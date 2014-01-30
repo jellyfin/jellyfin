@@ -2,6 +2,8 @@
 
     $(document).on('pagebeforeshow', "#moviesRecommendedPage", function () {
 
+        var screenWidth = $(window).width();
+
         var page = this;
         
         var options = {
@@ -9,7 +11,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
-            Limit: 12,
+            Limit: screenWidth >= 1920 ? 14 : 12,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,DateCreated,UserData",
             Filters: "IsUnplayed"
@@ -31,7 +33,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: 3,
+            Limit: screenWidth >= 1920 ? 4 : 3,
             Recursive: true,
             Fields: "DateCreated,UserData"
         };
@@ -61,7 +63,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Trailer",
-            Limit: 6,
+            Limit: screenWidth >= 1920 ? 7 : 6,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,DateCreated,UserData",
             Filters: "IsUnplayed"

@@ -18,9 +18,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             var log = new StringBuilder();
 
-            var headers = string.Join(",", request.Headers.AllKeys.Where(i => !string.Equals(i, "cookie", StringComparison.OrdinalIgnoreCase) && !string.Equals(i, "Referer", StringComparison.OrdinalIgnoreCase)).Select(k => k + "=" + request.Headers[k]));
+            //var headers = string.Join(",", request.Headers.AllKeys.Where(i => !string.Equals(i, "cookie", StringComparison.OrdinalIgnoreCase) && !string.Equals(i, "Referer", StringComparison.OrdinalIgnoreCase)).Select(k => k + "=" + request.Headers[k]));
 
-            log.AppendLine("Ip: " + request.RemoteEndPoint + ". Headers: " + headers);
+            //log.AppendLine("Ip: " + request.RemoteEndPoint + ". Headers: " + headers);
 
             var type = request.IsWebSocketRequest ? "Web Socket" : "HTTP " + request.HttpMethod;
 
@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             log.AppendLine(string.Format("Url: {0}", url));
 
-            log.AppendLine("Headers: " + string.Join(",", response.Headers.AllKeys.Select(k => k + "=" + response.Headers[k])));
+            //log.AppendLine("Headers: " + string.Join(",", response.Headers.AllKeys.Select(k => k + "=" + response.Headers[k])));
 
             var responseTime = string.Format(". Response time: {0} ms", duration.TotalMilliseconds);
 

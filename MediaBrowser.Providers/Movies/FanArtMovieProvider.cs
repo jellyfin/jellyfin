@@ -112,11 +112,6 @@ namespace MediaBrowser.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return SupportsItem(item);
-        }
-
-        internal static bool SupportsItem(IHasImages item)
-        {
             var trailer = item as Trailer;
 
             if (trailer != null)
@@ -124,7 +119,7 @@ namespace MediaBrowser.Providers.Movies
                 return !trailer.IsLocalTrailer;
             }
 
-            return item is Movie || item is BoxSet || item is MusicVideo;
+            return item is Movie || item is MusicVideo;
         }
 
         /// <summary>
@@ -252,6 +247,23 @@ namespace MediaBrowser.Providers.Movies
                     await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
                 }
             }
+        }
+
+        internal Task EnsureMovieXml(string tmdbId, CancellationToken cancellationToken)
+        {
+            var path = GetFanartXmlPath(tmdbId);
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+
+            if (fileInfo.Exists)
+            {
+                if (ConfigurationManager.Configuration.EnableFanArtUpdates || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                {
+                    return Task.FromResult(true);
+                }
+            }
+
+            return DownloadMovieXml(tmdbId, cancellationToken);
         }
 
         private async Task FetchImages(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)

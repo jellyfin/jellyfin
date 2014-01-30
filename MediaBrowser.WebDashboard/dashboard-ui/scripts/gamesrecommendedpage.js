@@ -9,7 +9,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             MediaTypes: "Game",
-            Limit: 5,
+            Limit: 10,
             Recursive: true
         };
 
@@ -29,7 +29,7 @@
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             MediaTypes: "Game",
-            Limit: 5,
+            Limit: 10,
             Recursive: true,
             Filters: "IsPlayed"
         };

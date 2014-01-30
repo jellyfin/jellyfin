@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var user = _userManager.GetUserById(new Guid(query.UserId));
 
-            var inputItems = user.RootFolder.GetRecursiveChildren(user, null);
+            var inputItems = user.RootFolder.GetRecursiveChildren(user, null).Where(i => !(i is ICollectionFolder));
 
             var results = await GetSearchHints(inputItems, query).ConfigureAwait(false);
 

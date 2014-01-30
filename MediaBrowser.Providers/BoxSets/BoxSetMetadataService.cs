@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -9,13 +9,13 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.Genres
+namespace MediaBrowser.Providers.BoxSets
 {
-    public class GenreMetadataService : ConcreteMetadataService<Genre>
+    public class BoxSetMetadataService : ConcreteMetadataService<BoxSet>
     {
         private readonly ILibraryManager _libraryManager;
 
-        public GenreMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, ILibraryManager libraryManager)
+        public BoxSetMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, ILibraryManager libraryManager)
             : base(serverConfigurationManager, logger, providerManager, providerRepo)
         {
             _libraryManager = libraryManager;
@@ -28,13 +28,12 @@ namespace MediaBrowser.Providers.Genres
         /// <param name="target">The target.</param>
         /// <param name="lockedFields">The locked fields.</param>
         /// <param name="replaceData">if set to <c>true</c> [replace data].</param>
-        /// <param name="mergeMetadataSettings">if set to <c>true</c> [merge metadata settings].</param>
-        protected override void MergeData(Genre source, Genre target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(BoxSet source, BoxSet target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
-        protected override Task SaveItem(Genre item, ItemUpdateType reason, CancellationToken cancellationToken)
+        protected override Task SaveItem(BoxSet item, ItemUpdateType reason, CancellationToken cancellationToken)
         {
             return _libraryManager.UpdateItem(item, reason, cancellationToken);
         }

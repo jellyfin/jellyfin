@@ -100,13 +100,16 @@
 
         var html = '';
 
+        var addPathMappingInfo = $(page).is('#mediaLibraryPage');
+
         for (var i = 0, length = virtualFolders.length; i < length; i++) {
 
             var virtualFolder = virtualFolders[i];
 
             var isCollapsed = MediaLibraryPage.lastVirtualFolderName != virtualFolder.Name;
 
-            html += MediaLibraryPage.getVirtualFolderHtml(virtualFolder, isCollapsed, i);
+
+            html += MediaLibraryPage.getVirtualFolderHtml(virtualFolder, isCollapsed, i, addPathMappingInfo);
         }
 
         $('#divVirtualFolders', page).html(html).trigger('create');
@@ -122,7 +125,7 @@
         });
     },
 
-    getVirtualFolderHtml: function (virtualFolder, isCollapsed, index) {
+    getVirtualFolderHtml: function (virtualFolder, isCollapsed, index, addPathMappingInfo) {
 
         isCollapsed = isCollapsed ? "true" : "false";
         var html = '<div class="collapsibleVirtualFolder" data-mini="true" data-role="collapsible" data-collapsed="' + isCollapsed + '">';
@@ -155,7 +158,9 @@
         }
         html += '</ul>';
 
-        html += '<p>Use <a href="librarypathmapping.html">path substitution</a> to map server paths to network shares that clients are able to access.</p>';
+        if (addPathMappingInfo) {
+            html += '<p>Use <a href="librarypathmapping.html">path substitution</a> to map server paths to network shares that clients are able to access.</p>';
+        }
 
         html += '<p>';
         html += '<button type="button" data-inline="true" data-icon="minus" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteVirtualFolder(this);" data-mini="true">Remove</button>';

@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -18,13 +18,11 @@ namespace MediaBrowser.Providers.Movies
     class ManualMovieDbImageProvider : IRemoteImageProvider
     {
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
 
-        public ManualMovieDbImageProvider(IJsonSerializer jsonSerializer, IServerConfigurationManager config, IHttpClient httpClient)
+        public ManualMovieDbImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _jsonSerializer = jsonSerializer;
-            _config = config;
             _httpClient = httpClient;
         }
 
@@ -40,7 +38,15 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasImages item)
         {
-            return MovieDbImagesProvider.SupportsItem(item);
+            var trailer = item as Trailer;
+
+            if (trailer != null)
+            {
+                return !trailer.IsLocalTrailer;
+            }
+
+            // Don't support local trailers
+            return item is Movie || item is BoxSet || item is MusicVideo;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)

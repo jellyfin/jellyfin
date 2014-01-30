@@ -88,6 +88,7 @@ namespace MediaBrowser.Providers.People
                     item.SetProviderId(MetadataProviders.Imdb, info.imdb_id);
                 }
 
+                result.HasMetadata = true;
                 result.Item = item;
             }
 

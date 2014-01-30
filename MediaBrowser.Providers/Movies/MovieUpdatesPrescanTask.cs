@@ -75,29 +75,7 @@ namespace MediaBrowser.Providers.Movies
                 return;
             }
 
-            var innerProgress = new ActionableProgress<double>();
-            innerProgress.RegisterAction(pct => progress.Report(pct * .8));
-            await Run(innerProgress, false, cancellationToken).ConfigureAwait(false);
-
-            progress.Report(80);
-
-            //innerProgress = new ActionableProgress<double>();
-            //innerProgress.RegisterAction(pct => progress.Report(80 + pct * .2));
-            //await Run(innerProgress, true, cancellationToken).ConfigureAwait(false);
-
-            progress.Report(100);
-        }
-
-        /// <summary>
-        /// Runs the specified progress.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="runForBoxSets">if set to <c>true</c> [run for box sets].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task Run(IProgress<double> progress, bool runForBoxSets, CancellationToken cancellationToken)
-        {
-            var path = runForBoxSets ? MovieDbProvider.GetBoxSetsDataPath(_config.CommonApplicationPaths) : MovieDbProvider.GetMoviesDataPath(_config.CommonApplicationPaths);
+            var path = MovieDbProvider.GetMoviesDataPath(_config.CommonApplicationPaths);
 
             Directory.CreateDirectory(path);
 
@@ -136,7 +114,7 @@ namespace MediaBrowser.Providers.Movies
 
                     var idsToUpdate = updatedIds.Where(i => !string.IsNullOrWhiteSpace(i) && existingDictionary.ContainsKey(i));
 
-                    await UpdateMovies(idsToUpdate, runForBoxSets, path, progress, cancellationToken).ConfigureAwait(false);
+                    await UpdateMovies(idsToUpdate, progress, cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -191,12 +169,10 @@ namespace MediaBrowser.Providers.Movies
         /// Updates the movies.
         /// </summary>
         /// <param name="ids">The ids.</param>
-        /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
-        /// <param name="moviesDataPath">The movies data path.</param>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task UpdateMovies(IEnumerable<string> ids, bool isBoxSet, string moviesDataPath, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task UpdateMovies(IEnumerable<string> ids, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var list = ids.ToList();
             var numComplete = 0;
@@ -219,7 +195,7 @@ namespace MediaBrowser.Providers.Movies
                 {
                     try
                     {
-                        await UpdateMovie(id, isBoxSet, language, cancellationToken).ConfigureAwait(false);
+                        await UpdateMovie(id, language, cancellationToken).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -240,15 +216,14 @@ namespace MediaBrowser.Providers.Movies
         /// Updates the movie.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
         /// <param name="preferredMetadataLanguage">The preferred metadata language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private Task UpdateMovie(string id, bool isBoxSet, string preferredMetadataLanguage, CancellationToken cancellationToken)
+        private Task UpdateMovie(string id, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
             _logger.Info("Updating movie from tmdb " + id + ", language " + preferredMetadataLanguage);
 
-            return MovieDbProvider.Current.DownloadMovieInfo(id, isBoxSet, preferredMetadataLanguage, cancellationToken);
+            return MovieDbProvider.Current.DownloadMovieInfo(id, preferredMetadataLanguage, cancellationToken);
         }
 
         class Result

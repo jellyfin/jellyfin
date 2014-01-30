@@ -85,7 +85,7 @@
             SortBy: "PlayCount",
             SortOrder: "Descending",
             IncludeItemTypes: "Audio",
-            Limit: 5,
+            Limit: 10,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo",
             Filters: "IsPlayed"

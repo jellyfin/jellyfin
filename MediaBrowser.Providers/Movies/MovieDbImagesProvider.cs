@@ -58,11 +58,6 @@ namespace MediaBrowser.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return SupportsItem(item);
-        }
-
-        internal static bool SupportsItem(IHasImages item)
-        {
             var trailer = item as Trailer;
 
             if (trailer != null)
@@ -71,7 +66,7 @@ namespace MediaBrowser.Providers.Movies
             }
 
             // Don't support local trailers
-            return item is Movie || item is BoxSet || item is MusicVideo;
+            return item is Movie || item is MusicVideo;
         }
 
         public override ItemUpdateType ItemUpdateType

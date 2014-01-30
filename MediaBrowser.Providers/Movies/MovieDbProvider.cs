@@ -103,7 +103,7 @@ namespace MediaBrowser.Providers.Movies
             }
 
             // Don't support local trailers
-            return item is Movie || item is BoxSet || item is MusicVideo;
+            return item is Movie || item is MusicVideo;
         }
 
         /// <summary>
@@ -182,9 +182,7 @@ namespace MediaBrowser.Providers.Movies
         }
 
         private const string TmdbConfigUrl = "http://api.themoviedb.org/3/configuration?api_key={0}";
-        private const string Search3 = @"http://api.themoviedb.org/3/search/{3}?api_key={1}&query={0}&language={2}";
         private const string GetMovieInfo3 = @"http://api.themoviedb.org/3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
-        private const string GetBoxSetInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&append_to_response=images";
 
         internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
         internal static string AcceptHeader = "application/json,image/*";
@@ -217,12 +215,11 @@ namespace MediaBrowser.Providers.Movies
         /// Gets the movie data path.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
         /// <param name="tmdbId">The TMDB id.</param>
         /// <returns>System.String.</returns>
-        internal static string GetMovieDataPath(IApplicationPaths appPaths, bool isBoxSet, string tmdbId)
+        internal static string GetMovieDataPath(IApplicationPaths appPaths, string tmdbId)
         {
-            var dataPath = isBoxSet ? GetBoxSetsDataPath(appPaths) : GetMoviesDataPath(appPaths);
+            var dataPath = GetMoviesDataPath(appPaths);
 
             return Path.Combine(dataPath, tmdbId);
         }
@@ -230,13 +227,6 @@ namespace MediaBrowser.Providers.Movies
         internal static string GetMoviesDataPath(IApplicationPaths appPaths)
         {
             var dataPath = Path.Combine(appPaths.DataPath, "tmdb-movies");
-
-            return dataPath;
-        }
-
-        internal static string GetBoxSetsDataPath(IApplicationPaths appPaths)
-        {
-            var dataPath = Path.Combine(appPaths.DataPath, "tmdb-collections");
 
             return dataPath;
         }
@@ -262,7 +252,8 @@ namespace MediaBrowser.Providers.Movies
             // Don't search for music video id's because it is very easy to misidentify. 
             if (string.IsNullOrEmpty(id) && !(item is MusicVideo))
             {
-                id = await FindId(item, cancellationToken).ConfigureAwait(false);
+                id = await new MovieDbSearch(Logger, JsonSerializer)
+                    .FindMovieId(GetId(item), cancellationToken).ConfigureAwait(false);
             }
 
             if (!string.IsNullOrEmpty(id))
@@ -276,6 +267,17 @@ namespace MediaBrowser.Providers.Movies
             return true;
         }
 
+        private ItemId GetId(IHasMetadata item)
+        {
+            return new ItemId
+            {
+                MetadataCountryCode = item.GetPreferredMetadataCountryCode(),
+                MetadataLanguage = item.GetPreferredMetadataLanguage(),
+                Name = item.Name,
+                ProviderIds = item.ProviderIds
+            };
+        }
+
         /// <summary>
         /// Determines whether [has alt meta] [the specified item].
         /// </summary>
@@ -283,11 +285,6 @@ namespace MediaBrowser.Providers.Movies
         /// <returns><c>true</c> if [has alt meta] [the specified item]; otherwise, <c>false</c>.</returns>
         internal static bool HasAltMeta(BaseItem item)
         {
-            if (item is BoxSet)
-            {
-                return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("collection.xml");
-            }
-
             var path = MovieXmlSaver.GetMovieSavePath(item);
 
             if (item.LocationType == LocationType.FileSystem)
@@ -297,191 +294,6 @@ namespace MediaBrowser.Providers.Movies
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Finds the id.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Task{System.String}.</returns>
-        public async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
-        {
-            int? yearInName;
-            string name = item.Name;
-            NameParser.ParseName(name, out name, out yearInName);
-
-            var year = item.ProductionYear ?? yearInName;
-
-            Logger.Info("MovieDbProvider: Finding id for item: " + name);
-            var language = item.GetPreferredMetadataLanguage().ToLower();
-
-            //if we are a boxset - look at our first child
-            var boxset = item as BoxSet;
-            if (boxset != null)
-            {
-                // See if any movies have a collection id already
-                var collId = boxset.Children.Concat(boxset.GetLinkedChildren()).OfType<Video>()
-                    .Select(i => i.GetProviderId(MetadataProviders.TmdbCollection))
-                   .FirstOrDefault(i => i != null);
-
-                if (collId != null) return collId;
-
-            }
-
-            //nope - search for it
-            var searchType = item is BoxSet ? "collection" : "movie";
-            var id = await AttemptFindId(name, searchType, year, language, cancellationToken).ConfigureAwait(false);
-            if (id == null)
-            {
-                //try in english if wasn't before
-                if (language != "en")
-                {
-                    id = await AttemptFindId(name, searchType, year, "en", cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    // try with dot and _ turned to space
-                    var originalName = name;
-
-                    name = name.Replace(",", " ");
-                    name = name.Replace(".", " ");
-                    name = name.Replace("_", " ");
-                    name = name.Replace("-", " ");
-
-                    // Search again if the new name is different
-                    if (!string.Equals(name, originalName))
-                    {
-                        id = await AttemptFindId(name, searchType, year, language, cancellationToken).ConfigureAwait(false);
-
-                        if (id == null && language != "en")
-                        {
-                            //one more time, in english
-                            id = await AttemptFindId(name, searchType, year, "en", cancellationToken).ConfigureAwait(false);
-
-                        }
-                    }
-
-                    if (id == null && item.LocationType == LocationType.FileSystem)
-                    {
-                        //last resort - try using the actual folder name
-                        var pathName = Path.GetFileName(item.ResolveArgs.Path);
-
-                        // Only search if it's a name we haven't already tried.
-                        if (!string.Equals(pathName, name, StringComparison.OrdinalIgnoreCase)
-                            && !string.Equals(pathName, originalName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            id = await AttemptFindId(pathName, searchType, year, "en", cancellationToken).ConfigureAwait(false);
-                        }
-                    }
-                }
-            }
-
-            return id;
-        }
-
-        /// <summary>
-        /// Attempts the find id.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="type">movie or collection</param>
-        /// <param name="year">The year.</param>
-        /// <param name="language">The language.</param>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task<string> AttemptFindId(string name, string type, int? year, string language, CancellationToken cancellationToken)
-        {
-            string url3 = string.Format(Search3, UrlEncode(name), ApiKey, language, type);
-            TmdbMovieSearchResults searchResult = null;
-
-            using (Stream json = await GetMovieDbResponse(new HttpRequestOptions
-            {
-                Url = url3,
-                CancellationToken = cancellationToken,
-                AcceptHeader = AcceptHeader
-
-            }).ConfigureAwait(false))
-            {
-                searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
-            }
-
-            if (searchResult != null)
-            {
-                return FindIdOfBestResult(searchResult.results, name, year);
-            }
-
-            return null;
-        }
-
-        private string FindIdOfBestResult(List<TmdbMovieSearchResult> results, string name, int? year)
-        {
-            if (year.HasValue)
-            {
-                // Take the first result from the same year
-                var id = results.Where(i =>
-                {
-                    // Make sure it has a name
-                    if (!string.IsNullOrEmpty(i.title ?? i.name))
-                    {
-                        DateTime r;
-
-                        // These dates are always in this exact format
-                        if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
-                        {
-                            return r.Year == year.Value;
-                        }
-                    }
-
-                    return false;
-                })
-                    .Select(i => i.id.ToString(CultureInfo.InvariantCulture))
-                    .FirstOrDefault();
-
-                if (!string.IsNullOrEmpty(id))
-                {
-                    return id;
-                }
-
-                // Take the first result within one year
-                id = results.Where(i =>
-               {
-                   // Make sure it has a name
-                   if (!string.IsNullOrEmpty(i.title ?? i.name))
-                   {
-                       DateTime r;
-
-                       // These dates are always in this exact format
-                       if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
-                       {
-                           return Math.Abs(r.Year - year.Value) <= 1;
-                       }
-                   }
-
-                   return false;
-               })
-                   .Select(i => i.id.ToString(CultureInfo.InvariantCulture))
-                   .FirstOrDefault();
-
-                if (!string.IsNullOrEmpty(id))
-                {
-                    return id;
-                }
-            }
-
-            // Just take the first one
-            return results.Where(i => !string.IsNullOrEmpty(i.title ?? i.name))
-                .Select(i => i.id.ToString(CultureInfo.InvariantCulture))
-                .FirstOrDefault();
-        }
-
-        /// <summary>
-        /// URLs the encode.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>System.String.</returns>
-        private static string UrlEncode(string name)
-        {
-            return WebUtility.UrlEncode(name);
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
@@ -499,23 +311,20 @@ namespace MediaBrowser.Providers.Movies
             // Id could be ImdbId or TmdbId
 
             var language = item.GetPreferredMetadataLanguage();
-            var country = item.GetPreferredMetadataCountryCode();
 
             var dataFilePath = GetDataFilePath(item);
 
             var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
 
-            var isBoxSet = item is BoxSet;
-
             if (string.IsNullOrEmpty(dataFilePath) || !File.Exists(dataFilePath))
             {
-                var mainResult = await FetchMainResult(id, isBoxSet, language, cancellationToken).ConfigureAwait(false);
+                var mainResult = await FetchMainResult(id, language, cancellationToken).ConfigureAwait(false);
 
                 if (mainResult == null) return;
 
                 tmdbId = mainResult.id.ToString(_usCulture);
 
-                dataFilePath = GetDataFilePath(isBoxSet, tmdbId, language);
+                dataFilePath = GetDataFilePath(tmdbId, language);
 
                 var directory = Path.GetDirectoryName(dataFilePath);
 
@@ -526,7 +335,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !HasAltMeta(item))
             {
-                dataFilePath = GetDataFilePath(isBoxSet, tmdbId, language);
+                dataFilePath = GetDataFilePath(tmdbId, language);
 
                 if (!string.IsNullOrEmpty(dataFilePath))
                 {
@@ -541,17 +350,16 @@ namespace MediaBrowser.Providers.Movies
         /// Downloads the movie info.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
         /// <param name="preferredMetadataLanguage">The preferred metadata language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        internal async Task DownloadMovieInfo(string id, bool isBoxSet, string preferredMetadataLanguage, CancellationToken cancellationToken)
+        internal async Task DownloadMovieInfo(string id, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
-            var mainResult = await FetchMainResult(id, isBoxSet, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
+            var mainResult = await FetchMainResult(id, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
 
             if (mainResult == null) return;
 
-            var dataFilePath = GetDataFilePath(isBoxSet, id, preferredMetadataLanguage);
+            var dataFilePath = GetDataFilePath(id, preferredMetadataLanguage);
 
             Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
@@ -567,7 +375,7 @@ namespace MediaBrowser.Providers.Movies
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if (ConfigurationManager.Configuration.EnableTmdbUpdates || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                if ((ConfigurationManager.Configuration.EnableTmdbUpdates) || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
                 {
                     return Task.FromResult(true);
                 }
@@ -580,7 +388,7 @@ namespace MediaBrowser.Providers.Movies
                 return Task.FromResult(true);
             }
 
-            return DownloadMovieInfo(id, item is BoxSet, item.GetPreferredMetadataLanguage(), cancellationToken);
+            return DownloadMovieInfo(id, item.GetPreferredMetadataLanguage(), cancellationToken);
         }
 
         /// <summary>
@@ -597,12 +405,12 @@ namespace MediaBrowser.Providers.Movies
                 return null;
             }
 
-            return GetDataFilePath(item is BoxSet, id, item.GetPreferredMetadataLanguage());
+            return GetDataFilePath(id, item.GetPreferredMetadataLanguage());
         }
 
-        private string GetDataFilePath(bool isBoxset, string tmdbId, string preferredLanguage)
+        private string GetDataFilePath(string tmdbId, string preferredLanguage)
         {
-            var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, isBoxset, tmdbId);
+            var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, tmdbId);
 
             var filename = string.Format("all-{0}.json",
                 preferredLanguage ?? string.Empty);
@@ -614,15 +422,12 @@ namespace MediaBrowser.Providers.Movies
         /// Fetches the main result.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
         /// <param name="language">The language.</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{CompleteMovieData}.</returns>
-        private async Task<CompleteMovieData> FetchMainResult(string id, bool isBoxSet, string language, CancellationToken cancellationToken)
+        private async Task<CompleteMovieData> FetchMainResult(string id, string language, CancellationToken cancellationToken)
         {
-            var baseUrl = isBoxSet ? GetBoxSetInfo3 : GetMovieInfo3;
-
-            var url = string.Format(baseUrl, id, ApiKey);
+            var url = string.Format(GetMovieInfo3, id, ApiKey);
 
             // Get images in english and with no language
             url += "&include_image_language=en,null";
@@ -661,7 +466,7 @@ namespace MediaBrowser.Providers.Movies
                 {
                     Logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
 
-                    url = string.Format(baseUrl, id, ApiKey, "en");
+                    url = string.Format(GetMovieInfo3, id, ApiKey) + "&include_image_language=en,null&language=en";
 
                     using (var json = await GetMovieDbResponse(new HttpRequestOptions
                     {
@@ -784,17 +589,6 @@ namespace MediaBrowser.Providers.Movies
                 //no specific country release info at all
                 movie.PremiereDate = movieData.release_date.ToUniversalTime();
                 movie.ProductionYear = movieData.release_date.Year;
-            }
-
-            // If that didn't find a rating and we are a boxset, use the one from our first child
-            if (movie.OfficialRating == null && movie is BoxSet && !movie.LockedFields.Contains(MetadataFields.OfficialRating))
-            {
-                var boxset = movie as BoxSet;
-                Logger.Info("MovieDbProvider - Using rating of first child of boxset...");
-
-                var firstChild = boxset.Children.Concat(boxset.GetLinkedChildren()).FirstOrDefault();
-
-                boxset.OfficialRating = firstChild != null ? firstChild.OfficialRating : null;
             }
 
             //studios
@@ -942,94 +736,6 @@ namespace MediaBrowser.Providers.Movies
             /// </summary>
             /// <value>The titles.</value>
             public List<TmdbTitle> titles { get; set; }
-        }
-
-        /// <summary>
-        /// Class TmdbMovieSearchResult
-        /// </summary>
-        internal class TmdbMovieSearchResult
-        {
-            /// <summary>
-            /// Gets or sets a value indicating whether this <see cref="TmdbMovieSearchResult" /> is adult.
-            /// </summary>
-            /// <value><c>true</c> if adult; otherwise, <c>false</c>.</value>
-            public bool adult { get; set; }
-            /// <summary>
-            /// Gets or sets the backdrop_path.
-            /// </summary>
-            /// <value>The backdrop_path.</value>
-            public string backdrop_path { get; set; }
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
-            public int id { get; set; }
-            /// <summary>
-            /// Gets or sets the original_title.
-            /// </summary>
-            /// <value>The original_title.</value>
-            public string original_title { get; set; }
-            /// <summary>
-            /// Gets or sets the release_date.
-            /// </summary>
-            /// <value>The release_date.</value>
-            public string release_date { get; set; }
-            /// <summary>
-            /// Gets or sets the poster_path.
-            /// </summary>
-            /// <value>The poster_path.</value>
-            public string poster_path { get; set; }
-            /// <summary>
-            /// Gets or sets the popularity.
-            /// </summary>
-            /// <value>The popularity.</value>
-            public double popularity { get; set; }
-            /// <summary>
-            /// Gets or sets the title.
-            /// </summary>
-            /// <value>The title.</value>
-            public string title { get; set; }
-            /// <summary>
-            /// Gets or sets the vote_average.
-            /// </summary>
-            /// <value>The vote_average.</value>
-            public double vote_average { get; set; }
-            /// <summary>
-            /// For collection search results
-            /// </summary>
-            public string name { get; set; }
-            /// <summary>
-            /// Gets or sets the vote_count.
-            /// </summary>
-            /// <value>The vote_count.</value>
-            public int vote_count { get; set; }
-        }
-
-        /// <summary>
-        /// Class TmdbMovieSearchResults
-        /// </summary>
-        internal class TmdbMovieSearchResults
-        {
-            /// <summary>
-            /// Gets or sets the page.
-            /// </summary>
-            /// <value>The page.</value>
-            public int page { get; set; }
-            /// <summary>
-            /// Gets or sets the results.
-            /// </summary>
-            /// <value>The results.</value>
-            public List<TmdbMovieSearchResult> results { get; set; }
-            /// <summary>
-            /// Gets or sets the total_pages.
-            /// </summary>
-            /// <value>The total_pages.</value>
-            public int total_pages { get; set; }
-            /// <summary>
-            /// Gets or sets the total_results.
-            /// </summary>
-            /// <value>The total_results.</value>
-            public int total_results { get; set; }
         }
 
         internal class BelongsToCollection
