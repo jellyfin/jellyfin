@@ -179,10 +179,16 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="logManager">The log manager.</param>
-        public ApplicationHost(ServerApplicationPaths applicationPaths, ILogManager logManager)
+        public ApplicationHost(ServerApplicationPaths applicationPaths, ILogManager logManager, bool isRunningAsService)
             : base(applicationPaths, logManager)
         {
+            _isRunningAsService = isRunningAsService;
+        }
 
+        private readonly bool _isRunningAsService;
+        public bool IsRunningAsService
+        {
+            get { return _isRunningAsService; }
         }
 
         /// <summary>
@@ -431,7 +437,7 @@ namespace MediaBrowser.ServerApplication
             await ItemRepository.Initialize().ConfigureAwait(false);
 
             await ProviderRepository.Initialize().ConfigureAwait(false);
-            
+
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
         }
 
@@ -687,7 +693,8 @@ namespace MediaBrowser.ServerApplication
                 WanAddress = GetWanAddress(),
                 HasUpdateAvailable = _hasUpdateAvailable,
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
-                TranscodingTempPath = ApplicationPaths.TranscodingTempPath
+                TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
+                IsRunningAsService = IsRunningAsService
             };
         }
 
