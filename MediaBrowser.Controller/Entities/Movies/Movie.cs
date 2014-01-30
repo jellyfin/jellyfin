@@ -159,7 +159,8 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             try
             {
-                folder = ResolveArgs.GetFileSystemEntryByName("specials");
+                folder = ResolveArgs.GetFileSystemEntryByName("extras") ??
+                    ResolveArgs.GetFileSystemEntryByName("specials");
             }
             catch (IOException ex)
             {

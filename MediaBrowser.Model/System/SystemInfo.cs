@@ -19,7 +19,13 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The operating sytem.</value>
         public string OperatingSystem { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is running as service.
+        /// </summary>
+        /// <value><c>true</c> if this instance is running as service; otherwise, <c>false</c>.</value>
+        public bool IsRunningAsService { get; set; }
+
         /// <summary>
         /// Gets or sets the mac address.
         /// </summary>

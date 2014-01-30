@@ -495,6 +495,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "itemdetailpage.js",
                                       "itemgallery.js",
                                       "itemlistpage.js",
+                                      "librarypathmapping.js",
                                       "librarysettings.js",
                                       "livetvchannel.js",
                                       "livetvchannels.js",

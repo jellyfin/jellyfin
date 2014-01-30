@@ -212,7 +212,7 @@ namespace MediaBrowser.ServerApplication
             SystemEvents.SessionEnding += SystemEvents_SessionEnding;
             SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
 
-            _appHost = new ApplicationHost(appPaths, logManager);
+            _appHost = new ApplicationHost(appPaths, logManager, runService);
 
             _app = new App(_appHost, _appHost.LogManager.GetLogger("App"), runService);
 
