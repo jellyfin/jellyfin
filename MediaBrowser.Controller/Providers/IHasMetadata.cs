@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Providers
     /// <summary>
     /// Interface IHasMetadata
     /// </summary>
-    public interface IHasMetadata : IHasImages, IHasProviderIds
+    public interface IHasMetadata : IHasImages
     {
         /// <summary>
         /// Gets the preferred metadata country code.

@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="All\LocalImageProvider.cs" />
     <Compile Include="BoxSets\BoxSetMetadataService.cs" />
+    <Compile Include="BoxSets\MovieDbBoxSetImageProvider.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetProvider.cs" />
     <Compile Include="GameGenres\GameGenreMetadataService.cs" />
     <Compile Include="Genres\GenreMetadataService.cs" />

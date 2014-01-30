@@ -1,4 +1,10 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
@@ -6,21 +12,16 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using MediaBrowser.Providers.Movies;
 
-namespace MediaBrowser.Providers.Movies
+namespace MediaBrowser.Providers.BoxSets
 {
-    class ManualMovieDbImageProvider : IRemoteImageProvider
+    class MovieDbBoxSetImageProvider : IRemoteImageProvider
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
 
-        public ManualMovieDbImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public MovieDbBoxSetImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
@@ -38,15 +39,7 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasImages item)
         {
-            var trailer = item as Trailer;
-
-            if (trailer != null)
-            {
-                return !trailer.IsLocalTrailer;
-            }
-
-            // Don't support local trailers
-            return item is Movie || item is MusicVideo;
+            return item is BoxSet;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -67,22 +60,36 @@ namespace MediaBrowser.Providers.Movies
 
         public async Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
-            var list = new List<RemoteImageInfo>();
+            var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
 
-            var results = await FetchImages((BaseItem)item, _jsonSerializer, cancellationToken).ConfigureAwait(false);
-
-            if (results == null)
+            if (!string.IsNullOrEmpty(tmdbId))
             {
-                return list;
+                var language = item.GetPreferredMetadataLanguage();
+
+                var mainResult = await MovieDbBoxSetProvider.Current.GetMovieDbResult(tmdbId, language, cancellationToken).ConfigureAwait(false);
+
+                if (mainResult != null)
+                {
+                    var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+
+                    var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+
+                    return GetImages(mainResult, language, tmdbImageUrl);
+                }
             }
 
-            var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+            return new List<RemoteImageInfo>();
+        }
 
-            var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+        private IEnumerable<RemoteImageInfo> GetImages(MovieDbBoxSetProvider.RootObject obj, string language, string baseUrl)
+        {
+            var list = new List<RemoteImageInfo>();
 
-            list.AddRange(GetPosters(results).Select(i => new RemoteImageInfo
+            var images = obj.images ?? new MovieDbBoxSetProvider.Images();
+
+            list.AddRange(GetPosters(images).Select(i => new RemoteImageInfo
             {
-                Url = tmdbImageUrl + i.file_path,
+                Url = baseUrl + i.file_path,
                 CommunityRating = i.vote_average,
                 VoteCount = i.vote_count,
                 Width = i.width,
@@ -93,9 +100,9 @@ namespace MediaBrowser.Providers.Movies
                 RatingType = RatingType.Score
             }));
 
-            list.AddRange(GetBackdrops(results).Select(i => new RemoteImageInfo
+            list.AddRange(GetBackdrops(images).Select(i => new RemoteImageInfo
             {
-                Url = tmdbImageUrl + i.file_path,
+                Url = baseUrl + i.file_path,
                 CommunityRating = i.vote_average,
                 VoteCount = i.vote_count,
                 Width = i.width,
@@ -104,8 +111,6 @@ namespace MediaBrowser.Providers.Movies
                 Type = ImageType.Backdrop,
                 RatingType = RatingType.Score
             }));
-
-            var language = item.GetPreferredMetadataLanguage();
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
@@ -138,9 +143,9 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="images">The images.</param>
         /// <returns>IEnumerable{MovieDbProvider.Poster}.</returns>
-        private IEnumerable<MovieDbProvider.Poster> GetPosters(MovieDbProvider.Images images)
+        private IEnumerable<MovieDbBoxSetProvider.Poster> GetPosters(MovieDbBoxSetProvider.Images images)
         {
-            return images.posters ?? new List<MovieDbProvider.Poster>();
+            return images.posters ?? new List<MovieDbBoxSetProvider.Poster>();
         }
 
         /// <summary>
@@ -148,9 +153,9 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="images">The images.</param>
         /// <returns>IEnumerable{MovieDbProvider.Backdrop}.</returns>
-        private IEnumerable<MovieDbProvider.Backdrop> GetBackdrops(MovieDbProvider.Images images)
+        private IEnumerable<MovieDbBoxSetProvider.Backdrop> GetBackdrops(MovieDbBoxSetProvider.Images images)
         {
-            var eligibleBackdrops = images.backdrops == null ? new List<MovieDbProvider.Backdrop>() :
+            var eligibleBackdrops = images.backdrops == null ? new List<MovieDbBoxSetProvider.Backdrop>() :
                 images.backdrops
                 .ToList();
 

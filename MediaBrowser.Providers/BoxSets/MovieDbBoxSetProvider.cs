@@ -20,8 +20,10 @@ namespace MediaBrowser.Providers.BoxSets
     public class MovieDbBoxSetProvider : IRemoteMetadataProvider<BoxSet>
     {
         private  readonly CultureInfo _enUs = new CultureInfo("en-US");
-        private const string GetCollectionInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&append_to_response=images"; 
-        
+        private const string GetCollectionInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&append_to_response=images";
+
+        internal static MovieDbBoxSetProvider Current;
+
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
         private readonly IServerConfigurationManager _config;
@@ -33,6 +35,7 @@ namespace MediaBrowser.Providers.BoxSets
             _json = json;
             _config = config;
             _fileSystem = fileSystem;
+            Current = this;
         }
 
         public async Task<MetadataResult<BoxSet>> GetMetadata(ItemId id, CancellationToken cancellationToken)
@@ -49,21 +52,35 @@ namespace MediaBrowser.Providers.BoxSets
 
             if (!string.IsNullOrEmpty(tmdbId))
             {
-                await EnsureInfo(tmdbId, id.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var mainResult = await GetMovieDbResult(tmdbId, id.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
-                var dataFilePath = GetDataFilePath(_config.ApplicationPaths, tmdbId, id.MetadataLanguage);
-
-                if (!string.IsNullOrEmpty(dataFilePath))
+                if (mainResult != null)
                 {
-                    var mainResult = _json.DeserializeFromFile<RootObject>(dataFilePath);
-
                     result.HasMetadata = true;
                     result.Item = GetItem(mainResult);
                 }
-                
             }
 
             return result;
+        }
+
+        internal async Task<RootObject> GetMovieDbResult(string tmdbId, string language, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(tmdbId))
+            {
+                throw new ArgumentNullException("tmdbId");
+            }
+
+            await EnsureInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
+
+            var dataFilePath = GetDataFilePath(_config.ApplicationPaths, tmdbId, language);
+
+            if (!string.IsNullOrEmpty(dataFilePath))
+            {
+                return _json.DeserializeFromFile<RootObject>(dataFilePath);
+            }
+
+            return null;
         }
 
         private BoxSet GetItem(RootObject obj)
@@ -219,7 +236,7 @@ namespace MediaBrowser.Providers.BoxSets
             public string file_path { get; set; }
             public int height { get; set; }
             public string iso_639_1 { get; set; }
-            public object vote_average { get; set; }
+            public double vote_average { get; set; }
             public int vote_count { get; set; }
             public int width { get; set; }
         }
@@ -230,7 +247,7 @@ namespace MediaBrowser.Providers.BoxSets
             public string file_path { get; set; }
             public int height { get; set; }
             public string iso_639_1 { get; set; }
-            public object vote_average { get; set; }
+            public double vote_average { get; set; }
             public int vote_count { get; set; }
             public int width { get; set; }
         }
