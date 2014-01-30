@@ -172,6 +172,12 @@ namespace MediaBrowser.Common.Implementations
         public abstract string Name { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is running as service.
+        /// </summary>
+        /// <value><c>true</c> if this instance is running as service; otherwise, <c>false</c>.</value>
+        public abstract bool IsRunningAsService { get; }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
         protected BaseApplicationHost(TApplicationPathsType applicationPaths, ILogManager logManager)

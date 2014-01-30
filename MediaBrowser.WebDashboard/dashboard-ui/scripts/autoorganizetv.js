@@ -69,6 +69,8 @@
 
         $('#txtEpisodePattern', page).val(tvOptions.EpisodeNamePattern).trigger('change');
         $('#txtMultiEpisodePattern', page).val(tvOptions.MultiEpisodeNamePattern).trigger('change');
+
+        $('#txtDeleteLeftOverFiles', page).val(tvOptions.LeftOverFileExtensionsToDelete.join(';'));
     }
     
     $(document).on('pageinit', "#libraryFileOrganizerPage", function () {
@@ -142,6 +144,8 @@
 
                 tvOptions.EpisodeNamePattern = $('#txtEpisodePattern', form).val();
                 tvOptions.MultiEpisodeNamePattern = $('#txtMultiEpisodePattern', form).val();
+
+                tvOptions.LeftOverFileExtensionsToDelete = $('#txtDeleteLeftOverFiles', form).val().split(';');
 
                 var watchLocation = $('#txtWatchFolder', form).val();
                 tvOptions.WatchLocations = watchLocation ? [watchLocation] : [];

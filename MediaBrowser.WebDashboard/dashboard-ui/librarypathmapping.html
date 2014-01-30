@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Library</title>
+</head>
+<body>
+    <div id="libraryPathMappingPage" data-role="page" class="page type-interior mediaLibraryPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="library.html" data-role="button">Media Folders</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Path Mapping</a>
+                    <a href="librarysettings.html" data-role="button">Advanced</a>
+                </div>
+
+                <form id="libraryPathMappingForm">
+
+
+                </form>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.libraryPathMappingForm').off('submit', LibraryPathMappingPage.onSubmit).on('submit', LibraryPathMappingPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

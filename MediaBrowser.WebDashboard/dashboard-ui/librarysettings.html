@@ -10,12 +10,20 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="library.html" data-role="button">Media Folders</a>
-                    <a href="#" data-role="button" class="ui-btn-active">Settings</a>
+                    <a href="librarypathmapping.html" data-role="button">Path Mapping</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Advanced</a>
                 </div>
 
                 <form id="librarySettingsForm">
 
                     <ul data-role="listview" class="ulForm">
+                        <li>
+                            <input type="checkbox" id="chkEnableRealtimeMonitor" name="chkEnableRealtimeMonitor" />
+                            <label for="chkEnableRealtimeMonitor">Enable real time monitoring</label>
+                            <div class="fieldDescription">
+                                Changes will be processed immediately, on supported file systems.
+                            </div>
+                        </li>
                         <li>
                             <input type="checkbox" id="chkEnableCustomIBNPath" name="chkEnableCustomIBNPath" />
                             <label for="chkEnableCustomIBNPath">Use custom images by name path</label>

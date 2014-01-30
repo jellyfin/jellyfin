@@ -498,7 +498,14 @@
                 $('#fldRecursive', page).hide();
             }
 
-            if (item.Type != "Channel" && item.Type != "Genre" && item.Type != "Studio" && item.Type != "MusicGenre" && item.Type != "GameGenre" && item.Type != "Person" && item.Type != "MusicArtist") {
+            if (item.Type != "Channel" &&
+                item.Type != "Genre" &&
+                item.Type != "Studio" &&
+                item.Type != "MusicGenre" &&
+                item.Type != "GameGenre" &&
+                item.Type != "Person" &&
+                item.Type != "MusicArtist" &&
+                item.Type != "UserRootFolder") {
                 $('#fldDelete', page).show();
             } else {
                 $('#fldDelete', page).hide();
