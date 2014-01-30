@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Weather;
+﻿using System.Collections.Generic;
+using MediaBrowser.Model.Weather;
 using System;
 
 namespace MediaBrowser.Model.Configuration
@@ -228,7 +229,8 @@ namespace MediaBrowser.Model.Configuration
         public LiveTvOptions LiveTvOptions { get; set; }
 
         public bool EnableRealtimeMonitor { get; set; }
-        
+        public PathSubstitution[] PathSubstitutions { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -259,6 +261,7 @@ namespace MediaBrowser.Model.Configuration
             EnableInternetProviders = true; //initial installs will need these
 
             ManualLoginClients = new ManualLoginCategory[] { };
+            PathSubstitutions = new PathSubstitution[] { };
 
             MetadataRefreshDays = 30;
             PreferredMetadataLanguage = "en";
@@ -351,5 +354,11 @@ namespace MediaBrowser.Model.Configuration
             SeasonFolderPattern = "Season %s";
             SeasonZeroFolderName = "Season 0";
         }
+    }
+
+    public class PathSubstitution
+    {
+        public string From { get; set; }
+        public string To { get; set; }
     }
 }

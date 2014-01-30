@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -8,6 +9,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -31,8 +33,9 @@ namespace MediaBrowser.Server.Implementations.Dto
         private readonly IItemRepository _itemRepo;
 
         private readonly IImageProcessor _imageProcessor;
+        private readonly IServerConfigurationManager _config;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor)
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -40,6 +43,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             _userDataRepository = userDataRepository;
             _itemRepo = itemRepo;
             _imageProcessor = imageProcessor;
+            _config = config;
         }
 
         /// <summary>
@@ -891,6 +895,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (fields.Contains(ItemFields.Path))
             {
                 dto.Path = item.Path;
+                dto.MappedPaths = GetMappedPaths(item);
             }
 
             dto.PremiereDate = item.PremiereDate;
@@ -1140,6 +1145,44 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 SetBookProperties(dto, book);
             }
+        }
+
+        private List<string> GetMappedPaths(BaseItem item)
+        {
+            var list = new List<string>();
+
+            var locationType = item.LocationType;
+
+            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+            {
+                var path = item.Path;
+                var mappedPaths = _config.Configuration.PathSubstitutions
+                    .Select(p => GetMappedPath(path, p))
+                    .Where(p => !string.Equals(p, path, StringComparison.OrdinalIgnoreCase))
+                    .Distinct(StringComparer.OrdinalIgnoreCase);
+
+                list.AddRange(mappedPaths);
+            }
+
+            return list;
+        }
+
+        private string GetMappedPath(string path, PathSubstitution map)
+        {
+            var toValue = map.To ?? string.Empty;
+
+            path = path.Replace(map.From, toValue, StringComparison.OrdinalIgnoreCase);
+
+            if (toValue.IndexOf('/') != -1)
+            {
+                path = path.Replace('\\', '/');
+            }
+            else
+            {
+                path = path.Replace('/', '\\');
+            }
+
+            return path;
         }
 
         private void SetProductionLocations(BaseItem item, BaseItemDto dto)

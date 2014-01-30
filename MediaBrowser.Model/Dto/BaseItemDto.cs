@@ -135,6 +135,12 @@ namespace MediaBrowser.Model.Dto
         public List<string> Genres { get; set; }
 
         /// <summary>
+        /// Gets or sets the mapped paths.
+        /// </summary>
+        /// <value>The mapped paths.</value>
+        public List<string> MappedPaths { get; set; }
+        
+        /// <summary>
         /// Gets or sets the community rating.
         /// </summary>
         /// <value>The community rating.</value>
