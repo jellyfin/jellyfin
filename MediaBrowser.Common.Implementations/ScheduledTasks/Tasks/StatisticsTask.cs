@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Logging;
 using System;
@@ -74,7 +72,16 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
             progress.Report(0);
             var mac = NetworkManager.GetMacAddress();
-            var data = new Dictionary<string, string> { { "feature", ApplicationHost.Name }, { "mac", mac }, { "ver", ApplicationHost.ApplicationVersion.ToString() }, { "platform", Environment.OSVersion.VersionString } };
+
+            var data = new Dictionary<string, string>
+            {
+                { "feature", ApplicationHost.Name }, 
+                { "mac", mac }, 
+                { "ver", ApplicationHost.ApplicationVersion.ToString() }, 
+                { "platform", Environment.OSVersion.VersionString }, 
+                { "isservice", ApplicationHost.IsRunningAsService.ToString().ToLower()}
+            };
+
             await HttpClient.Post(Constants.Constants.MbAdminUrl + "service/registration/ping", data, CancellationToken.None).ConfigureAwait(false);
             progress.Report(100);
 
@@ -86,7 +93,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <value>The name.</value>
         public string Name
         {
-            get { return "Collect stats"; }
+            get { return "Collect anonymous usage stats"; }
         }
 
         /// <summary>

@@ -186,7 +186,7 @@ namespace MediaBrowser.ServerApplication
         }
 
         private readonly bool _isRunningAsService;
-        public bool IsRunningAsService
+        public override bool IsRunningAsService
         {
             get { return _isRunningAsService; }
         }
