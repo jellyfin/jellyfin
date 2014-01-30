@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public interface IHasImages
+    public interface IHasImages : IHasProviderIds
     {
         /// <summary>
         /// Gets the name.
