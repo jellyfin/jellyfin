@@ -9,16 +9,16 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.Genres
+namespace MediaBrowser.Providers.Users
 {
-    public class GenreMetadataService : ConcreteMetadataService<Genre>
+    public class UserMetadataService : ConcreteMetadataService<User>
     {
-        private readonly ILibraryManager _libraryManager;
+        private readonly IUserManager _userManager;
 
-        public GenreMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, ILibraryManager libraryManager)
+        public UserMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, ILibraryManager libraryManager, IUserManager userManager)
             : base(serverConfigurationManager, logger, providerManager, providerRepo)
         {
-            _libraryManager = libraryManager;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -28,15 +28,14 @@ namespace MediaBrowser.Providers.Genres
         /// <param name="target">The target.</param>
         /// <param name="lockedFields">The locked fields.</param>
         /// <param name="replaceData">if set to <c>true</c> [replace data].</param>
-        /// <param name="mergeMetadataSettings">if set to <c>true</c> [merge metadata settings].</param>
-        protected override void MergeData(Genre source, Genre target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(User source, User target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
-        protected override Task SaveItem(Genre item, ItemUpdateType reason, CancellationToken cancellationToken)
+        protected override Task SaveItem(User item, ItemUpdateType reason, CancellationToken cancellationToken)
         {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
+            return _userManager.UpdateUser(item);
         }
     }
 }

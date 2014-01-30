@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers
         public override bool Supports(BaseItem item)
         {
             // Only run for these generic types since we are expensive in file i/o
-            return item is BasePluginFolder || item is CollectionFolder;
+            return item is ICollectionFolder;
         }
 
         /// <summary>

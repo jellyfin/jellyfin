@@ -26,6 +26,11 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The provider ids.</value>
         public Dictionary<string, string> ProviderIds { get; set; }
+        /// <summary>
+        /// Gets or sets the year.
+        /// </summary>
+        /// <value>The year.</value>
+        public int? Year { get; set; }
 
         public ItemId()
         {

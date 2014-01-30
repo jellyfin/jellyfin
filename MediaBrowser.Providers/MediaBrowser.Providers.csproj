@@ -65,11 +65,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="All\LocalImageProvider.cs" />
+    <Compile Include="BoxSets\BoxSetMetadataService.cs" />
+    <Compile Include="BoxSets\MovieDbBoxSetProvider.cs" />
     <Compile Include="GameGenres\GameGenreMetadataService.cs" />
     <Compile Include="Genres\GenreMetadataService.cs" />
     <Compile Include="LiveTv\ChannelMetadataService.cs" />
     <Compile Include="LiveTv\ChannelXmlProvider.cs" />
     <Compile Include="LiveTv\ProgramMetadataService.cs" />
+    <Compile Include="Manager\ConcreteMetadataService.cs" />
     <Compile Include="Manager\ImageSaver.cs" />
     <Compile Include="Manager\ItemImageProvider.cs" />
     <Compile Include="Manager\ProviderManager.cs" />
@@ -83,6 +86,7 @@
     <Compile Include="Games\GameSystemProviderFromXml.cs" />
     <Compile Include="ImageFromMediaLocationProvider.cs" />
     <Compile Include="ImagesByNameProvider.cs" />
+    <Compile Include="Movies\MovieDbSearch.cs" />
     <Compile Include="MusicGenres\MusicGenreImageProvider.cs" />
     <Compile Include="GameGenres\GameGenreImageProvider.cs" />
     <Compile Include="Genres\GenreImageProvider.cs" />
@@ -92,7 +96,7 @@
     <Compile Include="MediaInfo\FFProbeAudioInfoProvider.cs" />
     <Compile Include="MediaInfo\FFProbeVideoInfoProvider.cs" />
     <Compile Include="MediaInfo\VideoImageProvider.cs" />
-    <Compile Include="Movies\BoxSetProviderFromXml.cs" />
+    <Compile Include="BoxSets\BoxSetXmlProvider.cs" />
     <Compile Include="Movies\ManualMovieDbImageProvider.cs" />
     <Compile Include="Movies\ManualFanartMovieImageProvider.cs" />
     <Compile Include="MusicGenres\MusicGenreMetadataService.cs" />
@@ -169,6 +173,7 @@
     <Compile Include="TV\TvdbPrescanTask.cs" />
     <Compile Include="TV\TvdbSeriesImageProvider.cs" />
     <Compile Include="UserRootFolderNameProvider.cs" />
+    <Compile Include="Users\UserMetadataService.cs" />
     <Compile Include="VirtualItemImageValidator.cs" />
   </ItemGroup>
   <ItemGroup>

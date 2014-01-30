@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -41,7 +42,14 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasImages item)
         {
-            return FanArtMovieProvider.SupportsItem(item);
+            var trailer = item as Trailer;
+
+            if (trailer != null)
+            {
+                return !trailer.IsLocalTrailer;
+            }
+
+            return item is Movie || item is BoxSet || item is MusicVideo;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -65,7 +73,7 @@ namespace MediaBrowser.Providers.Movies
             return images.Where(i => i.Type == imageType);
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
             var baseItem = (BaseItem)item;
             var list = new List<RemoteImageInfo>();
@@ -74,6 +82,8 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(movieId))
             {
+                await FanArtMovieProvider.Current.EnsureMovieXml(movieId, cancellationToken).ConfigureAwait(false);
+
                 var xmlPath = FanArtMovieProvider.Current.GetFanartXmlPath(movieId);
 
                 try
@@ -91,7 +101,7 @@ namespace MediaBrowser.Providers.Movies
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
             // Sort first by width to prioritize HD versions
-            list = list.OrderByDescending(i => i.Width ?? 0)
+            return list.OrderByDescending(i => i.Width ?? 0)
                 .ThenByDescending(i =>
                 {
                     if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
@@ -111,10 +121,7 @@ namespace MediaBrowser.Providers.Movies
                     }
                     return 0;
                 })
-                .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ToList();
-
-            return Task.FromResult<IEnumerable<RemoteImageInfo>>(list);
+                .ThenByDescending(i => i.CommunityRating ?? 0);
         }
 
         private void AddImages(List<RemoteImageInfo> list, string xmlPath, CancellationToken cancellationToken)

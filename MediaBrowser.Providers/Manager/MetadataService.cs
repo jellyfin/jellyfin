@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Providers.Manager
 {
     public abstract class MetadataService<TItemType> : IMetadataService
-        where TItemType : IHasMetadata, new()
+        where TItemType : IHasMetadata
     {
         protected readonly IServerConfigurationManager ServerConfigurationManager;
         protected readonly ILogger Logger;
@@ -263,7 +263,7 @@ namespace MediaBrowser.Providers.Manager
                 Providers = providers.Select(i => i.GetType().FullName.GetMD5()).ToList()
             };
 
-            var temp = new TItemType();
+            var temp = CreateNew();
 
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
@@ -316,6 +316,8 @@ namespace MediaBrowser.Providers.Manager
 
             return refreshResult;
         }
+
+        protected abstract TItemType CreateNew();
 
         private async Task ExecuteRemoteProviders(TItemType item, TItemType temp, IEnumerable<IRemoteMetadataProvider<TItemType>> providers, RefreshResult refreshResult, CancellationToken cancellationToken)
         {

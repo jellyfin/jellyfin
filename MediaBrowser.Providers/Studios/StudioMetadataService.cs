@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Studios
 {
-    public class StudioMetadataService : MetadataService<Studio>
+    public class StudioMetadataService : ConcreteMetadataService<Studio>
     {
         private readonly ILibraryManager _libraryManager;
 

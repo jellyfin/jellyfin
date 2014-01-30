@@ -189,6 +189,7 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [enable tv db updates]; otherwise, <c>false</c>.</value>
         public bool EnableTvDbUpdates { get; set; }
         public bool EnableTmdbUpdates { get; set; }
+        public bool EnableFanArtUpdates { get; set; }
 
         public bool EnableVideoImageExtraction { get; set; }
 
@@ -243,8 +244,9 @@ namespace MediaBrowser.Model.Configuration
             LegacyWebSocketPortNumber = 8945;
             EnableHttpLevelLogging = true;
             EnableDashboardResponseCaching = true;
-            EnableVideoImageExtraction = true;
 
+            EnableFanArtUpdates = true;
+            EnableVideoImageExtraction = true;
             EnableMovieChapterImageExtraction = true;
             EnableEpisodeChapterImageExtraction = false;
             EnableOtherVideoChapterImageExtraction = false;
