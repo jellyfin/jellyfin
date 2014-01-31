@@ -17,13 +17,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
 using System.Net;
+using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Movies
 {
     /// <summary>
     /// Class FanArtMovieProvider
     /// </summary>
-    class FanArtMovieProvider : FanartBaseProvider
+    class FanArtMovieProvider : BaseMetadataProvider
     {
         /// <summary>
         /// Gets the HTTP client.
@@ -228,7 +229,7 @@ namespace MediaBrowser.Providers.Movies
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var url = string.Format(FanArtBaseUrl, ApiKey, tmdbId);
+            var url = string.Format(FanArtBaseUrl, FanartArtistProvider.ApiKey, tmdbId);
 
             var xmlPath = GetFanartXmlPath(tmdbId);
 
@@ -237,7 +238,7 @@ namespace MediaBrowser.Providers.Movies
             using (var response = await HttpClient.Get(new HttpRequestOptions
             {
                 Url = url,
-                ResourcePool = FanArtResourcePool,
+                ResourcePool = FanartArtistProvider.FanArtResourcePool,
                 CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))
@@ -318,7 +319,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))
                 {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Backdrop, null, cancellationToken)
+                    await _providerManager.SaveImage(item, image.Url, FanartArtistProvider.FanArtResourcePool, ImageType.Backdrop, null, cancellationToken)
                                         .ConfigureAwait(false);
 
                     if (item.BackdropImagePaths.Count >= backdropLimit) break;
@@ -332,7 +333,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 try
                 {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, image.Url, FanartArtistProvider.FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
                     break;
                 }
                 catch (HttpException ex)

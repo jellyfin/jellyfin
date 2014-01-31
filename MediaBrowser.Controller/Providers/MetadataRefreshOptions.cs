@@ -22,11 +22,21 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         [Obsolete]
         public bool ResetResolveArgs { get; set; }
+
+        public MetadataRefreshOptions()
+        {
+            ResetResolveArgs = true;
+        }
     }
 
     public class ImageRefreshOptions
     {
-        public MetadataRefreshMode ImageRefreshMode { get; set; }
+        public ImageRefreshMode ImageRefreshMode { get; set; }
+
+        public ImageRefreshOptions()
+        {
+            ImageRefreshMode = ImageRefreshMode.Default;
+        }
     }
 
     public enum MetadataRefreshMode
@@ -40,6 +50,24 @@ namespace MediaBrowser.Controller.Providers
         /// No providers will be executed
         /// </summary>
         None,
+
+        /// <summary>
+        /// All providers will be executed to search for new metadata
+        /// </summary>
+        FullRefresh
+    }
+
+    public enum ImageRefreshMode
+    {
+        /// <summary>
+        /// The default
+        /// </summary>
+        Default,
+
+        /// <summary>
+        /// Existing images will be validated
+        /// </summary>
+        ValidationOnly,
 
         /// <summary>
         /// All providers will be executed to search for new metadata

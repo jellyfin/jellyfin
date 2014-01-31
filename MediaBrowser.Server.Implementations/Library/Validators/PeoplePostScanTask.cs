@@ -93,7 +93,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                     // All other metadata can wait for that.
                     await itemByName.RefreshMetadata(new MetadataRefreshOptions
                     {
-                        ImageRefreshMode = MetadataRefreshMode.None,
+                        ImageRefreshMode = ImageRefreshMode.ValidationOnly,
                         MetadataRefreshMode = MetadataRefreshMode.None
 
                     }, cancellationToken).ConfigureAwait(false);

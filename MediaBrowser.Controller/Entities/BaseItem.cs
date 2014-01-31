@@ -1492,7 +1492,7 @@ namespace MediaBrowser.Controller.Entities
             return RefreshMetadata(new MetadataRefreshOptions
             {
                 ForceSave = true,
-                ImageRefreshMode = MetadataRefreshMode.None,
+                ImageRefreshMode = ImageRefreshMode.ValidationOnly,
                 MetadataRefreshMode = MetadataRefreshMode.None
 
             }, CancellationToken.None);

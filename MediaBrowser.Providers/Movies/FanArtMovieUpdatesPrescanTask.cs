@@ -54,7 +54,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableInternetProviders)
+            if (!_config.Configuration.EnableInternetProviders || !_config.Configuration.EnableFanArtUpdates)
             {
                 progress.Report(100);
                 return;
@@ -101,18 +101,18 @@ namespace MediaBrowser.Providers.Movies
             // First get last time
             using (var stream = await _httpClient.Get(new HttpRequestOptions
             {
-                Url = string.Format(UpdatesUrl, FanartBaseProvider.ApiKey, lastUpdateTime),
+                Url = string.Format(UpdatesUrl, FanartArtistProvider.ApiKey, lastUpdateTime),
                 CancellationToken = cancellationToken,
                 EnableHttpCompression = true,
-                ResourcePool = FanartBaseProvider.FanArtResourcePool
+                ResourcePool = FanartArtistProvider.FanArtResourcePool
 
             }).ConfigureAwait(false))
             {
-                // If empty fanart will return a string of "null", rather than an empty list
                 using (var reader = new StreamReader(stream))
                 {
                     var json = await reader.ReadToEndAsync().ConfigureAwait(false);
 
+                    // If empty fanart will return a string of "null", rather than an empty list
                     if (string.Equals(json, "null", StringComparison.OrdinalIgnoreCase))
                     {
                         return new List<string>();

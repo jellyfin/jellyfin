@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -20,69 +19,128 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
-    /// <summary>
-    /// Class LastfmArtistProvider
-    /// </summary>
-    public class LastfmArtistProvider : LastfmBaseProvider
+    public class LastFmArtistProvider : IRemoteMetadataProvider<MusicArtist>
     {
-        /// <summary>
-        /// The _library manager
-        /// </summary>
-        protected readonly ILibraryManager LibraryManager;
+        private readonly IJsonSerializer _json;
+        private readonly IHttpClient _httpClient;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LastfmArtistProvider" /> class.
-        /// </summary>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, ILibraryManager libraryManager)
-            : base(jsonSerializer, httpClient, logManager, configurationManager)
+        internal static readonly SemaphoreSlim LastfmResourcePool = new SemaphoreSlim(4, 4);
+
+        internal const string RootUrl = @"http://ws.audioscrobbler.com/2.0/?";
+        internal static string ApiKey = "7b76553c3eb1d341d642755aecc40a33";
+
+        private readonly IServerConfigurationManager _config;
+        private ILogger _logger;
+
+        public LastFmArtistProvider(IHttpClient httpClient, IJsonSerializer json)
         {
-            LibraryManager = libraryManager;
+            _httpClient = httpClient;
+            _json = json;
         }
 
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        public async Task<MetadataResult<MusicArtist>> GetMetadata(ItemId id, CancellationToken cancellationToken)
         {
-            if (HasAltMeta(item))
+            var result = new MetadataResult<MusicArtist>();
+
+            var musicBrainzId = id.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(id, cancellationToken).ConfigureAwait(false);
+
+            if (!String.IsNullOrWhiteSpace(musicBrainzId))
             {
-                return false;
+                cancellationToken.ThrowIfCancellationRequested();
+
+                result.Item = new MusicArtist();
+                result.HasMetadata = true;
+
+                result.Item.SetProviderId(MetadataProviders.Musicbrainz, musicBrainzId);
+
+                await FetchLastfmData(result.Item, musicBrainzId, cancellationToken).ConfigureAwait(false);
             }
 
-            return base.NeedsRefreshInternal(item, providerInfo);
+            return result;
         }
 
-        protected override string ProviderVersion
+        protected virtual async Task FetchLastfmData(MusicArtist item, string musicBrainzId, CancellationToken cancellationToken)
         {
-            get
+            // Get artist info with provided id
+            var url = RootUrl + String.Format("method=artist.getInfo&mbid={0}&api_key={1}&format=json", UrlEncode(musicBrainzId), ApiKey);
+
+            LastfmGetArtistResult result;
+
+            using (var json = await _httpClient.Get(new HttpRequestOptions
             {
-                return "9";
+                Url = url,
+                ResourcePool = LastfmResourcePool,
+                CancellationToken = cancellationToken,
+                EnableHttpCompression = false
+
+            }).ConfigureAwait(false))
+            {
+                using (var reader = new StreamReader(json))
+                {
+                    var jsonText = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    // Fix their bad json
+                    jsonText = jsonText.Replace("\"#text\"", "\"url\"");
+
+                    result = _json.DeserializeFromString<LastfmGetArtistResult>(jsonText);
+                }
+            }
+
+            if (result != null && result.artist != null)
+            {
+                ProcessArtistData(item, result.artist, musicBrainzId);
             }
         }
 
-        /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public override MetadataProviderPriority Priority
+        private void ProcessArtistData(MusicArtist artist, LastfmArtist data, string musicBrainzId)
         {
-            get { return MetadataProviderPriority.Third; }
-        }
+            var yearFormed = 0;
 
-        private bool HasAltMeta(BaseItem item)
-        {
-            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("artist.xml");
-        }
+            if (data.bio != null)
+            {
+                Int32.TryParse(data.bio.yearformed, out yearFormed);
+                if (!artist.LockedFields.Contains(MetadataFields.Overview))
+                {
+                    artist.Overview = data.bio.content;
+                }
+                if (!string.IsNullOrEmpty(data.bio.placeformed) && !artist.LockedFields.Contains(MetadataFields.ProductionLocations))
+                {
+                    artist.AddProductionLocation(data.bio.placeformed);
+                }
+            }
 
-        /// <summary>
-        /// Finds the id.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
+            if (yearFormed > 0)
+            {
+                artist.PremiereDate = new DateTime(yearFormed, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+                artist.ProductionYear = yearFormed;
+            }
+
+            string imageSize;
+            var url = LastfmHelper.GetImageUrl(data, out imageSize);
+
+            var cachePath = Path.Combine(_config.ApplicationPaths.CachePath, "lastfm", musicBrainzId, "image.txt");
+
+            try
+            {
+                if (string.IsNullOrEmpty(url))
+                {
+                    File.Delete(cachePath);
+                }
+                else
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+                    File.WriteAllText(cachePath, url + "|" + imageSize);
+                }
+            }
+            catch (IOException ex)
+            {
+                // Don't fail if this is unable to write
+                _logger.ErrorException("Error saving to {0}", ex, cachePath);
+            }
+        }
+        
+        private async Task<string> FindId(ItemId item, CancellationToken cancellationToken)
         {
             try
             {
@@ -102,43 +160,17 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <summary>
-        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var id = item.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(item, cancellationToken).ConfigureAwait(false);
-            
-            if (!string.IsNullOrWhiteSpace(id))
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                item.SetProviderId(MetadataProviders.Musicbrainz, id);
-
-                await FetchLastfmData(item, id, force, cancellationToken).ConfigureAwait(false);
-            }
-
-            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
-            return true;
-        }
-
-        /// <summary>
         /// Finds the id from music brainz.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        private async Task<string> FindIdFromMusicBrainz(BaseItem item, CancellationToken cancellationToken)
+        private async Task<string> FindIdFromMusicBrainz(ItemId item, CancellationToken cancellationToken)
         {
             // They seem to throw bad request failures on any term with a slash
             var nameToSearch = item.Name.Replace('/', ' ');
 
-            var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
+            var url = String.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
 
             var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
@@ -154,7 +186,7 @@ namespace MediaBrowser.Providers.Music
             if (HasDiacritics(item.Name))
             {
                 // Try again using the search with accent characters url
-                url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
+                url = String.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
                 doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
@@ -178,7 +210,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns><c>true</c> if the specified text has diacritics; otherwise, <c>false</c>.</returns>
         private bool HasDiacritics(string text)
         {
-            return !string.Equals(text, RemoveDiacritics(text), StringComparison.Ordinal);
+            return !String.Equals(text, RemoveDiacritics(text), StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -188,7 +220,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns>System.String.</returns>
         private string RemoveDiacritics(string text)
         {
-            return string.Concat(
+            return String.Concat(
                 text.Normalize(NormalizationForm.FormD)
                 .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
                                               UnicodeCategory.NonSpacingMark)
@@ -196,53 +228,18 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <summary>
-        /// Fetches the lastfm data.
+        /// Encodes an URL.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="musicBrainzId">The music brainz id.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        protected virtual async Task FetchLastfmData(BaseItem item, string musicBrainzId, bool force, CancellationToken cancellationToken)
+        /// <param name="name">The name.</param>
+        /// <returns>System.String.</returns>
+        private string UrlEncode(string name)
         {
-            // Get artist info with provided id
-            var url = RootUrl + string.Format("method=artist.getInfo&mbid={0}&api_key={1}&format=json", UrlEncode(musicBrainzId), ApiKey);
-
-            LastfmGetArtistResult result;
-
-            using (var json = await HttpClient.Get(new HttpRequestOptions
-            {
-                Url = url,
-                ResourcePool = LastfmResourcePool,
-                CancellationToken = cancellationToken,
-                EnableHttpCompression = false
-
-            }).ConfigureAwait(false))
-            {
-                using (var reader = new StreamReader(json))
-                {
-                    var jsonText = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-                    // Fix their bad json
-                    jsonText = jsonText.Replace("\"#text\"", "\"url\"");
-
-                    result = JsonSerializer.DeserializeFromString<LastfmGetArtistResult>(jsonText);
-                }
-            }
-
-            if (result != null && result.artist != null)
-            {
-                LastfmHelper.ProcessArtistData((MusicArtist)item, result.artist);
-            }
+            return WebUtility.UrlEncode(name);
         }
 
-        /// <summary>
-        /// Supportses the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public override bool Supports(BaseItem item)
+        public string Name
         {
-            return item is MusicArtist;
+            get { return "last.fm"; }
         }
     }
 }

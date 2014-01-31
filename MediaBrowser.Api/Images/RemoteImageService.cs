@@ -284,7 +284,7 @@ namespace MediaBrowser.Api.Images
             await item.RefreshMetadata(new MetadataRefreshOptions
             {
                 ForceSave = true,
-                ImageRefreshMode = MetadataRefreshMode.None,
+                ImageRefreshMode = ImageRefreshMode.ValidationOnly,
                 MetadataRefreshMode = MetadataRefreshMode.None
 
             }, CancellationToken.None).ConfigureAwait(false);

@@ -71,8 +71,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
-                var artistXmlPath = FanArtArtistProvider.GetArtistDataPath(_config.CommonApplicationPaths, artistMusicBrainzId);
-                artistXmlPath = Path.Combine(artistXmlPath, "fanart.xml");
+                var artistXmlPath = FanartArtistProvider.GetArtistXmlPath(_config.CommonApplicationPaths, artistMusicBrainzId);
 
                 var musicBrainzReleaseGroupId = album.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
@@ -348,7 +347,7 @@ namespace MediaBrowser.Providers.Music
             {
                 CancellationToken = cancellationToken,
                 Url = url,
-                ResourcePool = FanartBaseProvider.FanArtResourcePool
+                ResourcePool = FanartArtistProvider.FanArtResourcePool
             });
         }
     }

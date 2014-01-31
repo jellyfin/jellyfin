@@ -80,7 +80,6 @@
     <Compile Include="Manager\MetadataService.cs" />
     <Compile Include="BaseXmlProvider.cs" />
     <Compile Include="CollectionFolderImageProvider.cs" />
-    <Compile Include="FanartBaseProvider.cs" />
     <Compile Include="FolderProviderFromXml.cs" />
     <Compile Include="Games\GameXmlParser.cs" />
     <Compile Include="Games\GameProviderFromXml.cs" />
@@ -101,6 +100,8 @@
     <Compile Include="Movies\ManualMovieDbImageProvider.cs" />
     <Compile Include="Movies\ManualFanartMovieImageProvider.cs" />
     <Compile Include="MusicGenres\MusicGenreMetadataService.cs" />
+    <Compile Include="Music\ArtistMetadataService.cs" />
+    <Compile Include="Music\LastFmArtistProvider.cs" />
     <Compile Include="People\MovieDbPersonImageProvider.cs" />
     <Compile Include="Movies\MovieUpdatesPrescanTask.cs" />
     <Compile Include="Movies\MovieXmlParser.cs" />
@@ -112,18 +113,15 @@
     <Compile Include="Movies\OpenMovieDatabaseProvider.cs" />
     <Compile Include="Music\AlbumInfoFromSongProvider.cs" />
     <Compile Include="Music\AlbumProviderFromXml.cs" />
-    <Compile Include="Music\ArtistInfoFromSongProvider.cs" />
-    <Compile Include="Music\ArtistProviderFromXml.cs" />
+    <Compile Include="Music\ArtistXmlProvider.cs" />
     <Compile Include="Music\FanArtAlbumProvider.cs" />
-    <Compile Include="Music\FanArtArtistProvider.cs" />
     <Compile Include="Music\FanArtUpdatesPrescanTask.cs" />
     <Compile Include="Music\LastfmAlbumProvider.cs" />
     <Compile Include="Music\LastFmImageProvider.cs" />
-    <Compile Include="Music\LastfmArtistProvider.cs" />
     <Compile Include="Music\LastfmBaseProvider.cs" />
     <Compile Include="Music\LastfmHelper.cs" />
     <Compile Include="Music\ManualFanartAlbumProvider.cs" />
-    <Compile Include="Music\ManualFanartArtistProvider.cs" />
+    <Compile Include="Music\FanartArtistProvider.cs" />
     <Compile Include="Music\ManualLastFmImageProvider.cs" />
     <Compile Include="Music\MusicBrainzAlbumProvider.cs" />
     <Compile Include="Music\MusicVideoXmlParser.cs" />

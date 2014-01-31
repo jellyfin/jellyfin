@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Music
     /// <summary>
     /// Class FanArtAlbumProvider
     /// </summary>
-    public class FanArtAlbumProvider : FanartBaseProvider
+    public class FanArtAlbumProvider : BaseMetadataProvider
     {
         /// <summary>
         /// The _provider manager
@@ -131,8 +131,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
-                var artistXmlPath = FanArtArtistProvider.GetArtistDataPath(ConfigurationManager.CommonApplicationPaths, artistMusicBrainzId);
-                artistXmlPath = Path.Combine(artistXmlPath, "fanart.xml");
+                var artistXmlPath = FanartArtistProvider.GetArtistXmlPath(ConfigurationManager.CommonApplicationPaths, artistMusicBrainzId);
 
                 var file = new FileInfo(artistXmlPath);
 
@@ -195,7 +194,7 @@ namespace MediaBrowser.Providers.Music
             {
                 try
                 {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, image.Url, FanartArtistProvider.FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
                     break;
                 }
                 catch (HttpException ex)

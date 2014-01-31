@@ -15,8 +15,6 @@ namespace MediaBrowser.Providers.Music
     /// </summary>
     public abstract class LastfmBaseProvider : BaseMetadataProvider
     {
-        internal static readonly SemaphoreSlim LastfmResourcePool = new SemaphoreSlim(4, 4);
-
         /// <summary>
         /// Initializes a new instance of the <see cref="LastfmBaseProvider" /> class.
         /// </summary>
@@ -79,9 +77,6 @@ namespace MediaBrowser.Providers.Music
                 return true;
             }
         }
-
-        protected const string RootUrl = @"http://ws.audioscrobbler.com/2.0/?";
-        protected static string ApiKey = "7b76553c3eb1d341d642755aecc40a33";
 
         /// <summary>
         /// Encodes an URL.

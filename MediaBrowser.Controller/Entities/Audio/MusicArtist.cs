@@ -69,13 +69,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.GetClientTypeName();
         }
 
-        /// <summary>
-        /// Gets or sets the last fm image URL.
-        /// </summary>
-        /// <value>The last fm image URL.</value>
-        public string LastFmImageUrl { get; set; }
-        public string LastFmImageSize { get; set; }
-
         public MusicArtist()
         {
             UserItemCountList = new List<ItemByNameCounts>();

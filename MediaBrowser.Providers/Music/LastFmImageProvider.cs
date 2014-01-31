@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item is MusicArtist || item is MusicAlbum;
+            return item is MusicAlbum;
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace MediaBrowser.Providers.Music
 
                 if (image != null)
                 {
-                    await _providerManager.SaveImage(item, image.Url, LastfmBaseProvider.LastfmResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, image.Url, LastFmArtistProvider.LastfmResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
