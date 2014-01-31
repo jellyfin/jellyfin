@@ -146,11 +146,13 @@
     <Compile Include="Providers\IDynamicInfoProvider.cs" />
     <Compile Include="Providers\IHasMetadata.cs" />
     <Compile Include="Providers\IImageProvider.cs" />
+    <Compile Include="Providers\ILocalMetadataProvider.cs" />
     <Compile Include="Providers\IProviderRepository.cs" />
     <Compile Include="Providers\IRemoteImageProvider.cs" />
     <Compile Include="Providers\ILocalImageProvider.cs" />
     <Compile Include="Providers\IMetadataProvider.cs" />
     <Compile Include="Providers\IMetadataService.cs" />
+    <Compile Include="Providers\IRemoteMetadataProvider.cs" />
     <Compile Include="Providers\ItemId.cs" />
     <Compile Include="Providers\MetadataRefreshOptions.cs" />
     <Compile Include="Providers\NameParser.cs" />

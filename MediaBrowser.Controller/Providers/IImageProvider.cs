@@ -19,11 +19,5 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         bool Supports(IHasImages item);
-
-        /// <summary>
-        /// Gets the order.
-        /// </summary>
-        /// <value>The order.</value>
-        int Order { get; }
     }
 }

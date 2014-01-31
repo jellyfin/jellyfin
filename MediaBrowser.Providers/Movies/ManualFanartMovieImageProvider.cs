@@ -20,7 +20,7 @@ using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class ManualFanartMovieImageProvider : IRemoteImageProvider, IHasChangeMonitor
+    public class ManualFanartMovieImageProvider : IRemoteImageProvider, IHasChangeMonitor, IHasOrder
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
@@ -86,9 +86,9 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(movieId))
             {
-                await FanArtMovieProvider.Current.EnsureMovieXml(movieId, cancellationToken).ConfigureAwait(false);
+                await FanartMovieProvider.Current.EnsureMovieXml(movieId, cancellationToken).ConfigureAwait(false);
 
-                var xmlPath = FanArtMovieProvider.Current.GetFanartXmlPath(movieId);
+                var xmlPath = FanartMovieProvider.Current.GetFanartXmlPath(movieId);
 
                 try
                 {
@@ -344,7 +344,7 @@ namespace MediaBrowser.Providers.Movies
             if (!string.IsNullOrEmpty(id))
             {
                 // Process images
-                var xmlPath = FanArtMovieProvider.Current.GetFanartXmlPath(id);
+                var xmlPath = FanartMovieProvider.Current.GetFanartXmlPath(id);
 
                 var fileInfo = new FileInfo(xmlPath);
 

@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.Movies
     /// <summary>
     /// Class FanArtMovieProvider
     /// </summary>
-    class FanArtMovieProvider : BaseMetadataProvider
+    class FanartMovieProvider : BaseMetadataProvider
     {
         /// <summary>
         /// Gets the HTTP client.
@@ -37,18 +37,18 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         private readonly IProviderManager _providerManager;
 
-        internal static FanArtMovieProvider Current { get; private set; }
+        internal static FanartMovieProvider Current { get; private set; }
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FanArtMovieProvider" /> class.
+        /// Initializes a new instance of the <see cref="FanartMovieProvider" /> class.
         /// </summary>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public FanArtMovieProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
+        public FanartMovieProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             if (httpClient == null)

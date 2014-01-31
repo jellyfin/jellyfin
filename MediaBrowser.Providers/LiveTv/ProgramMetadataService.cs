@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.LiveTv
 {
-    public class ProgramMetadataService : ConcreteMetadataService<LiveTvProgram>
+    public class ProgramMetadataService : ConcreteMetadataService<LiveTvProgram, ItemId>
     {
         private readonly ILibraryManager _libraryManager;
 

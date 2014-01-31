@@ -3,210 +3,373 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
-using System.Net;
+using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
-    /// <summary>
-    /// Class FanArtAlbumProvider
-    /// </summary>
-    public class FanArtAlbumProvider : BaseMetadataProvider
+    public class FanartAlbumProvider : IRemoteImageProvider, IHasChangeMonitor, IHasOrder
     {
-        /// <summary>
-        /// The _provider manager
-        /// </summary>
-        private readonly IProviderManager _providerManager;
-
-        /// <summary>
-        /// Gets the HTTP client.
-        /// </summary>
-        /// <value>The HTTP client.</value>
-        protected IHttpClient HttpClient { get; private set; }
-
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly IServerConfigurationManager _config;
+        private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FanArtAlbumProvider"/> class.
-        /// </summary>
-        /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public FanArtAlbumProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
-            : base(logManager, configurationManager)
+        public FanartAlbumProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
-            _providerManager = providerManager;
+            _config = config;
+            _httpClient = httpClient;
             _fileSystem = fileSystem;
-            HttpClient = httpClient;
         }
 
-        /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public override MetadataProviderPriority Priority
+        public string Name
         {
-            get { return MetadataProviderPriority.Fifth; }
+            get { return ProviderName; }
         }
 
-        /// <summary>
-        /// Supportses the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public override bool Supports(BaseItem item)
+        public static string ProviderName
+        {
+            get { return "FanArt"; }
+        }
+
+        public bool Supports(IHasImages item)
         {
             return item is MusicAlbum;
         }
 
-        public override ItemUpdateType ItemUpdateType
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
         {
-            get
+            return new List<ImageType>
             {
-                return ItemUpdateType.ImageUpdate;
-            }
-        }
-        
-        /// <summary>
-        /// Gets a value indicating whether [refresh on version change].
-        /// </summary>
-        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
-        protected override bool RefreshOnVersionChange
-        {
-            get
-            {
-                return true;
-            }
+                ImageType.Primary, 
+                ImageType.Disc
+            };
         }
 
-        /// <summary>
-        /// Gets the provider version.
-        /// </summary>
-        /// <value>The provider version.</value>
-        protected override string ProviderVersion
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
         {
-            get
-            {
-                return "18";
-            }
+            var images = await GetAllImages(item, cancellationToken).ConfigureAwait(false);
+
+            return images.Where(i => i.Type == imageType);
         }
 
-        /// <summary>
-        /// Needses the refresh internal.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        public async Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
-            if (!ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc &&
-                !ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary)
-            {
-                return false;
-            }
+            var album = (MusicAlbum)item;
 
-            if (item.HasImage(ImageType.Primary) && item.HasImage(ImageType.Disc))
-            {
-                return false;
-            }
+            var list = new List<RemoteImageInfo>();
 
-            return base.NeedsRefreshInternal(item, providerInfo);
-        }
-
-        protected override DateTime CompareDate(BaseItem item)
-        {
-            var artistMusicBrainzId = item.Parent.GetProviderId(MetadataProviders.Musicbrainz);
+            var artistMusicBrainzId = album.Parent.GetProviderId(MetadataProviders.Musicbrainz);
 
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
-                var artistXmlPath = FanartArtistProvider.GetArtistXmlPath(ConfigurationManager.CommonApplicationPaths, artistMusicBrainzId);
+                await FanartArtistProvider.Current.EnsureMovieXml(artistMusicBrainzId, cancellationToken).ConfigureAwait(false);
 
-                var file = new FileInfo(artistXmlPath);
+                var artistXmlPath = FanartArtistProvider.GetArtistXmlPath(_config.CommonApplicationPaths, artistMusicBrainzId);
 
-                if (file.Exists)
-                {
-                    return _fileSystem.GetLastWriteTimeUtc(file);
-                }
-            } 
-            
-            return base.CompareDate(item);
-        }
+                var musicBrainzReleaseGroupId = album.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
-        /// <summary>
-        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
-        {
-            if (!item.LockedFields.Contains(MetadataFields.Images))
-            {
-                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartAlbumProvider.ProviderName).ConfigureAwait(false);
-                await FetchFromXml(item, images.ToList(), cancellationToken).ConfigureAwait(false);
-            }
+                var musicBrainzId = album.GetProviderId(MetadataProviders.Musicbrainz);
 
-            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Fetches from XML.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="images">The images.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task FetchFromXml(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.HasImage(ImageType.Primary))
-            {
-                await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.HasImage(ImageType.Disc))
-            {
-                await SaveImage(item, images, ImageType.Disc, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        private async Task SaveImage(BaseItem item, List<RemoteImageInfo> images, ImageType type, CancellationToken cancellationToken)
-        {
-            foreach (var image in images.Where(i => i.Type == type))
-            {
                 try
                 {
-                    await _providerManager.SaveImage(item, image.Url, FanartArtistProvider.FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
-                    break;
+                    AddImages(list, artistXmlPath, musicBrainzId, musicBrainzReleaseGroupId, cancellationToken);
                 }
-                catch (HttpException ex)
+                catch (FileNotFoundException)
                 {
-                    // Sometimes fanart has bad url's in their xml
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
-                    {
-                        continue;
-                    }
-                    break;
+
                 }
             }
+
+            var language = item.GetPreferredMetadataLanguage();
+
+            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
+
+            // Sort first by width to prioritize HD versions
+            return list.OrderByDescending(i => i.Width ?? 0)
+                .ThenByDescending(i =>
+                {
+                    if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return 3;
+                    }
+                    if (!isLanguageEn)
+                    {
+                        if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return 2;
+                        }
+                    }
+                    if (string.IsNullOrEmpty(i.Language))
+                    {
+                        return isLanguageEn ? 3 : 2;
+                    }
+                    return 0;
+                })
+                .ThenByDescending(i => i.CommunityRating ?? 0)
+                .ThenByDescending(i => i.VoteCount ?? 0);
+        }
+
+        /// <summary>
+        /// Adds the images.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        /// <param name="xmlPath">The XML path.</param>
+        /// <param name="releaseId">The release identifier.</param>
+        /// <param name="releaseGroupId">The release group identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private void AddImages(List<RemoteImageInfo> list, string xmlPath, string releaseId, string releaseGroupId, CancellationToken cancellationToken)
+        {
+            using (var streamReader = new StreamReader(xmlPath, Encoding.UTF8))
+            {
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, new XmlReaderSettings
+                {
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true,
+                    ValidationType = ValidationType.None
+                }))
+                {
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            switch (reader.Name)
+                            {
+                                case "music":
+                                    {
+                                        using (var subReader = reader.ReadSubtree())
+                                        {
+                                            AddImagesFromMusicNode(list, releaseId, releaseGroupId, subReader, cancellationToken);
+                                        }
+                                        break;
+                                    }
+
+                                default:
+                                    reader.Skip();
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the images from music node.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        /// <param name="releaseId">The release identifier.</param>
+        /// <param name="releaseGroupId">The release group identifier.</param>
+        /// <param name="reader">The reader.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private void AddImagesFromMusicNode(List<RemoteImageInfo> list, string releaseId, string releaseGroupId, XmlReader reader, CancellationToken cancellationToken)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "albums":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    AddImagesFromAlbumsNode(list, releaseId, releaseGroupId, subReader, cancellationToken);
+                                }
+                                break;
+                            }
+                        default:
+                            {
+                                using (reader.ReadSubtree())
+                                {
+                                }
+                                break;
+                            }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the images from albums node.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        /// <param name="releaseId">The release identifier.</param>
+        /// <param name="releaseGroupId">The release group identifier.</param>
+        /// <param name="reader">The reader.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private void AddImagesFromAlbumsNode(List<RemoteImageInfo> list, string releaseId, string releaseGroupId, XmlReader reader, CancellationToken cancellationToken)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "album":
+                            {
+                                var id = reader.GetAttribute("id");
+
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    if (string.Equals(id, releaseId, StringComparison.OrdinalIgnoreCase) ||
+                                        string.Equals(id, releaseGroupId, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        AddImages(list, subReader, cancellationToken);
+                                    }
+                                }
+                                break;
+                            }
+                        default:
+                            {
+                                using (reader.ReadSubtree())
+                                {
+                                }
+                                break;
+                            }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the images.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        /// <param name="reader">The reader.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private void AddImages(List<RemoteImageInfo> list, XmlReader reader, CancellationToken cancellationToken)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "cdart":
+                            {
+                                AddImage(list, reader, ImageType.Disc, 1000, 1000);
+                                break;
+                            }
+                        case "albumcover":
+                            {
+                                AddImage(list, reader, ImageType.Primary, 1000, 1000);
+                                break;
+                            }
+                        default:
+                            {
+                                using (reader.ReadSubtree())
+                                {
+                                }
+                                break;
+                            }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the image.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        /// <param name="reader">The reader.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
+        private void AddImage(List<RemoteImageInfo> list, XmlReader reader, ImageType type, int width, int height)
+        {
+            var url = reader.GetAttribute("url");
+
+            var size = reader.GetAttribute("size");
+
+            if (!string.IsNullOrEmpty(size))
+            {
+                int sizeNum;
+                if (int.TryParse(size, NumberStyles.Any, _usCulture, out sizeNum))
+                {
+                    width = sizeNum;
+                    height = sizeNum;
+                }
+            }
+
+            var likesString = reader.GetAttribute("likes");
+            int likes;
+
+            var info = new RemoteImageInfo
+            {
+                RatingType = RatingType.Likes,
+                Type = type,
+                Width = width,
+                Height = height,
+                ProviderName = Name,
+                Url = url,
+                Language = reader.GetAttribute("lang")
+            };
+
+            if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Any, _usCulture, out likes))
+            {
+                info.CommunityRating = likes;
+            }
+
+            list.Add(info);
+        }
+
+        public int Order
+        {
+            get { return 0; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = FanartArtistProvider.FanArtResourcePool
+            });
+        }
+
+        public bool HasChanged(IHasMetadata item, DateTime date)
+        {
+            var album = (MusicAlbum)item;
+
+            var artistMusicBrainzId = album.Parent.GetProviderId(MetadataProviders.Musicbrainz);
+
+            if (!String.IsNullOrEmpty(artistMusicBrainzId))
+            {
+                // Process images
+                var artistXmlPath = FanartArtistProvider.GetArtistXmlPath(_config.CommonApplicationPaths, artistMusicBrainzId);
+
+                var fileInfo = new FileInfo(artistXmlPath);
+
+                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+            }
+
+            return false;
         }
     }
 }

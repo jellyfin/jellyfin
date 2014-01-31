@@ -21,9 +21,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             Tags = new List<string>();
         }
 
-        public string LastFmImageUrl { get; set; }
-        public string LastFmImageSize { get; set; }
-
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>

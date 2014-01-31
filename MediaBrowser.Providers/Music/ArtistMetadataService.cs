@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class ArtistMetadataService : ConcreteMetadataService<MusicArtist>
+    public class ArtistMetadataService : ConcreteMetadataService<MusicArtist, ItemId>
     {
         private readonly ILibraryManager _libraryManager;
 
@@ -49,13 +49,13 @@ namespace MediaBrowser.Providers.Music
             {
                 var songs = item.RecursiveChildren.OfType<Audio>().ToList();
 
-                var currentGenres = item.Genres.ToList();
+                var currentList = item.Genres.ToList();
 
                 item.Genres = songs.SelectMany(i => i.Genres)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
-                if (currentGenres.Count != item.Genres.Count || !currentGenres.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                if (currentList.Count != item.Genres.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                 {
                     updateType = updateType | ItemUpdateType.MetadataDownload;
                 }

@@ -10,8 +10,7 @@ namespace MediaBrowser.Controller.Providers
         /// Adds the parts.
         /// </summary>
         /// <param name="providers">The providers.</param>
-        /// <param name="imageProviders">The image providers.</param>
-        void AddParts(IEnumerable<IMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders);
+        void AddParts(IEnumerable<IMetadataProvider> providers);
 
         /// <summary>
         /// Determines whether this instance can refresh the specified item.

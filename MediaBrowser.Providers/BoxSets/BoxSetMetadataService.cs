@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.BoxSets
 {
-    public class BoxSetMetadataService : ConcreteMetadataService<BoxSet>
+    public class BoxSetMetadataService : ConcreteMetadataService<BoxSet, ItemId>
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _iLocalizationManager;

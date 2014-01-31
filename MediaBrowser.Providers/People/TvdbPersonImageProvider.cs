@@ -18,7 +18,7 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.People
 {
-    public class TvdbPersonImageProvider : IRemoteImageProvider
+    public class TvdbPersonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _library;

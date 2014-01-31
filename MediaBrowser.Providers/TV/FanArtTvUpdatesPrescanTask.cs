@@ -127,7 +127,7 @@ namespace MediaBrowser.Providers.TV
 
                     var existingDictionary = existingSeriesIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-                    var updates = _jsonSerializer.DeserializeFromString<List<FanArtUpdatesPrescanTask.FanArtUpdate>>(json);
+                    var updates = _jsonSerializer.DeserializeFromString<List<FanartUpdatesPrescanTask.FanArtUpdate>>(json);
 
                     return updates.Select(i => i.id).Where(existingDictionary.ContainsKey);
                 }

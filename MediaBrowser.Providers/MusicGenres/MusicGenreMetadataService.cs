@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.MusicGenres
 {
-    public class MusicGenreMetadataService : ConcreteMetadataService<MusicGenre>
+    public class MusicGenreMetadataService : ConcreteMetadataService<MusicGenre, ItemId>
     {
         private readonly ILibraryManager _libraryManager;
 

@@ -1,113 +1,165 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    /// <summary>
-    /// Class LastFmArtistImageProvider
-    /// </summary>
-    public class LastFmImageProvider : BaseMetadataProvider
+    public class LastfmImageProvider : IRemoteImageProvider, IHasOrder
     {
-        /// <summary>
-        /// The _provider manager
-        /// </summary>
-        private readonly IProviderManager _providerManager;
+        private readonly IHttpClient _httpClient;
+        private readonly IServerConfigurationManager _config;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LastFmImageProvider"/> class.
-        /// </summary>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public LastFmImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager) : 
-            base(logManager, configurationManager)
+        public LastfmImageProvider(IHttpClient httpClient, IServerConfigurationManager config)
         {
-            _providerManager = providerManager;
+            _httpClient = httpClient;
+            _config = config;
         }
 
-        /// <summary>
-        /// Supportses the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public override bool Supports(BaseItem item)
+        public string Name
         {
-            return item is MusicAlbum;
+            get { return ProviderName; }
         }
 
-        /// <summary>
-        /// Needses the refresh internal.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        public static string ProviderName
         {
-            if (item.HasImage(ImageType.Primary))
+            get { return "last.fm"; }
+        }
+
+        public bool Supports(IHasImages item)
+        {
+            return item is MusicAlbum || item is MusicArtist;
+        }
+
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        {
+            return new List<ImageType>
             {
-                return false;
-            }
-
-            return base.NeedsRefreshInternal(item, providerInfo);
+                ImageType.Primary
+            };
         }
 
-        /// <summary>
-        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
         {
-            if (!item.HasImage(ImageType.Primary))
-            {
-                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualLastFmImageProvider.ProviderName).ConfigureAwait(false);
+            var images = await GetAllImages(item, cancellationToken).ConfigureAwait(false);
 
-                await DownloadImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
-            }
-
-            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
-
-            return true;
+            return images.Where(i => i.Type == imageType);
         }
 
-        private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            var list = new List<RemoteImageInfo>();
 
-            var configSetting = item is MusicAlbum
-                ? ConfigurationManager.Configuration.DownloadMusicAlbumImages
-                : ConfigurationManager.Configuration.DownloadMusicArtistImages;
+            RemoteImageInfo info = null;
 
-            if (configSetting.Primary && !item.HasImage(ImageType.Primary) && !item.LockedFields.Contains(MetadataFields.Images))
+            var musicBrainzId = item.GetProviderId(MetadataProviders.Musicbrainz);
+
+            if (!string.IsNullOrEmpty(musicBrainzId))
             {
-                var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
+                var cachePath = Path.Combine(_config.ApplicationPaths.CachePath, "lastfm", musicBrainzId, "image.txt");
 
-                if (image != null)
+                try
                 {
-                    await _providerManager.SaveImage(item, image.Url, LastFmArtistProvider.LastfmResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+                    var parts = File.ReadAllText(cachePath).Split('|');
+
+                    info = GetInfo(parts.FirstOrDefault(), parts.LastOrDefault());
+                }
+                catch (DirectoryNotFoundException)
+                {
+                }
+                catch (FileNotFoundException)
+                {
                 }
             }
+
+            if (info ==  null)
+            {
+                var musicBrainzReleaseGroupId = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+
+                if (!string.IsNullOrEmpty(musicBrainzReleaseGroupId))
+                {
+                    var cachePath = Path.Combine(_config.ApplicationPaths.CachePath, "lastfm", musicBrainzReleaseGroupId, "image.txt");
+
+                    try
+                    {
+                        var parts = File.ReadAllText(cachePath).Split('|');
+
+                        info = GetInfo(parts.FirstOrDefault(), parts.LastOrDefault());
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                    }
+                    catch (FileNotFoundException)
+                    {
+                    }
+                }
+            }
+
+            if (info != null)
+            {
+                list.Add(info);
+            }
+
+            // The only info we have is size
+            return Task.FromResult<IEnumerable<RemoteImageInfo>>(list.OrderByDescending(i => i.Width ?? 0));
         }
 
-        /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public override MetadataProviderPriority Priority
+        private RemoteImageInfo GetInfo(string url, string size)
         {
-            get { return MetadataProviderPriority.Fifth; }
+            if (string.IsNullOrEmpty(url))
+            {
+                return null;
+            }
+
+            var info = new RemoteImageInfo
+            {
+                ProviderName = Name,
+                Url = url,
+                Type = ImageType.Primary
+            };
+
+            if (string.Equals(size, "mega", StringComparison.OrdinalIgnoreCase))
+            {
+                
+            }
+            else if (string.Equals(size, "extralarge", StringComparison.OrdinalIgnoreCase))
+            {
+
+            }
+            else if (string.Equals(size, "large", StringComparison.OrdinalIgnoreCase))
+            {
+
+            }
+            else if (string.Equals(size, "medium", StringComparison.OrdinalIgnoreCase))
+            {
+
+            }
+
+            return info;
+        }
+
+        public int Order
+        {
+            get { return 1; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = LastfmArtistProvider.LastfmResourcePool
+            });
         }
     }
 }

@@ -74,13 +74,13 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="providerName">Name of the provider.</param>
         /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(BaseItem item, CancellationToken cancellationToken, string providerName = null, ImageType? type = null);
+        Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasImages item, CancellationToken cancellationToken, string providerName = null, ImageType? type = null);
 
         /// <summary>
         /// Gets the image providers.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ImageProviderInfo}.</returns>
-        IEnumerable<ImageProviderInfo> GetImageProviderInfo(BaseItem item);
+        IEnumerable<ImageProviderInfo> GetImageProviderInfo(IHasImages item);
     }
 }

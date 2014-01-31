@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    class FanArtUpdatesPrescanTask : ILibraryPostScanTask
+    class FanartUpdatesPrescanTask : ILibraryPostScanTask
     {
         private const string UpdatesUrl = "http://api.fanart.tv/webservice/newmusic/{0}/{1}/";
 
@@ -36,7 +36,7 @@ namespace MediaBrowser.Providers.Music
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public FanArtUpdatesPrescanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem)
+        public FanartUpdatesPrescanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _jsonSerializer = jsonSerializer;
             _config = config;

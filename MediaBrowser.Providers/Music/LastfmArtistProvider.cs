@@ -19,7 +19,7 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class LastFmArtistProvider : IRemoteMetadataProvider<MusicArtist>
+    public class LastfmArtistProvider : IRemoteMetadataProvider<MusicArtist>
     {
         private readonly IJsonSerializer _json;
         private readonly IHttpClient _httpClient;
@@ -30,12 +30,14 @@ namespace MediaBrowser.Providers.Music
         internal static string ApiKey = "7b76553c3eb1d341d642755aecc40a33";
 
         private readonly IServerConfigurationManager _config;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
-        public LastFmArtistProvider(IHttpClient httpClient, IJsonSerializer json)
+        public LastfmArtistProvider(IHttpClient httpClient, IJsonSerializer json, IServerConfigurationManager config, ILogger logger)
         {
             _httpClient = httpClient;
             _json = json;
+            _config = config;
+            _logger = logger;
         }
 
         public async Task<MetadataResult<MusicArtist>> GetMetadata(ItemId id, CancellationToken cancellationToken)
@@ -119,25 +121,7 @@ namespace MediaBrowser.Providers.Music
             string imageSize;
             var url = LastfmHelper.GetImageUrl(data, out imageSize);
 
-            var cachePath = Path.Combine(_config.ApplicationPaths.CachePath, "lastfm", musicBrainzId, "image.txt");
-
-            try
-            {
-                if (string.IsNullOrEmpty(url))
-                {
-                    File.Delete(cachePath);
-                }
-                else
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
-                    File.WriteAllText(cachePath, url + "|" + imageSize);
-                }
-            }
-            catch (IOException ex)
-            {
-                // Don't fail if this is unable to write
-                _logger.ErrorException("Error saving to {0}", ex, cachePath);
-            }
+            LastfmHelper.SaveImageInfo(_config.ApplicationPaths, _logger, musicBrainzId, url, imageSize);
         }
         
         private async Task<string> FindId(ItemId item, CancellationToken cancellationToken)

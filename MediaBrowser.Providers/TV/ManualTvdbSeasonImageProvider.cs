@@ -19,7 +19,7 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class ManualTvdbSeasonImageProvider : IRemoteImageProvider
+    public class ManualTvdbSeasonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");

@@ -37,4 +37,18 @@ namespace MediaBrowser.Controller.Providers
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
+
+    public class AlbumId : ItemId
+    {
+        /// <summary>
+        /// Gets or sets the album artist.
+        /// </summary>
+        /// <value>The album artist.</value>
+        public string AlbumArtist { get; set; }
+        /// <summary>
+        /// Gets or sets the artist music brainz identifier.
+        /// </summary>
+        /// <value>The artist music brainz identifier.</value>
+        public string ArtistMusicBrainzId { get; set; }
+    }
 }

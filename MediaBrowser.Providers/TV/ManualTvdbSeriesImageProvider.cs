@@ -19,7 +19,7 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class ManualTvdbSeriesImageProvider : IRemoteImageProvider
+    public class ManualTvdbSeriesImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;

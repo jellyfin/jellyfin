@@ -20,7 +20,7 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class FanartArtistProvider : IRemoteImageProvider, IHasChangeMonitor
+    public class FanartArtistProvider : IRemoteImageProvider, IHasChangeMonitor, IHasOrder
     {
         internal static readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3, 3);
         internal const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
