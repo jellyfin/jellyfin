@@ -98,11 +98,6 @@
             A fast, standards-based, serialization-issue free DateTime serailizer.
             </summary>
         </member>
-        <member name="T:ServiceStack.Text.WP.HashSet`1">
-            <summary>
-             A hashset implementation that uses an IDictionary
-            </summary>
-        </member>
         <member name="M:ServiceStack.Text.ITypeSerializer`1.CanCreateFromString(System.Type)">
             <summary>
             Determines whether this serializer can create the specified type from a string.

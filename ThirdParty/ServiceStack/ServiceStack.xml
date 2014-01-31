@@ -65,6 +65,11 @@
             <param name="doNext">A predicate on whether to continue processing the next message if any</param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.Messaging.IMessageHandler.ProcessMessage(ServiceStack.Messaging.IMessageQueueClient,System.Object)">
+            <summary>
+            Process a single message
+            </summary>
+        </member>
         <member name="M:ServiceStack.Messaging.IMessageHandler.GetStats">
             <summary>
             Get Current Stats for this Message Handler
@@ -135,13 +140,6 @@
             <summary>
             Alias of AsDto
             </summary>
-        </member>
-        <member name="M:ServiceStack.HttpResultExtensions.GetResponseStatus(System.Object)">
-            <summary>
-            Shortcut to get the ResponseStatus whether it's bare or inside a IHttpResult
-            </summary>
-            <param name="response"></param>
-            <returns></returns>
         </member>
         <member name="M:ServiceStack.HttpResultExtensions.IsErrorResponse(System.Object)">
             <summary>
@@ -3859,6 +3857,14 @@
             Ticks since this MiniProfiler was started.
             </summary>
         </member>
+        <member name="P:ServiceStack.MiniProfiler.Profiler.Json">
+            <summary>
+            Json representing the collection of CustomTimings relating to this Profiler
+            </summary>
+            <remarks>
+            Is used when storing the Profiler in SqlStorage
+            </remarks>
+        </member>
         <member name="P:ServiceStack.MiniProfiler.Profiler.Head">
             <summary>
             Points to the currently executing Timing. 
@@ -4447,12 +4453,6 @@
             Returns a DbConnection already opened for execution.
             </summary>
         </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.DatabaseStorageBase.MapTimings(ServiceStack.MiniProfiler.Profiler,System.Collections.Generic.List{ServiceStack.MiniProfiler.Timing},System.Collections.Generic.List{ServiceStack.MiniProfiler.SqlTiming},System.Collections.Generic.List{ServiceStack.MiniProfiler.SqlTimingParameter})">
-            <summary>
-            Giving freshly selected collections, this method puts them in the correct
-            hierarchy under the 'result' MiniProfiler.
-            </summary>
-        </member>
         <member name="P:ServiceStack.MiniProfiler.Storage.DatabaseStorageBase.ConnectionString">
             <summary>
             How we connect to the database used to save/load MiniProfiler results.
@@ -4785,7 +4785,7 @@
             <summary>
             Check all session is in all supplied roles otherwise a 401 HttpError is thrown
             </summary>
-            <param name="request"></param>
+            <param name="req"></param>
             <param name="requiredRoles"></param>
         </member>
         <member name="T:ServiceStack.RequiresAnyPermissionAttribute">
@@ -4938,12 +4938,22 @@
         </member>
         <member name="P:ServiceStack.IAppHost.GlobalRequestFilters">
             <summary>
-            Add Request Filters
+            Add Request Filters for HTTP Requests
             </summary>
         </member>
         <member name="P:ServiceStack.IAppHost.GlobalResponseFilters">
             <summary>
-            Add Response Filters
+            Add Response Filters for HTTP Responses
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.GlobalMessageRequestFilters">
+            <summary>
+            Add Request Filters for MQ/TCP Requests
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.GlobalMessageResponseFilters">
+            <summary>
+            Add Response Filters for MQ/TCP Responses
             </summary>
         </member>
         <member name="P:ServiceStack.IAppHost.ViewEngines">
@@ -5457,12 +5467,12 @@
             Provide for quick lookups based on hashes that can be determined from a request url
             </summary>
         </member>
-        <member name="M:ServiceStack.Host.ServiceController.ExecuteMessage``1(ServiceStack.Messaging.IMessage{``0})">
+        <member name="M:ServiceStack.Host.ServiceController.ExecuteMessage(ServiceStack.Messaging.IMessage)">
             <summary>
             Execute MQ
             </summary>
         </member>
-        <member name="M:ServiceStack.Host.ServiceController.ExecuteMessage``1(ServiceStack.Messaging.IMessage{``0},ServiceStack.Web.IRequest)">
+        <member name="M:ServiceStack.Host.ServiceController.ExecuteMessage(ServiceStack.Messaging.IMessage,ServiceStack.Web.IRequest)">
             <summary>
             Execute MQ with requestContext
             </summary>

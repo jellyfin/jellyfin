@@ -321,6 +321,25 @@
       }
     }
 
+    SwaggerResource.prototype.getAbsoluteBasePath = function(relativeBasePath) {
+      var parts, pos, url;
+      url = this.api.basePath;
+      pos = url.lastIndexOf(relativeBasePath);
+      if (pos === -1) {
+        parts = url.split("/");
+        url = parts[0] + "//" + parts[2];
+        if (relativeBasePath.indexOf("/") === 0) {
+          return url + relativeBasePath;
+        } else {
+          return url + "/" + relativeBasePath;
+        }
+      } else if (relativeBasePath === "/") {
+        return url.substring(0, pos);
+      } else {
+        return url.substring(0, pos) + relativeBasePath;
+      }
+    };
+
     SwaggerResource.prototype.addApiDeclaration = function(response) {
       var endpoint, _i, _len, _ref;
       if (response.produces != null) {
@@ -330,7 +349,7 @@
         this.consumes = response.consumes;
       }
       if ((response.basePath != null) && response.basePath.replace(/\s/g, '').length > 0) {
-        this.basePath = response.basePath;
+        this.basePath = response.basePath.indexOf("http") === -1 ? this.getAbsoluteBasePath(response.basePath) : response.basePath;
       }
       this.addModels(response.models);
       if (response.apis) {
@@ -366,7 +385,7 @@
     };
 
     SwaggerResource.prototype.addOperations = function(resource_path, ops, consumes, produces) {
-      var method, o, op, ref, responseMessages, type, _i, _len, _results;
+      var method, o, op, r, ref, responseMessages, type, _i, _j, _len, _len1, _results;
       if (ops) {
         _results = [];
         for (_i = 0, _len = ops.length; _i < _len; _i++) {
@@ -401,9 +420,14 @@
           }
           if (o.errorResponses) {
             responseMessages = o.errorResponses;
+            for (_j = 0, _len1 = responseMessages.length; _j < _len1; _j++) {
+              r = responseMessages[_j];
+              r.message = r.reason;
+              r.reason = null;
+            }
           }
           o.nickname = this.sanitize(o.nickname);
-          op = new SwaggerOperation(o.nickname, resource_path, method, o.parameters, o.summary, o.notes, type, responseMessages, this, consumes, produces);
+          op = new SwaggerOperation(o.nickname, resource_path, method, o.parameters, o.summary, o.notes, type, responseMessages, this, consumes, produces, o.authorizations);
           this.operations[op.nickname] = op;
           _results.push(this.operationsArray.push(op));
         }
@@ -595,7 +619,7 @@
   })();
 
   SwaggerOperation = (function() {
-    function SwaggerOperation(nickname, path, method, parameters, summary, notes, type, responseMessages, resource, consumes, produces) {
+    function SwaggerOperation(nickname, path, method, parameters, summary, notes, type, responseMessages, resource, consumes, produces, authorizations) {
       var parameter, v, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3,
         _this = this;
       this.nickname = nickname;
@@ -609,6 +633,7 @@
       this.resource = resource;
       this.consumes = consumes;
       this.produces = produces;
+      this.authorizations = authorizations;
       this["do"] = __bind(this["do"], this);
       if (this.nickname == null) {
         this.resource.api.fail("SwaggerOperations must have a nickname.");
@@ -651,12 +676,12 @@
             v = _ref2[_j];
             if ((parameter.defaultValue != null) && parameter.defaultValue === v) {
               parameter.allowableValues.descriptiveValues.push({
-                value: v,
+                value: String(v),
                 isDefault: true
               });
             } else {
               parameter.allowableValues.descriptiveValues.push({
-                value: v,
+                value: String(v),
                 isDefault: false
               });
             }
@@ -910,7 +935,7 @@
 
   SwaggerRequest = (function() {
     function SwaggerRequest(type, url, params, opts, successCallback, errorCallback, operation, execution) {
-      var body, e, fields, headers, key, myHeaders, name, obj, param, parent, possibleParams, requestContentType, responseContentType, urlEncoded, value, values,
+      var body, e, fields, headers, key, myHeaders, name, obj, param, parent, possibleParams, requestContentType, responseContentType, status, urlEncoded, value, values,
         _this = this;
       this.type = type;
       this.url = url;
@@ -959,18 +984,18 @@
           return _results;
         }).call(this)).length > 0) {
           type = param.type || param.dataType;
-          if (((function() {
+          if ((function() {
             var _i, _len, _ref, _results;
             _ref = this.operation.parameters;
             _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               param = _ref[_i];
-              if (type.toLowerCase() === "file") {
+              if ((typeof type !== 'undefined' && type.toLowerCase() === "file").length > 0) {
                 _results.push(param);
               }
             }
             return _results;
-          }).call(this)).length > 0) {
+          }).call(this)) {
             requestContentType = "multipart/form-data";
           } else {
             requestContentType = "application/x-www-form-urlencoded";
@@ -1069,9 +1094,13 @@
         } else {
           e = exports;
         }
-        e.authorizations.apply(obj);
+        status = e.authorizations.apply(obj, this.operation.authorizations);
         if (opts.mock == null) {
-          new SwaggerHttp().execute(obj);
+          if (status !== false) {
+            new SwaggerHttp().execute(obj);
+          } else {
+            obj.canceled = true;
+          }
         } else {
           console.log(obj);
           return obj;
@@ -1154,15 +1183,25 @@
       return auth;
     };
 
-    SwaggerAuthorizations.prototype.apply = function(obj) {
-      var key, value, _ref, _results;
+    SwaggerAuthorizations.prototype.remove = function(name) {
+      return delete this.authz[name];
+    };
+
+    SwaggerAuthorizations.prototype.apply = function(obj, authorizations) {
+      var key, result, status, value, _ref;
+      status = null;
       _ref = this.authz;
-      _results = [];
       for (key in _ref) {
         value = _ref[key];
-        _results.push(value.apply(obj));
+        result = value.apply(obj, authorizations);
+        if (result === false) {
+          status = false;
+        }
+        if (result === true) {
+          status = true;
+        }
       }
-      return _results;
+      return status;
     };
 
     return SwaggerAuthorizations;
@@ -1182,7 +1221,7 @@
       this.type = type;
     }
 
-    ApiKeyAuthorization.prototype.apply = function(obj) {
+    ApiKeyAuthorization.prototype.apply = function(obj, authorizations) {
       if (this.type === "query") {
         if (obj.url.indexOf('?') > 0) {
           obj.url = obj.url + "&" + this.name + "=" + this.value;
@@ -1191,7 +1230,8 @@
         }
         return true;
       } else if (this.type === "header") {
-        return obj.headers[this.name] = this.value;
+        obj.headers[this.name] = this.value;
+        return true;
       }
     };
 
@@ -1200,6 +1240,8 @@
   })();
 
   PasswordAuthorization = (function() {
+    PasswordAuthorization._btoa = null;
+
     PasswordAuthorization.prototype.name = null;
 
     PasswordAuthorization.prototype.username = null;
@@ -1210,10 +1252,20 @@
       this.name = name;
       this.username = username;
       this.password = password;
+      PasswordAuthorization._ensureBtoa();
     }
 
-    PasswordAuthorization.prototype.apply = function(obj) {
-      return obj.headers["Authorization"] = "Basic " + btoa(this.username + ":" + this.password);
+    PasswordAuthorization.prototype.apply = function(obj, authorizations) {
+      obj.headers["Authorization"] = "Basic " + PasswordAuthorization._btoa(this.username + ":" + this.password);
+      return true;
+    };
+
+    PasswordAuthorization._ensureBtoa = function() {
+      if (typeof window !== 'undefined') {
+        return this._btoa = btoa;
+      } else {
+        return this._btoa = require("btoa");
+      }
     };
 
     return PasswordAuthorization;

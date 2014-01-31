@@ -42,6 +42,45 @@
             <param name="enum"></param>
             <returns></returns>
         </member>
+        <member name="T:ServiceStack.Logging.ConsoleLogFactory">
+            <summary>
+            Creates a Console Logger, that logs all messages to: System.Console
+            
+            Made public so its testable
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.ConsoleLogger">
+            <summary>
+            Default logger is to Console.WriteLine
+            
+            Made public so its testable
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ConsoleLogger.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ConsoleLogger.#ctor(System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ConsoleLogger.Log(System.Object,System.Exception)">
+            <summary>
+            Logs the specified message.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ConsoleLogger.LogFormat(System.Object,System.Object[])">
+            <summary>
+            Logs the format.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ConsoleLogger.Log(System.Object)">
+            <summary>
+            Logs the specified message.
+            </summary>
+        </member>
         <member name="T:ServiceStack.IPAddressExtensions">
             <summary>
             Useful IPAddressExtensions from: 

@@ -372,5 +372,12 @@
             Naming convention for the request's Response DTO
             </summary>
         </member>
+        <member name="M:ServiceStack.WebRequestUtils.GetResponseStatus(System.Object)">
+            <summary>
+            Shortcut to get the ResponseStatus whether it's bare or inside a IHttpResult
+            </summary>
+            <param name="response"></param>
+            <returns></returns>
+        </member>
     </members>
 </doc>
