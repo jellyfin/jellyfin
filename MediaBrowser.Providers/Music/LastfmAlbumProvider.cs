@@ -144,12 +144,12 @@ namespace MediaBrowser.Providers.Music
         private async Task<LastfmGetAlbumResult> GetAlbumResult(string artist, string album, CancellationToken cancellationToken)
         {
             // Get albu info using artist and album name
-            var url = RootUrl + string.Format("method=album.getInfo&artist={0}&album={1}&api_key={2}&format=json", UrlEncode(artist), UrlEncode(album), ApiKey);
+            var url = LastFmArtistProvider.RootUrl + string.Format("method=album.getInfo&artist={0}&album={1}&api_key={2}&format=json", UrlEncode(artist), UrlEncode(album), LastFmArtistProvider.ApiKey);
 
             using (var json = await HttpClient.Get(new HttpRequestOptions
             {
                 Url = url,
-                ResourcePool = LastfmResourcePool,
+                ResourcePool = LastFmArtistProvider.LastfmResourcePool,
                 CancellationToken = cancellationToken,
                 EnableHttpCompression = false
 
@@ -170,12 +170,12 @@ namespace MediaBrowser.Providers.Music
         private async Task<LastfmGetAlbumResult> GetAlbumResult(string musicbraizId, CancellationToken cancellationToken)
         {
             // Get albu info using artist and album name
-            var url = RootUrl + string.Format("method=album.getInfo&mbid={0}&api_key={1}&format=json", musicbraizId, ApiKey);
+            var url = LastFmArtistProvider.RootUrl + string.Format("method=album.getInfo&mbid={0}&api_key={1}&format=json", musicbraizId, LastFmArtistProvider.ApiKey);
 
             using (var json = await HttpClient.Get(new HttpRequestOptions
             {
                 Url = url,
-                ResourcePool = LastfmResourcePool,
+                ResourcePool = LastFmArtistProvider.LastfmResourcePool,
                 CancellationToken = cancellationToken,
                 EnableHttpCompression = false
 

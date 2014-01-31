@@ -8,36 +8,7 @@ namespace MediaBrowser.Providers.Music
 {
     public static class LastfmHelper
     {
-        public static void ProcessArtistData(MusicArtist artist, LastfmArtist data)
-        {
-            var yearFormed = 0;
-
-            if (data.bio != null)
-            {
-                Int32.TryParse(data.bio.yearformed, out yearFormed);
-                if (!artist.LockedFields.Contains(MetadataFields.Overview))
-                {
-                    artist.Overview = data.bio.content;
-                }
-                if (!string.IsNullOrEmpty(data.bio.placeformed) && !artist.LockedFields.Contains(MetadataFields.ProductionLocations))
-                {
-                    artist.AddProductionLocation(data.bio.placeformed);
-                }
-            }
-
-            if (yearFormed > 0)
-            {
-                artist.PremiereDate = new DateTime(yearFormed, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-                artist.ProductionYear = yearFormed;
-            }
-
-            string imageSize;
-            artist.LastFmImageUrl = GetImageUrl(data, out imageSize);
-            artist.LastFmImageSize = imageSize;
-        }
-
-        private static string GetImageUrl(IHasLastFmImages data, out string size)
+        public static string GetImageUrl(IHasLastFmImages data, out string size)
         {
             size = null;
 

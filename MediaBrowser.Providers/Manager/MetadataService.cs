@@ -112,7 +112,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // Next run remote image providers, but only if local image providers didn't throw an exception
-            if (!localImagesFailed && options.ImageRefreshMode != MetadataRefreshMode.None)
+            if (!localImagesFailed && options.ImageRefreshMode != ImageRefreshMode.ValidationOnly)
             {
                 var providers = GetNonLocalImageProviders(item, lastResult.DateLastImagesRefresh.HasValue, options).ToList();
 
@@ -125,6 +125,8 @@ namespace MediaBrowser.Providers.Manager
                     refreshResult.SetDateLastImagesRefresh(DateTime.UtcNow);
                     refreshResult.AddImageProvidersRefreshed(result.Providers);
                 }
+
+                updateType = updateType | AfterMetadataRefresh(itemOfType);
             }
 
             var providersHadChanges = updateType > ItemUpdateType.Unspecified;
@@ -144,6 +146,15 @@ namespace MediaBrowser.Providers.Manager
             {
                 await SaveProviderResult(refreshResult).ConfigureAwait(false);
             }
+        }
+
+        /// <summary>
+        /// Afters the metadata refresh.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        protected virtual ItemUpdateType AfterMetadataRefresh(TItemType item)
+        {
+            return ItemUpdateType.Unspecified;
         }
 
         /// <summary>
@@ -200,7 +211,7 @@ namespace MediaBrowser.Providers.Manager
             }).ToList();
 
             // Run all if either of these flags are true
-            var runAllProviders = options.ImageRefreshMode == MetadataRefreshMode.FullRefresh || !hasRefreshedImages;
+            var runAllProviders = options.ImageRefreshMode == ImageRefreshMode.FullRefresh || !hasRefreshedImages;
 
             if (!runAllProviders)
             {

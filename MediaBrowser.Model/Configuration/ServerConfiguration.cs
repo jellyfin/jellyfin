@@ -245,7 +245,6 @@ namespace MediaBrowser.Model.Configuration
             EnableHttpLevelLogging = true;
             EnableDashboardResponseCaching = true;
 
-            EnableFanArtUpdates = true;
             EnableVideoImageExtraction = true;
             EnableMovieChapterImageExtraction = true;
             EnableEpisodeChapterImageExtraction = false;

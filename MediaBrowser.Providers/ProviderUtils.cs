@@ -104,6 +104,48 @@ namespace MediaBrowser.Providers
                 }
             }
 
+            if (!lockedFields.Contains(MetadataFields.Tags))
+            {
+                var sourceHasTags = source as IHasTags;
+                var targetHasTags = target as IHasTags;
+
+                if (sourceHasTags != null && targetHasTags != null)
+                {
+                    if (replaceData || targetHasTags.Tags.Count == 0)
+                    {
+                        targetHasTags.Tags = sourceHasTags.Tags;
+                    }
+                }
+            }
+
+            if (!lockedFields.Contains(MetadataFields.Keywords))
+            {
+                var sourceHasKeywords = source as IHasKeywords;
+                var targetHasKeywords = target as IHasKeywords;
+
+                if (sourceHasKeywords != null && targetHasKeywords != null)
+                {
+                    if (replaceData || targetHasKeywords.Keywords.Count == 0)
+                    {
+                        targetHasKeywords.Keywords = sourceHasKeywords.Keywords;
+                    }
+                }
+            }
+
+            if (!lockedFields.Contains(MetadataFields.ProductionLocations))
+            {
+                var sourceHasProductionLocations = source as IHasProductionLocations;
+                var targetHasProductionLocations = target as IHasProductionLocations;
+
+                if (sourceHasProductionLocations != null && targetHasProductionLocations != null)
+                {
+                    if (replaceData || targetHasProductionLocations.ProductionLocations.Count == 0)
+                    {
+                        targetHasProductionLocations.ProductionLocations = sourceHasProductionLocations.ProductionLocations;
+                    }
+                }
+            }
+
             if (replaceData || !target.VoteCount.HasValue)
             {
                 target.VoteCount = source.VoteCount;
@@ -120,6 +162,23 @@ namespace MediaBrowser.Providers
                 target.LockedFields = source.LockedFields;
                 target.DontFetchMeta = source.DontFetchMeta;
                 target.DisplayMediaType = source.DisplayMediaType;
+
+                var sourceHasLanguageSettings = source as IHasPreferredMetadataLanguage;
+                var targetHasLanguageSettings = target as IHasPreferredMetadataLanguage;
+
+                if (sourceHasLanguageSettings != null && targetHasLanguageSettings != null)
+                {
+                    targetHasLanguageSettings.PreferredMetadataCountryCode = sourceHasLanguageSettings.PreferredMetadataCountryCode;
+                    targetHasLanguageSettings.PreferredMetadataLanguage = sourceHasLanguageSettings.PreferredMetadataLanguage;
+                }
+
+                var sourceHasDisplayOrder = source as IHasDisplayOrder;
+                var targetHasDisplayOrder = target as IHasDisplayOrder;
+
+                if (sourceHasDisplayOrder != null && targetHasDisplayOrder != null)
+                {
+                    targetHasDisplayOrder.DisplayOrder = sourceHasDisplayOrder.DisplayOrder;
+                }
             }
         }
     }

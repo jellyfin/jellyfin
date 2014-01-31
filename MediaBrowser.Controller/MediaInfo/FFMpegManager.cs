@@ -126,7 +126,7 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             if (!IsEligibleForChapterImageExtraction(video))
             {
-                return true;
+                extractImages = false;
             }
 
             var success = true;
@@ -186,6 +186,11 @@ namespace MediaBrowser.Controller.MediaInfo
                             success = false;
                             break;
                         }
+                    }
+                    else if (!string.IsNullOrEmpty(chapter.ImagePath))
+                    {
+                        chapter.ImagePath = null;
+                        changesMade = true;
                     }
                 }
                 else if (!string.Equals(path, chapter.ImagePath, StringComparison.OrdinalIgnoreCase))

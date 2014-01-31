@@ -15,13 +15,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
 using System.Net;
+using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.TV
 {
     /// <summary>
     /// Class FanArtSeasonProvider
     /// </summary>
-    class FanArtSeasonProvider : FanartBaseProvider
+    class FanArtSeasonProvider : BaseMetadataProvider
     {
         /// <summary>
         /// The _provider manager
@@ -132,7 +133,7 @@ namespace MediaBrowser.Providers.TV
             {
                 try
                 {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, image.Url, FanartArtistProvider.FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
                     break;
                 }
                 catch (HttpException ex)

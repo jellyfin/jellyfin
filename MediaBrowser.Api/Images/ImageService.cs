@@ -801,7 +801,7 @@ namespace MediaBrowser.Api.Images
 
                 await entity.RefreshMetadata(new MetadataRefreshOptions
                 {
-                    ImageRefreshMode = MetadataRefreshMode.None,
+                    ImageRefreshMode = ImageRefreshMode.ValidationOnly,
                     ForceSave = true
 
                 }, CancellationToken.None).ConfigureAwait(false);

@@ -1,29 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.BoxSets
 {
     class MovieDbBoxSetImageProvider : IRemoteImageProvider
     {
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
 
-        public MovieDbBoxSetImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public MovieDbBoxSetImageProvider(IHttpClient httpClient)
         {
-            _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
         }
 
@@ -161,33 +157,6 @@ namespace MediaBrowser.Providers.BoxSets
 
             return eligibleBackdrops.OrderByDescending(i => i.vote_average)
                 .ThenByDescending(i => i.vote_count);
-        }
-
-        /// <summary>
-        /// Fetches the images.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{MovieImages}.</returns>
-        private async Task<MovieDbProvider.Images> FetchImages(BaseItem item, IJsonSerializer jsonSerializer,
-            CancellationToken cancellationToken)
-        {
-            await MovieDbProvider.Current.EnsureMovieInfo(item, cancellationToken).ConfigureAwait(false);
-
-            var path = MovieDbProvider.Current.GetDataFilePath(item);
-
-            if (!string.IsNullOrEmpty(path))
-            {
-                var fileInfo = new FileInfo(path);
-
-                if (fileInfo.Exists)
-                {
-                    return jsonSerializer.DeserializeFromFile<MovieDbProvider.CompleteMovieData>(path).images;
-                }
-            }
-
-            return null;
         }
 
         public int Order

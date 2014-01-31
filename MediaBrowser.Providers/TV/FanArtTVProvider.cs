@@ -18,10 +18,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
 using System.Net;
+using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.TV
 {
-    class FanArtTvProvider : FanartBaseProvider
+    class FanArtTvProvider : BaseMetadataProvider
     {
         protected string FanArtBaseUrl = "http://api.fanart.tv/webservice/series/{0}/{1}/xml/all/1/1";
 
@@ -244,7 +245,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))
                     {
-                        await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Backdrop, null, cancellationToken)
+                        await _providerManager.SaveImage(item, image.Url, FanartArtistProvider.FanArtResourcePool, ImageType.Backdrop, null, cancellationToken)
                             .ConfigureAwait(false);
 
                         if (item.BackdropImagePaths.Count >= backdropLimit) break;
@@ -259,7 +260,7 @@ namespace MediaBrowser.Providers.TV
             {
                 try
                 {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, image.Url, FanartArtistProvider.FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
                     break;
                 }
                 catch (HttpException ex)
@@ -284,7 +285,7 @@ namespace MediaBrowser.Providers.TV
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var url = string.Format(FanArtBaseUrl, ApiKey, tvdbId);
+            var url = string.Format(FanArtBaseUrl, FanartArtistProvider.ApiKey, tvdbId);
 
             var xmlPath = GetFanartXmlPath(tvdbId);
 
@@ -293,7 +294,7 @@ namespace MediaBrowser.Providers.TV
             using (var response = await HttpClient.Get(new HttpRequestOptions
             {
                 Url = url,
-                ResourcePool = FanArtResourcePool,
+                ResourcePool = FanartArtistProvider.FanArtResourcePool,
                 CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))

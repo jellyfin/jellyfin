@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -6,6 +7,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,10 +17,12 @@ namespace MediaBrowser.Providers.Music
     public class ManualLastFmImageProvider : IRemoteImageProvider
     {
         private readonly IHttpClient _httpClient;
+        private readonly IServerConfigurationManager _config;
 
-        public ManualLastFmImageProvider(IHttpClient httpClient)
+        public ManualLastFmImageProvider(IHttpClient httpClient, IServerConfigurationManager config)
         {
             _httpClient = httpClient;
+            _config = config;
         }
 
         public string Name
@@ -57,6 +61,8 @@ namespace MediaBrowser.Providers.Music
 
             RemoteImageInfo info = null;
 
+            var musicBrainzId = item.GetProviderId(MetadataProviders.Musicbrainz);
+
             var album = item as MusicAlbum;
             if (album != null)
             {
@@ -64,9 +70,23 @@ namespace MediaBrowser.Providers.Music
             }
 
             var musicArtist = item as MusicArtist;
-            if (musicArtist != null)
+            if (musicArtist != null && !string.IsNullOrEmpty(musicBrainzId))
             {
-                info = GetInfo(musicArtist.LastFmImageUrl, musicArtist.LastFmImageSize);
+                var cachePath = Path.Combine(_config.ApplicationPaths.CachePath, "lastfm", musicBrainzId, "image.txt");
+
+                try
+                {
+                    var parts = File.ReadAllText(cachePath).Split('|');
+
+                    info = GetInfo(parts.FirstOrDefault(), parts.LastOrDefault());
+                }
+                catch (DirectoryNotFoundException ex)
+                {
+                }
+                catch (FileNotFoundException ex)
+                {
+                }
+            
             }
 
             if (info != null)
@@ -123,7 +143,7 @@ namespace MediaBrowser.Providers.Music
             {
                 CancellationToken = cancellationToken,
                 Url = url,
-                ResourcePool = LastfmBaseProvider.LastfmResourcePool
+                ResourcePool = LastFmArtistProvider.LastfmResourcePool
             });
         }
     }
