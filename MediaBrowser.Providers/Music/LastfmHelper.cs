@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Logging;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace MediaBrowser.Providers.Music
@@ -37,41 +37,27 @@ namespace MediaBrowser.Providers.Music
             return null;
         }
 
-        public static void ProcessAlbumData(BaseItem item, LastfmAlbum data)
+        public static void SaveImageInfo(IApplicationPaths appPaths, ILogger logger, string musicBrainzId, string url, string size)
         {
-            var overview = data.wiki != null ? data.wiki.content : null;
+            var cachePath = Path.Combine(appPaths.CachePath, "lastfm", musicBrainzId, "image.txt");
 
-            if (!item.LockedFields.Contains(MetadataFields.Overview))
+            try
             {
-                item.Overview = overview;
-            }
-
-            // Only grab the date here if the album doesn't already have one, since id3 tags are preferred
-            DateTime release;
-
-            if (DateTime.TryParse(data.releasedate, out release))
-            {
-                // Lastfm sends back null as sometimes 1901, other times 0
-                if (release.Year > 1901)
+                if (string.IsNullOrEmpty(url))
                 {
-                    if (!item.PremiereDate.HasValue)
-                    {
-                        item.PremiereDate = release;
-                    }
-
-                    if (!item.ProductionYear.HasValue)
-                    {
-                        item.ProductionYear = release.Year;
-                    }
+                    File.Delete(cachePath);
+                }
+                else
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+                    File.WriteAllText(cachePath, url + "|" + size);
                 }
             }
-
-            var album = (MusicAlbum)item;
-
-            string imageSize;
-
-            album.LastFmImageUrl = GetImageUrl(data, out imageSize);
-            album.LastFmImageSize = imageSize;
+            catch (IOException ex)
+            {
+                // Don't fail if this is unable to write
+                logger.ErrorException("Error saving to {0}", ex, cachePath);
+            }
         }
     }
 }

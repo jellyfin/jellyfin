@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.GameGenres
 {
-    public class GameGenreMetadataService : ConcreteMetadataService<GameGenre>
+    public class GameGenreMetadataService : ConcreteMetadataService<GameGenre, ItemId>
     {
         private readonly ILibraryManager _libraryManager;
 

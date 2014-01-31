@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
@@ -38,13 +39,14 @@ namespace MediaBrowser.Providers.All
             if (locationType == LocationType.FileSystem)
             {
                 // Episode has it's own provider
-                if (item is Episode)
+                if (item is Episode || item is Audio)
                 {
                     return false;
                 }
 
                 return true;
             }
+
             if (locationType == LocationType.Virtual)
             {
                 var season = item as Season;

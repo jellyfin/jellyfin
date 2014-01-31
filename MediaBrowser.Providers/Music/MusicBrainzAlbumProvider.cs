@@ -1,11 +1,8 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Net;
@@ -16,46 +13,46 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class MusicBrainzAlbumProvider : BaseMetadataProvider
+    public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum>, IHasOrder
     {
         internal static MusicBrainzAlbumProvider Current;
 
         private readonly IHttpClient _httpClient;
         private readonly IApplicationHost _appHost;
 
-        public MusicBrainzAlbumProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IHttpClient httpClient, IApplicationHost appHost)
-            : base(logManager, configurationManager)
+        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost)
         {
             _httpClient = httpClient;
             _appHost = appHost;
-
             Current = this;
         }
 
-        public override bool Supports(BaseItem item)
+        public async Task<MetadataResult<MusicAlbum>> GetMetadata(ItemId id, CancellationToken cancellationToken)
         {
-            return item is MusicAlbum;
-        }
+            var albumId = (AlbumId)id;
+            var releaseId = albumId.GetProviderId(MetadataProviders.Musicbrainz);
+            var releaseGroupId = albumId.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
-        {
-            var releaseId = item.GetProviderId(MetadataProviders.Musicbrainz);
-            var releaseGroupId = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+            var result = new MetadataResult<MusicAlbum>();
 
             if (string.IsNullOrEmpty(releaseId))
             {
-                var result = await GetReleaseResult((MusicAlbum)item, cancellationToken).ConfigureAwait(false);
+                var releaseResult = await GetReleaseResult(albumId.ArtistMusicBrainzId, albumId.AlbumArtist, albumId.Name, cancellationToken).ConfigureAwait(false);
 
-                if (!string.IsNullOrEmpty(result.ReleaseId))
+                result.Item = new MusicAlbum();
+
+                if (!string.IsNullOrEmpty(releaseResult.ReleaseId))
                 {
-                    releaseId = result.ReleaseId;
-                    item.SetProviderId(MetadataProviders.Musicbrainz, releaseId);
+                    releaseId = releaseResult.ReleaseId;
+                    result.HasMetadata = true;
+                    result.Item.SetProviderId(MetadataProviders.Musicbrainz, releaseId);
                 }
 
-                if (!string.IsNullOrEmpty(result.ReleaseGroupId))
+                if (!string.IsNullOrEmpty(releaseResult.ReleaseGroupId))
                 {
-                    releaseGroupId = result.ReleaseGroupId;
-                    item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, releaseGroupId);
+                    releaseGroupId = releaseResult.ReleaseGroupId;
+                    result.HasMetadata = true;
+                    result.Item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, releaseGroupId);
                 }
             }
 
@@ -63,25 +60,26 @@ namespace MediaBrowser.Providers.Music
             if (!string.IsNullOrEmpty(releaseId) && string.IsNullOrEmpty(releaseGroupId))
             {
                 releaseGroupId = await GetReleaseGroupId(releaseId, cancellationToken).ConfigureAwait(false);
-
-                item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, releaseGroupId);
+                result.HasMetadata = true;
+                result.Item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, releaseGroupId);
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
-            return true;
+            return result;
         }
 
-        private Task<ReleaseResult> GetReleaseResult(MusicAlbum album, CancellationToken cancellationToken)
+        public string Name
         {
-            var artist = album.Parent;
-            var artistId = artist.GetProviderId(MetadataProviders.Musicbrainz);
+            get { return "MusicBrainz"; }
+        }
 
-            if (!string.IsNullOrEmpty(artistId))
+        private Task<ReleaseResult> GetReleaseResult(string artistMusicBrainId, string artistName, string albumName, CancellationToken cancellationToken)
+        {
+            if (!string.IsNullOrEmpty(artistMusicBrainId))
             {
-                return GetReleaseResult(album.Name, artistId, cancellationToken);
+                return GetReleaseResult(albumName, artistMusicBrainId, cancellationToken);
             }
 
-            return GetReleaseResultByArtistName(album.Name, artist.Name, cancellationToken);
+            return GetReleaseResultByArtistName(albumName, artistName, cancellationToken);
         }
 
         private async Task<ReleaseResult> GetReleaseResult(string albumName, string artistId, CancellationToken cancellationToken)
@@ -218,10 +216,9 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
-
-        public override MetadataProviderPriority Priority
+        public int Order
         {
-            get { return MetadataProviderPriority.Third; }
+            get { return 0; }
         }
     }
 }

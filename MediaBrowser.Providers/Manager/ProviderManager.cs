@@ -50,7 +50,6 @@ namespace MediaBrowser.Providers.Manager
         /// <value>The metadata providers enumerable.</value>
         private BaseMetadataProvider[] MetadataProviders { get; set; }
 
-        private IRemoteImageProvider[] RemoteImageProviders { get; set; }
         private IImageProvider[] ImageProviders { get; set; }
 
         private readonly IFileSystem _fileSystem;
@@ -58,6 +57,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly IProviderRepository _providerRepo;
 
         private IMetadataService[] _metadataServices = { };
+        private IMetadataProvider[] _metadataProviders = { };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
@@ -89,16 +89,10 @@ namespace MediaBrowser.Providers.Manager
         {
             MetadataProviders = providers.OrderBy(e => e.Priority).ToArray();
 
-            ImageProviders = imageProviders.OrderBy(i => i.Order).ToArray();
-            RemoteImageProviders = ImageProviders.OfType<IRemoteImageProvider>().ToArray();
+            ImageProviders = imageProviders.ToArray();
 
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
-
-            var providerList = metadataProviders.ToList();
-            foreach (var service in _metadataServices)
-            {
-                service.AddParts(providerList, ImageProviders);
-            }
+            _metadataProviders = metadataProviders.ToArray();
         }
 
         public Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -391,7 +385,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="providerName">Name of the provider.</param>
         /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(BaseItem item, CancellationToken cancellationToken, string providerName = null, ImageType? type = null)
+        public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasImages item, CancellationToken cancellationToken, string providerName = null, ImageType? type = null)
         {
             var providers = GetRemoteImageProviders(item);
 
@@ -418,7 +412,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="preferredLanguage">The preferred language.</param>
         /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        private async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken, IRemoteImageProvider i, string preferredLanguage, ImageType? type = null)
+        private async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken, IRemoteImageProvider i, string preferredLanguage, ImageType? type = null)
         {
             try
             {
@@ -452,9 +446,23 @@ namespace MediaBrowser.Providers.Manager
             return images;
         }
 
-        private IEnumerable<IRemoteImageProvider> GetRemoteImageProviders(BaseItem item)
+        /// <summary>
+        /// Gets the supported image providers.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>IEnumerable{IImageProvider}.</returns>
+        public IEnumerable<ImageProviderInfo> GetImageProviderInfo(IHasImages item)
         {
-            return RemoteImageProviders.Where(i =>
+            return GetRemoteImageProviders(item).Select(i => new ImageProviderInfo
+            {
+                Name = i.Name,
+                Order = GetOrder(item, i)
+            });
+        }
+
+        public IEnumerable<IImageProvider> GetImageProviders(IHasImages item)
+        {
+            return ImageProviders.Where(i =>
             {
                 try
                 {
@@ -466,22 +474,77 @@ namespace MediaBrowser.Providers.Manager
                     return false;
                 }
 
-            });
+            }).OrderBy(i => GetOrder(item, i));
+        }
+
+        public IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(IHasMetadata item)
+            where T : IHasMetadata
+        {
+            return _metadataProviders.OfType<IMetadataProvider<T>>()
+                .Where(i => CanRefresh(i, item))
+                .OrderBy(i => GetOrder(item, i));
+        }
+
+        private IEnumerable<IRemoteImageProvider> GetRemoteImageProviders(IHasImages item)
+        {
+            return GetImageProviders(item).OfType<IRemoteImageProvider>();
         }
 
         /// <summary>
-        /// Gets the supported image providers.
+        /// Determines whether this instance can refresh the specified provider.
+        /// </summary>
+        /// <param name="provider">The provider.</param>
+        /// <param name="item">The item.</param>
+        /// <returns><c>true</c> if this instance can refresh the specified provider; otherwise, <c>false</c>.</returns>
+        protected bool CanRefresh(IMetadataProvider provider, IHasMetadata item)
+        {
+            if (!ConfigurationManager.Configuration.EnableInternetProviders && provider is IRemoteMetadataProvider)
+            {
+                return false;
+            }
+
+            if (item.LocationType != LocationType.FileSystem && provider is ILocalMetadataProvider)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the order.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{IImageProvider}.</returns>
-        public IEnumerable<ImageProviderInfo> GetImageProviderInfo(BaseItem item)
+        /// <param name="provider">The provider.</param>
+        /// <returns>System.Int32.</returns>
+        private int GetOrder(IHasImages item, IImageProvider provider)
         {
-            return GetRemoteImageProviders(item).Select(i => new ImageProviderInfo
-            {
-                Name = i.Name,
-                Order = i.Order
+            var hasOrder = provider as IHasOrder;
 
-            });
+            if (hasOrder == null)
+            {
+                return 0;
+            }
+
+            return hasOrder.Order;
+        }
+
+        /// <summary>
+        /// Gets the order.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="provider">The provider.</param>
+        /// <returns>System.Int32.</returns>
+        private int GetOrder(IHasMetadata item, IMetadataProvider provider)
+        {
+            var hasOrder = provider as IHasOrder;
+
+            if (hasOrder == null)
+            {
+                return 0;
+            }
+
+            return hasOrder.Order;
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.IO;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -21,6 +23,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;
         private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
 
         public ItemImageProvider(ILogger logger, IProviderManager providerManager, IServerConfigurationManager config)
         {
@@ -97,9 +100,21 @@ namespace MediaBrowser.Providers.Manager
 
                         if (response.HasImage)
                         {
-                            var mimeType = "image/" + response.Format.ToString().ToLower();
+                            if (!string.IsNullOrEmpty(response.Path))
+                            {
+                                var mimeType = "image/" + Path.GetExtension(response.Path).TrimStart('.').ToLower();
 
-                            await _providerManager.SaveImage((BaseItem)item, response.Stream, mimeType, imageType, null, Guid.NewGuid().ToString(), cancellationToken).ConfigureAwait(false);
+                                var stream = _fileSystem.GetFileStream(response.Path, FileMode.Open, FileAccess.Read,
+                                    FileShare.Read, true);
+
+                                await _providerManager.SaveImage((BaseItem)item, stream, mimeType, imageType, null, Guid.NewGuid().ToString(), cancellationToken).ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                var mimeType = "image/" + response.Format.ToString().ToLower();
+
+                                await _providerManager.SaveImage((BaseItem)item, response.Stream, mimeType, imageType, null, Guid.NewGuid().ToString(), cancellationToken).ConfigureAwait(false);
+                            }
 
                             result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
                         }
@@ -227,26 +242,14 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>IEnumerable{IImageProvider}.</returns>
         private IEnumerable<IImageProvider> GetImageProviders(IHasImages item, IEnumerable<IImageProvider> imageProviders)
         {
-            var providers = imageProviders.Where(i =>
-            {
-                try
-                {
-                    return i.Supports(item);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in ImageProvider.Supports", ex, i.Name);
-
-                    return false;
-                }
-            });
+            var providers = imageProviders;
 
             if (!_config.Configuration.EnableInternetProviders)
             {
                 providers = providers.Where(i => !(i is IRemoteImageProvider));
             }
 
-            return providers.OrderBy(i => i.Order);
+            return providers;
         }
 
         private bool MergeImages(IHasImages item, List<LocalImageInfo> images)

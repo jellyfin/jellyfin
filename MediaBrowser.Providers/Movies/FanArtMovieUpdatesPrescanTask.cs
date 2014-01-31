@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    class FanArtMovieUpdatesPrescanTask : ILibraryPostScanTask
+    class FanartMovieUpdatesPrescanTask : ILibraryPostScanTask
     {
         private const string UpdatesUrl = "http://api.fanart.tv/webservice/newmovies/{0}/{1}/";
 
@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.Movies
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public FanArtMovieUpdatesPrescanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem)
+        public FanartMovieUpdatesPrescanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _jsonSerializer = jsonSerializer;
             _config = config;
@@ -60,7 +60,7 @@ namespace MediaBrowser.Providers.Movies
                 return;
             }
 
-            var path = FanArtMovieProvider.GetMoviesDataPath(_config.CommonApplicationPaths);
+            var path = FanartMovieProvider.GetMoviesDataPath(_config.CommonApplicationPaths);
 
             Directory.CreateDirectory(path);
             
@@ -118,7 +118,7 @@ namespace MediaBrowser.Providers.Movies
                         return new List<string>();
                     }
 
-                    var updates = _jsonSerializer.DeserializeFromString<List<FanArtUpdatesPrescanTask.FanArtUpdate>>(json);
+                    var updates = _jsonSerializer.DeserializeFromString<List<FanartUpdatesPrescanTask.FanArtUpdate>>(json);
 
                     var existingDictionary = existingIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
@@ -136,7 +136,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 _logger.Info("Updating movie " + id);
 
-                await FanArtMovieProvider.Current.DownloadMovieXml(id, cancellationToken).ConfigureAwait(false);
+                await FanartMovieProvider.Current.DownloadMovieXml(id, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;

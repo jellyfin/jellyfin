@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.People
 {
-    public class PersonMetadataService : ConcreteMetadataService<Person>
+    public class PersonMetadataService : ConcreteMetadataService<Person, ItemId>
     {
         private readonly ILibraryManager _libraryManager;
 

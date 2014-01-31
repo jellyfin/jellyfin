@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.People
 {
-    public class MovieDbPersonImageProvider : IRemoteImageProvider
+    public class MovieDbPersonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
         private readonly IJsonSerializer _jsonSerializer;
