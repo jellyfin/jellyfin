@@ -177,7 +177,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Image is already in the cache
-            item.PrimaryImagePath = path;
+            item.SetImagePath(ImageType.Primary, path);
         }
 
         /// <summary>

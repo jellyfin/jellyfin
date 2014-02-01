@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System.Globalization;
 using System.IO;
@@ -90,7 +91,7 @@ namespace MediaBrowser.Providers.TV
 
                             if (File.Exists(filename))
                             {
-                                item.PrimaryImagePath = filename;
+                                item.SetImagePath(ImageType.Primary, 0, filename);
                             }
                         }
                         break;

@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// </summary>
         /// <value><c>true</c> if this instance has embedded image; otherwise, <c>false</c>.</value>
         public bool HasEmbeddedImage { get; set; }
-        
+
         /// <summary>
         /// Override this to true if class should be grouped under a container in indicies
         /// The container class should be defined via IndexContainer
@@ -37,10 +37,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         /// <summary>
-        /// The unknown album
-        /// </summary>
-        private static readonly MusicAlbum UnknownAlbum = new MusicAlbum { Name = "<Unknown>" };
-        /// <summary>
         /// Override this to return the folder that should be used to construct a container
         /// for this item in an index.  GroupInIndex should be true as well.
         /// </summary>
@@ -50,7 +46,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             get
             {
-                return Parent is MusicAlbum ? Parent : Album != null ? new MusicAlbum { Name = Album, PrimaryImagePath = PrimaryImagePath } : UnknownAlbum;
+                return Parents.OfType<MusicAlbum>().FirstOrDefault() ?? new MusicAlbum { Name = "<Unknown>" };
             }
         }
 

@@ -164,7 +164,7 @@ namespace MediaBrowser.Providers.Manager
         protected virtual IEnumerable<IMetadataProvider> GetProviders(IHasMetadata item, bool hasRefreshedMetadata, MetadataRefreshOptions options)
         {
             // Get providers to refresh
-            var providers = ((ProviderManager) ProviderManager).GetMetadataProviders<TItemType>(item).ToList();
+            var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item).ToList();
 
             // Run all if either of these flags are true
             var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || !hasRefreshedMetadata;
@@ -258,7 +258,7 @@ namespace MediaBrowser.Providers.Manager
 
                     if (localItem.HasMetadata)
                     {
-                        MergeData(localItem.Item, temp, new List<MetadataFields>(), false, true);
+                        MergeData(localItem.Item, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
@@ -287,7 +287,10 @@ namespace MediaBrowser.Providers.Manager
                 await ExecuteRemoteProviders(item, temp, providers.OfType<IRemoteMetadataProvider<TItemType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
-            MergeData(temp, item, item.LockedFields, true, true);
+            if (refreshResult.UpdateType > ItemUpdateType.Unspecified)
+            {
+                MergeData(temp, item, item.LockedFields, true, true);
+            }
 
             return refreshResult;
         }
