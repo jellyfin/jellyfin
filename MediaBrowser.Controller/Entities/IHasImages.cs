@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the primary image path.
         /// </summary>
         /// <value>The primary image path.</value>
-        string PrimaryImagePath { get; set; }
+        string PrimaryImagePath { get; }
 
         /// <summary>
         /// Gets the preferred metadata language.

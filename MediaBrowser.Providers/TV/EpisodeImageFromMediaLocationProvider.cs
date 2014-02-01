@@ -116,7 +116,7 @@ namespace MediaBrowser.Providers.TV
 
             if (!File.Exists(path))
             {
-                episode.PrimaryImagePath = null;
+                episode.SetImagePath(ImageType.Primary, null);
             }
         }
 
@@ -137,7 +137,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (file != null)
                 {
-                    item.PrimaryImagePath = file.FullName;
+                    item.SetImagePath(ImageType.Primary, file.FullName);
                     return;
                 }
             }
@@ -154,7 +154,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (file != null)
                 {
-                    item.PrimaryImagePath = file.FullName;
+                    item.SetImagePath(ImageType.Primary, file.FullName);
                     return;
                 }
             }

@@ -227,7 +227,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Image is already in the cache
-            item.PrimaryImagePath = path;
+            item.SetImagePath(ImageType.Primary, path);
         }
 
         /// <summary>
@@ -256,7 +256,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 await _mediaEncoder.ExtractImage(inputPath, type, false, video.Video3DFormat, imageOffset, path, cancellationToken).ConfigureAwait(false);
 
-                video.PrimaryImagePath = path;
+                video.SetImagePath(ImageType.Primary, path);
             }
             finally
             {
