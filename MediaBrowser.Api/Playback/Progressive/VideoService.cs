@@ -156,48 +156,11 @@ namespace MediaBrowser.Api.Playback.Progressive
                 }
             }
 
-            var framerate = GetFramerateParam(state);
-            if (framerate.HasValue)
-            {
-                args += string.Format(" -r {0}", framerate.Value.ToString(UsCulture));
-            }
-
-            var qualityParam = GetVideoQualityParam(state, codec);
-
-            var bitrate = GetVideoBitrateParam(state);
-
-            if (bitrate.HasValue)
-            {
-                if (string.Equals(codec, "libvpx", StringComparison.OrdinalIgnoreCase))
-                {
-                    qualityParam += string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
-                }
-                else
-                {
-                    qualityParam += string.Format(" -maxrate {0} -bufsize {1}", 
-                        bitrate.Value.ToString(UsCulture),
-                        (bitrate.Value * 2).ToString(UsCulture));
-                }
-            }
+            var qualityParam = GetVideoQualityParam(state, codec, false);
 
             if (!string.IsNullOrEmpty(qualityParam))
             {
                 args += " " + qualityParam.Trim();
-            }
-
-            if (!string.IsNullOrEmpty(state.VideoSync))
-            {
-                args += " -vsync " + state.VideoSync;
-            }
-
-            if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
-            {
-                args += " -profile:v " + state.VideoRequest.Profile;
-            }
-
-            if (!string.IsNullOrEmpty(state.VideoRequest.Level))
-            {
-                args += " -level " + state.VideoRequest.Level;
             }
 
             // This is for internal graphical subs

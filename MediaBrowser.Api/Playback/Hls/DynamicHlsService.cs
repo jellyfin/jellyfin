@@ -299,14 +299,7 @@ namespace MediaBrowser.Api.Playback.Hls
                                  (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 ||
                                   state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1);
 
-            var args = "-codec:v:0 " + codec + " " + GetVideoQualityParam(state, "libx264") + keyFrameArg;
-
-            var bitrate = GetVideoBitrateParam(state);
-
-            if (bitrate.HasValue)
-            {
-                args += string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
-            }
+            var args = "-codec:v:0 " + codec + " " + GetVideoQualityParam(state, "libx264", true) + keyFrameArg;
 
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
@@ -315,27 +308,6 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     args += GetOutputSizeParam(state, codec, performSubtitleConversion);
                 }
-            }
-
-            var framerate = GetFramerateParam(state);
-            if (framerate.HasValue)
-            {
-                args += string.Format(" -r {0}", framerate.Value.ToString(UsCulture));
-            }
-
-            if (!string.IsNullOrEmpty(state.VideoSync))
-            {
-                args += " -vsync " + state.VideoSync;
-            }
-
-            if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
-            {
-                args += " -profile:v " + state.VideoRequest.Profile;
-            }
-
-            if (!string.IsNullOrEmpty(state.VideoRequest.Level))
-            {
-                args += " -level " + state.VideoRequest.Level;
             }
 
             // This is for internal graphical subs

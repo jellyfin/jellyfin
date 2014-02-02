@@ -172,7 +172,7 @@ namespace MediaBrowser.Api.Playback.Hls
         protected void GetPlaylistBitrates(StreamState state, out int audioBitrate, out int videoBitrate)
         {
             var audioBitrateParam = GetAudioBitrateParam(state);
-            var videoBitrateParam = GetVideoBitrateParam(state);
+            var videoBitrateParam = GetVideoBitrateParamValue(state);
 
             if (!audioBitrateParam.HasValue)
             {

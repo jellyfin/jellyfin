@@ -301,42 +301,73 @@ namespace MediaBrowser.Api.Playback
         /// <param name="state">The state.</param>
         /// <param name="videoCodec">The video codec.</param>
         /// <returns>System.String.</returns>
-        protected string GetVideoQualityParam(StreamState state, string videoCodec)
+        protected string GetVideoQualityParam(StreamState state, string videoCodec, bool isHls)
         {
-            // webm
-            if (videoCodec.Equals("libvpx", StringComparison.OrdinalIgnoreCase))
-            {
-                // http://www.webmproject.org/docs/encoder-parameters/
-                return "-speed 16 -quality good -profile:v 0 -slices 8 -crf 18";
-            }
+            var param = string.Empty;
 
-            // asf/wmv
-            if (videoCodec.Equals("wmv2", StringComparison.OrdinalIgnoreCase))
-            {
-                return "-qmin 2";
-            }
-
-            if (videoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
                 switch (GetQualitySetting())
                 {
                     case EncodingQuality.HighSpeed:
-                        return "-preset ultrafast -crf 18";
+                        param = "-preset ultrafast -crf 18";
+                        break;
                     case EncodingQuality.HighQuality:
-                        return "-preset superfast -crf 18";
+                        param = "-preset superfast -crf 18";
+                        break;
                     case EncodingQuality.MaxQuality:
-                        return "-preset superfast -crf 18";
-                    default:
-                        throw new Exception("Unrecognized MediaEncodingQuality value.");
+                        param = "-preset superfast -crf 18";
+                        break;
                 }
             }
 
-            if (videoCodec.Equals("mpeg4", StringComparison.OrdinalIgnoreCase))
+            // webm
+            else if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
             {
-                return "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
+                // http://www.webmproject.org/docs/encoder-parameters/
+                param = "-speed 16 -quality good -profile:v 0 -slices 8 -crf 18";
             }
 
-            return string.Empty;
+            else if (string.Equals(videoCodec, "mpeg4", StringComparison.OrdinalIgnoreCase))
+            {
+                param = "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
+            }
+
+            // asf/wmv
+            else if (string.Equals(videoCodec, "wmv2", StringComparison.OrdinalIgnoreCase))
+            {
+                param = "-qmin 2";
+            }
+
+            else if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
+            {
+                param = "-mbd 2";
+            }
+
+            param += GetVideoBitrateParam(state, videoCodec, isHls);
+
+            var framerate = GetFramerateParam(state);
+            if (framerate.HasValue)
+            {
+                param += string.Format(" -r {0}", framerate.Value.ToString(UsCulture));
+            }
+
+            if (!string.IsNullOrEmpty(state.VideoSync))
+            {
+                param += " -vsync " + state.VideoSync;
+            }
+
+            if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
+            {
+                param += " -profile:v " + state.VideoRequest.Profile;
+            }
+
+            if (!string.IsNullOrEmpty(state.VideoRequest.Level))
+            {
+                param += " -level " + state.VideoRequest.Level;
+            }
+
+            return param;
         }
 
         protected string GetAudioFilterParam(StreamState state, bool isHls)
@@ -723,7 +754,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 if (codec == VideoCodecs.Wmv)
                 {
-                    return "wmv2";
+                    return "msmpeg4";
                 }
                 if (codec == VideoCodecs.Theora)
                 {
@@ -899,9 +930,38 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        protected int? GetVideoBitrateParam(StreamState state)
+        protected int? GetVideoBitrateParamValue(StreamState state)
         {
             return state.VideoRequest.VideoBitRate;
+        }
+
+        protected string GetVideoBitrateParam(StreamState state, string videoCodec, bool isHls)
+        {
+            var bitrate = GetVideoBitrateParamValue(state);
+
+            if (bitrate.HasValue)
+            {
+                if (isHls)
+                {
+                    return string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
+                }
+
+                // With vpx when crf is used, b:v becomes a max rate
+                // https://trac.ffmpeg.org/wiki/vpxEncodingGuide
+                if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
+                {
+                    return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                }
+                if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
+                {
+                    return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                }
+                return string.Format(" -maxrate {0} -bufsize {1}",
+                    bitrate.Value.ToString(UsCulture),
+                    (bitrate.Value * 2).ToString(UsCulture));
+            }
+
+            return string.Empty;
         }
 
         protected int? GetAudioBitrateParam(StreamState state)
@@ -1180,7 +1240,7 @@ namespace MediaBrowser.Api.Playback
             var probeSize = GetProbeSizeArgument(state.MediaPath, state.IsInputVideo, state.VideoType, state.IsoType);
             inputModifier += " " + probeSize;
             inputModifier = inputModifier.Trim();
-         
+
             inputModifier += " " + GetUserAgentParam(state.MediaPath);
             inputModifier = inputModifier.Trim();
 
