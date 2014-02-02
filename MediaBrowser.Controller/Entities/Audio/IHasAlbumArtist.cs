@@ -3,7 +3,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 {
     public interface IHasAlbumArtist
     {
-        string AlbumArtist { get; }
+        string AlbumArtist { get; set; }
     }
 
     public interface IHasArtist

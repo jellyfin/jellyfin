@@ -10,13 +10,13 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.People
+namespace MediaBrowser.Providers.Books
 {
-    public class PersonMetadataService : MetadataService<Person, ItemId>
+    public class BookMetadataService : MetadataService<Book, ItemId>
     {
         private readonly ILibraryManager _libraryManager;
 
-        public PersonMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public BookMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
             : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
         {
             _libraryManager = libraryManager;
@@ -30,17 +30,17 @@ namespace MediaBrowser.Providers.People
         /// <param name="lockedFields">The locked fields.</param>
         /// <param name="replaceData">if set to <c>true</c> [replace data].</param>
         /// <param name="mergeMetadataSettings">if set to <c>true</c> [merge metadata settings].</param>
-        protected override void MergeData(Person source, Person target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(Book source, Book target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
-            if (replaceData || string.IsNullOrEmpty(target.PlaceOfBirth))
+            if (replaceData || string.IsNullOrEmpty(target.SeriesName))
             {
-                target.PlaceOfBirth = source.PlaceOfBirth;
+                target.SeriesName = source.SeriesName;
             }
         }
 
-        protected override Task SaveItem(Person item, ItemUpdateType reason, CancellationToken cancellationToken)
+        protected override Task SaveItem(Book item, ItemUpdateType reason, CancellationToken cancellationToken)
         {
             return _libraryManager.UpdateItem(item, reason, cancellationToken);
         }

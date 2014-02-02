@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
@@ -36,6 +35,11 @@ namespace MediaBrowser.Providers.Music
         protected override void MergeData(MusicAlbum source, MusicAlbum target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+
+            if (replaceData || target.Artists.Count == 0)
+            {
+                target.Artists = source.Artists;
+            }
         }
 
         protected override Task SaveItem(MusicAlbum item, ItemUpdateType reason, CancellationToken cancellationToken)

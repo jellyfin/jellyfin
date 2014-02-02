@@ -1,5 +1,7 @@
 ﻿(function ($, document, window) {
 
+    var currentType;
+
     function loadTabs(page, tabs) {
 
         var html = '';
@@ -10,7 +12,9 @@
 
             var tab = tabs[i];
 
-            html += '<input type="radio" name="radioTypeTab" class="radioTypeTab" id="' + tab.type + '" value="' + tab.type + '">';
+            var isChecked = i == 0 ? ' checked="checked"' : '';
+
+            html += '<input type="radio" name="radioTypeTab" class="radioTypeTab" id="' + tab.type + '" value="' + tab.type + '"' + isChecked + '>';
             html += '<label for="' + tab.type + '">' + tab.name + '</label>';
         }
 
@@ -27,23 +31,63 @@
                 loadType(page, this.id);
             }
 
-        })[0].click();
+        }).trigger('change');
     }
 
     function loadType(page, type) {
 
         Dashboard.showLoadingMsg();
 
+        currentType = type;
+
         var promise1 = ApiClient.getServerConfiguration();
         var promise2 = $.getJSON(ApiClient.getUrl("System/Configuration/MetadataPlugins"));
 
         $.when(promise1, promise2).done(function (response1, response2) {
 
-            renderType(page, type, response1[0], response2[0]);
+            var config = response1[0];
+            var metadataPlugins = response2[0];
 
-            Dashboard.hideLoadingMsg();
+            config = config.MetadataOptions.filter(function (c) {
+                return c.ItemType == type;
+            })[0];
+
+            if (config) {
+
+                renderType(page, type, config, metadataPlugins);
+
+                Dashboard.hideLoadingMsg();
+
+            } else {
+
+                $.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultConfig) {
+
+
+                    config = defaultConfig;
+
+                    renderType(page, type, config, metadataPlugins);
+
+                    Dashboard.hideLoadingMsg();
+                });
+
+            }
+
         });
 
+    }
+
+    function setVisibilityOfBackdrops(elem, visible) {
+
+        if (visible) {
+            elem.show();
+
+            $('input', elem).attr('required', 'required');
+
+        } else {
+            elem.hide();
+
+            $('input', elem).attr('required', '').removeAttr('required');
+        }
     }
 
     function renderType(page, type, config, metadataPlugins) {
@@ -53,17 +97,8 @@
             return type == f.ItemType;
         })[0];
 
-        if (metadataInfo.SupportedImageTypes.indexOf('Backdrop') == -1) {
-            $('.backdropFields', page).hide();
-        } else {
-            $('.backdropFields', page).show();
-        }
-
-        if (metadataInfo.SupportedImageTypes.indexOf('Screenshot') == -1) {
-            $('.screenshotFields', page).hide();
-        } else {
-            $('.screenshotFields', page).show();
-        }
+        setVisibilityOfBackdrops($('.backdropFields', page), metadataInfo.SupportedImageTypes.indexOf('Backdrop') != -1);
+        setVisibilityOfBackdrops($('.screenshotFields', page), metadataInfo.SupportedImageTypes.indexOf('Screenshot') != -1);
 
         $('.imageType', page).each(function () {
 
@@ -74,12 +109,44 @@
             } else {
                 $(this).show();
             }
+
+            if (getImageConfig(config, imageType).Limit) {
+
+                $('input', this).checked(true).checkboxradio('refresh');
+
+            } else {
+                $('input', this).checked(false).checkboxradio('refresh');
+            }
         });
+
+        var backdropConfig = getImageConfig(config, 'Backdrop');
+
+        $('#txtMaxBackdrops', page).val(backdropConfig.Limit);
+        $('#txtMinBackdropDownloadWidth', page).val(backdropConfig.MinWidth);
+
+        var screenshotConfig = getImageConfig(config, 'Screenshot');
+
+        $('#txtMaxScreenshots', page).val(screenshotConfig.Limit);
+        $('#txtMinScreenshotDownloadWidth', page).val(screenshotConfig.MinWidth);
 
         renderMetadataLocals(page, type, config, metadataInfo);
         renderMetadataFetchers(page, type, config, metadataInfo);
         renderMetadataSavers(page, type, config, metadataInfo);
         renderImageFetchers(page, type, config, metadataInfo);
+    }
+
+    function getImageConfig(config, type) {
+
+        return config.ImageOptions.filter(function (i) {
+
+            return i.Type == type;
+
+        })[0] || {
+
+            Type: type,
+            MinWidth: type == 'Backdrop' ? 1280 : 0,
+            Limit: type == 'Backdrop' ? 3 : 1
+        };
     }
 
     function renderImageFetchers(page, type, config, metadataInfo) {
@@ -104,7 +171,7 @@
 
             var id = 'chkImageFetcher' + i;
 
-            html += '<input type="checkbox" name="' + id + '" id="' + id + '" data-mini="true">';
+            html += '<input class="chkImageFetcher" type="checkbox" name="' + id + '" id="' + id + '" data-mini="true" data-pluginname="' + plugin.Name + '">';
             html += '<label for="' + id + '">' + plugin.Name + '</label>';
         }
 
@@ -135,7 +202,9 @@
 
             var id = 'chkMetadataSaver' + i;
 
-            html += '<input type="checkbox" name="' + id + '" id="' + id + '" data-mini="true">';
+            var isChecked = config.DisabledMetadataSavers.indexOf(plugin.Name) == -1 ? ' checked="checked"' : '';
+
+            html += '<input class="chkMetadataSaver" type="checkbox" name="' + id + '" id="' + id + '" data-mini="true"' + isChecked + ' data-pluginname="' + plugin.Name + '">';
             html += '<label for="' + id + '">' + plugin.Name + '</label>';
         }
 
@@ -273,6 +342,44 @@
         }
     }
 
+    function saveSettingsIntoConfig(form, config) {
+
+        config.DisabledMetadataSavers = $('.chkMetadataSaver:not(:checked)', form).get().map(function (c) {
+
+            return c.getAttribute('data-pluginname');
+
+        });
+
+        config.ImageOptions = $('.imageType:visible input', form).get().map(function (c) {
+
+
+            return {
+                Type: $(c).parents('.imageType').attr('data-imagetype'),
+                Limit: c.checked ? 1 : 0,
+                MinWidth: 0
+            };
+
+        });
+
+        if ($('.backdropFields:visible', form).length) {
+            
+            config.ImageOptions.push({
+                Type: 'Backdrop',
+                Limit: $('#txtMaxBackdrops', form).val(),
+                MinWidth: $('#txtMinBackdropDownloadWidth', form).val()
+            });
+        }
+
+        if ($('.screenshotFields:visible', form).length) {
+
+            config.ImageOptions.push({
+                Type: 'Screenshot',
+                Limit: $('#txtMaxScreenshots', form).val(),
+                MinWidth: $('#txtMinScreenshotDownloadWidth', form).val()
+            });
+        }
+    }
+
     function onSubmit() {
 
         var form = this;
@@ -281,7 +388,28 @@
 
         ApiClient.getServerConfiguration().done(function (config) {
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            var type = currentType;
+
+            var metadataOptions = config.MetadataOptions.filter(function (c) {
+                return c.ItemType == type;
+            })[0];
+
+            if (metadataOptions) {
+
+                saveSettingsIntoConfig(form, metadataOptions);
+                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+
+            } else {
+
+                $.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultOptions) {
+
+                    defaultOptions.ItemType = type;
+                    config.MetadataOptions.push(defaultOptions);
+                    saveSettingsIntoConfig(form, defaultOptions);
+                    ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+
+                });
+            }
         });
 
         // Disable default form submission
