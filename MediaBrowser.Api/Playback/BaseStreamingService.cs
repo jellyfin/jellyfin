@@ -1242,6 +1242,12 @@ namespace MediaBrowser.Api.Playback
         /// <param name="videoRequest">The video request.</param>
         private void EnforceResolutionLimit(StreamState state, VideoStreamRequest videoRequest)
         {
+            // If enabled, allow whatever the client asks for
+            if (ServerConfigurationManager.Configuration.AllowVideoUpscaling)
+            {
+                return;
+            }
+
             int? videoWidth = null;
             int? videoHeight = null;
 
@@ -1269,14 +1275,11 @@ namespace MediaBrowser.Api.Playback
             }
 
             // We don't know the source resolution. Don't allow an exact resolution unless upscaling is allowed
-            if (!ServerConfigurationManager.Configuration.AllowVideoUpscaling)
-            {
-                videoRequest.MaxWidth = videoRequest.MaxWidth ?? videoRequest.Width;
-                videoRequest.MaxHeight = videoRequest.MaxHeight ?? videoRequest.Height;
+            videoRequest.MaxWidth = videoRequest.MaxWidth ?? videoRequest.Width;
+            videoRequest.MaxHeight = videoRequest.MaxHeight ?? videoRequest.Height;
 
-                videoRequest.Width = null;
-                videoRequest.Height = null;
-            }
+            videoRequest.Width = null;
+            videoRequest.Height = null;
         }
 
         protected string GetInputModifier(StreamState state)
