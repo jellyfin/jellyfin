@@ -305,19 +305,26 @@ namespace MediaBrowser.Api.Playback
         {
             var param = string.Empty;
 
+            var hasFixedResolution = state.VideoRequest.HasFixedResolution;
+
             if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
                 switch (GetQualitySetting())
                 {
                     case EncodingQuality.HighSpeed:
-                        param = "-preset ultrafast -crf 18";
+                        param = "-preset ultrafast";
                         break;
                     case EncodingQuality.HighQuality:
-                        param = "-preset superfast -crf 18";
+                        param = "-preset superfast";
                         break;
                     case EncodingQuality.MaxQuality:
-                        param = "-preset superfast -crf 18";
+                        param = "-preset superfast";
                         break;
+                }
+
+                if (!hasFixedResolution)
+                {
+                    param += " crf18";
                 }
             }
 
@@ -325,7 +332,12 @@ namespace MediaBrowser.Api.Playback
             else if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
             {
                 // http://www.webmproject.org/docs/encoder-parameters/
-                param = "-speed 16 -quality good -profile:v 0 -slices 8 -crf 18";
+                param = "-speed 16 -quality good -profile:v 0 -slices 8";
+
+                if (!hasFixedResolution)
+                {
+                    param += " crf18";
+                }
             }
 
             else if (string.Equals(videoCodec, "mpeg4", StringComparison.OrdinalIgnoreCase))
@@ -941,21 +953,37 @@ namespace MediaBrowser.Api.Playback
 
             if (bitrate.HasValue)
             {
+                var hasFixedResolution = state.VideoRequest.HasFixedResolution;
+
                 if (isHls)
                 {
                     return string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
                 }
 
-                // With vpx when crf is used, b:v becomes a max rate
-                // https://trac.ffmpeg.org/wiki/vpxEncodingGuide
                 if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
                 {
+                    if (hasFixedResolution)
+                    {
+                        return string.Format(" -minrate:v ({0}*.90) -maxrate:v ({0}*1.10) -bufsize:v {0} -b:v {0}", bitrate.Value.ToString(UsCulture));
+                    }
+
+                    // With vpx when crf is used, b:v becomes a max rate
+                    // https://trac.ffmpeg.org/wiki/vpxEncodingGuide
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
+
                 if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
                 {
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
+
+
+                // H264
+                if (hasFixedResolution)
+                {
+                    return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                }
+
                 return string.Format(" -maxrate {0} -bufsize {1}",
                     bitrate.Value.ToString(UsCulture),
                     (bitrate.Value * 2).ToString(UsCulture));

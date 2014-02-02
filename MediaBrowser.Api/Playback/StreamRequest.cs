@@ -157,5 +157,17 @@ namespace MediaBrowser.Api.Playback
         /// <value>The level.</value>
         [ApiMember(Name = "Level", Description = "Optional. Specify a level for the h264 profile, e.g. 3, 3.1.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Level { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has fixed resolution.
+        /// </summary>
+        /// <value><c>true</c> if this instance has fixed resolution; otherwise, <c>false</c>.</value>
+        public bool HasFixedResolution
+        {
+            get
+            {
+                return Width.HasValue || Height.HasValue;
+            }
+        }
     }
 }
