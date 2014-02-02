@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 
@@ -156,6 +157,8 @@ namespace MediaBrowser.Providers
                 target.ProviderIds[id.Key] = id.Value;
             }
 
+            MergeAlbumArtist(source, target, lockedFields, replaceData);
+
             if (mergeMetadataSettings)
             {
                 target.ForcedSortName = source.ForcedSortName;
@@ -178,6 +181,20 @@ namespace MediaBrowser.Providers
                 if (sourceHasDisplayOrder != null && targetHasDisplayOrder != null)
                 {
                     targetHasDisplayOrder.DisplayOrder = sourceHasDisplayOrder.DisplayOrder;
+                }
+            }
+        }
+
+        private static void MergeAlbumArtist(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        {
+            var sourceHasAlbumArtist = source as IHasAlbumArtist;
+            var targetHasAlbumArtist = target as IHasAlbumArtist;
+
+            if (sourceHasAlbumArtist != null && targetHasAlbumArtist != null)
+            {
+                if (replaceData || string.IsNullOrEmpty(targetHasAlbumArtist.AlbumArtist))
+                {
+                    targetHasAlbumArtist.AlbumArtist = sourceHasAlbumArtist.AlbumArtist;
                 }
             }
         }
