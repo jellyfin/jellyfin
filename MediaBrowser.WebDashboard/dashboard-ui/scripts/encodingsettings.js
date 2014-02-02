@@ -23,6 +23,8 @@
             $('#txtTranscodingTempPath', page).removeAttr("required");
         }
 
+        $('#chkAllowUpscaling', page).checked(config.AllowVideoUpscaling).checkboxradio("refresh");
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -90,6 +92,7 @@
                     config.TranscodingTempPath = '';
                 }
 
+                config.AllowVideoUpscaling = $('#chkAllowUpscaling', form).checked();
                 config.EnableDebugEncodingLogging = $('#chkEnableDebugEncodingLogging', form).checked();
                 config.MediaEncodingQuality = $('.radioEncodingQuality:checked', form).val();
 

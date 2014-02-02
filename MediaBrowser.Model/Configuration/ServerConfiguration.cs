@@ -187,6 +187,8 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The encoding quality.</value>
         public EncodingQuality MediaEncodingQuality { get; set; }
 
+        public bool AllowVideoUpscaling { get; set; }
+
         public bool EnableMovieChapterImageExtraction { get; set; }
         public bool EnableEpisodeChapterImageExtraction { get; set; }
         public bool EnableOtherVideoChapterImageExtraction { get; set; }

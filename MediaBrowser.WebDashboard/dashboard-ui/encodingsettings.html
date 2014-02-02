@@ -40,6 +40,11 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
+                            <input type="checkbox" id="chkAllowUpscaling" name="chkAllowUpscaling" data-mini="true" />
+                            <label for="chkAllowUpscaling">Allow video upscaling when requested by clients</label>
+                            <div class="fieldDescription">In some cases this will result in improved video quality but will increase CPU usage.</div>
+                        </li>
+                        <li>
                             <input type="checkbox" id="chkEnableDebugEncodingLogging" name="chkEnableDebugEncodingLogging" data-mini="true" />
                             <label for="chkEnableDebugEncodingLogging">Enable debug transcoding logging</label>
                             <div class="fieldDescription">This will create very large log files and is only recommended as needed for troubleshooting purposes.</div>
