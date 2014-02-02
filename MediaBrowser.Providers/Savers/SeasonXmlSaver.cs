@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace MediaBrowser.Providers.Savers
 {
-    public class SeasonXmlSaver : IMetadataSaver
+    public class SeasonXmlSaver : IMetadataFileSaver
     {
         private readonly IServerConfigurationManager _config;
 

@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace MediaBrowser.Providers.Savers
 {
-    class ArtistXmlSaver : IMetadataSaver
+    class ArtistXmlSaver : IMetadataFileSaver
     {
         private readonly IServerConfigurationManager _config;
 

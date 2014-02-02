@@ -17,7 +17,7 @@ namespace MediaBrowser.Providers.Savers
     /// <summary>
     /// Saves movie.xml for movies, trailers and music videos
     /// </summary>
-    public class MovieXmlSaver : IMetadataSaver
+    public class MovieXmlSaver : IMetadataFileSaver
     {
         private readonly IServerConfigurationManager _config;
         private readonly IItemRepository _itemRepository;

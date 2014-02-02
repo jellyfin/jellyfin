@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace MediaBrowser.Providers.Savers
 {
-    public class SeriesXmlSaver : IMetadataSaver
+    public class SeriesXmlSaver : IMetadataFileSaver
     {
         private readonly IServerConfigurationManager _config;
 

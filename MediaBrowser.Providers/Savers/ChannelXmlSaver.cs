@@ -11,7 +11,7 @@ namespace MediaBrowser.Providers.Savers
     /// <summary>
     /// Class PersonXmlSaver
     /// </summary>
-    public class ChannelXmlSaver : IMetadataSaver
+    public class ChannelXmlSaver : IMetadataFileSaver
     {
         /// <summary>
         /// Determines whether [is enabled for] [the specified item].

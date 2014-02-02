@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -582,7 +583,15 @@ namespace MediaBrowser.Providers.Manager
             list.Add(GetPluginSummary<Studio>());
             list.Add(GetPluginSummary<GameGenre>());
             list.Add(GetPluginSummary<MusicGenre>());
-            
+
+            list.Add(GetPluginSummary<AdultVideo>());
+            list.Add(GetPluginSummary<MusicVideo>());
+
+            list.Add(GetPluginSummary<LiveTvChannel>());
+            list.Add(GetPluginSummary<LiveTvProgram>());
+            list.Add(GetPluginSummary<LiveTvVideoRecording>());
+            list.Add(GetPluginSummary<LiveTvAudioRecording>());
+
             return list;
         }
 
@@ -672,33 +681,49 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         public async Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
         {
-            var locationType = item.LocationType;
-            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
-            {
-                throw new ArgumentException("Only file-system based items can save metadata.");
-            }
-
             foreach (var saver in _savers.Where(i => i.IsEnabledFor(item, updateType)))
             {
-                var path = saver.GetSavePath(item);
+                var fileSaver = saver as IMetadataFileSaver;
 
-                var semaphore = _fileLocks.GetOrAdd(path, key => new SemaphoreSlim(1, 1));
-
-                await semaphore.WaitAsync().ConfigureAwait(false);
-
-                try
+                if (fileSaver != null)
                 {
-                    _libraryMonitor.ReportFileSystemChangeBeginning(path);
-                    saver.Save(item, CancellationToken.None);
+                    var locationType = item.LocationType;
+                    if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
+                    {
+                        throw new ArgumentException("Only file-system based items can save metadata.");
+                    }
+
+                    var path = fileSaver.GetSavePath(item);
+
+                    var semaphore = _fileLocks.GetOrAdd(path, key => new SemaphoreSlim(1, 1));
+
+                    await semaphore.WaitAsync().ConfigureAwait(false);
+
+                    try
+                    {
+                        _libraryMonitor.ReportFileSystemChangeBeginning(path);
+                        saver.Save(item, CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error in metadata saver", ex);
+                    }
+                    finally
+                    {
+                        _libraryMonitor.ReportFileSystemChangeComplete(path, false);
+                        semaphore.Release();
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.ErrorException("Error in metadata saver", ex);
-                }
-                finally
-                {
-                    _libraryMonitor.ReportFileSystemChangeComplete(path, false);
-                    semaphore.Release();
+                    try
+                    {
+                        saver.Save(item, CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error in metadata saver", ex);
+                    }
                 }
             }
         }

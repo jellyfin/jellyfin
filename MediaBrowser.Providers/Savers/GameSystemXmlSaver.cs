@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace MediaBrowser.Providers.Savers
 {
-    public class GameSystemXmlSaver : IMetadataSaver
+    public class GameSystemXmlSaver : IMetadataFileSaver
     {
         private readonly IServerConfigurationManager _config;
 

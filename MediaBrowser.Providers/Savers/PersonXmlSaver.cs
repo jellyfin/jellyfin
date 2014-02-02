@@ -12,7 +12,7 @@ namespace MediaBrowser.Providers.Savers
     /// <summary>
     /// Class PersonXmlSaver
     /// </summary>
-    public class PersonXmlSaver : IMetadataSaver
+    public class PersonXmlSaver : IMetadataFileSaver
     {
         public string Name
         {
