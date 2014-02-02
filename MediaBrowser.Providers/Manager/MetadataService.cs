@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -13,32 +15,22 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Providers.Manager
 {
     public abstract class MetadataService<TItemType, TIdType> : IMetadataService
-        where TItemType : IHasMetadata
+        where TItemType : IHasMetadata, new()
         where TIdType : ItemId, new()
     {
         protected readonly IServerConfigurationManager ServerConfigurationManager;
         protected readonly ILogger Logger;
         protected readonly IProviderManager ProviderManager;
-        private readonly IProviderRepository _providerRepo;
+        protected readonly IProviderRepository ProviderRepo;
+        protected readonly IFileSystem FileSystem;
 
-        private IMetadataProvider<TItemType>[] _providers = { };
-
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo)
+        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
             ProviderManager = providerManager;
-            _providerRepo = providerRepo;
-        }
-
-        /// <summary>
-        /// Adds the parts.
-        /// </summary>
-        /// <param name="providers">The providers.</param>
-        public void AddParts(IEnumerable<IMetadataProvider> providers)
-        {
-            _providers = providers.OfType<IMetadataProvider<TItemType>>()
-                .ToArray();
+            ProviderRepo = providerRepo;
+            FileSystem = fileSystem;
         }
 
         /// <summary>
@@ -48,7 +40,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         protected Task SaveProviderResult(MetadataStatus result)
         {
-            return _providerRepo.SaveMetadataStatus(result, CancellationToken.None);
+            return ProviderRepo.SaveMetadataStatus(result, CancellationToken.None);
         }
 
         /// <summary>
@@ -58,12 +50,14 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>ProviderResult.</returns>
         protected MetadataStatus GetLastResult(Guid itemId)
         {
-            return _providerRepo.GetMetadataStatus(itemId) ?? new MetadataStatus { ItemId = itemId };
+            return ProviderRepo.GetMetadataStatus(itemId) ?? new MetadataStatus { ItemId = itemId };
         }
 
-        public async Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        public async Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
             var itemOfType = (TItemType)item;
+
+            var config = GetMetadataOptions(itemOfType);
 
             var updateType = ItemUpdateType.Unspecified;
             var lastResult = GetLastResult(item.Id);
@@ -71,7 +65,7 @@ namespace MediaBrowser.Providers.Manager
             refreshResult.LastErrorMessage = string.Empty;
             refreshResult.LastStatus = ProviderRefreshStatus.Success;
 
-            var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager);
+            var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
             var localImagesFailed = false;
 
             var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item).ToList();
@@ -93,13 +87,13 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // Next run metadata providers
-            if (options.MetadataRefreshMode != MetadataRefreshMode.None)
+            if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
-                var providers = GetProviders(item, lastResult.DateLastMetadataRefresh.HasValue, options).ToList();
+                var providers = GetProviders(item, lastResult.DateLastMetadataRefresh.HasValue, refreshOptions).ToList();
 
                 if (providers.Count > 0)
                 {
-                    var result = await RefreshWithProviders(itemOfType, options, providers, cancellationToken).ConfigureAwait(false);
+                    var result = await RefreshWithProviders(itemOfType, refreshOptions, providers, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
@@ -109,13 +103,13 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // Next run remote image providers, but only if local image providers didn't throw an exception
-            if (!localImagesFailed && options.ImageRefreshMode != ImageRefreshMode.ValidationOnly)
+            if (!localImagesFailed && refreshOptions.ImageRefreshMode != ImageRefreshMode.ValidationOnly)
             {
-                var providers = GetNonLocalImageProviders(item, allImageProviders, lastResult.DateLastImagesRefresh.HasValue, options).ToList();
+                var providers = GetNonLocalImageProviders(item, allImageProviders, lastResult.DateLastImagesRefresh.HasValue, refreshOptions).ToList();
 
                 if (providers.Count > 0)
                 {
-                    var result = await itemImageProvider.RefreshImages(itemOfType, providers, options, cancellationToken).ConfigureAwait(false);
+                    var result = await itemImageProvider.RefreshImages(itemOfType, providers, refreshOptions, config, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
@@ -128,7 +122,7 @@ namespace MediaBrowser.Providers.Manager
 
             var providersHadChanges = updateType > ItemUpdateType.Unspecified;
 
-            if (options.ForceSave || providersHadChanges)
+            if (refreshOptions.ForceSave || providersHadChanges)
             {
                 if (string.IsNullOrEmpty(item.Name))
                 {
@@ -143,6 +137,15 @@ namespace MediaBrowser.Providers.Manager
             {
                 await SaveProviderResult(refreshResult).ConfigureAwait(false);
             }
+        }
+
+        private readonly MetadataOptions _defaultOptions = new MetadataOptions();
+        protected MetadataOptions GetMetadataOptions(TItemType item)
+        {
+            var type = item.GetType().Name;
+            return ServerConfigurationManager.Configuration.MetadataOptions
+                .FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase)) ?? 
+                _defaultOptions;
         }
 
         /// <summary>
@@ -292,10 +295,35 @@ namespace MediaBrowser.Providers.Manager
                 MergeData(temp, item, item.LockedFields, true, true);
             }
 
+            foreach (var provider in providers.OfType<ICustomMetadataProvider<TItemType>>())
+            {
+                Logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
+
+                try
+                {
+                    await provider.FetchAsync(item, cancellationToken).ConfigureAwait(false);
+
+                    refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    refreshResult.Status = ProviderRefreshStatus.CompletedWithErrors;
+                    refreshResult.ErrorMessage = ex.Message;
+                    Logger.ErrorException("Error in {0}", ex, provider.Name);
+                }
+            }
+            
             return refreshResult;
         }
 
-        protected abstract TItemType CreateNew();
+        protected virtual TItemType CreateNew()
+        {
+            return new TItemType();
+        }
 
         private async Task ExecuteRemoteProviders(TItemType item, TItemType temp, IEnumerable<IRemoteMetadataProvider<TItemType>> providers, RefreshResult refreshResult, CancellationToken cancellationToken)
         {

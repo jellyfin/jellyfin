@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.MusicGenres
 
         public static string ProviderName
         {
-            get { return "Media Browser"; }
+            get { return "Media Browser Images"; }
         }
 
         public bool Supports(IHasImages item)

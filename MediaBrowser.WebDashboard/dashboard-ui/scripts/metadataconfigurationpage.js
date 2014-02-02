@@ -43,6 +43,8 @@
         $('#selectCountry', page).val(config.MetadataCountryCode).selectmenu("refresh");
         $('#chkEnableInternetProviders', page).checked(config.EnableInternetProviders).checkboxradio("refresh");
 
+        $('#selectImageSavingConvention', page).val(config.ImageSavingConvention).selectmenu("refresh");
+
         Dashboard.hideLoadingMsg();
     },
     
@@ -52,6 +54,8 @@
         Dashboard.showLoadingMsg();
 
         ApiClient.getServerConfiguration().done(function (config) {
+
+            config.ImageSavingConvention = $('#selectImageSavingConvention', form).val();
 
             config.EnableInternetProviders = $('#chkEnableInternetProviders', form).checked();
             config.SaveLocalMeta = $('#chkSaveLocal', form).checked();

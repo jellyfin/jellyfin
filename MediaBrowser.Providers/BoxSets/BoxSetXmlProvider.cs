@@ -23,7 +23,7 @@ namespace MediaBrowser.Providers.BoxSets
 
         public async Task<MetadataResult<BoxSet>> GetMetadata(string path, CancellationToken cancellationToken)
         {
-            path = GetXmlPath(path);
+            path = GetXmlFile(path).FullName;
 
             var result = new MetadataResult<BoxSet>();
 
@@ -51,12 +51,12 @@ namespace MediaBrowser.Providers.BoxSets
 
         public string Name
         {
-            get { return "Media Browser Xml"; }
+            get { return "Media Browser xml"; }
         }
 
-        protected override string GetXmlPath(string path)
+        protected override FileInfo GetXmlFile(string path)
         {
-            return Path.Combine(path, "collection.xml");
+            return new FileInfo(Path.Combine(path, "collection.xml"));
         }
     }
 }

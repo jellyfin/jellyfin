@@ -1,8 +1,6 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Providers.LiveTv;
-using System;
+using MediaBrowser.Controller.Providers;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -21,7 +19,7 @@ namespace MediaBrowser.Providers.Savers
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
-        public bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
+        public bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
         {
             var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
@@ -35,19 +33,27 @@ namespace MediaBrowser.Providers.Savers
             return false;
         }
 
+        public string Name
+        {
+            get
+            {
+                return "Media Browser xml";
+            }
+        }
+
         /// <summary>
         /// Saves the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public void Save(BaseItem item, CancellationToken cancellationToken)
+        public void Save(IHasMetadata item, CancellationToken cancellationToken)
         {
             var builder = new StringBuilder();
 
             builder.Append("<Item>");
 
-            XmlSaverHelpers.AddCommonNodes(item, builder);
+            XmlSaverHelpers.AddCommonNodes((LiveTvChannel)item, builder);
 
             builder.Append("</Item>");
 
@@ -63,7 +69,7 @@ namespace MediaBrowser.Providers.Savers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        public string GetSavePath(BaseItem item)
+        public string GetSavePath(IHasMetadata item)
         {
             return Path.Combine(item.Path, "channel.xml");
         }

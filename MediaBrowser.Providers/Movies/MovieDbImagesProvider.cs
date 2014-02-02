@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
@@ -126,9 +127,11 @@ namespace MediaBrowser.Providers.Movies
                 return false;
             }
 
+            var options = ConfigurationManager.Configuration.GetMetadataOptions("Movie") ?? new MetadataOptions();
+            
             // Don't refresh if we already have both poster and backdrop and we're not refreshing images
             if (item.HasImage(ImageType.Primary) &&
-                item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MovieOptions.MaxBackdrops &&
+                item.BackdropImagePaths.Count >= options.GetLimit(ImageType.Backdrop) &&
                 !item.LockedFields.Contains(MetadataFields.Images))
             {
                 return false;
@@ -205,15 +208,17 @@ namespace MediaBrowser.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            var options = ConfigurationManager.Configuration.GetMetadataOptions("Movie") ?? new MetadataOptions();
+            
             var eligibleBackdrops = images
-                .Where(i => i.Type == ImageType.Backdrop && i.Width.HasValue && i.Width.Value >= ConfigurationManager.Configuration.MovieOptions.MinBackdropWidth)
+                .Where(i => i.Type == ImageType.Backdrop && i.Width.HasValue && i.Width.Value >= options.GetMinWidth(ImageType.Backdrop))
                 .ToList();
 
-            var backdropLimit = ConfigurationManager.Configuration.MovieOptions.MaxBackdrops;
+            var backdropLimit = options.GetLimit(ImageType.Backdrop);
 
             // backdrops - only download if earlier providers didn't find any (fanart)
             if (eligibleBackdrops.Count > 0 &&
-                ConfigurationManager.Configuration.DownloadMovieImages.Backdrops &&
+                options.IsEnabled(ImageType.Backdrop) &&
                 item.BackdropImagePaths.Count < backdropLimit &&
                 !item.LockedFields.Contains(MetadataFields.Backdrops))
             {
@@ -221,18 +226,15 @@ namespace MediaBrowser.Providers.Movies
                 {
                     var url = eligibleBackdrops[i].Url;
 
-                    if (!item.ContainsImageWithSourceUrl(url))
+                    var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                     {
-                        var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
-                        {
-                            Url = url,
-                            CancellationToken = cancellationToken
+                        Url = url,
+                        CancellationToken = cancellationToken
 
-                        }).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
 
-                        await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Backdrop, null, url, cancellationToken)
-                          .ConfigureAwait(false);
-                    }
+                    await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Backdrop, null, url, cancellationToken)
+                      .ConfigureAwait(false);
 
                     if (item.BackdropImagePaths.Count >= backdropLimit)
                     {

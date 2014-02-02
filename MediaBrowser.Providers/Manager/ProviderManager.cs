@@ -2,14 +2,17 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -58,6 +61,7 @@ namespace MediaBrowser.Providers.Manager
 
         private IMetadataService[] _metadataServices = { };
         private IMetadataProvider[] _metadataProviders = { };
+        private IEnumerable<IMetadataSaver> _savers;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
@@ -85,7 +89,8 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="imageProviders">The image providers.</param>
         /// <param name="metadataServices">The metadata services.</param>
         /// <param name="metadataProviders">The metadata providers.</param>
-        public void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders)
+        /// <param name="metadataSavers">The metadata savers.</param>
+        public void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders, IEnumerable<IMetadataSaver> metadataSavers)
         {
             MetadataProviders = providers.OrderBy(e => e.Priority).ToArray();
 
@@ -93,6 +98,7 @@ namespace MediaBrowser.Providers.Manager
 
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
             _metadataProviders = metadataProviders.ToArray();
+            _savers = metadataSavers.ToArray();
         }
 
         public Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -480,8 +486,14 @@ namespace MediaBrowser.Providers.Manager
         public IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(IHasMetadata item)
             where T : IHasMetadata
         {
+            return GetMetadataProvidersInternal<T>(item, false);
+        }
+
+        private IEnumerable<IMetadataProvider<T>> GetMetadataProvidersInternal<T>(IHasMetadata item, bool includeDisabled)
+            where T : IHasMetadata
+        {
             return _metadataProviders.OfType<IMetadataProvider<T>>()
-                .Where(i => CanRefresh(i, item))
+                .Where(i => CanRefresh(i, item, includeDisabled))
                 .OrderBy(i => GetOrder(item, i));
         }
 
@@ -495,10 +507,11 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="provider">The provider.</param>
         /// <param name="item">The item.</param>
+        /// <param name="includeDisabled">if set to <c>true</c> [include disabled].</param>
         /// <returns><c>true</c> if this instance can refresh the specified provider; otherwise, <c>false</c>.</returns>
-        protected bool CanRefresh(IMetadataProvider provider, IHasMetadata item)
+        private bool CanRefresh(IMetadataProvider provider, IHasMetadata item, bool includeDisabled)
         {
-            if (!ConfigurationManager.Configuration.EnableInternetProviders && provider is IRemoteMetadataProvider)
+            if (!includeDisabled && !ConfigurationManager.Configuration.EnableInternetProviders && provider is IRemoteMetadataProvider)
             {
                 return false;
             }
@@ -545,6 +558,149 @@ namespace MediaBrowser.Providers.Manager
             }
 
             return hasOrder.Order;
+        }
+
+        public IEnumerable<MetadataPluginSummary> GetAllMetadataPlugins()
+        {
+            var list = new List<MetadataPluginSummary>();
+
+            list.Add(GetPluginSummary<Game>());
+            list.Add(GetPluginSummary<GameSystem>());
+            list.Add(GetPluginSummary<Movie>());
+            list.Add(GetPluginSummary<Trailer>());
+            list.Add(GetPluginSummary<BoxSet>());
+            list.Add(GetPluginSummary<Book>());
+            list.Add(GetPluginSummary<Series>());
+            list.Add(GetPluginSummary<Season>());
+            list.Add(GetPluginSummary<Episode>());
+            list.Add(GetPluginSummary<Person>());
+            list.Add(GetPluginSummary<MusicAlbum>());
+            list.Add(GetPluginSummary<MusicArtist>());
+            list.Add(GetPluginSummary<Audio>());
+
+            list.Add(GetPluginSummary<Genre>());
+            list.Add(GetPluginSummary<Studio>());
+            list.Add(GetPluginSummary<GameGenre>());
+            list.Add(GetPluginSummary<MusicGenre>());
+            
+            return list;
+        }
+
+        private MetadataPluginSummary GetPluginSummary<T>()
+            where T : BaseItem, new()
+        {
+            // Give it a dummy path just so that it looks like a file system item
+            var dummy = new T()
+            {
+                Path = "C:\\",
+
+                // Dummy this up to fool the local trailer check
+                Parent = new Folder()
+            };
+
+            var summary = new MetadataPluginSummary
+            {
+                ItemType = typeof(T).Name
+            };
+
+            var imageProviders = GetImageProviders(dummy).ToList();
+
+            AddMetadataPlugins(summary.Plugins, dummy);
+            AddImagePlugins(summary.Plugins, dummy, imageProviders);
+
+            summary.SupportedImageTypes = imageProviders.OfType<IRemoteImageProvider>()
+                .SelectMany(i => i.GetSupportedImages(dummy))
+                .Distinct()
+                .ToList();
+
+            return summary;
+        }
+
+        private void AddMetadataPlugins<T>(List<MetadataPlugin> list, T item)
+            where T : IHasMetadata
+        {
+            var providers = GetMetadataProvidersInternal<T>(item, true).ToList();
+
+            // Locals
+            list.AddRange(providers.Where(i => (i is ILocalMetadataProvider)).Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = MetadataPluginType.LocalMetadataProvider
+            }));
+
+            // Fetchers
+            list.AddRange(providers.Where(i => !(i is ILocalMetadataProvider)).Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = MetadataPluginType.MetadataFetcher
+            }));
+
+            // Savers
+            list.AddRange(_savers.Where(i => i.IsEnabledFor(item, ItemUpdateType.MetadataEdit)).OrderBy(i => i.Name).Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = MetadataPluginType.MetadataSaver
+            }));
+        }
+
+        private void AddImagePlugins<T>(List<MetadataPlugin> list, T item, List<IImageProvider> imageProviders)
+            where T : IHasImages
+        {
+
+            // Locals
+            list.AddRange(imageProviders.Where(i => (i is ILocalImageProvider)).Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = MetadataPluginType.LocalImageProvider
+            }));
+
+            // Fetchers
+            list.AddRange(imageProviders.Where(i => !(i is ILocalImageProvider)).Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = MetadataPluginType.ImageFetcher
+            }));
+        }
+
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
+
+        /// <summary>
+        /// Saves the metadata.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="updateType">Type of the update.</param>
+        /// <returns>Task.</returns>
+        public async Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
+        {
+            var locationType = item.LocationType;
+            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
+            {
+                throw new ArgumentException("Only file-system based items can save metadata.");
+            }
+
+            foreach (var saver in _savers.Where(i => i.IsEnabledFor(item, updateType)))
+            {
+                var path = saver.GetSavePath(item);
+
+                var semaphore = _fileLocks.GetOrAdd(path, key => new SemaphoreSlim(1, 1));
+
+                await semaphore.WaitAsync().ConfigureAwait(false);
+
+                try
+                {
+                    _libraryMonitor.ReportFileSystemChangeBeginning(path);
+                    saver.Save(item, CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in metadata saver", ex);
+                }
+                finally
+                {
+                    _libraryMonitor.ReportFileSystemChangeComplete(path, false);
+                    semaphore.Release();
+                }
+            }
         }
     }
 }

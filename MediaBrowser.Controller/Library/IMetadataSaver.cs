@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Providers;
 using System.Threading;
 
 namespace MediaBrowser.Controller.Library
@@ -9,19 +9,25 @@ namespace MediaBrowser.Controller.Library
     public interface IMetadataSaver
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        string Name { get; }
+
+        /// <summary>
         /// Determines whether [is enabled for] [the specified item].
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
-        bool IsEnabledFor(BaseItem item, ItemUpdateType updateType);
+        bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType);
 
         /// <summary>
         /// Gets the save path.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        string GetSavePath(BaseItem item);
+        string GetSavePath(IHasMetadata item);
 
         /// <summary>
         /// Saves the specified item.
@@ -29,6 +35,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        void Save(BaseItem item, CancellationToken cancellationToken);
+        void Save(IHasMetadata item, CancellationToken cancellationToken);
     }
 }

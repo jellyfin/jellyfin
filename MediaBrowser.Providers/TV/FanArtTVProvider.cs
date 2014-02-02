@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
@@ -197,39 +198,41 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         private async Task FetchFromXml(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
+            var options = ConfigurationManager.Configuration.GetMetadataOptions("Series") ?? new MetadataOptions();
+            
             if (!item.LockedFields.Contains(MetadataFields.Images))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Primary && !item.HasImage(ImageType.Primary))
+                if (options.IsEnabled(ImageType.Primary) && !item.HasImage(ImageType.Primary))
                 {
                     await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !item.HasImage(ImageType.Logo))
+                if (options.IsEnabled(ImageType.Logo) && !item.HasImage(ImageType.Logo))
                 {
                     await SaveImage(item, images, ImageType.Logo, cancellationToken).ConfigureAwait(false);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !item.HasImage(ImageType.Art))
+                if (options.IsEnabled(ImageType.Art) && !item.HasImage(ImageType.Art))
                 {
                     await SaveImage(item, images, ImageType.Art, cancellationToken).ConfigureAwait(false);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !item.HasImage(ImageType.Thumb))
+                if (options.IsEnabled(ImageType.Thumb) && !item.HasImage(ImageType.Thumb))
                 {
                     await SaveImage(item, images, ImageType.Thumb, cancellationToken).ConfigureAwait(false);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !item.HasImage(ImageType.Banner))
+                if (options.IsEnabled(ImageType.Banner) && !item.HasImage(ImageType.Banner))
                 {
                     await SaveImage(item, images, ImageType.Banner, cancellationToken).ConfigureAwait(false);
                 }
@@ -239,8 +242,8 @@ namespace MediaBrowser.Providers.TV
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var backdropLimit = ConfigurationManager.Configuration.TvOptions.MaxBackdrops;
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops &&
+                var backdropLimit = options.GetLimit(ImageType.Backdrop);
+                if (options.IsEnabled(ImageType.Backdrop) &&
                     item.BackdropImagePaths.Count < backdropLimit)
                 {
                     foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))

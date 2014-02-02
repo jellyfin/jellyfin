@@ -161,7 +161,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (!string.IsNullOrEmpty(contentFeatures))
             {
-                responseHeaders["ContentFeatures.DLNA.ORG"] = (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
+                responseHeaders["contentFeatures.dlna.org"] = (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
             }
 
             foreach (var item in responseHeaders)

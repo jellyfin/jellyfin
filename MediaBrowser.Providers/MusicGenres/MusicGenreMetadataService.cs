@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
@@ -11,12 +13,12 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.MusicGenres
 {
-    public class MusicGenreMetadataService : ConcreteMetadataService<MusicGenre, ItemId>
+    public class MusicGenreMetadataService : MetadataService<MusicGenre, ItemId>
     {
         private readonly ILibraryManager _libraryManager;
 
-        public MusicGenreMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo)
+        public MusicGenreMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
         {
             _libraryManager = libraryManager;
         }

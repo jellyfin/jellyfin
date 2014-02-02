@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
@@ -137,7 +138,9 @@ namespace MediaBrowser.Providers.TV
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (item.HasImage(ImageType.Primary) && item.HasImage(ImageType.Banner) && item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.TvOptions.MaxBackdrops)
+            var options = ConfigurationManager.Configuration.GetMetadataOptions("Series") ?? new MetadataOptions();
+            
+            if (item.HasImage(ImageType.Primary) && item.HasImage(ImageType.Banner) && item.BackdropImagePaths.Count >= options.GetLimit(ImageType.Backdrop))
             {
                 return false;
             }
@@ -167,6 +170,8 @@ namespace MediaBrowser.Providers.TV
 
         private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, int backdropLimit, CancellationToken cancellationToken)
         {
+            var options = ConfigurationManager.Configuration.GetMetadataOptions("Series") ?? new MetadataOptions();
+            
             if (!item.LockedFields.Contains(MetadataFields.Images))
             {
                 if (!item.HasImage(ImageType.Primary))
@@ -180,7 +185,7 @@ namespace MediaBrowser.Providers.TV
                     }
                 }
 
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !item.HasImage(ImageType.Banner))
+                if (options.IsEnabled(ImageType.Banner) && !item.HasImage(ImageType.Banner))
                 {
                     var image = images.FirstOrDefault(i => i.Type == ImageType.Banner);
 
@@ -192,18 +197,13 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit && !item.LockedFields.Contains(MetadataFields.Backdrops))
+            if (options.IsEnabled(ImageType.Backdrop) && item.BackdropImagePaths.Count < backdropLimit && !item.LockedFields.Contains(MetadataFields.Backdrops))
             {
                 foreach (var backdrop in images.Where(i => i.Type == ImageType.Backdrop && 
                     (!i.Width.HasValue || 
-                    i.Width.Value >= ConfigurationManager.Configuration.TvOptions.MinBackdropWidth)))
+                    i.Width.Value >= options.GetMinWidth(ImageType.Backdrop))))
                 {
                     var url = backdrop.Url;
-
-                    if (item.ContainsImageWithSourceUrl(url))
-                    {
-                        continue;
-                    }
 
                     await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, null, cancellationToken).ConfigureAwait(false);
 

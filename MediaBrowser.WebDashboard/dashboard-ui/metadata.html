@@ -11,7 +11,11 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">Basics</a>
-                    <a href="metadataimages.html" data-role="button">More Options</a>
+                    <a href="metadataimages.html?type=movies" data-role="button">Movies</a>
+                    <a href="metadataimages.html?type=tv" data-role="button">TV</a>
+                    <a href="metadataimages.html?type=games" data-role="button">Games</a>
+                    <a href="metadataimages.html?type=music" data-role="button">Music</a>
+                    <a href="metadataimages.html?type=others" data-role="button">Others</a>
                     <a href="metadataadvanced.html" data-role="button">Advanced</a>
                 </div>
 
@@ -25,6 +29,14 @@
                             <input type="checkbox" id="chkSaveLocal" name="chkSaveLocal" data-mini="true" />
                             <label for="chkSaveLocal">Save metadata and images within media folders </label>
                             <div class="fieldDescription">Save downloaded metadata and images into media folders where they can be stored permanently and easily edited.</div>
+                        </li>
+                        <li>
+                            <label for="selectImageSavingConvention">Image saving convention: </label>
+                            <select name="selectImageSavingConvention" id="selectImageSavingConvention" data-mini="true">
+                                <option value="Compatible">Compatible - MB3/Plex/Xbmc</option>
+                                <option value="Legacy">Standard - MB3/MB2</option>
+                            </select>
+                            <div class="fieldDescription">Media Browser recognizes images from most major media applications. Choosing your downloading convention is useful if you also use other products.</div>
                         </li>
                         <li>
                             <label for="selectLanguage">Preferred language: </label>

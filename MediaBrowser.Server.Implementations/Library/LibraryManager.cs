@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
@@ -135,9 +136,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <value>The by reference items.</value>
         private ConcurrentDictionary<Guid, BaseItem> ByReferenceItems { get; set; }
 
-        private IEnumerable<IMetadataSaver> _savers;
-
         private readonly Func<ILibraryMonitor> _libraryMonitorFactory;
+        private readonly Func<IProviderManager> _providerManagerFactory;
 
         /// <summary>
         /// The _library items cache
@@ -180,7 +180,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<ILibraryMonitor> libraryMonitorFactory, IFileSystem fileSystem)
+        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<ILibraryMonitor> libraryMonitorFactory, IFileSystem fileSystem, Func<IProviderManager> providerManagerFactory)
         {
             _logger = logger;
             _taskManager = taskManager;
@@ -189,6 +189,7 @@ namespace MediaBrowser.Server.Implementations.Library
             _userDataRepository = userDataRepository;
             _libraryMonitorFactory = libraryMonitorFactory;
             _fileSystem = fileSystem;
+            _providerManagerFactory = providerManagerFactory;
             ByReferenceItems = new ConcurrentDictionary<Guid, BaseItem>();
 
             ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -215,8 +216,7 @@ namespace MediaBrowser.Server.Implementations.Library
             IEnumerable<IBaseItemComparer> itemComparers,
             IEnumerable<ILibraryPrescanTask> prescanTasks,
             IEnumerable<ILibraryPostScanTask> postscanTasks,
-            IEnumerable<IPeoplePrescanTask> peoplePrescanTasks,
-            IEnumerable<IMetadataSaver> savers)
+            IEnumerable<IPeoplePrescanTask> peoplePrescanTasks)
         {
             EntityResolutionIgnoreRules = rules.ToArray();
             PluginFolderCreators = pluginFolders.ToArray();
@@ -226,7 +226,6 @@ namespace MediaBrowser.Server.Implementations.Library
             PrescanTasks = prescanTasks;
             PostscanTasks = postscanTasks;
             PeoplePrescanTasks = peoplePrescanTasks;
-            _savers = savers;
         }
 
         /// <summary>
@@ -1375,9 +1374,9 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (item.LocationType == LocationType.FileSystem)
             {
-                await SaveMetadata(item, updateReason).ConfigureAwait(false);
+                await _providerManagerFactory().SaveMetadata(item, updateReason).ConfigureAwait(false);
             }
-
+            
             item.DateLastSaved = DateTime.UtcNow;
 
             await ItemRepository.SaveItem(item, cancellationToken).ConfigureAwait(false);
@@ -1438,49 +1437,6 @@ namespace MediaBrowser.Server.Implementations.Library
         public BaseItem RetrieveItem(Guid id)
         {
             return ItemRepository.RetrieveItem(id);
-        }
-
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
-
-        /// <summary>
-        /// Saves the metadata.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="updateType">Type of the update.</param>
-        /// <returns>Task.</returns>
-        public async Task SaveMetadata(BaseItem item, ItemUpdateType updateType)
-        {
-            var locationType = item.LocationType;
-            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
-            {
-                throw new ArgumentException("Only file-system based items can save metadata.");
-            }
-
-            foreach (var saver in _savers.Where(i => i.IsEnabledFor(item, updateType)))
-            {
-                var path = saver.GetSavePath(item);
-
-                var semaphore = _fileLocks.GetOrAdd(path, key => new SemaphoreSlim(1, 1));
-
-                var libraryMonitor = _libraryMonitorFactory();
-
-                await semaphore.WaitAsync().ConfigureAwait(false);
-
-                try
-                {
-                    libraryMonitor.ReportFileSystemChangeBeginning(path);
-                    saver.Save(item, CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in metadata saver", ex);
-                }
-                finally
-                {
-                    libraryMonitor.ReportFileSystemChangeComplete(path, false);
-                    semaphore.Release();
-                }
-            }
         }
 
         /// <summary>

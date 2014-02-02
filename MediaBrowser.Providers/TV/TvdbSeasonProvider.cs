@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -149,16 +150,17 @@ namespace MediaBrowser.Providers.TV
 
             var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualTvdbSeasonImageProvider.ProviderName).ConfigureAwait(false);
 
-            const int backdropLimit = 1;
-
-            await DownloadImages(item, images.ToList(), backdropLimit, cancellationToken).ConfigureAwait(false);
+            await DownloadImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
         }
 
-        private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, int backdropLimit, CancellationToken cancellationToken)
+        private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
+            var options = ConfigurationManager.Configuration.GetMetadataOptions("Season") ?? new MetadataOptions();
+            var backdropLimit = options.GetLimit(ImageType.Backdrop);
+
             if (!item.LockedFields.Contains(MetadataFields.Images))
             {
                 if (!item.HasImage(ImageType.Primary))
@@ -166,22 +168,17 @@ namespace MediaBrowser.Providers.TV
                     await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && !item.HasImage(ImageType.Banner))
+                if (options.IsEnabled(ImageType.Banner) && !item.HasImage(ImageType.Banner))
                 {
                     await SaveImage(item, images, ImageType.Banner, cancellationToken).ConfigureAwait(false);
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit && !item.LockedFields.Contains(MetadataFields.Backdrops))
+            if (options.IsEnabled(ImageType.Backdrop) && item.BackdropImagePaths.Count < backdropLimit && !item.LockedFields.Contains(MetadataFields.Backdrops))
             {
                 foreach (var backdrop in images.Where(i => i.Type == ImageType.Backdrop))
                 {
                     var url = backdrop.Url;
-
-                    if (item.ContainsImageWithSourceUrl(url))
-                    {
-                        continue;
-                    }
 
                     await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, null, cancellationToken).ConfigureAwait(false);
 

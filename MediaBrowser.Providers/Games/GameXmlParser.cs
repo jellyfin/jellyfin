@@ -14,7 +14,6 @@ namespace MediaBrowser.Providers.Games
     /// </summary>
     public class GameXmlParser : BaseItemXmlParser<Game>
     {
-        private Task _chaptersTask = null;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         public GameXmlParser(ILogger logger)
@@ -22,18 +21,13 @@ namespace MediaBrowser.Providers.Games
         {
         }
 
-        public async Task FetchAsync(Game item, string metadataFile, CancellationToken cancellationToken)
+        public Task FetchAsync(Game item, string metadataFile, CancellationToken cancellationToken)
         {
-            _chaptersTask = null;
-
             Fetch(item, metadataFile, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (_chaptersTask != null)
-            {
-                await _chaptersTask.ConfigureAwait(false);
-            }
+            return Task.FromResult(true);
         }
 
         /// <summary>

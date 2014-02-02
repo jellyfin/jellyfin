@@ -10,6 +10,7 @@ using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
+using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Providers.Savers
 {
@@ -27,13 +28,21 @@ namespace MediaBrowser.Providers.Savers
             _itemRepository = itemRepository;
         }
 
+        public string Name
+        {
+            get
+            {
+                return "Media Browser xml";
+            }
+        }
+
         /// <summary>
         /// Determines whether [is enabled for] [the specified item].
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
-        public bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
+        public bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
         {
             var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
@@ -48,9 +57,9 @@ namespace MediaBrowser.Providers.Savers
                 {
                     return !trailer.IsLocalTrailer;
                 }
-
+                var video = item as Video;
                 // Check parent for null to avoid running this against things like video backdrops
-                return item is Video && !(item is Episode) && item.Parent != null;
+                return video != null && !(item is Episode) && video.Parent != null;
             }
 
             return false;
@@ -64,22 +73,24 @@ namespace MediaBrowser.Providers.Savers
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public void Save(BaseItem item, CancellationToken cancellationToken)
+        public void Save(IHasMetadata item, CancellationToken cancellationToken)
         {
+            var video = (Video)item;
+
             var builder = new StringBuilder();
 
             builder.Append("<Title>");
 
-            XmlSaverHelpers.AddCommonNodes(item, builder);
+            XmlSaverHelpers.AddCommonNodes(video, builder);
 
-            if (item.CommunityRating.HasValue)
+            if (video.CommunityRating.HasValue)
             {
-                builder.Append("<IMDBrating>" + SecurityElement.Escape(item.CommunityRating.Value.ToString(UsCulture)) + "</IMDBrating>");
+                builder.Append("<IMDBrating>" + SecurityElement.Escape(video.CommunityRating.Value.ToString(UsCulture)) + "</IMDBrating>");
             }
 
-            if (!string.IsNullOrEmpty(item.Overview))
+            if (!string.IsNullOrEmpty(video.Overview))
             {
-                builder.Append("<Description><![CDATA[" + item.Overview + "]]></Description>");
+                builder.Append("<Description><![CDATA[" + video.Overview + "]]></Description>");
             }
 
             var musicVideo = item as MusicVideo;
@@ -106,8 +117,6 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
             
-            var video = (Video)item;
-
             XmlSaverHelpers.AddMediaInfo(video, builder, _itemRepository);
 
             builder.Append("</Title>");
@@ -124,12 +133,12 @@ namespace MediaBrowser.Providers.Savers
                 });
         }
 
-        public string GetSavePath(BaseItem item)
+        public string GetSavePath(IHasMetadata item)
         {
-            return GetMovieSavePath(item);
+            return GetMovieSavePath((Video)item);
         }
 
-        public static string GetMovieSavePath(BaseItem item)
+        public static string GetMovieSavePath(Video item)
         {
             if (item.IsInMixedFolder)
             {

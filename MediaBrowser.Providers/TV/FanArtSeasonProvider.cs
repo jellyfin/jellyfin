@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
@@ -121,7 +122,9 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         private async Task FetchImages(Season season, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Thumb && !season.HasImage(ImageType.Thumb) && !season.LockedFields.Contains(MetadataFields.Images))
+            var options = ConfigurationManager.Configuration.GetMetadataOptions("Season") ?? new MetadataOptions();
+
+            if (options.IsEnabled(ImageType.Thumb) && !season.HasImage(ImageType.Thumb) && !season.LockedFields.Contains(MetadataFields.Images))
             {
                 await SaveImage(season, images, ImageType.Thumb, cancellationToken).ConfigureAwait(false);
             }

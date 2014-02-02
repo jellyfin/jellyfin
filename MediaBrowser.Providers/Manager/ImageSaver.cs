@@ -309,15 +309,6 @@ namespace MediaBrowser.Providers.Manager
                     {
                         item.BackdropImagePaths.Add(path);
                     }
-
-                    if (string.IsNullOrEmpty(sourceUrl))
-                    {
-                        item.RemoveImageSourceForPath(path);
-                    }
-                    else
-                    {
-                        item.AddImageSource(path, sourceUrl);
-                    }
                     break;
                 default:
                     item.SetImagePath(type, path);

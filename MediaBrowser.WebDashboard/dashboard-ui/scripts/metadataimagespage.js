@@ -1,110 +1,277 @@
-﻿var MetadataImagesPage = {
+﻿(function ($, document, window) {
 
-    onPageShow: function () {
+    function loadTabs(page, tabs) {
+
+        var html = '';
+
+        html += '<div data-role="controlgroup" data-type="horizontal" data-mini="true">';
+
+        for (var i = 0, length = tabs.length; i < length; i++) {
+
+            var tab = tabs[i];
+
+            html += '<input type="radio" name="radioTypeTab" class="radioTypeTab" id="' + tab.type + '" value="' + tab.type + '">';
+            html += '<label for="' + tab.type + '">' + tab.name + '</label>';
+        }
+
+        html += '</div>';
+
+        var elem = $('.tabs', page).html(html).trigger('create');
+
+        Dashboard.hideLoadingMsg();
+
+        $('.radioTypeTab', elem).on('change', function () {
+
+            if (this.checked) {
+
+                loadType(page, this.id);
+            }
+
+        })[0].click();
+    }
+
+    function loadType(page, type) {
 
         Dashboard.showLoadingMsg();
 
-        var page = this;
+        var promise1 = ApiClient.getServerConfiguration();
+        var promise2 = $.getJSON(ApiClient.getUrl("System/Configuration/MetadataPlugins"));
 
-        ApiClient.getServerConfiguration().done(function(result) {
-            MetadataImagesPage.load(page, result);
+        $.when(promise1, promise2).done(function (response1, response2) {
+
+            renderType(page, type, response1[0], response2[0]);
+
+            Dashboard.hideLoadingMsg();
         });
-    },
 
-    load: function (page, config) {
+    }
 
-        // Movie options
-        $('#txtMaxMovieBackdrops', page).val(config.MovieOptions.MaxBackdrops);
-        $('#txtMinMovieBackdropDownloadWidth', page).val(config.MovieOptions.MinBackdropWidth);
-        
-        // Tv options
-        $('#txtMaxTvBackdrops', page).val(config.TvOptions.MaxBackdrops);
-        $('#txtMinTvBackdropDownloadWidth', page).val(config.TvOptions.MinBackdropWidth);
+    function renderType(page, type, config, metadataPlugins) {
 
-        // Music options
-        $('#txtMaxMusicBackdrops', page).val(config.MusicOptions.MaxBackdrops);
-        $('#txtMinMusicBackdropDownloadWidth', page).val(config.MusicOptions.MinBackdropWidth);
+        var metadataInfo = metadataPlugins.filter(function (f) {
 
-        // Game options
-        $('#txtMaxGameBackdrops', page).val(config.GameOptions.MaxBackdrops);
-        $('#txtMinGameBackdropDownloadWidth', page).val(config.GameOptions.MinBackdropWidth);
+            return type == f.ItemType;
+        })[0];
 
-        $('#chkDownloadMovieArt', page).checked(config.DownloadMovieImages.Art).checkboxradio("refresh");
-        $('#chkDownloadMovieBackdrops', page).checked(config.DownloadMovieImages.Backdrops).checkboxradio("refresh");
-        $('#chkDownloadMovieBanner', page).checked(config.DownloadMovieImages.Banner).checkboxradio("refresh");
-        $('#chkDownloadMovieDisc', page).checked(config.DownloadMovieImages.Disc).checkboxradio("refresh");
-        $('#chkDownloadMovieLogo', page).checked(config.DownloadMovieImages.Logo).checkboxradio("refresh");
-        $('#chkDownloadMovieThumb', page).checked(config.DownloadMovieImages.Thumb).checkboxradio("refresh");
-        
-        $('#chKDownloadTVArt', page).checked(config.DownloadSeriesImages.Art).checkboxradio("refresh");
-        $('#chkDownloadTVBackdrops', page).checked(config.DownloadSeriesImages.Backdrops).checkboxradio("refresh");
-        $('#chkDownloadTVBanner', page).checked(config.DownloadSeriesImages.Banner).checkboxradio("refresh");
-        $('#chkDownloadTVLogo', page).checked(config.DownloadSeriesImages.Logo).checkboxradio("refresh");
-        $('#chkDownloadTVThumb', page).checked(config.DownloadSeriesImages.Thumb).checkboxradio("refresh");
-        
-        $('#chkDownloadSeasonBanner', page).checked(config.DownloadSeasonImages.Banner).checkboxradio("refresh");
-        $('#chkDownloadSeasonThumb', page).checked(config.DownloadSeasonImages.Thumb).checkboxradio("refresh");
-        $('#chkDownloadSeasonBackdrops', page).checked(config.DownloadSeasonImages.Backdrops).checkboxradio("refresh");
-        
-        $('#chkDownloadArtistThumb', page).checked(config.DownloadMusicArtistImages.Primary).checkboxradio("refresh");
-        $('#chkDownloadArtistBackdrops', page).checked(config.DownloadMusicArtistImages.Backdrops).checkboxradio("refresh");
-        $('#chkDownloadArtistLogo', page).checked(config.DownloadMusicArtistImages.Logo).checkboxradio("refresh");
-        $('#chkDownloadArtistBanner', page).checked(config.DownloadMusicArtistImages.Banner).checkboxradio("refresh");
+        if (metadataInfo.SupportedImageTypes.indexOf('Backdrop') == -1) {
+            $('.backdropFields', page).hide();
+        } else {
+            $('.backdropFields', page).show();
+        }
 
-        $('#chkDownloadAlbumPrimary', page).checked(config.DownloadMusicAlbumImages.Primary).checkboxradio("refresh");
-        $('#chkDownloadAlbumBackdrops', page).checked(config.DownloadMusicAlbumImages.Backdrops).checkboxradio("refresh");
-        $('#chkMusicAlbumDisc', page).checked(config.DownloadMusicAlbumImages.Disc).checkboxradio("refresh");
+        $('.imageType', page).each(function () {
 
-        $('#selectImageSavingConvention', page).val(config.ImageSavingConvention).selectmenu("refresh");
+            var imageType = this.getAttribute('data-imagetype');
 
-        Dashboard.hideLoadingMsg();
-    },
+            if (metadataInfo.SupportedImageTypes.indexOf(imageType) == -1) {
+                $(this).hide();
+            } else {
+                $(this).show();
+            }
+        });
 
-    onSubmit: function () {
+        renderMetadataLocals(page, type, config, metadataInfo);
+        renderMetadataFetchers(page, type, config, metadataInfo);
+        renderMetadataSavers(page, type, config, metadataInfo);
+        renderImageFetchers(page, type, config, metadataInfo);
+    }
+
+    function renderImageFetchers(page, type, config, metadataInfo) {
+
+        var plugins = metadataInfo.Plugins.filter(function (p) {
+            return p.Type == 'ImageFetcher';
+        });
+
+        var html = '';
+
+        if (!plugins.length) {
+            $('.imageFetchers', page).html(html).hide().trigger('create');
+            return;
+        }
+
+        html += '<fieldset data-role="controlgroup">';
+        html += '<legend>Image Fetchers:</legend>';
+
+        for (var i = 0, length = plugins.length; i < length; i++) {
+
+            var plugin = plugins[i];
+
+            var id = 'chkImageFetcher' + i;
+
+            html += '<input type="checkbox" name="' + id + '" id="' + id + '" data-mini="true">';
+            html += '<label for="' + id + '">' + plugin.Name + '</label>';
+        }
+
+        html += '</fieldset>';
+
+        $('.imageFetchers', page).html(html).show().trigger('create');
+    }
+
+    function renderMetadataSavers(page, type, config, metadataInfo) {
+
+        var plugins = metadataInfo.Plugins.filter(function (p) {
+            return p.Type == 'MetadataSaver';
+        });
+
+        var html = '';
+
+        if (!plugins.length) {
+            $('.metadataSavers', page).html(html).hide().trigger('create');
+            return;
+        }
+
+        html += '<fieldset data-role="controlgroup">';
+        html += '<legend>Metadata Savers:</legend>';
+
+        for (var i = 0, length = plugins.length; i < length; i++) {
+
+            var plugin = plugins[i];
+
+            var id = 'chkMetadataSaver' + i;
+
+            html += '<input type="checkbox" name="' + id + '" id="' + id + '" data-mini="true">';
+            html += '<label for="' + id + '">' + plugin.Name + '</label>';
+        }
+
+        html += '</fieldset>';
+
+        $('.metadataSavers', page).html(html).show().trigger('create');
+    }
+
+    function renderMetadataFetchers(page, type, config, metadataInfo) {
+
+        var plugins = metadataInfo.Plugins.filter(function (p) {
+            return p.Type == 'MetadataFetcher';
+        });
+
+        var html = '';
+
+        if (!plugins.length) {
+            $('.metadataFetchers', page).html(html).hide().trigger('create');
+            return;
+        }
+
+        html += '<fieldset data-role="controlgroup">';
+        html += '<legend>Metadata Fetchers:</legend>';
+
+        for (var i = 0, length = plugins.length; i < length; i++) {
+
+            var plugin = plugins[i];
+
+            var id = 'chkMetadataFetcher' + i;
+
+            html += '<input type="checkbox" name="' + id + '" id="' + id + '" data-mini="true">';
+            html += '<label for="' + id + '">' + plugin.Name + '</label>';
+        }
+
+        html += '</fieldset>';
+
+        $('.metadataFetchers', page).html(html).show().trigger('create');
+    }
+
+    function renderMetadataLocals(page, type, config, metadataInfo) {
+
+        var plugins = metadataInfo.Plugins.filter(function (p) {
+            return p.Type == 'LocalMetadataProvider';
+        });
+
+        var html = '';
+
+        if (!plugins.length) {
+            $('.metadataReaders', page).html(html).hide().trigger('create');
+            return;
+        }
+
+        html += '<fieldset data-role="controlgroup">';
+        html += '<legend>Local Metadata Readers:</legend>';
+
+        for (var i = 0, length = plugins.length; i < length; i++) {
+
+            var plugin = plugins[i];
+
+            var id = 'chkMetadataLocal' + i;
+
+            html += '<input type="checkbox" name="' + id + '" id="' + id + '" data-mini="true">';
+            html += '<label for="' + id + '">' + plugin.Name + '</label>';
+        }
+
+        html += '</fieldset>';
+
+        $('.metadataReaders', page).html(html).show().trigger('create');
+    }
+
+    function loadPage(page) {
+
+        var type = getParameterByName('type');
+
+        $('.categoryTab', page).removeClass('ui-btn-active');
+
+        if (type == 'games') {
+
+            loadTabs(page, [
+
+                { name: 'Game', type: 'Game' },
+                { name: 'Game System', type: 'GameSystem' }
+            ]);
+
+            $('.gamesTab', page).addClass('ui-btn-active');
+        }
+        else if (type == 'movies') {
+
+            loadTabs(page, [
+
+                { name: 'Movie', type: 'Movie' },
+                { name: 'Trailer', type: 'Trailer' },
+                { name: 'Collection', type: 'BoxSet' }
+            ]);
+
+            $('.moviesTab', page).addClass('ui-btn-active');
+        }
+        else if (type == 'tv') {
+
+            loadTabs(page, [
+
+                { name: 'Series', type: 'Series' },
+                { name: 'Season', type: 'Season' },
+                { name: 'Episode', type: 'Episode' }
+            ]);
+
+            $('.tvTab', page).addClass('ui-btn-active');
+        }
+        else if (type == 'music') {
+
+            loadTabs(page, [
+
+                { name: 'Artist', type: 'MusicArtist' },
+                { name: 'Album', type: 'MusicAlbum' },
+                { name: 'Song', type: 'Audio' }
+            ]);
+
+            $('.musicTab', page).addClass('ui-btn-active');
+        }
+        else if (type == 'others') {
+
+            loadTabs(page, [
+
+                { name: 'Person', type: 'Person' },
+                { name: 'Genre', type: 'Genre' },
+                { name: 'Game Genre', type: 'GameGenre' },
+                { name: 'Music Genre', type: 'MusicGenre' },
+                { name: 'Studio', type: 'Studio' },
+                { name: 'Book', type: 'Book' }
+            ]);
+
+            $('.othersTab', page).addClass('ui-btn-active');
+        }
+    }
+
+    function onSubmit() {
+
         var form = this;
 
         Dashboard.showLoadingMsg();
 
         ApiClient.getServerConfiguration().done(function (config) {
-
-            config.ImageSavingConvention = $('#selectImageSavingConvention', form).val();
-
-            // Movie options
-            config.MovieOptions.MaxBackdrops = $('#txtMaxMovieBackdrops', form).val();
-            config.MovieOptions.MinBackdropWidth = $('#txtMinMovieBackdropDownloadWidth', form).val();
-            config.DownloadMovieImages.Art = $('#chkDownloadMovieArt', form).checked();
-            config.DownloadMovieImages.Backdrops = $('#chkDownloadMovieBackdrops', form).checked();
-            config.DownloadMovieImages.Banner = $('#chkDownloadMovieBanner', form).checked();
-            config.DownloadMovieImages.Disc = $('#chkDownloadMovieDisc', form).checked();
-            config.DownloadMovieImages.Logo = $('#chkDownloadMovieLogo', form).checked();
-            config.DownloadMovieImages.Thumb = $('#chkDownloadMovieThumb', form).checked();
-
-            // Tv options
-            config.TvOptions.MaxBackdrops = $('#txtMaxTvBackdrops', form).val();
-            config.TvOptions.MinBackdropWidth = $('#txtMinTvBackdropDownloadWidth', form).val();
-            config.DownloadSeriesImages.Art = $('#chKDownloadTVArt', form).checked();
-            config.DownloadSeriesImages.Backdrops = $('#chkDownloadMovieBackdrops', form).checked();
-            config.DownloadSeriesImages.Banner = $('#chkDownloadTVBanner', form).checked();
-            config.DownloadSeriesImages.Logo = $('#chkDownloadTVLogo', form).checked();
-            config.DownloadSeriesImages.Thumb = $('#chkDownloadTVThumb', form).checked();
-            config.DownloadSeasonImages.Banner = $('#chkDownloadSeasonBanner', form).checked();
-            config.DownloadSeasonImages.Thumb = $('#chkDownloadSeasonThumb', form).checked();
-            config.DownloadSeasonImages.Backdrops = $('#chkDownloadSeasonBackdrops', form).checked();
-
-            // Music options
-            config.MusicOptions.MaxBackdrops = $('#txtMaxMusicBackdrops', form).val();
-            config.MusicOptions.MinBackdropWidth = $('#txtMinMusicBackdropDownloadWidth', form).val();
-            config.DownloadMusicArtistImages.Backdrops = $('#chkDownloadArtistBackdrops', form).checked();
-            config.DownloadMusicArtistImages.Logo = $('#chkDownloadArtistLogo', form).checked();
-            config.DownloadMusicArtistImages.Primary = $('#chkDownloadArtistThumb', form).checked();
-            config.DownloadMusicArtistImages.Banner = $('#chkDownloadArtistBanner', form).checked();
-            config.DownloadMusicAlbumImages.Primary = $('#chkDownloadAlbumPrimary', form).checked();
-            config.DownloadMusicAlbumImages.Backdrops = $('#chkDownloadAlbumBackdrops', form).checked();
-            config.DownloadMusicAlbumImages.Disc = $('#chkMusicAlbumDisc', form).checked();
-
-            // Game options
-            config.GameOptions.MaxBackdrops = $('#txtMaxGameBackdrops', form).val();
-            config.GameOptions.MinBackdropWidth = $('#txtMinGameBackdropDownloadWidth', form).val();
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });
@@ -112,6 +279,19 @@
         // Disable default form submission
         return false;
     }
-};
 
-$(document).on('pageshow', "#metadataImagesConfigurationPage", MetadataImagesPage.onPageShow);
+    $(document).on('pageshow', "#metadataImagesConfigurationPage", function () {
+
+        Dashboard.showLoadingMsg();
+
+        var page = this;
+
+        loadPage(page);
+    });
+
+    window.MetadataImagesPage = {
+
+        onSubmit: onSubmit
+    };
+
+})(jQuery, document, window);
