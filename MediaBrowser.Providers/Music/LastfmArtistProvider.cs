@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Globalization;
@@ -15,11 +14,10 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class LastfmArtistProvider : IRemoteMetadataProvider<MusicArtist>
+    public class LastfmArtistProvider : IRemoteMetadataProvider<MusicArtist>, IHasOrder
     {
         private readonly IJsonSerializer _json;
         private readonly IHttpClient _httpClient;
@@ -44,7 +42,7 @@ namespace MediaBrowser.Providers.Music
         {
             var result = new MetadataResult<MusicArtist>();
 
-            var musicBrainzId = id.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(id, cancellationToken).ConfigureAwait(false);
+            var musicBrainzId = id.GetProviderId(MetadataProviders.Musicbrainz);
 
             if (!String.IsNullOrWhiteSpace(musicBrainzId))
             {
@@ -123,69 +121,6 @@ namespace MediaBrowser.Providers.Music
 
             LastfmHelper.SaveImageInfo(_config.ApplicationPaths, _logger, musicBrainzId, url, imageSize);
         }
-        
-        private async Task<string> FindId(ItemId item, CancellationToken cancellationToken)
-        {
-            try
-            {
-                // If we don't get anything, go directly to music brainz
-                return await FindIdFromMusicBrainz(item, cancellationToken).ConfigureAwait(false);
-            }
-            catch (HttpException e)
-            {
-                if (e.StatusCode.HasValue && e.StatusCode.Value == HttpStatusCode.BadRequest)
-                {
-                    // They didn't like a character in the name. Handle the exception so that the provider doesn't keep retrying over and over
-                    return null;
-                }
-
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Finds the id from music brainz.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task<string> FindIdFromMusicBrainz(ItemId item, CancellationToken cancellationToken)
-        {
-            // They seem to throw bad request failures on any term with a slash
-            var nameToSearch = item.Name.Replace('/', ' ');
-
-            var url = String.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
-
-            var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-
-            var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-            var node = doc.SelectSingleNode("//mb:artist-list/mb:artist/@id", ns);
-
-            if (node != null && node.Value != null)
-            {
-                return node.Value;
-            }
-
-            if (HasDiacritics(item.Name))
-            {
-                // Try again using the search with accent characters url
-                url = String.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
-
-                doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-
-                ns = new XmlNamespaceManager(doc.NameTable);
-                ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-                node = doc.SelectSingleNode("//mb:artist-list/mb:artist/@id", ns);
-
-                if (node != null && node.Value != null)
-                {
-                    return node.Value;
-                }
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Determines whether the specified text has diacritics.
@@ -224,6 +159,11 @@ namespace MediaBrowser.Providers.Music
         public string Name
         {
             get { return "last.fm"; }
+        }
+
+        public int Order
+        {
+            get { return 1; }
         }
     }
 }

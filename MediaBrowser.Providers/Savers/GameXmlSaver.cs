@@ -15,7 +15,7 @@ namespace MediaBrowser.Providers.Savers
     /// <summary>
     /// Saves game.xml for games
     /// </summary>
-    public class GameXmlSaver : IMetadataSaver
+    public class GameXmlSaver : IMetadataFileSaver
     {
         private readonly IServerConfigurationManager _config;
 

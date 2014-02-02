@@ -59,6 +59,12 @@
             $('.backdropFields', page).show();
         }
 
+        if (metadataInfo.SupportedImageTypes.indexOf('Screenshot') == -1) {
+            $('.screenshotFields', page).hide();
+        } else {
+            $('.screenshotFields', page).show();
+        }
+
         $('.imageType', page).each(function () {
 
             var imageType = this.getAttribute('data-imagetype');
@@ -244,7 +250,8 @@
 
                 { name: 'Artist', type: 'MusicArtist' },
                 { name: 'Album', type: 'MusicAlbum' },
-                { name: 'Song', type: 'Audio' }
+                { name: 'Song', type: 'Audio' },
+                { name: 'Music Video', type: 'MusicVideo' }
             ]);
 
             $('.musicTab', page).addClass('ui-btn-active');
@@ -258,7 +265,8 @@
                 { name: 'Game Genre', type: 'GameGenre' },
                 { name: 'Music Genre', type: 'MusicGenre' },
                 { name: 'Studio', type: 'Studio' },
-                { name: 'Book', type: 'Book' }
+                { name: 'Book', type: 'Book' },
+                { name: 'Adult Video', type: 'AdultVideo' }
             ]);
 
             $('.othersTab', page).addClass('ui-btn-active');

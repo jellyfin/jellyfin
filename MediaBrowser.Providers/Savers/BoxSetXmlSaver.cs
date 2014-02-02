@@ -10,7 +10,7 @@ using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Providers.Savers
 {
-    public class BoxSetXmlSaver : IMetadataSaver
+    public class BoxSetXmlSaver : IMetadataFileSaver
     {
         private readonly IServerConfigurationManager _config;
 

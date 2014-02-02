@@ -23,18 +23,21 @@ namespace MediaBrowser.Controller.Library
         bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType);
 
         /// <summary>
-        /// Gets the save path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>System.String.</returns>
-        string GetSavePath(IHasMetadata item);
-
-        /// <summary>
         /// Saves the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         void Save(IHasMetadata item, CancellationToken cancellationToken);
+    }
+
+    public interface IMetadataFileSaver : IMetadataSaver
+    {
+        /// <summary>
+        /// Gets the save path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        string GetSavePath(IHasMetadata item);
     }
 }
