@@ -324,7 +324,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (!hasFixedResolution)
                 {
-                    param += " crf18";
+                    param += " -crf 18";
                 }
             }
 
@@ -336,7 +336,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (!hasFixedResolution)
                 {
-                    param += " crf18";
+                    param += " -crf 18";
                 }
             }
 
