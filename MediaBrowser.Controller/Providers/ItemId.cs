@@ -51,4 +51,22 @@ namespace MediaBrowser.Controller.Providers
         /// <value>The artist music brainz identifier.</value>
         public string ArtistMusicBrainzId { get; set; }
     }
+
+    public class GameId : ItemId
+    {
+        /// <summary>
+        /// Gets or sets the game system.
+        /// </summary>
+        /// <value>The game system.</value>
+        public string GameSystem { get; set; }
+    }
+
+    public class GameSystemId : ItemId
+    {
+        /// <summary>
+        /// Gets or sets the path.
+        /// </summary>
+        /// <value>The path.</value>
+        public string Path { get; set; }
+    }
 }

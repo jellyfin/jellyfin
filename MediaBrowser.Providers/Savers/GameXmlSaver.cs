@@ -1,9 +1,8 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Providers.Movies;
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -25,13 +24,21 @@ namespace MediaBrowser.Providers.Savers
             _config = config;
         }
 
+        public string Name
+        {
+            get
+            {
+                return "Media Browser xml";
+            }
+        }
+
         /// <summary>
         /// Determines whether [is enabled for] [the specified item].
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
-        public bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
+        public bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
         {
             var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
@@ -53,7 +60,7 @@ namespace MediaBrowser.Providers.Savers
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public void Save(BaseItem item, CancellationToken cancellationToken)
+        public void Save(IHasMetadata item, CancellationToken cancellationToken)
         {
             var builder = new StringBuilder();
 
@@ -85,7 +92,7 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<NesBoxRom>" + SecurityElement.Escape(val) + "</NesBoxRom>");
             }
 
-            XmlSaverHelpers.AddCommonNodes(item, builder);
+            XmlSaverHelpers.AddCommonNodes(game, builder);
 
             builder.Append("</Item>");
 
@@ -100,12 +107,12 @@ namespace MediaBrowser.Providers.Savers
                 });
         }
 
-        public string GetSavePath(BaseItem item)
+        public string GetSavePath(IHasMetadata item)
         {
-            return GetGameSavePath(item);
+            return GetGameSavePath((Game)item);
         }
 
-        public static string GetGameSavePath(BaseItem item)
+        public static string GetGameSavePath(Game item)
         {
             if (item.IsInMixedFolder)
             {

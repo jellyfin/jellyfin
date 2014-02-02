@@ -20,7 +20,7 @@ namespace MediaBrowser.Providers.People
 
         public async Task<MetadataResult<Person>> GetMetadata(string path, CancellationToken cancellationToken)
         {
-            path = GetXmlPath(path);
+            path = GetXmlFile(path).FullName;
 
             var result = new MetadataResult<Person>();
 
@@ -48,12 +48,12 @@ namespace MediaBrowser.Providers.People
 
         public string Name
         {
-            get { return "Media Browser Xml"; }
+            get { return "Media Browser xml"; }
         }
 
-        protected override string GetXmlPath(string path)
+        protected override FileInfo GetXmlFile(string path)
         {
-            return Path.Combine(path, "person.xml");
+            return new FileInfo(Path.Combine(path, "person.xml"));
         }
     }
 }

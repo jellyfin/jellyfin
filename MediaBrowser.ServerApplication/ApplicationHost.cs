@@ -282,7 +282,7 @@ namespace MediaBrowser.ServerApplication
             UserManager = new UserManager(Logger, ServerConfigurationManager, UserRepository);
             RegisterSingleInstance(UserManager);
 
-            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager);
+            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager);
             RegisterSingleInstance(LibraryManager);
 
             LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
@@ -499,10 +499,10 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<IBaseItemComparer>(),
                                     GetExports<ILibraryPrescanTask>(),
                                     GetExports<ILibraryPostScanTask>(),
-                                    GetExports<IPeoplePrescanTask>(),
-                                    GetExports<IMetadataSaver>());
+                                    GetExports<IPeoplePrescanTask>());
 
-            ProviderManager.AddParts(GetExports<BaseMetadataProvider>(), GetExports<IImageProvider>(), GetExports<IMetadataService>(), GetExports<IMetadataProvider>());
+            ProviderManager.AddParts(GetExports<BaseMetadataProvider>(), GetExports<IImageProvider>(), GetExports<IMetadataService>(), GetExports<IMetadataProvider>(),
+                                    GetExports<IMetadataSaver>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 

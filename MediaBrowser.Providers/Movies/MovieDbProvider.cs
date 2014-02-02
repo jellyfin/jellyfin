@@ -285,7 +285,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns><c>true</c> if [has alt meta] [the specified item]; otherwise, <c>false</c>.</returns>
         internal static bool HasAltMeta(BaseItem item)
         {
-            var path = MovieXmlSaver.GetMovieSavePath(item);
+            var path = MovieXmlSaver.GetMovieSavePath((Video)item);
 
             if (item.LocationType == LocationType.FileSystem)
             {

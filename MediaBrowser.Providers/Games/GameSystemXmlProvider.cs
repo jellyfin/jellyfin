@@ -1,36 +1,36 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.LiveTv
+namespace MediaBrowser.Providers.Games
 {
-    public class ChannelXmlProvider : BaseXmlProvider, ILocalMetadataProvider<LiveTvChannel>
+    public class GameSystemXmlProvider : BaseXmlProvider, ILocalMetadataProvider<GameSystem>
     {
         private readonly ILogger _logger;
 
-        public ChannelXmlProvider(IFileSystem fileSystem, ILogger logger)
+        public GameSystemXmlProvider(IFileSystem fileSystem, ILogger logger)
             : base(fileSystem)
         {
             _logger = logger;
         }
 
-        public async Task<MetadataResult<LiveTvChannel>> GetMetadata(string path, CancellationToken cancellationToken)
+        public async Task<MetadataResult<GameSystem>> GetMetadata(string path, CancellationToken cancellationToken)
         {
             path = GetXmlFile(path).FullName;
 
-            var result = new MetadataResult<LiveTvChannel>();
+            var result = new MetadataResult<GameSystem>();
 
             await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                var item = new LiveTvChannel();
+                var item = new GameSystem();
 
-                new BaseItemXmlParser<LiveTvChannel>(_logger).Fetch(item, path, cancellationToken);
+                new GameSystemXmlParser(_logger).Fetch(item, path, cancellationToken);
                 result.HasMetadata = true;
                 result.Item = item;
             }
@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.LiveTv
 
         protected override FileInfo GetXmlFile(string path)
         {
-            return new FileInfo(Path.Combine(path, "channel.xml"));
+            return new FileInfo(Path.Combine(path, "gamesystem.xml"));
         }
     }
 }

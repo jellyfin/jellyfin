@@ -72,6 +72,7 @@
     </Compile>
     <Compile Include="AlbumsService.cs" />
     <Compile Include="BaseApiService.cs" />
+    <Compile Include="ConfigurationService.cs" />
     <Compile Include="DefaultTheme\DefaultThemeService.cs" />
     <Compile Include="DefaultTheme\Models.cs" />
     <Compile Include="DisplayPreferencesService.cs" />

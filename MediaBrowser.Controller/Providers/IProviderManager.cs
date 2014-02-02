@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using System.Collections.Generic;
@@ -64,7 +65,9 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="imageProviders">The image providers.</param>
         /// <param name="metadataServices">The metadata services.</param>
         /// <param name="metadataProviders">The metadata providers.</param>
-        void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders);
+        /// <param name="savers">The savers.</param>
+        void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders,
+            IEnumerable<IMetadataSaver> savers);
 
         /// <summary>
         /// Gets the available remote images.
@@ -82,5 +85,19 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ImageProviderInfo}.</returns>
         IEnumerable<ImageProviderInfo> GetImageProviderInfo(IHasImages item);
+
+        /// <summary>
+        /// Gets all metadata plugins.
+        /// </summary>
+        /// <returns>IEnumerable{MetadataPlugin}.</returns>
+        IEnumerable<MetadataPluginSummary> GetAllMetadataPlugins();
+
+        /// <summary>
+        /// Saves the metadata.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="updateType">Type of the update.</param>
+        /// <returns>Task.</returns>
+        Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType);
     }
 }

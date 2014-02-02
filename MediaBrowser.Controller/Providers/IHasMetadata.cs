@@ -27,5 +27,11 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The date last saved.</value>
         DateTime DateLastSaved { get; set; }
+
+        /// <summary>
+        /// Determines whether [is save local metadata enabled].
+        /// </summary>
+        /// <returns><c>true</c> if [is save local metadata enabled]; otherwise, <c>false</c>.</returns>
+        bool IsSaveLocalMetadataEnabled();
     }
 }

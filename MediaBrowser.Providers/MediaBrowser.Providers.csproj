@@ -69,11 +69,13 @@
     <Compile Include="BoxSets\MovieDbBoxSetImageProvider.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetProvider.cs" />
     <Compile Include="GameGenres\GameGenreMetadataService.cs" />
+    <Compile Include="Games\GameMetadataService.cs" />
+    <Compile Include="Games\GameSystemMetadataService.cs" />
+    <Compile Include="Games\GameSystemXmlParser.cs" />
     <Compile Include="Genres\GenreMetadataService.cs" />
     <Compile Include="LiveTv\ChannelMetadataService.cs" />
     <Compile Include="LiveTv\ChannelXmlProvider.cs" />
     <Compile Include="LiveTv\ProgramMetadataService.cs" />
-    <Compile Include="Manager\ConcreteMetadataService.cs" />
     <Compile Include="Manager\ImageSaver.cs" />
     <Compile Include="Manager\ItemImageProvider.cs" />
     <Compile Include="Manager\ProviderManager.cs" />
@@ -82,8 +84,8 @@
     <Compile Include="CollectionFolderImageProvider.cs" />
     <Compile Include="FolderProviderFromXml.cs" />
     <Compile Include="Games\GameXmlParser.cs" />
-    <Compile Include="Games\GameProviderFromXml.cs" />
-    <Compile Include="Games\GameSystemProviderFromXml.cs" />
+    <Compile Include="Games\GameXmlProvider.cs" />
+    <Compile Include="Games\GameSystemXmlProvider.cs" />
     <Compile Include="ImageFromMediaLocationProvider.cs" />
     <Compile Include="ImagesByNameProvider.cs" />
     <Compile Include="Movies\MovieDbSearch.cs" />

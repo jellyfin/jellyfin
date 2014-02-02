@@ -34,7 +34,6 @@ namespace MediaBrowser.Controller.Entities
             Images = new Dictionary<ImageType, string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = new List<MetadataFields>();
-            ImageSources = new List<ImageSourceInfo>();
         }
 
         /// <summary>
@@ -473,12 +472,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The backdrop image paths.</value>
         public List<string> BackdropImagePaths { get; set; }
-
-        /// <summary>
-        /// Gets or sets the backdrop image sources.
-        /// </summary>
-        /// <value>The backdrop image sources.</value>
-        public List<ImageSourceInfo> ImageSources { get; set; }
 
         /// <summary>
         /// Gets or sets the official rating.
@@ -1458,8 +1451,6 @@ namespace MediaBrowser.Controller.Entities
 
                 BackdropImagePaths.Remove(file);
 
-                RemoveImageSourceForPath(file);
-
                 // Delete the source file
                 DeleteImagePath(file);
             }
@@ -1567,86 +1558,10 @@ namespace MediaBrowser.Controller.Entities
             {
                 BackdropImagePaths.Remove(path);
 
-                RemoveImageSourceForPath(path);
-
                 changed = true;
             }
 
             return changed;
-        }
-
-        /// <summary>
-        /// Adds the image source.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="url">The URL.</param>
-        public void AddImageSource(string path, string url)
-        {
-            RemoveImageSourceForPath(path);
-
-            var pathMd5 = path.ToLower().GetMD5();
-
-            ImageSources.Add(new ImageSourceInfo
-            {
-                ImagePathMD5 = pathMd5,
-                ImageUrlMD5 = url.ToLower().GetMD5()
-            });
-        }
-
-        /// <summary>
-        /// Gets the image source info.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>ImageSourceInfo.</returns>
-        public ImageSourceInfo GetImageSourceInfo(string path)
-        {
-            if (ImageSources.Count == 0)
-            {
-                return null;
-            }
-
-            var pathMd5 = path.ToLower().GetMD5();
-
-            return ImageSources.FirstOrDefault(i => i.ImagePathMD5 == pathMd5);
-        }
-
-        /// <summary>
-        /// Removes the image source for path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        public void RemoveImageSourceForPath(string path)
-        {
-            if (ImageSources.Count == 0)
-            {
-                return;
-            }
-
-            var pathMd5 = path.ToLower().GetMD5();
-
-            // Remove existing
-            foreach (var entry in ImageSources
-                .Where(i => i.ImagePathMD5 == pathMd5)
-                .ToList())
-            {
-                ImageSources.Remove(entry);
-            }
-        }
-
-        /// <summary>
-        /// Determines whether [contains image with source URL] [the specified URL].
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <returns><c>true</c> if [contains image with source URL] [the specified URL]; otherwise, <c>false</c>.</returns>
-        public bool ContainsImageWithSourceUrl(string url)
-        {
-            if (ImageSources.Count == 0)
-            {
-                return false;
-            }
-
-            var md5 = url.ToLower().GetMD5();
-
-            return ImageSources.Any(i => i.ImageUrlMD5 == md5);
         }
 
         /// <summary>

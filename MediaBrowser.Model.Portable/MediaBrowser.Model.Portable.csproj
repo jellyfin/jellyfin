@@ -74,14 +74,20 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\ServerEventArgs.cs">
       <Link>ApiClient\ServerEventArgs.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\AutoOrganize.cs">
+      <Link>Configuration\AutoOrganize.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\ImageDownloadOptions.cs">
-      <Link>Configuration\ImageDownloadOptions.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\ManualLoginCategory.cs">
       <Link>Configuration\ManualLoginCategory.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\MetadataOptions.cs">
+      <Link>Configuration\MetadataOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\MetadataPlugin.cs">
+      <Link>Configuration\MetadataPlugin.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\ServerConfiguration.cs">
       <Link>Configuration\ServerConfiguration.cs</Link>

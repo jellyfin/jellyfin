@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
@@ -271,50 +272,53 @@ namespace MediaBrowser.Providers.Movies
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Primary && !item.HasImage(ImageType.Primary))
+            var options = ConfigurationManager.Configuration.GetMetadataOptions("Movie") ?? new MetadataOptions();
+
+            if (options.IsEnabled(ImageType.Primary) && !item.HasImage(ImageType.Primary))
             {
                 await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Logo && !item.HasImage(ImageType.Logo))
+            if (options.IsEnabled(ImageType.Logo) && !item.HasImage(ImageType.Logo))
             {
                 await SaveImage(item, images, ImageType.Logo, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Art && !item.HasImage(ImageType.Art))
+            if (options.IsEnabled(ImageType.Art) && !item.HasImage(ImageType.Art))
             {
                 await SaveImage(item, images, ImageType.Art, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !item.HasImage(ImageType.Disc))
+            if (options.IsEnabled(ImageType.Disc) && !item.HasImage(ImageType.Disc))
             {
                 await SaveImage(item, images, ImageType.Disc, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Banner && !item.HasImage(ImageType.Banner))
+            if (options.IsEnabled(ImageType.Banner) && !item.HasImage(ImageType.Banner))
             {
                 await SaveImage(item, images, ImageType.Banner, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Thumb && !item.HasImage(ImageType.Thumb))
+            if (options.IsEnabled(ImageType.Thumb) && !item.HasImage(ImageType.Thumb))
             {
                 await SaveImage(item, images, ImageType.Thumb, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var backdropLimit = ConfigurationManager.Configuration.MovieOptions.MaxBackdrops;
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops &&
+            var backdropLimit = options.GetLimit(ImageType.Backdrop);
+
+            if (backdropLimit > 0 &&
                 item.BackdropImagePaths.Count < backdropLimit)
             {
                 foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))

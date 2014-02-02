@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
@@ -20,13 +20,21 @@ namespace MediaBrowser.Providers.Savers
             _config = config;
         }
 
+        public string Name
+        {
+            get
+            {
+                return "Media Browser xml";
+            }
+        }
+
         /// <summary>
         /// Determines whether [is enabled for] [the specified item].
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
-        public bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
+        public bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
         {
             var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
@@ -46,7 +54,7 @@ namespace MediaBrowser.Providers.Savers
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public void Save(BaseItem item, CancellationToken cancellationToken)
+        public void Save(IHasMetadata item, CancellationToken cancellationToken)
         {
             var series = (Series)item;
 
@@ -73,7 +81,7 @@ namespace MediaBrowser.Providers.Savers
 
             if (series.Studios.Count > 0)
             {
-                builder.Append("<Network>" + SecurityElement.Escape(item.Studios[0]) + "</Network>");
+                builder.Append("<Network>" + SecurityElement.Escape(series.Studios[0]) + "</Network>");
             }
 
             if (!string.IsNullOrEmpty(series.AirTime))
@@ -97,8 +105,8 @@ namespace MediaBrowser.Providers.Savers
             {
                 builder.Append("<FirstAired>" + SecurityElement.Escape(series.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd")) + "</FirstAired>");
             }
-            
-            XmlSaverHelpers.AddCommonNodes(item, builder);
+
+            XmlSaverHelpers.AddCommonNodes(series, builder);
 
             builder.Append("</Series>");
 
@@ -124,7 +132,7 @@ namespace MediaBrowser.Providers.Savers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        public string GetSavePath(BaseItem item)
+        public string GetSavePath(IHasMetadata item)
         {
             return Path.Combine(item.Path, "series.xml");
         }

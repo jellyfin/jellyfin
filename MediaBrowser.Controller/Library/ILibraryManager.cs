@@ -165,7 +165,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="prescanTasks">The prescan tasks.</param>
         /// <param name="postscanTasks">The postscan tasks.</param>
         /// <param name="peoplePrescanTasks">The people prescan tasks.</param>
-        /// <param name="savers">The savers.</param>
         void AddParts(IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IVirtualFolderCreator> pluginFolders,
             IEnumerable<IItemResolver> resolvers,
@@ -173,8 +172,7 @@ namespace MediaBrowser.Controller.Library
             IEnumerable<IBaseItemComparer> itemComparers,
             IEnumerable<ILibraryPrescanTask> prescanTasks,
             IEnumerable<ILibraryPostScanTask> postscanTasks,
-            IEnumerable<IPeoplePrescanTask> peoplePrescanTasks,
-            IEnumerable<IMetadataSaver> savers);
+            IEnumerable<IPeoplePrescanTask> peoplePrescanTasks);
 
         /// <summary>
         /// Sorts the specified items.
@@ -299,14 +297,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
         string FindCollectionType(BaseItem item);
-
-        /// <summary>
-        /// Saves the metadata.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="updateType">Type of the update.</param>
-        /// <returns>Task.</returns>
-        Task SaveMetadata(BaseItem item, ItemUpdateType updateType);
 
         /// <summary>
         /// Gets all artists.

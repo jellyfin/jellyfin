@@ -17,18 +17,18 @@ namespace MediaBrowser.Providers
             FileSystem = fileSystem;
         }
 
-        protected abstract string GetXmlPath(string path);
+        protected abstract FileInfo GetXmlFile(string path);
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
-            var path = GetXmlPath(item.Path);
+            var file = GetXmlFile(item.Path);
 
-            return FileSystem.GetLastWriteTimeUtc(path) > date;
+            return FileSystem.GetLastWriteTimeUtc(file) > date;
         }
 
         public bool HasLocalMetadata(IHasMetadata item)
         {
-            return File.Exists(GetXmlPath(item.Path));
+            return GetXmlFile(item.Path).Exists;
         }
     }
 }

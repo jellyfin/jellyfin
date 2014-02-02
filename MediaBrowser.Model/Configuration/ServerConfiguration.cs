@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Model.Weather;
 using System;
 
@@ -86,31 +87,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The metadata country code.</value>
         public string MetadataCountryCode { get; set; }
-
-        /// <summary>
-        /// Options for specific art to download for movies.
-        /// </summary>
-        public ImageDownloadOptions DownloadMovieImages { get; set; }
-
-        /// <summary>
-        /// Options for specific art to download for Series.
-        /// </summary>
-        public ImageDownloadOptions DownloadSeriesImages { get; set; }
-
-        /// <summary>
-        /// Options for specific art to download for Seasons.
-        /// </summary>
-        public ImageDownloadOptions DownloadSeasonImages { get; set; }
-
-        /// <summary>
-        /// Options for specific art to download for MusicArtists.
-        /// </summary>
-        public ImageDownloadOptions DownloadMusicArtistImages { get; set; }
-
-        /// <summary>
-        /// Options for specific art to download for MusicAlbums.
-        /// </summary>
-        public ImageDownloadOptions DownloadMusicAlbumImages { get; set; }
 
         /// <summary>
         /// Characters to be replaced with a ' ' in strings to create a sort name
@@ -215,11 +191,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableEpisodeChapterImageExtraction { get; set; }
         public bool EnableOtherVideoChapterImageExtraction { get; set; }
 
-        public MetadataOptions MovieOptions { get; set; }
-        public MetadataOptions TvOptions { get; set; }
-        public MetadataOptions MusicOptions { get; set; }
-        public MetadataOptions GameOptions { get; set; }
-        public MetadataOptions BookOptions { get; set; }
+        public MetadataOptions[] MetadataOptions { get; set; }
 
         public bool EnableDebugEncodingLogging { get; set; }
         public string TranscodingTempPath { get; set; }
@@ -267,14 +239,6 @@ namespace MediaBrowser.Model.Configuration
             MetadataRefreshDays = 30;
             PreferredMetadataLanguage = "en";
             MetadataCountryCode = "US";
-            DownloadMovieImages = new ImageDownloadOptions();
-            DownloadSeriesImages = new ImageDownloadOptions();
-            DownloadSeasonImages = new ImageDownloadOptions
-            {
-                Backdrops = false
-            };
-            DownloadMusicArtistImages = new ImageDownloadOptions();
-            DownloadMusicAlbumImages = new ImageDownloadOptions();
 
             SortReplaceCharacters = new[] { ".", "+", "%" };
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
@@ -282,26 +246,26 @@ namespace MediaBrowser.Model.Configuration
 
             SeasonZeroDisplayName = "Specials";
 
-            MovieOptions = new MetadataOptions();
-            TvOptions = new MetadataOptions();
-
-            MusicOptions = new MetadataOptions()
-            {
-                MaxBackdrops = 1
-            };
-
-            GameOptions = new MetadataOptions();
-
-            BookOptions = new MetadataOptions
-            {
-                MaxBackdrops = 1
-            };
-
             LiveTvOptions = new LiveTvOptions();
 
             TvFileOrganizationOptions = new TvFileOrganizationOptions();
 
             EnableRealtimeMonitor = true;
+
+            var options = new List<MetadataOptions>
+            {
+                new MetadataOptions(1, 1280) {ItemType = "Book"},
+                new MetadataOptions(1, 1280) {ItemType = "MusicAlbum"},
+                new MetadataOptions(1, 1280) {ItemType = "MusicArtist"},
+                new MetadataOptions(0, 1280) {ItemType = "Season"}
+            };
+
+            MetadataOptions = options.ToArray();
+        }
+
+        public MetadataOptions GetMetadataOptions(string type)
+        {
+            return MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase));
         }
     }
 
@@ -322,39 +286,6 @@ namespace MediaBrowser.Model.Configuration
     public class LiveTvOptions
     {
         public int? GuideDays { get; set; }
-    }
-
-    public class TvFileOrganizationOptions
-    {
-        public bool IsEnabled { get; set; }
-        public int MinFileSizeMb { get; set; }
-        public string[] LeftOverFileExtensionsToDelete { get; set; }
-        public string[] WatchLocations { get; set; }
-
-        public string SeasonFolderPattern { get; set; }
-
-        public string SeasonZeroFolderName { get; set; }
-
-        public string EpisodeNamePattern { get; set; }
-        public string MultiEpisodeNamePattern { get; set; }
-
-        public bool OverwriteExistingEpisodes { get; set; }
-
-        public bool DeleteEmptyFolders { get; set; }
-
-        public TvFileOrganizationOptions()
-        {
-            MinFileSizeMb = 50;
-
-            LeftOverFileExtensionsToDelete = new string[] {};
-
-            WatchLocations = new string[] { };
-
-            EpisodeNamePattern = "%sn - %sx%0e - %en.%ext";
-            MultiEpisodeNamePattern = "%sn - %sx%0e-x%0ed - %en.%ext";
-            SeasonFolderPattern = "Season %s";
-            SeasonZeroFolderName = "Season 0";
-        }
     }
 
     public class PathSubstitution

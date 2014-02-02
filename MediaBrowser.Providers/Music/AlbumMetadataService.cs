@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
@@ -13,12 +15,12 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class AlbumMetadataService : ConcreteMetadataService<MusicAlbum, AlbumId>
+    public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumId>
     {
         private readonly ILibraryManager _libraryManager;
 
-        public AlbumMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo)
+        public AlbumMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
         {
             _libraryManager = libraryManager;
         }

@@ -20,7 +20,7 @@ namespace MediaBrowser.Providers.Music
 
         public async Task<MetadataResult<MusicAlbum>> GetMetadata(string path, CancellationToken cancellationToken)
         {
-            path = GetXmlPath(path);
+            path = GetXmlFile(path).FullName;
 
             var result = new MetadataResult<MusicAlbum>();
 
@@ -48,12 +48,12 @@ namespace MediaBrowser.Providers.Music
 
         public string Name
         {
-            get { return "Media Browser Xml"; }
+            get { return "Media Browser xml"; }
         }
 
-        protected override string GetXmlPath(string path)
+        protected override FileInfo GetXmlFile(string path)
         {
-            return Path.Combine(path, "album.xml");
+            return new FileInfo(Path.Combine(path, "album.xml"));
         }
     }
 }

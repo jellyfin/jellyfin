@@ -1,17 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers
 {
     public interface IMetadataService
     {
-        /// <summary>
-        /// Adds the parts.
-        /// </summary>
-        /// <param name="providers">The providers.</param>
-        void AddParts(IEnumerable<IMetadataProvider> providers);
-
         /// <summary>
         /// Determines whether this instance can refresh the specified item.
         /// </summary>
@@ -23,10 +16,10 @@ namespace MediaBrowser.Controller.Providers
         /// Refreshes the metadata.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
+        /// <param name="refreshOptions">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken);
+        Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the order.

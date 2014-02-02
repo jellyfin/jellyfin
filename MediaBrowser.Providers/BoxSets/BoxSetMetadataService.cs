@@ -1,9 +1,12 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
@@ -15,13 +18,13 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.BoxSets
 {
-    public class BoxSetMetadataService : ConcreteMetadataService<BoxSet, ItemId>
+    public class BoxSetMetadataService : MetadataService<BoxSet, ItemId>
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _iLocalizationManager;
 
-        public BoxSetMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, ILibraryManager libraryManager, ILocalizationManager iLocalizationManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo)
+        public BoxSetMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager, ILocalizationManager iLocalizationManager)
+            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
         {
             _libraryManager = libraryManager;
             _iLocalizationManager = iLocalizationManager;
@@ -34,6 +37,7 @@ namespace MediaBrowser.Providers.BoxSets
         /// <param name="target">The target.</param>
         /// <param name="lockedFields">The locked fields.</param>
         /// <param name="replaceData">if set to <c>true</c> [replace data].</param>
+        /// <param name="mergeMetadataSettings">if set to <c>true</c> [merge metadata settings].</param>
         protected override void MergeData(BoxSet source, BoxSet target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);

@@ -99,13 +99,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The backdrop image paths.</value>
         List<string> BackdropImagePaths { get; set; }
-
-        /// <summary>
-        /// Determines whether [contains image with source URL] [the specified URL].
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <returns><c>true</c> if [contains image with source URL] [the specified URL]; otherwise, <c>false</c>.</returns>
-        bool ContainsImageWithSourceUrl(string url);
     }
 
     public static class HasImagesExtensions

@@ -63,7 +63,7 @@ namespace MediaBrowser.Providers.Movies
 
         protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
-            var savePath = MovieXmlSaver.GetMovieSavePath(item);
+            var savePath = MovieXmlSaver.GetMovieSavePath((Video)item);
 
             var xml = item.ResolveArgs.GetMetaFileByPath(savePath) ?? new FileInfo(savePath);
 
@@ -86,7 +86,9 @@ namespace MediaBrowser.Providers.Movies
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var path = MovieXmlSaver.GetMovieSavePath(item);
+            var video = (Video)item;
+
+            var path = MovieXmlSaver.GetMovieSavePath(video);
 
             if (File.Exists(path))
             {
@@ -94,8 +96,6 @@ namespace MediaBrowser.Providers.Movies
 
                 try
                 {
-                    var video = (Video)item;
-
                     await new MovieXmlParser(Logger, _itemRepo).FetchAsync(video, path, cancellationToken).ConfigureAwait(false);
                 }
                 finally
