@@ -1222,6 +1222,8 @@ namespace MediaBrowser.Api.Playback
                 state.VideoStream = GetMediaStream(mediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video);
                 state.SubtitleStream = GetMediaStream(mediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
                 state.AudioStream = GetMediaStream(mediaStreams, videoRequest.AudioStreamIndex, MediaStreamType.Audio);
+
+                EnforceResolutionLimit(state, videoRequest);
             }
             else
             {
@@ -1231,6 +1233,50 @@ namespace MediaBrowser.Api.Playback
             state.HasMediaStreams = mediaStreams.Count > 0;
 
             return state;
+        }
+
+        /// <summary>
+        /// Enforces the resolution limit.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <param name="videoRequest">The video request.</param>
+        private void EnforceResolutionLimit(StreamState state, VideoStreamRequest videoRequest)
+        {
+            int? videoWidth = null;
+            int? videoHeight = null;
+
+            // Grab the values from the source video, if we have them
+            if (state.VideoStream != null)
+            {
+                videoWidth = state.VideoStream.Width;
+                videoHeight = state.VideoStream.Height;
+            }
+
+            if (videoRequest.Width.HasValue && videoWidth.HasValue)
+            {
+                if (videoRequest.Width.Value > videoWidth.Value)
+                {
+                    throw new ArgumentException("Video upscaling has not been enabled by the user");
+                }
+            }
+
+            if (videoRequest.Height.HasValue && videoHeight.HasValue)
+            {
+                if (videoRequest.Height.Value > videoHeight.Value)
+                {
+                    throw new ArgumentException("Video upscaling has not been enabled by the user");
+                }
+            }
+
+            // We don't know the source resolution. Don't allow an exact resolution unless upscaling is allowed
+            if (!ServerConfigurationManager.Configuration.AllowVideoUpscaling)
+            {
+                videoRequest.MaxWidth = videoRequest.MaxWidth ?? videoRequest.Width;
+                videoRequest.MaxHeight = videoRequest.MaxHeight ?? videoRequest.Height;
+
+                videoRequest.Width = null;
+                videoRequest.Height = null;
+            }
         }
 
         protected string GetInputModifier(StreamState state)
