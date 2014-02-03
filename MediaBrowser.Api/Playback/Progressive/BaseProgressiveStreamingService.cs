@@ -257,6 +257,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 var result = new StaticRemoteStreamWriter(response, httpClient);
 
                 result.Options["Content-Type"] = contentType;
+                AddDlnaHeaders(state, responseHeaders, isStatic);
 
                 // Add the response headers to the result object
                 foreach (var header in responseHeaders)
