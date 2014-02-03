@@ -797,7 +797,7 @@ namespace MediaBrowser.Api.Images
                 // Handle image/png; charset=utf-8
                 mimeType = mimeType.Split(';').FirstOrDefault();
 
-                await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, null, null, CancellationToken.None).ConfigureAwait(false);
+                await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
 
                 await entity.RefreshMetadata(new MetadataRefreshOptions
                 {

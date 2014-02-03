@@ -56,12 +56,10 @@ namespace MediaBrowser.Providers.Manager
         public async Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
             var itemOfType = (TItemType)item;
-
             var config = GetMetadataOptions(itemOfType);
 
             var updateType = ItemUpdateType.Unspecified;
-            var lastResult = GetLastResult(item.Id);
-            var refreshResult = lastResult;
+            var refreshResult = GetLastResult(item.Id);
             refreshResult.LastErrorMessage = string.Empty;
             refreshResult.LastStatus = ProviderRefreshStatus.Success;
 
@@ -90,8 +88,8 @@ namespace MediaBrowser.Providers.Manager
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
                 updateType = updateType | BeforeMetadataRefresh(itemOfType);
-                
-                var providers = GetProviders(item, lastResult.DateLastMetadataRefresh.HasValue, refreshOptions).ToList();
+
+                var providers = GetProviders(item, refreshResult.DateLastMetadataRefresh.HasValue, refreshOptions).ToList();
 
                 if (providers.Count > 0)
                 {
@@ -109,7 +107,7 @@ namespace MediaBrowser.Providers.Manager
             // Next run remote image providers, but only if local image providers didn't throw an exception
             if (!localImagesFailed && refreshOptions.ImageRefreshMode != ImageRefreshMode.ValidationOnly)
             {
-                var providers = GetNonLocalImageProviders(item, allImageProviders, lastResult.DateLastImagesRefresh.HasValue, refreshOptions).ToList();
+                var providers = GetNonLocalImageProviders(item, allImageProviders, refreshResult.DateLastImagesRefresh, refreshOptions).ToList();
 
                 if (providers.Count > 0)
                 {
@@ -205,13 +203,13 @@ namespace MediaBrowser.Providers.Manager
             return providers;
         }
 
-        protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(IHasMetadata item, IEnumerable<IImageProvider> allImageProviders, bool hasRefreshedImages, ImageRefreshOptions options)
+        protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(IHasMetadata item, IEnumerable<IImageProvider> allImageProviders, DateTime? dateLastImageRefresh, ImageRefreshOptions options)
         {
             // Get providers to refresh
             var providers = allImageProviders.Where(i => !(i is ILocalImageProvider)).ToList();
 
             // Run all if either of these flags are true
-            var runAllProviders = options.ImageRefreshMode == ImageRefreshMode.FullRefresh || !hasRefreshedImages;
+            var runAllProviders = options.ImageRefreshMode == ImageRefreshMode.FullRefresh || !dateLastImageRefresh.HasValue;
 
             if (!runAllProviders)
             {
@@ -219,7 +217,7 @@ namespace MediaBrowser.Providers.Manager
                 var currentItem = item;
 
                 providers = providers.OfType<IHasChangeMonitor>()
-                    .Where(i => i.HasChanged(currentItem, currentItem.DateLastSaved))
+                    .Where(i => i.HasChanged(currentItem, dateLastImageRefresh.Value))
                     .Cast<IImageProvider>()
                     .ToList();
             }

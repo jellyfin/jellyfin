@@ -91,10 +91,11 @@ namespace MediaBrowser.Server.Implementations.Roku
             }, cancellationToken);
         }
 
+        private readonly Task _cachedTask = Task.FromResult(true);
         public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)
         {
             // Roku probably won't care about this
-            return Task.FromResult(true);
+            return _cachedTask;
         }
 
         public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
@@ -110,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.Roku
         public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
         {
             // Roku probably won't care about this
-            return Task.FromResult(true);
+            return _cachedTask;
         }
 
         public Task SendServerShutdownNotification(CancellationToken cancellationToken)

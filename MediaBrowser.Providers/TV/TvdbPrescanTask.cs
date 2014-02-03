@@ -329,7 +329,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         private Task UpdateSeries(string id, string seriesDataPath, long? lastTvDbUpdateTime, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
-            _logger.Info("Updating movie from tmdb " + id + ", language " + preferredMetadataLanguage);
+            _logger.Info("Updating series from tvdb " + id + ", language " + preferredMetadataLanguage);
 
             seriesDataPath = Path.Combine(seriesDataPath, id);
 

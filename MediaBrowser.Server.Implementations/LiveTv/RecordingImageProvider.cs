@@ -133,7 +133,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 // Dummy up the original url
                 var url = item.ServiceName + recordingInfo.Id;
 
-                await _providerManager.SaveImage((BaseItem)item, imageStream, contentType, ImageType.Primary, null, url, cancellationToken).ConfigureAwait(false);
+                await _providerManager.SaveImage((BaseItem)item, imageStream, contentType, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
                 return true;
             }
 

@@ -320,6 +320,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
+        private readonly Task _cachedTask = Task.FromResult(true);
         /// <summary>
         /// Saves the critic reviews.
         /// </summary>
@@ -334,7 +335,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _jsonSerializer.SerializeToFile(criticReviews.ToList(), path);
 
-            return Task.FromResult(true);
+            return _cachedTask;
         }
 
         /// <summary>
