@@ -391,6 +391,7 @@ namespace MediaBrowser.Providers.Music
             return false;
         }
 
+        private readonly Task _cachedTask = Task.FromResult(true);
         internal Task EnsureMovieXml(string musicBrainzId, CancellationToken cancellationToken)
         {
             var xmlPath = GetArtistXmlPath(_config.ApplicationPaths, musicBrainzId);
@@ -401,7 +402,7 @@ namespace MediaBrowser.Providers.Music
             {
                 if (_config.Configuration.EnableFanArtUpdates || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
                 {
-                    return Task.FromResult(true);
+                    return _cachedTask;
                 }
             }
 

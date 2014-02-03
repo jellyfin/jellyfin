@@ -364,7 +364,7 @@ namespace MediaBrowser.Providers.Manager
 
             }).ConfigureAwait(false);
 
-            await SaveImage(item, response.Content, response.ContentType, type, imageIndex, url, cancellationToken)
+            await SaveImage(item, response.Content, response.ContentType, type, imageIndex, cancellationToken)
                     .ConfigureAwait(false);
         }
 
@@ -376,12 +376,11 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="mimeType">Type of the MIME.</param>
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
-        /// <param name="sourceUrl">The source URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, string sourceUrl, CancellationToken cancellationToken)
+        public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, sourceUrl, cancellationToken);
+            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
         }
 
         /// <summary>

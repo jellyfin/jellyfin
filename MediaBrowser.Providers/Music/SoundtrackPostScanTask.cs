@@ -21,11 +21,12 @@ namespace MediaBrowser.Providers.Music
             _libraryManager = libraryManager;
         }
 
+        private readonly Task _cachedTask = Task.FromResult(true);
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
             RunInternal(progress, cancellationToken);
 
-            return Task.FromResult(true);
+            return _cachedTask;
         }
 
         private void RunInternal(IProgress<double> progress, CancellationToken cancellationToken)

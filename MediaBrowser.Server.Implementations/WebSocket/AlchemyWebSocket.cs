@@ -81,7 +81,8 @@ namespace MediaBrowser.Server.Implementations.WebSocket
                 OnReceive(json);
             }
         }
-        
+
+        private readonly Task _cachedTask = Task.FromResult(true);
         /// <summary>
         /// Sends the async.
         /// </summary>
@@ -94,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         {
             UserContext.Send(bytes);
 
-            return Task.FromResult(true);
+            return _cachedTask;
         }
 
         /// <summary>

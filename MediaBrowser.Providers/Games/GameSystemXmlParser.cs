@@ -15,13 +15,14 @@ namespace MediaBrowser.Providers.Games
         {
         }
 
+        private readonly Task _cachedTask = Task.FromResult(true);
         public Task FetchAsync(GameSystem item, string metadataFile, CancellationToken cancellationToken)
         {
             Fetch(item, metadataFile, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            return Task.FromResult(true);
+            return _cachedTask;
         }
 
         /// <summary>

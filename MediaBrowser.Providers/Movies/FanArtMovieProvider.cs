@@ -251,6 +251,7 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
+        private readonly Task _cachedTask = Task.FromResult(true);
         internal Task EnsureMovieXml(string tmdbId, CancellationToken cancellationToken)
         {
             var path = GetFanartXmlPath(tmdbId);
@@ -261,7 +262,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 if (ConfigurationManager.Configuration.EnableFanArtUpdates || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
                 {
-                    return Task.FromResult(true);
+                    return _cachedTask;
                 }
             }
 

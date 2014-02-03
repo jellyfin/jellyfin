@@ -48,12 +48,13 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        private readonly Task _cachedTask = Task.FromResult(true);
         protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
         {
             if (IsAccessedByName)
             {
                 // Should never get in here anyway
-                return Task.FromResult(true);
+                return _cachedTask;
             }
 
             return base.ValidateChildrenInternal(progress, cancellationToken, recursive, forceRefreshMetadata);

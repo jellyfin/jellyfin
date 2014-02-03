@@ -202,7 +202,7 @@ namespace MediaBrowser.Providers.Movies
 
                 }).ConfigureAwait(false);
 
-                await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Primary, null, url, cancellationToken)
+                await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Primary, null, cancellationToken)
                                     .ConfigureAwait(false);
             }
 
@@ -233,7 +233,7 @@ namespace MediaBrowser.Providers.Movies
 
                     }).ConfigureAwait(false);
 
-                    await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Backdrop, null, url, cancellationToken)
+                    await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Backdrop, null, cancellationToken)
                       .ConfigureAwait(false);
 
                     if (item.BackdropImagePaths.Count >= backdropLimit)

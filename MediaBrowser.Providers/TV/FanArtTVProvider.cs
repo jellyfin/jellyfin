@@ -278,6 +278,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
+        private readonly Task _cachedTask = Task.FromResult(true);
         internal Task EnsureSeriesXml(string tvdbId, CancellationToken cancellationToken)
         {
             var xmlPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, tvdbId);
@@ -288,7 +289,7 @@ namespace MediaBrowser.Providers.TV
             {
                 if (ConfigurationManager.Configuration.EnableFanArtUpdates || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
                 {
-                    return Task.FromResult(true);
+                    return _cachedTask;
                 }
             }
 

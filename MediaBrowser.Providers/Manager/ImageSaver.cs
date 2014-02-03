@@ -62,11 +62,10 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="mimeType">Type of the MIME.</param>
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
-        /// <param name="sourceUrl">The source URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">mimeType</exception>
-        public async Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, string sourceUrl, CancellationToken cancellationToken)
+        public async Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(mimeType))
             {
@@ -155,7 +154,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // Set the path into the item
-            SetImagePath(item, type, imageIndex, paths[0], sourceUrl);
+            SetImagePath(item, type, imageIndex, paths[0]);
 
             // Delete the current path
             if (!string.IsNullOrEmpty(currentPath) && !paths.Contains(currentPath, StringComparer.OrdinalIgnoreCase))
@@ -271,11 +270,10 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="path">The path.</param>
-        /// <param name="sourceUrl">The source URL.</param>
         /// <exception cref="System.ArgumentNullException">imageIndex
         /// or
         /// imageIndex</exception>
-        private void SetImagePath(BaseItem item, ImageType type, int? imageIndex, string path, string sourceUrl)
+        private void SetImagePath(BaseItem item, ImageType type, int? imageIndex, string path)
         {
             switch (type)
             {
