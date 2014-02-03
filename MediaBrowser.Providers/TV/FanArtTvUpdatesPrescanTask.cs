@@ -60,7 +60,7 @@ namespace MediaBrowser.Providers.TV
                 return;
             }
 
-            var path = FanArtTvProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
+            var path = FanartSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
             Directory.CreateDirectory(path);
             
@@ -149,8 +149,8 @@ namespace MediaBrowser.Providers.TV
             foreach (var id in list)
             {
                 _logger.Info("Updating series " + id);
-                
-                await FanArtTvProvider.Current.DownloadSeriesXml(id, cancellationToken).ConfigureAwait(false);
+
+                await FanartSeriesProvider.Current.DownloadSeriesXml(id, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;

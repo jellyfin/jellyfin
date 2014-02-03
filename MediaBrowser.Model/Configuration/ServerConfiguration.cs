@@ -224,6 +224,7 @@ namespace MediaBrowser.Model.Configuration
             EnableEpisodeChapterImageExtraction = false;
             EnableOtherVideoChapterImageExtraction = false;
             EnableAutomaticRestart = true;
+            EnablePeoplePrefixSubFolders = true;
 
             MinResumePct = 5;
             MaxResumePct = 90;

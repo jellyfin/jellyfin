@@ -5,211 +5,353 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbSeriesImageProvider : BaseMetadataProvider
+    public class TvdbSeriesImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
     {
-        /// <summary>
-        /// Gets the HTTP client.
-        /// </summary>
-        /// <value>The HTTP client.</value>
-        protected IHttpClient HttpClient { get; private set; }
-
-        /// <summary>
-        /// The _provider manager
-        /// </summary>
-        private readonly IProviderManager _providerManager;
+        private readonly IServerConfigurationManager _config;
+        private readonly IHttpClient _httpClient;
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IFileSystem _fileSystem;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TvdbSeriesImageProvider"/> class.
-        /// </summary>
-        /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public TvdbSeriesImageProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
-            : base(logManager, configurationManager)
+        public TvdbSeriesImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException("httpClient");
-            }
-            HttpClient = httpClient;
-            _providerManager = providerManager;
+            _config = config;
+            _httpClient = httpClient;
             _fileSystem = fileSystem;
         }
 
-        /// <summary>
-        /// Supportses the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public override bool Supports(BaseItem item)
+        public string Name
+        {
+            get { return ProviderName; }
+        }
+
+        public static string ProviderName
+        {
+            get { return "TheTVDB"; }
+        }
+
+        public bool Supports(IHasImages item)
         {
             return item is Series;
         }
 
-        /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public override MetadataProviderPriority Priority
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
         {
-            // Run after fanart
-            get { return MetadataProviderPriority.Fourth; }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether [requires internet].
-        /// </summary>
-        /// <value><c>true</c> if [requires internet]; otherwise, <c>false</c>.</value>
-        public override bool RequiresInternet
-        {
-            get
+            return new List<ImageType>
             {
-                return true;
-            }
+                ImageType.Primary, 
+                ImageType.Banner,
+                ImageType.Backdrop
+            };
         }
 
-        public override ItemUpdateType ItemUpdateType
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
         {
-            get
-            {
-                return ItemUpdateType.ImageUpdate;
-            }
+            var images = await GetAllImages(item, cancellationToken).ConfigureAwait(false);
+
+            return images.Where(i => i.Type == imageType);
         }
 
-        /// <summary>
-        /// Gets a value indicating whether [refresh on version change].
-        /// </summary>
-        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
-        protected override bool RefreshOnVersionChange
+        public async Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
-            get
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Gets the provider version.
-        /// </summary>
-        /// <value>The provider version.</value>
-        protected override string ProviderVersion
-        {
-            get
-            {
-                return "1";
-            }
-        }
-
-        protected override DateTime CompareDate(BaseItem item)
-        {
-            var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
+            var series = (Series)item;
+            var seriesId = series.GetProviderId(MetadataProviders.Tvdb);
 
             if (!string.IsNullOrEmpty(seriesId))
             {
+                var language = item.GetPreferredMetadataLanguage();
+
+                await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesId, language, cancellationToken).ConfigureAwait(false);
+
                 // Process images
-                var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "banners.xml");
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
 
-                var imagesFileInfo = new FileInfo(imagesXmlPath);
+                var path = Path.Combine(seriesDataPath, "banners.xml");
 
-                if (imagesFileInfo.Exists)
+                try
                 {
-                    return _fileSystem.GetLastWriteTimeUtc(imagesFileInfo);
+                    return GetImages(path, language, cancellationToken);
+                }
+                catch (FileNotFoundException)
+                {
+                    // No tvdb data yet. Don't blow up
                 }
             }
 
-            return base.CompareDate(item);
+            return new RemoteImageInfo[] { };
         }
 
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        private IEnumerable<RemoteImageInfo> GetImages(string xmlPath, string preferredLanguage, CancellationToken cancellationToken)
         {
-            var options = ConfigurationManager.Configuration.GetMetadataOptions("Series") ?? new MetadataOptions();
-            
-            if (item.HasImage(ImageType.Primary) && item.HasImage(ImageType.Banner) && item.BackdropImagePaths.Count >= options.GetLimit(ImageType.Backdrop))
+            var settings = new XmlReaderSettings
             {
-                return false;
-            }
-            return base.NeedsRefreshInternal(item, providerInfo);
-        }
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                ValidationType = ValidationType.None
+            };
 
-        /// <summary>
-        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+            var list = new List<RemoteImageInfo>();
 
-            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualTvdbSeriesImageProvider.ProviderName).ConfigureAwait(false);
-
-            const int backdropLimit = 1;
-
-            await DownloadImages(item, images.ToList(), backdropLimit, cancellationToken).ConfigureAwait(false);
-
-            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
-            return true;
-        }
-
-        private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, int backdropLimit, CancellationToken cancellationToken)
-        {
-            var options = ConfigurationManager.Configuration.GetMetadataOptions("Series") ?? new MetadataOptions();
-            
-            if (!item.LockedFields.Contains(MetadataFields.Images))
+            using (var streamReader = new StreamReader(xmlPath, Encoding.UTF8))
             {
-                if (!item.HasImage(ImageType.Primary))
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
                 {
-                    var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
+                    reader.MoveToContent();
 
-                    if (image != null)
+                    // Loop through each element
+                    while (reader.Read())
                     {
-                        await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-                }
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                if (options.IsEnabled(ImageType.Banner) && !item.HasImage(ImageType.Banner))
-                {
-                    var image = images.FirstOrDefault(i => i.Type == ImageType.Banner);
-
-                    if (image != null)
-                    {
-                        await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Banner, null, cancellationToken)
-                            .ConfigureAwait(false);
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            switch (reader.Name)
+                            {
+                                case "Banner":
+                                    {
+                                        using (var subtree = reader.ReadSubtree())
+                                        {
+                                            AddImage(subtree, list);
+                                        }
+                                        break;
+                                    }
+                                default:
+                                    reader.Skip();
+                                    break;
+                            }
+                        }
                     }
                 }
             }
 
-            if (options.IsEnabled(ImageType.Backdrop) && item.BackdropImagePaths.Count < backdropLimit && !item.LockedFields.Contains(MetadataFields.Backdrops))
+            var isLanguageEn = string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase);
+
+            return list.OrderByDescending(i =>
             {
-                foreach (var backdrop in images.Where(i => i.Type == ImageType.Backdrop && 
-                    (!i.Width.HasValue || 
-                    i.Width.Value >= options.GetMinWidth(ImageType.Backdrop))))
+                if (string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase))
                 {
-                    var url = backdrop.Url;
+                    return 3;
+                }
+                if (!isLanguageEn)
+                {
+                    if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return 2;
+                    }
+                }
+                if (string.IsNullOrEmpty(i.Language))
+                {
+                    return isLanguageEn ? 3 : 2;
+                }
+                return 0;
+            })
+                .ThenByDescending(i => i.CommunityRating ?? 0)
+                .ThenByDescending(i => i.VoteCount ?? 0)
+                .ToList();
+        }
 
-                    await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, null, cancellationToken).ConfigureAwait(false);
+        private void AddImage(XmlReader reader, List<RemoteImageInfo> images)
+        {
+            reader.MoveToContent();
 
-                    if (item.BackdropImagePaths.Count >= backdropLimit) break;
+            string bannerType = null;
+            string url = null;
+            int? bannerSeason = null;
+            int? width = null;
+            int? height = null;
+            string language = null;
+            double? rating = null;
+            int? voteCount = null;
+            string thumbnailUrl = null;
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Rating":
+                            {
+                                var val = reader.ReadElementContentAsString() ?? string.Empty;
+
+                                double rval;
+
+                                if (double.TryParse(val, NumberStyles.Any, _usCulture, out rval))
+                                {
+                                    rating = rval;
+                                }
+
+                                break;
+                            }
+
+                        case "RatingCount":
+                            {
+                                var val = reader.ReadElementContentAsString() ?? string.Empty;
+
+                                int rval;
+
+                                if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                {
+                                    voteCount = rval;
+                                }
+
+                                break;
+                            }
+
+                        case "Language":
+                            {
+                                language = reader.ReadElementContentAsString() ?? string.Empty;
+                                break;
+                            }
+
+                        case "ThumbnailPath":
+                            {
+                                thumbnailUrl = reader.ReadElementContentAsString() ?? string.Empty;
+                                break;
+                            }
+
+                        case "BannerType":
+                            {
+                                bannerType = reader.ReadElementContentAsString() ?? string.Empty;
+
+                                break;
+                            }
+
+                        case "BannerPath":
+                            {
+                                url = reader.ReadElementContentAsString() ?? string.Empty;
+                                break;
+                            }
+
+                        case "BannerType2":
+                            {
+                                var bannerType2 = reader.ReadElementContentAsString() ?? string.Empty;
+
+                                // Sometimes the resolution is stuffed in here
+                                var resolutionParts = bannerType2.Split('x');
+
+                                if (resolutionParts.Length == 2)
+                                {
+                                    int rval;
+
+                                    if (int.TryParse(resolutionParts[0], NumberStyles.Integer, _usCulture, out rval))
+                                    {
+                                        width = rval;
+                                    }
+
+                                    if (int.TryParse(resolutionParts[1], NumberStyles.Integer, _usCulture, out rval))
+                                    {
+                                        height = rval;
+                                    }
+
+                                }
+
+                                break;
+                            }
+
+                        case "Season":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    bannerSeason = int.Parse(val);
+                                }
+                                break;
+                            }
+
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
                 }
             }
+
+            if (!string.IsNullOrEmpty(url) && !bannerSeason.HasValue)
+            {
+                var imageInfo = new RemoteImageInfo
+                {
+                    RatingType = RatingType.Score,
+                    CommunityRating = rating,
+                    VoteCount = voteCount,
+                    Url = TVUtils.BannerUrl + url,
+                    ProviderName = Name,
+                    Language = language,
+                    Width = width,
+                    Height = height
+                };
+
+                if (!string.IsNullOrEmpty(thumbnailUrl))
+                {
+                    imageInfo.ThumbnailUrl = TVUtils.BannerUrl + thumbnailUrl;
+                }
+
+                if (string.Equals(bannerType, "poster", StringComparison.OrdinalIgnoreCase))
+                {
+                    imageInfo.Type = ImageType.Primary;
+                    images.Add(imageInfo);
+                }
+                else if (string.Equals(bannerType, "series", StringComparison.OrdinalIgnoreCase))
+                {
+                    imageInfo.Type = ImageType.Banner;
+                    images.Add(imageInfo);
+                }
+                else if (string.Equals(bannerType, "fanart", StringComparison.OrdinalIgnoreCase))
+                {
+                    imageInfo.Type = ImageType.Backdrop;
+                    images.Add(imageInfo);
+                }
+            }
+
+        }
+
+        public int Order
+        {
+            get { return 0; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = TvdbSeriesProvider.Current.TvDbResourcePool
+            });
+        }
+
+        public bool HasChanged(IHasMetadata item, DateTime date)
+        {
+            var tvdbId = item.GetProviderId(MetadataProviders.Tvdb);
+
+            if (!String.IsNullOrEmpty(tvdbId))
+            {
+                // Process images
+                var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, tvdbId), "banners.xml");
+
+                var fileInfo = new FileInfo(imagesXmlPath);
+
+                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+            }
+
+            return false;
         }
     }
 }

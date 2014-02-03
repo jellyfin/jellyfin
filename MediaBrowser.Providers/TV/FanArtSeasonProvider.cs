@@ -20,14 +20,14 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class FanartSeasonImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
+    public class FanartSeasonProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
 
-        public FanartSeasonImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public FanartSeasonProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _config = config;
             _httpClient = httpClient;
@@ -78,9 +78,9 @@ namespace MediaBrowser.Providers.TV
 
                 if (!string.IsNullOrEmpty(id) && season.IndexNumber.HasValue)
                 {
-                    await FanArtTvProvider.Current.EnsureSeriesXml(id, cancellationToken).ConfigureAwait(false);
+                    await FanartSeriesProvider.Current.EnsureSeriesXml(id, cancellationToken).ConfigureAwait(false);
 
-                    var xmlPath = FanArtTvProvider.Current.GetFanartXmlPath(id);
+                    var xmlPath = FanartSeriesProvider.Current.GetFanartXmlPath(id);
 
                     try
                     {
@@ -290,7 +290,7 @@ namespace MediaBrowser.Providers.TV
             if (!String.IsNullOrEmpty(tvdbId))
             {
                 // Process images
-                var imagesXmlPath = FanArtTvProvider.Current.GetFanartXmlPath(tvdbId);
+                var imagesXmlPath = FanartSeriesProvider.Current.GetFanartXmlPath(tvdbId);
 
                 var fileInfo = new FileInfo(imagesXmlPath);
 

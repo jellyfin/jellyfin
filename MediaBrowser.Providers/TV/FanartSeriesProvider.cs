@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -6,6 +8,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Music;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,20 +18,27 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class ManualFanartSeriesImageProvider : IRemoteImageProvider, IHasOrder
+    public class FanartSeriesProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
+        private readonly IFileSystem _fileSystem;
 
-        public ManualFanartSeriesImageProvider(IServerConfigurationManager config, IHttpClient httpClient)
+        protected string FanArtBaseUrl = "http://api.fanart.tv/webservice/series/{0}/{1}/xml/all/1/1";
+
+        internal static FanartSeriesProvider Current { get; private set; }
+
+        public FanartSeriesProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _config = config;
             _httpClient = httpClient;
+            _fileSystem = fileSystem;
+
+            Current = this;
         }
 
         public string Name
@@ -66,7 +76,7 @@ namespace MediaBrowser.Providers.TV
             return images.Where(i => i.Type == imageType);
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
             var list = new List<RemoteImageInfo>();
 
@@ -76,7 +86,9 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrEmpty(id))
             {
-                var xmlPath = FanArtTvProvider.Current.GetFanartXmlPath(id);
+                await EnsureSeriesXml(id, cancellationToken).ConfigureAwait(false);
+
+                var xmlPath = GetFanartXmlPath(id);
 
                 try
                 {
@@ -93,7 +105,7 @@ namespace MediaBrowser.Providers.TV
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
             // Sort first by width to prioritize HD versions
-            list = list.OrderByDescending(i => i.Width ?? 0)
+            return list.OrderByDescending(i => i.Width ?? 0)
                 .ThenByDescending(i =>
                 {
                     if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
@@ -114,10 +126,7 @@ namespace MediaBrowser.Providers.TV
                     return 0;
                 })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0)
-                .ToList();
-
-            return Task.FromResult<IEnumerable<RemoteImageInfo>>(list);
+                .ThenByDescending(i => i.VoteCount ?? 0);
         }
 
         private void AddImages(List<RemoteImageInfo> list, string xmlPath, CancellationToken cancellationToken)
@@ -332,6 +341,103 @@ namespace MediaBrowser.Providers.TV
                 Url = url,
                 ResourcePool = FanartArtistProvider.FanArtResourcePool
             });
+        }
+
+        /// <summary>
+        /// Gets the series data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="seriesId">The series id.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetSeriesDataPath(IApplicationPaths appPaths, string seriesId)
+        {
+            var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
+
+            return seriesDataPath;
+        }
+
+        /// <summary>
+        /// Gets the series data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetSeriesDataPath(IApplicationPaths appPaths)
+        {
+            var dataPath = Path.Combine(appPaths.DataPath, "fanart-tv");
+
+            return dataPath;
+        }
+
+        public string GetFanartXmlPath(string tvdbId)
+        {
+            var dataPath = GetSeriesDataPath(_config.ApplicationPaths, tvdbId);
+            return Path.Combine(dataPath, "fanart.xml");
+        }
+
+        private readonly Task _cachedTask = Task.FromResult(true);
+        internal Task EnsureSeriesXml(string tvdbId, CancellationToken cancellationToken)
+        {
+            var xmlPath = GetSeriesDataPath(_config.ApplicationPaths, tvdbId);
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
+
+            if (fileInfo.Exists)
+            {
+                if (_config.Configuration.EnableFanArtUpdates || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                {
+                    return _cachedTask;
+                }
+            }
+
+            return DownloadSeriesXml(tvdbId, cancellationToken);
+        }
+
+        /// <summary>
+        /// Downloads the series XML.
+        /// </summary>
+        /// <param name="tvdbId">The TVDB id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        internal async Task DownloadSeriesXml(string tvdbId, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var url = string.Format(FanArtBaseUrl, FanartArtistProvider.ApiKey, tvdbId);
+
+            var xmlPath = GetFanartXmlPath(tvdbId);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(xmlPath));
+
+            using (var response = await _httpClient.Get(new HttpRequestOptions
+            {
+                Url = url,
+                ResourcePool = FanartArtistProvider.FanArtResourcePool,
+                CancellationToken = cancellationToken
+
+            }).ConfigureAwait(false))
+            {
+                using (var xmlFileStream = _fileSystem.GetFileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                {
+                    await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
+                }
+            }
+        }
+
+        public bool HasChanged(IHasMetadata item, DateTime date)
+        {
+            var tvdbId = item.GetProviderId(MetadataProviders.Tvdb);
+
+            if (!String.IsNullOrEmpty(tvdbId))
+            {
+                // Process images
+                var imagesXmlPath = GetFanartXmlPath(tvdbId);
+
+                var fileInfo = new FileInfo(imagesXmlPath);
+
+                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+            }
+
+            return false;
         }
     }
 }

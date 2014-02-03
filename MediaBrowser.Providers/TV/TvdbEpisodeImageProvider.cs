@@ -17,13 +17,13 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class ManualTvdbEpisodeImageProvider : IRemoteImageProvider
+    public class TvdbEpisodeImageProvider : IRemoteImageProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IHttpClient _httpClient;
 
-        public ManualTvdbEpisodeImageProvider(IServerConfigurationManager config, IHttpClient httpClient)
+        public TvdbEpisodeImageProvider(IServerConfigurationManager config, IHttpClient httpClient)
         {
             _config = config;
             _httpClient = httpClient;
