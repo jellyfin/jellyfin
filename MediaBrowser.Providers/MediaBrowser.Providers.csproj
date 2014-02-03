@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="All\LocalImageProvider.cs" />
+    <Compile Include="Books\BookMetadataService.cs" />
     <Compile Include="BoxSets\BoxSetMetadataService.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetImageProvider.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetProvider.cs" />
@@ -151,26 +152,24 @@
     <Compile Include="TV\EpisodeIndexNumberProvider.cs" />
     <Compile Include="TV\EpisodeProviderFromXml.cs" />
     <Compile Include="TV\EpisodeXmlParser.cs" />
-    <Compile Include="TV\FanArtSeasonProvider.cs" />
     <Compile Include="TV\FanArtTVProvider.cs" />
     <Compile Include="TV\FanArtTvUpdatesPrescanTask.cs" />
-    <Compile Include="TV\ManualFanartSeasonProvider.cs" />
+    <Compile Include="TV\FanartSeasonProvider.cs" />
     <Compile Include="TV\ManualFanartSeriesProvider.cs" />
     <Compile Include="TV\ManualTvdbEpisodeImageProvider.cs" />
     <Compile Include="People\TvdbPersonImageProvider.cs" />
-    <Compile Include="TV\ManualTvdbSeasonImageProvider.cs" />
+    <Compile Include="TV\TvdbSeasonImageProvider.cs" />
     <Compile Include="TV\ManualTvdbSeriesImageProvider.cs" />
-    <Compile Include="TV\SeasonIndexNumberProvider.cs" />
+    <Compile Include="TV\SeasonMetadataService.cs" />
     <Compile Include="TV\TvdbEpisodeProvider.cs" />
-    <Compile Include="TV\TvdbSeasonProvider.cs" />
+    <Compile Include="TV\TvdbSeriesImageProvider.cs" />
     <Compile Include="TV\TvdbSeriesProvider.cs" />
-    <Compile Include="TV\SeasonProviderFromXml.cs" />
+    <Compile Include="TV\SeasonXmlProvider.cs" />
     <Compile Include="TV\SeriesDynamicInfoProvider.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\SeriesProviderFromXml.cs" />
     <Compile Include="TV\SeriesXmlParser.cs" />
     <Compile Include="TV\TvdbPrescanTask.cs" />
-    <Compile Include="TV\TvdbSeriesImageProvider.cs" />
     <Compile Include="UserRootFolderNameProvider.cs" />
     <Compile Include="Users\UserMetadataService.cs" />
     <Compile Include="VirtualItemImageValidator.cs" />

@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.TV
                 return ItemUpdateType.ImageUpdate;
             }
         }
-        
+
         /// <summary>
         /// Needses the refresh internal.
         /// </summary>
@@ -160,7 +160,7 @@ namespace MediaBrowser.Providers.TV
             var dataPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, tvdbId);
             return Path.Combine(dataPath, "fanart.xml");
         }
-        
+
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
@@ -199,7 +199,7 @@ namespace MediaBrowser.Providers.TV
         private async Task FetchFromXml(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
             var options = ConfigurationManager.Configuration.GetMetadataOptions("Series") ?? new MetadataOptions();
-            
+
             if (!item.LockedFields.Contains(MetadataFields.Images))
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -276,6 +276,23 @@ namespace MediaBrowser.Providers.TV
                     break;
                 }
             }
+        }
+
+        internal Task EnsureSeriesXml(string tvdbId, CancellationToken cancellationToken)
+        {
+            var xmlPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, tvdbId);
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
+
+            if (fileInfo.Exists)
+            {
+                if (ConfigurationManager.Configuration.EnableFanArtUpdates || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                {
+                    return Task.FromResult(true);
+                }
+            }
+
+            return DownloadSeriesXml(tvdbId, cancellationToken);
         }
 
         /// <summary>

@@ -275,33 +275,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Refresh metadata on us by execution our provider chain
-        /// The item will be persisted if a change is made by a provider, or if it's new or changed.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="forceSave">if set to <c>true</c> [is new item].</param>
-        /// <param name="forceRefresh">if set to <c>true</c> [force].</param>
-        /// <returns>true if a provider reports we changed</returns>
-        public override async Task<bool> RefreshMetadataDirect(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
-        {
-            // Reload this
-            ResetResolveArgs();
-
-            var updateReason = await ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh).ConfigureAwait(false);
-
-            var changed = updateReason.HasValue;
-
-            if (changed || forceSave)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await UserManager.UpdateUser(this).ConfigureAwait(false);
-            }
-
-            return changed;
-        }
-
-        /// <summary>
         /// Updates the configuration.
         /// </summary>
         /// <param name="config">The config.</param>

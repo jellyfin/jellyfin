@@ -324,6 +324,26 @@ namespace MediaBrowser.Providers.TV
             await ExtractEpisodes(seriesDataPath, Path.Combine(seriesDataPath, preferredMetadataLanguage + ".xml"), lastTvDbUpdateTime).ConfigureAwait(false);
         }
 
+        internal async Task EnsureSeriesInfo(string seriesId, string preferredMetadataLanguage, CancellationToken cancellationToken)
+        {
+            var seriesDataPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
+
+            Directory.CreateDirectory(seriesDataPath);
+
+            var files = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly)
+                .Select(Path.GetFileName)
+                .ToList();
+
+            var seriesXmlFilename = preferredMetadataLanguage + ".xml";
+
+            // Only download if not already there
+            // The prescan task will take care of updates so we don't need to re-download here
+            if (!files.Contains("banners.xml", StringComparer.OrdinalIgnoreCase) || !files.Contains("actors.xml", StringComparer.OrdinalIgnoreCase) || !files.Contains(seriesXmlFilename, StringComparer.OrdinalIgnoreCase))
+            {
+                await DownloadSeriesZip(seriesId, seriesDataPath, null, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
         private void DeleteXmlFiles(string path)
         {
             try

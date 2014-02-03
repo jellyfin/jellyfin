@@ -89,6 +89,8 @@ namespace MediaBrowser.Providers.Manager
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
+                updateType = updateType | BeforeMetadataRefresh(itemOfType);
+                
                 var providers = GetProviders(item, lastResult.DateLastMetadataRefresh.HasValue, refreshOptions).ToList();
 
                 if (providers.Count > 0)
@@ -100,6 +102,8 @@ namespace MediaBrowser.Providers.Manager
                     refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
                     refreshResult.AddImageProvidersRefreshed(result.Providers);
                 }
+
+                updateType = updateType | AfterMetadataRefresh(itemOfType);
             }
 
             // Next run remote image providers, but only if local image providers didn't throw an exception
@@ -116,8 +120,6 @@ namespace MediaBrowser.Providers.Manager
                     refreshResult.SetDateLastImagesRefresh(DateTime.UtcNow);
                     refreshResult.AddImageProvidersRefreshed(result.Providers);
                 }
-
-                updateType = updateType | AfterMetadataRefresh(itemOfType);
             }
 
             var providersHadChanges = updateType > ItemUpdateType.Unspecified;
@@ -153,6 +155,16 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="item">The item.</param>
         protected virtual ItemUpdateType AfterMetadataRefresh(TItemType item)
+        {
+            return ItemUpdateType.Unspecified;
+        }
+
+        /// <summary>
+        /// Befores the metadata refresh.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>ItemUpdateType.</returns>
+        protected virtual ItemUpdateType BeforeMetadataRefresh(TItemType item)
         {
             return ItemUpdateType.Unspecified;
         }
@@ -261,12 +273,17 @@ namespace MediaBrowser.Providers.Manager
 
                     if (localItem.HasMetadata)
                     {
-                        MergeData(localItem.Item, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
-                        refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
+                        if (!string.IsNullOrEmpty(localItem.Item.Name))
+                        {
+                            MergeData(localItem.Item, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
+                            refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
-                        // Only one local provider allowed per item
-                        hasLocalMetadata = true;
-                        break;
+                            // Only one local provider allowed per item
+                            hasLocalMetadata = true;
+                            break;
+                        }
+
+                        Logger.Error("Invalid local metadata found for: " + item.Path);
                     }
                 }
                 catch (OperationCanceledException)

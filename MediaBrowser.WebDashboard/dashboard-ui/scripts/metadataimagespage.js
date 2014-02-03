@@ -286,7 +286,8 @@
             loadTabs(page, [
 
                 { name: 'Game', type: 'Game' },
-                { name: 'Game System', type: 'GameSystem' }
+                { name: 'Game System', type: 'GameSystem' },
+                { name: 'Game Genre', type: 'GameGenre' }
             ]);
 
             $('.gamesTab', page).addClass('ui-btn-active');
@@ -320,7 +321,8 @@
                 { name: 'Artist', type: 'MusicArtist' },
                 { name: 'Album', type: 'MusicAlbum' },
                 { name: 'Song', type: 'Audio' },
-                { name: 'Music Video', type: 'MusicVideo' }
+                { name: 'Music Video', type: 'MusicVideo' },
+                { name: 'Music Genre', type: 'MusicGenre' }
             ]);
 
             $('.musicTab', page).addClass('ui-btn-active');
@@ -331,8 +333,6 @@
 
                 { name: 'Person', type: 'Person' },
                 { name: 'Genre', type: 'Genre' },
-                { name: 'Game Genre', type: 'GameGenre' },
-                { name: 'Music Genre', type: 'MusicGenre' },
                 { name: 'Studio', type: 'Studio' },
                 { name: 'Book', type: 'Book' },
                 { name: 'Adult Video', type: 'AdultVideo' }
@@ -362,11 +362,17 @@
         });
 
         if ($('.backdropFields:visible', form).length) {
-            
+
             config.ImageOptions.push({
                 Type: 'Backdrop',
                 Limit: $('#txtMaxBackdrops', form).val(),
                 MinWidth: $('#txtMinBackdropDownloadWidth', form).val()
+            });
+        } else {
+            config.ImageOptions.push({
+                Type: 'Backdrop',
+                Limit: 0,
+                MinWidth: 0
             });
         }
 
@@ -376,6 +382,12 @@
                 Type: 'Screenshot',
                 Limit: $('#txtMaxScreenshots', form).val(),
                 MinWidth: $('#txtMinScreenshotDownloadWidth', form).val()
+            });
+        } else {
+            config.ImageOptions.push({
+                Type: 'Screenshot',
+                Limit: 0,
+                MinWidth: 0
             });
         }
     }
