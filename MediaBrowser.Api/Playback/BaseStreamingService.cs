@@ -355,10 +355,10 @@ namespace MediaBrowser.Api.Playback
                             param += " -crf 18";
                             break;
                         case EncodingQuality.HighQuality:
-                            param += " -crf 14";
+                            param += " -crf 10";
                             break;
                         case EncodingQuality.MaxQuality:
-                            param += " -crf 10";
+                            param += " -crf 4";
                             break;
                     }
                 }
@@ -968,7 +968,35 @@ namespace MediaBrowser.Api.Playback
 
         protected int? GetVideoBitrateParamValue(StreamState state)
         {
-            return state.VideoRequest.VideoBitRate;
+            var bitrate = state.VideoRequest.VideoBitRate;
+
+            if (state.VideoStream != null)
+            {
+                var isUpscaling = false;
+
+                if (state.VideoRequest.Height.HasValue && state.VideoStream.Height.HasValue &&
+                    state.VideoRequest.Height.Value > state.VideoStream.Height.Value)
+                {
+                    isUpscaling = true;
+                }
+
+                if (state.VideoRequest.Width.HasValue && state.VideoStream.Width.HasValue &&
+                    state.VideoRequest.Width.Value > state.VideoStream.Width.Value)
+                {
+                    isUpscaling = true;
+                }
+                
+                // Don't allow bitrate increases unless upscaling
+                if (!isUpscaling)
+                {
+                    if (bitrate.HasValue && state.VideoStream.BitRate.HasValue)
+                    {
+                        bitrate = Math.Min(bitrate.Value, state.VideoStream.BitRate.Value);
+                    }
+                }
+            }
+
+            return bitrate;
         }
 
         protected string GetVideoBitrateParam(StreamState state, string videoCodec, bool isHls)
