@@ -1276,33 +1276,7 @@ namespace MediaBrowser.Api.Playback
                 return;
             }
 
-            int? videoWidth = null;
-            int? videoHeight = null;
-
-            // Grab the values from the source video, if we have them
-            if (state.VideoStream != null)
-            {
-                videoWidth = state.VideoStream.Width;
-                videoHeight = state.VideoStream.Height;
-            }
-
-            if (videoRequest.Width.HasValue && videoWidth.HasValue)
-            {
-                if (videoRequest.Width.Value > videoWidth.Value)
-                {
-                    throw new ArgumentException("Video upscaling has not been enabled by the user");
-                }
-            }
-
-            if (videoRequest.Height.HasValue && videoHeight.HasValue)
-            {
-                if (videoRequest.Height.Value > videoHeight.Value)
-                {
-                    throw new ArgumentException("Video upscaling has not been enabled by the user");
-                }
-            }
-
-            // We don't know the source resolution. Don't allow an exact resolution unless upscaling is allowed
+            // Switch the incoming params to be ceilings rather than fixed values
             videoRequest.MaxWidth = videoRequest.MaxWidth ?? videoRequest.Width;
             videoRequest.MaxHeight = videoRequest.MaxHeight ?? videoRequest.Height;
 
