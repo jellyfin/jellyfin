@@ -1,41 +1,41 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.BoxSets
+namespace MediaBrowser.Providers.TV
 {
     /// <summary>
-    /// Class BoxSetXmlProvider.
+    /// Class SeriesProviderFromXml
     /// </summary>
-    public class BoxSetXmlProvider : BaseXmlProvider, ILocalMetadataProvider<BoxSet>
+    public class SeriesXmlProvider : BaseXmlProvider, ILocalMetadataProvider<Series>
     {
         private readonly ILogger _logger;
 
-        public BoxSetXmlProvider(IFileSystem fileSystem, ILogger logger)
+        public SeriesXmlProvider(IFileSystem fileSystem, ILogger logger)
             : base(fileSystem)
         {
             _logger = logger;
         }
 
-        public async Task<MetadataResult<BoxSet>> GetMetadata(string path, CancellationToken cancellationToken)
+        public async Task<MetadataResult<Series>> GetMetadata(string path, CancellationToken cancellationToken)
         {
             path = GetXmlFile(path).FullName;
 
-            var result = new MetadataResult<BoxSet>();
+            var result = new MetadataResult<Series>();
 
             await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                var item = new BoxSet();
+                var person = new Series();
 
-                new BaseItemXmlParser<BoxSet>(_logger).Fetch(item, path, cancellationToken);
+                new SeriesXmlParser(_logger).Fetch(person, path, cancellationToken);
                 result.HasMetadata = true;
-                result.Item = item;
+                result.Item = person;
             }
             catch (FileNotFoundException)
             {
@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.BoxSets
 
         protected override FileInfo GetXmlFile(string path)
         {
-            return new FileInfo(Path.Combine(path, "collection.xml"));
+            return new FileInfo(Path.Combine(path, "series.xml"));
         }
     }
 }

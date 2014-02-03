@@ -634,8 +634,12 @@
                 options.push({ name: '720p - 5Mbps', maxWidth: 1280, bitrate: 5000000 });
             }
             else if (maxAllowedWidth >= 470) {
+                options.push({ name: '480p - 4Mbps', maxWidth: 720, bitrate: 4000000 });
+                options.push({ name: '480p - 3.5Mbps', maxWidth: 720, bitrate: 3500000 });
+                options.push({ name: '480p - 3Mbps', maxWidth: 720, bitrate: 3000000 });
+                options.push({ name: '480p - 2.5Mbps', maxWidth: 720, bitrate: 2500000 });
+                options.push({ name: '480p - 2Mbps', maxWidth: 720, bitrate: 2000000 });
                 options.push({ name: '480p - 1.5Mbps', maxWidth: 720, bitrate: 1500000 });
-                options.push({ name: '480p - 1.0Mbps', maxWidth: 720, bitrate: 1000000 });
             }
 
             if (maxAllowedWidth >= 1270) {
@@ -645,6 +649,7 @@
                 options.push({ name: '720p - 1.5Mbps', maxWidth: 1280, bitrate: 1500000 });
             }
 
+            options.push({ name: '480p - 1.0Mbps', maxWidth: 720, bitrate: 1000000 });
             options.push({ name: '480p - 720 kbps', maxWidth: 720, bitrate: 700000 });
             options.push({ name: '480p - 420 kbps', maxWidth: 720, bitrate: 420000 });
             options.push({ name: '360p', maxWidth: 640, bitrate: 400000 });

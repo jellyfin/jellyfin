@@ -6,9 +6,6 @@
 
             config.IsStartupWizardCompleted = true;
             
-            // Try migrate everyone over to this. Eventually remove the config setting.
-            config.EnablePeoplePrefixSubFolders = true;
-
             ApiClient.updateServerConfiguration(config).done(function () {
 
                 ApiClient.getUsers().done(function (users) {

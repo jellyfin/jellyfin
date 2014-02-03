@@ -208,7 +208,6 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="prescanTasks">The prescan tasks.</param>
         /// <param name="postscanTasks">The postscan tasks.</param>
         /// <param name="peoplePrescanTasks">The people prescan tasks.</param>
-        /// <param name="savers">The savers.</param>
         public void AddParts(IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IVirtualFolderCreator> pluginFolders,
             IEnumerable<IItemResolver> resolvers,
@@ -277,7 +276,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="configuration">The configuration.</param>
         private void RecordConfigurationValues(ServerConfiguration configuration)
         {
-            _seasonZeroDisplayName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
+            _seasonZeroDisplayName = configuration.SeasonZeroDisplayName;
             _itemsByNamePath = ConfigurationManager.ApplicationPaths.ItemsByNamePath;
         }
 
@@ -309,8 +308,10 @@ namespace MediaBrowser.Server.Implementations.Library
                     await UpdateSeasonZeroNames(newSeasonZeroName, CancellationToken.None).ConfigureAwait(false);
                 }
 
-                // Any number of configuration settings could change the way the library is refreshed, so do that now
-                _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+                if (seasonZeroNameChanged || ibnPathChanged)
+                {
+                    _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+                }
             });
         }
 

@@ -784,7 +784,8 @@ namespace MediaBrowser.Api.Images
                 // Validate first
                 using (var validationStream = new MemoryStream(bytes))
                 {
-                    using (var image = Image.FromStream(validationStream))
+                    // This will throw an exception if it's not a valid image
+                    using (Image.FromStream(validationStream))
                     {
                     }
                 }
