@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -19,16 +20,18 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class ManualTvdbSeasonImageProvider : IRemoteImageProvider, IHasOrder
+    public class TvdbSeasonImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
     {
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IHttpClient _httpClient;
+        private readonly IFileSystem _fileSystem;
 
-        public ManualTvdbSeasonImageProvider(IServerConfigurationManager config, IHttpClient httpClient)
+        public TvdbSeasonImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _config = config;
             _httpClient = httpClient;
+            _fileSystem = fileSystem;
         }
 
         public string Name
@@ -63,14 +66,17 @@ namespace MediaBrowser.Providers.TV
             return images.Where(i => i.Type == imageType);
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
             var season = (Season)item;
+            var series = season.Series;
 
-            var seriesId = season.Series != null ? season.Series.GetProviderId(MetadataProviders.Tvdb) : null;
+            var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tvdb) : null;
 
             if (!string.IsNullOrEmpty(seriesId) && season.IndexNumber.HasValue)
             {
+                await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesId, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
+
                 // Process images
                 var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
 
@@ -78,9 +84,7 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    var result = GetImages(path, item.GetPreferredMetadataLanguage(), season.IndexNumber.Value, cancellationToken);
-
-                    return Task.FromResult(result);
+                    return GetImages(path, item.GetPreferredMetadataLanguage(), season.IndexNumber.Value, cancellationToken);
                 }
                 catch (FileNotFoundException)
                 {
@@ -88,7 +92,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            return Task.FromResult<IEnumerable<RemoteImageInfo>>(new RemoteImageInfo[] { });
+            return new RemoteImageInfo[] { };
         }
 
         private IEnumerable<RemoteImageInfo> GetImages(string xmlPath, string preferredLanguage, int seasonNumber, CancellationToken cancellationToken)
@@ -334,6 +338,31 @@ namespace MediaBrowser.Providers.TV
                 Url = url,
                 ResourcePool = TvdbSeriesProvider.Current.TvDbResourcePool
             });
+        }
+
+        public bool HasChanged(IHasMetadata item, DateTime date)
+        {
+            var season = (Season)item;
+            var series = season.Series;
+
+            if (series == null)
+            {
+                return false;
+            }
+
+            var tvdbId = series.GetProviderId(MetadataProviders.Tvdb);
+
+            if (!String.IsNullOrEmpty(tvdbId))
+            {
+                // Process images
+                var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, tvdbId), "banners.xml");
+
+                var fileInfo = new FileInfo(imagesXmlPath);
+
+                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+            }
+
+            return false;
         }
     }
 }

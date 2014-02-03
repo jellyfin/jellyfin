@@ -51,7 +51,7 @@ namespace MediaBrowser.Providers.BoxSets
 
         public string Name
         {
-            get { return "Media Browser xml"; }
+            get { return "Media Browser Xml"; }
         }
 
         protected override FileInfo GetXmlFile(string path)

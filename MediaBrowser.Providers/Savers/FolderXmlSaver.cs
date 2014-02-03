@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.Savers
         {
             get
             {
-                return "Media Browser xml";
+                return "Media Browser Xml";
             }
         }
 

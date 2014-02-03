@@ -914,11 +914,14 @@ namespace MediaBrowser.Controller.Entities
             return item;
         }
 
-        public override async Task<bool> RefreshMetadataDirect(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
+        protected override Task BeforeRefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            var changed = await base.RefreshMetadataDirect(cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
+            if (SupportsShortcutChildren && LocationType == LocationType.FileSystem)
+            {
+                RefreshLinkedChildren();
+            }
 
-            return (SupportsShortcutChildren && LocationType == LocationType.FileSystem && RefreshLinkedChildren()) || changed;
+            return base.BeforeRefreshMetadata(options, cancellationToken);
         }
 
         /// <summary>

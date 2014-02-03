@@ -1,38 +1,41 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.Music
+namespace MediaBrowser.Providers.TV
 {
-    class ArtistXmlProvider : BaseXmlProvider, ILocalMetadataProvider<MusicArtist>
+    /// <summary>
+    /// Class SeriesProviderFromXml
+    /// </summary>
+    public class SeasonXmlProvider : BaseXmlProvider, ILocalMetadataProvider<Season>
     {
         private readonly ILogger _logger;
 
-        public ArtistXmlProvider(IFileSystem fileSystem, ILogger logger)
+        public SeasonXmlProvider(IFileSystem fileSystem, ILogger logger)
             : base(fileSystem)
         {
             _logger = logger;
         }
 
-        public async Task<MetadataResult<MusicArtist>> GetMetadata(string path, CancellationToken cancellationToken)
+        public async Task<MetadataResult<Season>> GetMetadata(string path, CancellationToken cancellationToken)
         {
             path = GetXmlFile(path).FullName;
 
-            var result = new MetadataResult<MusicArtist>();
+            var result = new MetadataResult<Season>();
 
             await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                var item = new MusicArtist();
+                var person = new Season();
 
-                new BaseItemXmlParser<MusicArtist>(_logger).Fetch(item, path, cancellationToken);
+                new BaseItemXmlParser<Season>(_logger).Fetch(person, path, cancellationToken);
                 result.HasMetadata = true;
-                result.Item = item;
+                result.Item = person;
             }
             catch (FileNotFoundException)
             {
@@ -53,7 +56,8 @@ namespace MediaBrowser.Providers.Music
 
         protected override FileInfo GetXmlFile(string path)
         {
-            return new FileInfo(Path.Combine(path, "artist.xml"));
+            return new FileInfo(Path.Combine(path, "season.xml"));
         }
     }
 }
+

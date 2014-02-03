@@ -784,9 +784,17 @@ namespace MediaBrowser.Controller.Entities
                 ResetResolveArgs();
             }
 
+            await BeforeRefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+
             await ProviderManager.RefreshMetadata(this, options, cancellationToken).ConfigureAwait(false);
 
             return false;
+        }
+
+        private readonly Task _cachedTask = Task.FromResult(true);
+        protected virtual Task BeforeRefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            return _cachedTask;
         }
 
         [Obsolete]

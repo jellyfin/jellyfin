@@ -1,190 +1,303 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Music;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
-using System.Net;
-using MediaBrowser.Providers.Music;
+using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    /// <summary>
-    /// Class FanArtSeasonProvider
-    /// </summary>
-    class FanArtSeasonProvider : BaseMetadataProvider
+    public class FanartSeasonImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
     {
-        /// <summary>
-        /// The _provider manager
-        /// </summary>
-        private readonly IProviderManager _providerManager;
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly IServerConfigurationManager _config;
+        private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FanArtSeasonProvider"/> class.
-        /// </summary>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public FanArtSeasonProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
-            : base(logManager, configurationManager)
+        public FanartSeasonImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
-            _providerManager = providerManager;
+            _config = config;
+            _httpClient = httpClient;
             _fileSystem = fileSystem;
         }
 
-        public override ItemUpdateType ItemUpdateType
+        public string Name
         {
-            get
-            {
-                return ItemUpdateType.ImageUpdate;
-            }
+            get { return ProviderName; }
         }
-        
-        /// <summary>
-        /// Supportses the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public override bool Supports(BaseItem item)
+
+        public static string ProviderName
+        {
+            get { return "FanArt"; }
+        }
+
+        public bool Supports(IHasImages item)
         {
             return item is Season;
         }
 
-        /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public override MetadataProviderPriority Priority
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
         {
-            get { return MetadataProviderPriority.Third; }
+            return new List<ImageType>
+            {
+                ImageType.Backdrop, 
+                ImageType.Thumb
+            };
         }
 
-        protected override DateTime CompareDate(BaseItem item)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
+        {
+            var images = await GetAllImages(item, cancellationToken).ConfigureAwait(false);
+
+            return images.Where(i => i.Type == imageType);
+        }
+
+        public async Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
+        {
+            var list = new List<RemoteImageInfo>();
+
+            var season = (Season)item;
+            var series = season.Series;
+
+            if (series != null)
+            {
+                var id = series.GetProviderId(MetadataProviders.Tvdb);
+
+                if (!string.IsNullOrEmpty(id) && season.IndexNumber.HasValue)
+                {
+                    await FanArtTvProvider.Current.EnsureSeriesXml(id, cancellationToken).ConfigureAwait(false);
+
+                    var xmlPath = FanArtTvProvider.Current.GetFanartXmlPath(id);
+
+                    try
+                    {
+                        AddImages(list, season.IndexNumber.Value, xmlPath, cancellationToken);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        // No biggie. Don't blow up
+                    }
+                }
+            }
+
+            var language = item.GetPreferredMetadataLanguage();
+
+            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
+
+            // Sort first by width to prioritize HD versions
+            return list.OrderByDescending(i => i.Width ?? 0)
+                .ThenByDescending(i =>
+                {
+                    if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return 3;
+                    }
+                    if (!isLanguageEn)
+                    {
+                        if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return 2;
+                        }
+                    }
+                    if (string.IsNullOrEmpty(i.Language))
+                    {
+                        return isLanguageEn ? 3 : 2;
+                    }
+                    return 0;
+                })
+                .ThenByDescending(i => i.CommunityRating ?? 0)
+                .ThenByDescending(i => i.VoteCount ?? 0);
+        }
+
+        private void AddImages(List<RemoteImageInfo> list, int seasonNumber, string xmlPath, CancellationToken cancellationToken)
+        {
+            using (var streamReader = new StreamReader(xmlPath, Encoding.UTF8))
+            {
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, new XmlReaderSettings
+                {
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true,
+                    ValidationType = ValidationType.None
+                }))
+                {
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            switch (reader.Name)
+                            {
+                                case "series":
+                                    {
+                                        using (var subReader = reader.ReadSubtree())
+                                        {
+                                            AddImages(list, subReader, seasonNumber, cancellationToken);
+                                        }
+                                        break;
+                                    }
+
+                                default:
+                                    reader.Skip();
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void AddImages(List<RemoteImageInfo> list, XmlReader reader, int seasonNumber, CancellationToken cancellationToken)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "seasonthumbs":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Thumb, 500, 281, seasonNumber);
+                                }
+                                break;
+                            }
+                        case "showbackgrounds":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Backdrop, 1920, 1080, seasonNumber);
+                                }
+                                break;
+                            }
+                        default:
+                            {
+                                using (reader.ReadSubtree())
+                                {
+                                }
+                                break;
+                            }
+                    }
+                }
+            }
+        }
+
+        private void PopulateImageCategory(List<RemoteImageInfo> list, XmlReader reader, CancellationToken cancellationToken, ImageType type, int width, int height, int seasonNumber)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "seasonthumb":
+                        case "showbackground":
+                            {
+                                var url = reader.GetAttribute("url");
+                                var season = reader.GetAttribute("season");
+
+                                int imageSeasonNumber;
+
+                                if (!string.IsNullOrEmpty(url) &&
+                                    !string.IsNullOrEmpty(season) &&
+                                    int.TryParse(season, NumberStyles.Any, _usCulture, out imageSeasonNumber) &&
+                                    seasonNumber == imageSeasonNumber)
+                                {
+                                    var likesString = reader.GetAttribute("likes");
+                                    int likes;
+
+                                    var info = new RemoteImageInfo
+                                    {
+                                        RatingType = RatingType.Likes,
+                                        Type = type,
+                                        Width = width,
+                                        Height = height,
+                                        ProviderName = Name,
+                                        Url = url,
+                                        Language = reader.GetAttribute("lang")
+                                    };
+
+                                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Any, _usCulture, out likes))
+                                    {
+                                        info.CommunityRating = likes;
+                                    }
+
+                                    list.Add(info);
+                                }
+
+                                break;
+                            }
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+        }
+
+        public int Order
+        {
+            get { return 1; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = FanartArtistProvider.FanArtResourcePool
+            });
+        }
+
+        public bool HasChanged(IHasMetadata item, DateTime date)
         {
             var season = (Season)item;
-            var seriesId = season.Series != null ? season.Series.GetProviderId(MetadataProviders.Tvdb) : null;
+            var series = season.Series;
 
-            if (!string.IsNullOrEmpty(seriesId))
+            if (series == null)
+            {
+                return false;
+            }
+
+            var tvdbId = series.GetProviderId(MetadataProviders.Tvdb);
+
+            if (!String.IsNullOrEmpty(tvdbId))
             {
                 // Process images
-                var imagesXmlPath = FanArtTvProvider.Current.GetFanartXmlPath(seriesId);
+                var imagesXmlPath = FanArtTvProvider.Current.GetFanartXmlPath(tvdbId);
 
-                var imagesFileInfo = new FileInfo(imagesXmlPath);
+                var fileInfo = new FileInfo(imagesXmlPath);
 
-                if (imagesFileInfo.Exists)
-                {
-                    return _fileSystem.GetLastWriteTimeUtc(imagesFileInfo);
-                }
+                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }
 
-            return base.CompareDate(item);
-        }
-
-        /// <summary>
-        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var season = (Season) item;
-
-            // Process images
-            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartSeasonImageProvider.ProviderName).ConfigureAwait(false);
-            await FetchImages(season, images.ToList(), cancellationToken).ConfigureAwait(false);
-
-            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
-            return true;
-        }
-
-        /// <summary>
-        /// Fetches the images.
-        /// </summary>
-        /// <param name="season">The season.</param>
-        /// <param name="images">The images.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task FetchImages(Season season, List<RemoteImageInfo> images, CancellationToken cancellationToken)
-        {
-            var options = ConfigurationManager.Configuration.GetMetadataOptions("Season") ?? new MetadataOptions();
-
-            if (options.IsEnabled(ImageType.Thumb) && !season.HasImage(ImageType.Thumb) && !season.LockedFields.Contains(MetadataFields.Images))
-            {
-                await SaveImage(season, images, ImageType.Thumb, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        private async Task SaveImage(BaseItem item, List<RemoteImageInfo> images, ImageType type, CancellationToken cancellationToken)
-        {
-            foreach (var image in images.Where(i => i.Type == type))
-            {
-                try
-                {
-                    await _providerManager.SaveImage(item, image.Url, FanartArtistProvider.FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
-                    break;
-                }
-                catch (HttpException ex)
-                {
-                    // Sometimes fanart has bad url's in their xml
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
-                    {
-                        continue;
-                    }
-                    break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether [requires internet].
-        /// </summary>
-        /// <value><c>true</c> if [requires internet]; otherwise, <c>false</c>.</value>
-        public override bool RequiresInternet
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether [refresh on version change].
-        /// </summary>
-        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
-        protected override bool RefreshOnVersionChange
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Gets the provider version.
-        /// </summary>
-        /// <value>The provider version.</value>
-        protected override string ProviderVersion
-        {
-            get
-            {
-                return "3";
-            }
+            return false;
         }
     }
 }
