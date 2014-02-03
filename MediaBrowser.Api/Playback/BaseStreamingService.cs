@@ -307,9 +307,11 @@ namespace MediaBrowser.Api.Playback
 
             var hasFixedResolution = state.VideoRequest.HasFixedResolution;
 
+            var qualitySetting = GetQualitySetting();
+
             if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
-                switch (GetQualitySetting())
+                switch (qualitySetting)
                 {
                     case EncodingQuality.HighSpeed:
                         param = "-preset ultrafast";
@@ -322,9 +324,20 @@ namespace MediaBrowser.Api.Playback
                         break;
                 }
 
-                if (!hasFixedResolution)
+                if (!isHls)
                 {
-                    param += " -crf 18";
+                    switch (qualitySetting)
+                    {
+                        case EncodingQuality.HighSpeed:
+                            param += " -crf 23";
+                            break;
+                        case EncodingQuality.HighQuality:
+                            param += " -crf 20";
+                            break;
+                        case EncodingQuality.MaxQuality:
+                            param += " -crf 18";
+                            break;
+                    }
                 }
             }
 
@@ -336,7 +349,18 @@ namespace MediaBrowser.Api.Playback
 
                 if (!hasFixedResolution)
                 {
-                    param += " -crf 18";
+                    switch (qualitySetting)
+                    {
+                        case EncodingQuality.HighSpeed:
+                            param += " -crf 18";
+                            break;
+                        case EncodingQuality.HighQuality:
+                            param += " -crf 14";
+                            break;
+                        case EncodingQuality.MaxQuality:
+                            param += " -crf 10";
+                            break;
+                    }
                 }
             }
 
@@ -970,6 +994,7 @@ namespace MediaBrowser.Api.Playback
                     // With vpx when crf is used, b:v becomes a max rate
                     // https://trac.ffmpeg.org/wiki/vpxEncodingGuide
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                    //return string.Format(" -minrate:v ({0}*.95) -maxrate:v ({0}*1.05) -bufsize:v {0} -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
 
                 if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
