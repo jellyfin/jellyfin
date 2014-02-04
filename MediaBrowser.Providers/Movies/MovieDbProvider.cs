@@ -371,6 +371,11 @@ namespace MediaBrowser.Providers.Movies
         {
             var path = GetDataFilePath(item);
 
+            if (string.IsNullOrEmpty(path))
+            {
+                return _cachedTask;
+            }
+            
             var fileInfo = _fileSystem.GetFileSystemInfo(path);
 
             if (fileInfo.Exists)

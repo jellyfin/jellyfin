@@ -37,7 +37,10 @@ namespace MediaBrowser.Providers.Music
 
             if (string.IsNullOrEmpty(releaseId))
             {
-                var releaseResult = await GetReleaseResult(albumId.ArtistMusicBrainzId, albumId.AlbumArtist, albumId.Name, cancellationToken).ConfigureAwait(false);
+                string artistMusicBrainzId;
+                albumId.ArtistProviderIds.TryGetValue(MetadataProviders.Musicbrainz.ToString(), out artistMusicBrainzId);
+
+                var releaseResult = await GetReleaseResult(artistMusicBrainzId, albumId.AlbumArtist, albumId.Name, cancellationToken).ConfigureAwait(false);
 
                 result.Item = new MusicAlbum();
 

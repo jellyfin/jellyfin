@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -10,13 +10,13 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.LiveTv
+namespace MediaBrowser.Providers.Music
 {
-    public class ProgramMetadataService : MetadataService<LiveTvProgram, ItemId>
+    class MusicVideoMetadataService : MetadataService<MusicVideo, ItemId>
     {
         private readonly ILibraryManager _libraryManager;
 
-        public ProgramMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public MusicVideoMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
             : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
         {
             _libraryManager = libraryManager;
@@ -29,12 +29,23 @@ namespace MediaBrowser.Providers.LiveTv
         /// <param name="target">The target.</param>
         /// <param name="lockedFields">The locked fields.</param>
         /// <param name="replaceData">if set to <c>true</c> [replace data].</param>
-        protected override void MergeData(LiveTvProgram source, LiveTvProgram target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        /// <param name="mergeMetadataSettings">if set to <c>true</c> [merge metadata settings].</param>
+        protected override void MergeData(MusicVideo source, MusicVideo target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+
+            if (replaceData || string.IsNullOrEmpty(target.Album))
+            {
+                target.Album = source.Album;
+            }
+
+            if (replaceData || string.IsNullOrEmpty(target.Artist))
+            {
+                target.Artist = source.Artist;
+            }
         }
 
-        protected override Task SaveItem(LiveTvProgram item, ItemUpdateType reason, CancellationToken cancellationToken)
+        protected override Task SaveItem(MusicVideo item, ItemUpdateType reason, CancellationToken cancellationToken)
         {
             return _libraryManager.UpdateItem(item, reason, cancellationToken);
         }

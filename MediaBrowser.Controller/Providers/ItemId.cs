@@ -31,6 +31,8 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The year.</value>
         public int? Year { get; set; }
+        public int? IndexNumber { get; set; }
+        public int? ParentIndexNumber { get; set; }
 
         public ItemId()
         {
@@ -45,11 +47,17 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The album artist.</value>
         public string AlbumArtist { get; set; }
+
         /// <summary>
-        /// Gets or sets the artist music brainz identifier.
+        /// Gets or sets the artist provider ids.
         /// </summary>
-        /// <value>The artist music brainz identifier.</value>
-        public string ArtistMusicBrainzId { get; set; }
+        /// <value>The artist provider ids.</value>
+        public Dictionary<string, string> ArtistProviderIds { get; set; }
+
+        public AlbumId()
+        {
+            ArtistProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
     }
 
     public class GameId : ItemId
@@ -68,5 +76,17 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The path.</value>
         public string Path { get; set; }
+    }
+
+    public class EpisodeId : ItemId
+    {
+        public Dictionary<string, string> SeriesProviderIds { get; set; }
+
+        public int? IndexNumberEnd { get; set; }
+
+        public EpisodeId()
+        {
+            SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
     }
 }

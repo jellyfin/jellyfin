@@ -1,8 +1,8 @@
-﻿using System;
+﻿using MediaBrowser.Model.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -57,6 +57,12 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         /// <value>The absolute episode number.</value>
         public int? AbsoluteEpisodeNumber { get; set; }
+
+        /// <summary>
+        /// This is the ending episode number for double episodes.
+        /// </summary>
+        /// <value>The index number.</value>
+        public int? IndexNumberEnd { get; set; }
         
         /// <summary>
         /// We want to group into series not show individually in an index
@@ -89,7 +95,7 @@ namespace MediaBrowser.Controller.Entities.TV
                     return value;
                 }
 
-                var season = Parent as Season;
+                var season = Season;
 
                 return season != null ? season.IndexNumber : null;
             }
@@ -141,24 +147,20 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// The _series
-        /// </summary>
-        private Series _series;
-        /// <summary>
         /// This Episode's Series Instance
         /// </summary>
         /// <value>The series.</value>
         [IgnoreDataMember]
         public Series Series
         {
-            get { return _series ?? (_series = FindParent<Series>()); }
+            get { return FindParent<Series>(); }
         }
 
-        /// <summary>
-        /// This is the ending episode number for double episodes.
-        /// </summary>
-        /// <value>The index number.</value>
-        public int? IndexNumberEnd { get; set; }
+        [IgnoreDataMember]
+        public Season Season
+        {
+            get { return FindParent<Season>(); }
+        }
 
         /// <summary>
         /// Creates the name of the sort.
@@ -217,7 +219,7 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 // First see if the parent is a Season
-                var season = Parent as Season;
+                var season = Season;
 
                 if (season != null)
                 {
@@ -229,7 +231,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 // Parent is a Series
                 if (seasonNumber.HasValue)
                 {
-                    var series = Parent as Series;
+                    var series = Series;
 
                     if (series != null)
                     {

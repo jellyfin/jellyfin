@@ -1,13 +1,11 @@
-﻿using System;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Persistence;
+﻿using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace MediaBrowser.Providers.TV
@@ -17,28 +15,14 @@ namespace MediaBrowser.Providers.TV
     /// </summary>
     public class EpisodeXmlParser : BaseItemXmlParser<Episode>
     {
-        private readonly IItemRepository _itemRepo;
-
-        private Task _chaptersTask = null;
-
-        public EpisodeXmlParser(ILogger logger, IItemRepository itemRepo)
+        public EpisodeXmlParser(ILogger logger)
             : base(logger)
         {
-            _itemRepo = itemRepo;
         }
 
-        public async Task FetchAsync(Episode item, string metadataFile, CancellationToken cancellationToken)
+        public void FetchAsync(Episode item, string metadataFile, CancellationToken cancellationToken)
         {
-            _chaptersTask = null;
-
-            Fetch(item, metadataFile, cancellationToken);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (_chaptersTask != null)
-            {
-                await _chaptersTask.ConfigureAwait(false);
-            }
+             Fetch(item, metadataFile, cancellationToken);
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");

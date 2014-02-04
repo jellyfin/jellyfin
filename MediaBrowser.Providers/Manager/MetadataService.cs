@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -230,13 +231,23 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual TIdType GetId(TItemType item)
         {
-            return new TIdType
+            var id = new TIdType
             {
                 MetadataCountryCode = item.GetPreferredMetadataCountryCode(),
                 MetadataLanguage = item.GetPreferredMetadataLanguage(),
                 Name = item.Name,
                 ProviderIds = item.ProviderIds
             };
+
+            var baseItem = item as BaseItem;
+
+            if (baseItem != null)
+            {
+                id.IndexNumber = baseItem.IndexNumber;
+                id.ParentIndexNumber = baseItem.ParentIndexNumber;
+            }
+
+            return id;
         }
 
         public bool CanRefresh(IHasMetadata item)
@@ -253,6 +264,7 @@ namespace MediaBrowser.Providers.Manager
             };
 
             var temp = CreateNew();
+            temp.Path = item.Path;
 
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
@@ -313,27 +325,30 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var provider in providers.OfType<ICustomMetadataProvider<TItemType>>())
             {
-                Logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
-
-                try
-                {
-                    await provider.FetchAsync(item, cancellationToken).ConfigureAwait(false);
-
-                    refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    refreshResult.Status = ProviderRefreshStatus.CompletedWithErrors;
-                    refreshResult.ErrorMessage = ex.Message;
-                    Logger.ErrorException("Error in {0}", ex, provider.Name);
-                }
+                await RunCustomProvider(provider, item, refreshResult, cancellationToken).ConfigureAwait(false);
             }
             
             return refreshResult;
+        }
+
+        private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, RefreshResult refreshResult, CancellationToken cancellationToken)
+        {
+            Logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
+
+            try
+            {
+                refreshResult.UpdateType = refreshResult.UpdateType | await provider.FetchAsync(item, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                refreshResult.Status = ProviderRefreshStatus.CompletedWithErrors;
+                refreshResult.ErrorMessage = ex.Message;
+                Logger.ErrorException("Error in {0}", ex, provider.Name);
+            }
         }
 
         protected virtual TItemType CreateNew()

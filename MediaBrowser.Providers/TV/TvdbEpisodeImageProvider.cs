@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -6,6 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -17,16 +19,18 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbEpisodeImageProvider : IRemoteImageProvider
+    public class TvdbEpisodeImageProvider : IRemoteImageProvider, IHasChangeMonitor
     {
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IHttpClient _httpClient;
+        private readonly IFileSystem _fileSystem;
 
-        public TvdbEpisodeImageProvider(IServerConfigurationManager config, IHttpClient httpClient)
+        public TvdbEpisodeImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _config = config;
             _httpClient = httpClient;
+            _fileSystem = fileSystem;
         }
 
         public string Name
@@ -65,7 +69,7 @@ namespace MediaBrowser.Providers.TV
                 // Process images
                 var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
 
-                var files = TvdbEpisodeProvider.Current.GetEpisodeXmlFiles(episode, seriesDataPath);
+                var files = TvdbEpisodeProvider.Current.GetEpisodeXmlFiles(episode.ParentIndexNumber, episode.IndexNumber, episode.IndexNumberEnd, seriesDataPath);
 
                 var result = files.Select(i => GetImageInfo(i, cancellationToken))
                     .Where(i => i != null);
@@ -185,6 +189,28 @@ namespace MediaBrowser.Providers.TV
                 Url = url,
                 ResourcePool = TvdbSeriesProvider.Current.TvDbResourcePool
             });
+        }
+
+        public bool HasChanged(IHasMetadata item, DateTime date)
+        {
+            if (!item.HasImage(ImageType.Primary))
+            {
+                var episode = (Episode)item;
+                var series = episode.Series;
+
+                var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tvdb) : null;
+
+                if (!string.IsNullOrEmpty(seriesId))
+                {
+                    // Process images
+                    var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
+
+                    var files = TvdbEpisodeProvider.Current.GetEpisodeXmlFiles(episode.ParentIndexNumber, episode.IndexNumber, episode.IndexNumberEnd, seriesDataPath);
+
+                    return files.Any(i => _fileSystem.GetLastWriteTimeUtc(i) > date);
+                }
+            }
+            return false;
         }
     }
 }

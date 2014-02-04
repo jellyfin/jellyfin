@@ -11,13 +11,16 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
-    [Route("/Items/{Id}/Refresh", "POST")]
-    [Api(Description = "Refreshes metadata for an item")]
-    public class RefreshItem : IReturnVoid
+    public class BaseRefreshRequest : IReturnVoid
     {
         [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool Forced { get; set; }
+    }
 
+    [Route("/Items/{Id}/Refresh", "POST")]
+    [Api(Description = "Refreshes metadata for an item")]
+    public class RefreshItem : BaseRefreshRequest
+    {
         [ApiMember(Name = "Recursive", Description = "Indicates if the refresh should occur recursively.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool Recursive { get; set; }
 
@@ -27,66 +30,48 @@ namespace MediaBrowser.Api
 
     [Route("/Artists/{Name}/Refresh", "POST")]
     [Api(Description = "Refreshes metadata for an artist")]
-    public class RefreshArtist : IReturnVoid
+    public class RefreshArtist : BaseRefreshRequest
     {
-        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
-        public bool Forced { get; set; }
-
         [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Name { get; set; }
     }
 
     [Route("/Genres/{Name}/Refresh", "POST")]
     [Api(Description = "Refreshes metadata for a genre")]
-    public class RefreshGenre : IReturnVoid
+    public class RefreshGenre : BaseRefreshRequest
     {
-        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
-        public bool Forced { get; set; }
-
         [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Name { get; set; }
     }
 
     [Route("/MusicGenres/{Name}/Refresh", "POST")]
     [Api(Description = "Refreshes metadata for a music genre")]
-    public class RefreshMusicGenre : IReturnVoid
+    public class RefreshMusicGenre : BaseRefreshRequest
     {
-        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
-        public bool Forced { get; set; }
-
         [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Name { get; set; }
     }
 
     [Route("/GameGenres/{Name}/Refresh", "POST")]
     [Api(Description = "Refreshes metadata for a game genre")]
-    public class RefreshGameGenre : IReturnVoid
+    public class RefreshGameGenre : BaseRefreshRequest
     {
-        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
-        public bool Forced { get; set; }
-
         [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Name { get; set; }
     }
 
     [Route("/Persons/{Name}/Refresh", "POST")]
     [Api(Description = "Refreshes metadata for a person")]
-    public class RefreshPerson : IReturnVoid
+    public class RefreshPerson : BaseRefreshRequest
     {
-        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
-        public bool Forced { get; set; }
-
         [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Name { get; set; }
     }
 
     [Route("/Studios/{Name}/Refresh", "POST")]
     [Api(Description = "Refreshes metadata for a studio")]
-    public class RefreshStudio : IReturnVoid
+    public class RefreshStudio : BaseRefreshRequest
     {
-        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
-        public bool Forced { get; set; }
-
         [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Name { get; set; }
     }
@@ -132,11 +117,7 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ReplaceAllMetadata = request.Forced,
-
-                }, CancellationToken.None).ConfigureAwait(false);
+                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -157,11 +138,7 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ReplaceAllMetadata = request.Forced,
-
-                }, CancellationToken.None).ConfigureAwait(false);
+                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -182,11 +159,7 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ReplaceAllMetadata = request.Forced,
-
-                }, CancellationToken.None).ConfigureAwait(false);
+                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -207,11 +180,7 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ReplaceAllMetadata = request.Forced,
-
-                }, CancellationToken.None).ConfigureAwait(false);
+                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -232,11 +201,7 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ReplaceAllMetadata = request.Forced,
-
-                }, CancellationToken.None).ConfigureAwait(false);
+                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -257,11 +222,7 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ReplaceAllMetadata = request.Forced,
-
-                }, CancellationToken.None).ConfigureAwait(false);
+                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -291,11 +252,7 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ReplaceAllMetadata = request.Forced,
-
-                }, CancellationToken.None).ConfigureAwait(false);
+                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
 
                 if (item.IsFolder)
                 {
@@ -328,13 +285,11 @@ namespace MediaBrowser.Api
         /// <returns>Task.</returns>
         private async Task RefreshCollectionFolderChildren(RefreshItem request, CollectionFolder collectionFolder)
         {
+            var options = GetRefreshOptions(request);
+
             foreach (var child in collectionFolder.Children.ToList())
             {
-                await child.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ReplaceAllMetadata = request.Forced,
-
-                }, CancellationToken.None).ConfigureAwait(false);
+                await child.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
 
                 if (child.IsFolder)
                 {
@@ -343,6 +298,16 @@ namespace MediaBrowser.Api
                     await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive, request.Forced).ConfigureAwait(false);
                 }
             }
+        }
+
+        private MetadataRefreshOptions GetRefreshOptions(BaseRefreshRequest request)
+        {
+            return new MetadataRefreshOptions
+            {
+                MetadataRefreshMode = request.Forced ? MetadataRefreshMode.FullRefresh : MetadataRefreshMode.EnsureMetadata,
+                ImageRefreshMode = request.Forced ? ImageRefreshMode.FullRefresh : ImageRefreshMode.Default,
+                ReplaceAllMetadata = request.Forced
+            };
         }
     }
 }

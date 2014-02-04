@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Providers
         public ImageType Type { get; set; }
     }
 
-    public interface IDynamicImageProvider : ILocalImageProvider
+    public interface IDynamicImageProvider : IImageProvider
     {
         /// <summary>
         /// Gets the supported images.

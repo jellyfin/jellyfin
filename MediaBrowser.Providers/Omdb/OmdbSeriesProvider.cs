@@ -1,5 +1,8 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Serialization;
 using System.Threading;
@@ -7,7 +10,8 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Omdb
 {
-    public class OmdbSeriesProvider : ICustomMetadataProvider<Series>
+    public class OmdbSeriesProvider : ICustomMetadataProvider<Series>, 
+        ICustomMetadataProvider<Movie>, ICustomMetadataProvider<Trailer>
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
@@ -18,14 +22,30 @@ namespace MediaBrowser.Providers.Omdb
             _httpClient = httpClient;
         }
 
-        public Task FetchAsync(Series item, CancellationToken cancellationToken)
+        public string Name
+        {
+            get { return "OMDb"; }
+        }
+
+        public Task<ItemUpdateType> FetchAsync(Series item, CancellationToken cancellationToken)
         {
             return new OmdbProvider(_jsonSerializer, _httpClient).Fetch(item, cancellationToken);
         }
 
-        public string Name
+        public Task<ItemUpdateType> FetchAsync(Movie item, CancellationToken cancellationToken)
         {
-            get { return "OMDb"; }
+            return new OmdbProvider(_jsonSerializer, _httpClient).Fetch(item, cancellationToken);
+        }
+
+        private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.Unspecified);
+        public Task<ItemUpdateType> FetchAsync(Trailer item, CancellationToken cancellationToken)
+        {
+            if (item.IsLocalTrailer)
+            {
+                return _cachedTask;
+            }
+
+            return new OmdbProvider(_jsonSerializer, _httpClient).Fetch(item, cancellationToken);
         }
     }
 }

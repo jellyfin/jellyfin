@@ -112,7 +112,7 @@ namespace MediaBrowser.Providers.Music
 
             if (artist != null)
             {
-                id.ArtistMusicBrainzId = artist.GetProviderId(MetadataProviders.Musicbrainz);
+                id.ArtistProviderIds = artist.ProviderIds;
                 id.AlbumArtist = id.AlbumArtist ?? artist.Name;
             }
 

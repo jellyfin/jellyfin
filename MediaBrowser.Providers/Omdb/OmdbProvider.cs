@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -26,13 +27,13 @@ namespace MediaBrowser.Providers.Omdb
             _httpClient = httpClient;
         }
 
-        public async Task Fetch(BaseItem item, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> Fetch(BaseItem item, CancellationToken cancellationToken)
         {
             var imdbId = item.GetProviderId(MetadataProviders.Imdb);
 
             if (string.IsNullOrEmpty(imdbId))
             {
-                return;
+                return ItemUpdateType.Unspecified;
             }
 
             var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;
@@ -97,6 +98,8 @@ namespace MediaBrowser.Providers.Omdb
 
                 ParseAdditionalMetadata(item, result);
             }
+
+            return ItemUpdateType.MetadataDownload;
         }
 
         private void ParseAdditionalMetadata(BaseItem item, RootObject result)

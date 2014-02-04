@@ -17,6 +17,12 @@ namespace MediaBrowser.Controller.Providers
         string GetPreferredMetadataCountryCode();
 
         /// <summary>
+        /// Gets the date modified.
+        /// </summary>
+        /// <value>The date modified.</value>
+        DateTime DateModified { get; }
+
+        /// <summary>
         /// Gets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
