@@ -59,7 +59,7 @@ namespace MediaBrowser.Api
                 request, item => item is MusicAlbum,
                 GetAlbumSimilarityScore);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

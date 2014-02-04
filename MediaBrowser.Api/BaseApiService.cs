@@ -21,7 +21,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The logger.</value>
         public ILogger Logger { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the HTTP result factory.
         /// </summary>
@@ -58,15 +58,26 @@ namespace MediaBrowser.Api
         /// <param name="cacheKey">The cache key.</param>
         /// <param name="lastDateModified">The last date modified.</param>
         /// <param name="cacheDuration">Duration of the cache.</param>
-        /// <param name="factoryFn">The factory fn.</param>
+        /// <param name="factoryFn">The factory function.</param>
         /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentNullException">cacheKey</exception>
-        protected object ToOptimizedResultUsingCache<T>(Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn)
-               where T : class
+        protected object ToOptimizedResultUsingCache<T>(Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn)
+           where T : class
         {
             return ResultFactory.GetOptimizedResultUsingCache(Request, cacheKey, lastDateModified, cacheDuration, factoryFn);
         }
 
+        /// <summary>
+        /// To the optimized serialized result using cache.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="result">The result.</param>
+        /// <returns>System.Object.</returns>
+        protected object ToOptimizedSerializedResultUsingCache<T>(T result)
+           where T : class
+        {
+            return ResultFactory.GetOptimizedSerializedResultUsingCache(Request, result);
+        }
+        
         /// <summary>
         /// To the cached result.
         /// </summary>

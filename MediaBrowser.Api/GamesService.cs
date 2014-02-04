@@ -113,7 +113,7 @@ namespace MediaBrowser.Api
                 .Select(i => GetSummary(i, user))
                 .ToList();
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -134,7 +134,7 @@ namespace MediaBrowser.Api
                 })
                 .ToList();
 
-            return ToOptimizedResult(lookup);
+            return ToOptimizedSerializedResultUsingCache(lookup);
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace MediaBrowser.Api
                 request, item => item is Game,
                 SimilarItemsHelper.GetSimiliarityScore);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
     }
 }

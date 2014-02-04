@@ -95,7 +95,7 @@ namespace MediaBrowser.Api.Library
                 StartIndex = request.StartIndex
             });
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public void Delete(DeleteOriginalFile request)

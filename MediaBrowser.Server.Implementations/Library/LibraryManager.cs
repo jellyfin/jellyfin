@@ -270,6 +270,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private string _seasonZeroDisplayName;
 
+        private bool _wizardCompleted;
         /// <summary>
         /// Records the configuration values.
         /// </summary>
@@ -278,6 +279,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             _seasonZeroDisplayName = configuration.SeasonZeroDisplayName;
             _itemsByNamePath = ConfigurationManager.ApplicationPaths.ItemsByNamePath;
+            _wizardCompleted = configuration.IsStartupWizardCompleted;
         }
 
         /// <summary>
@@ -298,6 +300,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var newSeasonZeroName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
             var seasonZeroNameChanged = !string.Equals(_seasonZeroDisplayName, newSeasonZeroName, StringComparison.CurrentCulture);
+            var wizardChanged = config.IsStartupWizardCompleted != _wizardCompleted;
 
             RecordConfigurationValues(config);
 
@@ -308,7 +311,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     await UpdateSeasonZeroNames(newSeasonZeroName, CancellationToken.None).ConfigureAwait(false);
                 }
 
-                if (seasonZeroNameChanged || ibnPathChanged)
+                if (seasonZeroNameChanged || ibnPathChanged || wizardChanged)
                 {
                     _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
                 }
@@ -1479,7 +1482,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     try
                     {
 
-                        return i.ResolveArgs.PhysicalLocations.Contains(item.Path);
+                        return i.PhysicalLocations.Contains(item.Path);
                     }
                     catch (IOException ex)
                     {

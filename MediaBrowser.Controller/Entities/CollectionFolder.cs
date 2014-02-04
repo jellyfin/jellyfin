@@ -84,7 +84,7 @@ namespace MediaBrowser.Controller.Entities
 
             try
             {
-                locationsDicionary = ResolveArgs.PhysicalLocations.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+                locationsDicionary = PhysicalLocations.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
             }
             catch (IOException ex)
             {
@@ -116,7 +116,7 @@ namespace MediaBrowser.Controller.Entities
 
             try
             {
-                locationsDicionary = ResolveArgs.PhysicalLocations.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+                locationsDicionary = PhysicalLocations.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
             }
             catch (IOException ex)
             {

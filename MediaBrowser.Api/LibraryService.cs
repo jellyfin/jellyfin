@@ -284,7 +284,7 @@ namespace MediaBrowser.Api
         {
             var result = GetAncestors(request);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>
@@ -337,7 +337,7 @@ namespace MediaBrowser.Api
                     try
                     {
                         return i.LocationType == LocationType.FileSystem &&
-                               i.ResolveArgs.PhysicalLocations.Contains(item.Path);
+                               i.PhysicalLocations.Contains(item.Path);
                     }
                     catch (Exception ex)
                     {
@@ -360,7 +360,7 @@ namespace MediaBrowser.Api
         {
             var result = GetCriticReviews(request);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>
@@ -405,7 +405,7 @@ namespace MediaBrowser.Api
                 UniqueTypes = items.Select(i => i.GetClientTypeName()).Distinct().ToList()
             };
 
-            return ToOptimizedResult(counts);
+            return ToOptimizedSerializedResultUsingCache(counts);
         }
 
         private IEnumerable<T> FilterItems<T>(IEnumerable<T> items, GetItemCounts request, Guid userId)
@@ -552,7 +552,7 @@ namespace MediaBrowser.Api
 
             });
 
-            return ToOptimizedResult(new AllThemeMediaResult
+            return ToOptimizedSerializedResultUsingCache(new AllThemeMediaResult
             {
                 ThemeSongsResult = themeSongs,
                 ThemeVideosResult = themeVideos,
@@ -570,7 +570,7 @@ namespace MediaBrowser.Api
         {
             var result = GetThemeSongs(request);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         private ThemeMediaResult GetThemeSongs(GetThemeSongs request)
@@ -638,7 +638,7 @@ namespace MediaBrowser.Api
         {
             var result = GetThemeVideos(request);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public ThemeMediaResult GetThemeVideos(GetThemeVideos request)
@@ -748,7 +748,7 @@ namespace MediaBrowser.Api
                 })
                 .ToList();
 
-            return ToOptimizedResult(lookup);
+            return ToOptimizedSerializedResultUsingCache(lookup);
         }
 
         public ThemeMediaResult GetSoundtrackSongs(string id, Guid? userId, bool inheritFromParent)

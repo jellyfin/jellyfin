@@ -176,7 +176,7 @@ namespace MediaBrowser.Api.Images
 
             var result = GetImageProviders(item);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetItemByNameRemoteImageProviders request)
@@ -188,7 +188,7 @@ namespace MediaBrowser.Api.Images
 
             var result = GetImageProviders(item);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         private List<ImageProviderInfo> GetImageProviders(BaseItem item)
@@ -202,7 +202,7 @@ namespace MediaBrowser.Api.Images
 
             var result = GetRemoteImageResult(item, request);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetItemByNameRemoteImages request)

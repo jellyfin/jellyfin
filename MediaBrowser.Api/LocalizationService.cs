@@ -62,7 +62,7 @@ namespace MediaBrowser.Api
         {
             var result = _localization.GetParentalRatings().ToList();
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace MediaBrowser.Api
         {
             var result = _localization.GetCountries().ToList();
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace MediaBrowser.Api
         {
             var result = _localization.GetCultures().ToList();
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
     }
 

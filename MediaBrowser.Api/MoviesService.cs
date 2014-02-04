@@ -76,7 +76,7 @@ namespace MediaBrowser.Api
                 request, item => item is Movie || (item is Trailer && request.IncludeTrailers),
                 SimilarItemsHelper.GetSimiliarityScore);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
     }
 }

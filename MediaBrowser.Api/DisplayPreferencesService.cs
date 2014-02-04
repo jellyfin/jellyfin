@@ -88,7 +88,7 @@ namespace MediaBrowser.Api
 
             var result = _displayPreferencesManager.GetDisplayPreferences(displayPreferencesId, request.UserId, request.Client);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

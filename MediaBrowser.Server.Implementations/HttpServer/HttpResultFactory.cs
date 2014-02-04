@@ -1,9 +1,10 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
+using ServiceStack;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,8 +12,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using ServiceStack;
-using ServiceStack.Web;
 using MimeTypes = MediaBrowser.Common.Net.MimeTypes;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
@@ -27,14 +26,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpResultFactory"/> class.
+        /// Initializes a new instance of the <see cref="HttpResultFactory" /> class.
         /// </summary>
         /// <param name="logManager">The log manager.</param>
-        public HttpResultFactory(ILogManager logManager, IFileSystem fileSystem)
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        public HttpResultFactory(ILogManager logManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
         {
             _fileSystem = fileSystem;
+            _jsonSerializer = jsonSerializer;
             _logger = logManager.GetLogger("HttpResultFactory");
         }
 
@@ -151,12 +154,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="factoryFn">The factory fn.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// cacheKey
+        /// <exception cref="System.ArgumentNullException">cacheKey
         /// or
-        /// factoryFn
-        /// </exception>
-        public object GetOptimizedResultUsingCache<T>(IRequest requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, IDictionary<string, string> responseHeaders = null)
+        /// factoryFn</exception>
+        public object GetOptimizedResultUsingCache<T>(IRequest requestContext, Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, IDictionary<string, string> responseHeaders = null)
                where T : class
         {
             if (cacheKey == Guid.Empty)
@@ -199,7 +200,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="System.ArgumentNullException">cacheKey</exception>
-        public object GetCachedResult<T>(IRequest requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string, string> responseHeaders = null)
+        public object GetCachedResult<T>(IRequest requestContext, Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string, string> responseHeaders = null)
           where T : class
         {
             if (cacheKey == Guid.Empty)
@@ -660,6 +661,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             throw error;
+        }
+
+        public object GetOptimizedSerializedResultUsingCache<T>(IRequest request, T result)
+           where T : class
+        {
+            var json = _jsonSerializer.SerializeToString(result);
+            var cacheKey = json.GetMD5();
+
+            return GetOptimizedResultUsingCache(request, cacheKey, null, null, () => result);
         }
     }
 }

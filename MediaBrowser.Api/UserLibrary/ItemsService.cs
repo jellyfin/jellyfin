@@ -268,7 +268,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var result = GetItems(request);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

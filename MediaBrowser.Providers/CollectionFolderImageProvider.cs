@@ -31,14 +31,14 @@ namespace MediaBrowser.Providers
 
         protected override FileSystemInfo GetImage(BaseItem item, ItemResolveArgs args, string filenameWithoutExtension)
         {
-            return item.ResolveArgs.PhysicalLocations
+            return item.PhysicalLocations
                 .Select(i => GetImageFromLocation(i, filenameWithoutExtension))
                 .FirstOrDefault(i => i != null);
         }
 
         protected override Guid GetFileSystemStamp(IEnumerable<BaseItem> items)
         {
-            var files = items.SelectMany(i => i.ResolveArgs.PhysicalLocations)
+            var files = items.SelectMany(i => i.PhysicalLocations)
                 .Select(i => new DirectoryInfo(i))
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .Where(i =>

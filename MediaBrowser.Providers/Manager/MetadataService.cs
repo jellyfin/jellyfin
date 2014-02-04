@@ -100,8 +100,6 @@ namespace MediaBrowser.Providers.Manager
                     refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
                     refreshResult.AddImageProvidersRefreshed(result.Providers);
                 }
-
-                updateType = updateType | AfterMetadataRefresh(itemOfType);
             }
 
             // Next run remote image providers, but only if local image providers didn't throw an exception
@@ -119,6 +117,8 @@ namespace MediaBrowser.Providers.Manager
                     refreshResult.AddImageProvidersRefreshed(result.Providers);
                 }
             }
+
+            updateType = updateType | BeforeSave(itemOfType);
 
             var providersHadChanges = updateType > ItemUpdateType.Unspecified;
 
@@ -149,20 +149,21 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Afters the metadata refresh.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        protected virtual ItemUpdateType AfterMetadataRefresh(TItemType item)
-        {
-            return ItemUpdateType.Unspecified;
-        }
-
-        /// <summary>
         /// Befores the metadata refresh.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>ItemUpdateType.</returns>
         protected virtual ItemUpdateType BeforeMetadataRefresh(TItemType item)
+        {
+            return ItemUpdateType.Unspecified;
+        }
+
+        /// <summary>
+        /// Befores the save.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>ItemUpdateType.</returns>
+        protected virtual ItemUpdateType BeforeSave(TItemType item)
         {
             return ItemUpdateType.Unspecified;
         }

@@ -250,7 +250,7 @@ namespace MediaBrowser.ServerApplication
         {
             await base.RegisterResources(progress).ConfigureAwait(false);
 
-            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager));
+            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager, JsonSerializer));
 
             RegisterSingleInstance<IServerApplicationHost>(this);
             RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
