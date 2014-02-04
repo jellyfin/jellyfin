@@ -188,8 +188,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     FileName = FFProbePath,
-                    Arguments =
-                        string.Format(
+                    Arguments = string.Format(
                             "{0} -i {1} -threads 0 -v info -print_format json -show_streams -show_format",
                             probeSizeArgument, inputPath).Trim(),
 
@@ -830,6 +829,28 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             await ExtractImageInternal(inputArgument, type, threedFormat, offset, outputPath, false, resourcePool, cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task<Stream> ExtractImage(string[] inputFiles, InputType type, bool isAudio,
+            Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
+        {
+            var resourcePool = isAudio ? _audioImageResourcePool : _videoImageResourcePool;
+
+            var inputArgument = GetInputArgument(inputFiles, type);
+
+            if (!isAudio)
+            {
+                try
+                {
+                    return await ExtractImageInternal(inputArgument, type, threedFormat, offset, true, resourcePool, cancellationToken).ConfigureAwait(false);
+                }
+                catch
+                {
+                    _logger.Error("I-frame image extraction failed, will attempt standard way. Input: {0}", inputArgument);
+                }
+            }
+
+            return await ExtractImageInternal(inputArgument, type, threedFormat, offset, false, resourcePool, cancellationToken).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Extracts the image.
         /// </summary>
@@ -958,13 +979,129 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
         }
 
+        private async Task<Stream> ExtractImageInternal(string inputPath, InputType type, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(inputPath))
+            {
+                throw new ArgumentNullException("inputPath");
+            }
+
+            // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar then scale to width 600. 
+            // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
+            var vf = "crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
+
+            if (threedFormat.HasValue)
+            {
+                switch (threedFormat.Value)
+                {
+                    case Video3DFormat.HalfSideBySide:
+                        vf = "crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
+                        // hsbs crop width in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600. Work out the correct height based on the display aspect it will maintain the aspect where -1 in this case (3d) may not.
+                        break;
+                    case Video3DFormat.FullSideBySide:
+                        vf = "crop=iw/2:ih:0:0,setdar=dar=a,,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
+                        //fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to 600.
+                        break;
+                    case Video3DFormat.HalfTopAndBottom:
+                        vf = "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
+                        //htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600
+                        break;
+                    case Video3DFormat.FullTopAndBottom:
+                        vf = "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
+                        // ftab crop heigt in half, set the display aspect,crop out any black bars we may have made the scale width to 600
+                        break;
+                }
+            }
+
+            // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
+            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"thumbnail,{2}\" -f image2 \"{1}\"", inputPath, "-", vf) :
+                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf);
+
+            var probeSize = GetProbeSizeArgument(type);
+
+            if (!string.IsNullOrEmpty(probeSize))
+            {
+                args = probeSize + " " + args;
+            }
+
+            if (offset.HasValue)
+            {
+                args = string.Format("-ss {0} ", Convert.ToInt32(offset.Value.TotalSeconds)).ToString(UsCulture) + args;
+            }
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    FileName = FFMpegPath,
+                    Arguments = args,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+
+            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            process.Start();
+
+            var memoryStream = new MemoryStream();
+
+            // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
+            process.StandardOutput.BaseStream.CopyToAsync(memoryStream);
+
+            // MUST read both stdout and stderr asynchronously or a deadlock may occurr
+            process.BeginErrorReadLine();
+
+            var ranToCompletion = process.WaitForExit(10000);
+
+            if (!ranToCompletion)
+            {
+                try
+                {
+                    _logger.Info("Killing ffmpeg process");
+
+                    process.Kill();
+
+                    process.WaitForExit(1000);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error killing process", ex);
+                }
+            }
+            
+            resourcePool.Release();
+
+            var exitCode = ranToCompletion ? process.ExitCode : -1;
+
+            process.Dispose();
+
+            if (exitCode == -1 || memoryStream.Length == 0)
+            {
+                memoryStream.Dispose();
+
+                var msg = string.Format("ffmpeg image extraction failed for {0}", inputPath);
+
+                _logger.Error(msg);
+
+                throw new ApplicationException(msg);
+            }
+
+            memoryStream.Position = 0;
+            return memoryStream;
+        }
+
         /// <summary>
         /// Starts the and wait for process.
         /// </summary>
         /// <param name="process">The process.</param>
         /// <param name="timeout">The timeout.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool StartAndWaitForProcess(Process process, int timeout = 12000)
+        private bool StartAndWaitForProcess(Process process, int timeout = 10000)
         {
             process.Start();
 

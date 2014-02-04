@@ -64,6 +64,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdultVideos\AdultVideoMetadataService.cs" />
     <Compile Include="All\LocalImageProvider.cs" />
     <Compile Include="Books\BookMetadataService.cs" />
     <Compile Include="BoxSets\BoxSetMetadataService.cs" />
@@ -89,7 +90,11 @@
     <Compile Include="Games\GameSystemXmlProvider.cs" />
     <Compile Include="ImageFromMediaLocationProvider.cs" />
     <Compile Include="ImagesByNameProvider.cs" />
+    <Compile Include="MediaInfo\FFProbeHelpers.cs" />
+    <Compile Include="MediaInfo\FFProbeProvider.cs" />
+    <Compile Include="MediaInfo\FFProbeVideoInfo.cs" />
     <Compile Include="Movies\MovieDbSearch.cs" />
+    <Compile Include="Movies\MovieXmlProvider.cs" />
     <Compile Include="MusicGenres\MusicGenreImageProvider.cs" />
     <Compile Include="GameGenres\GameGenreImageProvider.cs" />
     <Compile Include="Genres\GenreImageProvider.cs" />
@@ -107,6 +112,8 @@
     <Compile Include="Music\ArtistMetadataService.cs" />
     <Compile Include="Music\LastfmArtistProvider.cs" />
     <Compile Include="Music\MusicBrainzArtistProvider.cs" />
+    <Compile Include="Music\MusicVideoMetadataService.cs" />
+    <Compile Include="Music\MusicVideoXmlProvider.cs" />
     <Compile Include="Omdb\OmdbProvider.cs" />
     <Compile Include="Omdb\OmdbSeriesProvider.cs" />
     <Compile Include="People\MovieDbPersonImageProvider.cs" />
@@ -150,9 +157,9 @@
     <Compile Include="Savers\XmlSaverHelpers.cs" />
     <Compile Include="Studios\StudiosImageProvider.cs" />
     <Compile Include="Studios\StudioMetadataService.cs" />
-    <Compile Include="TV\EpisodeImageFromMediaLocationProvider.cs" />
-    <Compile Include="TV\EpisodeIndexNumberProvider.cs" />
-    <Compile Include="TV\EpisodeProviderFromXml.cs" />
+    <Compile Include="TV\EpisodeLocalImageProvider.cs" />
+    <Compile Include="TV\EpisodeMetadataService.cs" />
+    <Compile Include="TV\EpisodeXmlProvider.cs" />
     <Compile Include="TV\EpisodeXmlParser.cs" />
     <Compile Include="TV\FanArtTvUpdatesPrescanTask.cs" />
     <Compile Include="TV\FanartSeasonProvider.cs" />

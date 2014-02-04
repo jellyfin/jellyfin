@@ -96,7 +96,7 @@ namespace MediaBrowser.Providers.Movies
 
                 try
                 {
-                    await new MovieXmlParser(Logger, _itemRepo).FetchAsync(video, path, cancellationToken).ConfigureAwait(false);
+                    new MovieXmlParser(Logger).FetchAsync(video, path, cancellationToken);
                 }
                 finally
                 {

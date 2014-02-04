@@ -192,7 +192,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                NormalizeFFProbeResult(result);
+                FFProbeHelpers.NormalizeFFProbeResult(result);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -401,7 +401,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (!video.LockedFields.Contains(MetadataFields.Genres))
                 {
-                    var genres = GetDictionaryValue(data.format.tags, "genre");
+                    var genres = FFProbeHelpers.GetDictionaryValue(data.format.tags, "genre");
 
                     if (!string.IsNullOrEmpty(genres))
                     {
@@ -417,7 +417,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (!video.LockedFields.Contains(MetadataFields.Overview))
                 {
-                    var overview = GetDictionaryValue(data.format.tags, "WM/SubTitleDescription");
+                    var overview = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/SubTitleDescription");
 
                     if (!string.IsNullOrWhiteSpace(overview))
                     {
@@ -428,7 +428,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (force || string.IsNullOrEmpty(video.OfficialRating))
             {
-                var officialRating = GetDictionaryValue(data.format.tags, "WM/ParentalRating");
+                var officialRating = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/ParentalRating");
 
                 if (!string.IsNullOrWhiteSpace(officialRating))
                 {
@@ -443,7 +443,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (!video.LockedFields.Contains(MetadataFields.Cast))
                 {
-                    var people = GetDictionaryValue(data.format.tags, "WM/MediaCredits");
+                    var people = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/MediaCredits");
 
                     if (!string.IsNullOrEmpty(people))
                     {
@@ -457,7 +457,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (force || !video.ProductionYear.HasValue)
             {
-                var year = GetDictionaryValue(data.format.tags, "WM/OriginalReleaseTime");
+                var year = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/OriginalReleaseTime");
 
                 if (!string.IsNullOrWhiteSpace(year))
                 {

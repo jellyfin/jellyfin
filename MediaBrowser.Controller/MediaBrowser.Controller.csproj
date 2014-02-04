@@ -144,7 +144,6 @@
     <Compile Include="Persistence\IFileOrganizationRepository.cs" />
     <Compile Include="Persistence\MediaStreamQuery.cs" />
     <Compile Include="Providers\ICustomMetadataProvider.cs" />
-    <Compile Include="Providers\IDynamicInfoProvider.cs" />
     <Compile Include="Providers\IHasChangeMonitor.cs" />
     <Compile Include="Providers\IHasMetadata.cs" />
     <Compile Include="Providers\IImageProvider.cs" />

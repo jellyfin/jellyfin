@@ -158,6 +158,7 @@ namespace MediaBrowser.Providers
             }
 
             MergeAlbumArtist(source, target, lockedFields, replaceData);
+            MergeBudget(source, target, lockedFields, replaceData);
 
             if (mergeMetadataSettings)
             {
@@ -195,6 +196,25 @@ namespace MediaBrowser.Providers
                 if (replaceData || string.IsNullOrEmpty(targetHasAlbumArtist.AlbumArtist))
                 {
                     targetHasAlbumArtist.AlbumArtist = sourceHasAlbumArtist.AlbumArtist;
+                }
+            }
+        }
+
+        private static void MergeBudget(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        {
+            var sourceHasBudget = source as IHasBudget;
+            var targetHasBudget = target as IHasBudget;
+
+            if (sourceHasBudget != null && targetHasBudget != null)
+            {
+                if (replaceData || !targetHasBudget.Budget.HasValue)
+                {
+                    targetHasBudget.Budget = sourceHasBudget.Budget;
+                }
+
+                if (replaceData || !targetHasBudget.Revenue.HasValue)
+                {
+                    targetHasBudget.Revenue = sourceHasBudget.Revenue;
                 }
             }
         }

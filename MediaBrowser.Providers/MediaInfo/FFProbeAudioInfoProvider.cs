@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            NormalizeFFProbeResult(result);
+            FFProbeHelpers.NormalizeFFProbeResult(result);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -102,7 +102,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="tags">The tags.</param>
         private void FetchDataFromTags(Audio audio, Dictionary<string, string> tags)
         {
-            var title = GetDictionaryValue(tags, "title");
+            var title = FFProbeHelpers.GetDictionaryValue(tags, "title");
 
             // Only set Name if title was found in the dictionary
             if (!string.IsNullOrEmpty(title))
@@ -114,7 +114,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 audio.People.Clear();
 
-                var composer = GetDictionaryValue(tags, "composer");
+                var composer = FFProbeHelpers.GetDictionaryValue(tags, "composer");
 
                 if (!string.IsNullOrWhiteSpace(composer))
                 {
@@ -125,9 +125,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            audio.Album = GetDictionaryValue(tags, "album");
+            audio.Album = FFProbeHelpers.GetDictionaryValue(tags, "album");
 
-            var artist = GetDictionaryValue(tags, "artist");
+            var artist = FFProbeHelpers.GetDictionaryValue(tags, "artist");
 
             if (string.IsNullOrWhiteSpace(artist))
             {
@@ -142,7 +142,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Several different forms of albumartist
-            audio.AlbumArtist = GetDictionaryValue(tags, "albumartist") ?? GetDictionaryValue(tags, "album artist") ?? GetDictionaryValue(tags, "album_artist");
+            audio.AlbumArtist = FFProbeHelpers.GetDictionaryValue(tags, "albumartist") ?? FFProbeHelpers.GetDictionaryValue(tags, "album artist") ?? FFProbeHelpers.GetDictionaryValue(tags, "album_artist");
 
             // Track number
             audio.IndexNumber = GetDictionaryDiscValue(tags, "track");
@@ -150,10 +150,10 @@ namespace MediaBrowser.Providers.MediaInfo
             // Disc number
             audio.ParentIndexNumber = GetDictionaryDiscValue(tags, "disc");
 
-            audio.ProductionYear = GetDictionaryNumericValue(tags, "date");
+            audio.ProductionYear = FFProbeHelpers.GetDictionaryNumericValue(tags, "date");
 
             // Several different forms of retaildate
-            audio.PremiereDate = GetDictionaryDateTime(tags, "retaildate") ?? GetDictionaryDateTime(tags, "retail date") ?? GetDictionaryDateTime(tags, "retail_date");
+            audio.PremiereDate = FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ?? FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ?? FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date");
 
             // If we don't have a ProductionYear try and get it from PremiereDate
             if (audio.PremiereDate.HasValue && !audio.ProductionYear.HasValue)
@@ -219,7 +219,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="tagName">Name of the tag.</param>
         private void FetchStudios(Audio audio, Dictionary<string, string> tags, string tagName)
         {
-            var val = GetDictionaryValue(tags, tagName);
+            var val = FFProbeHelpers.GetDictionaryValue(tags, tagName);
 
             if (!string.IsNullOrEmpty(val))
             {
@@ -240,7 +240,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="tags">The tags.</param>
         private void FetchGenres(Audio audio, Dictionary<string, string> tags)
         {
-            var val = GetDictionaryValue(tags, "genre");
+            var val = FFProbeHelpers.GetDictionaryValue(tags, "genre");
 
             if (!string.IsNullOrEmpty(val))
             {
@@ -261,7 +261,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <returns>System.Nullable{System.Int32}.</returns>
         private int? GetDictionaryDiscValue(Dictionary<string, string> tags, string tagName)
         {
-            var disc = GetDictionaryValue(tags, tagName);
+            var disc = FFProbeHelpers.GetDictionaryValue(tags, tagName);
 
             if (!string.IsNullOrEmpty(disc))
             {

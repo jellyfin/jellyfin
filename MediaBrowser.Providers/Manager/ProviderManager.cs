@@ -246,11 +246,7 @@ namespace MediaBrowser.Providers.Manager
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Don't clog up the log with these providers
-            if (!(provider is IDynamicInfoProvider))
-            {
-                _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name ?? "--Unknown--");
-            }
+            _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name ?? "--Unknown--");
 
             try
             {
@@ -637,7 +633,7 @@ namespace MediaBrowser.Providers.Manager
             }));
 
             // Fetchers
-            list.AddRange(providers.Where(i => !(i is ILocalMetadataProvider)).Select(i => new MetadataPlugin
+            list.AddRange(providers.Where(i => (i is IRemoteMetadataProvider)).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.MetadataFetcher

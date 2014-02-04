@@ -1,12 +1,10 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
@@ -25,160 +23,87 @@ namespace MediaBrowser.Providers.TV
     /// <summary>
     /// Class RemoteEpisodeProvider
     /// </summary>
-    class TvdbEpisodeProvider : BaseMetadataProvider
+    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode>, IHasChangeMonitor
     {
-        /// <summary>
-        /// The _provider manager
-        /// </summary>
-        private readonly IProviderManager _providerManager;
-
-        /// <summary>
-        /// Gets the HTTP client.
-        /// </summary>
-        /// <value>The HTTP client.</value>
-        protected IHttpClient HttpClient { get; private set; }
-        private readonly IFileSystem _fileSystem;
-
         internal static TvdbEpisodeProvider Current;
+        private readonly IFileSystem _fileSystem;
+        private readonly IServerConfigurationManager _config;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TvdbEpisodeProvider" /> class.
-        /// </summary>
-        /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public TvdbEpisodeProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
-            : base(logManager, configurationManager)
+        public TvdbEpisodeProvider(IFileSystem fileSystem, IServerConfigurationManager config)
         {
-            HttpClient = httpClient;
-            _providerManager = providerManager;
             _fileSystem = fileSystem;
+            _config = config;
             Current = this;
         }
 
-        /// <summary>
-        /// Supportses the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public override bool Supports(BaseItem item)
+        public string Name
         {
-            return item is Episode;
+            get { return "TheTVDB"; }
         }
 
-        public override ItemUpdateType ItemUpdateType
+        public Task<MetadataResult<Episode>> GetMetadata(ItemId id, CancellationToken cancellationToken)
         {
-            get
+            var episodeId = (EpisodeId)id;
+
+            string seriesTvdbId;
+            episodeId.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesTvdbId);
+
+            var result = new MetadataResult<Episode>();
+
+            if (!string.IsNullOrEmpty(seriesTvdbId))
             {
-                return ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataDownload;
-            }
-        }
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesTvdbId);
 
-        /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public override MetadataProviderPriority Priority
-        {
-            get { return MetadataProviderPriority.Third; }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether [requires internet].
-        /// </summary>
-        /// <value><c>true</c> if [requires internet]; otherwise, <c>false</c>.</value>
-        public override bool RequiresInternet
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether [refresh on version change].
-        /// </summary>
-        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
-        protected override bool RefreshOnVersionChange
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Gets the provider version.
-        /// </summary>
-        /// <value>The provider version.</value>
-        protected override string ProviderVersion
-        {
-            get
-            {
-                return "5";
-            }
-        }
-
-        /// <summary>
-        /// Needses the refresh internal.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            var locationType = item.LocationType;
-
-            // Always use tvdb updates for non-file system episodes
-            if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
-            {
-                // Don't proceed if there's local metadata
-                if (!ConfigurationManager.Configuration.EnableTvDbUpdates && HasLocalMeta(item))
+                try
                 {
-                    return false;
+                    result.Item = FetchEpisodeData(episodeId, seriesDataPath, cancellationToken);
+                    result.HasMetadata = result.Item != null;
+                }
+                catch (FileNotFoundException)
+                {
+                    // Don't fail the provider because this will just keep on going and going.
                 }
             }
 
-            return base.NeedsRefreshInternal(item, providerInfo);
+            return Task.FromResult(result);
         }
 
-        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
+        public bool HasChanged(IHasMetadata item, DateTime date)
         {
             var episode = (Episode)item;
+            var series = episode.Series;
 
-            var seriesId = episode.Series != null ? episode.Series.GetProviderId(MetadataProviders.Tvdb) : null;
+            var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tvdb) : null;
 
             if (!string.IsNullOrEmpty(seriesId))
             {
                 // Process images
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
 
-                var files = GetEpisodeXmlFiles(episode, seriesDataPath);
+                var files = GetEpisodeXmlFiles(episode.ParentIndexNumber, episode.IndexNumber, episode.IndexNumberEnd, seriesDataPath);
 
-                if (files.Count > 0)
-                {
-                    return files.Select(i => _fileSystem.GetLastWriteTimeUtc(i)).Max() > providerInfo.LastRefreshed;
-                }
+                return files.Any(i => _fileSystem.GetLastWriteTimeUtc(i) > date);
             }
-            
+
             return false;
         }
 
         /// <summary>
         /// Gets the episode XML files.
         /// </summary>
-        /// <param name="episode">The episode.</param>
+        /// <param name="seasonNumber">The season number.</param>
+        /// <param name="episodeNumber">The episode number.</param>
+        /// <param name="endingEpisodeNumber">The ending episode number.</param>
         /// <param name="seriesDataPath">The series data path.</param>
         /// <returns>List{FileInfo}.</returns>
-        internal List<FileInfo> GetEpisodeXmlFiles(Episode episode, string seriesDataPath)
+        internal List<FileInfo> GetEpisodeXmlFiles(int? seasonNumber, int? episodeNumber, int? endingEpisodeNumber, string seriesDataPath)
         {
             var files = new List<FileInfo>();
 
-            if (episode.IndexNumber == null)
+            if (episodeNumber == null)
             {
                 return files;
             }
-
-            var episodeNumber = episode.IndexNumber.Value;
-            var seasonNumber = episode.ParentIndexNumber;
 
             if (seasonNumber == null)
             {
@@ -205,7 +130,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            var end = episode.IndexNumberEnd ?? episodeNumber;
+            var end = endingEpisodeNumber ?? episodeNumber;
             episodeNumber++;
 
             while (episodeNumber <= end)
@@ -236,72 +161,34 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <summary>
-        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var status = ProviderRefreshStatus.Success;
-
-            var episode = (Episode)item;
-
-            var seriesId = episode.Series != null ? episode.Series.GetProviderId(MetadataProviders.Tvdb) : null;
-
-            if (!string.IsNullOrEmpty(seriesId))
-            {
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
-
-                try
-                {
-                    status = await FetchEpisodeData(episode, seriesDataPath, cancellationToken).ConfigureAwait(false);
-                }
-                catch (FileNotFoundException)
-                {
-                    // Don't fail the provider because this will just keep on going and going.
-                }
-            }
-
-            SetLastRefreshed(item, DateTime.UtcNow, providerInfo, status);
-            return true;
-        }
-
-
-        /// <summary>
         /// Fetches the episode data.
         /// </summary>
-        /// <param name="episode">The episode.</param>
+        /// <param name="id">The identifier.</param>
         /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private async Task<ProviderRefreshStatus> FetchEpisodeData(Episode episode, string seriesDataPath, CancellationToken cancellationToken)
+        private Episode FetchEpisodeData(EpisodeId id, string seriesDataPath, CancellationToken cancellationToken)
         {
-            var status = ProviderRefreshStatus.Success;
-
-            if (episode.IndexNumber == null)
+            if (id.IndexNumber == null)
             {
-                return status;
+                return null;
             }
 
-            var episodeNumber = episode.IndexNumber.Value;
-            var seasonNumber = episode.ParentIndexNumber;
+            var episodeNumber = id.IndexNumber.Value;
+            var seasonNumber = id.ParentIndexNumber;
 
             if (seasonNumber == null)
             {
-                return status;
+                return null;
             }
 
             var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
             var success = false;
             var usingAbsoluteData = false;
-
+            var episode = new Episode();
             try
             {
-                status = await FetchMainEpisodeInfo(episode, file, cancellationToken).ConfigureAwait(false);
+                FetchMainEpisodeInfo(episode, file, cancellationToken);
 
                 success = true;
             }
@@ -318,11 +205,11 @@ namespace MediaBrowser.Providers.TV
             {
                 file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", episodeNumber));
 
-                status = await FetchMainEpisodeInfo(episode, file, cancellationToken).ConfigureAwait(false);
+                FetchMainEpisodeInfo(episode, file, cancellationToken);
                 usingAbsoluteData = true;
             }
 
-            var end = episode.IndexNumberEnd ?? episodeNumber;
+            var end = id.IndexNumberEnd ?? episodeNumber;
             episodeNumber++;
 
             while (episodeNumber <= end)
@@ -348,12 +235,12 @@ namespace MediaBrowser.Providers.TV
                 episodeNumber++;
             }
 
-            return status;
+            return success ? episode : null;
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        private async Task<ProviderRefreshStatus> FetchMainEpisodeInfo(Episode item, string xmlFile, CancellationToken cancellationToken)
+        private void FetchMainEpisodeInfo(Episode item, string xmlFile, CancellationToken cancellationToken)
         {
             var status = ProviderRefreshStatus.Success;
 
@@ -506,7 +393,7 @@ namespace MediaBrowser.Providers.TV
                                                 item.AirsBeforeSeasonNumber = rval;
                                             }
                                         }
-                                        
+
                                         break;
                                     }
 
@@ -534,7 +421,7 @@ namespace MediaBrowser.Providers.TV
                                                 {
                                                     var url = TVUtils.BannerUrl + val;
 
-                                                    await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+                                                    //await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
                                                 }
                                                 catch (HttpException)
                                                 {
@@ -661,8 +548,6 @@ namespace MediaBrowser.Providers.TV
                     }
                 }
             }
-
-            return status;
         }
 
         private void AddPeople(BaseItem item, string val, string personType)
@@ -801,16 +686,6 @@ namespace MediaBrowser.Providers.TV
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Determines whether [has local meta] [the specified episode].
-        /// </summary>
-        /// <param name="episode">The episode.</param>
-        /// <returns><c>true</c> if [has local meta] [the specified episode]; otherwise, <c>false</c>.</returns>
-        private bool HasLocalMeta(BaseItem episode)
-        {
-            return (episode.Parent.ResolveArgs.ContainsMetaFileByName(Path.GetFileNameWithoutExtension(episode.Path) + ".xml"));
         }
     }
 }

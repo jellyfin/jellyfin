@@ -1,7 +1,8 @@
-﻿using System;
+﻿using MediaBrowser.Model.Entities;
+using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.MediaInfo
 {
@@ -35,6 +36,18 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <returns>Task.</returns>
         Task ExtractImage(string[] inputFiles, InputType type, bool isAudio, Video3DFormat? threedFormat, TimeSpan? offset, string outputPath, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Extracts the image.
+        /// </summary>
+        /// <param name="inputFiles">The input files.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
+        /// <param name="threedFormat">The threed format.</param>
+        /// <param name="offset">The offset.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        Task<Stream> ExtractImage(string[] inputFiles, InputType type, bool isAudio, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
+        
         /// <summary>
         /// Extracts the text subtitle.
         /// </summary>
