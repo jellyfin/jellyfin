@@ -42,9 +42,9 @@ namespace MediaBrowser.Providers.Music
             return _libraryManager.UpdateItem(item, reason, cancellationToken);
         }
 
-        protected override ItemUpdateType AfterMetadataRefresh(MusicArtist item)
+        protected override ItemUpdateType BeforeSave(MusicArtist item)
         {
-            var updateType = base.AfterMetadataRefresh(item);
+            var updateType = base.BeforeSave(item);
 
             if (!item.IsAccessedByName && !item.LockedFields.Contains(MetadataFields.Genres))
             {

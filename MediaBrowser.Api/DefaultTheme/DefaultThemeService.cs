@@ -215,7 +215,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
-            return ToOptimizedResult(view);
+            return ToOptimizedSerializedResultUsingCache(view);
         }
 
         public object Get(GetGamesView request)
@@ -268,7 +268,7 @@ namespace MediaBrowser.Api.DefaultTheme
             .Take(1)
             .ToList();
 
-            return ToOptimizedResult(view);
+            return ToOptimizedSerializedResultUsingCache(view);
         }
 
         public object Get(GetTvView request)
@@ -394,7 +394,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
-            return ToOptimizedResult(view);
+            return ToOptimizedSerializedResultUsingCache(view);
         }
 
         public object Get(GetMovieView request)
@@ -569,7 +569,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
-            return ToOptimizedResult(view);
+            return ToOptimizedSerializedResultUsingCache(view);
         }
 
         private IEnumerable<BaseItem> FilterItemsForBackdropDisplay(IEnumerable<BaseItem> items)

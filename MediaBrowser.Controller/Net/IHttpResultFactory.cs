@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="factoryFn">The factory function that creates the response object.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
-        object GetOptimizedResultUsingCache<T>(IRequest requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, IDictionary<string, string> responseHeaders = null)
+        object GetOptimizedResultUsingCache<T>(IRequest requestContext, Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, IDictionary<string, string> responseHeaders = null)
             where T : class;
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="contentType">Type of the content.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
-        object GetCachedResult<T>(IRequest requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string, string> responseHeaders = null)
+        object GetCachedResult<T>(IRequest requestContext, Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string, string> responseHeaders = null)
             where T : class;
 
         /// <summary>
@@ -94,5 +94,15 @@ namespace MediaBrowser.Controller.Net
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
         object GetStaticFileResult(IRequest requestContext, string path, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
+
+        /// <summary>
+        /// Gets the optimized serialized result using cache.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="request">The request.</param>
+        /// <param name="result">The result.</param>
+        /// <returns>System.Object.</returns>
+        object GetOptimizedSerializedResultUsingCache<T>(IRequest request, T result)
+            where T : class;
     }
 }

@@ -77,7 +77,7 @@ namespace MediaBrowser.Api.Library
                     {
                         try
                         {
-                            return c.ResolveArgs.PhysicalLocations;
+                            return c.PhysicalLocations;
                         }
                         catch (Exception ex)
                         {
@@ -90,7 +90,7 @@ namespace MediaBrowser.Api.Library
                 })
                 .ToList();
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

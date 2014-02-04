@@ -142,24 +142,59 @@ namespace MediaBrowser.Providers.TV
             await ExtractEpisodes(seriesDataPath, Path.Combine(seriesDataPath, preferredMetadataLanguage + ".xml"), lastTvDbUpdateTime).ConfigureAwait(false);
         }
 
-        internal async Task EnsureSeriesInfo(string seriesId, string preferredMetadataLanguage, CancellationToken cancellationToken)
+        private readonly Task _cachedTask = Task.FromResult(true);
+        internal Task EnsureSeriesInfo(string seriesId, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
             var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesId);
 
             Directory.CreateDirectory(seriesDataPath);
 
-            var files = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly)
-                .Select(Path.GetFileName)
+            var files = new DirectoryInfo(seriesDataPath).EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
                 .ToList();
 
             var seriesXmlFilename = preferredMetadataLanguage + ".xml";
 
+            var download = false;
+            var automaticUpdatesEnabled = _config.Configuration.EnableTvDbUpdates;
+
+            var seriesFile = files.FirstOrDefault(i => string.Equals(seriesXmlFilename, i.Name, StringComparison.OrdinalIgnoreCase));
+            if (seriesFile == null || !seriesFile.Exists)
+            {
+                // No need to check age if automatic updates are enabled
+                if (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalDays > 7)
+                {
+                    download = true;
+                }
+            }
+
+            var actorsXml = files.FirstOrDefault(i => string.Equals("actors.xml", i.Name, StringComparison.OrdinalIgnoreCase));
+            if (actorsXml == null || !actorsXml.Exists)
+            {
+                // No need to check age if automatic updates are enabled
+                if (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalDays > 7)
+                {
+                    download = true;
+                }
+            }
+
+            var bannersXml = files.FirstOrDefault(i => string.Equals("banners.xml", i.Name, StringComparison.OrdinalIgnoreCase));
+            if (bannersXml == null || !bannersXml.Exists)
+            {
+                // No need to check age if automatic updates are enabled
+                if (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalDays > 7)
+                {
+                    download = true;
+                }
+            }
+
             // Only download if not already there
             // The prescan task will take care of updates so we don't need to re-download here
-            if (!files.Contains("banners.xml", StringComparer.OrdinalIgnoreCase) || !files.Contains("actors.xml", StringComparer.OrdinalIgnoreCase) || !files.Contains(seriesXmlFilename, StringComparer.OrdinalIgnoreCase))
+            if (download)
             {
-                await DownloadSeriesZip(seriesId, seriesDataPath, null, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
+                return DownloadSeriesZip(seriesId, seriesDataPath, null, preferredMetadataLanguage, cancellationToken);
             }
+
+            return _cachedTask;
         }
 
         /// <summary>

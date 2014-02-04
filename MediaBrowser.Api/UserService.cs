@@ -225,7 +225,7 @@ namespace MediaBrowser.Api
                 .Select(_dtoService.GetUserDto)
                 .ToList();
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>
@@ -244,7 +244,7 @@ namespace MediaBrowser.Api
 
             var result = _dtoService.GetUserDto(user);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

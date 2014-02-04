@@ -251,7 +251,7 @@ namespace MediaBrowser.Api.Library
             {
                 var result = _libraryManager.GetDefaultVirtualFolders().OrderBy(i => i.Name).ToList();
 
-                return ToOptimizedResult(result);
+                return ToOptimizedSerializedResultUsingCache(result);
             }
             else
             {
@@ -259,7 +259,7 @@ namespace MediaBrowser.Api.Library
 
                 var result = _libraryManager.GetVirtualFolders(user).OrderBy(i => i.Name).ToList();
 
-                return ToOptimizedResult(result);
+                return ToOptimizedSerializedResultUsingCache(result);
             }
         }
 

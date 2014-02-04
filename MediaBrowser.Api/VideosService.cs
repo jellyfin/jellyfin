@@ -69,7 +69,7 @@ namespace MediaBrowser.Api
                 TotalRecordCount = items.Length
             };
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
     }
 }

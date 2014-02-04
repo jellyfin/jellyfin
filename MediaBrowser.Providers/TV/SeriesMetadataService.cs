@@ -41,9 +41,9 @@ namespace MediaBrowser.Providers.TV
             return _libraryManager.UpdateItem(item, reason, cancellationToken);
         }
 
-        protected override ItemUpdateType AfterMetadataRefresh(Series item)
+        protected override ItemUpdateType BeforeSave(Series item)
         {
-            var updateType = base.AfterMetadataRefresh(item);
+            var updateType = base.BeforeSave(item);
 
             var episodes = item.RecursiveChildren
                 .OfType<Episode>()

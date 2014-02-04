@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -7,6 +8,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -411,7 +413,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var result = GetAsync(request);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         private List<BaseItemDto> GetAsync(GetSpecialFeatures request)
@@ -477,7 +479,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var result = GetAsync(request);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         private List<BaseItemDto> GetAsync(GetLocalTrailers request)
@@ -521,7 +523,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var result = _dtoService.GetBaseItemDto(item, fields, user);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>
@@ -540,7 +542,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var result = _dtoService.GetBaseItemDto(item, fields, user);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>
@@ -570,7 +572,7 @@ namespace MediaBrowser.Api.UserLibrary
                 TotalRecordCount = dtos.Length
             };
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

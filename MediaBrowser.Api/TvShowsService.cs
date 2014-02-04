@@ -183,7 +183,7 @@ namespace MediaBrowser.Api
                 request, item => item is Series,
                 SimilarItemsHelper.GetSimiliarityScore);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace MediaBrowser.Api
                 Items = returnItems
             };
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public IEnumerable<Episode> GetNextUpEpisodes(GetNextUpEpisodes request)

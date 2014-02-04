@@ -47,9 +47,9 @@ namespace MediaBrowser.Providers.Music
             return _libraryManager.UpdateItem(item, reason, cancellationToken);
         }
 
-        protected override ItemUpdateType AfterMetadataRefresh(MusicAlbum item)
+        protected override ItemUpdateType BeforeSave(MusicAlbum item)
         {
-            var updateType = base.AfterMetadataRefresh(item);
+            var updateType = base.BeforeSave(item);
 
             var songs = item.RecursiveChildren.OfType<Audio>().ToList(); 
             

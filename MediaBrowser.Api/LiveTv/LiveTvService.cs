@@ -304,7 +304,7 @@ namespace MediaBrowser.Api.LiveTv
         {
             var info = _liveTvManager.GetLiveTvInfo(CancellationToken.None).Result;
 
-            return ToOptimizedResult(info);
+            return ToOptimizedSerializedResultUsingCache(info);
         }
 
         public object Get(GetChannels request)
@@ -318,7 +318,7 @@ namespace MediaBrowser.Api.LiveTv
 
             }, CancellationToken.None).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetChannel request)
@@ -327,7 +327,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var result = _liveTvManager.GetChannel(request.Id, CancellationToken.None, user).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetPrograms request)
@@ -360,7 +360,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var result = _liveTvManager.GetPrograms(query, CancellationToken.None).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetRecommendedPrograms request)
@@ -375,7 +375,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var result = _liveTvManager.GetRecommendedPrograms(query, CancellationToken.None).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Post(GetPrograms request)
@@ -398,7 +398,7 @@ namespace MediaBrowser.Api.LiveTv
 
             }, CancellationToken.None).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetRecording request)
@@ -407,14 +407,14 @@ namespace MediaBrowser.Api.LiveTv
 
             var result = _liveTvManager.GetRecording(request.Id, CancellationToken.None, user).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetTimer request)
         {
             var result = _liveTvManager.GetTimer(request.Id, CancellationToken.None).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetTimers request)
@@ -426,7 +426,7 @@ namespace MediaBrowser.Api.LiveTv
 
             }, CancellationToken.None).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public void Delete(DeleteRecording request)
@@ -465,14 +465,14 @@ namespace MediaBrowser.Api.LiveTv
 
             }, CancellationToken.None).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetSeriesTimer request)
         {
             var result = _liveTvManager.GetSeriesTimer(request.Id, CancellationToken.None).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public void Delete(CancelSeriesTimer request)
@@ -499,13 +499,13 @@ namespace MediaBrowser.Api.LiveTv
             {
                 var result = _liveTvManager.GetNewTimerDefaults(CancellationToken.None).Result;
 
-                return ToOptimizedResult(result);
+                return ToOptimizedSerializedResultUsingCache(result);
             }
             else
             {
                 var result = _liveTvManager.GetNewTimerDefaults(request.ProgramId, CancellationToken.None).Result;
 
-                return ToOptimizedResult(result);
+                return ToOptimizedSerializedResultUsingCache(result);
             }
         }
 
@@ -515,7 +515,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var result = _liveTvManager.GetProgram(request.Id, CancellationToken.None, user).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public void Post(CreateSeriesTimer request)
@@ -544,7 +544,7 @@ namespace MediaBrowser.Api.LiveTv
 
             }, CancellationToken.None).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetRecordingGroup request)
@@ -556,7 +556,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var group = result.Items.FirstOrDefault(i => string.Equals(i.Id, request.Id, StringComparison.OrdinalIgnoreCase));
 
-            return ToOptimizedResult(group);
+            return ToOptimizedSerializedResultUsingCache(group);
         }
 
         public object Get(GetGuideInfo request)

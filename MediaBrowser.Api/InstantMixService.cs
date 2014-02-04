@@ -57,7 +57,7 @@ namespace MediaBrowser.Api
 
             var result = GetInstantMixResult(request, item.Genres);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetInstantMixFromAlbum request)
@@ -73,7 +73,7 @@ namespace MediaBrowser.Api
 
             var result = GetInstantMixResult(request, genres);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetInstantMixFromMusicGenre request)
@@ -82,7 +82,7 @@ namespace MediaBrowser.Api
 
             var result = GetInstantMixResult(request, new[] { genre.Name });
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetInstantMixFromArtist request)
@@ -99,7 +99,7 @@ namespace MediaBrowser.Api
 
             var result = GetInstantMixResult(request, genres);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         private ItemsResult GetInstantMixResult(BaseGetSimilarItems request, IEnumerable<string> genres)

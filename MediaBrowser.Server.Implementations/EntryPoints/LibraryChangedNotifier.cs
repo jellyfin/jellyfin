@@ -279,7 +279,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                         try
                         {
                             return i.LocationType == LocationType.FileSystem &&
-                                   i.ResolveArgs.PhysicalLocations.Contains(item.Path);
+                                   i.PhysicalLocations.Contains(item.Path);
                         }
                         catch (Exception ex)
                         {

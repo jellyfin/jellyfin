@@ -135,10 +135,10 @@ namespace MediaBrowser.Api
 
             if (path.StartsWith(networkPrefix, StringComparison.OrdinalIgnoreCase) && path.LastIndexOf(UncSeparator) == 1)
             {
-                return ToOptimizedResult(GetNetworkShares(path).OrderBy(i => i.Path).ToList());
+                return ToOptimizedSerializedResultUsingCache(GetNetworkShares(path).OrderBy(i => i.Path).ToList());
             }
 
-            return ToOptimizedResult(GetFileSystemEntries(request).OrderBy(i => i.Path).ToList());
+            return ToOptimizedSerializedResultUsingCache(GetFileSystemEntries(request).OrderBy(i => i.Path).ToList());
         }
 
         public object Get(GetNetworkShares request)
@@ -147,7 +147,7 @@ namespace MediaBrowser.Api
 
             var shares = GetNetworkShares(path).OrderBy(i => i.Path).ToList();
 
-            return ToOptimizedResult(shares);
+            return ToOptimizedSerializedResultUsingCache(shares);
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace MediaBrowser.Api
         {
             var result = GetDrives().ToList();
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>
@@ -189,7 +189,7 @@ namespace MediaBrowser.Api
                 .OrderBy(i => i.Path)
                 .ToList();
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

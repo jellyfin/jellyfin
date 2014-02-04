@@ -1079,7 +1079,7 @@ namespace MediaBrowser.Controller.Entities
 
                     if (i.LocationType != LocationType.Remote)
                     {
-                        if (i.ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
+                        if (i.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
                         {
                             return true;
                         }

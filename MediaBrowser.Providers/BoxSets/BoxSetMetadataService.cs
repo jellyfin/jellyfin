@@ -1,12 +1,10 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
@@ -48,9 +46,9 @@ namespace MediaBrowser.Providers.BoxSets
             return _libraryManager.UpdateItem(item, reason, cancellationToken);
         }
 
-        protected override ItemUpdateType AfterMetadataRefresh(BoxSet item)
+        protected override ItemUpdateType BeforeSave(BoxSet item)
         {
-            var updateType = base.AfterMetadataRefresh(item);
+            var updateType = base.BeforeSave(item);
 
             if (!item.LockedFields.Contains(MetadataFields.OfficialRating))
             {

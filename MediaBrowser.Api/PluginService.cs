@@ -166,7 +166,7 @@ namespace MediaBrowser.Api
         {
             var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToList();
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace MediaBrowser.Api
                 LegacyKey = _securityManager.LegacyKey
             };
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

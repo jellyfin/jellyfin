@@ -166,8 +166,7 @@ namespace MediaBrowser.Server.Implementations.IO
                     {
                         try
                         {
-                            // Accessing ResolveArgs could involve file system access
-                            return f.ResolveArgs.PhysicalLocations;
+                            return f.PhysicalLocations;
                         }
                         catch (IOException)
                         {

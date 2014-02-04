@@ -110,7 +110,7 @@ namespace MediaBrowser.Api
         {
             var result = GetSearchHintsAsync(request).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

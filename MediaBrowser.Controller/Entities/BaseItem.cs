@@ -253,6 +253,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public IEnumerable<string> PhysicalLocations
+        {
+            get
+            {
+                return ResolveArgs.PhysicalLocations;
+            }
+        }
+
         /// <summary>
         /// Resets the resolve args.
         /// </summary>

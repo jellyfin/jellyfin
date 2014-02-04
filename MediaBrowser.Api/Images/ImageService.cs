@@ -361,14 +361,14 @@ namespace MediaBrowser.Api.Images
 
             var result = GetItemImageInfos(item);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public object Get(GetItemByNameImageInfos request)
         {
             var result = GetItemByNameImageInfos(request);
 
-            return ToOptimizedResult(result);
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

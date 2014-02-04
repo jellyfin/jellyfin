@@ -99,12 +99,12 @@ namespace MediaBrowser.Api
 
         public object Get(GetDefaultMetadataOptions request)
         {
-            return ToOptimizedResult(new MetadataOptions());
+            return ToOptimizedSerializedResultUsingCache(new MetadataOptions());
         }
 
         public object Get(GetMetadataPlugins request)
         {
-            return ToOptimizedResult(_providerManager.GetAllMetadataPlugins().ToList());
+            return ToOptimizedSerializedResultUsingCache(_providerManager.GetAllMetadataPlugins().ToList());
         }
     }
 }
