@@ -136,10 +136,14 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 contentFeatures = "DLNA.ORG_PN=AVI";
             }
-            //else if (string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    contentFeatures = "DLNA.ORG_PN=MPEG4_P2_SP_AAC";
-            //}
+            else if (string.Equals(extension, ".mkv", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MATROSKA";
+            }
+            else if (string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=AVC_MP4_MP_HD_720p_AAC";
+            }
             //else if (string.Equals(extension, ".mpeg", StringComparison.OrdinalIgnoreCase))
             //{
             //    contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
@@ -153,11 +157,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             //    // ??
             //    contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
             //}
-            //else if (string.Equals(extension, ".mkv", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    // ??
-            //    contentFeatures = "";
-            //}
+          
 
             if (!string.IsNullOrEmpty(contentFeatures))
             {
