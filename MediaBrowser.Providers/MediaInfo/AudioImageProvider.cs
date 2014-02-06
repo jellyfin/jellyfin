@@ -82,26 +82,30 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!File.Exists(path))
             {
-                using (var stream = await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.File, true, null, null, cancellationToken).ConfigureAwait(false))
+                var semaphore = GetLock(path);
+
+                // Acquire a lock
+                await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                try
                 {
-                    var semaphore = GetLock(path);
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-                    // Acquire a lock
-                    await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-                    try
+                    // Check again in case it was saved while waiting for the lock
+                    if (!File.Exists(path))
                     {
-                        using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                        using (var stream = await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.File, true, null, null, cancellationToken).ConfigureAwait(false))
                         {
-                            await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                            using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                            {
+                                await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                            }
                         }
                     }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
+                }
+                finally
+                {
+                    semaphore.Release();
                 }
             }
 

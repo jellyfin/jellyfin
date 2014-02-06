@@ -475,10 +475,6 @@ namespace MediaBrowser.Controller.Entities
                     await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
                 }
             }
-            else
-            {
-                validChildren.AddRange(ActualChildren);
-            }
 
             progress.Report(10);
 
@@ -486,7 +482,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (recursive)
             {
-                await ValidateSubFolders(validChildren.OfType<Folder>().ToList(), progress, cancellationToken).ConfigureAwait(false);
+                await ValidateSubFolders(ActualChildren.OfType<Folder>().ToList(), progress, cancellationToken).ConfigureAwait(false);
             }
 
             progress.Report(20);
