@@ -447,9 +447,23 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public virtual string CustomRatingForComparison
+        public string CustomRatingForComparison
         {
-            get { return CustomRating; }
+            get
+            {
+                if (!string.IsNullOrEmpty(CustomRating))
+                {
+                    return CustomRating;
+                }
+
+                var parent = Parent;
+                if (parent != null)
+                {
+                    return parent.CustomRatingForComparison;
+                }
+
+                return null;
+            }
         }
 
         /// <summary>
