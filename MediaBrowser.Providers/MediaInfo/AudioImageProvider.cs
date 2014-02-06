@@ -1,5 +1,6 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Drawing;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.MediaInfo;
@@ -7,7 +8,10 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,15 +22,19 @@ namespace MediaBrowser.Providers.MediaInfo
     /// </summary>
     public class AudioImageProvider : IDynamicImageProvider, IHasChangeMonitor
     {
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
+
         private readonly IIsoManager _isoManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
 
-        public AudioImageProvider(IIsoManager isoManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config)
+        public AudioImageProvider(IIsoManager isoManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, IFileSystem fileSystem)
         {
             _isoManager = isoManager;
             _mediaEncoder = mediaEncoder;
             _config = config;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -65,19 +73,76 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
 
-            return GetVideoImage((Audio)item, cancellationToken);
+            return GetImage((Audio)item, cancellationToken);
         }
 
-        public async Task<DynamicImageResponse> GetVideoImage(Audio item, CancellationToken cancellationToken)
+        public async Task<DynamicImageResponse> GetImage(Audio item, CancellationToken cancellationToken)
         {
-            var stream = await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.File, true, null, null, cancellationToken).ConfigureAwait(false);
+            var path = GetAudioImagePath(item);
+
+            if (!File.Exists(path))
+            {
+                using (var stream = await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.File, true, null, null, cancellationToken).ConfigureAwait(false))
+                {
+                    var semaphore = GetLock(path);
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                    // Acquire a lock
+                    await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                    try
+                    {
+                        using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                        {
+                            await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                        }
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }
+            }
 
             return new DynamicImageResponse
             {
-                Format = ImageFormat.Jpg,
                 HasImage = true,
-                Stream = stream
+                Path = path
             };
+        }
+
+        private string GetAudioImagePath(Audio item)
+        {
+            var album = item.Parent as MusicAlbum;
+
+            var filename = item.Album ?? string.Empty;
+            filename += item.Artists.FirstOrDefault() ?? string.Empty;
+            filename += album == null ? item.Id.ToString("N") + "_primary" + item.DateModified.Ticks : album.Id.ToString("N") + album.DateModified.Ticks + "_primary";
+
+            filename = filename.GetMD5() + ".jpg";
+
+            var prefix = filename.Substring(0, 1);
+
+            return Path.Combine(AudioImagesPath, prefix, filename);
+        }
+
+        public string AudioImagesPath
+        {
+            get
+            {
+                return Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");
+            }
+        }
+
+        /// <summary>
+        /// Gets the lock.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns>SemaphoreSlim.</returns>
+        private SemaphoreSlim GetLock(string filename)
+        {
+            return _locks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
         }
 
         public string Name
