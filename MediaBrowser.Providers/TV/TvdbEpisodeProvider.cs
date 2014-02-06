@@ -185,7 +185,14 @@ namespace MediaBrowser.Providers.TV
             var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
             var success = false;
             var usingAbsoluteData = false;
-            var episode = new Episode();
+
+            var episode = new Episode
+            {
+                 IndexNumber = id.IndexNumber,
+                 ParentIndexNumber = id.ParentIndexNumber,
+                 IndexNumberEnd = id.IndexNumberEnd
+            };
+
             try
             {
                 FetchMainEpisodeInfo(episode, file, cancellationToken);

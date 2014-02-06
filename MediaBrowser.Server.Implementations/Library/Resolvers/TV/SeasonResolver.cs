@@ -47,17 +47,5 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
             return null;
         }
-
-        /// <summary>
-        /// Sets the initial item values.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="args">The args.</param>
-        protected override void SetInitialItemValues(Season item, ItemResolveArgs args)
-        {
-            base.SetInitialItemValues(item, args);
-
-            Season.AddMetadataFiles(args);
-        }
     }
 }

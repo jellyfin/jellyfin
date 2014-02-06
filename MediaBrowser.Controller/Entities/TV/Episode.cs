@@ -12,28 +12,6 @@ namespace MediaBrowser.Controller.Entities.TV
     public class Episode : Video
     {
         /// <summary>
-        /// Episodes have a special Metadata folder
-        /// </summary>
-        /// <value>The meta location.</value>
-        [IgnoreDataMember]
-        public override string MetaLocation
-        {
-            get
-            {
-                return System.IO.Path.Combine(Parent.Path, "metadata");
-            }
-        }
-
-        [IgnoreDataMember]
-        protected override bool UseParentPathToCreateResolveArgs
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Gets the season in which it aired.
         /// </summary>
         /// <value>The aired season.</value>

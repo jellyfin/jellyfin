@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -18,10 +19,14 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Providers.MediaInfo
 {
     public class FFProbeProvider : ICustomMetadataProvider<Episode>,
-        ICustomMetadataProvider<MusicVideo>, 
-        ICustomMetadataProvider<Movie>, 
-        ICustomMetadataProvider<AdultVideo>, 
-        ICustomMetadataProvider<LiveTvVideoRecording>, 
+        ICustomMetadataProvider<MusicVideo>,
+        ICustomMetadataProvider<Movie>,
+        ICustomMetadataProvider<AdultVideo>,
+        ICustomMetadataProvider<LiveTvVideoRecording>,
+        ICustomMetadataProvider<LiveTvAudioRecording>,
+        ICustomMetadataProvider<Trailer>,
+        ICustomMetadataProvider<Video>,
+        ICustomMetadataProvider<Audio>,
         IHasChangeMonitor
     {
         private readonly ILogger _logger;
@@ -30,7 +35,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IItemRepository _itemRepo;
         private readonly IBlurayExaminer _blurayExaminer;
         private readonly ILocalizationManager _localization;
-        
+
         public string Name
         {
             get { return "ffprobe"; }
@@ -59,6 +64,26 @@ namespace MediaBrowser.Providers.MediaInfo
         public Task<ItemUpdateType> FetchAsync(LiveTvVideoRecording item, CancellationToken cancellationToken)
         {
             return FetchVideoInfo(item, cancellationToken);
+        }
+
+        public Task<ItemUpdateType> FetchAsync(Trailer item, CancellationToken cancellationToken)
+        {
+            return FetchVideoInfo(item, cancellationToken);
+        }
+
+        public Task<ItemUpdateType> FetchAsync(Video item, CancellationToken cancellationToken)
+        {
+            return FetchVideoInfo(item, cancellationToken);
+        }
+
+        public Task<ItemUpdateType> FetchAsync(Audio item, CancellationToken cancellationToken)
+        {
+            return FetchAudioInfo(item, cancellationToken);
+        }
+
+        public Task<ItemUpdateType> FetchAsync(LiveTvAudioRecording item, CancellationToken cancellationToken)
+        {
+            return FetchAudioInfo(item, cancellationToken);
         }
 
         public FFProbeProvider(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization)
@@ -93,6 +118,19 @@ namespace MediaBrowser.Providers.MediaInfo
             var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization);
 
             return prober.ProbeVideo(item, cancellationToken);
+        }
+
+        public Task<ItemUpdateType> FetchAudioInfo<T>(T item, CancellationToken cancellationToken)
+            where T : Audio
+        {
+            if (item.LocationType != LocationType.FileSystem)
+            {
+                return _cachedTask;
+            }
+
+            var prober = new FFProbeAudioInfo(_mediaEncoder, _itemRepo);
+
+            return prober.Probe(item, cancellationToken);
         }
 
         public bool HasChanged(IHasMetadata item, DateTime date)

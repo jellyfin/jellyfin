@@ -16,17 +16,6 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         [Obsolete]
         public bool ForceSave { get; set; }
-
-        /// <summary>
-        /// TODO: deprecate. Keeping this for now, for api compatibility
-        /// </summary>
-        [Obsolete]
-        public bool ResetResolveArgs { get; set; }
-
-        public MetadataRefreshOptions()
-        {
-            ResetResolveArgs = true;
-        }
     }
 
     public class ImageRefreshOptions

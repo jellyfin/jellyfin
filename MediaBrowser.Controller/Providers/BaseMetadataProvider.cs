@@ -2,13 +2,8 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -146,19 +141,6 @@ namespace MediaBrowser.Controller.Providers
             providerInfo.LastRefreshed = value;
             providerInfo.LastRefreshStatus = status;
             providerInfo.ProviderVersion = providerVersion;
-
-            // Save the file system stamp for future comparisons
-            if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem)
-            {
-                try
-                {
-                    providerInfo.FileStamp = GetCurrentFileSystemStamp(item);
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error getting file stamp for {0}", ex, item.Path);
-                }
-            }
         }
 
         /// <summary>
@@ -233,12 +215,6 @@ namespace MediaBrowser.Controller.Providers
                 return true;
             }
 
-            if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem &&
-                HasFileSystemStampChanged(item, providerInfo))
-            {
-                return true;
-            }
-
             if (RefreshOnVersionChange && !String.Equals(ProviderVersion, providerInfo.ProviderVersion))
             {
                 return true;
@@ -261,17 +237,6 @@ namespace MediaBrowser.Controller.Providers
         protected virtual bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
             return CompareDate(item) > providerInfo.LastRefreshed;
-        }
-
-        /// <summary>
-        /// Determines if the item's file system stamp has changed from the last time the provider refreshed
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if [has file system stamp changed] [the specified item]; otherwise, <c>false</c>.</returns>
-        protected bool HasFileSystemStampChanged(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            return GetCurrentFileSystemStamp(item) != providerInfo.FileStamp;
         }
 
         /// <summary>
@@ -301,159 +266,5 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The priority.</value>
         public abstract MetadataProviderPriority Priority { get; }
-
-        /// <summary>
-        /// Returns true or false indicating if the provider should refresh when the contents of it's directory changes
-        /// </summary>
-        /// <value><c>true</c> if [refresh on file system stamp change]; otherwise, <c>false</c>.</value>
-        protected virtual bool RefreshOnFileSystemStampChange
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        protected virtual string[] FilestampExtensions
-        {
-            get { return new string[] { }; }
-        }
-
-        /// <summary>
-        /// Determines if the parent's file system stamp should be used for comparison
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected virtual bool UseParentFileSystemStamp(BaseItem item)
-        {
-            // True when the current item is just a file
-            return !item.ResolveArgs.IsDirectory;
-        }
-
-        protected virtual IEnumerable<BaseItem> GetItemsForFileStampComparison(BaseItem item)
-        {
-            if (UseParentFileSystemStamp(item) && item.Parent != null)
-            {
-                return new[] { item.Parent };
-            }
-
-            return new[] { item };
-        }
-
-        /// <summary>
-        /// Gets the item's current file system stamp
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetCurrentFileSystemStamp(BaseItem item)
-        {
-            return GetFileSystemStamp(GetItemsForFileStampComparison(item));
-        }
-
-        private Dictionary<string, string> _fileStampExtensionsDictionary;
-
-        private Dictionary<string, string> FileStampExtensionsDictionary
-        {
-            get
-            {
-                return _fileStampExtensionsDictionary ??
-                       (_fileStampExtensionsDictionary =
-                           FilestampExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase));
-            }
-        }
-
-        /// <summary>
-        /// Gets the file system stamp.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <returns>Guid.</returns>
-        protected virtual Guid GetFileSystemStamp(IEnumerable<BaseItem> items)
-        {
-            var sb = new StringBuilder();
-
-            var extensions = FileStampExtensionsDictionary;
-            var numExtensions = FilestampExtensions.Length;
-
-            foreach (var item in items)
-            {
-                // If there's no path or the item is a file, there's nothing to do
-                if (item.LocationType == LocationType.FileSystem)
-                {
-                    var resolveArgs = item.ResolveArgs;
-
-                    if (resolveArgs.IsDirectory)
-                    {
-                        // Record the name of each file 
-                        // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
-                        AddFiles(sb, resolveArgs.FileSystemChildren, extensions, numExtensions);
-                        AddFiles(sb, resolveArgs.MetadataFiles, extensions, numExtensions);
-                    }
-                }
-            }
-
-            var stamp = sb.ToString();
-
-            if (string.IsNullOrEmpty(stamp))
-            {
-                return Guid.Empty;
-            }
-
-            return stamp.GetMD5();
-        }
-
-        private static readonly Dictionary<string, string> FoldersToMonitor = new[] { "extrafanart", "extrathumbs" }
-            .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
-
-        protected Guid GetFileSystemStamp(IEnumerable<FileSystemInfo> files)
-        {
-            var sb = new StringBuilder();
-
-            var extensions = FileStampExtensionsDictionary;
-            var numExtensions = FilestampExtensions.Length;
-
-            // Record the name of each file 
-            // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
-            AddFiles(sb, files, extensions, numExtensions);
-
-            return sb.ToString().GetMD5();
-        }
-
-        /// <summary>
-        /// Adds the files.
-        /// </summary>
-        /// <param name="sb">The sb.</param>
-        /// <param name="files">The files.</param>
-        /// <param name="extensions">The extensions.</param>
-        /// <param name="numExtensions">The num extensions.</param>
-        private void AddFiles(StringBuilder sb, IEnumerable<FileSystemInfo> files, Dictionary<string, string> extensions, int numExtensions)
-        {
-            foreach (var file in files
-                .OrderBy(f => f.Name))
-            {
-                try
-                {
-                    if ((file.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
-                    {
-                        if (FoldersToMonitor.ContainsKey(file.Name))
-                        {
-                            sb.Append(file.Name);
-
-                            var children = ((DirectoryInfo)file).EnumerateFiles("*", SearchOption.TopDirectoryOnly).ToList();
-                            AddFiles(sb, children, extensions, numExtensions);
-                        }
-                    }
-
-                    // It's a file
-                    else if (numExtensions == 0 || extensions.ContainsKey(file.Extension))
-                    {
-                        sb.Append(file.Name);
-                    }
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error accessing file attributes for {0}", ex, file.FullName);
-                }
-            }
-        }
     }
 }

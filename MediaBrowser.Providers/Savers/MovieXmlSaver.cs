@@ -50,16 +50,9 @@ namespace MediaBrowser.Providers.Savers
             // If new metadata has been downloaded and save local is on
             if (item.IsSaveLocalMetadataEnabled() && (wasMetadataEdited || wasMetadataDownloaded))
             {
-                var trailer = item as Trailer;
-
-                // Don't support local trailers
-                if (trailer != null)
-                {
-                    return !trailer.IsLocalTrailer;
-                }
                 var video = item as Video;
                 // Check parent for null to avoid running this against things like video backdrops
-                return video != null && !(item is Episode) && video.Parent != null;
+                return video != null && !(item is Episode) && !video.IsOwnedItem;
             }
 
             return false;
@@ -145,7 +138,7 @@ namespace MediaBrowser.Providers.Savers
                 return Path.ChangeExtension(item.Path, ".xml");
             }
 
-            return Path.Combine(item.MetaLocation, "movie.xml");
+            return Path.Combine(item.ContainingFolderPath, "movie.xml");
         }
     }
 }

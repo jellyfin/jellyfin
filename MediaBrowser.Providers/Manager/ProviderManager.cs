@@ -48,12 +48,6 @@ namespace MediaBrowser.Providers.Manager
         /// <value>The configuration manager.</value>
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
-        /// <summary>
-        /// Gets the list of currently registered metadata prvoiders
-        /// </summary>
-        /// <value>The metadata providers enumerable.</value>
-        private BaseMetadataProvider[] MetadataProviders { get; set; }
-
         private IImageProvider[] ImageProviders { get; set; }
 
         private readonly IFileSystem _fileSystem;
@@ -86,15 +80,12 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
-        /// <param name="providers">The providers.</param>
         /// <param name="imageProviders">The image providers.</param>
         /// <param name="metadataServices">The metadata services.</param>
         /// <param name="metadataProviders">The metadata providers.</param>
         /// <param name="metadataSavers">The metadata savers.</param>
-        public void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders, IEnumerable<IMetadataSaver> metadataSavers)
+        public void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders, IEnumerable<IMetadataSaver> metadataSavers)
         {
-            MetadataProviders = providers.OrderBy(e => e.Priority).ToArray();
-
             ImageProviders = imageProviders.ToArray();
 
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
@@ -111,174 +102,8 @@ namespace MediaBrowser.Providers.Manager
                 return service.RefreshMetadata(item, options, cancellationToken);
             }
 
-            return ((BaseItem)item).RefreshMetadataDirect(cancellationToken, options.ForceSave, options.ReplaceAllMetadata);
-        }
-
-        /// <summary>
-        /// Runs all metadata providers for an entity, and returns true or false indicating if at least one was refreshed and requires persistence
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<ItemUpdateType?> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            ItemUpdateType? result = null;
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var enableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
-
-            var providerHistories = item.DateLastSaved == default(DateTime) ?
-                new List<BaseProviderInfo>() :
-                _providerRepo.GetProviderHistory(item.Id).ToList();
-
-            // Run the normal providers sequentially in order of priority
-            foreach (var provider in MetadataProviders)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (!ProviderSupportsItem(provider, item))
-                {
-                    continue;
-                }
-
-                // Skip if internet providers are currently disabled
-                if (provider.RequiresInternet && !enableInternetProviders)
-                {
-                    continue;
-                }
-
-                // Put this check below the await because the needs refresh of the next tier of providers may depend on the previous ones running
-                //  This is the case for the fan art provider which depends on the movie and tv providers having run before them
-                if (provider.RequiresInternet && item.DontFetchMeta && provider.EnforceDontFetchMetadata)
-                {
-                    continue;
-                }
-
-                var providerInfo = providerHistories.FirstOrDefault(i => i.ProviderId == provider.Id);
-
-                if (providerInfo == null)
-                {
-                    providerInfo = new BaseProviderInfo
-                    {
-                        ProviderId = provider.Id
-                    };
-                    providerHistories.Add(providerInfo);
-                }
-
-                try
-                {
-                    if (!force && !provider.NeedsRefresh(item, providerInfo))
-                    {
-                        continue;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error("Error determining NeedsRefresh for {0}", ex, item.Path);
-                }
-
-                var updateType = await FetchAsync(provider, item, providerInfo, force, cancellationToken).ConfigureAwait(false);
-
-                if (updateType.HasValue)
-                {
-                    if (result.HasValue)
-                    {
-                        result = result.Value | updateType.Value;
-                    }
-                    else
-                    {
-                        result = updateType;
-                    }
-                }
-            }
-
-            if (result.HasValue || force)
-            {
-                await _providerRepo.SaveProviderHistory(item.Id, providerHistories, cancellationToken);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Providers the supports item.
-        /// </summary>
-        /// <param name="provider">The provider.</param>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool ProviderSupportsItem(BaseMetadataProvider provider, BaseItem item)
-        {
-            try
-            {
-                return provider.Supports(item);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("{0} failed in Supports for type {1}", ex, provider.GetType().Name, item.GetType().Name);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
-        /// </summary>
-        /// <param name="provider">The provider.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider information.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        private async Task<ItemUpdateType?> FetchAsync(BaseMetadataProvider provider, BaseItem item, BaseProviderInfo providerInfo, bool force, CancellationToken cancellationToken)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name ?? "--Unknown--");
-
-            try
-            {
-                var changed = await provider.FetchAsync(item, force, providerInfo, cancellationToken).ConfigureAwait(false);
-
-                if (changed)
-                {
-                    return provider.ItemUpdateType;
-                }
-
-                return null;
-            }
-            catch (OperationCanceledException ex)
-            {
-                _logger.Debug("{0} canceled for {1}", provider.GetType().Name, item.Name);
-
-                // If the outer cancellation token is the one that caused the cancellation, throw it
-                if (cancellationToken.IsCancellationRequested && ex.CancellationToken == cancellationToken)
-                {
-                    throw;
-                }
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("{0} failed refreshing {1} {2}", ex, provider.GetType().Name, item.Name, item.Path ?? string.Empty);
-
-                provider.SetLastRefreshed(item, DateTime.UtcNow, providerInfo, ProviderRefreshStatus.Failure);
-
-                return ItemUpdateType.Unspecified;
-            }
+            _logger.Error("Unable to find a metadata service for item of type " + item.GetType().Name);
+            return Task.FromResult(true);
         }
 
         /// <summary>
@@ -328,9 +153,6 @@ namespace MediaBrowser.Providers.Manager
                         await dataToSave.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                     }
                 }
-
-                // If this is ever used for something other than metadata we can add a file type param
-                item.ResolveArgs.AddMetadataFile(path);
             }
             finally
             {
@@ -517,6 +339,15 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
+            // If this restriction is ever lifted, movie xml providers will have to be updated to prevent owned items like trailers from reading those files
+            if (item.IsOwnedItem)
+            {
+                if (provider is ILocalMetadataProvider || provider is IRemoteMetadataProvider)
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -581,6 +412,7 @@ namespace MediaBrowser.Providers.Manager
 
             list.Add(GetPluginSummary<AdultVideo>());
             list.Add(GetPluginSummary<MusicVideo>());
+            list.Add(GetPluginSummary<Video>());
 
             list.Add(GetPluginSummary<LiveTvChannel>());
             list.Add(GetPluginSummary<LiveTvProgram>());
@@ -678,6 +510,8 @@ namespace MediaBrowser.Providers.Manager
         {
             foreach (var saver in _savers.Where(i => i.IsEnabledFor(item, updateType)))
             {
+                _logger.Debug("Saving {0} to {1}.", item.Path ?? item.Name, saver.Name);
+                
                 var fileSaver = saver as IMetadataFileSaver;
 
                 if (fileSaver != null)

@@ -75,15 +75,7 @@ namespace MediaBrowser.Api.Library
 
                     if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
                     {
-                        try
-                        {
-                            return c.PhysicalLocations;
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.ErrorException("Error getting ResolveArgs for {0}", ex, c.Path);
-                        }
-
+                        return c.PhysicalLocations;
                     }
 
                     return new List<string>();

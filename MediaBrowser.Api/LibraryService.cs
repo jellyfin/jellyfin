@@ -331,21 +331,8 @@ namespace MediaBrowser.Api
         {
             if (item.Parent is AggregateFolder)
             {
-                return user.RootFolder.GetChildren(user, true).FirstOrDefault(i =>
-                {
-
-                    try
-                    {
-                        return i.LocationType == LocationType.FileSystem &&
-                               i.PhysicalLocations.Contains(item.Path);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error getting ResolveArgs for {0}", ex, i.Path);
-                        return false;
-                    }
-
-                });
+                return user.RootFolder.GetChildren(user, true).FirstOrDefault(i => i.LocationType == LocationType.FileSystem &&
+                                                                                   i.PhysicalLocations.Contains(item.Path));
             }
 
             return item;

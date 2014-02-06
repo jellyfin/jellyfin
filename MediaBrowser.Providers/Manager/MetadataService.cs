@@ -88,12 +88,16 @@ namespace MediaBrowser.Providers.Manager
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
-                updateType = updateType | BeforeMetadataRefresh(itemOfType);
-
                 var providers = GetProviders(item, refreshResult.DateLastMetadataRefresh.HasValue, refreshOptions).ToList();
+
+                if (providers.Count > 0 || !refreshResult.DateLastMetadataRefresh.HasValue)
+                {
+                    updateType = updateType | BeforeMetadataRefresh(itemOfType);
+                }
 
                 if (providers.Count > 0)
                 {
+
                     var result = await RefreshWithProviders(itemOfType, refreshOptions, providers, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
@@ -145,7 +149,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var type = item.GetType().Name;
             return ServerConfigurationManager.Configuration.MetadataOptions
-                .FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase)) ?? 
+                .FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase)) ??
                 _defaultOptions;
         }
 
@@ -278,9 +282,11 @@ namespace MediaBrowser.Providers.Manager
             {
                 Logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
 
+                var itemInfo = new ItemInfo { Path = item.Path, IsInMixedFolder = item.IsInMixedFolder };
+
                 try
                 {
-                    var localItem = await provider.GetMetadata(item.Path, cancellationToken).ConfigureAwait(false);
+                    var localItem = await provider.GetMetadata(itemInfo, cancellationToken).ConfigureAwait(false);
 
                     if (localItem.HasMetadata)
                     {
@@ -327,7 +333,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 await RunCustomProvider(provider, item, refreshResult, cancellationToken).ConfigureAwait(false);
             }
-            
+
             return refreshResult;
         }
 

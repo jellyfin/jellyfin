@@ -833,9 +833,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 (item as MusicArtist).IsAccessedByName = true;
             }
 
-            // Set this now so we don't cause additional file system access during provider executions
-            item.ResetResolveArgs(fileInfo);
-
             return new Tuple<bool, T>(isNew, item);
         }
 
@@ -1113,6 +1110,7 @@ namespace MediaBrowser.Server.Implementations.Library
             cancellationToken.ThrowIfCancellationRequested();
 
             await userRootFolder.ValidateChildren(new Progress<double>(), cancellationToken, recursive: false).ConfigureAwait(false);
+            var b = true;
         }
 
         /// <summary>
@@ -1244,7 +1242,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
                         if (dbItem != null)
                         {
-                            dbItem.ResetResolveArgs(video.ResolveArgs);
                             video = dbItem;
                         }
                     }
@@ -1383,6 +1380,8 @@ namespace MediaBrowser.Server.Implementations.Library
             
             item.DateLastSaved = DateTime.UtcNow;
 
+            _logger.Debug("Saving {0} to database.", item.Path ?? item.Name);
+
             await ItemRepository.SaveItem(item, cancellationToken).ConfigureAwait(false);
 
             UpdateItemInLibraryCache(item);
@@ -1479,16 +1478,7 @@ namespace MediaBrowser.Server.Implementations.Library
                         return true;
                     }
 
-                    try
-                    {
-
-                        return i.PhysicalLocations.Contains(item.Path);
-                    }
-                    catch (IOException ex)
-                    {
-                        _logger.ErrorException("Error getting resolve args for {0}", ex, i.Path);
-                        return false;
-                    }
+                    return i.PhysicalLocations.Contains(item.Path);
                 })
                 .Select(i => i.CollectionType)
                 .Where(i => !string.IsNullOrEmpty(i))

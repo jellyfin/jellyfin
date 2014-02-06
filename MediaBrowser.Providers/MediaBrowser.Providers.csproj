@@ -65,11 +65,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdultVideos\AdultVideoMetadataService.cs" />
+    <Compile Include="AdultVideos\AdultVideoXmlProvider.cs" />
     <Compile Include="All\LocalImageProvider.cs" />
     <Compile Include="Books\BookMetadataService.cs" />
     <Compile Include="BoxSets\BoxSetMetadataService.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetImageProvider.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetProvider.cs" />
+    <Compile Include="Folders\FolderMetadataService.cs" />
     <Compile Include="GameGenres\GameGenreMetadataService.cs" />
     <Compile Include="Games\GameMetadataService.cs" />
     <Compile Include="Games\GameSystemMetadataService.cs" />
@@ -83,33 +85,34 @@
     <Compile Include="Manager\ProviderManager.cs" />
     <Compile Include="Manager\MetadataService.cs" />
     <Compile Include="BaseXmlProvider.cs" />
-    <Compile Include="CollectionFolderImageProvider.cs" />
-    <Compile Include="FolderProviderFromXml.cs" />
+    <Compile Include="Folders\FolderXmlProvider.cs" />
     <Compile Include="Games\GameXmlParser.cs" />
     <Compile Include="Games\GameXmlProvider.cs" />
     <Compile Include="Games\GameSystemXmlProvider.cs" />
-    <Compile Include="ImageFromMediaLocationProvider.cs" />
-    <Compile Include="ImagesByNameProvider.cs" />
+    <Compile Include="MediaInfo\FFProbeAudioInfo.cs" />
     <Compile Include="MediaInfo\FFProbeHelpers.cs" />
     <Compile Include="MediaInfo\FFProbeProvider.cs" />
     <Compile Include="MediaInfo\FFProbeVideoInfo.cs" />
+    <Compile Include="Movies\TrailerMetadataService.cs" />
+    <Compile Include="Movies\GenericMovieDbInfo.cs" />
     <Compile Include="Movies\MovieDbSearch.cs" />
+    <Compile Include="Movies\MovieMetadataService.cs" />
     <Compile Include="Movies\MovieXmlProvider.cs" />
+    <Compile Include="Movies\TmdbSettings.cs" />
+    <Compile Include="Movies\TrailerXmlProvider.cs" />
     <Compile Include="MusicGenres\MusicGenreImageProvider.cs" />
     <Compile Include="GameGenres\GameGenreImageProvider.cs" />
     <Compile Include="Genres\GenreImageProvider.cs" />
     <Compile Include="ImagesByName\ImageUtils.cs" />
     <Compile Include="MediaInfo\AudioImageProvider.cs" />
-    <Compile Include="MediaInfo\BaseFFProbeProvider.cs" />
-    <Compile Include="MediaInfo\FFProbeAudioInfoProvider.cs" />
-    <Compile Include="MediaInfo\FFProbeVideoInfoProvider.cs" />
     <Compile Include="MediaInfo\VideoImageProvider.cs" />
     <Compile Include="BoxSets\BoxSetXmlProvider.cs" />
-    <Compile Include="Movies\ManualMovieDbImageProvider.cs" />
-    <Compile Include="Movies\ManualFanartMovieImageProvider.cs" />
+    <Compile Include="Movies\MovieDbImageProvider.cs" />
+    <Compile Include="Movies\FanartMovieImageProvider.cs" />
     <Compile Include="MusicGenres\MusicGenreMetadataService.cs" />
     <Compile Include="Music\AlbumMetadataService.cs" />
     <Compile Include="Music\ArtistMetadataService.cs" />
+    <Compile Include="Music\AudioMetadataService.cs" />
     <Compile Include="Music\LastfmArtistProvider.cs" />
     <Compile Include="Music\MusicBrainzArtistProvider.cs" />
     <Compile Include="Music\MusicVideoMetadataService.cs" />
@@ -119,12 +122,8 @@
     <Compile Include="People\MovieDbPersonImageProvider.cs" />
     <Compile Include="Movies\MovieUpdatesPrescanTask.cs" />
     <Compile Include="Movies\MovieXmlParser.cs" />
-    <Compile Include="Movies\FanArtMovieProvider.cs" />
     <Compile Include="Movies\FanArtMovieUpdatesPrescanTask.cs" />
-    <Compile Include="Movies\MovieDbImagesProvider.cs" />
     <Compile Include="Movies\MovieDbProvider.cs" />
-    <Compile Include="Movies\MovieProviderFromXml.cs" />
-    <Compile Include="Movies\OpenMovieDatabaseProvider.cs" />
     <Compile Include="Music\AlbumXmlProvider.cs" />
     <Compile Include="Music\ArtistXmlProvider.cs" />
     <Compile Include="Music\FanArtUpdatesPrescanTask.cs" />
@@ -177,9 +176,10 @@
     <Compile Include="TV\SeriesXmlProvider.cs" />
     <Compile Include="TV\SeriesXmlParser.cs" />
     <Compile Include="TV\TvdbPrescanTask.cs" />
-    <Compile Include="UserRootFolderNameProvider.cs" />
+    <Compile Include="Folders\UserRootFolderNameProvider.cs" />
     <Compile Include="Users\UserMetadataService.cs" />
-    <Compile Include="VirtualItemImageValidator.cs" />
+    <Compile Include="Videos\VideoMetadataService.cs" />
+    <Compile Include="Years\YearMetadataService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

@@ -19,6 +19,6 @@ namespace MediaBrowser.Controller.LiveTv
 
         bool IsParentalAllowed(User user);
 
-        Task<bool> RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken);
+        Task RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken);
     }
 }

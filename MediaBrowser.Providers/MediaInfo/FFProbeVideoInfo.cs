@@ -321,69 +321,69 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="currentStreams">The current streams.</param>
         private void AddExternalSubtitles(Video video, List<MediaStream> currentStreams)
         {
-            var useParent = !video.ResolveArgs.IsDirectory;
+            //var useParent = !video.ResolveArgs.IsDirectory;
 
-            if (useParent && video.Parent == null)
-            {
-                return;
-            }
+            //if (useParent && video.Parent == null)
+            //{
+            //    return;
+            //}
 
-            var fileSystemChildren = useParent
-                                         ? video.Parent.ResolveArgs.FileSystemChildren
-                                         : video.ResolveArgs.FileSystemChildren;
+            //var fileSystemChildren = useParent
+            //                             ? video.Parent.ResolveArgs.FileSystemChildren
+            //                             : video.ResolveArgs.FileSystemChildren;
 
-            var startIndex = currentStreams.Count;
-            var streams = new List<MediaStream>();
+            //var startIndex = currentStreams.Count;
+            //var streams = new List<MediaStream>();
 
-            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
+            //var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
 
-            foreach (var file in fileSystemChildren
-                .Where(f => !f.Attributes.HasFlag(FileAttributes.Directory) && SubtitleExtensions.Contains(Path.GetExtension(f.FullName), StringComparer.OrdinalIgnoreCase)))
-            {
-                var fullName = file.FullName;
+            //foreach (var file in fileSystemChildren
+            //    .Where(f => !f.Attributes.HasFlag(FileAttributes.Directory) && SubtitleExtensions.Contains(Path.GetExtension(f.FullName), StringComparer.OrdinalIgnoreCase)))
+            //{
+            //    var fullName = file.FullName;
 
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullName);
+            //    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullName);
 
-                // If the subtitle file matches the video file name
-                if (string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
-                {
-                    streams.Add(new MediaStream
-                    {
-                        Index = startIndex++,
-                        Type = MediaStreamType.Subtitle,
-                        IsExternal = true,
-                        Path = fullName,
-                        Codec = Path.GetExtension(fullName).ToLower().TrimStart('.')
-                    });
-                }
-                else if (fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension + ".", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Support xbmc naming conventions - 300.spanish.srt
-                    var language = fileNameWithoutExtension.Split('.').LastOrDefault();
+            //    // If the subtitle file matches the video file name
+            //    if (string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+            //    {
+            //        streams.Add(new MediaStream
+            //        {
+            //            Index = startIndex++,
+            //            Type = MediaStreamType.Subtitle,
+            //            IsExternal = true,
+            //            Path = fullName,
+            //            Codec = Path.GetExtension(fullName).ToLower().TrimStart('.')
+            //        });
+            //    }
+            //    else if (fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension + ".", StringComparison.OrdinalIgnoreCase))
+            //    {
+            //        // Support xbmc naming conventions - 300.spanish.srt
+            //        var language = fileNameWithoutExtension.Split('.').LastOrDefault();
 
-                    // Try to translate to three character code
-                    // Be flexible and check against both the full and three character versions
-                    var culture = _localization.GetCultures()
-                        .FirstOrDefault(i => string.Equals(i.DisplayName, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.ThreeLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.TwoLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase));
+            //        // Try to translate to three character code
+            //        // Be flexible and check against both the full and three character versions
+            //        var culture = _localization.GetCultures()
+            //            .FirstOrDefault(i => string.Equals(i.DisplayName, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.ThreeLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.TwoLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase));
 
-                    if (culture != null)
-                    {
-                        language = culture.ThreeLetterISOLanguageName;
-                    }
+            //        if (culture != null)
+            //        {
+            //            language = culture.ThreeLetterISOLanguageName;
+            //        }
 
-                    streams.Add(new MediaStream
-                    {
-                        Index = startIndex++,
-                        Type = MediaStreamType.Subtitle,
-                        IsExternal = true,
-                        Path = fullName,
-                        Codec = Path.GetExtension(fullName).ToLower().TrimStart('.'),
-                        Language = language
-                    });
-                }
-            }
+            //        streams.Add(new MediaStream
+            //        {
+            //            Index = startIndex++,
+            //            Type = MediaStreamType.Subtitle,
+            //            IsExternal = true,
+            //            Path = fullName,
+            //            Codec = Path.GetExtension(fullName).ToLower().TrimStart('.'),
+            //            Language = language
+            //        });
+            //    }
+            //}
 
-            currentStreams.AddRange(streams);
+            //currentStreams.AddRange(streams);
         }
 
         /// <summary>

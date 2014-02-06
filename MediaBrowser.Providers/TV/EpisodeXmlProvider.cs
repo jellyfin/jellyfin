@@ -4,11 +4,10 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class EpisodeXmlProvider : BaseXmlProvider, ILocalMetadataProvider<Episode>
+    public class EpisodeXmlProvider : BaseXmlProvider<Episode>
     {
         private readonly ILogger _logger;
 
@@ -18,43 +17,16 @@ namespace MediaBrowser.Providers.TV
             _logger = logger;
         }
 
-        public async Task<MetadataResult<Episode>> GetMetadata(string path, CancellationToken cancellationToken)
+        protected override void Fetch(Episode item, string path, CancellationToken cancellationToken)
         {
-            path = GetXmlFile(path).FullName;
-
-            var result = new MetadataResult<Episode>();
-
-            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                result.Item = new Episode();
-
-                new EpisodeXmlParser(_logger).Fetch(result.Item, path, cancellationToken);
-                result.HasMetadata = true;
-            }
-            catch (FileNotFoundException)
-            {
-                result.HasMetadata = false;
-            }
-            finally
-            {
-                XmlParsingResourcePool.Release();
-            }
-
-            return result;
+            new EpisodeXmlParser(_logger).Fetch(item, path, cancellationToken);
         }
 
-        public string Name
+        protected override FileInfo GetXmlFile(ItemInfo info)
         {
-            get { return "Media Browser Xml"; }
-        }
-
-        protected override FileInfo GetXmlFile(string path)
-        {
-            var metadataPath = Path.GetDirectoryName(path);
+            var metadataPath = Path.GetDirectoryName(info.Path);
             metadataPath = Path.Combine(metadataPath, "metadata");
-            var metadataFile = Path.Combine(metadataPath, Path.ChangeExtension(Path.GetFileName(path), ".xml"));
+            var metadataFile = Path.Combine(metadataPath, Path.ChangeExtension(Path.GetFileName(info.Path), ".xml"));
 
             return new FileInfo(metadataFile);
         }

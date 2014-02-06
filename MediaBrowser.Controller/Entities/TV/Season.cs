@@ -132,34 +132,6 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// Add files from the metadata folder to ResolveArgs
-        /// </summary>
-        /// <param name="args">The args.</param>
-        public static void AddMetadataFiles(ItemResolveArgs args)
-        {
-            var folder = args.GetFileSystemEntryByName("metadata");
-
-            if (folder != null)
-            {
-                args.AddMetadataFiles(new DirectoryInfo(folder.FullName).EnumerateFiles());
-            }
-        }
-
-        /// <summary>
-        /// Creates ResolveArgs on demand
-        /// </summary>
-        /// <param name="pathInfo">The path info.</param>
-        /// <returns>ItemResolveArgs.</returns>
-        protected internal override ItemResolveArgs CreateResolveArgs(FileSystemInfo pathInfo = null)
-        {
-            var args = base.CreateResolveArgs(pathInfo);
-
-            AddMetadataFiles(args);
-
-            return args;
-        }
-
-        /// <summary>
         /// Creates the name of the sort.
         /// </summary>
         /// <returns>System.String.</returns>

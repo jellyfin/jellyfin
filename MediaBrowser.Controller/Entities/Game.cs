@@ -80,17 +80,6 @@ namespace MediaBrowser.Controller.Entities
         public string GameSystem { get; set; }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public override string MetaLocation
-        {
-            get
-            {
-                return System.IO.Path.GetDirectoryName(Path);
-            }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is multi part.
         /// </summary>
         /// <value><c>true</c> if this instance is multi part; otherwise, <c>false</c>.</value>
@@ -100,17 +89,6 @@ namespace MediaBrowser.Controller.Entities
         /// Holds the paths to the game files in the event this is a multipart game
         /// </summary>
         public List<string> MultiPartGameFiles { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override bool UseParentPathToCreateResolveArgs
-        {
-            get
-            {
-                return !IsInMixedFolder;
-            }
-        }
 
         public override string GetUserDataKey()
         {

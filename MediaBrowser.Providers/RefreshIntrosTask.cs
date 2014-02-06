@@ -90,20 +90,14 @@ namespace MediaBrowser.Providers
             }
 
             var dbItem = _libraryManager.GetItemById(item.Id);
-            var isNewItem = false;
 
             if (dbItem != null)
             {
-                dbItem.ResetResolveArgs(item.ResolveArgs);
                 item = dbItem;
-            }
-            else
-            {
-                isNewItem = true;
             }
 
             // Force the save if it's a new item
-            await item.RefreshMetadata(cancellationToken, isNewItem).ConfigureAwait(false);
+            await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
         }
     }
 }

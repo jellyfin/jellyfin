@@ -92,8 +92,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         {
             base.SetInitialItemValues(item, args);
 
-            Season.AddMetadataFiles(args);
-
             SetProviderIdFromPath(item, args.Path);
         }
 

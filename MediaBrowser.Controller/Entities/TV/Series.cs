@@ -111,20 +111,6 @@ namespace MediaBrowser.Controller.Entities.TV
             };
         }
 
-        /// <summary>
-        /// Creates ResolveArgs on demand
-        /// </summary>
-        /// <param name="pathInfo">The path info.</param>
-        /// <returns>ItemResolveArgs.</returns>
-        protected internal override ItemResolveArgs CreateResolveArgs(FileSystemInfo pathInfo = null)
-        {
-            var args = base.CreateResolveArgs(pathInfo);
-
-            Season.AddMetadataFiles(args);
-
-            return args;
-        }
-
         [IgnoreDataMember]
         public bool ContainsEpisodesWithoutSeasonFolders
         {

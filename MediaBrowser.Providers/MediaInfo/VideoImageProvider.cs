@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
-    public class VideoImageProvider : IDynamicImageProvider
+    public class VideoImageProvider : IDynamicImageProvider, IHasChangeMonitor
     {
         private readonly IIsoManager _isoManager;
         private readonly IMediaEncoder _mediaEncoder;
@@ -23,34 +23,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _isoManager = isoManager;
             _mediaEncoder = mediaEncoder;
             _config = config;
-        }
-
-        /// <summary>
-        /// Qualifieses for extraction.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool QualifiesForExtraction(Video item)
-        {
-            // No support for this
-            if (item.VideoType == VideoType.HdDvd)
-            {
-                return false;
-            }
-
-            // Can't extract from iso's if we weren't unable to determine iso type
-            if (item.VideoType == VideoType.Iso && !item.IsoType.HasValue)
-            {
-                return false;
-            }
-
-            // Can't extract if we didn't find a video stream in the file
-            if (!item.DefaultVideoStreamIndex.HasValue)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -81,7 +53,27 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
         {
-            return GetVideoImage((Video)item, cancellationToken);
+            var video = (Video)item;
+
+            // No support for this
+            if (video.VideoType == VideoType.HdDvd)
+            {
+                return Task.FromResult(new DynamicImageResponse { HasImage = false });
+            }
+
+            // Can't extract from iso's if we weren't unable to determine iso type
+            if (video.VideoType == VideoType.Iso && !video.IsoType.HasValue)
+            {
+                return Task.FromResult(new DynamicImageResponse { HasImage = false });
+            }
+
+            // Can't extract if we didn't find a video stream in the file
+            if (!video.DefaultVideoStreamIndex.HasValue)
+            {
+                return Task.FromResult(new DynamicImageResponse { HasImage = false });
+            }
+
+            return GetVideoImage(video, cancellationToken);
         }
 
         public async Task<DynamicImageResponse> GetVideoImage(Video item, CancellationToken cancellationToken)
@@ -132,6 +124,11 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             return item.LocationType == LocationType.FileSystem && item is Video;
+        }
+
+        public bool HasChanged(IHasMetadata item, DateTime date)
+        {
+            return item.DateModified > date;
         }
     }
 }

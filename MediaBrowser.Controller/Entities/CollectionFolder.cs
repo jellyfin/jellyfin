@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,6 +16,11 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class CollectionFolder : Folder, ICollectionFolder
     {
+        public CollectionFolder()
+        {
+            PhysicalLocationsList = new List<string>();
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is virtual folder.
         /// </summary>
@@ -42,6 +49,60 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override IEnumerable<string> PhysicalLocations
+        {
+            get
+            {
+                return PhysicalLocationsList;
+            }
+        }
+
+        public List<string> PhysicalLocationsList { get; set; }
+
+        protected override IEnumerable<FileSystemInfo> GetFileSystemChildren()
+        {
+            return CreateResolveArgs().FileSystemChildren;
+        }
+
+        private ItemResolveArgs CreateResolveArgs()
+        {
+            var path = ContainingFolderPath;
+
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager)
+            {
+                FileInfo = new DirectoryInfo(path),
+                Path = path,
+                Parent = Parent
+            };
+
+            // Gather child folder and files
+            if (args.IsDirectory)
+            {
+                var isPhysicalRoot = args.IsPhysicalRoot;
+
+                // When resolving the root, we need it's grandchildren (children of user views)
+                var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
+
+                var fileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, FileSystem, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
+
+                // Need to remove subpaths that may have been resolved from shortcuts
+                // Example: if \\server\movies exists, then strip out \\server\movies\action
+                if (isPhysicalRoot)
+                {
+                    var paths = LibraryManager.NormalizeRootPathList(fileSystemDictionary.Keys);
+
+                    fileSystemDictionary = paths.Select(i => (FileSystemInfo)new DirectoryInfo(i)).ToDictionary(i => i.FullName);
+                }
+
+                args.FileSystemDictionary = fileSystemDictionary;
+            }
+
+            PhysicalLocationsList = args.PhysicalLocations.ToList();
+
+            return args;
+        }
+
         // Cache this since it will be used a lot
         /// <summary>
         /// The null task result
@@ -59,13 +120,14 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
         {
+            CreateResolveArgs();
             ResetDynamicChildren();
 
             return NullTaskResult;
         }
 
         private List<LinkedChild> _linkedChildren;
-        
+
         /// <summary>
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>

@@ -501,7 +501,7 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<ILibraryPostScanTask>(),
                                     GetExports<IPeoplePrescanTask>());
 
-            ProviderManager.AddParts(GetExports<BaseMetadataProvider>(), GetExports<IImageProvider>(), GetExports<IMetadataService>(), GetExports<IMetadataProvider>(),
+            ProviderManager.AddParts(GetExports<IImageProvider>(), GetExports<IMetadataService>(), GetExports<IMetadataProvider>(),
                                     GetExports<IMetadataSaver>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
@@ -627,7 +627,7 @@ namespace MediaBrowser.ServerApplication
             list.Add(typeof(IServerApplicationHost).Assembly);
 
             // Include composable parts in the Providers assembly 
-            list.Add(typeof(ImagesByNameProvider).Assembly);
+            list.Add(typeof(ProviderUtils).Assembly);
 
             // Common implementations
             list.Add(typeof(TaskManager).Assembly);

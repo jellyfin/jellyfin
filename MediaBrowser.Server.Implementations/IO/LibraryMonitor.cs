@@ -162,18 +162,7 @@ namespace MediaBrowser.Server.Implementations.IO
                 .Children
                 .OfType<Folder>()
                 .Where(i => i.LocationType != LocationType.Remote && i.LocationType != LocationType.Virtual)
-                .SelectMany(f =>
-                    {
-                        try
-                        {
-                            return f.PhysicalLocations;
-                        }
-                        catch (IOException)
-                        {
-                            return new string[] { };
-                        }
-
-                    })
+                .SelectMany(f => f.PhysicalLocations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(i => i)
                 .ToList();

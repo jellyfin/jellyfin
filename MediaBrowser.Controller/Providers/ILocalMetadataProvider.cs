@@ -5,12 +5,6 @@ namespace MediaBrowser.Controller.Providers
 {
     public interface ILocalMetadataProvider : IMetadataProvider
     {
-        /// <summary>
-        /// Determines whether [has local metadata] [the specified item].
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if [has local metadata] [the specified item]; otherwise, <c>false</c>.</returns>
-        bool HasLocalMetadata(IHasMetadata item);
     }
 
     public interface ILocalMetadataProvider<TItemType> : IMetadataProvider<TItemType>, ILocalMetadataProvider
@@ -19,9 +13,16 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Gets the metadata.
         /// </summary>
-        /// <param name="path">The path.</param>
+        /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MetadataResult{`0}}.</returns>
-        Task<MetadataResult<TItemType>> GetMetadata(string path, CancellationToken cancellationToken);
+        Task<MetadataResult<TItemType>> GetMetadata(ItemInfo info, CancellationToken cancellationToken);
+    }
+
+    public class ItemInfo
+    {
+        public string Path { get; set; }
+
+        public bool IsInMixedFolder { get; set; }
     }
 }

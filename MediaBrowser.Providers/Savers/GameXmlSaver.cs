@@ -119,7 +119,7 @@ namespace MediaBrowser.Providers.Savers
                 return Path.ChangeExtension(item.Path, ".xml");
             }
 
-            return Path.Combine(item.MetaLocation, "game.xml");
+            return Path.Combine(item.ContainingFolderPath, "game.xml");
         }
     }
 }

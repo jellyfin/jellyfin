@@ -4,11 +4,10 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.People
 {
-    public class PersonXmlProvider : BaseXmlProvider, ILocalMetadataProvider<Person>
+    public class PersonXmlProvider : BaseXmlProvider<Person>
     {
         private readonly ILogger _logger;
 
@@ -18,42 +17,14 @@ namespace MediaBrowser.Providers.People
             _logger = logger;
         }
 
-        public async Task<MetadataResult<Person>> GetMetadata(string path, CancellationToken cancellationToken)
+        protected override void Fetch(Person item, string path, CancellationToken cancellationToken)
         {
-            path = GetXmlFile(path).FullName;
-
-            var result = new MetadataResult<Person>();
-
-            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                var person = new Person();
-
-                new BaseItemXmlParser<Person>(_logger).Fetch(person, path, cancellationToken);
-                result.HasMetadata = true;
-                result.Item = person;
-            }
-            catch (FileNotFoundException)
-            {
-                result.HasMetadata = false;
-            }
-            finally
-            {
-                XmlParsingResourcePool.Release();
-            }
-
-            return result;
+            new BaseItemXmlParser<Person>(_logger).Fetch(item, path, cancellationToken);
         }
 
-        public string Name
+        protected override FileInfo GetXmlFile(ItemInfo info)
         {
-            get { return "Media Browser Xml"; }
-        }
-
-        protected override FileInfo GetXmlFile(string path)
-        {
-            return new FileInfo(Path.Combine(path, "person.xml"));
+            return new FileInfo(Path.Combine(info.Path, "person.xml"));
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
@@ -27,7 +28,7 @@ namespace MediaBrowser.Controller.Entities
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
-        
+
         public Folder()
         {
             LinkedChildren = new List<LinkedChild>();
@@ -379,7 +380,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (IOException ex)
                 {
-                    nonCachedChildren = new BaseItem[] {};
+                    nonCachedChildren = new BaseItem[] { };
 
                     Logger.ErrorException("Error getting file system entries for {0}", ex, Path);
                 }
@@ -402,8 +403,6 @@ namespace MediaBrowser.Controller.Entities
 
                     if (currentChildren.TryGetValue(child.Id, out currentChild))
                     {
-                        currentChild.ResetResolveArgs(child.ResolveArgs);
-
                         //existing item - check if it has changed
                         if (currentChild.HasChanged(child))
                         {
@@ -411,7 +410,7 @@ namespace MediaBrowser.Controller.Entities
                             if (currentChildLocationType != LocationType.Remote &&
                                 currentChildLocationType != LocationType.Virtual)
                             {
-                                EntityResolutionHelper.EnsureDates(FileSystem, currentChild, child.ResolveArgs, false);
+                                currentChild.DateModified = child.DateModified;
                             }
 
                             currentChild.IsInMixedFolder = child.IsInMixedFolder;
@@ -539,8 +538,7 @@ namespace MediaBrowser.Controller.Entities
                 await child.RefreshMetadata(new MetadataRefreshOptions
                 {
                     ForceSave = currentTuple.Item2,
-                    ReplaceAllMetadata = forceRefreshMetadata,
-                    ResetResolveArgs = false
+                    ReplaceAllMetadata = forceRefreshMetadata
 
                 }, cancellationToken).ConfigureAwait(false);
             }
@@ -581,16 +579,6 @@ namespace MediaBrowser.Controller.Entities
                 });
 
                 await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive, forceRefreshMetadata).ConfigureAwait(false);
-
-                try
-                {
-                    // Some folder providers are unable to refresh until children have been refreshed.
-                    await child.RefreshMetadata(cancellationToken, resetResolveArgs: false).ConfigureAwait(false);
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error refreshing {0}", ex, child.Path ?? child.Name);
-                }
             }
             else
             {
@@ -661,14 +649,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren()
         {
-            var resolveArgs = ResolveArgs;
-
-            if (resolveArgs == null || resolveArgs.FileSystemDictionary == null)
-            {
-                Logger.Error("ResolveArgs null for {0}", Path);
-            }
-
-            return LibraryManager.ResolvePaths<BaseItem>(resolveArgs.FileSystemChildren, this);
+            return LibraryManager.ResolvePaths<BaseItem>(GetFileSystemChildren(), this);
         }
 
         /// <summary>
@@ -914,43 +895,29 @@ namespace MediaBrowser.Controller.Entities
             return item;
         }
 
-        protected override Task BeforeRefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
+        protected override Task BeforeRefreshMetadata(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
             if (SupportsShortcutChildren && LocationType == LocationType.FileSystem)
             {
-                RefreshLinkedChildren();
+                if (RefreshLinkedChildren(fileSystemChildren))
+                {
+                    options.ForceSave = true;
+                }
             }
 
-            return base.BeforeRefreshMetadata(options, cancellationToken);
+            return base.BeforeRefreshMetadata(options, fileSystemChildren, cancellationToken);
         }
 
         /// <summary>
         /// Refreshes the linked children.
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool RefreshLinkedChildren()
+        private bool RefreshLinkedChildren(IEnumerable<FileSystemInfo> fileSystemChildren)
         {
-            ItemResolveArgs resolveArgs;
-
-            try
-            {
-                resolveArgs = ResolveArgs;
-
-                if (!resolveArgs.IsDirectory)
-                {
-                    return false;
-                }
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return false;
-            }
-
             var currentManualLinks = LinkedChildren.Where(i => i.Type == LinkedChildType.Manual).ToList();
             var currentShortcutLinks = LinkedChildren.Where(i => i.Type == LinkedChildType.Shortcut).ToList();
 
-            var newShortcutLinks = resolveArgs.FileSystemChildren
+            var newShortcutLinks = fileSystemChildren
                 .Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory && FileSystem.IsShortcut(i.FullName))
                 .Select(i =>
                 {
@@ -1058,7 +1025,7 @@ namespace MediaBrowser.Controller.Entities
                     return this;
                 }
 
-                if (locationType != LocationType.Virtual && ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
+                if (locationType != LocationType.Virtual && PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
                 {
                     return this;
                 }

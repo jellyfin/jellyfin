@@ -153,12 +153,6 @@ namespace MediaBrowser.Model.Dto
         public int? VoteCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the original run time ticks.
-        /// </summary>
-        /// <value>The original run time ticks.</value>
-        public long? OriginalRunTimeTicks { get; set; }
-
-        /// <summary>
         /// Gets or sets the cumulative run time ticks.
         /// </summary>
         /// <value>The cumulative run time ticks.</value>

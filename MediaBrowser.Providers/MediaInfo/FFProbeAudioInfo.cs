@@ -1,41 +1,36 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
-    /// <summary>
-    /// Extracts audio information using ffprobe
-    /// </summary>
-    public class FFProbeAudioInfoProvider : BaseFFProbeProvider<Audio>
+    class FFProbeAudioInfo
     {
+        private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
 
-        public FFProbeAudioInfoProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, IJsonSerializer jsonSerializer, IItemRepository itemRepo)
-            : base(logManager, configurationManager, mediaEncoder, jsonSerializer)
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        
+        public FFProbeAudioInfo(IMediaEncoder mediaEncoder, IItemRepository itemRepo)
         {
+            _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
         }
 
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> Probe<T>(T item, CancellationToken cancellationToken)
+            where T : Audio
         {
-            var myItem = (Audio)item;
-
-            OnPreFetch(myItem, null);
-
-            var result = await GetMediaInfo(item, null, cancellationToken).ConfigureAwait(false);
+            var result = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -43,11 +38,19 @@ namespace MediaBrowser.Providers.MediaInfo
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await Fetch(myItem, cancellationToken, result).ConfigureAwait(false);
+            await Fetch(item, cancellationToken, result).ConfigureAwait(false);
 
-            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
+            return ItemUpdateType.MetadataImport;
+        }
 
-            return true;
+        private async Task<InternalMediaInfoResult> GetMediaInfo(BaseItem item, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            const InputType type = InputType.File;
+            var inputPath = new[] { item.Path };
+
+            return await _mediaEncoder.GetMediaInfo(inputPath, type, false, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -82,7 +85,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     // If we got something, parse it
                     if (!string.IsNullOrEmpty(duration))
                     {
-                        audio.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, UsCulture)).Ticks;
+                        audio.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, _usCulture)).Ticks;
                     }
                 }
             }
@@ -277,6 +280,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return null;
         }
-    }
 
+    }
 }

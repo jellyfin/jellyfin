@@ -326,13 +326,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 item.Name = channelInfo.Name;
             }
 
-            // Set this now so we don't cause additional file system access during provider executions
-            item.ResetResolveArgs(fileInfo);
-
             await item.RefreshMetadata(new MetadataRefreshOptions
             {
-                ForceSave = isNew,
-                ResetResolveArgs = false
+                ForceSave = isNew
 
             }, cancellationToken);
 
@@ -391,8 +387,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await item.RefreshMetadata(new MetadataRefreshOptions
             {
-                ForceSave = isNew,
-                ResetResolveArgs = false
+                ForceSave = isNew
 
             }, cancellationToken);
 
@@ -448,8 +443,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await item.RefreshMetadata(new MetadataRefreshOptions
             {
-                ForceSave = isNew,
-                ResetResolveArgs = false
+                ForceSave = isNew
 
             }, cancellationToken);
 

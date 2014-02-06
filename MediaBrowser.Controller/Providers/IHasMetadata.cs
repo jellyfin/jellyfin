@@ -39,5 +39,11 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <returns><c>true</c> if [is save local metadata enabled]; otherwise, <c>false</c>.</returns>
         bool IsSaveLocalMetadataEnabled();
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is in mixed folder.
+        /// </summary>
+        /// <value><c>true</c> if this instance is in mixed folder; otherwise, <c>false</c>.</value>
+        bool IsInMixedFolder { get; }
     }
 }

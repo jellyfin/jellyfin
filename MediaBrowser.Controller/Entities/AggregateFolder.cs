@@ -1,7 +1,11 @@
-﻿using System;
+﻿using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -11,6 +15,11 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class AggregateFolder : Folder
     {
+        public AggregateFolder()
+        {
+            PhysicalLocationsList = new List<string>();
+        }
+
         /// <summary>
         /// We don't support manual shortcuts
         /// </summary>
@@ -36,6 +45,60 @@ namespace MediaBrowser.Controller.Entities
             get { return _virtualChildren; }
         }
 
+        [IgnoreDataMember]
+        public override IEnumerable<string> PhysicalLocations
+        {
+            get
+            {
+                return PhysicalLocationsList;
+            }
+        }
+
+        public List<string> PhysicalLocationsList { get; set; }
+
+        protected override IEnumerable<FileSystemInfo> GetFileSystemChildren()
+        {
+            return CreateResolveArgs().FileSystemChildren;
+        }
+
+        private ItemResolveArgs CreateResolveArgs()
+        {
+            var path = ContainingFolderPath;
+
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager)
+            {
+                FileInfo = new DirectoryInfo(path),
+                Path = path,
+                Parent = Parent
+            };
+
+            // Gather child folder and files
+            if (args.IsDirectory)
+            {
+                var isPhysicalRoot = args.IsPhysicalRoot;
+
+                // When resolving the root, we need it's grandchildren (children of user views)
+                var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
+
+                var fileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, FileSystem, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
+
+                // Need to remove subpaths that may have been resolved from shortcuts
+                // Example: if \\server\movies exists, then strip out \\server\movies\action
+                if (isPhysicalRoot)
+                {
+                    var paths = LibraryManager.NormalizeRootPathList(fileSystemDictionary.Keys);
+
+                    fileSystemDictionary = paths.Select(i => (FileSystemInfo)new DirectoryInfo(i)).ToDictionary(i => i.FullName);
+                }
+
+                args.FileSystemDictionary = fileSystemDictionary;
+            }
+
+            PhysicalLocationsList = args.PhysicalLocations.ToList();
+
+            return args;
+        }
+        
         /// <summary>
         /// Adds the virtual child.
         /// </summary>

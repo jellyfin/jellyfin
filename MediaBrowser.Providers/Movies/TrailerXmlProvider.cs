@@ -2,23 +2,22 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Providers.Movies;
 using System.IO;
 using System.Threading;
 
-namespace MediaBrowser.Providers.AdultVideos
+namespace MediaBrowser.Providers.Movies
 {
-    class AdultVideoXmlProvider : BaseXmlProvider<AdultVideo>
+    public class TrailerXmlProvider : BaseXmlProvider<Trailer>
     {
         private readonly ILogger _logger;
 
-        public AdultVideoXmlProvider(IFileSystem fileSystem, ILogger logger)
+        public TrailerXmlProvider(IFileSystem fileSystem, ILogger logger)
             : base(fileSystem)
         {
             _logger = logger;
         }
 
-        protected override void Fetch(AdultVideo item, string path, CancellationToken cancellationToken)
+        protected override void Fetch(Trailer item, string path, CancellationToken cancellationToken)
         {
             new MovieXmlParser(_logger).Fetch(item, path, cancellationToken);
         }
