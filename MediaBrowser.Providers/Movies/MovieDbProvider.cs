@@ -5,16 +5,11 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Savers;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,48 +18,44 @@ namespace MediaBrowser.Providers.Movies
     /// <summary>
     /// Class MovieDbProvider
     /// </summary>
-    public class MovieDbProvider : BaseMetadataProvider, IDisposable
+    public class MovieDbProvider : IRemoteMetadataProvider<Movie>, IDisposable
     {
-        protected static CultureInfo EnUs = new CultureInfo("en-US");
-
-        protected readonly IProviderManager ProviderManager;
-
-        /// <summary>
-        /// The movie db
-        /// </summary>
         internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(1, 1);
 
         internal static MovieDbProvider Current { get; private set; }
 
-        /// <summary>
-        /// Gets the json serializer.
-        /// </summary>
-        /// <value>The json serializer.</value>
-        protected IJsonSerializer JsonSerializer { get; private set; }
-
-        /// <summary>
-        /// Gets the HTTP client.
-        /// </summary>
-        /// <value>The HTTP client.</value>
-        protected IHttpClient HttpClient { get; private set; }
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
+        private readonly IServerConfigurationManager _configurationManager;
+        private readonly ILogger _logger;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MovieDbProvider" /> class.
-        /// </summary>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public MovieDbProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, IProviderManager providerManager, IFileSystem fileSystem)
-            : base(logManager, configurationManager)
+        public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger)
         {
-            JsonSerializer = jsonSerializer;
-            HttpClient = httpClient;
-            ProviderManager = providerManager;
+            _jsonSerializer = jsonSerializer;
+            _httpClient = httpClient;
             _fileSystem = fileSystem;
+            _configurationManager = configurationManager;
+            _logger = logger;
             Current = this;
+        }
+
+        public Task<MetadataResult<Movie>> GetMetadata(ItemId id, CancellationToken cancellationToken)
+        {
+            return GetItemMetadata<Movie>(id, cancellationToken);
+        }
+
+        public Task<MetadataResult<T>> GetItemMetadata<T>(ItemId id, CancellationToken cancellationToken)
+            where T : Video, new ()
+        {
+            var movieDb = new GenericMovieDbInfo<T>(_logger, _jsonSerializer);
+
+            return movieDb.GetMetadata(id, cancellationToken);
+        }
+
+        public string Name
+        {
+            get { return "TheMovieDb"; }
         }
 
         /// <summary>
@@ -76,61 +67,6 @@ namespace MediaBrowser.Providers.Movies
             if (dispose)
             {
                 MovieDbResourcePool.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public override MetadataProviderPriority Priority
-        {
-            get { return MetadataProviderPriority.Third; }
-        }
-
-        /// <summary>
-        /// Supportses the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public override bool Supports(BaseItem item)
-        {
-            var trailer = item as Trailer;
-
-            if (trailer != null)
-            {
-                return !trailer.IsLocalTrailer;
-            }
-
-            // Don't support local trailers
-            return item is Movie || item is MusicVideo;
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether [requires internet].
-        /// </summary>
-        /// <value><c>true</c> if [requires internet]; otherwise, <c>false</c>.</value>
-        public override bool RequiresInternet
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        protected override bool RefreshOnVersionChange
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        protected override string ProviderVersion
-        {
-            get
-            {
-                return "3";
             }
         }
 
@@ -170,7 +106,7 @@ namespace MediaBrowser.Providers.Movies
 
                 }).ConfigureAwait(false))
                 {
-                    _tmdbSettings = JsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
+                    _tmdbSettings = _jsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
 
                     return _tmdbSettings;
                 }
@@ -186,30 +122,6 @@ namespace MediaBrowser.Providers.Movies
 
         internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
         internal static string AcceptHeader = "application/json,image/*";
-
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb)))
-            {
-                return true;
-            }
-
-            return base.NeedsRefreshInternal(item, providerInfo);
-        }
-
-        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            var path = GetDataFilePath(item);
-
-            if (!string.IsNullOrEmpty(path))
-            {
-                var fileInfo = new FileInfo(path);
-
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed;
-            }
-
-            return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
-        }
 
         /// <summary>
         /// Gets the movie data path.
@@ -232,121 +144,6 @@ namespace MediaBrowser.Providers.Movies
         }
 
         /// <summary>
-        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var id = item.GetProviderId(MetadataProviders.Tmdb);
-
-            if (string.IsNullOrEmpty(id))
-            {
-                id = item.GetProviderId(MetadataProviders.Imdb);
-            }
-
-            // Don't search for music video id's because it is very easy to misidentify. 
-            if (string.IsNullOrEmpty(id) && !(item is MusicVideo))
-            {
-                id = await new MovieDbSearch(Logger, JsonSerializer)
-                    .FindMovieId(GetId(item), cancellationToken).ConfigureAwait(false);
-            }
-
-            if (!string.IsNullOrEmpty(id))
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await FetchMovieData(item, id, force, cancellationToken).ConfigureAwait(false);
-            }
-
-            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
-            return true;
-        }
-
-        private ItemId GetId(IHasMetadata item)
-        {
-            return new ItemId
-            {
-                MetadataCountryCode = item.GetPreferredMetadataCountryCode(),
-                MetadataLanguage = item.GetPreferredMetadataLanguage(),
-                Name = item.Name,
-                ProviderIds = item.ProviderIds
-            };
-        }
-
-        /// <summary>
-        /// Determines whether [has alt meta] [the specified item].
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if [has alt meta] [the specified item]; otherwise, <c>false</c>.</returns>
-        internal static bool HasAltMeta(BaseItem item)
-        {
-            var path = MovieXmlSaver.GetMovieSavePath((Video)item);
-
-            if (item.LocationType == LocationType.FileSystem)
-            {
-                // If mixed with multiple movies in one folder, resolve args won't have the file system children
-                return item.ResolveArgs.ContainsMetaFileByName(Path.GetFileName(path)) || File.Exists(path);
-            }
-
-            return false;
-        }
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
-        /// <summary>
-        /// Fetches the movie data.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="id">The id.</param>
-        /// <param name="isForcedRefresh">if set to <c>true</c> [is forced refresh].</param>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Task.</returns>
-        private async Task FetchMovieData(BaseItem item, string id, bool isForcedRefresh, CancellationToken cancellationToken)
-        {
-            // Id could be ImdbId or TmdbId
-
-            var language = item.GetPreferredMetadataLanguage();
-
-            var dataFilePath = GetDataFilePath(item);
-
-            var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
-
-            if (string.IsNullOrEmpty(dataFilePath) || !File.Exists(dataFilePath))
-            {
-                var mainResult = await FetchMainResult(id, language, cancellationToken).ConfigureAwait(false);
-
-                if (mainResult == null) return;
-
-                tmdbId = mainResult.id.ToString(_usCulture);
-
-                dataFilePath = GetDataFilePath(tmdbId, language);
-
-                var directory = Path.GetDirectoryName(dataFilePath);
-
-                Directory.CreateDirectory(directory);
-
-                JsonSerializer.SerializeToFile(mainResult, dataFilePath);
-            }
-
-            if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !HasAltMeta(item))
-            {
-                dataFilePath = GetDataFilePath(tmdbId, language);
-
-                if (!string.IsNullOrEmpty(dataFilePath))
-                {
-                    var mainResult = JsonSerializer.DeserializeFromFile<CompleteMovieData>(dataFilePath);
-
-                    ProcessMainInfo(item, mainResult);
-                }
-            }
-        }
-
-        /// <summary>
         /// Downloads the movie info.
         /// </summary>
         /// <param name="id">The id.</param>
@@ -363,60 +160,49 @@ namespace MediaBrowser.Providers.Movies
 
             Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
-            JsonSerializer.SerializeToFile(mainResult, dataFilePath);
+            _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
-        internal Task EnsureMovieInfo(BaseItem item, CancellationToken cancellationToken)
+        internal Task EnsureMovieInfo(string tmdbId, string language, CancellationToken cancellationToken)
         {
-            var path = GetDataFilePath(item);
-
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(tmdbId))
             {
-                return _cachedTask;
+                throw new ArgumentNullException("tmdbId");
             }
-            
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException("language");
+            }
+
+            var path = GetDataFilePath(tmdbId, language);
+
             var fileInfo = _fileSystem.GetFileSystemInfo(path);
 
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if ((ConfigurationManager.Configuration.EnableTmdbUpdates) || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                if ((_configurationManager.Configuration.EnableTmdbUpdates) || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
                 {
                     return _cachedTask;
                 }
             }
 
-            var id = item.GetProviderId(MetadataProviders.Tmdb);
-
-            if (string.IsNullOrEmpty(id))
-            {
-                return _cachedTask;
-            }
-
-            return DownloadMovieInfo(id, item.GetPreferredMetadataLanguage(), cancellationToken);
+            return DownloadMovieInfo(tmdbId, language, cancellationToken);
         }
 
-        /// <summary>
-        /// Gets the data file path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>System.String.</returns>
-        internal string GetDataFilePath(BaseItem item)
+        internal string GetDataFilePath(string tmdbId, string preferredLanguage)
         {
-            var id = item.GetProviderId(MetadataProviders.Tmdb);
-
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(tmdbId))
             {
-                return null;
+                throw new ArgumentNullException("tmdbId");
+            }
+            if (string.IsNullOrEmpty(preferredLanguage))
+            {
+                throw new ArgumentNullException("preferredLanguage");
             }
 
-            return GetDataFilePath(id, item.GetPreferredMetadataLanguage());
-        }
-
-        private string GetDataFilePath(string tmdbId, string preferredLanguage)
-        {
-            var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, tmdbId);
+            var path = GetMovieDataPath(_configurationManager.ApplicationPaths, tmdbId);
 
             var filename = string.Format("all-{0}.json",
                 preferredLanguage ?? string.Empty);
@@ -431,7 +217,7 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="language">The language.</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{CompleteMovieData}.</returns>
-        private async Task<CompleteMovieData> FetchMainResult(string id, string language, CancellationToken cancellationToken)
+        internal async Task<CompleteMovieData> FetchMainResult(string id, string language, CancellationToken cancellationToken)
         {
             var url = string.Format(GetMovieInfo3, id, ApiKey);
 
@@ -461,7 +247,7 @@ namespace MediaBrowser.Providers.Movies
 
             }).ConfigureAwait(false))
             {
-                mainResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
+                mainResult = _jsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -470,7 +256,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 if (!string.IsNullOrEmpty(language) && !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
+                    _logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
 
                     url = string.Format(GetMovieInfo3, id, ApiKey) + "&include_image_language=en,null&language=en";
 
@@ -482,194 +268,17 @@ namespace MediaBrowser.Providers.Movies
 
                     }).ConfigureAwait(false))
                     {
-                        mainResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
+                        mainResult = _jsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
                     }
 
                     if (String.IsNullOrEmpty(mainResult.overview))
                     {
-                        Logger.Error("MovieDbProvider - Unable to find information for (id:" + id + ")");
+                        _logger.Error("MovieDbProvider - Unable to find information for (id:" + id + ")");
                         return null;
                     }
                 }
             }
             return mainResult;
-        }
-
-        /// <summary>
-        /// Processes the main info.
-        /// </summary>
-        /// <param name="movie">The movie.</param>
-        /// <param name="movieData">The movie data.</param>
-        private void ProcessMainInfo(BaseItem movie, CompleteMovieData movieData)
-        {
-            if (!movie.LockedFields.Contains(MetadataFields.Name))
-            {
-                movie.Name = movieData.title ?? movieData.original_title ?? movieData.name ?? movie.Name;
-            }
-            if (!movie.LockedFields.Contains(MetadataFields.Overview))
-            {
-                // Bug in Mono: WebUtility.HtmlDecode should return null if the string is null but in Mono it generate an System.ArgumentNullException.
-                movie.Overview = movieData.overview != null ? WebUtility.HtmlDecode(movieData.overview) : null;
-                movie.Overview = movie.Overview != null ? movie.Overview.Replace("\n\n", "\n") : null;
-            }
-            movie.HomePageUrl = movieData.homepage;
-
-            var hasBudget = movie as IHasBudget;
-            if (hasBudget != null)
-            {
-                hasBudget.Budget = movieData.budget;
-                hasBudget.Revenue = movieData.revenue;
-            }
-
-            if (!string.IsNullOrEmpty(movieData.tagline))
-            {
-                var hasTagline = movie as IHasTaglines;
-                if (hasTagline != null)
-                {
-                    hasTagline.Taglines.Clear();
-                    hasTagline.AddTagline(movieData.tagline);
-                }
-            }
-
-            movie.SetProviderId(MetadataProviders.Tmdb, movieData.id.ToString(_usCulture));
-            movie.SetProviderId(MetadataProviders.Imdb, movieData.imdb_id);
-
-            if (movieData.belongs_to_collection != null)
-            {
-                movie.SetProviderId(MetadataProviders.TmdbCollection,
-                                    movieData.belongs_to_collection.id.ToString(CultureInfo.InvariantCulture));
-
-                var movieItem = movie as Movie;
-
-                if (movieItem != null)
-                {
-                    movieItem.TmdbCollectionName = movieData.belongs_to_collection.name;
-                }
-            }
-            else
-            {
-                movie.SetProviderId(MetadataProviders.TmdbCollection, null); // clear out any old entry
-            }
-
-            float rating;
-            string voteAvg = movieData.vote_average.ToString(CultureInfo.InvariantCulture);
-
-            // tmdb appears to have unified their numbers to always report "7.3" regardless of country
-            // so I removed the culture-specific processing here because it was not working for other countries -ebr
-            // Movies get this from imdb
-            if (!(movie is Movie) && float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
-            {
-                movie.CommunityRating = rating;
-            }
-
-            // Movies get this from imdb
-            if (!(movie is Movie))
-            {
-                movie.VoteCount = movieData.vote_count;
-            }
-
-            var preferredCountryCode = movie.GetPreferredMetadataCountryCode();
-
-            //release date and certification are retrieved based on configured country and we fall back on US if not there and to minimun release date if still no match
-            if (movieData.releases != null && movieData.releases.countries != null)
-            {
-                var ourRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals(preferredCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new Country();
-                var usRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase)) ?? new Country();
-                var minimunRelease = movieData.releases.countries.OrderBy(c => c.release_date).FirstOrDefault() ?? new Country();
-
-                if (!movie.LockedFields.Contains(MetadataFields.OfficialRating))
-                {
-                    var ratingPrefix = string.Equals(preferredCountryCode, "us", StringComparison.OrdinalIgnoreCase) ? "" : preferredCountryCode + "-";
-                    movie.OfficialRating = !string.IsNullOrEmpty(ourRelease.certification)
-                                               ? ratingPrefix + ourRelease.certification
-                                               : !string.IsNullOrEmpty(usRelease.certification)
-                                                     ? usRelease.certification
-                                                     : !string.IsNullOrEmpty(minimunRelease.certification)
-                                                           ? minimunRelease.iso_3166_1 + "-" + minimunRelease.certification
-                                                           : null;
-                }
-            }
-
-            if (movieData.release_date.Year != 1)
-            {
-                //no specific country release info at all
-                movie.PremiereDate = movieData.release_date.ToUniversalTime();
-                movie.ProductionYear = movieData.release_date.Year;
-            }
-
-            //studios
-            if (movieData.production_companies != null && !movie.LockedFields.Contains(MetadataFields.Studios))
-            {
-                movie.Studios.Clear();
-
-                foreach (var studio in movieData.production_companies.Select(c => c.name))
-                {
-                    movie.AddStudio(studio);
-                }
-            }
-
-            // genres
-            // Movies get this from imdb
-            var genres = movieData.genres ?? new List<GenreItem>();
-            if (!movie.LockedFields.Contains(MetadataFields.Genres))
-            {
-                // Only grab them if a boxset or there are no genres.
-                // For movies and trailers we'll use imdb via omdb
-                // But omdb data is for english users only so fetch if language is not english
-                if (!(movie is Movie) || movie.Genres.Count == 0 || !string.Equals(movie.GetPreferredMetadataLanguage(), "en", StringComparison.OrdinalIgnoreCase))
-                {
-                    movie.Genres.Clear();
-
-                    foreach (var genre in genres.Select(g => g.name))
-                    {
-                        movie.AddGenre(genre);
-                    }
-                }
-            }
-
-            if (!movie.LockedFields.Contains(MetadataFields.Cast))
-            {
-                movie.People.Clear();
-
-                //Actors, Directors, Writers - all in People
-                //actors come from cast
-                if (movieData.casts != null && movieData.casts.cast != null)
-                {
-                    foreach (var actor in movieData.casts.cast.OrderBy(a => a.order)) movie.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
-                }
-
-                //and the rest from crew
-                if (movieData.casts != null && movieData.casts.crew != null)
-                {
-                    foreach (var person in movieData.casts.crew) movie.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
-                }
-            }
-
-            if (movieData.keywords != null && movieData.keywords.keywords != null && !movie.LockedFields.Contains(MetadataFields.Keywords))
-            {
-                var hasTags = movie as IHasKeywords;
-                if (hasTags != null)
-                {
-                    hasTags.Keywords = movieData.keywords.keywords.Select(i => i.name).ToList();
-                }
-            }
-
-            if (movieData.trailers != null && movieData.trailers.youtube != null &&
-                movieData.trailers.youtube.Count > 0)
-            {
-                var hasTrailers = movie as IHasTrailers;
-                if (hasTrailers != null)
-                {
-                    hasTrailers.RemoteTrailers = movieData.trailers.youtube.Select(i => new MediaUrl
-                    {
-                        Url = string.Format("http://www.youtube.com/watch?v={0}", i.source),
-                        IsDirectLink = false,
-                        Name = i.name,
-                        VideoSize = string.Equals("hd", i.size, StringComparison.OrdinalIgnoreCase) ? VideoSize.HighDefinition : VideoSize.StandardDefinition
-
-                    }).ToList();
-                }
-            }
         }
 
         private DateTime _lastRequestDate = DateTime.MinValue;
@@ -695,7 +304,7 @@ namespace MediaBrowser.Providers.Movies
 
                 _lastRequestDate = DateTime.Now;
 
-                return await HttpClient.Get(options).ConfigureAwait(false);
+                return await _httpClient.Get(options).ConfigureAwait(false);
             }
             finally
             {
@@ -896,19 +505,6 @@ namespace MediaBrowser.Providers.Movies
             public Images images { get; set; }
             public Keywords keywords { get; set; }
             public Trailers trailers { get; set; }
-        }
-
-        internal class TmdbImageSettings
-        {
-            public List<string> backdrop_sizes { get; set; }
-            public string base_url { get; set; }
-            public List<string> poster_sizes { get; set; }
-            public List<string> profile_sizes { get; set; }
-        }
-
-        internal class TmdbSettingsResult
-        {
-            public TmdbImageSettings images { get; set; }
         }
     }
 }

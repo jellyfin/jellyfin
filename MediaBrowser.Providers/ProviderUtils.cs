@@ -93,7 +93,10 @@ namespace MediaBrowser.Providers
             {
                 if (replaceData || !target.RunTimeTicks.HasValue)
                 {
-                    target.RunTimeTicks = source.RunTimeTicks;
+                    if (!(target is Audio) && !(target is Video))
+                    {
+                        target.RunTimeTicks = source.RunTimeTicks;
+                    }
                 }
             }
 
@@ -159,6 +162,11 @@ namespace MediaBrowser.Providers
 
             MergeAlbumArtist(source, target, lockedFields, replaceData);
             MergeBudget(source, target, lockedFields, replaceData);
+            MergeMetascore(source, target, lockedFields, replaceData);
+            MergeCriticRating(source, target, lockedFields, replaceData);
+            MergeAwards(source, target, lockedFields, replaceData);
+            MergeTaglines(source, target, lockedFields, replaceData);
+            MergeTrailers(source, target, lockedFields, replaceData);
 
             if (mergeMetadataSettings)
             {
@@ -215,6 +223,81 @@ namespace MediaBrowser.Providers
                 if (replaceData || !targetHasBudget.Revenue.HasValue)
                 {
                     targetHasBudget.Revenue = sourceHasBudget.Revenue;
+                }
+            }
+        }
+
+        private static void MergeMetascore(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        {
+            var sourceCast = source as IHasMetascore;
+            var targetCast = target as IHasMetascore;
+
+            if (sourceCast != null && targetCast != null)
+            {
+                if (replaceData || !targetCast.Metascore.HasValue)
+                {
+                    targetCast.Metascore = sourceCast.Metascore;
+                }
+            }
+        }
+
+        private static void MergeAwards(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        {
+            var sourceCast = source as IHasAwards;
+            var targetCast = target as IHasAwards;
+
+            if (sourceCast != null && targetCast != null)
+            {
+                if (replaceData || string.IsNullOrEmpty(targetCast.AwardSummary))
+                {
+                    targetCast.AwardSummary = sourceCast.AwardSummary;
+                }
+            }
+        }
+
+        private static void MergeCriticRating(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        {
+            var sourceCast = source as IHasCriticRating;
+            var targetCast = target as IHasCriticRating;
+
+            if (sourceCast != null && targetCast != null)
+            {
+                if (replaceData || !targetCast.CriticRating.HasValue)
+                {
+                    targetCast.CriticRating = sourceCast.CriticRating;
+                }
+
+                if (replaceData || string.IsNullOrEmpty(targetCast.CriticRatingSummary))
+                {
+                    targetCast.CriticRatingSummary = sourceCast.CriticRatingSummary;
+                }
+            }
+        }
+
+        private static void MergeTaglines(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        {
+            var sourceCast = source as IHasTaglines;
+            var targetCast = target as IHasTaglines;
+
+            if (sourceCast != null && targetCast != null)
+            {
+                if (replaceData || targetCast.Taglines.Count == 0)
+                {
+                    targetCast.Taglines = sourceCast.Taglines;
+                }
+            }
+        }
+
+        private static void MergeTrailers(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
+        {
+            var sourceCast = source as IHasTrailers;
+            var targetCast = target as IHasTrailers;
+
+            if (sourceCast != null && targetCast != null)
+            {
+                if (replaceData || targetCast.RemoteTrailers.Count == 0)
+                {
+                    targetCast.RemoteTrailers = sourceCast.RemoteTrailers;
                 }
             }
         }

@@ -4,11 +4,10 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    class AlbumXmlProvider : BaseXmlProvider, ILocalMetadataProvider<MusicAlbum>
+    class AlbumXmlProvider : BaseXmlProvider<MusicAlbum>
     {
         private readonly ILogger _logger;
 
@@ -18,42 +17,14 @@ namespace MediaBrowser.Providers.Music
             _logger = logger;
         }
 
-        public async Task<MetadataResult<MusicAlbum>> GetMetadata(string path, CancellationToken cancellationToken)
+        protected override void Fetch(MusicAlbum item, string path, CancellationToken cancellationToken)
         {
-            path = GetXmlFile(path).FullName;
-
-            var result = new MetadataResult<MusicAlbum>();
-
-            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                var item = new MusicAlbum();
-
-                new BaseItemXmlParser<MusicAlbum>(_logger).Fetch(item, path, cancellationToken);
-                result.HasMetadata = true;
-                result.Item = item;
-            }
-            catch (FileNotFoundException)
-            {
-                result.HasMetadata = false;
-            }
-            finally
-            {
-                XmlParsingResourcePool.Release();
-            }
-
-            return result;
+            new BaseItemXmlParser<MusicAlbum>(_logger).Fetch(item, path, cancellationToken);
         }
 
-        public string Name
+        protected override FileInfo GetXmlFile(ItemInfo info)
         {
-            get { return "Media Browser Xml"; }
-        }
-
-        protected override FileInfo GetXmlFile(string path)
-        {
-            return new FileInfo(Path.Combine(path, "album.xml"));
+            return new FileInfo(Path.Combine(info.Path, "album.xml"));
         }
     }
 }

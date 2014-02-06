@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the preferred metadata country code.
         /// </summary>
@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         public string PreferredMetadataCountryCode { get; set; }
 
         public string PreferredMetadataLanguage { get; set; }
-        
+
         public Movie()
         {
             SpecialFeatureIds = new List<Guid>();
@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public List<Guid> LocalTrailerIds { get; set; }
         public List<string> Keywords { get; set; }
-    
+
         public List<MediaUrl> RemoteTrailers { get; set; }
 
         /// <summary>
@@ -103,88 +103,48 @@ namespace MediaBrowser.Controller.Entities.Movies
             return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.GetUserDataKey();
         }
 
-        /// <summary>
-        /// Overrides the base implementation to refresh metadata for special features
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="forceSave">if set to <c>true</c> [is new item].</param>
-        /// <param name="forceRefresh">if set to <c>true</c> [force].</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> RefreshMetadataDirect(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
+        protected override async Task BeforeRefreshMetadata(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            // Kick off a task to refresh the main item
-            var result = await base.RefreshMetadataDirect(cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
-
-            var specialFeaturesChanged = false;
+            await base.BeforeRefreshMetadata(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
             // Must have a parent to have special features
             // In other words, it must be part of the Parent/Child tree
             if (LocationType == LocationType.FileSystem && Parent != null && !IsInMixedFolder)
             {
-                specialFeaturesChanged = await RefreshSpecialFeatures(cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
-            }
+                var specialFeaturesChanged = await RefreshSpecialFeatures(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
-            return specialFeaturesChanged || result;
+                if (specialFeaturesChanged)
+                {
+                    options.ForceSave = true;
+                }
+            }
         }
 
-        private async Task<bool> RefreshSpecialFeatures(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        private async Task<bool> RefreshSpecialFeatures(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newItems = LoadSpecialFeatures().ToList();
+            var newItems = LoadSpecialFeatures(fileSystemChildren).ToList();
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
             var itemsChanged = !SpecialFeatureIds.SequenceEqual(newItemIds);
 
-            var tasks = newItems.Select(i => i.RefreshMetadata(new MetadataRefreshOptions
-            {
-                ForceSave = forceSave,
-                ReplaceAllMetadata = forceRefresh,
-                ResetResolveArgs = false
+            var tasks = newItems.Select(i => i.RefreshMetadata(options, cancellationToken));
 
-            }, cancellationToken));
-
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             SpecialFeatureIds = newItemIds;
 
-            return itemsChanged || results.Contains(true);
+            return itemsChanged;
         }
 
         /// <summary>
         /// Loads the special features.
         /// </summary>
         /// <returns>IEnumerable{Video}.</returns>
-        private IEnumerable<Video> LoadSpecialFeatures()
+        private IEnumerable<Video> LoadSpecialFeatures(IEnumerable<FileSystemInfo> fileSystemChildren)
         {
-            FileSystemInfo folder;
-
-            try
-            {
-                folder = ResolveArgs.GetFileSystemEntryByName("extras") ??
-                    ResolveArgs.GetFileSystemEntryByName("specials");
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<Video>();
-            }
-
-            // Path doesn't exist. No biggie
-            if (folder == null)
-            {
-                return new List<Video>();
-            }
-
-            IEnumerable<FileSystemInfo> files;
-
-            try
-            {
-                files = new DirectoryInfo(folder.FullName).EnumerateFiles();
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error loading special features for {0}", ex, Name);
-                return new List<Video>();
-            }
+            var files = fileSystemChildren.OfType<DirectoryInfo>()
+                .Where(i => string.Equals(i.Name, "extras", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "specials", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly));
 
             return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
             {
@@ -193,7 +153,6 @@ namespace MediaBrowser.Controller.Entities.Movies
 
                 if (dbItem != null)
                 {
-                    dbItem.ResetResolveArgs(video.ResolveArgs);
                     video = dbItem;
                 }
 

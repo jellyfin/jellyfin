@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.All
             if (locationType == LocationType.FileSystem)
             {
                 // Episode has it's own provider
-                if (item is Episode || item is Audio)
+                if (item.IsOwnedItem || item is Episode || item is Audio)
                 {
                     return false;
                 }

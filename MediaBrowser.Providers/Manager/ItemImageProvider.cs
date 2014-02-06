@@ -93,8 +93,6 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         private async Task RefreshFromProvider(IHasImages item, IDynamicImageProvider provider, MetadataOptions savedOptions, RefreshResult result, CancellationToken cancellationToken)
         {
-            _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
-
             try
             {
                 var images = provider.GetSupportedImages(item);
@@ -103,6 +101,8 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (!item.HasImage(imageType) && savedOptions.IsEnabled(imageType))
                     {
+                        _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
+
                         var response = await provider.GetImage(item, imageType, cancellationToken).ConfigureAwait(false);
 
                         if (response.HasImage)

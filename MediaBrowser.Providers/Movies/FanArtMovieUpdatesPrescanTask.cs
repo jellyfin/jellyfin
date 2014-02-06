@@ -60,7 +60,7 @@ namespace MediaBrowser.Providers.Movies
                 return;
             }
 
-            var path = FanartMovieProvider.GetMoviesDataPath(_config.CommonApplicationPaths);
+            var path = FanartMovieImageProvider.GetMoviesDataPath(_config.CommonApplicationPaths);
 
             Directory.CreateDirectory(path);
             
@@ -136,7 +136,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 _logger.Info("Updating movie " + id);
 
-                await FanartMovieProvider.Current.DownloadMovieXml(id, cancellationToken).ConfigureAwait(false);
+                await FanartMovieImageProvider.Current.DownloadMovieXml(id, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;

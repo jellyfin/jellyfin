@@ -4,14 +4,13 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
     /// <summary>
     /// Class SeriesProviderFromXml
     /// </summary>
-    public class SeriesXmlProvider : BaseXmlProvider, ILocalMetadataProvider<Series>
+    public class SeriesXmlProvider : BaseXmlProvider<Series>
     {
         private readonly ILogger _logger;
 
@@ -21,42 +20,14 @@ namespace MediaBrowser.Providers.TV
             _logger = logger;
         }
 
-        public async Task<MetadataResult<Series>> GetMetadata(string path, CancellationToken cancellationToken)
+        protected override void Fetch(Series item, string path, CancellationToken cancellationToken)
         {
-            path = GetXmlFile(path).FullName;
-
-            var result = new MetadataResult<Series>();
-
-            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                var person = new Series();
-
-                new SeriesXmlParser(_logger).Fetch(person, path, cancellationToken);
-                result.HasMetadata = true;
-                result.Item = person;
-            }
-            catch (FileNotFoundException)
-            {
-                result.HasMetadata = false;
-            }
-            finally
-            {
-                XmlParsingResourcePool.Release();
-            }
-
-            return result;
+            new SeriesXmlParser(_logger).Fetch(item, path, cancellationToken);
         }
 
-        public string Name
+        protected override FileInfo GetXmlFile(ItemInfo info)
         {
-            get { return "Media Browser Xml"; }
-        }
-
-        protected override FileInfo GetXmlFile(string path)
-        {
-            return new FileInfo(Path.Combine(path, "series.xml"));
+            return new FileInfo(Path.Combine(info.Path, "series.xml"));
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -7,6 +8,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Music;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,22 +18,27 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class ManualFanartMovieImageProvider : IRemoteImageProvider, IHasChangeMonitor, IHasOrder
+    public class FanartMovieImageProvider : IRemoteImageProvider, IHasChangeMonitor, IHasOrder
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
 
-        public ManualFanartMovieImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        private const string FanArtBaseUrl = "http://api.fanart.tv/webservice/movie/{0}/{1}/xml/all/1/1";
+
+        internal static FanartMovieImageProvider Current;
+
+        public FanartMovieImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _config = config;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
+
+            Current = this;
         }
 
         public string Name
@@ -86,9 +93,9 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(movieId))
             {
-                await FanartMovieProvider.Current.EnsureMovieXml(movieId, cancellationToken).ConfigureAwait(false);
+                await EnsureMovieXml(movieId, cancellationToken).ConfigureAwait(false);
 
-                var xmlPath = FanartMovieProvider.Current.GetFanartXmlPath(movieId);
+                var xmlPath = GetFanartXmlPath(movieId);
 
                 try
                 {
@@ -344,7 +351,7 @@ namespace MediaBrowser.Providers.Movies
             if (!string.IsNullOrEmpty(id))
             {
                 // Process images
-                var xmlPath = FanartMovieProvider.Current.GetFanartXmlPath(id);
+                var xmlPath = GetFanartXmlPath(id);
 
                 var fileInfo = new FileInfo(xmlPath);
 
@@ -352,6 +359,86 @@ namespace MediaBrowser.Providers.Movies
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Gets the movie data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="tmdbId">The TMDB id.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetMovieDataPath(IApplicationPaths appPaths, string tmdbId)
+        {
+            var dataPath = Path.Combine(GetMoviesDataPath(appPaths), tmdbId);
+
+            return dataPath;
+        }
+
+        /// <summary>
+        /// Gets the movie data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetMoviesDataPath(IApplicationPaths appPaths)
+        {
+            var dataPath = Path.Combine(appPaths.DataPath, "fanart-movies");
+
+            return dataPath;
+        }
+
+        public string GetFanartXmlPath(string tmdbId)
+        {
+            var movieDataPath = GetMovieDataPath(_config.ApplicationPaths, tmdbId);
+            return Path.Combine(movieDataPath, "fanart.xml");
+        }
+
+        /// <summary>
+        /// Downloads the movie XML.
+        /// </summary>
+        /// <param name="tmdbId">The TMDB id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        internal async Task DownloadMovieXml(string tmdbId, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var url = string.Format(FanArtBaseUrl, FanartArtistProvider.ApiKey, tmdbId);
+
+            var xmlPath = GetFanartXmlPath(tmdbId);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(xmlPath));
+
+            using (var response = await _httpClient.Get(new HttpRequestOptions
+            {
+                Url = url,
+                ResourcePool = FanartArtistProvider.FanArtResourcePool,
+                CancellationToken = cancellationToken
+
+            }).ConfigureAwait(false))
+            {
+                using (var xmlFileStream = _fileSystem.GetFileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                {
+                    await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private readonly Task _cachedTask = Task.FromResult(true);
+        internal Task EnsureMovieXml(string tmdbId, CancellationToken cancellationToken)
+        {
+            var path = GetFanartXmlPath(tmdbId);
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+
+            if (fileInfo.Exists)
+            {
+                if (_config.Configuration.EnableFanArtUpdates || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                {
+                    return _cachedTask;
+                }
+            }
+
+            return DownloadMovieXml(tmdbId, cancellationToken);
         }
     }
 }

@@ -4,11 +4,10 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.LiveTv
 {
-    public class ChannelXmlProvider : BaseXmlProvider, ILocalMetadataProvider<LiveTvChannel>
+    public class ChannelXmlProvider : BaseXmlProvider<LiveTvChannel>
     {
         private readonly ILogger _logger;
 
@@ -18,42 +17,14 @@ namespace MediaBrowser.Providers.LiveTv
             _logger = logger;
         }
 
-        public async Task<MetadataResult<LiveTvChannel>> GetMetadata(string path, CancellationToken cancellationToken)
+        protected override void Fetch(LiveTvChannel item, string path, CancellationToken cancellationToken)
         {
-            path = GetXmlFile(path).FullName;
-
-            var result = new MetadataResult<LiveTvChannel>();
-
-            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                var item = new LiveTvChannel();
-
-                new BaseItemXmlParser<LiveTvChannel>(_logger).Fetch(item, path, cancellationToken);
-                result.HasMetadata = true;
-                result.Item = item;
-            }
-            catch (FileNotFoundException)
-            {
-                result.HasMetadata = false;
-            }
-            finally
-            {
-                XmlParsingResourcePool.Release();
-            }
-
-            return result;
+            new BaseItemXmlParser<LiveTvChannel>(_logger).Fetch(item, path, cancellationToken);
         }
 
-        public string Name
+        protected override FileInfo GetXmlFile(ItemInfo info)
         {
-            get { return "Media Browser Xml"; }
-        }
-
-        protected override FileInfo GetXmlFile(string path)
-        {
-            return new FileInfo(Path.Combine(path, "channel.xml"));
+            return new FileInfo(Path.Combine(info.Path, "channel.xml"));
         }
     }
 }

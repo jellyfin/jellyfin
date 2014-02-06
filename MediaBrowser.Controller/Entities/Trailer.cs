@@ -89,33 +89,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        /// <summary>
-        /// Should be overridden to return the proper folder where metadata lives
-        /// </summary>
-        /// <value>The meta location.</value>
-        [IgnoreDataMember]
-        public override string MetaLocation
-        {
-            get
-            {
-                if (!IsLocalTrailer)
-                {
-                    return System.IO.Path.GetDirectoryName(Path);
-                }
-
-                return base.MetaLocation;
-            }
-        }
-
-        /// <summary>
-        /// Needed because the resolver stops at the trailer folder and we find the video inside.
-        /// </summary>
-        /// <value><c>true</c> if [use parent path to create resolve args]; otherwise, <c>false</c>.</value>
-        protected override bool UseParentPathToCreateResolveArgs
-        {
-            get { return !IsLocalTrailer; }
-        }
-
         public override string GetUserDataKey()
         {
             var key = this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Tvdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tvcom);

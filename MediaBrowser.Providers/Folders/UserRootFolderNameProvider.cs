@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers
+namespace MediaBrowser.Providers.Folders
 {
     public class UserRootFolderNameProvider : BaseMetadataProvider
     {

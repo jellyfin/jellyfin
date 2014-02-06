@@ -273,21 +273,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 if (item.LocationType == LocationType.FileSystem)
                 {
-                    return collections.Where(i =>
-                    {
-
-                        try
-                        {
-                            return i.LocationType == LocationType.FileSystem &&
-                                   i.PhysicalLocations.Contains(item.Path);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error getting ResolveArgs for {0}", ex, i.Path);
-                            return false;
-                        }
-
-                    }).Cast<T>();
+                    return collections.Where(i => i.LocationType == LocationType.FileSystem &&
+                                                  i.PhysicalLocations.Contains(item.Path)).Cast<T>();
                 }
             }
 

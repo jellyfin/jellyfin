@@ -15,12 +15,12 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    class ManualMovieDbImageProvider : IRemoteImageProvider, IHasOrder
+    class MovieDbImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
 
-        public ManualMovieDbImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public MovieDbImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
@@ -168,9 +168,17 @@ namespace MediaBrowser.Providers.Movies
         private async Task<MovieDbProvider.Images> FetchImages(BaseItem item, IJsonSerializer jsonSerializer,
             CancellationToken cancellationToken)
         {
-            await MovieDbProvider.Current.EnsureMovieInfo(item, cancellationToken).ConfigureAwait(false);
+            var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
+            var language = item.GetPreferredMetadataLanguage();
 
-            var path = MovieDbProvider.Current.GetDataFilePath(item);
+            if (string.IsNullOrEmpty(tmdbId))
+            {
+                return null;
+            }
+
+            await MovieDbProvider.Current.EnsureMovieInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
+
+            var path = MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
 
             if (!string.IsNullOrEmpty(path))
             {

@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -53,7 +54,7 @@ namespace MediaBrowser.Providers.TV
             await new MissingEpisodeProvider(_logger, _config).Run(seriesGroups, cancellationToken).ConfigureAwait(false);
 
             var numComplete = 0;
-            
+
             foreach (var series in seriesList)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -171,7 +172,9 @@ namespace MediaBrowser.Providers.TV
             {
                 foreach (var series in group)
                 {
-                    await series.RefreshMetadata(cancellationToken, true)
+                    await series.RefreshMetadata(new MetadataRefreshOptions
+                    {
+                    }, cancellationToken)
                         .ConfigureAwait(false);
 
                     await series.ValidateChildren(new Progress<double>(), cancellationToken, true)
@@ -438,7 +441,9 @@ namespace MediaBrowser.Providers.TV
 
             await season.AddChild(episode, cancellationToken).ConfigureAwait(false);
 
-            await episode.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            await episode.RefreshMetadata(new MetadataRefreshOptions
+            {
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -464,7 +469,9 @@ namespace MediaBrowser.Providers.TV
             };
 
             await series.AddChild(season, cancellationToken).ConfigureAwait(false);
-            await season.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            await season.RefreshMetadata(new MetadataRefreshOptions
+            {
+            }, cancellationToken).ConfigureAwait(false);
 
             return season;
         }

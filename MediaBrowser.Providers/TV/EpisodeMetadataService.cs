@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.IO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -102,8 +103,10 @@ namespace MediaBrowser.Providers.TV
                 var currentIndexNumberEnd = item.IndexNumberEnd;
                 var currentParentIndexNumber = item.ParentIndexNumber;
 
-                item.IndexNumber = item.IndexNumber ?? TVUtils.GetEpisodeNumberFromFile(item.Path, item.Parent is Season);
-                item.IndexNumberEnd = item.IndexNumberEnd ?? TVUtils.GetEndingEpisodeNumberFromFile(item.Path);
+                var filename = Path.GetFileName(item.Path);
+
+                item.IndexNumber = item.IndexNumber ?? TVUtils.GetEpisodeNumberFromFile(filename, item.Parent is Season);
+                item.IndexNumberEnd = item.IndexNumberEnd ?? TVUtils.GetEndingEpisodeNumberFromFile(filename);
 
                 if (!item.ParentIndexNumber.HasValue)
                 {

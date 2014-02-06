@@ -196,77 +196,6 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Store these to reduce disk access in Resolvers
-        /// </summary>
-        /// <value>The metadata file dictionary.</value>
-        private Dictionary<string, FileSystemInfo> MetadataFileDictionary { get; set; }
-
-        /// <summary>
-        /// Gets the metadata files.
-        /// </summary>
-        /// <value>The metadata files.</value>
-        public IEnumerable<FileSystemInfo> MetadataFiles
-        {
-            get
-            {
-                if (MetadataFileDictionary != null)
-                {
-                    return MetadataFileDictionary.Values;
-                }
-
-                return new FileSystemInfo[] { };
-            }
-        }
-
-        /// <summary>
-        /// Adds the metadata file.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <exception cref="System.IO.FileNotFoundException"></exception>
-        public void AddMetadataFile(string path)
-        {
-            var file = new FileInfo(path);
-
-            if (!file.Exists)
-            {
-                throw new FileNotFoundException(path);
-            }
-
-            AddMetadataFile(file);
-        }
-
-        /// <summary>
-        /// Adds the metadata file.
-        /// </summary>
-        /// <param name="fileInfo">The file info.</param>
-        public void AddMetadataFile(FileSystemInfo fileInfo)
-        {
-            AddMetadataFiles(new[] { fileInfo });
-        }
-
-        /// <summary>
-        /// Adds the metadata files.
-        /// </summary>
-        /// <param name="files">The files.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddMetadataFiles(IEnumerable<FileSystemInfo> files)
-        {
-            if (files == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (MetadataFileDictionary == null)
-            {
-                MetadataFileDictionary = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);
-            }
-            foreach (var file in files)
-            {
-                MetadataFileDictionary[file.Name] = file;
-            }
-        }
-
-        /// <summary>
         /// Gets the name of the file system entry by.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -320,16 +249,6 @@ namespace MediaBrowser.Controller.Library
             {
                 throw new ArgumentNullException();
             }
-            
-            if (MetadataFileDictionary != null)
-            {
-                FileSystemInfo entry;
-
-                if (MetadataFileDictionary.TryGetValue(System.IO.Path.GetFileName(path), out entry))
-                {
-                    return entry;
-                }
-            }
 
             return GetFileSystemEntryByPath(path);
         }
@@ -345,16 +264,6 @@ namespace MediaBrowser.Controller.Library
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException();
-            }
-            
-            if (MetadataFileDictionary != null)
-            {
-                FileSystemInfo entry;
-
-                if (MetadataFileDictionary.TryGetValue(name, out entry))
-                {
-                    return entry;
-                }
             }
 
             return GetFileSystemEntryByName(name);

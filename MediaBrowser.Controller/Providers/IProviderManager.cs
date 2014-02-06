@@ -25,15 +25,6 @@ namespace MediaBrowser.Controller.Providers
         Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Executes the metadata providers.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        Task<ItemUpdateType?> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false);
-
-        /// <summary>
         /// Saves the image.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -60,12 +51,11 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
-        /// <param name="providers">The providers.</param>
         /// <param name="imageProviders">The image providers.</param>
         /// <param name="metadataServices">The metadata services.</param>
         /// <param name="metadataProviders">The metadata providers.</param>
         /// <param name="savers">The savers.</param>
-        void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders,
+        void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> savers);
 
         /// <summary>

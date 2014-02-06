@@ -379,14 +379,19 @@ namespace MediaBrowser.Providers.Manager
 
             if (saveLocally)
             {
-                if (item.IsInMixedFolder && !(item is Episode))
+                if (item is Episode)
+                {
+                    path = Path.Combine(Path.GetDirectoryName(item.Path), "metadata", filename + extension);
+                }
+
+                else if (item.IsInMixedFolder)
                 {
                     path = GetSavePathForItemInMixedFolder(item, type, filename, extension);
                 }
 
                 if (string.IsNullOrEmpty(path))
                 {
-                    path = Path.Combine(item.MetaLocation, filename + extension);
+                    path = Path.Combine(item.ContainingFolderPath, filename + extension);
                 }
             }
 
@@ -468,7 +473,7 @@ namespace MediaBrowser.Providers.Manager
 
                     return new[]
                         {
-                            Path.Combine(item.MetaLocation, "fanart" + extension)
+                            Path.Combine(item.ContainingFolderPath, "fanart" + extension)
                         };
                 }
 
@@ -483,8 +488,8 @@ namespace MediaBrowser.Providers.Manager
 
                 return new[]
                     {
-                        Path.Combine(item.MetaLocation, "extrafanart", extraFanartFilename + extension),
-                        Path.Combine(item.MetaLocation, "extrathumbs", "thumb" + outputIndex.ToString(UsCulture) + extension)
+                        Path.Combine(item.ContainingFolderPath, "extrafanart", extraFanartFilename + extension),
+                        Path.Combine(item.ContainingFolderPath, "extrathumbs", "thumb" + outputIndex.ToString(UsCulture) + extension)
                     };
             }
 
@@ -519,10 +524,10 @@ namespace MediaBrowser.Providers.Manager
 
                 if (item is MusicAlbum || item is MusicArtist)
                 {
-                    return new[] { Path.Combine(item.MetaLocation, "folder" + extension) };
+                    return new[] { Path.Combine(item.ContainingFolderPath, "folder" + extension) };
                 }
 
-                return new[] { Path.Combine(item.MetaLocation, "poster" + extension) };
+                return new[] { Path.Combine(item.ContainingFolderPath, "poster" + extension) };
             }
 
             if (type == ImageType.Banner)
@@ -561,7 +566,7 @@ namespace MediaBrowser.Providers.Manager
                     return new[] { GetSavePathForItemInMixedFolder(item, type, "landscape", extension) };
                 }
 
-                return new[] { Path.Combine(item.MetaLocation, "landscape" + extension) };
+                return new[] { Path.Combine(item.ContainingFolderPath, "landscape" + extension) };
             }
 
             // All other paths are the same

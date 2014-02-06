@@ -4,11 +4,10 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Games
 {
-    public class GameXmlProvider : BaseXmlProvider, ILocalMetadataProvider<Game>
+    public class GameXmlProvider : BaseXmlProvider<Game>
     {
         private readonly ILogger _logger;
 
@@ -18,57 +17,29 @@ namespace MediaBrowser.Providers.Games
             _logger = logger;
         }
 
-        public async Task<MetadataResult<Game>> GetMetadata(string path, CancellationToken cancellationToken)
+        protected override void Fetch(Game item, string path, CancellationToken cancellationToken)
         {
-            path = GetXmlFile(path).FullName;
-
-            var result = new MetadataResult<Game>();
-
-            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                var item = new Game();
-
-                new GameXmlParser(_logger).Fetch(item, path, cancellationToken);
-                result.HasMetadata = true;
-                result.Item = item;
-            }
-            catch (FileNotFoundException)
-            {
-                result.HasMetadata = false;
-            }
-            finally
-            {
-                XmlParsingResourcePool.Release();
-            }
-
-            return result;
+            new GameXmlParser(_logger).Fetch(item, path, cancellationToken);
         }
 
-        public string Name
+        protected override FileInfo GetXmlFile(ItemInfo info)
         {
-            get { return "Media Browser Xml"; }
-        }
-
-        protected override FileInfo GetXmlFile(string path)
-        {
-            var fileInfo = FileSystem.GetFileSystemInfo(path);
+            var fileInfo = FileSystem.GetFileSystemInfo(info.Path);
 
             var directoryInfo = fileInfo as DirectoryInfo;
 
             if (directoryInfo == null)
             {
-                directoryInfo = new DirectoryInfo(Path.GetDirectoryName(path));
+                directoryInfo = new DirectoryInfo(Path.GetDirectoryName(info.Path));
             }
 
             var directoryPath = directoryInfo.FullName;
 
-            var specificFile = Path.Combine(directoryPath, Path.GetFileNameWithoutExtension(path) + ".xml");
+            var specificFile = Path.Combine(directoryPath, Path.GetFileNameWithoutExtension(info.Path) + ".xml");
 
             var file = new FileInfo(specificFile);
 
-            return file.Exists ? file : new FileInfo(Path.Combine(directoryPath, "game.xml"));
+            return info.IsInMixedFolder || file.Exists ? file : new FileInfo(Path.Combine(directoryPath, "game.xml"));
         }
     }
 }

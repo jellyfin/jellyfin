@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class BaseItemXmlParser<T>
-        where T : BaseItem, new()
+        where T : BaseItem
     {
         /// <summary>
         /// The logger
@@ -422,11 +422,7 @@ namespace MediaBrowser.Controller.Providers
                             int runtime;
                             if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, _usCulture, out runtime))
                             {
-                                // For audio and video don't replace ffmpeg data
-                                if (!(item is Video || item is Audio))
-                                {
-                                    item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
-                                }
+                                item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                             }
                         }
                         break;

@@ -29,25 +29,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The preferred metadata country code.</value>
         public string PreferredMetadataCountryCode { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public override string MetaLocation
-        {
-            get
-            {
-                return System.IO.Path.GetDirectoryName(Path);
-            }
-        }
-
-        protected override bool UseParentPathToCreateResolveArgs
-        {
-            get
-            {
-                return !IsInMixedFolder;
-            }
-        }
-
         public Book()
         {
             Tags = new List<string>();

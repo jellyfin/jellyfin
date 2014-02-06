@@ -99,6 +99,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The backdrop image paths.</value>
         List<string> BackdropImagePaths { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is owned item.
+        /// </summary>
+        /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
+        bool IsOwnedItem { get; }
     }
 
     public static class HasImagesExtensions

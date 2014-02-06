@@ -1,12 +1,10 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -103,6 +101,35 @@ namespace MediaBrowser.Controller.Entities
         protected internal bool IsOffline { get; set; }
 
         /// <summary>
+        /// Returns the folder containing the item.
+        /// If the item is a folder, it returns the folder itself
+        /// </summary>
+        [IgnoreDataMember]
+        public virtual string ContainingFolderPath
+        {
+            get
+            {
+                if (IsFolder)
+                {
+                    return Path;
+                }
+
+                return System.IO.Path.GetDirectoryName(Path);
+            }
+        }
+
+        [IgnoreDataMember]
+        public bool IsOwnedItem
+        {
+            get
+            {
+                // Local trailer, special feature, theme video, etc.
+                // An item that belongs to another item but is not part of the Parent-Child tree
+                return !IsFolder && Parent == null;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the type of the location.
         /// </summary>
         /// <value>The type of the location.</value>
@@ -190,19 +217,6 @@ namespace MediaBrowser.Controller.Entities
         public List<MetadataFields> LockedFields { get; set; }
 
         /// <summary>
-        /// Should be overridden to return the proper folder where metadata lives
-        /// </summary>
-        /// <value>The meta location.</value>
-        [IgnoreDataMember]
-        public virtual string MetaLocation
-        {
-            get
-            {
-                return Path ?? "";
-            }
-        }
-
-        /// <summary>
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
@@ -215,160 +229,19 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        /// <summary>
-        /// The _resolve args
-        /// </summary>
-        private ItemResolveArgs _resolveArgs;
-        /// <summary>
-        /// We attach these to the item so that we only ever have to hit the file system once
-        /// (this includes the children of the containing folder)
-        /// </summary>
-        /// <value>The resolve args.</value>
         [IgnoreDataMember]
-        public ItemResolveArgs ResolveArgs
+        public virtual IEnumerable<string> PhysicalLocations
         {
             get
             {
-                if (_resolveArgs == null)
+                var locationType = LocationType;
+
+                if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
                 {
-                    try
-                    {
-                        _resolveArgs = CreateResolveArgs();
-                    }
-                    catch (IOException ex)
-                    {
-                        Logger.ErrorException("Error creating resolve args for {0}", ex, Path);
-
-                        IsOffline = true;
-
-                        throw;
-                    }
+                    return new string[] { };
                 }
 
-                return _resolveArgs;
-            }
-            set
-            {
-                _resolveArgs = value;
-            }
-        }
-
-        [IgnoreDataMember]
-        public IEnumerable<string> PhysicalLocations
-        {
-            get
-            {
-                return ResolveArgs.PhysicalLocations;
-            }
-        }
-
-        /// <summary>
-        /// Resets the resolve args.
-        /// </summary>
-        /// <param name="pathInfo">The path info.</param>
-        public void ResetResolveArgs(FileSystemInfo pathInfo)
-        {
-            ResetResolveArgs(CreateResolveArgs(pathInfo));
-        }
-
-        /// <summary>
-        /// Resets the resolve args.
-        /// </summary>
-        public void ResetResolveArgs()
-        {
-            _resolveArgs = null;
-        }
-
-        /// <summary>
-        /// Resets the resolve args.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        public void ResetResolveArgs(ItemResolveArgs args)
-        {
-            _resolveArgs = args;
-        }
-
-        /// <summary>
-        /// Creates ResolveArgs on demand
-        /// </summary>
-        /// <param name="pathInfo">The path info.</param>
-        /// <returns>ItemResolveArgs.</returns>
-        /// <exception cref="System.IO.IOException">Unable to retrieve file system info for  + path</exception>
-        protected internal virtual ItemResolveArgs CreateResolveArgs(FileSystemInfo pathInfo = null)
-        {
-            var path = Path;
-
-            var locationType = LocationType;
-
-            if (locationType == LocationType.Remote ||
-                locationType == LocationType.Virtual)
-            {
-                return new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager);
-            }
-
-            var isDirectory = false;
-
-            if (UseParentPathToCreateResolveArgs)
-            {
-                path = System.IO.Path.GetDirectoryName(path);
-                isDirectory = true;
-            }
-
-            pathInfo = pathInfo ?? (isDirectory ? new DirectoryInfo(path) : FileSystem.GetFileSystemInfo(path));
-
-            if (pathInfo == null || !pathInfo.Exists)
-            {
-                throw new IOException("Unable to retrieve file system info for " + path);
-            }
-
-            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager)
-            {
-                FileInfo = pathInfo,
-                Path = path,
-                Parent = Parent
-            };
-
-            // Gather child folder and files
-            if (args.IsDirectory)
-            {
-                var isPhysicalRoot = args.IsPhysicalRoot;
-
-                // When resolving the root, we need it's grandchildren (children of user views)
-                var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
-
-                var fileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, FileSystem, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
-
-                // Need to remove subpaths that may have been resolved from shortcuts
-                // Example: if \\server\movies exists, then strip out \\server\movies\action
-                if (isPhysicalRoot)
-                {
-                    var paths = LibraryManager.NormalizeRootPathList(fileSystemDictionary.Keys);
-
-                    fileSystemDictionary = paths.Select(i => (FileSystemInfo)new DirectoryInfo(i)).ToDictionary(i => i.FullName);
-                }
-
-                args.FileSystemDictionary = fileSystemDictionary;
-            }
-
-            //update our dates
-            EntityResolutionHelper.EnsureDates(FileSystem, this, args, false);
-
-            IsOffline = false;
-
-            return args;
-        }
-
-        /// <summary>
-        /// Some subclasses will stop resolving at a directory and point their Path to a file within. This will help ensure the on-demand resolve args are identical to the
-        /// original ones.
-        /// </summary>
-        /// <value><c>true</c> if [use parent path to create resolve args]; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        protected virtual bool UseParentPathToCreateResolveArgs
-        {
-            get
-            {
-                return false;
+                return new[] { Path };
             }
         }
 
@@ -583,122 +456,93 @@ namespace MediaBrowser.Controller.Entities
         /// Loads local trailers from the file system
         /// </summary>
         /// <returns>List{Video}.</returns>
-        private IEnumerable<Trailer> LoadLocalTrailers()
+        private IEnumerable<Trailer> LoadLocalTrailers(List<FileSystemInfo> fileSystemChildren)
         {
-            ItemResolveArgs resolveArgs;
+            return new List<Trailer>();
+            //ItemResolveArgs resolveArgs;
 
-            try
-            {
-                resolveArgs = ResolveArgs;
+            //try
+            //{
+            //    resolveArgs = ResolveArgs;
 
-                if (!resolveArgs.IsDirectory)
-                {
-                    return new List<Trailer>();
-                }
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<Trailer>();
-            }
+            //    if (!resolveArgs.IsDirectory)
+            //    {
+            //        return new List<Trailer>();
+            //    }
+            //}
+            //catch (IOException ex)
+            //{
+            //    Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
+            //    return new List<Trailer>();
+            //}
 
-            var files = new List<FileSystemInfo>();
+            //var files = new List<FileSystemInfo>();
 
-            var folder = resolveArgs.GetFileSystemEntryByName(TrailerFolderName);
+            //var folder = resolveArgs.GetFileSystemEntryByName(TrailerFolderName);
 
-            // Path doesn't exist. No biggie
-            if (folder != null)
-            {
-                try
-                {
-                    files.AddRange(new DirectoryInfo(folder.FullName).EnumerateFiles());
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error loading trailers for {0}", ex, Name);
-                }
-            }
+            //// Path doesn't exist. No biggie
+            //if (folder != null)
+            //{
+            //    try
+            //    {
+            //        files.AddRange(new DirectoryInfo(folder.FullName).EnumerateFiles());
+            //    }
+            //    catch (IOException ex)
+            //    {
+            //        Logger.ErrorException("Error loading trailers for {0}", ex, Name);
+            //    }
+            //}
 
-            // Support xbmc trailers (-trailer suffix on video file names)
-            files.AddRange(resolveArgs.FileSystemChildren.Where(i =>
-            {
-                try
-                {
-                    if ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
-                    {
-                        if (System.IO.Path.GetFileNameWithoutExtension(i.Name).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                    }
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error accessing path {0}", ex, i.FullName);
-                }
+            //// Support xbmc trailers (-trailer suffix on video file names)
+            //files.AddRange(resolveArgs.FileSystemChildren.Where(i =>
+            //{
+            //    try
+            //    {
+            //        if ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
+            //        {
+            //            if (System.IO.Path.GetFileNameWithoutExtension(i.Name).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
+            //            {
+            //                return true;
+            //            }
+            //        }
+            //    }
+            //    catch (IOException ex)
+            //    {
+            //        Logger.ErrorException("Error accessing path {0}", ex, i.FullName);
+            //    }
 
-                return false;
-            }));
+            //    return false;
+            //}));
 
-            return LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
-            {
-                // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.GetItemById(video.Id) as Trailer;
+            //return LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
+            //{
+            //    // Try to retrieve it from the db. If we don't find it, use the resolved version
+            //    var dbItem = LibraryManager.GetItemById(video.Id) as Trailer;
 
-                if (dbItem != null)
-                {
-                    dbItem.ResetResolveArgs(video.ResolveArgs);
-                    video = dbItem;
-                }
+            //    if (dbItem != null)
+            //    {
+            //        video = dbItem;
+            //    }
 
-                return video;
+            //    return video;
 
-            }).ToList();
+            //}).ToList();
         }
 
         /// <summary>
         /// Loads the theme songs.
         /// </summary>
         /// <returns>List{Audio.Audio}.</returns>
-        private IEnumerable<Audio.Audio> LoadThemeSongs()
+        private IEnumerable<Audio.Audio> LoadThemeSongs(List<FileSystemInfo> fileSystemChildren)
         {
-            ItemResolveArgs resolveArgs;
-
-            try
-            {
-                resolveArgs = ResolveArgs;
-
-                if (!resolveArgs.IsDirectory)
-                {
-                    return new List<Audio.Audio>();
-                }
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<Audio.Audio>();
-            }
-
-            var files = new List<FileSystemInfo>();
-
-            var folder = resolveArgs.GetFileSystemEntryByName(ThemeSongsFolderName);
-
-            // Path doesn't exist. No biggie
-            if (folder != null)
-            {
-                try
-                {
-                    files.AddRange(new DirectoryInfo(folder.FullName).EnumerateFiles());
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error loading theme songs for {0}", ex, Name);
-                }
-            }
+            var files = fileSystemChildren.OfType<DirectoryInfo>()
+                .Where(i => string.Equals(i.Name, ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
+                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+                .ToList();
 
             // Support plex/xbmc convention
-            files.AddRange(resolveArgs.FileSystemChildren
-                .Where(i => string.Equals(System.IO.Path.GetFileNameWithoutExtension(i.Name), ThemeSongFilename, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsAudioFile(i.Name))
+            files.AddRange(fileSystemChildren.OfType<FileInfo>()
+                .Where(i => string.Equals(System.IO.Path.GetFileNameWithoutExtension(i.Name), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
                 );
 
             return LibraryManager.ResolvePaths<Audio.Audio>(files, null).Select(audio =>
@@ -708,7 +552,6 @@ namespace MediaBrowser.Controller.Entities
 
                 if (dbItem != null)
                 {
-                    dbItem.ResetResolveArgs(audio.ResolveArgs);
                     audio = dbItem;
                 }
 
@@ -720,44 +563,11 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the video backdrops.
         /// </summary>
         /// <returns>List{Video}.</returns>
-        private IEnumerable<Video> LoadThemeVideos()
+        private IEnumerable<Video> LoadThemeVideos(IEnumerable<FileSystemInfo> fileSystemChildren)
         {
-            ItemResolveArgs resolveArgs;
-
-            try
-            {
-                resolveArgs = ResolveArgs;
-
-                if (!resolveArgs.IsDirectory)
-                {
-                    return new List<Video>();
-                }
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<Video>();
-            }
-
-            var folder = resolveArgs.GetFileSystemEntryByName(ThemeVideosFolderName);
-
-            // Path doesn't exist. No biggie
-            if (folder == null)
-            {
-                return new List<Video>();
-            }
-
-            IEnumerable<FileSystemInfo> files;
-
-            try
-            {
-                files = new DirectoryInfo(folder.FullName).EnumerateFiles();
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error loading video backdrops for {0}", ex, Name);
-                return new List<Video>();
-            }
+            var files = fileSystemChildren.OfType<DirectoryInfo>()
+                .Where(i => string.Equals(i.Name, ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
+                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly));
 
             return LibraryManager.ResolvePaths<Video>(files, null).Select(item =>
             {
@@ -766,7 +576,6 @@ namespace MediaBrowser.Controller.Entities
 
                 if (dbItem != null)
                 {
-                    dbItem.ResetResolveArgs(item.ResolveArgs);
                     item = dbItem;
                 }
 
@@ -774,9 +583,9 @@ namespace MediaBrowser.Controller.Entities
             }).ToList();
         }
 
-        public Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool resetResolveArgs = true)
+        public Task RefreshMetadata(CancellationToken cancellationToken)
         {
-            return RefreshMetadata(new MetadataRefreshOptions { ResetResolveArgs = resetResolveArgs }, cancellationToken);
+            return RefreshMetadata(new MetadataRefreshOptions(), cancellationToken);
         }
 
         /// <summary>
@@ -785,35 +594,24 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>true if a provider reports we changed</returns>
-        public async Task<bool> RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
+        public async Task RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            if (options.ResetResolveArgs)
+            var locationType = LocationType;
+
+            if (IsFolder || Parent != null)
             {
-                // Reload this
-                ResetResolveArgs();
+                var files = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
+                    GetFileSystemChildren().ToList() :
+                    new List<FileSystemInfo>();
+
+                await BeforeRefreshMetadata(options, files, cancellationToken).ConfigureAwait(false);
             }
 
-            await BeforeRefreshMetadata(options, cancellationToken).ConfigureAwait(false);
-
             await ProviderManager.RefreshMetadata(this, options, cancellationToken).ConfigureAwait(false);
-
-            return false;
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
-        protected virtual Task BeforeRefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
+        protected virtual async Task BeforeRefreshMetadata(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            return _cachedTask;
-        }
-
-        [Obsolete]
-        public virtual async Task<bool> RefreshMetadataDirect(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
-        {
-            // Refresh for the item
-            var itemRefreshTask = ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
             var themeSongsChanged = false;
 
             var themeVideosChanged = false;
@@ -825,102 +623,83 @@ namespace MediaBrowser.Controller.Entities
                 var hasThemeMedia = this as IHasThemeMedia;
                 if (hasThemeMedia != null)
                 {
-                    themeSongsChanged = await RefreshThemeSongs(hasThemeMedia, cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
+                    if (!IsInMixedFolder)
+                    {
+                        themeSongsChanged = await RefreshThemeSongs(hasThemeMedia, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
-                    themeVideosChanged = await RefreshThemeVideos(hasThemeMedia, cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
+                        themeVideosChanged = await RefreshThemeVideos(hasThemeMedia, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+                    }
                 }
 
                 var hasTrailers = this as IHasTrailers;
                 if (hasTrailers != null)
                 {
-                    localTrailersChanged = await RefreshLocalTrailers(hasTrailers, cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
+                    localTrailersChanged = await RefreshLocalTrailers(hasTrailers, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
                 }
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Get the result from the item task
-            var updateReason = await itemRefreshTask.ConfigureAwait(false);
-
-            var changed = updateReason.HasValue;
-
-            if (changed || forceSave || themeSongsChanged || themeVideosChanged || localTrailersChanged)
+            
+            if (themeSongsChanged || themeVideosChanged || localTrailersChanged)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await LibraryManager.UpdateItem(this, updateReason ?? ItemUpdateType.Unspecified, cancellationToken).ConfigureAwait(false);
+                options.ForceSave = true;
             }
-
-            return changed;
         }
 
-        private async Task<bool> RefreshLocalTrailers(IHasTrailers item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
+        protected virtual IEnumerable<FileSystemInfo> GetFileSystemChildren()
         {
-            var newItems = LoadLocalTrailers().ToList();
+            var path = ContainingFolderPath;
+
+            return new DirectoryInfo(path).EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+        }
+
+        private async Task<bool> RefreshLocalTrailers(IHasTrailers item, MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        {
+            var newItems = LoadLocalTrailers(fileSystemChildren).ToList();
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
             var itemsChanged = !item.LocalTrailerIds.SequenceEqual(newItemIds);
 
-            var tasks = newItems.Select(i => i.RefreshMetadata(new MetadataRefreshOptions
-            {
-                ForceSave = forceSave,
-                ReplaceAllMetadata = forceRefresh,
-                ResetResolveArgs = false
+            var tasks = newItems.Select(i => i.RefreshMetadata(options, cancellationToken));
 
-            }, cancellationToken));
-
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             item.LocalTrailerIds = newItemIds;
 
-            return itemsChanged || results.Contains(true);
+            return itemsChanged;
         }
 
-        private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
+        private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newThemeVideos = LoadThemeVideos().ToList();
+            var newThemeVideos = LoadThemeVideos(fileSystemChildren).ToList();
             var newThemeVideoIds = newThemeVideos.Select(i => i.Id).ToList();
 
             var themeVideosChanged = !item.ThemeVideoIds.SequenceEqual(newThemeVideoIds);
 
-            var tasks = newThemeVideos.Select(i => i.RefreshMetadata(new MetadataRefreshOptions
-            {
-                ForceSave = forceSave,
-                ReplaceAllMetadata = forceRefresh,
-                ResetResolveArgs = false
+            var tasks = newThemeVideos.Select(i => i.RefreshMetadata(options, cancellationToken));
 
-            }, cancellationToken));
-
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             item.ThemeVideoIds = newThemeVideoIds;
 
-            return themeVideosChanged || results.Contains(true);
+            return themeVideosChanged;
         }
 
         /// <summary>
         /// Refreshes the theme songs.
         /// </summary>
-        private async Task<bool> RefreshThemeSongs(IHasThemeMedia item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
+        private async Task<bool> RefreshThemeSongs(IHasThemeMedia item, MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newThemeSongs = LoadThemeSongs().ToList();
+            var newThemeSongs = LoadThemeSongs(fileSystemChildren).ToList();
             var newThemeSongIds = newThemeSongs.Select(i => i.Id).ToList();
 
             var themeSongsChanged = !item.ThemeSongIds.SequenceEqual(newThemeSongIds);
 
-            var tasks = newThemeSongs.Select(i => i.RefreshMetadata(new MetadataRefreshOptions
-            {
-                ForceSave = forceSave,
-                ReplaceAllMetadata = forceRefresh,
-                ResetResolveArgs = false
+            var tasks = newThemeSongs.Select(i => i.RefreshMetadata(options, cancellationToken));
 
-            }, cancellationToken));
-
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             item.ThemeSongIds = newThemeSongIds;
 
-            return themeSongsChanged || results.Contains(true);
+            return themeSongsChanged;
         }
 
         /// <summary>
@@ -1655,27 +1434,8 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("imagePath");
             }
 
-            var locationType = LocationType;
-
-            if (locationType == LocationType.Remote ||
-                locationType == LocationType.Virtual)
-            {
-                return FileSystem.GetLastWriteTimeUtc(imagePath);
-            }
-
-            var metaFileEntry = ResolveArgs.GetMetaFileByPath(imagePath);
-
-            // If we didn't the metafile entry, check the Season
-            if (metaFileEntry == null)
-            {
-                if (Parent != null)
-                {
-                    metaFileEntry = Parent.ResolveArgs.GetMetaFileByPath(imagePath);
-                }
-            }
-
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            return metaFileEntry == null ? FileSystem.GetLastWriteTimeUtc(imagePath) : FileSystem.GetLastWriteTimeUtc(metaFileEntry);
+            return FileSystem.GetLastWriteTimeUtc(imagePath);
         }
 
         /// <summary>
