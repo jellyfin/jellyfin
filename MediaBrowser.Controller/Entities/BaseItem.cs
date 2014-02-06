@@ -570,7 +570,9 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 return audio;
-            }).ToList();
+
+                // Sort them so that the list can be easily compared for changes
+            }).OrderBy(i => i.Path).ToList();
         }
 
         /// <summary>
@@ -594,7 +596,9 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 return item;
-            }).ToList();
+
+                // Sort them so that the list can be easily compared for changes
+            }).OrderBy(i => i.Path).ToList();
         }
 
         public Task RefreshMetadata(CancellationToken cancellationToken)
@@ -652,8 +656,19 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
             
-            if (themeSongsChanged || themeVideosChanged || localTrailersChanged)
+            if (themeSongsChanged)
             {
+                Logger.Debug("Theme songs have changed for {0}", Path);
+                options.ForceSave = true;
+            }
+            if (themeVideosChanged)
+            {
+                Logger.Debug("Theme videos have changed for {0}", Path);
+                options.ForceSave = true;
+            }
+            if (localTrailersChanged)
+            {
+                Logger.Debug("Local trailers have changed for {0}", Path);
                 options.ForceSave = true;
             }
         }
@@ -684,6 +699,7 @@ namespace MediaBrowser.Controller.Entities
         private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newThemeVideos = LoadThemeVideos(fileSystemChildren).ToList();
+
             var newThemeVideoIds = newThemeVideos.Select(i => i.Id).ToList();
 
             var themeVideosChanged = !item.ThemeVideoIds.SequenceEqual(newThemeVideoIds);
