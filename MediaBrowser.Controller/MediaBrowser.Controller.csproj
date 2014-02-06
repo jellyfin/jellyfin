@@ -103,6 +103,7 @@
     <Compile Include="Entities\IItemByName.cs" />
     <Compile Include="Entities\ILibraryItem.cs" />
     <Compile Include="Entities\ImageSourceInfo.cs" />
+    <Compile Include="Entities\IMetadataContainer.cs" />
     <Compile Include="Entities\LinkedChild.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
     <Compile Include="Entities\IHasAwards.cs" />

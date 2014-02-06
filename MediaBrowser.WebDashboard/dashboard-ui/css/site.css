@@ -248,12 +248,12 @@ h1 .imageLink {
 
 .sidebarLinks a {
     display: block;
-    padding: 12px 20px 12px 30px;
+    padding: 10px 20px 10px 30px;
     text-decoration: none;
     color: #fff!important;
     text-shadow: none!important;
     font-weight: 400!important;
-    font-size: 17px;
+    font-size: 15px;
 }
 
     .sidebarLinks a:hover {

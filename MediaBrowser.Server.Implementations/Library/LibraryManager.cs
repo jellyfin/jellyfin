@@ -1110,7 +1110,6 @@ namespace MediaBrowser.Server.Implementations.Library
             cancellationToken.ThrowIfCancellationRequested();
 
             await userRootFolder.ValidateChildren(new Progress<double>(), cancellationToken, recursive: false).ConfigureAwait(false);
-            var b = true;
         }
 
         /// <summary>

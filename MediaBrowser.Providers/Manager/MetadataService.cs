@@ -197,6 +197,11 @@ namespace MediaBrowser.Providers.Manager
                     .Where(i => i.HasChanged(currentItem, currentItem.DateLastSaved))
                     .ToList();
 
+                if (providersWithChanges.Count > 0)
+                {
+                    var b = true;
+                }
+
                 // If local providers are the only ones with changes, then just run those
                 if (providersWithChanges.All(i => i is ILocalMetadataProvider))
                 {

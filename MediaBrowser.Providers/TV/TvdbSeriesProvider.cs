@@ -1088,30 +1088,15 @@ namespace MediaBrowser.Providers.TV
             {
                 var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesId);
 
-                try
+                var seriesXmlFilename = item.GetPreferredMetadataLanguage() + ".xml";
+
+                var filePath = Path.Combine(seriesDataPath, seriesXmlFilename);
+
+                var seriesFile = new FileInfo(filePath);
+
+                if (seriesFile.Exists && _fileSystem.GetLastWriteTimeUtc(seriesFile) > date)
                 {
-                    var files = new DirectoryInfo(seriesDataPath).EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                        .ToList();
-
-                    var seriesXmlFilename = item.GetPreferredMetadataLanguage() + ".xml";
-
-                    var seriesFile = files.FirstOrDefault(i => string.Equals(seriesXmlFilename, i.Name, StringComparison.OrdinalIgnoreCase));
-
-                    if (seriesFile != null && seriesFile.Exists && _fileSystem.GetLastWriteTimeUtc(seriesFile) > date)
-                    {
-                        return true;
-                    }
-
-                    var actorsXml = files.FirstOrDefault(i => string.Equals("actors.xml", i.Name, StringComparison.OrdinalIgnoreCase));
-
-                    if (actorsXml != null && actorsXml.Exists && _fileSystem.GetLastWriteTimeUtc(actorsXml) > date)
-                    {
-                        return true;
-                    }
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    // Don't blow up
+                    return true;
                 }
             }
 

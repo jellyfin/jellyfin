@@ -51,12 +51,15 @@ namespace MediaBrowser.Providers.TV
 
             var dateLastEpisodeAdded = item.DateLastEpisodeAdded;
 
-            item.DateLastEpisodeAdded = episodes.Select(i => i.DateCreated)
+            item.DateLastEpisodeAdded = episodes
+                .Where(i => i.LocationType != LocationType.Virtual)
+                .Select(i => i.DateCreated)
                 .OrderByDescending(i => i)
                 .FirstOrDefault();
 
             if (dateLastEpisodeAdded != item.DateLastEpisodeAdded)
             {
+                Logger.Debug("DateLastEpisodeAdded changed for {0}", item.Path);
                 updateType = updateType | ItemUpdateType.MetadataImport;
             }
 

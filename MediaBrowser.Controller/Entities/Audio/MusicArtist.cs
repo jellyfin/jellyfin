@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
@@ -49,7 +50,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions)
         {
             if (IsAccessedByName)
             {
@@ -57,7 +58,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return _cachedTask;
             }
 
-            return base.ValidateChildrenInternal(progress, cancellationToken, recursive, forceRefreshMetadata);
+            return base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions);
         }
 
         public override string GetClientTypeName()

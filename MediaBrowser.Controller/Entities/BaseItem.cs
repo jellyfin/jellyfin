@@ -472,75 +472,30 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{Video}.</returns>
         private IEnumerable<Trailer> LoadLocalTrailers(List<FileSystemInfo> fileSystemChildren)
         {
-            return new List<Trailer>();
-            //ItemResolveArgs resolveArgs;
+            var files = fileSystemChildren.OfType<DirectoryInfo>()
+                .Where(i => string.Equals(i.Name, TrailerFolderName, StringComparison.OrdinalIgnoreCase))
+                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+                .ToList();
 
-            //try
-            //{
-            //    resolveArgs = ResolveArgs;
+            // Support plex/xbmc convention
+            files.AddRange(fileSystemChildren.OfType<FileInfo>()
+                .Where(i => System.IO.Path.GetFileNameWithoutExtension(i.Name).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
+                );
 
-            //    if (!resolveArgs.IsDirectory)
-            //    {
-            //        return new List<Trailer>();
-            //    }
-            //}
-            //catch (IOException ex)
-            //{
-            //    Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-            //    return new List<Trailer>();
-            //}
+            return LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
+            {
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                var dbItem = LibraryManager.GetItemById(video.Id) as Trailer;
 
-            //var files = new List<FileSystemInfo>();
+                if (dbItem != null)
+                {
+                    video = dbItem;
+                }
 
-            //var folder = resolveArgs.GetFileSystemEntryByName(TrailerFolderName);
+                return video;
 
-            //// Path doesn't exist. No biggie
-            //if (folder != null)
-            //{
-            //    try
-            //    {
-            //        files.AddRange(new DirectoryInfo(folder.FullName).EnumerateFiles());
-            //    }
-            //    catch (IOException ex)
-            //    {
-            //        Logger.ErrorException("Error loading trailers for {0}", ex, Name);
-            //    }
-            //}
-
-            //// Support xbmc trailers (-trailer suffix on video file names)
-            //files.AddRange(resolveArgs.FileSystemChildren.Where(i =>
-            //{
-            //    try
-            //    {
-            //        if ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
-            //        {
-            //            if (System.IO.Path.GetFileNameWithoutExtension(i.Name).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
-            //            {
-            //                return true;
-            //            }
-            //        }
-            //    }
-            //    catch (IOException ex)
-            //    {
-            //        Logger.ErrorException("Error accessing path {0}", ex, i.FullName);
-            //    }
-
-            //    return false;
-            //}));
-
-            //return LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
-            //{
-            //    // Try to retrieve it from the db. If we don't find it, use the resolved version
-            //    var dbItem = LibraryManager.GetItemById(video.Id) as Trailer;
-
-            //    if (dbItem != null)
-            //    {
-            //        video = dbItem;
-            //    }
-
-            //    return video;
-
-            //}).ToList();
+                // Sort them so that the list can be easily compared for changes
+            }).OrderBy(i => i.Path).ToList();
         }
 
         /// <summary>
@@ -656,19 +611,8 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
             
-            if (themeSongsChanged)
+            if (themeSongsChanged || themeVideosChanged || localTrailersChanged)
             {
-                Logger.Debug("Theme songs have changed for {0}", Path);
-                options.ForceSave = true;
-            }
-            if (themeVideosChanged)
-            {
-                Logger.Debug("Theme videos have changed for {0}", Path);
-                options.ForceSave = true;
-            }
-            if (localTrailersChanged)
-            {
-                Logger.Debug("Local trailers have changed for {0}", Path);
                 options.ForceSave = true;
             }
         }

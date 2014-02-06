@@ -307,7 +307,17 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="forceRefreshMetadata">if set to <c>true</c> [force refresh metadata].</param>
         /// <returns>Task.</returns>
-        public async Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
+        public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
+        {
+            return ValidateChildrenWithCancellationSupport(progress, cancellationToken, recursive ?? true, true,
+
+                new MetadataRefreshOptions
+                {
+                    ReplaceAllMetadata = forceRefreshMetadata
+                });
+        }
+
+        private async Task ValidateChildrenWithCancellationSupport(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -327,7 +337,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(innerCancellationTokenSource.Token, cancellationToken);
 
-                await ValidateChildrenInternal(progress, linkedCancellationTokenSource.Token, recursive, forceRefreshMetadata).ConfigureAwait(false);
+                await ValidateChildrenInternal(progress, linkedCancellationTokenSource.Token, recursive, refreshChildMetadata, refreshOptions).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex)
             {
@@ -352,15 +362,15 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Compare our current children (presumably just read from the repo) with the current state of the file system and adjust for any changes
-        /// ***Currently does not contain logic to maintain items that are unavailable in the file system***
+        /// Validates the children internal.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        /// <param name="forceRefreshMetadata">if set to <c>true</c> [force refresh metadata].</param>
+        /// <param name="refreshChildMetadata">if set to <c>true</c> [refresh child metadata].</param>
+        /// <param name="refreshOptions">The refresh options.</param>
         /// <returns>Task.</returns>
-        protected async virtual Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
+        protected async virtual Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions)
         {
             var locationType = LocationType;
 
@@ -401,33 +411,23 @@ namespace MediaBrowser.Controller.Entities
 
                     if (currentChildren.TryGetValue(child.Id, out currentChild))
                     {
-                        //existing item - check if it has changed
-                        if (currentChild.HasChanged(child))
+                        var currentChildLocationType = currentChild.LocationType;
+                        if (currentChildLocationType != LocationType.Remote &&
+                            currentChildLocationType != LocationType.Virtual)
                         {
-                            var currentChildLocationType = currentChild.LocationType;
-                            if (currentChildLocationType != LocationType.Remote &&
-                                currentChildLocationType != LocationType.Virtual)
-                            {
-                                currentChild.DateModified = child.DateModified;
-                            }
-
-                            currentChild.IsInMixedFolder = child.IsInMixedFolder;
-                            validChildren.Add(currentChild);
-                        }
-                        else
-                        {
-                            validChildren.Add(currentChild);
+                            currentChild.DateModified = child.DateModified;
                         }
 
+                        currentChild.IsInMixedFolder = child.IsInMixedFolder;
                         currentChild.IsOffline = false;
                     }
                     else
                     {
                         //brand new item - needs to be added
                         newItems.Add(child);
-
-                        validChildren.Add(child);
                     }
+
+                    validChildren.Add(currentChild);
                 }
 
                 // If any items were added or removed....
@@ -435,7 +435,6 @@ namespace MediaBrowser.Controller.Entities
                 {
                     // That's all the new and changed ones - now see if there are any that are missing
                     var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
-
                     var actualRemovals = new List<BaseItem>();
 
                     foreach (var item in itemsRemoved)
@@ -450,7 +449,6 @@ namespace MediaBrowser.Controller.Entities
                         else if (!string.IsNullOrEmpty(item.Path) && IsPathOffline(item.Path))
                         {
                             item.IsOffline = true;
-
                             validChildren.Add(item);
                         }
                         else
@@ -486,8 +484,105 @@ namespace MediaBrowser.Controller.Entities
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await RefreshChildren(validChildren, progress, cancellationToken, recursive, forceRefreshMetadata).ConfigureAwait(false);
+            if (recursive)
+            {
+                await ValidateSubFolders(validChildren.OfType<Folder>().ToList(), progress, cancellationToken).ConfigureAwait(false);
+            }
 
+            progress.Report(20);
+
+            if (refreshChildMetadata)
+            {
+                var container = this as IMetadataContainer;
+
+                var innerProgress = new ActionableProgress<double>();
+
+                innerProgress.RegisterAction(p => progress.Report((.80 * p) + 20));
+
+                if (container != null)
+                {
+                    await container.RefreshAllMetadata(refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await RefreshMetadataRecursive(refreshOptions, recursive, innerProgress, cancellationToken);
+                }
+            }
+
+            progress.Report(100);
+        }
+
+        private async Task RefreshMetadataRecursive(MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var children = ActualChildren.ToList();
+
+            var percentages = new Dictionary<Guid, double>(children.Count);
+
+            var tasks = new List<Task>();
+
+            foreach (var child in children)
+            {
+                if (tasks.Count > 3)
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    tasks.Clear();
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                var innerProgress = new ActionableProgress<double>();
+                
+                // Avoid implicitly captured closure
+                var currentChild = child;
+                innerProgress.RegisterAction(p =>
+                {
+                    lock (percentages)
+                    {
+                        percentages[currentChild.Id] = p / 100;
+
+                        var percent = percentages.Values.Sum();
+                        percent /= children.Count;
+                        percent *= 100;
+                        progress.Report(percent);
+                    }
+                });
+
+                if (child.IsFolder)
+                {
+                    await RefreshChildMetadata(child, refreshOptions, recursive, innerProgress, cancellationToken)
+                      .ConfigureAwait(false);
+                }
+                else
+                {
+                    tasks.Add(RefreshChildMetadata(child, refreshOptions, recursive, innerProgress, cancellationToken));
+                }
+            }
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+            progress.Report(100);
+        }
+
+        private async Task RefreshChildMetadata(BaseItem child, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var container = child as IMetadataContainer;
+
+            if (container != null)
+            {
+                await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+                if (recursive)
+                {
+                    var folder = child as Folder;
+
+                    if (folder != null)
+                    {
+                        await folder.RefreshMetadataRecursive(refreshOptions, true, progress, cancellationToken);
+                    }
+                }
+            }
             progress.Report(100);
         }
 
@@ -497,66 +592,26 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="children">The children.</param>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        /// <param name="forceRefreshMetadata">if set to <c>true</c> [force refresh metadata].</param>
         /// <returns>Task.</returns>
-        private async Task RefreshChildren(IList<BaseItem> children, IProgress<double> progress, CancellationToken cancellationToken, bool? recursive, bool forceRefreshMetadata = false)
+        private async Task ValidateSubFolders(IList<Folder> children, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var list = children;
+            var childCount = list.Count;
 
             var percentages = new Dictionary<Guid, double>(list.Count);
 
             var tasks = new List<Task>();
 
-            foreach (var tuple in list)
+            foreach (var item in list)
             {
                 if (tasks.Count > 10)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                 }
 
-                tasks.Add(RefreshChild(tuple, progress, percentages, list.Count, cancellationToken, recursive, forceRefreshMetadata));
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
-
-        private async Task RefreshChild(BaseItem item, IProgress<double> progress, Dictionary<Guid, double> percentages, int childCount, CancellationToken cancellationToken, bool? recursive, bool forceRefreshMetadata = false)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var child = item;
-            try
-            {
-                //refresh it
-                await child.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ReplaceAllMetadata = forceRefreshMetadata
-
-                }, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error refreshing {0}", ex, child.Path ?? child.Name);
-            }
-
-            // Refresh children if a folder and the item changed or recursive is set to true
-            var refreshChildren = child.IsFolder;
-
-            if (refreshChildren)
-            {
-                // Don't refresh children if explicitly set to false
-                if (recursive.HasValue && recursive.Value == false)
-                {
-                    refreshChildren = false;
-                }
-            }
-
-            if (refreshChildren)
-            {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                var child = item;
 
                 var innerProgress = new ActionableProgress<double>();
 
@@ -569,24 +624,16 @@ namespace MediaBrowser.Controller.Entities
                         var percent = percentages.Values.Sum();
                         percent /= childCount;
 
-                        progress.Report((90 * percent) + 10);
+                        progress.Report((10 * percent) + 10);
                     }
                 });
 
-                await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive, forceRefreshMetadata).ConfigureAwait(false);
+                tasks.Add(child.ValidateChildrenWithCancellationSupport(innerProgress, cancellationToken, true, false, null));
             }
-            else
-            {
-                lock (percentages)
-                {
-                    percentages[child.Id] = 1;
 
-                    var percent = percentages.Values.Sum();
-                    percent /= childCount;
+            cancellationToken.ThrowIfCancellationRequested();
 
-                    progress.Report((90 * percent) + 10);
-                }
-            }
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -962,11 +1009,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public override async Task ChangedExternally()
         {
-            await base.ChangedExternally().ConfigureAwait(false);
-
             var progress = new Progress<double>();
 
             await ValidateChildren(progress, CancellationToken.None).ConfigureAwait(false);
+
+            await base.ChangedExternally().ConfigureAwait(false);
         }
 
         /// <summary>
