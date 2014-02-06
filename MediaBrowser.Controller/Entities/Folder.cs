@@ -1,11 +1,9 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MoreLinq;
 using System;

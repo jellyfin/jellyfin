@@ -98,9 +98,11 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         public override string GetUserDataKey()
         {
-            if (Series != null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
+            var series = Series;
+
+            if (series != null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
             {
-                return Series.GetUserDataKey() + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000");
+                return series.GetUserDataKey() + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000");
             }
 
             return base.GetUserDataKey();
@@ -112,16 +114,11 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public override string OfficialRatingForComparison
         {
-            get { return Series != null ? Series.OfficialRatingForComparison : base.OfficialRatingForComparison; }
-        }
-
-        /// <summary>
-        /// Our rating comes from our series
-        /// </summary>
-        [IgnoreDataMember]
-        public override string CustomRatingForComparison
-        {
-            get { return Series != null ? Series.CustomRatingForComparison : base.CustomRatingForComparison; }
+            get
+            {
+                var series = Series;
+                return series != null ? series.OfficialRatingForComparison : base.OfficialRatingForComparison;
+            }
         }
 
         /// <summary>

@@ -61,8 +61,9 @@ namespace MediaBrowser.Providers.TV
         public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
             var episode = (Episode)item;
+            var series = episode.Series;
 
-            var seriesId = episode.Series != null ? episode.Series.GetProviderId(MetadataProviders.Tvdb) : null;
+            var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tvdb) : null;
 
             if (!string.IsNullOrEmpty(seriesId))
             {
