@@ -177,7 +177,14 @@ namespace MediaBrowser.Controller.MediaInfo
 
                             Directory.CreateDirectory(parentPath);
 
-                            await _encoder.ExtractImage(inputPath, type, false, video.Video3DFormat, time, path, cancellationToken).ConfigureAwait(false);
+                            using (var stream = await _encoder.ExtractImage(inputPath, type, false, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false))
+                            {
+                                using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                                {
+                                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                                }
+                            }
+
                             chapter.ImagePath = path;
                             changesMade = true;
                         }
