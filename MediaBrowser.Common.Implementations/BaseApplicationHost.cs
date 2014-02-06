@@ -35,7 +35,7 @@ namespace MediaBrowser.Common.Implementations
     /// Class BaseApplicationHost
     /// </summary>
     /// <typeparam name="TApplicationPathsType">The type of the T application paths type.</typeparam>
-    public abstract class BaseApplicationHost<TApplicationPathsType> : IApplicationHost
+    public abstract class BaseApplicationHost<TApplicationPathsType> : IApplicationHost, IDependencyContainer
         where TApplicationPathsType : class, IApplicationPaths
     {
         /// <summary>
@@ -406,7 +406,28 @@ namespace MediaBrowser.Common.Implementations
 
                 IsoManager = new IsoManager();
                 RegisterSingleInstance(IsoManager);
+
+                RegisterModules();
             });
+        }
+
+        private void RegisterModules()
+        {
+            var moduleTypes = GetExportTypes<IDependencyModule>();
+
+            foreach (var type in moduleTypes)
+            {
+                try
+                {
+                    var instance = Activator.CreateInstance(type) as IDependencyModule;
+                    if (instance != null)
+                        instance.BindDependencies(this);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error setting up dependency bindings for " + type.Name, ex);
+                }
+            }
         }
 
         protected virtual IFileSystem CreateFileSystemManager()
@@ -479,6 +500,11 @@ namespace MediaBrowser.Common.Implementations
             }
         }
 
+        void IDependencyContainer.RegisterSingleInstance<T>(T obj, bool manageLifetime)
+        {
+            RegisterSingleInstance(obj, manageLifetime);
+        }
+
         /// <summary>
         /// Registers the specified obj.
         /// </summary>
@@ -501,6 +527,11 @@ namespace MediaBrowser.Common.Implementations
             }
         }
 
+        void IDependencyContainer.RegisterSingleInstance<T>(Func<T> func)
+        {
+            RegisterSingleInstance(func);
+        }
+
         /// <summary>
         /// Registers the single instance.
         /// </summary>
@@ -512,6 +543,11 @@ namespace MediaBrowser.Common.Implementations
             Container.RegisterSingle(func);
         }
 
+        void IDependencyContainer.Register(Type typeInterface, Type typeImplementation)
+        {
+            Container.Register(typeInterface, typeImplementation);
+        }
+        
         /// <summary>
         /// Resolves this instance.
         /// </summary>
