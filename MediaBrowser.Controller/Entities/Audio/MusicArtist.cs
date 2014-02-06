@@ -1,9 +1,11 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +15,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicArtist
     /// </summary>
-    public class MusicArtist : Folder, IItemByName, IHasMusicGenres, IHasDualAccess, IHasTags, IHasProductionLocations
+    public class MusicArtist : Folder, IMetadataContainer, IItemByName, IHasMusicGenres, IHasDualAccess, IHasTags, IHasProductionLocations
     {
         [IgnoreDataMember]
         public List<ItemByNameCounts> UserItemCountList { get; set; }
@@ -107,6 +109,97 @@ namespace MediaBrowser.Controller.Entities.Audio
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedMusic;
+        }
+
+        public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var items = RecursiveChildren.ToList();
+
+            var songs = items.OfType<Audio>().ToList();
+
+            var others = items.Except(songs).ToList();
+
+            var totalItems = songs.Count + others.Count;
+            var percentages = new Dictionary<Guid, double>(totalItems);
+
+            var tasks = new List<Task>();
+
+            // Refresh songs
+            foreach (var item in songs)
+            {
+                if (tasks.Count > 3)
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    tasks.Clear();
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                var innerProgress = new ActionableProgress<double>();
+
+                // Avoid implicitly captured closure
+                var currentChild = item;
+                innerProgress.RegisterAction(p =>
+                {
+                    lock (percentages)
+                    {
+                        percentages[currentChild.Id] = p / 100;
+
+                        var percent = percentages.Values.Sum();
+                        percent /= totalItems;
+                        percent *= 100;
+                        progress.Report(percent);
+                    }
+                });
+
+                tasks.Add(RefreshItem(item, refreshOptions, innerProgress, cancellationToken));
+            }
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+            tasks.Clear();
+
+            // Refresh current item
+            await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+            
+            // Refresh all non-songs
+            foreach (var item in others)
+            {
+                if (tasks.Count > 3)
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    tasks.Clear();
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                var innerProgress = new ActionableProgress<double>();
+
+                // Avoid implicitly captured closure
+                var currentChild = item;
+                innerProgress.RegisterAction(p =>
+                {
+                    lock (percentages)
+                    {
+                        percentages[currentChild.Id] = p / 100;
+
+                        var percent = percentages.Values.Sum();
+                        percent /= totalItems;
+                        percent *= 100;
+                        progress.Report(percent);
+                    }
+                });
+
+                tasks.Add(RefreshItem(item, refreshOptions, innerProgress, cancellationToken));
+            }
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+            
+            progress.Report(100);
+        }
+
+        private async Task RefreshItem(BaseItem item, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            progress.Report(100);
         }
     }
 }
