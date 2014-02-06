@@ -79,6 +79,7 @@
     <Compile Include="Net\IWebSocketServer.cs" />
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Net\WebSocketConnectEventArgs.cs" />
+    <Compile Include="Plugins\IDependencyModule.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Progress\ActionableProgress.cs" />
     <Compile Include="ScheduledTasks\IScheduledTask.cs" />
