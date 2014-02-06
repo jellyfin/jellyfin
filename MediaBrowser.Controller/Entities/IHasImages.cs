@@ -105,6 +105,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
         bool IsOwnedItem { get; }
+
+        /// <summary>
+        /// Gets the containing folder path.
+        /// </summary>
+        /// <value>The containing folder path.</value>
+        string ContainingFolderPath { get; }
     }
 
     public static class HasImagesExtensions
