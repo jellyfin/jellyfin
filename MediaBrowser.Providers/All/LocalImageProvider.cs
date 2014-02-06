@@ -72,13 +72,7 @@ namespace MediaBrowser.Providers.All
                 return new List<string>();
             }
 
-            var path = item.Path;
-            var fileInfo = _fileSystem.GetFileSystemInfo(path) as DirectoryInfo;
-
-            if (fileInfo == null)
-            {
-                path = Path.GetDirectoryName(path);
-            }
+            var path = item.ContainingFolderPath;
 
             if (includeDirectories)
             {
