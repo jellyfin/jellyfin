@@ -238,7 +238,8 @@ namespace MediaBrowser.Controller.Entities
 
                 return video;
 
-            }).ToList();
+                // Sort them so that the list can be easily compared for changes
+            }).OrderBy(i => i.Path).ToList();
         }
 
         public override IEnumerable<string> GetDeletePaths()

@@ -157,7 +157,9 @@ namespace MediaBrowser.Controller.Entities.Movies
                 }
 
                 return video;
-            });
+
+                // Sort them so that the list can be easily compared for changes
+            }).OrderBy(i => i.Path).ToList();
         }
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)

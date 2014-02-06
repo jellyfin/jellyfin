@@ -366,7 +366,7 @@ namespace MediaBrowser.Controller.Entities
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var validChildren = new List<Tuple<BaseItem, bool>>();
+            var validChildren = new List<BaseItem>();
 
             if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
             {
@@ -412,11 +412,11 @@ namespace MediaBrowser.Controller.Entities
                             }
 
                             currentChild.IsInMixedFolder = child.IsInMixedFolder;
-                            validChildren.Add(new Tuple<BaseItem, bool>(currentChild, true));
+                            validChildren.Add(currentChild);
                         }
                         else
                         {
-                            validChildren.Add(new Tuple<BaseItem, bool>(currentChild, false));
+                            validChildren.Add(currentChild);
                         }
 
                         currentChild.IsOffline = false;
@@ -426,17 +426,15 @@ namespace MediaBrowser.Controller.Entities
                         //brand new item - needs to be added
                         newItems.Add(child);
 
-                        validChildren.Add(new Tuple<BaseItem, bool>(child, true));
+                        validChildren.Add(child);
                     }
                 }
 
                 // If any items were added or removed....
                 if (newItems.Count > 0 || currentChildren.Count != validChildren.Count)
                 {
-                    var newChildren = validChildren.Select(c => c.Item1).ToList();
-
                     // That's all the new and changed ones - now see if there are any that are missing
-                    var itemsRemoved = currentChildren.Values.Except(newChildren).ToList();
+                    var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
 
                     var actualRemovals = new List<BaseItem>();
 
@@ -446,14 +444,14 @@ namespace MediaBrowser.Controller.Entities
                             item.LocationType == LocationType.Remote)
                         {
                             // Don't remove these because there's no way to accurately validate them.
-                            validChildren.Add(new Tuple<BaseItem, bool>(item, false));
+                            validChildren.Add(item);
                         }
 
                         else if (!string.IsNullOrEmpty(item.Path) && IsPathOffline(item.Path))
                         {
                             item.IsOffline = true;
 
-                            validChildren.Add(new Tuple<BaseItem, bool>(item, false));
+                            validChildren.Add(item);
                         }
                         else
                         {
@@ -481,7 +479,7 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                validChildren.AddRange(ActualChildren.Select(i => new Tuple<BaseItem, bool>(i, false)));
+                validChildren.AddRange(ActualChildren);
             }
 
             progress.Report(10);
@@ -502,7 +500,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="forceRefreshMetadata">if set to <c>true</c> [force refresh metadata].</param>
         /// <returns>Task.</returns>
-        private async Task RefreshChildren(IList<Tuple<BaseItem, bool>> children, IProgress<double> progress, CancellationToken cancellationToken, bool? recursive, bool forceRefreshMetadata = false)
+        private async Task RefreshChildren(IList<BaseItem> children, IProgress<double> progress, CancellationToken cancellationToken, bool? recursive, bool forceRefreshMetadata = false)
         {
             var list = children;
 
@@ -525,17 +523,16 @@ namespace MediaBrowser.Controller.Entities
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        private async Task RefreshChild(Tuple<BaseItem, bool> currentTuple, IProgress<double> progress, Dictionary<Guid, double> percentages, int childCount, CancellationToken cancellationToken, bool? recursive, bool forceRefreshMetadata = false)
+        private async Task RefreshChild(BaseItem item, IProgress<double> progress, Dictionary<Guid, double> percentages, int childCount, CancellationToken cancellationToken, bool? recursive, bool forceRefreshMetadata = false)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var child = currentTuple.Item1;
+            var child = item;
             try
             {
                 //refresh it
                 await child.RefreshMetadata(new MetadataRefreshOptions
                 {
-                    ForceSave = currentTuple.Item2,
                     ReplaceAllMetadata = forceRefreshMetadata
 
                 }, cancellationToken).ConfigureAwait(false);
@@ -546,7 +543,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Refresh children if a folder and the item changed or recursive is set to true
-            var refreshChildren = child.IsFolder && (currentTuple.Item2 || (recursive.HasValue && recursive.Value));
+            var refreshChildren = child.IsFolder;
 
             if (refreshChildren)
             {
