@@ -96,8 +96,34 @@ namespace MediaBrowser.Server.Implementations.Configuration
 
             ValidateItemByNamePath(newConfig);
             ValidateTranscodingTempPath(newConfig);
+            ValidatePathSubstitutions(newConfig);
 
             base.ReplaceConfiguration(newConfiguration);
+        }
+
+        private void ValidatePathSubstitutions(ServerConfiguration newConfig)
+        {
+            foreach (var map in newConfig.PathSubstitutions)
+            {
+                if (string.IsNullOrWhiteSpace(map.From) || string.IsNullOrWhiteSpace(map.To))
+                {
+                    throw new ArgumentException("Invalid path substitution");
+                }
+
+                if (!map.From.EndsWith(":\\") && !map.From.EndsWith(":/"))
+                {
+                    map.From = map.From.TrimEnd('/').TrimEnd('\\');
+                }
+                if (!map.To.EndsWith(":\\") && !map.To.EndsWith(":/"))
+                {
+                    map.To = map.To.TrimEnd('/').TrimEnd('\\');
+                }
+
+                if (string.IsNullOrWhiteSpace(map.From) || string.IsNullOrWhiteSpace(map.To))
+                {
+                    throw new ArgumentException("Invalid path substitution");
+                }
+            }
         }
 
         /// <summary>
