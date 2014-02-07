@@ -38,12 +38,6 @@ namespace MediaBrowser.Api.Playback.Hls
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsVideoSegment : VideoStreamRequest
     {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        public string Id { get; set; }
-
         public string PlaylistId { get; set; }
 
         /// <summary>

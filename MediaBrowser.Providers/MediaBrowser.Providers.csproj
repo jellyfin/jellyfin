@@ -77,9 +77,11 @@
     <Compile Include="Games\GameSystemMetadataService.cs" />
     <Compile Include="Games\GameSystemXmlParser.cs" />
     <Compile Include="Genres\GenreMetadataService.cs" />
+    <Compile Include="LiveTv\AudioRecordingService.cs" />
     <Compile Include="LiveTv\ChannelMetadataService.cs" />
     <Compile Include="LiveTv\ChannelXmlProvider.cs" />
     <Compile Include="LiveTv\ProgramMetadataService.cs" />
+    <Compile Include="LiveTv\VideoRecordingService.cs" />
     <Compile Include="Manager\ImageSaver.cs" />
     <Compile Include="Manager\ItemImageProvider.cs" />
     <Compile Include="Manager\ProviderManager.cs" />
@@ -121,7 +123,7 @@
     <Compile Include="Music\MusicVideoMetadataService.cs" />
     <Compile Include="Music\MusicVideoXmlProvider.cs" />
     <Compile Include="Omdb\OmdbProvider.cs" />
-    <Compile Include="Omdb\OmdbSeriesProvider.cs" />
+    <Compile Include="Omdb\OmdbItemProvider.cs" />
     <Compile Include="People\MovieDbPersonImageProvider.cs" />
     <Compile Include="Movies\MovieUpdatesPrescanTask.cs" />
     <Compile Include="Movies\MovieXmlParser.cs" />

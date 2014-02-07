@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Omdb
 {
-    public class OmdbSeriesProvider : ICustomMetadataProvider<Series>, 
+    public class OmdbItemProvider : ICustomMetadataProvider<Series>, 
         ICustomMetadataProvider<Movie>, ICustomMetadataProvider<Trailer>
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
 
-        public OmdbSeriesProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public OmdbItemProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
