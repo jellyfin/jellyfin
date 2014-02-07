@@ -63,18 +63,24 @@ namespace MediaBrowser.Providers.Manager
             var backdropLimit = item.HasImage(ImageType.Backdrop) ? 0 : savedOptions.GetLimit(ImageType.Backdrop);
             var screenshotLimit = item.HasImage(ImageType.Screenshot) ? 0 : savedOptions.GetLimit(ImageType.Screenshot);
 
-            foreach (var provider in providers.OfType<IRemoteImageProvider>())
+            foreach (var provider in providers)
             {
-                await RefreshFromProvider(item, provider, refreshOptions, savedOptions, backdropLimit, screenshotLimit, result, cancellationToken).ConfigureAwait(false);
+                var remoteProvider = provider as IRemoteImageProvider;
 
-                providerIds.Add(provider.GetType().FullName.GetMD5());
-            }
+                if (remoteProvider != null)
+                {
+                    await RefreshFromProvider(item, remoteProvider, refreshOptions, savedOptions, backdropLimit, screenshotLimit, result, cancellationToken).ConfigureAwait(false);
+                    providerIds.Add(provider.GetType().FullName.GetMD5());
+                    continue;
+                }
 
-            foreach (var provider in providers.OfType<IDynamicImageProvider>())
-            {
-                await RefreshFromProvider(item, provider, savedOptions, result, cancellationToken).ConfigureAwait(false);
+                var dynamicImageProvider = provider as IDynamicImageProvider;
 
-                providerIds.Add(provider.GetType().FullName.GetMD5());
+                if (dynamicImageProvider != null)
+                {
+                    await RefreshFromProvider(item, dynamicImageProvider, savedOptions, result, cancellationToken).ConfigureAwait(false);
+                    providerIds.Add(provider.GetType().FullName.GetMD5());
+                }
             }
 
             result.Providers = providerIds;

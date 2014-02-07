@@ -376,6 +376,11 @@ namespace MediaBrowser.Providers.Music
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
+            if (!_config.Configuration.EnableFanArtUpdates)
+            {
+                return false;
+            }
+
             var id = item.GetProviderId(MetadataProviders.Musicbrainz);
 
             if (!String.IsNullOrEmpty(id))
@@ -385,7 +390,7 @@ namespace MediaBrowser.Providers.Music
 
                 var fileInfo = new FileInfo(artistXmlPath);
 
-                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }
 
             return false;

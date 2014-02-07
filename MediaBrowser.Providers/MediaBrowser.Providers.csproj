@@ -110,6 +110,7 @@
     <Compile Include="Movies\MovieDbImageProvider.cs" />
     <Compile Include="Movies\FanartMovieImageProvider.cs" />
     <Compile Include="MusicGenres\MusicGenreMetadataService.cs" />
+    <Compile Include="Music\AlbumImageFromSongProvider.cs" />
     <Compile Include="Music\AlbumMetadataService.cs" />
     <Compile Include="Music\ArtistMetadataService.cs" />
     <Compile Include="Music\AudioMetadataService.cs" />

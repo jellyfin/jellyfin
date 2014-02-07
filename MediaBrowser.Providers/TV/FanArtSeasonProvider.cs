@@ -277,6 +277,11 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
+            if (!_config.Configuration.EnableFanArtUpdates)
+            {
+                return false;
+            }
+            
             var season = (Season)item;
             var series = season.Series;
 
@@ -294,7 +299,7 @@ namespace MediaBrowser.Providers.TV
 
                 var fileInfo = new FileInfo(imagesXmlPath);
 
-                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }
 
             return false;

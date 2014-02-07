@@ -340,7 +340,11 @@ namespace MediaBrowser.Providers.Music
 
         public int Order
         {
-            get { return 0; }
+            get
+            {
+                // After embedded provider
+                return 1;
+            }
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
@@ -355,6 +359,11 @@ namespace MediaBrowser.Providers.Music
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
+            if (!_config.Configuration.EnableFanArtUpdates)
+            {
+                return false;
+            }
+
             var album = (MusicAlbum)item;
 
             var artistMusicBrainzId = album.Parent.GetProviderId(MetadataProviders.Musicbrainz);
@@ -366,7 +375,7 @@ namespace MediaBrowser.Providers.Music
 
                 var fileInfo = new FileInfo(artistXmlPath);
 
-                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }
 
             return false;
