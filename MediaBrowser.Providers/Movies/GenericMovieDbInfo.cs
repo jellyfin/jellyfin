@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using PersonInfo = MediaBrowser.Controller.Entities.PersonInfo;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -29,7 +30,7 @@ namespace MediaBrowser.Providers.Movies
             _jsonSerializer = jsonSerializer;
         }
 
-        public async Task<MetadataResult<T>> GetMetadata(ItemId itemId, CancellationToken cancellationToken)
+        public async Task<MetadataResult<T>> GetMetadata(ItemLookupInfo itemId, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<T>();
 

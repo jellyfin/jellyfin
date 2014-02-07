@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.BoxSets
 {
-    public class MovieDbBoxSetProvider : IRemoteMetadataProvider<BoxSet>
+    public class MovieDbBoxSetProvider : IRemoteMetadataProvider<BoxSet, BoxSetInfo>
     {
         private  readonly CultureInfo _enUs = new CultureInfo("en-US");
         private const string GetCollectionInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&append_to_response=images";
@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.BoxSets
             Current = this;
         }
 
-        public async Task<MetadataResult<BoxSet>> GetMetadata(ItemId id, CancellationToken cancellationToken)
+        public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo id, CancellationToken cancellationToken)
         {
             var tmdbId = id.GetProviderId(MetadataProviders.Tmdb);
 
@@ -188,7 +188,7 @@ namespace MediaBrowser.Providers.BoxSets
             return DownloadInfo(tmdbId, preferredMetadataLanguage, cancellationToken);
         }
         
-        private Task<string> GetTmdbId(ItemId id, CancellationToken cancellationToken)
+        private Task<string> GetTmdbId(ItemLookupInfo id, CancellationToken cancellationToken)
         {
             return new MovieDbSearch(_logger, _json).FindCollectionId(id, cancellationToken);
         }

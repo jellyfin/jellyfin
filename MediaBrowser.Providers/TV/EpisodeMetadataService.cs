@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -8,12 +7,13 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class EpisodeMetadataService : MetadataService<Episode, EpisodeId>
+    public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
     {
         private readonly ILibraryManager _libraryManager;
 
@@ -74,22 +74,6 @@ namespace MediaBrowser.Providers.TV
         protected override Task SaveItem(Episode item, ItemUpdateType reason, CancellationToken cancellationToken)
         {
             return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
-
-        protected override EpisodeId GetId(Episode item)
-        {
-            var id = base.GetId(item);
-
-            var series = item.Series;
-
-            if (series != null)
-            {
-                id.SeriesProviderIds = series.ProviderIds;
-            }
-
-            id.IndexNumberEnd = item.IndexNumberEnd;
-
-            return id;
         }
 
         protected override ItemUpdateType BeforeMetadataRefresh(Episode item)

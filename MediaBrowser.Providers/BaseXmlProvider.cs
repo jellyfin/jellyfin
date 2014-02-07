@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using System;
 using System.IO;
@@ -64,7 +65,7 @@ namespace MediaBrowser.Providers
                 return false;
             }
 
-            return FileSystem.GetLastWriteTimeUtc(file) > date;
+            return file.Exists && FileSystem.GetLastWriteTimeUtc(file) > date;
         }
 
         public string Name

@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using PersonInfo = MediaBrowser.Controller.Entities.PersonInfo;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -23,7 +24,7 @@ namespace MediaBrowser.Providers.TV
     /// <summary>
     /// Class RemoteEpisodeProvider
     /// </summary>
-    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode>, IHasChangeMonitor
+    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasChangeMonitor
     {
         internal static TvdbEpisodeProvider Current;
         private readonly IFileSystem _fileSystem;
@@ -41,9 +42,9 @@ namespace MediaBrowser.Providers.TV
             get { return "TheTVDB"; }
         }
 
-        public Task<MetadataResult<Episode>> GetMetadata(ItemId id, CancellationToken cancellationToken)
+        public Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo id, CancellationToken cancellationToken)
         {
-            var episodeId = (EpisodeId)id;
+            var episodeId = id;
 
             string seriesTvdbId;
             episodeId.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesTvdbId);
@@ -172,7 +173,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private Episode FetchEpisodeData(EpisodeId id, string seriesDataPath, CancellationToken cancellationToken)
+        private Episode FetchEpisodeData(EpisodeInfo id, string seriesDataPath, CancellationToken cancellationToken)
         {
             if (id.IndexNumber == null)
             {

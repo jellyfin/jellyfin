@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using System;
 
@@ -7,7 +8,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class GameSystem
     /// </summary>
-    public class GameSystem : Folder
+    public class GameSystem : Folder, IHasLookupInfo<GameSystemInfo>
     {
         /// <summary>
         /// Return the id that should be used to key display prefs for this item.
@@ -46,6 +47,15 @@ namespace MediaBrowser.Controller.Entities
         {
             // Don't block. Determine by game
             return false;
+        }
+
+        public GameSystemInfo GetLookupInfo()
+        {
+            var id = GetItemLookupInfo<GameSystemInfo>();
+
+            id.Path = Path;
+
+            return id;
         }
     }
 }

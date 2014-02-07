@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
-    public class Trailer : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasTrailers, IHasKeywords, IHasTaglines, IHasTags, IHasPreferredMetadataLanguage, IHasMetascore
+    public class Trailer : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasTrailers, IHasKeywords, IHasTaglines, IHasTags, IHasPreferredMetadataLanguage, IHasMetascore, IHasLookupInfo<TrailerInfo>
     {
         public List<Guid> SoundtrackIds { get; set; }
 
@@ -104,6 +105,11 @@ namespace MediaBrowser.Controller.Entities
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedTrailers;
+        }
+
+        public TrailerInfo GetLookupInfo()
+        {
+            return GetItemLookupInfo<TrailerInfo>();
         }
     }
 }

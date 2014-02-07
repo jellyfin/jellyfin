@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Providers
 {
-    public class ItemId : IHasProviderIds
+    public class ItemLookupInfo : IHasProviderIds
     {
         /// <summary>
         /// Gets or sets the name.
@@ -34,13 +34,29 @@ namespace MediaBrowser.Controller.Providers
         public int? IndexNumber { get; set; }
         public int? ParentIndexNumber { get; set; }
 
-        public ItemId()
+        public ItemLookupInfo()
         {
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 
-    public class AlbumId : ItemId
+    public interface IHasLookupInfo<out TLookupInfoType>
+        where TLookupInfoType : ItemLookupInfo, new()
+    {
+        TLookupInfoType GetLookupInfo();
+    }
+
+    public class ArtistInfo : ItemLookupInfo
+    {
+        public List<SongInfo> SongInfos { get; set; }
+
+        public ArtistInfo()
+        {
+            SongInfos = new List<SongInfo>();
+        }
+    }
+
+    public class AlbumInfo : ItemLookupInfo
     {
         /// <summary>
         /// Gets or sets the album artist.
@@ -53,14 +69,16 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The artist provider ids.</value>
         public Dictionary<string, string> ArtistProviderIds { get; set; }
+        public List<SongInfo> SongInfos { get; set; }
 
-        public AlbumId()
+        public AlbumInfo()
         {
             ArtistProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            SongInfos = new List<SongInfo>();
         }
     }
 
-    public class GameId : ItemId
+    public class GameInfo : ItemLookupInfo
     {
         /// <summary>
         /// Gets or sets the game system.
@@ -69,7 +87,7 @@ namespace MediaBrowser.Controller.Providers
         public string GameSystem { get; set; }
     }
 
-    public class GameSystemId : ItemId
+    public class GameSystemInfo : ItemLookupInfo
     {
         /// <summary>
         /// Gets or sets the path.
@@ -78,15 +96,57 @@ namespace MediaBrowser.Controller.Providers
         public string Path { get; set; }
     }
 
-    public class EpisodeId : ItemId
+    public class EpisodeInfo : ItemLookupInfo
     {
         public Dictionary<string, string> SeriesProviderIds { get; set; }
 
         public int? IndexNumberEnd { get; set; }
 
-        public EpisodeId()
+        public EpisodeInfo()
         {
             SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+    }
+
+    public class SongInfo : ItemLookupInfo
+    {
+        public string AlbumArtist { get; set; }
+        public string Album { get; set; }
+        public List<string> Artists { get; set; }
+    }
+
+    public class SeriesInfo : ItemLookupInfo
+    {
+
+    }
+
+    public class PersonLookupInfo : ItemLookupInfo
+    {
+        
+    }
+
+    public class MovieInfo : ItemLookupInfo
+    {
+
+    }
+
+    public class BoxSetInfo : ItemLookupInfo
+    {
+
+    }
+
+    public class MusicVideoInfo : ItemLookupInfo
+    {
+
+    }
+
+    public class TrailerInfo : ItemLookupInfo
+    {
+
+    }
+
+    public class BookInfo : ItemLookupInfo
+    {
+        
     }
 }

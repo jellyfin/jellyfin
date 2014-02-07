@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.LiveTv
 {
-    public class ProgramMetadataService : MetadataService<LiveTvProgram, ItemId>
+    public class ProgramMetadataService : MetadataService<LiveTvProgram, ItemLookupInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

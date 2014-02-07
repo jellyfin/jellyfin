@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Videos
 {
-    public class VideoMetadataService : MetadataService<Video, ItemId>
+    public class VideoMetadataService : MetadataService<Video, ItemLookupInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

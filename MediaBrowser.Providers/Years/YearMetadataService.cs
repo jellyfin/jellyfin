@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Years
 {
-    public class YearMetadataService : MetadataService<Year, ItemId>
+    public class YearMetadataService : MetadataService<Year, ItemLookupInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Users
 {
-    public class UserMetadataService : MetadataService<User, ItemId>
+    public class UserMetadataService : MetadataService<User, ItemLookupInfo>
     {
         private readonly IUserManager _userManager;
 

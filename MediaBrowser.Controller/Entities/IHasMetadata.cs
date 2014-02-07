@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
     /// Interface IHasMetadata

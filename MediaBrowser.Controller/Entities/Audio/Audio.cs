@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class Audio
     /// </summary>
-    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist, IHasArtist, IHasMusicGenres
+    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<SongInfo>
     {
         public Audio()
         {
@@ -126,6 +127,17 @@ namespace MediaBrowser.Controller.Entities.Audio
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedMusic;
+        }
+
+        public SongInfo GetLookupInfo()
+        {
+            var info = GetItemLookupInfo<SongInfo>();
+
+            info.AlbumArtist = AlbumArtist;
+            info.Album = Album;
+            info.Artists = Artists;
+
+            return info;
         }
     }
 }

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class SeriesMetadataService : MetadataService<Series, ItemId>
+    public class SeriesMetadataService : MetadataService<Series, ItemLookupInfo>
     {
         private readonly ILibraryManager _libraryManager;
 
@@ -59,7 +59,6 @@ namespace MediaBrowser.Providers.TV
 
             if (dateLastEpisodeAdded != item.DateLastEpisodeAdded)
             {
-                Logger.Debug("DateLastEpisodeAdded changed for {0}", item.Path);
                 updateType = updateType | ItemUpdateType.MetadataImport;
             }
 

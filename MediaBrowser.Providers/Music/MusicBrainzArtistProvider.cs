@@ -12,9 +12,9 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist>
+    public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>
     {
-        public async Task<MetadataResult<MusicArtist>> GetMetadata(ItemId id, CancellationToken cancellationToken)
+        public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo id, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicArtist>();
 
@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.Music
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        private async Task<string> FindId(ItemId item, CancellationToken cancellationToken)
+        private async Task<string> FindId(ItemLookupInfo item, CancellationToken cancellationToken)
         {
             // They seem to throw bad request failures on any term with a slash
             var nameToSearch = item.Name.Replace('/', ' ');

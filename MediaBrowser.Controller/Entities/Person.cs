@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -7,7 +8,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// This is the full Person object that can be retrieved with all of it's data.
     /// </summary>
-    public class Person : BaseItem, IItemByName
+    public class Person : BaseItem, IItemByName, IHasLookupInfo<Providers.PersonLookupInfo>
     {
         public Person()
         {
@@ -30,6 +31,11 @@ namespace MediaBrowser.Controller.Entities
         public override string GetUserDataKey()
         {
             return "Person-" + Name;
+        }
+
+        public Providers.PersonLookupInfo GetLookupInfo()
+        {
+            return GetItemLookupInfo<Providers.PersonLookupInfo>();
         }
     }
 

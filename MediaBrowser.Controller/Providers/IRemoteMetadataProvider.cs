@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -7,15 +8,10 @@ namespace MediaBrowser.Controller.Providers
     {
     }
 
-    public interface IRemoteMetadataProvider<TItemType> : IMetadataProvider<TItemType>, IRemoteMetadataProvider
-        where TItemType : IHasMetadata
+    public interface IRemoteMetadataProvider<TItemType, in TLookupInfoType> : IMetadataProvider<TItemType>, IRemoteMetadataProvider
+        where TItemType : IHasMetadata, IHasLookupInfo<TLookupInfoType>
+        where TLookupInfoType : ItemLookupInfo, new()
     {
-        /// <summary>
-        /// Gets the metadata.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{MetadataResult{`0}}.</returns>
-        Task<MetadataResult<TItemType>> GetMetadata(ItemId id, CancellationToken cancellationToken);
+        Task<MetadataResult<TItemType>> GetMetadata(TLookupInfoType info, CancellationToken cancellationToken);
     }
 }

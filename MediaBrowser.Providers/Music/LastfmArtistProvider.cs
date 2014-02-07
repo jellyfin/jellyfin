@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class LastfmArtistProvider : IRemoteMetadataProvider<MusicArtist>, IHasOrder
+    public class LastfmArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
     {
         private readonly IJsonSerializer _json;
         private readonly IHttpClient _httpClient;
@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.Music
             _logger = logger;
         }
 
-        public async Task<MetadataResult<MusicArtist>> GetMetadata(ItemId id, CancellationToken cancellationToken)
+        public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo id, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicArtist>();
 
