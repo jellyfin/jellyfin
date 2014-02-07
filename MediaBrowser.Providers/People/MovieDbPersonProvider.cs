@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.People
 {
-    public class MovieDbPersonProvider : IRemoteMetadataProvider<Person>
+    public class MovieDbPersonProvider : IRemoteMetadataProvider<Person, PersonLookupInfo>
     {
         const string DataFileName = "info.json";
         
@@ -40,8 +40,8 @@ namespace MediaBrowser.Providers.People
         {
             get { return "TheMovieDb"; }
         }
-        
-        public async Task<MetadataResult<Person>> GetMetadata(ItemId id, CancellationToken cancellationToken)
+
+        public async Task<MetadataResult<Person>> GetMetadata(PersonLookupInfo id, CancellationToken cancellationToken)
         {
             var tmdbId = id.GetProviderId(MetadataProviders.Tmdb);
 

@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.Movies
     /// <summary>
     /// Class MovieDbProvider
     /// </summary>
-    public class MovieDbProvider : IRemoteMetadataProvider<Movie>, IDisposable, IHasChangeMonitor
+    public class MovieDbProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IDisposable, IHasChangeMonitor
     {
         internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(1, 1);
 
@@ -41,12 +41,12 @@ namespace MediaBrowser.Providers.Movies
             Current = this;
         }
 
-        public Task<MetadataResult<Movie>> GetMetadata(ItemId id, CancellationToken cancellationToken)
+        public Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
         {
-            return GetItemMetadata<Movie>(id, cancellationToken);
+            return GetItemMetadata<Movie>(info, cancellationToken);
         }
 
-        public Task<MetadataResult<T>> GetItemMetadata<T>(ItemId id, CancellationToken cancellationToken)
+        public Task<MetadataResult<T>> GetItemMetadata<T>(ItemLookupInfo id, CancellationToken cancellationToken)
             where T : Video, new ()
         {
             var movieDb = new GenericMovieDbInfo<T>(_logger, _jsonSerializer);

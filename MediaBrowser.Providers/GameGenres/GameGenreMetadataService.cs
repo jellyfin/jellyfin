@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.GameGenres
 {
-    public class GameGenreMetadataService : MetadataService<GameGenre, ItemId>
+    public class GameGenreMetadataService : MetadataService<GameGenre, ItemLookupInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

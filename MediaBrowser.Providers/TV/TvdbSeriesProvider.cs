@@ -19,10 +19,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using PersonInfo = MediaBrowser.Controller.Entities.PersonInfo;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series>, IHasChangeMonitor
+    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasChangeMonitor
     {
         internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(2, 2);
         internal static TvdbSeriesProvider Current { get; private set; }
@@ -47,7 +48,7 @@ namespace MediaBrowser.Providers.TV
         private const string SeriesQuery = "GetSeries.php?seriesname={0}";
         private const string SeriesGetZip = "http://www.thetvdb.com/api/{0}/series/{1}/all/{2}.zip";
 
-        public async Task<MetadataResult<Series>> GetMetadata(ItemId itemId, CancellationToken cancellationToken)
+        public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo itemId, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Series>();
 

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Folders
 {
-    public class FolderMetadataService : MetadataService<Folder, ItemId>
+    public class FolderMetadataService : MetadataService<Folder, ItemLookupInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

@@ -1,11 +1,12 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasBudget
+    public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasBudget, IHasLookupInfo<MusicVideoInfo>
     {
         /// <summary>
         /// Gets or sets the artist.
@@ -53,6 +54,11 @@ namespace MediaBrowser.Controller.Entities
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedMusic;
+        }
+
+        public MusicVideoInfo GetLookupInfo()
+        {
+            return GetItemLookupInfo<MusicVideoInfo>();
         }
     }
 }

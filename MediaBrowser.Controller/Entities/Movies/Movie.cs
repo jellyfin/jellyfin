@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasTags, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasTags, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -165,6 +165,11 @@ namespace MediaBrowser.Controller.Entities.Movies
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedMovies;
+        }
+
+        public MovieInfo GetLookupInfo()
+        {
+            return GetItemLookupInfo<MovieInfo>();
         }
     }
 }

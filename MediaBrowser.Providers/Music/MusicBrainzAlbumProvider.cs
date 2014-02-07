@@ -13,7 +13,7 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum>, IHasOrder
+    public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {
         internal static MusicBrainzAlbumProvider Current;
 
@@ -27,9 +27,9 @@ namespace MediaBrowser.Providers.Music
             Current = this;
         }
 
-        public async Task<MetadataResult<MusicAlbum>> GetMetadata(ItemId id, CancellationToken cancellationToken)
+        public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo id, CancellationToken cancellationToken)
         {
-            var albumId = (AlbumId)id;
+            var albumId = id;
             var releaseId = albumId.GetProviderId(MetadataProviders.Musicbrainz);
             var releaseGroupId = albumId.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 

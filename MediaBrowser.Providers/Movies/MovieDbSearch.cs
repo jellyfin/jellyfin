@@ -29,17 +29,17 @@ namespace MediaBrowser.Providers.Movies
             _json = json;
         }
 
-        public Task<string> FindMovieId(ItemId idInfo, CancellationToken cancellationToken)
+        public Task<string> FindMovieId(ItemLookupInfo idInfo, CancellationToken cancellationToken)
         {
             return FindId(idInfo, "movie", cancellationToken);
         }
 
-        public Task<string> FindCollectionId(ItemId idInfo, CancellationToken cancellationToken)
+        public Task<string> FindCollectionId(ItemLookupInfo idInfo, CancellationToken cancellationToken)
         {
             return FindId(idInfo, "collection", cancellationToken);
         }
 
-        private async Task<string> FindId(ItemId idInfo, string searchType, CancellationToken cancellationToken)
+        private async Task<string> FindId(ItemLookupInfo idInfo, string searchType, CancellationToken cancellationToken)
         {
             int? yearInName;
             var name = idInfo.Name;

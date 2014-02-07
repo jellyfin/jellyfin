@@ -1,15 +1,20 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
     /// <summary>
     /// Class BoxSet
     /// </summary>
-    public class BoxSet : Folder, IHasTrailers, IHasTags, IHasKeywords, IHasPreferredMetadataLanguage, IHasDisplayOrder
+    public class BoxSet : Folder, IHasTrailers, IHasTags, IHasKeywords, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>, IMetadataContainer
     {
         public BoxSet()
         {
@@ -73,6 +78,68 @@ namespace MediaBrowser.Controller.Entities.Movies
             
             // Default sorting
             return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
+        }
+
+        public BoxSetInfo GetLookupInfo()
+        {
+            return GetItemLookupInfo<BoxSetInfo>();
+        }
+
+        public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            // Refresh bottom up, children first, then the boxset
+            // By then hopefully the  movies within will have Tmdb collection values
+            var items = RecursiveChildren.ToList();
+
+            var totalItems = items.Count;
+            var percentages = new Dictionary<Guid, double>(totalItems);
+
+            var tasks = new List<Task>();
+
+            // Refresh songs
+            foreach (var item in items)
+            {
+                if (tasks.Count > 3)
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    tasks.Clear();
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                var innerProgress = new ActionableProgress<double>();
+
+                // Avoid implicitly captured closure
+                var currentChild = item;
+                innerProgress.RegisterAction(p =>
+                {
+                    lock (percentages)
+                    {
+                        percentages[currentChild.Id] = p / 100;
+
+                        var percent = percentages.Values.Sum();
+                        percent /= totalItems;
+                        percent *= 100;
+                        progress.Report(percent);
+                    }
+                });
+
+                tasks.Add(RefreshItem(item, refreshOptions, innerProgress, cancellationToken));
+            }
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+            tasks.Clear();
+
+            // Refresh current item
+            await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            progress.Report(100);
+        }
+
+        private async Task RefreshItem(BaseItem item, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            progress.Report(100);
         }
     }
 }

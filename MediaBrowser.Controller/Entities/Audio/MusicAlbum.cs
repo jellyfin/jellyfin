@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,10 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicAlbum
     /// </summary>
-    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasTags
+    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasTags, IHasLookupInfo<AlbumInfo>
     {
         public List<Guid> SoundtrackIds { get; set; }
-        
+
         public MusicAlbum()
         {
             Artists = new List<string>();
@@ -111,6 +112,26 @@ namespace MediaBrowser.Controller.Entities.Audio
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedMusic;
+        }
+
+        public AlbumInfo GetLookupInfo()
+        {
+            var id = GetItemLookupInfo<AlbumInfo>();
+
+            id.AlbumArtist = AlbumArtist;
+
+            var artist = Parents.OfType<MusicArtist>().FirstOrDefault();
+
+            if (artist != null)
+            {
+                id.ArtistProviderIds = artist.ProviderIds;
+            }
+
+            id.SongInfos = RecursiveChildren.OfType<Audio>()
+                .Select(i => i.GetLookupInfo())
+                .ToList();
+
+            return id;
         }
     }
 

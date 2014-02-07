@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using System.Collections.Generic;

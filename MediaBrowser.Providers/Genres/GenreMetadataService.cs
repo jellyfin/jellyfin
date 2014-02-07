@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Genres
 {
-    public class GenreMetadataService : MetadataService<Genre, ItemId>
+    public class GenreMetadataService : MetadataService<Genre, ItemLookupInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

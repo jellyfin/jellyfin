@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Books
 {
-    public class BookMetadataService : MetadataService<Book, ItemId>
+    public class BookMetadataService : MetadataService<Book, BookInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

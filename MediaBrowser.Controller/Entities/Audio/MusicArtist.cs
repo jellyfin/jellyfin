@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicArtist
     /// </summary>
-    public class MusicArtist : Folder, IMetadataContainer, IItemByName, IHasMusicGenres, IHasDualAccess, IHasTags, IHasProductionLocations
+    public class MusicArtist : Folder, IMetadataContainer, IItemByName, IHasMusicGenres, IHasDualAccess, IHasTags, IHasProductionLocations, IHasLookupInfo<ArtistInfo>
     {
         [IgnoreDataMember]
         public List<ItemByNameCounts> UserItemCountList { get; set; }
@@ -200,6 +200,17 @@ namespace MediaBrowser.Controller.Entities.Audio
             await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
+        }
+
+        public ArtistInfo GetLookupInfo()
+        {
+            var info = GetItemLookupInfo<ArtistInfo>();
+
+            info.SongInfos = RecursiveChildren.OfType<Audio>()
+                .Select(i => i.GetLookupInfo())
+                .ToList();
+
+            return info;
         }
     }
 }

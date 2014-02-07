@@ -93,6 +93,7 @@
     <Compile Include="MediaInfo\FFProbeHelpers.cs" />
     <Compile Include="MediaInfo\FFProbeProvider.cs" />
     <Compile Include="MediaInfo\FFProbeVideoInfo.cs" />
+    <Compile Include="Movies\MovieDbTrailerProvider.cs" />
     <Compile Include="Movies\TrailerMetadataService.cs" />
     <Compile Include="Movies\GenericMovieDbInfo.cs" />
     <Compile Include="Movies\MovieDbSearch.cs" />
@@ -115,6 +116,7 @@
     <Compile Include="Music\ArtistMetadataService.cs" />
     <Compile Include="Music\AudioMetadataService.cs" />
     <Compile Include="Music\LastfmArtistProvider.cs" />
+    <Compile Include="Music\MovieDbMusicVideoProvider.cs" />
     <Compile Include="Music\MusicBrainzArtistProvider.cs" />
     <Compile Include="Music\MusicVideoMetadataService.cs" />
     <Compile Include="Music\MusicVideoXmlProvider.cs" />

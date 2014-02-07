@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Studios
 {
-    public class StudioMetadataService : MetadataService<Studio, ItemId>
+    public class StudioMetadataService : MetadataService<Studio, ItemLookupInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

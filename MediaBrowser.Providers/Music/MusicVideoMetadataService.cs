@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    class MusicVideoMetadataService : MetadataService<MusicVideo, ItemId>
+    class MusicVideoMetadataService : MetadataService<MusicVideo, MusicVideoInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

@@ -1,11 +1,12 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Game : BaseItem, IHasSoundtracks, IHasTrailers, IHasThemeMedia, IHasTags, IHasScreenshots, IHasPreferredMetadataLanguage
+    public class Game : BaseItem, IHasSoundtracks, IHasTrailers, IHasThemeMedia, IHasTags, IHasScreenshots, IHasPreferredMetadataLanguage, IHasLookupInfo<GameInfo>
     {
         public List<Guid> SoundtrackIds { get; set; }
 
@@ -114,6 +115,15 @@ namespace MediaBrowser.Controller.Entities
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedGames;
+        }
+
+        public GameInfo GetLookupInfo()
+        {
+            var id = GetItemLookupInfo<GameInfo>();
+
+            id.GameSystem = GameSystem;
+
+            return id;
         }
     }
 }

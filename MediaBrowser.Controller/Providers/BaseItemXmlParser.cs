@@ -479,7 +479,7 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Director":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -491,7 +491,7 @@ namespace MediaBrowser.Controller.Providers
                     }
                 case "Writer":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -516,7 +516,7 @@ namespace MediaBrowser.Controller.Providers
                         else
                         {
                             // Old-style piped string
-                            foreach (var p in SplitNames(actors).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
+                            foreach (var p in SplitNames(actors).Select(v => new Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
                             {
                                 if (string.IsNullOrWhiteSpace(p.Name))
                                 {
@@ -530,7 +530,7 @@ namespace MediaBrowser.Controller.Providers
 
                 case "GuestStars":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.GuestStar }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Entities.PersonInfo { Name = v.Trim(), Type = PersonType.GuestStar }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -1195,7 +1195,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <returns>IEnumerable{PersonInfo}.</returns>
-        private IEnumerable<PersonInfo> GetPersonsFromXmlNode(XmlReader reader)
+        private IEnumerable<Entities.PersonInfo> GetPersonsFromXmlNode(XmlReader reader)
         {
             var name = string.Empty;
             var type = "Actor";  // If type is not specified assume actor
@@ -1257,7 +1257,7 @@ namespace MediaBrowser.Controller.Providers
                 }
             }
 
-            var personInfo = new PersonInfo
+            var personInfo = new Entities.PersonInfo
             {
                 Name = name.Trim(),
                 Role = role,

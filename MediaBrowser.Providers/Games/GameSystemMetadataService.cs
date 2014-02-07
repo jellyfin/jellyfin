@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Games
 {
-    public class GameSystemMetadataService : MetadataService<GameSystem, GameSystemId>
+    public class GameSystemMetadataService : MetadataService<GameSystem, GameSystemInfo>
     {
         private readonly ILibraryManager _libraryManager;
 
@@ -43,15 +43,6 @@ namespace MediaBrowser.Providers.Games
         protected override Task SaveItem(GameSystem item, ItemUpdateType reason, CancellationToken cancellationToken)
         {
             return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
-
-        protected override GameSystemId GetId(GameSystem item)
-        {
-            var id = base.GetId(item);
-
-            id.Path = item.Path;
-
-            return id;
         }
     }
 }

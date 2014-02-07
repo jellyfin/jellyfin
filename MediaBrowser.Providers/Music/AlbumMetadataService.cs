@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumId>
+    public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
     {
         private readonly ILibraryManager _libraryManager;
 
@@ -100,23 +100,6 @@ namespace MediaBrowser.Providers.Music
             updateType = updateType | SetDateFromSongs(item, songs);
 
             return updateType;
-        }
-
-        protected override AlbumId GetId(MusicAlbum item)
-        {
-            var id = base.GetId(item);
-
-            id.AlbumArtist = item.AlbumArtist;
-
-            var artist = item.Parents.OfType<MusicArtist>().FirstOrDefault();
-
-            if (artist != null)
-            {
-                id.ArtistProviderIds = artist.ProviderIds;
-                id.AlbumArtist = id.AlbumArtist ?? artist.Name;
-            }
-
-            return id;
         }
 
         private ItemUpdateType SetAlbumArtistFromSongs(MusicAlbum item, IEnumerable<Audio> songs)

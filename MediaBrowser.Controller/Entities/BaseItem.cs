@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class BaseItem
     /// </summary>
-    public abstract class BaseItem : IHasProviderIds, ILibraryItem, IHasImages, IHasUserData, IHasMetadata
+    public abstract class BaseItem : IHasProviderIds, ILibraryItem, IHasImages, IHasUserData, IHasMetadata, IHasLookupInfo<ItemLookupInfo>
     {
         protected BaseItem()
         {
@@ -236,7 +236,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var locationType = LocationType;
 
-                if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
+                if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
                 {
                     return new string[] { };
                 }
@@ -610,7 +610,7 @@ namespace MediaBrowser.Controller.Entities
                     localTrailersChanged = await RefreshLocalTrailers(hasTrailers, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
                 }
             }
-            
+
             if (themeSongsChanged || themeVideosChanged || localTrailersChanged)
             {
                 options.ForceSave = true;
@@ -1454,6 +1454,25 @@ namespace MediaBrowser.Controller.Entities
             var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
 
             return userdata == null || !userdata.Played;
+        }
+
+        ItemLookupInfo IHasLookupInfo<ItemLookupInfo>.GetLookupInfo()
+        {
+            return GetItemLookupInfo<ItemLookupInfo>();
+        }
+
+        protected T GetItemLookupInfo<T>()
+            where T : ItemLookupInfo, new()
+        {
+            return new T
+            {
+                MetadataCountryCode = GetPreferredMetadataCountryCode(),
+                MetadataLanguage = GetPreferredMetadataLanguage(),
+                Name = Name,
+                ProviderIds = ProviderIds,
+                IndexNumber = IndexNumber,
+                ParentIndexNumber = ParentIndexNumber
+            };
         }
     }
 }

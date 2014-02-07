@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class LastfmAlbumProvider : IRemoteMetadataProvider<MusicAlbum>, IHasOrder
+    public class LastfmAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {
         private readonly IJsonSerializer _json;
         private readonly IHttpClient _httpClient;
@@ -30,11 +30,11 @@ namespace MediaBrowser.Providers.Music
             _logger = logger;
         }
 
-        public async Task<MetadataResult<MusicAlbum>> GetMetadata(ItemId id, CancellationToken cancellationToken)
+        public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo id, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicAlbum>();
 
-            var lastFmData = await GetAlbumResult((AlbumId)id, cancellationToken).ConfigureAwait(false);
+            var lastFmData = await GetAlbumResult(id, cancellationToken).ConfigureAwait(false);
 
             if (lastFmData != null && lastFmData.album != null)
             {
@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.Music
             return result;
         }
 
-        private async Task<LastfmGetAlbumResult> GetAlbumResult(AlbumId item, CancellationToken cancellationToken)
+        private async Task<LastfmGetAlbumResult> GetAlbumResult(AlbumInfo item, CancellationToken cancellationToken)
         {
             // Try album release Id
             if (!string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Musicbrainz)))

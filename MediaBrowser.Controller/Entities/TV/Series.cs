@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -14,7 +15,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasTags, IHasPreferredMetadataLanguage, IHasDisplayOrder
+    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasTags, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>
     {
         public List<Guid> SpecialFeatureIds { get; set; }
         public List<Guid> SoundtrackIds { get; set; }
@@ -222,5 +223,10 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         public string PreferredMetadataLanguage { get; set; }
+
+        public SeriesInfo GetLookupInfo()
+        {
+            return GetItemLookupInfo<SeriesInfo>();
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Episode
     /// </summary>
-    public class Episode : Video
+    public class Episode : Video, IHasLookupInfo<EpisodeInfo>
     {
         /// <summary>
         /// Gets the season in which it aired.
@@ -41,7 +42,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         /// <value>The index number.</value>
         public int? IndexNumberEnd { get; set; }
-        
+
         /// <summary>
         /// We want to group into series not show individually in an index
         /// </summary>
@@ -232,6 +233,22 @@ namespace MediaBrowser.Controller.Entities.TV
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedSeries;
+        }
+
+        public EpisodeInfo GetLookupInfo()
+        {
+            var id = GetItemLookupInfo<EpisodeInfo>();
+
+            var series = Series;
+
+            if (series != null)
+            {
+                id.SeriesProviderIds = series.ProviderIds;
+            }
+
+            id.IndexNumberEnd = IndexNumberEnd;
+
+            return id;
         }
     }
 }

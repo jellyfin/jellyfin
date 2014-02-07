@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class ArtistMetadataService : MetadataService<MusicArtist, ItemId>
+    public class ArtistMetadataService : MetadataService<MusicArtist, ItemLookupInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

@@ -1,9 +1,10 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Book : BaseItem, IHasTags, IHasPreferredMetadataLanguage
+    public class Book : BaseItem, IHasTags, IHasPreferredMetadataLanguage, IHasLookupInfo<BookInfo>
     {
         public override string MediaType
         {
@@ -37,6 +38,11 @@ namespace MediaBrowser.Controller.Entities
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedBooks;
+        }
+
+        public BookInfo GetLookupInfo()
+        {
+            return GetItemLookupInfo<BookInfo>();
         }
     }
 }

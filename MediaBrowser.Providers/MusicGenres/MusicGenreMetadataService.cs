@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.MusicGenres
 {
-    public class MusicGenreMetadataService : MetadataService<MusicGenre, ItemId>
+    public class MusicGenreMetadataService : MetadataService<MusicGenre, ItemLookupInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

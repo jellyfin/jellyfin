@@ -16,8 +16,8 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Providers.Manager
 {
     public abstract class MetadataService<TItemType, TIdType> : IMetadataService
-        where TItemType : IHasMetadata, new()
-        where TIdType : ItemId, new()
+        where TItemType : IHasMetadata, IHasLookupInfo<TIdType>, new()
+        where TIdType : ItemLookupInfo, new()
     {
         protected readonly IServerConfigurationManager ServerConfigurationManager;
         protected readonly ILogger Logger;
@@ -238,27 +238,6 @@ namespace MediaBrowser.Providers.Manager
 
         protected abstract Task SaveItem(TItemType item, ItemUpdateType reason, CancellationToken cancellationToken);
 
-        protected virtual TIdType GetId(TItemType item)
-        {
-            var id = new TIdType
-            {
-                MetadataCountryCode = item.GetPreferredMetadataCountryCode(),
-                MetadataLanguage = item.GetPreferredMetadataLanguage(),
-                Name = item.Name,
-                ProviderIds = item.ProviderIds
-            };
-
-            var baseItem = item as BaseItem;
-
-            if (baseItem != null)
-            {
-                id.IndexNumber = baseItem.IndexNumber;
-                id.ParentIndexNumber = baseItem.ParentIndexNumber;
-            }
-
-            return id;
-        }
-
         public bool CanRefresh(IHasMetadata item)
         {
             return item is TItemType;
@@ -278,7 +257,7 @@ namespace MediaBrowser.Providers.Manager
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
             {
-                await ExecuteRemoteProviders(item, temp, providers.OfType<IRemoteMetadataProvider<TItemType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
+                await ExecuteRemoteProviders(item, temp, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
             var hasLocalMetadata = false;
@@ -326,7 +305,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (!options.ReplaceAllMetadata && !hasLocalMetadata)
             {
-                await ExecuteRemoteProviders(item, temp, providers.OfType<IRemoteMetadataProvider<TItemType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
+                await ExecuteRemoteProviders(item, temp, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
             if (refreshResult.UpdateType > ItemUpdateType.Unspecified)
@@ -367,13 +346,15 @@ namespace MediaBrowser.Providers.Manager
             return new TItemType();
         }
 
-        private async Task ExecuteRemoteProviders(TItemType item, TItemType temp, IEnumerable<IRemoteMetadataProvider<TItemType>> providers, RefreshResult refreshResult, CancellationToken cancellationToken)
+        private async Task ExecuteRemoteProviders(TItemType item, TItemType temp, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, RefreshResult refreshResult, CancellationToken cancellationToken)
         {
-            var id = GetId(item);
+            TIdType id = null;
 
             foreach (var provider in providers)
             {
                 Logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
+
+                id = id ?? item.GetLookupInfo();
 
                 try
                 {
