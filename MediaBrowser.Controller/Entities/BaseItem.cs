@@ -28,10 +28,9 @@ namespace MediaBrowser.Controller.Entities
             Genres = new List<string>();
             Studios = new List<string>();
             People = new List<PersonInfo>();
-            BackdropImagePaths = new List<string>();
-            Images = new Dictionary<ImageType, string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = new List<MetadataFields>();
+            ImageInfos = new List<ItemImageInfo>();
         }
 
         /// <summary>
@@ -48,6 +47,12 @@ namespace MediaBrowser.Controller.Entities
         public const string ThemeVideosFolderName = "backdrops";
         public const string XbmcTrailerFileSuffix = "-trailer";
 
+        public List<ItemImageInfo> ImageInfos { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is in mixed folder.
+        /// </summary>
+        /// <value><c>true</c> if this instance is in mixed folder; otherwise, <c>false</c>.</value>
         public bool IsInMixedFolder { get; set; }
 
         private string _name;
@@ -160,14 +165,7 @@ namespace MediaBrowser.Controller.Entities
         public string PrimaryImagePath
         {
             get { return this.GetImagePath(ImageType.Primary); }
-            set { this.SetImagePath(ImageType.Primary, value); }
         }
-
-        /// <summary>
-        /// Gets or sets the images.
-        /// </summary>
-        /// <value>The images.</value>
-        public Dictionary<ImageType, string> Images { get; set; }
 
         /// <summary>
         /// Gets or sets the date created.
@@ -348,12 +346,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The display type of the media.</value>
         public string DisplayMediaType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the backdrop image paths.
-        /// </summary>
-        /// <value>The backdrop image paths.</value>
-        public List<string> BackdropImagePaths { get; set; }
 
         /// <summary>
         /// Gets or sets the official rating.
@@ -1162,43 +1154,31 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.ArgumentException">Backdrops should be accessed using Item.Backdrops</exception>
         public bool HasImage(ImageType type, int imageIndex)
         {
-            if (type == ImageType.Backdrop)
-            {
-                return BackdropImagePaths.Count > imageIndex;
-            }
-            if (type == ImageType.Screenshot)
-            {
-                var hasScreenshots = this as IHasScreenshots;
-                return hasScreenshots != null && hasScreenshots.ScreenshotImagePaths.Count > imageIndex;
-            }
-
-            return !string.IsNullOrEmpty(this.GetImagePath(type));
+            return GetImageInfo(type, imageIndex) != null;
         }
 
-        public void SetImagePath(ImageType type, int index, string path)
+        public void SetImagePath(ImageType type, int index, FileInfo file)
         {
-            if (type == ImageType.Backdrop)
+            if (type == ImageType.Chapter)
             {
-                throw new ArgumentException("Backdrops should be accessed using Item.Backdrops");
-            }
-            if (type == ImageType.Screenshot)
-            {
-                throw new ArgumentException("Screenshots should be accessed using Item.Screenshots");
+                throw new ArgumentException("Cannot set chapter images using SetImagePath");
             }
 
-            var typeKey = type;
+            var image = GetImageInfo(type, index);
 
-            // If it's null remove the key from the dictionary
-            if (string.IsNullOrEmpty(path))
+            if (image == null)
             {
-                if (Images.ContainsKey(typeKey))
+                ImageInfos.Add(new ItemImageInfo
                 {
-                    Images.Remove(typeKey);
-                }
+                    Path = file.FullName,
+                    Type = type,
+                    DateModified = FileSystem.GetLastWriteTimeUtc(file)
+                });
             }
             else
             {
-                Images[typeKey] = path;
+                image.Path = file.FullName;
+                image.DateModified = FileSystem.GetLastWriteTimeUtc(file);
             }
         }
 
@@ -1208,66 +1188,23 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="type">The type.</param>
         /// <param name="index">The index.</param>
         /// <returns>Task.</returns>
-        public Task DeleteImage(ImageType type, int? index)
+        public Task DeleteImage(ImageType type, int index)
         {
-            if (type == ImageType.Backdrop)
+            var info = GetImageInfo(type, index);
+
+            if (info == null)
             {
-                if (!index.HasValue)
-                {
-                    throw new ArgumentException("Please specify a backdrop image index to delete.");
-                }
-
-                var file = BackdropImagePaths[index.Value];
-
-                BackdropImagePaths.Remove(file);
-
-                // Delete the source file
-                DeleteImagePath(file);
-            }
-            else if (type == ImageType.Screenshot)
-            {
-                if (!index.HasValue)
-                {
-                    throw new ArgumentException("Please specify a screenshot image index to delete.");
-                }
-
-                var hasScreenshots = (IHasScreenshots)this;
-                var file = hasScreenshots.ScreenshotImagePaths[index.Value];
-
-                hasScreenshots.ScreenshotImagePaths.Remove(file);
-
-                // Delete the source file
-                DeleteImagePath(file);
-            }
-            else
-            {
-                // Delete the source file
-                DeleteImagePath(this.GetImagePath(type));
-
-                // Remove it from the item
-                this.SetImagePath(type, null);
+                // Nothing to do
+                return Task.FromResult(true);
             }
 
-            // Refresh metadata
-            // Need to disable slow providers or the image might get re-downloaded
-            return RefreshMetadata(new MetadataRefreshOptions
-            {
-                ForceSave = true,
-                ImageRefreshMode = ImageRefreshMode.ValidationOnly,
-                MetadataRefreshMode = MetadataRefreshMode.None
+            // Remove it from the item
+            ImageInfos.Remove(info);
 
-            }, CancellationToken.None);
-        }
+            // Delete the source file
+            var currentFile = new FileInfo(info.Path);
 
-        /// <summary>
-        /// Deletes the image path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        private void DeleteImagePath(string path)
-        {
-            var currentFile = new FileInfo(path);
-
-            // This will fail if the file is hidden
+            // Deletion will fail if the file is hidden so remove the attribute first
             if (currentFile.Exists)
             {
                 if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
@@ -1277,6 +1214,8 @@ namespace MediaBrowser.Controller.Entities
 
                 currentFile.Delete();
             }
+
+            return LibraryManager.UpdateItem(this, ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
         /// <summary>
@@ -1284,83 +1223,16 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public bool ValidateImages()
         {
-            var changed = false;
-
-            // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedKeys = Images
-                .Where(image => !File.Exists(image.Value))
-                .Select(i => i.Key)
+            var deletedImages = ImageInfos
+                .Where(image => !File.Exists(image.Path))
                 .ToList();
 
-            // Now remove them from the dictionary
-            foreach (var key in deletedKeys)
+            if (deletedImages.Count > 0)
             {
-                Images.Remove(key);
-                changed = true;
+                ImageInfos = ImageInfos.Except(deletedImages).ToList();
             }
 
-            if (ValidateBackdrops())
-            {
-                changed = true;
-            }
-            if (ValidateScreenshots())
-            {
-                changed = true;
-            }
-
-            return changed;
-        }
-
-        /// <summary>
-        /// Validates that backdrops within the item are still on the file system
-        /// </summary>
-        private bool ValidateBackdrops()
-        {
-            var changed = false;
-
-            // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedImages = BackdropImagePaths
-                .Where(path => !File.Exists(path))
-                .ToList();
-
-            // Now remove them from the dictionary
-            foreach (var path in deletedImages)
-            {
-                BackdropImagePaths.Remove(path);
-
-                changed = true;
-            }
-
-            return changed;
-        }
-
-        /// <summary>
-        /// Validates the screenshots.
-        /// </summary>
-        private bool ValidateScreenshots()
-        {
-            var changed = false;
-
-            var hasScreenshots = this as IHasScreenshots;
-
-            if (hasScreenshots == null)
-            {
-                return changed;
-            }
-
-            // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedImages = hasScreenshots.ScreenshotImagePaths
-                .Where(path => !File.Exists(path))
-                .ToList();
-
-            // Now remove them from the dictionary
-            foreach (var path in deletedImages)
-            {
-                hasScreenshots.ScreenshotImagePaths.Remove(path);
-                changed = true;
-            }
-
-            return changed;
+            return deletedImages.Count > 0;
         }
 
         /// <summary>
@@ -1374,42 +1246,87 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.ArgumentNullException">item</exception>
         public string GetImagePath(ImageType imageType, int imageIndex)
         {
-            if (imageType == ImageType.Backdrop)
-            {
-                return BackdropImagePaths.Count > imageIndex ? BackdropImagePaths[imageIndex] : null;
-            }
+            var info = GetImageInfo(imageType, imageIndex);
 
-            if (imageType == ImageType.Screenshot)
-            {
-                var hasScreenshots = (IHasScreenshots)this;
-                return hasScreenshots.ScreenshotImagePaths.Count > imageIndex ? hasScreenshots.ScreenshotImagePaths[imageIndex] : null;
-            }
-
-            if (imageType == ImageType.Chapter)
-            {
-                return ItemRepository.GetChapter(Id, imageIndex).ImagePath;
-            }
-
-            string val;
-            Images.TryGetValue(imageType, out val);
-            return val;
+            return info == null ? null : info.Path;
         }
 
         /// <summary>
-        /// Gets the image date modified.
+        /// Gets the image information.
         /// </summary>
-        /// <param name="imagePath">The image path.</param>
-        /// <returns>DateTime.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public DateTime GetImageDateModified(string imagePath)
+        /// <param name="imageType">Type of the image.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <returns>ItemImageInfo.</returns>
+        public ItemImageInfo GetImageInfo(ImageType imageType, int imageIndex)
         {
-            if (string.IsNullOrEmpty(imagePath))
+            if (imageType == ImageType.Chapter)
             {
-                throw new ArgumentNullException("imagePath");
+                var chapter = ItemRepository.GetChapter(Id, imageIndex);
+
+                if (chapter == null)
+                {
+                    return null;
+                }
+
+                var path = chapter.ImagePath;
+
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    return null;
+                }
+
+                return new ItemImageInfo
+                {
+                    Path = path,
+                    DateModified = FileSystem.GetLastWriteTimeUtc(path),
+                    Type = imageType
+                };
             }
 
-            // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            return FileSystem.GetLastWriteTimeUtc(imagePath);
+            return GetImages(imageType)
+                .ElementAtOrDefault(imageIndex);
+        }
+
+        public IEnumerable<ItemImageInfo> GetImages(ImageType imageType)
+        {
+            if (imageType == ImageType.Chapter)
+            {
+                throw new ArgumentException("No image info for chapter images");
+            }
+
+            return ImageInfos.Where(i => i.Type == imageType);
+        }
+
+        /// <summary>
+        /// Adds the images.
+        /// </summary>
+        /// <param name="imageType">Type of the image.</param>
+        /// <param name="images">The images.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <exception cref="System.ArgumentException">Cannot call AddImages with chapter images</exception>
+        public bool AddImages(ImageType imageType, IEnumerable<FileInfo> images)
+        {
+            if (imageType == ImageType.Chapter)
+            {
+                throw new ArgumentException("Cannot call AddImages with chapter images");
+            }
+
+            var existingImagePaths = GetImages(imageType)
+                .Select(i => i.Path)
+                .ToList();
+
+            var newImages = images
+                .Where(i => !existingImagePaths.Contains(i.FullName, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            ImageInfos.AddRange(newImages.Select(i => new ItemImageInfo
+            {
+                Path = i.FullName,
+                Type = imageType,
+                DateModified = FileSystem.GetLastWriteTimeUtc(i)
+            }));
+
+            return newImages.Count > 0;
         }
 
         /// <summary>
@@ -1421,25 +1338,39 @@ namespace MediaBrowser.Controller.Entities
             return new[] { Path };
         }
 
+        public bool AllowsMultipleImages(ImageType type)
+        {
+            return type == ImageType.Backdrop || type == ImageType.Screenshot || type == ImageType.Chapter;
+        }
+
         public Task SwapImages(ImageType type, int index1, int index2)
         {
-            if (type != ImageType.Screenshot && type != ImageType.Backdrop)
+            if (!AllowsMultipleImages(type))
             {
                 throw new ArgumentException("The change index operation is only applicable to backdrops and screenshots");
             }
 
-            var file1 = GetImagePath(type, index1);
-            var file2 = GetImagePath(type, index2);
+            var info1 = GetImageInfo(type, index1);
+            var info2 = GetImageInfo(type, index2);
 
-            FileSystem.SwapFiles(file1, file2);
-
-            // Directory watchers should repeat this, but do a quick refresh first
-            return RefreshMetadata(new MetadataRefreshOptions
+            if (info1 == null || info2 == null)
             {
-                ForceSave = true,
-                MetadataRefreshMode = MetadataRefreshMode.None
+                // Nothing to do
+                return Task.FromResult(true);
+            }
 
-            }, CancellationToken.None);
+            var path1 = info1.Path;
+            var path2 = info2.Path;
+
+            FileSystem.SwapFiles(path1, path2);
+
+            info1.Path = path2;
+            info2.Path = path1;
+
+            info1.DateModified = FileSystem.GetLastWriteTimeUtc(info1.Path);
+            info2.DateModified = FileSystem.GetLastWriteTimeUtc(info2.Path);
+
+            return LibraryManager.UpdateItem(this, ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
         public virtual bool IsPlayed(User user)

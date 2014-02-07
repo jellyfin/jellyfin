@@ -66,17 +66,17 @@ namespace MediaBrowser.Providers.TV
 
                         if (!string.IsNullOrWhiteSpace(filename))
                         {
-                            // Strip off everything but the filename. Some metadata tools like MetaBrowser v1.0 will have an 'episodes' prefix
-                            // even though it's actually using the metadata folder.
-                            filename = Path.GetFileName(filename);
+                            //// Strip off everything but the filename. Some metadata tools like MetaBrowser v1.0 will have an 'episodes' prefix
+                            //// even though it's actually using the metadata folder.
+                            //filename = Path.GetFileName(filename);
 
-                            var seasonFolder = Path.GetDirectoryName(item.Path);
-                            filename = Path.Combine(seasonFolder, "metadata", filename);
+                            //var seasonFolder = Path.GetDirectoryName(item.Path);
+                            //filename = Path.Combine(seasonFolder, "metadata", filename);
 
-                            if (File.Exists(filename))
-                            {
-                                item.SetImagePath(ImageType.Primary, 0, filename);
-                            }
+                            //if (File.Exists(filename))
+                            //{
+                            //    item.SetImagePath(ImageType.Primary, 0, filename);
+                            //}
                         }
                         break;
                     }

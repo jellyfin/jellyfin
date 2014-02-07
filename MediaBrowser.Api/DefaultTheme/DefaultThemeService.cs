@@ -115,7 +115,7 @@ namespace MediaBrowser.Api.DefaultTheme
             var itemsWithImages = allFavoriteItems.Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath))
                 .ToList();
 
-            var itemsWithBackdrops = allFavoriteItems.Where(i => i.BackdropImagePaths.Count > 0)
+            var itemsWithBackdrops = allFavoriteItems.Where(i => i.GetImages(ImageType.Backdrop).Any())
                 .ToList();
 
             var view = new FavoritesView();
@@ -227,7 +227,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var gamesWithImages = items.OfType<Game>().Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath)).ToList();
 
-            var itemsWithBackdrops = FilterItemsForBackdropDisplay(items.Where(i => i.BackdropImagePaths.Count > 0)).ToList();
+            var itemsWithBackdrops = FilterItemsForBackdropDisplay(items.Where(i => i.GetImages(ImageType.Backdrop).Any())).ToList();
 
             var gamesWithBackdrops = itemsWithBackdrops.OfType<Game>().ToList();
 
@@ -282,7 +282,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .OfType<Series>()
                 .ToList();
 
-            var seriesWithBackdrops = series.Where(i => i.BackdropImagePaths.Count > 0).ToList();
+            var seriesWithBackdrops = series.Where(i => i.GetImages(ImageType.Backdrop).Any()).ToList();
 
             var view = new TvView();
 
@@ -298,7 +298,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .ToList();
 
             view.ShowsItems = series
-               .Where(i => i.BackdropImagePaths.Count > 0)
+               .Where(i => i.GetImages(ImageType.Backdrop).Any())
                .Randomize("all")
                .Select(i => GetItemStub(i, ImageType.Backdrop))
                .Where(i => i != null)
@@ -425,7 +425,7 @@ namespace MediaBrowser.Api.DefaultTheme
             view.FamilyMoviePercentage /= movies.Count;
 
             var moviesWithBackdrops = movies
-               .Where(i => i.BackdropImagePaths.Count > 0)
+               .Where(i => i.GetImages(ImageType.Backdrop).Any())
                .ToList();
 
             var fields = new List<ItemFields>();
@@ -456,7 +456,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.BoxSetItems = items
              .OfType<BoxSet>()
-             .Where(i => i.BackdropImagePaths.Count > 0)
+             .Where(i => i.GetImages(ImageType.Backdrop).Any())
              .Randomize()
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
@@ -491,7 +491,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .ToList();
 
             view.HDItems = hdMovies
-             .Where(i => i.BackdropImagePaths.Count > 0)
+             .Where(i => i.GetImages(ImageType.Backdrop).Any())
              .Randomize("hd")
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
@@ -499,7 +499,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .ToList();
 
             view.FamilyMovies = familyMovies
-             .Where(i => i.BackdropImagePaths.Count > 0)
+             .Where(i => i.GetImages(ImageType.Backdrop).Any())
              .Randomize("family")
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
@@ -575,7 +575,7 @@ namespace MediaBrowser.Api.DefaultTheme
         private IEnumerable<BaseItem> FilterItemsForBackdropDisplay(IEnumerable<BaseItem> items)
         {
             var tuples = items
-                .Select(i => new Tuple<BaseItem, double>(i, GetResolution(i, i.BackdropImagePaths[0])))
+                .Select(i => new Tuple<BaseItem, double>(i, GetResolution(i, ImageType.Backdrop, 0)))
                 .Where(i => i.Item2 > 0)
                 .ToList();
 
@@ -591,13 +591,13 @@ namespace MediaBrowser.Api.DefaultTheme
             return tuples.Select(i => i.Item1);
         }
 
-        private double GetResolution(BaseItem item, string path)
+        private double GetResolution(BaseItem item, ImageType type, int index)
         {
             try
             {
-                var date = item.GetImageDateModified(path);
+                var info = item.GetImageInfo(type, index);
 
-                var size = _imageProcessor.GetImageSize(path, date);
+                var size = _imageProcessor.GetImageSize(info.Path, info.DateModified);
 
                 return size.Width;
             }
@@ -618,9 +618,12 @@ namespace MediaBrowser.Api.DefaultTheme
 
             try
             {
-                var imagePath = item.GetImagePath(imageType, 0);
+                var tag = _imageProcessor.GetImageCacheTag(item, imageType);
 
-                stub.ImageTag = _imageProcessor.GetImageCacheTag(item, imageType, imagePath);
+                if (tag.HasValue)
+                {
+                    stub.ImageTag = tag.Value;
+                }
             }
             catch (Exception ex)
             {

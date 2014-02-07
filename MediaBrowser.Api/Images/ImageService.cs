@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -334,12 +335,12 @@ namespace MediaBrowser.Api.Images
         private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
-
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
-        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor)
+        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor, IFileSystem fileSystem)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -348,6 +349,7 @@ namespace MediaBrowser.Api.Images
             _itemRepo = itemRepo;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -395,9 +397,9 @@ namespace MediaBrowser.Api.Images
         {
             var list = new List<ImageInfo>();
 
-            foreach (var image in item.Images)
+            foreach (var image in item.ImageInfos.Where(i => !item.AllowsMultipleImages(i.Type)))
             {
-                var info = GetImageInfo(image.Value, item, null, image.Key);
+                var info = GetImageInfo(item, image, null);
 
                 if (info != null)
                 {
@@ -405,28 +407,16 @@ namespace MediaBrowser.Api.Images
                 }
             }
 
-            var index = 0;
-
-            foreach (var image in item.BackdropImagePaths)
+            foreach (var imageType in item.ImageInfos.Select(i => i.Type).Distinct().Where(item.AllowsMultipleImages))
             {
-                var info = GetImageInfo(image, item, index, ImageType.Backdrop);
+                var index = 0;
 
-                if (info != null)
+                // Prevent implicitly captured closure
+                var currentImageType = imageType;
+
+                foreach (var image in item.ImageInfos.Where(i => i.Type == currentImageType))
                 {
-                    list.Add(info);
-                }
-
-                index++;
-            }
-
-            index = 0;
-
-            var hasScreenshots = item as IHasScreenshots;
-            if (hasScreenshots != null)
-            {
-                foreach (var image in hasScreenshots.ScreenshotImagePaths)
-                {
-                    var info = GetImageInfo(image, item, index, ImageType.Screenshot);
+                    var info = GetImageInfo(item, image, index);
 
                     if (info != null)
                     {
@@ -441,7 +431,7 @@ namespace MediaBrowser.Api.Images
 
             if (video != null)
             {
-                index = 0;
+                var index = 0;
 
                 foreach (var chapter in _itemRepo.GetChapters(video.Id))
                 {
@@ -449,7 +439,13 @@ namespace MediaBrowser.Api.Images
                     {
                         var image = chapter.ImagePath;
 
-                        var info = GetImageInfo(image, item, index, ImageType.Chapter);
+                        var info = GetImageInfo(item, new ItemImageInfo
+                        {
+                            Path = image,
+                            Type = ImageType.Chapter,
+                            DateModified = _fileSystem.GetLastWriteTimeUtc(image)
+
+                        }, index);
 
                         if (info != null)
                         {
@@ -464,20 +460,20 @@ namespace MediaBrowser.Api.Images
             return list;
         }
 
-        private ImageInfo GetImageInfo(string path, IHasImages item, int? imageIndex, ImageType type)
+        private ImageInfo GetImageInfo(IHasImages item, ItemImageInfo info, int? imageIndex)
         {
             try
             {
-                var fileInfo = new FileInfo(path);
+                var fileInfo = new FileInfo(info.Path);
 
-                var size = _imageProcessor.GetImageSize(path);
+                var size = _imageProcessor.GetImageSize(info.Path);
 
                 return new ImageInfo
                 {
-                    Path = path,
+                    Path = info.Path,
                     ImageIndex = imageIndex,
-                    ImageType = type,
-                    ImageTag = _imageProcessor.GetImageCacheTag(item, type, path),
+                    ImageType = info.Type,
+                    ImageTag = _imageProcessor.GetImageCacheTag(item, info),
                     Size = fileInfo.Length,
                     Width = Convert.ToInt32(size.Width),
                     Height = Convert.ToInt32(size.Height)
@@ -485,7 +481,7 @@ namespace MediaBrowser.Api.Images
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error getting image information for {0}", ex, path);
+                Logger.ErrorException("Error getting image information for {0}", ex, info.Path);
 
                 return null;
             }
@@ -584,7 +580,7 @@ namespace MediaBrowser.Api.Images
         {
             var item = _userManager.Users.First(i => i.Id == request.Id);
 
-            var task = item.DeleteImage(request.Type, request.Index);
+            var task = item.DeleteImage(request.Type, request.Index ?? 0);
 
             Task.WaitAll(task);
         }
@@ -597,7 +593,7 @@ namespace MediaBrowser.Api.Images
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var task = item.DeleteImage(request.Type, request.Index);
+            var task = item.DeleteImage(request.Type, request.Index ?? 0);
 
             Task.WaitAll(task);
         }
@@ -613,7 +609,7 @@ namespace MediaBrowser.Api.Images
 
             var item = GetItemByName(request.Name, type, _libraryManager);
 
-            var task = item.DeleteImage(request.Type, request.Index);
+            var task = item.DeleteImage(request.Type, request.Index ?? 0);
 
             Task.WaitAll(task);
         }
@@ -671,15 +667,15 @@ namespace MediaBrowser.Api.Images
         /// </exception>
         public object GetImage(ImageRequest request, IHasImages item)
         {
-            var imagePath = GetImagePath(request, item);
+            var imageInfo = GetImageInfo(request, item);
 
-            if (string.IsNullOrEmpty(imagePath))
+            if (imageInfo == null)
             {
                 throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", item.Name, request.Type));
             }
 
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            var originalFileImageDateModified = item.GetImageDateModified(imagePath);
+            var originalFileImageDateModified = imageInfo.DateModified;
 
             var supportedImageEnhancers = request.EnableImageEnhancers ? _imageProcessor.ImageEnhancers.Where(i =>
             {
@@ -696,16 +692,9 @@ namespace MediaBrowser.Api.Images
 
             }).ToList() : new List<IImageEnhancer>();
 
-            // If the file does not exist GetLastWriteTimeUtc will return jan 1, 1601 as opposed to throwing an exception
-            // http://msdn.microsoft.com/en-us/library/system.io.file.getlastwritetimeutc.aspx
-            if (originalFileImageDateModified.Year == 1601 && !File.Exists(imagePath))
-            {
-                throw new ResourceNotFoundException(string.Format("File not found: {0}", imagePath));
-            }
+            var contentType = GetMimeType(request.Format, imageInfo.Path);
 
-            var contentType = GetMimeType(request.Format, imagePath);
-
-            var cacheGuid = _imageProcessor.GetImageCacheTag(item, request.Type, imagePath, originalFileImageDateModified, supportedImageEnhancers);
+            var cacheGuid = _imageProcessor.GetImageCacheTag(item, request.Type, imageInfo.Path, originalFileImageDateModified, supportedImageEnhancers);
 
             TimeSpan? cacheDuration = null;
 
@@ -724,7 +713,7 @@ namespace MediaBrowser.Api.Images
                 Request = currentRequest,
                 OriginalImageDateModified = originalFileImageDateModified,
                 Enhancers = supportedImageEnhancers,
-                OriginalImagePath = imagePath,
+                OriginalImagePath = imageInfo.Path,
                 ImageProcessor = _imageProcessor
 
             }, contentType);
@@ -758,11 +747,11 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        private string GetImagePath(ImageRequest request, IHasImages item)
+        private ItemImageInfo GetImageInfo(ImageRequest request, IHasImages item)
         {
             var index = request.Index ?? 0;
 
-            return item.GetImagePath(request.Type, index);
+            return item.GetImageInfo(request.Type, index);
         }
 
         /// <summary>

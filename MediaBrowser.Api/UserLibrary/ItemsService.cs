@@ -1181,21 +1181,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns><c>true</c> if the specified item has image; otherwise, <c>false</c>.</returns>
         internal static bool HasImage(BaseItem item, ImageType imageType)
         {
-            if (imageType == ImageType.Backdrop)
-            {
-                return item.BackdropImagePaths.Count > 0;
-            }
-
-            if (imageType == ImageType.Screenshot)
-            {
-                var hasScreenshots = item as IHasScreenshots;
-                if (hasScreenshots == null)
-                {
-                    return false;
-                }
-                return hasScreenshots.ScreenshotImagePaths.Count > 0;
-            }
-
             return item.HasImage(imageType);
         }
 

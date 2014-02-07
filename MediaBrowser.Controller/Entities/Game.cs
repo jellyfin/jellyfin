@@ -30,16 +30,9 @@ namespace MediaBrowser.Controller.Entities
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
             Tags = new List<string>();
-            ScreenshotImagePaths = new List<string>();
         }
 
         public List<Guid> LocalTrailerIds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the screenshot image paths.
-        /// </summary>
-        /// <value>The screenshot image paths.</value>
-        public List<string> ScreenshotImagePaths { get; set; }
 
         /// <summary>
         /// Gets or sets the tags.

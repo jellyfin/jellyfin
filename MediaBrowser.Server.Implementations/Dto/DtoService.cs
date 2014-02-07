@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -34,8 +35,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         private readonly IImageProcessor _imageProcessor;
         private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config)
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -44,6 +46,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             _itemRepo = itemRepo;
             _imageProcessor = imageProcessor;
             _config = config;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -207,11 +210,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Configuration = user.Configuration
             };
 
-            var image = user.PrimaryImagePath;
+            var image = user.GetImageInfo(ImageType.Primary, 0);
 
-            if (!string.IsNullOrEmpty(image))
+            if (image != null)
             {
-                dto.PrimaryImageTag = GetImageCacheTag(user, ImageType.Primary, image);
+                dto.PrimaryImageTag = GetImageCacheTag(user, image);
 
                 try
                 {
@@ -288,12 +291,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 RunTimeTicks = item.RunTimeTicks
             };
 
-            var imagePath = item.PrimaryImagePath;
-
-            if (!string.IsNullOrEmpty(imagePath))
-            {
-                info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary, imagePath);
-            }
+            info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary);
 
             return info;
         }
@@ -380,11 +378,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <returns>List{System.String}.</returns>
         private List<Guid> GetBackdropImageTags(BaseItem item)
         {
-            return item.BackdropImagePaths
-                .Select(p => GetImageCacheTag(item, ImageType.Backdrop, p))
-                .Where(i => i.HasValue)
-                .Select(i => i.Value)
-                .ToList();
+            return GetCacheTags(item, ImageType.Backdrop).ToList();
         }
 
         /// <summary>
@@ -399,23 +393,40 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 return new List<Guid>();
             }
+            return GetCacheTags(item, ImageType.Screenshot).ToList();
+        }
 
-            return hasScreenshots.ScreenshotImagePaths
-                .Select(p => GetImageCacheTag(item, ImageType.Screenshot, p))
+        private IEnumerable<Guid> GetCacheTags(BaseItem item, ImageType type)
+        {
+            return item.GetImages(type)
+                .Select(p => GetImageCacheTag(item, p))
                 .Where(i => i.HasValue)
                 .Select(i => i.Value)
                 .ToList();
         }
 
-        private Guid? GetImageCacheTag(BaseItem item, ImageType type, string path)
+        private Guid? GetImageCacheTag(BaseItem item, ImageType type)
         {
             try
             {
-                return _imageProcessor.GetImageCacheTag(item, type, path);
+                return _imageProcessor.GetImageCacheTag(item, type);
             }
             catch (IOException ex)
             {
-                _logger.ErrorException("Error getting {0} image info for {1}", ex, type, path);
+                _logger.ErrorException("Error getting {0} image info", ex, type);
+                return null;
+            }
+        }
+
+        private Guid? GetImageCacheTag(BaseItem item, ItemImageInfo image)
+        {
+            try
+            {
+                return _imageProcessor.GetImageCacheTag(item, image);
+            }
+            catch (IOException ex)
+            {
+                _logger.ErrorException("Error getting {0} image info for {1}", ex, image.Type, image.Path);
                 return null;
             }
         }
@@ -468,12 +479,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (dictionary.TryGetValue(person.Name, out entity))
                 {
-                    var primaryImagePath = entity.PrimaryImagePath;
-
-                    if (!string.IsNullOrEmpty(primaryImagePath))
-                    {
-                        baseItemPerson.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary, primaryImagePath);
-                    }
+                    baseItemPerson.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary);
                 }
 
                 dto.People[i] = baseItemPerson;
@@ -520,12 +526,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (dictionary.TryGetValue(studio, out entity))
                 {
-                    var primaryImagePath = entity.PrimaryImagePath;
-
-                    if (!string.IsNullOrEmpty(primaryImagePath))
-                    {
-                        studioDto.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary, primaryImagePath);
-                    }
+                    studioDto.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary);
                 }
 
                 dto.Studios[i] = studioDto;
@@ -544,7 +545,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             while (parent != null)
             {
-                if (parent.BackdropImagePaths != null && parent.BackdropImagePaths.Count > 0)
+                if (parent.GetImages(ImageType.Backdrop).Any())
                 {
                     return parent;
                 }
@@ -595,7 +596,12 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (!string.IsNullOrEmpty(chapterInfo.ImagePath))
             {
-                dto.ImageTag = GetImageCacheTag(item, ImageType.Chapter, chapterInfo.ImagePath);
+                dto.ImageTag = GetImageCacheTag(item, new ItemImageInfo
+                {
+                    Path = chapterInfo.ImagePath,
+                    Type = ImageType.Chapter,
+                    DateModified = _fileSystem.GetLastWriteTimeUtc(chapterInfo.ImagePath)
+                });
             }
 
             return dto;
@@ -698,7 +704,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.Keywords))
             {
-                var hasTags = item as  IHasKeywords;
+                var hasTags = item as IHasKeywords;
                 if (hasTags != null)
                 {
                     dto.Keywords = hasTags.Keywords;
@@ -750,15 +756,15 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.ImageTags = new Dictionary<ImageType, Guid>();
 
-            foreach (var image in item.Images)
+            // Prevent implicitly captured closure
+            var currentItem = item;
+            foreach (var image in currentItem.ImageInfos.Where(i => !currentItem.AllowsMultipleImages(i.Type)))
             {
-                var type = image.Key;
-
-                var tag = GetImageCacheTag(item, type, image.Value);
+                var tag = GetImageCacheTag(item, image);
 
                 if (tag.HasValue)
                 {
-                    dto.ImageTags[type] = tag.Value;
+                    dto.ImageTags[image.Type] = tag.Value;
                 }
             }
 
@@ -804,7 +810,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.CollectionType = collectionFolder.CollectionType;
             }
-            
+
             if (fields.Contains(ItemFields.RemoteTrailers))
             {
                 dto.RemoteTrailers = hasTrailers != null ?
@@ -862,7 +868,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.ParentLogoItemId = GetDtoId(parentWithLogo);
 
-                    dto.ParentLogoImageTag = GetImageCacheTag(parentWithLogo, ImageType.Logo, parentWithLogo.GetImagePath(ImageType.Logo));
+                    dto.ParentLogoImageTag = GetImageCacheTag(parentWithLogo, ImageType.Logo);
                 }
             }
 
@@ -875,7 +881,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.ParentArtItemId = GetDtoId(parentWithImage);
 
-                    dto.ParentArtImageTag = GetImageCacheTag(parentWithImage, ImageType.Art, parentWithImage.GetImagePath(ImageType.Art));
+                    dto.ParentArtImageTag = GetImageCacheTag(parentWithImage, ImageType.Art);
                 }
             }
 
@@ -888,7 +894,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.ParentThumbItemId = GetDtoId(parentWithImage);
 
-                    dto.ParentThumbImageTag = GetImageCacheTag(parentWithImage, ImageType.Thumb, parentWithImage.GetImagePath(ImageType.Thumb));
+                    dto.ParentThumbImageTag = GetImageCacheTag(parentWithImage, ImageType.Thumb);
                 }
             }
 
@@ -959,12 +965,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.AlbumId = GetDtoId(albumParent);
 
-                    var imagePath = albumParent.PrimaryImagePath;
-
-                    if (!string.IsNullOrEmpty(imagePath))
-                    {
-                        dto.AlbumPrimaryImageTag = GetImageCacheTag(albumParent, ImageType.Primary, imagePath);
-                    }
+                    dto.AlbumPrimaryImageTag = GetImageCacheTag(albumParent, ImageType.Primary);
                 }
             }
 
@@ -1085,17 +1086,9 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AirTime = series.AirTime;
                 dto.SeriesStudio = series.Studios.FirstOrDefault();
 
-                if (series.HasImage(ImageType.Thumb))
-                {
-                    dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb, series.GetImagePath(ImageType.Thumb));
-                }
+                dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb);
 
-                var imagePath = series.PrimaryImagePath;
-
-                if (!string.IsNullOrEmpty(imagePath))
-                {
-                    dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary, imagePath);
-                }
+                dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
             }
 
             // Add SeasonInfo
@@ -1110,12 +1103,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AirTime = series.AirTime;
                 dto.SeriesStudio = series.Studios.FirstOrDefault();
 
-                var imagePath = series.PrimaryImagePath;
-
-                if (!string.IsNullOrEmpty(imagePath))
-                {
-                    dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary, imagePath);
-                }
+                dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
             }
 
             var game = item as Game;
@@ -1303,15 +1291,17 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <returns>Task.</returns>
         public void AttachPrimaryImageAspectRatio(IItemDto dto, IHasImages item)
         {
-            var path = item.PrimaryImagePath;
+            var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
 
-            if (string.IsNullOrEmpty(path))
+            if (imageInfo == null)
             {
                 return;
             }
 
+            var path = imageInfo.Path;
+
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            var dateModified = item.GetImageDateModified(path);
+            var dateModified = imageInfo.DateModified;
 
             ImageSize size;
 

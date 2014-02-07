@@ -389,35 +389,33 @@ namespace MediaBrowser.Providers.Manager
 
         public IEnumerable<MetadataPluginSummary> GetAllMetadataPlugins()
         {
-            var list = new List<MetadataPluginSummary>();
-
-            list.Add(GetPluginSummary<Game>());
-            list.Add(GetPluginSummary<GameSystem>());
-            list.Add(GetPluginSummary<Movie>());
-            list.Add(GetPluginSummary<Trailer>());
-            list.Add(GetPluginSummary<BoxSet>());
-            list.Add(GetPluginSummary<Book>());
-            list.Add(GetPluginSummary<Series>());
-            list.Add(GetPluginSummary<Season>());
-            list.Add(GetPluginSummary<Episode>());
-            list.Add(GetPluginSummary<Person>());
-            list.Add(GetPluginSummary<MusicAlbum>());
-            list.Add(GetPluginSummary<MusicArtist>());
-            list.Add(GetPluginSummary<Audio>());
-
-            list.Add(GetPluginSummary<Genre>());
-            list.Add(GetPluginSummary<Studio>());
-            list.Add(GetPluginSummary<GameGenre>());
-            list.Add(GetPluginSummary<MusicGenre>());
-
-            list.Add(GetPluginSummary<AdultVideo>());
-            list.Add(GetPluginSummary<MusicVideo>());
-            list.Add(GetPluginSummary<Video>());
-
-            list.Add(GetPluginSummary<LiveTvChannel>());
-            list.Add(GetPluginSummary<LiveTvProgram>());
-            list.Add(GetPluginSummary<LiveTvVideoRecording>());
-            list.Add(GetPluginSummary<LiveTvAudioRecording>());
+            var list = new List<MetadataPluginSummary>
+            {
+                GetPluginSummary<Game>(),
+                GetPluginSummary<GameSystem>(),
+                GetPluginSummary<Movie>(),
+                GetPluginSummary<Trailer>(),
+                GetPluginSummary<BoxSet>(),
+                GetPluginSummary<Book>(),
+                GetPluginSummary<Series>(),
+                GetPluginSummary<Season>(),
+                GetPluginSummary<Episode>(),
+                GetPluginSummary<Person>(),
+                GetPluginSummary<MusicAlbum>(),
+                GetPluginSummary<MusicArtist>(),
+                GetPluginSummary<Audio>(),
+                GetPluginSummary<Genre>(),
+                GetPluginSummary<Studio>(),
+                GetPluginSummary<GameGenre>(),
+                GetPluginSummary<MusicGenre>(),
+                GetPluginSummary<AdultVideo>(),
+                GetPluginSummary<MusicVideo>(),
+                GetPluginSummary<Video>(),
+                GetPluginSummary<LiveTvChannel>(),
+                GetPluginSummary<LiveTvProgram>(),
+                GetPluginSummary<LiveTvVideoRecording>(),
+                GetPluginSummary<LiveTvAudioRecording>()
+            };
 
             return list;
         }

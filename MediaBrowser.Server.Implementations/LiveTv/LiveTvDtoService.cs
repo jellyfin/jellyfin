@@ -401,16 +401,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private Guid? GetImageTag(IHasImages info)
         {
-            var path = info.PrimaryImagePath;
-
-            if (string.IsNullOrEmpty(path))
-            {
-                return null;
-            }
-
             try
             {
-                return _imageProcessor.GetImageCacheTag(info, ImageType.Primary, path);
+                return _imageProcessor.GetImageCacheTag(info, ImageType.Primary);
             }
             catch (Exception ex)
             {

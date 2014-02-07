@@ -60,7 +60,7 @@ namespace MediaBrowser.Controller.Providers
 
         public void SetFormatFromMimeType(string mimeType)
         {
-            
+
         }
     }
 }

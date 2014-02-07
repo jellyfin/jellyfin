@@ -107,14 +107,9 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (type == ImageType.Backdrop && imageIndex == null)
+            if (!imageIndex.HasValue && item.AllowsMultipleImages(type))
             {
-                imageIndex = item.BackdropImagePaths.Count;
-            }
-            else if (type == ImageType.Screenshot && imageIndex == null)
-            {
-                var hasScreenshots = (IHasScreenshots)item;
-                imageIndex = hasScreenshots.ScreenshotImagePaths.Count;
+                imageIndex = item.GetImages(type).Count();
             }
 
             var index = imageIndex ?? 0;
@@ -275,43 +270,7 @@ namespace MediaBrowser.Providers.Manager
         /// imageIndex</exception>
         private void SetImagePath(BaseItem item, ImageType type, int? imageIndex, string path)
         {
-            switch (type)
-            {
-                case ImageType.Screenshot:
-
-                    if (!imageIndex.HasValue)
-                    {
-                        throw new ArgumentNullException("imageIndex");
-                    }
-
-                    var hasScreenshots = (IHasScreenshots)item;
-                    if (hasScreenshots.ScreenshotImagePaths.Count > imageIndex.Value)
-                    {
-                        hasScreenshots.ScreenshotImagePaths[imageIndex.Value] = path;
-                    }
-                    else if (!hasScreenshots.ScreenshotImagePaths.Contains(path, StringComparer.OrdinalIgnoreCase))
-                    {
-                        hasScreenshots.ScreenshotImagePaths.Add(path);
-                    }
-                    break;
-                case ImageType.Backdrop:
-                    if (!imageIndex.HasValue)
-                    {
-                        throw new ArgumentNullException("imageIndex");
-                    }
-                    if (item.BackdropImagePaths.Count > imageIndex.Value)
-                    {
-                        item.BackdropImagePaths[imageIndex.Value] = path;
-                    }
-                    else if (!item.BackdropImagePaths.Contains(path, StringComparer.OrdinalIgnoreCase))
-                    {
-                        item.BackdropImagePaths.Add(path);
-                    }
-                    break;
-                default:
-                    item.SetImagePath(type, path);
-                    break;
-            }
+            item.SetImagePath(type, imageIndex ?? 0, new FileInfo(path));
         }
 
         /// <summary>
@@ -347,19 +306,10 @@ namespace MediaBrowser.Providers.Manager
                     filename = item is Episode ? Path.GetFileNameWithoutExtension(item.Path) : "folder";
                     break;
                 case ImageType.Backdrop:
-                    if (!imageIndex.HasValue)
-                    {
-                        throw new ArgumentNullException("imageIndex");
-                    }
-                    filename = GetBackdropSaveFilename(item.BackdropImagePaths, "backdrop", "backdrop", imageIndex.Value);
+                    filename = GetBackdropSaveFilename(item.GetImages(type), "backdrop", "backdrop", imageIndex);
                     break;
                 case ImageType.Screenshot:
-                    if (!imageIndex.HasValue)
-                    {
-                        throw new ArgumentNullException("imageIndex");
-                    }
-                    var hasScreenshots = (IHasScreenshots)item;
-                    filename = GetBackdropSaveFilename(hasScreenshots.ScreenshotImagePaths, "screenshot", "screenshot", imageIndex.Value);
+                    filename = GetBackdropSaveFilename(item.GetImages(type), "screenshot", "screenshot", imageIndex);
                     break;
                 default:
                     filename = type.ToString().ToLower();
@@ -404,16 +354,16 @@ namespace MediaBrowser.Providers.Manager
             return path;
         }
 
-        private string GetBackdropSaveFilename(IEnumerable<string> images, string zeroIndexFilename, string numberedIndexPrefix, int index)
+        private string GetBackdropSaveFilename(IEnumerable<ItemImageInfo> images, string zeroIndexFilename, string numberedIndexPrefix, int? index)
         {
-            if (index == 0)
+            if (index.HasValue && index.Value == 0)
             {
                 return zeroIndexFilename;
             }
 
-            var filenames = images.Select(Path.GetFileNameWithoutExtension).ToList();
+            var filenames = images.Select(i => Path.GetFileNameWithoutExtension(i.Path)).ToList();
 
-            var current = index;
+            var current = 1;
             while (filenames.Contains(numberedIndexPrefix + current.ToString(UsCulture), StringComparer.OrdinalIgnoreCase))
             {
                 current++;
@@ -484,7 +434,7 @@ namespace MediaBrowser.Providers.Manager
                     return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart" + outputIndex.ToString(UsCulture), extension) };
                 }
 
-                var extraFanartFilename = GetBackdropSaveFilename(item.BackdropImagePaths, "fanart", "fanart", outputIndex);
+                var extraFanartFilename = GetBackdropSaveFilename(item.GetImages(ImageType.Backdrop), "fanart", "fanart", outputIndex);
 
                 return new[]
                     {
