@@ -281,13 +281,7 @@ namespace MediaBrowser.Api.Images
         {
             await _providerManager.SaveImage(item, request.ImageUrl, null, request.Type, null, CancellationToken.None).ConfigureAwait(false);
 
-            await item.RefreshMetadata(new MetadataRefreshOptions
-            {
-                ForceSave = true,
-                ImageRefreshMode = ImageRefreshMode.ValidationOnly,
-                MetadataRefreshMode = MetadataRefreshMode.None
-
-            }, CancellationToken.None).ConfigureAwait(false);
+            await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>

@@ -117,6 +117,7 @@
     <Compile Include="Music\AlbumMetadataService.cs" />
     <Compile Include="Music\ArtistMetadataService.cs" />
     <Compile Include="Music\AudioMetadataService.cs" />
+    <Compile Include="Music\Extensions.cs" />
     <Compile Include="Music\LastfmArtistProvider.cs" />
     <Compile Include="Music\MovieDbMusicVideoProvider.cs" />
     <Compile Include="Music\MusicBrainzArtistProvider.cs" />

@@ -124,7 +124,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public bool IsOwnedItem
+        public virtual bool IsOwnedItem
         {
             get
             {
@@ -1215,7 +1215,12 @@ namespace MediaBrowser.Controller.Entities
                 currentFile.Delete();
             }
 
-            return LibraryManager.UpdateItem(this, ItemUpdateType.ImageUpdate, CancellationToken.None);
+            return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+        }
+
+        public virtual Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
+        {
+            return LibraryManager.UpdateItem(this, ItemUpdateType.ImageUpdate, cancellationToken);
         }
 
         /// <summary>
@@ -1370,7 +1375,7 @@ namespace MediaBrowser.Controller.Entities
             info1.DateModified = FileSystem.GetLastWriteTimeUtc(info1.Path);
             info2.DateModified = FileSystem.GetLastWriteTimeUtc(info2.Path);
 
-            return LibraryManager.UpdateItem(this, ItemUpdateType.ImageUpdate, CancellationToken.None);
+            return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
         public virtual bool IsPlayed(User user)

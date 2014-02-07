@@ -61,7 +61,9 @@ namespace MediaBrowser.Providers.Music
 
             RemoteImageInfo info = null;
 
-            var musicBrainzId = item.GetProviderId(MetadataProviders.Musicbrainz);
+            var musicBrainzId = item is MusicAlbum ?
+                item.GetProviderId(MetadataProviders.MusicBrainzAlbum) :
+                item.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
             if (!string.IsNullOrEmpty(musicBrainzId))
             {

@@ -178,6 +178,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchStudios(audio, tags, "ensemble");
                 FetchStudios(audio, tags, "publisher");
             }
+
+            audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"));
+            audio.SetProviderId(MetadataProviders.MusicBrainzArtist, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"));
+            audio.SetProviderId(MetadataProviders.MusicBrainzAlbum, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"));
+            audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
         }
 
         private readonly char[] _nameDelimiters = new[] { '/', '|', ';', '\\' };

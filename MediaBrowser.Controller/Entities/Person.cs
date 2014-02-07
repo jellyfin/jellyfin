@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// This is the full Person object that can be retrieved with all of it's data.
     /// </summary>
-    public class Person : BaseItem, IItemByName, IHasLookupInfo<Providers.PersonLookupInfo>
+    public class Person : BaseItem, IItemByName, IHasLookupInfo<PersonLookupInfo>
     {
         public Person()
         {
@@ -33,9 +33,34 @@ namespace MediaBrowser.Controller.Entities
             return "Person-" + Name;
         }
 
-        public Providers.PersonLookupInfo GetLookupInfo()
+        public PersonLookupInfo GetLookupInfo()
         {
-            return GetItemLookupInfo<Providers.PersonLookupInfo>();
+            return GetItemLookupInfo<PersonLookupInfo>();
+        }
+
+        /// <summary>
+        /// Returns the folder containing the item.
+        /// If the item is a folder, it returns the folder itself
+        /// </summary>
+        /// <value>The containing folder path.</value>
+        public override string ContainingFolderPath
+        {
+            get
+            {
+                return Path;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is owned item.
+        /// </summary>
+        /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
+        public override bool IsOwnedItem
+        {
+            get
+            {
+                return false;
+            }
         }
     }
 

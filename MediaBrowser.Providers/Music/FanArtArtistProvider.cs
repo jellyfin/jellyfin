@@ -82,7 +82,7 @@ namespace MediaBrowser.Providers.Music
 
             var list = new List<RemoteImageInfo>();
 
-            var artistMusicBrainzId = artist.GetProviderId(MetadataProviders.Musicbrainz);
+            var artistMusicBrainzId = artist.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
             if (!String.IsNullOrEmpty(artistMusicBrainzId))
             {
@@ -381,7 +381,7 @@ namespace MediaBrowser.Providers.Music
                 return false;
             }
 
-            var id = item.GetProviderId(MetadataProviders.Musicbrainz);
+            var id = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
             if (!String.IsNullOrEmpty(id))
             {

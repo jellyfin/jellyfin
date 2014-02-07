@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Music
         {
             var result = new MetadataResult<MusicArtist>();
            
-            var musicBrainzId = id.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(id, cancellationToken).ConfigureAwait(false);
+            var musicBrainzId = id.GetProviderId(MetadataProviders.MusicBrainzArtist) ?? await FindId(id, cancellationToken).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
             {
@@ -27,7 +27,7 @@ namespace MediaBrowser.Providers.Music
                 result.Item = new MusicArtist();
                 result.HasMetadata = true;
 
-                result.Item.SetProviderId(MetadataProviders.Musicbrainz, musicBrainzId);
+                result.Item.SetProviderId(MetadataProviders.MusicBrainzArtist, musicBrainzId);
             }
 
             return result;

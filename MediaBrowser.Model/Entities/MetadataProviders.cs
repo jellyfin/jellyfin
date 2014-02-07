@@ -24,10 +24,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         Tvcom,
         /// <summary>
-        /// MusicBrainz
-        /// </summary>
-        Musicbrainz,
-        /// <summary>
         /// The rotten tomatoes
         /// </summary>
         RottenTomatoes,
@@ -35,6 +31,9 @@ namespace MediaBrowser.Model.Entities
         /// Tmdb Collection Id
         /// </summary>
         TmdbCollection,
+        MusicBrainzAlbum,
+        MusicBrainzAlbumArtist,
+        MusicBrainzArtist,
         MusicBrainzReleaseGroup,
         Zap2It,
         NesBox,

@@ -22,6 +22,15 @@ namespace MediaBrowser.Controller.Entities.Audio
             Tags = new List<string>();
         }
 
+        [IgnoreDataMember]
+        public MusicArtist MusicArtist
+        {
+            get
+            {
+                return Parents.OfType<MusicArtist>().FirstOrDefault();
+            }
+        }
+
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>
@@ -99,7 +108,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return "MusicAlbum-MusicBrainzReleaseGroup-" + id;
             }
 
-            id = this.GetProviderId(MetadataProviders.Musicbrainz);
+            id = this.GetProviderId(MetadataProviders.MusicBrainzAlbum);
 
             if (!string.IsNullOrEmpty(id))
             {

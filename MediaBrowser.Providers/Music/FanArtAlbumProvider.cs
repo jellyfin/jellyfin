@@ -70,7 +70,7 @@ namespace MediaBrowser.Providers.Music
 
             var list = new List<RemoteImageInfo>();
 
-            var artistMusicBrainzId = album.Parent.GetProviderId(MetadataProviders.Musicbrainz);
+            var artistMusicBrainzId = album.MusicArtist.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
@@ -80,7 +80,7 @@ namespace MediaBrowser.Providers.Music
 
                 var musicBrainzReleaseGroupId = album.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
-                var musicBrainzId = album.GetProviderId(MetadataProviders.Musicbrainz);
+                var musicBrainzId = album.GetProviderId(MetadataProviders.MusicBrainzAlbum);
 
                 try
                 {
@@ -365,17 +365,21 @@ namespace MediaBrowser.Providers.Music
             }
 
             var album = (MusicAlbum)item;
+            var artist = album.MusicArtist;
 
-            var artistMusicBrainzId = album.Parent.GetProviderId(MetadataProviders.Musicbrainz);
-
-            if (!String.IsNullOrEmpty(artistMusicBrainzId))
+            if (artist != null)
             {
-                // Process images
-                var artistXmlPath = FanartArtistProvider.GetArtistXmlPath(_config.CommonApplicationPaths, artistMusicBrainzId);
+                var artistMusicBrainzId = artist.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
-                var fileInfo = new FileInfo(artistXmlPath);
+                if (!String.IsNullOrEmpty(artistMusicBrainzId))
+                {
+                    // Process images
+                    var artistXmlPath = FanartArtistProvider.GetArtistXmlPath(_config.CommonApplicationPaths, artistMusicBrainzId);
 
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                    var fileInfo = new FileInfo(artistXmlPath);
+
+                    return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                }
             }
 
             return false;
