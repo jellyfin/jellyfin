@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
-    public class VideoImageProvider : IDynamicImageProvider, IHasChangeMonitor
+    public class VideoImageProvider : IDynamicImageProvider, IHasChangeMonitor, IHasOrder
     {
         private readonly IIsoManager _isoManager;
         private readonly IMediaEncoder _mediaEncoder;
@@ -129,6 +129,15 @@ namespace MediaBrowser.Providers.MediaInfo
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
             return item.DateModified > date;
+        }
+
+        public int Order
+        {
+            get
+            {
+                // Make sure this comes after internet image providers
+                return 100;
+            }
         }
     }
 }

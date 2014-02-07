@@ -1082,6 +1082,11 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
+            if (!_config.Configuration.EnableTvDbUpdates)
+            {
+                return false;
+            }
+
             var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
 
             if (!string.IsNullOrEmpty(seriesId))
@@ -1094,7 +1099,7 @@ namespace MediaBrowser.Providers.TV
 
                 var seriesFile = new FileInfo(filePath);
 
-                if (seriesFile.Exists && _fileSystem.GetLastWriteTimeUtc(seriesFile) > date)
+                if (!seriesFile.Exists || _fileSystem.GetLastWriteTimeUtc(seriesFile) > date)
                 {
                     return true;
                 }

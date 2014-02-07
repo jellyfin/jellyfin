@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -18,7 +19,7 @@ namespace MediaBrowser.Providers.Movies
     /// <summary>
     /// Class MovieDbProvider
     /// </summary>
-    public class MovieDbProvider : IRemoteMetadataProvider<Movie>, IDisposable
+    public class MovieDbProvider : IRemoteMetadataProvider<Movie>, IDisposable, IHasChangeMonitor
     {
         internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(1, 1);
 
@@ -312,6 +313,28 @@ namespace MediaBrowser.Providers.Movies
 
                 MovieDbResourcePool.Release();
             }
+        }
+
+        public bool HasChanged(IHasMetadata item, DateTime date)
+        {
+            if (!_configurationManager.Configuration.EnableTmdbUpdates)
+            {
+                return false;
+            }
+
+            var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
+
+            if (!String.IsNullOrEmpty(tmdbId))
+            {
+                // Process images
+                var dataFilePath = GetDataFilePath(tmdbId, item.GetPreferredMetadataLanguage());
+
+                var fileInfo = new FileInfo(dataFilePath);
+                
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+            }
+            
+            return false;
         }
 
         public void Dispose()

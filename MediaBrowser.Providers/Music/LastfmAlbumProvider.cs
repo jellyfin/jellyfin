@@ -189,7 +189,11 @@ namespace MediaBrowser.Providers.Music
 
         public int Order
         {
-            get { return 1; }
+            get
+            {
+                // After embedded provider and fanart
+                return 2;
+            }
         }
     }
 
