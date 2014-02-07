@@ -29,26 +29,25 @@ namespace MediaBrowser.Providers.Music
 
         public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo id, CancellationToken cancellationToken)
         {
-            var albumId = id;
-            var releaseId = albumId.GetProviderId(MetadataProviders.Musicbrainz);
-            var releaseGroupId = albumId.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+            var releaseId = id.GetReleaseId();
+            var releaseGroupId = id.GetReleaseGroupId();
 
-            var result = new MetadataResult<MusicAlbum>();
+            var result = new MetadataResult<MusicAlbum>
+            {
+                Item = new MusicAlbum()
+            };
 
             if (string.IsNullOrEmpty(releaseId))
             {
-                string artistMusicBrainzId;
-                albumId.ArtistProviderIds.TryGetValue(MetadataProviders.Musicbrainz.ToString(), out artistMusicBrainzId);
+                var artistMusicBrainzId = id.GetArtistId();
 
-                var releaseResult = await GetReleaseResult(artistMusicBrainzId, albumId.AlbumArtist, albumId.Name, cancellationToken).ConfigureAwait(false);
-
-                result.Item = new MusicAlbum();
+                var releaseResult = await GetReleaseResult(artistMusicBrainzId, id.GetAlbumArtist(), id.Name, cancellationToken).ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(releaseResult.ReleaseId))
                 {
                     releaseId = releaseResult.ReleaseId;
                     result.HasMetadata = true;
-                    result.Item.SetProviderId(MetadataProviders.Musicbrainz, releaseId);
+                    result.Item.SetProviderId(MetadataProviders.MusicBrainzAlbum, releaseId);
                 }
 
                 if (!string.IsNullOrEmpty(releaseResult.ReleaseGroupId))
@@ -65,6 +64,19 @@ namespace MediaBrowser.Providers.Music
                 releaseGroupId = await GetReleaseGroupId(releaseId, cancellationToken).ConfigureAwait(false);
                 result.HasMetadata = true;
                 result.Item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, releaseGroupId);
+            }
+
+            if (result.HasMetadata)
+            {
+                if (!string.IsNullOrEmpty(releaseId))
+                {
+                    result.Item.SetProviderId(MetadataProviders.MusicBrainzAlbum, releaseId);
+                }
+
+                if (!string.IsNullOrEmpty(releaseGroupId))
+                {
+                    result.Item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, releaseGroupId);
+                }
             }
 
             return result;

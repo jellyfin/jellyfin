@@ -678,7 +678,25 @@
             $('#fldMusicBrainz', page).hide();
         }
 
-        if (item.Type == "MusicAlbum") {
+        if (item.Type == "MusicAlbum" || item.Type == "Audio") {
+            $('#fldMusicBrainzAlbumId', page).show();
+        } else {
+            $('#fldMusicBrainzAlbumId', page).hide();
+        }
+
+        if (item.Type == "Audio") {
+            $('#fldMusicBrainzAlbumArtistId', page).show();
+        } else {
+            $('#fldMusicBrainzAlbumArtistId', page).hide();
+        }
+
+        if (item.Type == "MusicArtist" || item.Type == "Audio") {
+            $('#fldMusicBrainzArtistId', page).show();
+        } else {
+            $('#fldMusicBrainzArtistId', page).hide();
+        }
+
+        if (item.Type == "MusicAlbum" || item.Type == "Audio") {
             $('#fldMusicBrainzReleaseGroupId', page).show();
         } else {
             $('#fldMusicBrainzReleaseGroupId', page).hide();
@@ -963,7 +981,9 @@
         $('#txtTmdbCollection', page).val(providerIds.TmdbCollection || "");
         $('#txtTvdb', page).val(providerIds.Tvdb || "");
         $('#txtTvCom', page).val(providerIds.Tvcom || "");
-        $('#txtMusicBrainz', page).val(providerIds.Musicbrainz || "");
+        $('#txtMusicBrainzArtistId', page).val(providerIds.MusicBrainzArtist || "");
+        $('#txtMusicBrainzAlbumId', page).val(providerIds.MusicBrainzAlbum || "");
+        $('#txtMusicBrainzAlbumArtistId', page).val(providerIds.MusicBrainzAlbumArtist || "");
         $('#txtMusicBrainzReleaseGroupId', page).val(providerIds.MusicBrainzReleaseGroup || "");
         $('#txtRottenTomatoes', page).val(providerIds.RottenTomatoes || "");
         $('#txtZap2It', page).val(providerIds.Zap2It || "");
@@ -1210,7 +1230,9 @@
                     TmdbCollection: $('#txtTmdbCollection', form).val(),
                     Tvdb: $('#txtTvdb', form).val(),
                     Tvcom: $('#txtTvCom', form).val(),
-                    Musicbrainz: $('#txtMusicBrainz', form).val(),
+                    MusicBrainzAlbum: $('#txtMusicBrainzAlbumId', form).val(),
+                    MusicBrainzAlbumArtist: $('#txtMusicBrainzAlbumArtistId', form).val(),
+                    MusicBrainzArtist: $('#txtMusicBrainzArtistId', form).val(),
                     MusicBrainzReleaseGroup: $('#txtMusicBrainzReleaseGroupId', form).val(),
                     RottenTomatoes: $('#txtRottenTomatoes', form).val(),
                     Zap2It: $('#txtZap2It', form).val(),
@@ -1366,20 +1388,44 @@
 
         });
 
-        $('#txtMusicBrainz', this).on('change', function () {
+        $('#txtMusicBrainzAlbumId', this).on('change', function () {
 
             var val = this.value;
 
             if (val) {
 
-                if (currentItem.Type == "MusicArtist") {
-                    $('#btnOpenMusicbrainz', page).attr('href', 'http://musicbrainz.org/artist/' + val);
-                } else {
-                    $('#btnOpenMusicbrainz', page).attr('href', 'http://musicbrainz.org/release/' + val);
-                }
+                $('#btnOpenMusicBrainzAlbum', page).attr('href', 'http://musicbrainz.org/release/' + val);
 
             } else {
-                $('#btnOpenMusicbrainz', page).attr('href', '#');
+                $('#btnOpenMusicBrainzAlbum', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtMusicBrainzAlbumArtistId', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                $('#btnOpenMusicBrainzAlbumArtist', page).attr('href', 'http://musicbrainz.org/artist/' + val);
+
+            } else {
+                $('#btnOpenMusicBrainzAlbumArtist', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtMusicBrainzArtistId', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                $('#btnOpenMusicBrainzArtist', page).attr('href', 'http://musicbrainz.org/artist/' + val);
+
+            } else {
+                $('#btnOpenMusicBrainzArtist', page).attr('href', '#');
             }
 
         });

@@ -1363,13 +1363,19 @@
                 else if (item.Type == "Person")
                     links.push('<a class="textlink" href="http://www.tv.com/people/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
             }
-            if (providerIds.Musicbrainz) {
+            if (providerIds.MusicBrainzAlbum) {
 
-                if (item.Type == "MusicArtist") {
-                    links.push('<a class="textlink" href="http://musicbrainz.org/artist/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
-                } else {
-                    links.push('<a class="textlink" href="http://musicbrainz.org/release/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz Release</a>');
-                }
+                links.push('<a class="textlink" href="http://musicbrainz.org/release/' + providerIds.MusicBrainzAlbum + '" target="_blank">MusicBrainz Album</a>');
+
+            }
+            if (providerIds.MusicBrainzAlbumArtist) {
+
+                links.push('<a class="textlink" href="http://musicbrainz.org/artist/' + providerIds.MusicBrainzAlbumArtist + '" target="_blank">MusicBrainz Album Artist</a>');
+
+            }
+            if (providerIds.MusicBrainzArtist) {
+
+                links.push('<a class="textlink" href="http://musicbrainz.org/artist/' + providerIds.MusicBrainzArtist + '" target="_blank">MusicBrainz Artist</a>');
 
             }
             if (providerIds.MusicBrainzReleaseGroup) {

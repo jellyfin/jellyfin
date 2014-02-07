@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Music
         {
             var result = new MetadataResult<MusicArtist>();
 
-            var musicBrainzId = id.GetProviderId(MetadataProviders.Musicbrainz);
+            var musicBrainzId = id.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
             if (!String.IsNullOrWhiteSpace(musicBrainzId))
             {
@@ -50,8 +50,6 @@ namespace MediaBrowser.Providers.Music
 
                 result.Item = new MusicArtist();
                 result.HasMetadata = true;
-
-                result.Item.SetProviderId(MetadataProviders.Musicbrainz, musicBrainzId);
 
                 await FetchLastfmData(result.Item, musicBrainzId, cancellationToken).ConfigureAwait(false);
             }

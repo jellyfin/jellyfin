@@ -680,12 +680,30 @@ namespace MediaBrowser.Controller.Providers
                         }
                         break;
                     }
-                case "MusicbrainzId":
+                case "MusicBrainzAlbumId":
                     {
                         var mbz = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(mbz))
                         {
-                            item.SetProviderId(MetadataProviders.Musicbrainz, mbz);
+                            item.SetProviderId(MetadataProviders.MusicBrainzAlbum, mbz);
+                        }
+                        break;
+                    }
+                case "MusicBrainzAlbumArtistId":
+                    {
+                        var mbz = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(mbz))
+                        {
+                            item.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, mbz);
+                        }
+                        break;
+                    }
+                case "MusicBrainzArtistId":
+                    {
+                        var mbz = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(mbz))
+                        {
+                            item.SetProviderId(MetadataProviders.MusicBrainzArtist, mbz);
                         }
                         break;
                     }

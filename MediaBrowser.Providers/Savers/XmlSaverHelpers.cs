@@ -415,11 +415,25 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<Zap2ItId>" + SecurityElement.Escape(zap2It) + "</Zap2ItId>");
             }
 
-            var mbz = item.GetProviderId(MetadataProviders.Musicbrainz);
+            var mbz = item.GetProviderId(MetadataProviders.MusicBrainzAlbum);
 
             if (!string.IsNullOrEmpty(mbz))
             {
-                builder.Append("<MusicbrainzId>" + SecurityElement.Escape(mbz) + "</MusicbrainzId>");
+                builder.Append("<MusicBrainzAlbumId>" + SecurityElement.Escape(mbz) + "</MusicBrainzAlbumId>");
+            }
+
+            mbz = item.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist);
+
+            if (!string.IsNullOrEmpty(mbz))
+            {
+                builder.Append("<MusicBrainzAlbumArtistId>" + SecurityElement.Escape(mbz) + "</MusicBrainzAlbumArtistId>");
+            }
+
+            mbz = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
+
+            if (!string.IsNullOrEmpty(mbz))
+            {
+                builder.Append("<MusicBrainzArtistId>" + SecurityElement.Escape(mbz) + "</MusicBrainzArtistId>");
             }
 
             mbz = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);

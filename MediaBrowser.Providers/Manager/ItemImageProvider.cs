@@ -275,9 +275,9 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var currentImage = item.GetImageInfo(type, 0);
 
-                    if (currentImage == null || !string.Equals(currentImage.Path, image.Path, StringComparison.OrdinalIgnoreCase))
+                    if (currentImage == null || !string.Equals(currentImage.Path, image.FileInfo.FullName, StringComparison.OrdinalIgnoreCase))
                     {
-                        item.SetImagePath(type, new FileInfo(image.Path));
+                        item.SetImagePath(type, image.FileInfo);
                         changed = true;
                     }
                 }
@@ -287,7 +287,7 @@ namespace MediaBrowser.Providers.Manager
             if (backdrops.Count > 0)
             {
                 var foundImages = images.Where(i => i.Type == ImageType.Backdrop)
-                    .Select(i => new FileInfo(i.Path))
+                    .Select(i => i.FileInfo)
                     .ToList();
 
                 if (foundImages.Count > 0)
@@ -303,7 +303,7 @@ namespace MediaBrowser.Providers.Manager
             if (hasScreenshots != null)
             {
                 var foundImages = images.Where(i => i.Type == ImageType.Screenshot)
-                    .Select(i => new FileInfo(i.Path))
+                    .Select(i => i.FileInfo)
                     .ToList();
 
                 if (foundImages.Count > 0)

@@ -28,12 +28,12 @@ namespace MediaBrowser.Providers.TV
             var nameWithoutExtension = Path.GetFileNameWithoutExtension(item.Path);
             var thumbName = nameWithoutExtension + "-thumb";
 
-            return Directory.EnumerateFiles(parentPath, "*", SearchOption.AllDirectories)
+            return new DirectoryInfo(parentPath).EnumerateFiles("*", SearchOption.AllDirectories)
                 .Where(i =>
                 {
-                    if (BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i) ?? string.Empty))
+                    if (BaseItem.SupportedImageExtensions.Contains(i.Extension))
                     {
-                        var currentNameWithoutExtension = Path.GetFileNameWithoutExtension(i);
+                        var currentNameWithoutExtension = Path.GetFileNameWithoutExtension(i.Name);
 
                         if (string.Equals(nameWithoutExtension, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                         {
@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.TV
                 })
                 .Select(i => new LocalImageInfo
                 {
-                    Path = i,
+                    FileInfo = i,
                     Type = ImageType.Primary
                 })
                 .ToList();

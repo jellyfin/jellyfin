@@ -789,12 +789,7 @@ namespace MediaBrowser.Api.Images
 
                 await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
 
-                await entity.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ImageRefreshMode = ImageRefreshMode.ValidationOnly,
-                    ForceSave = true
-
-                }, CancellationToken.None).ConfigureAwait(false);
+                await entity.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
             }
         }
     }

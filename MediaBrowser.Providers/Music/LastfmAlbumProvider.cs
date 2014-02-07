@@ -48,9 +48,10 @@ namespace MediaBrowser.Providers.Music
         private async Task<LastfmGetAlbumResult> GetAlbumResult(AlbumInfo item, CancellationToken cancellationToken)
         {
             // Try album release Id
-            if (!string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Musicbrainz)))
+            var id = item.GetReleaseId();
+            if (!string.IsNullOrEmpty(id))
             {
-                var result = await GetAlbumResult(item.GetProviderId(MetadataProviders.Musicbrainz), cancellationToken).ConfigureAwait(false);
+                var result = await GetAlbumResult(id, cancellationToken).ConfigureAwait(false);
 
                 if (result != null && result.album != null)
                 {
@@ -59,9 +60,10 @@ namespace MediaBrowser.Providers.Music
             }
 
             // Try album release group Id
-            if (!string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup)))
+            id = item.GetReleaseGroupId();
+            if (!string.IsNullOrEmpty(id))
             {
-                var result = await GetAlbumResult(item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup), cancellationToken).ConfigureAwait(false);
+                var result = await GetAlbumResult(id, cancellationToken).ConfigureAwait(false);
 
                 if (result != null && result.album != null)
                 {
@@ -69,6 +71,7 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
+            var albumArtist = item.GetAlbumArtist();
             //// Get each song, distinct by the combination of AlbumArtist and Album
             //var songs = item.RecursiveChildren.OfType<Audio>().DistinctBy(i => (i.AlbumArtist ?? string.Empty) + (i.Album ?? string.Empty), StringComparer.OrdinalIgnoreCase).ToList();
 
@@ -82,12 +85,12 @@ namespace MediaBrowser.Providers.Music
             //    }
             //}
 
-            if (string.IsNullOrEmpty(item.AlbumArtist))
+            if (string.IsNullOrEmpty(albumArtist))
             {
                 return null;
             }
 
-            return await GetAlbumResult(item.AlbumArtist, item.Name, cancellationToken);
+            return await GetAlbumResult(albumArtist, item.Name, cancellationToken);
         }
 
         private async Task<LastfmGetAlbumResult> GetAlbumResult(string artist, string album, CancellationToken cancellationToken)
@@ -166,7 +169,7 @@ namespace MediaBrowser.Providers.Music
             string imageSize;
             var url = LastfmHelper.GetImageUrl(data, out imageSize);
 
-            var musicBrainzId = item.GetProviderId(MetadataProviders.Musicbrainz) ??
+            var musicBrainzId = item.GetProviderId(MetadataProviders.MusicBrainzAlbum) ??
                 item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
             LastfmHelper.SaveImageInfo(_config.ApplicationPaths, _logger, musicBrainzId, url, imageSize);

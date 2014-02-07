@@ -65,25 +65,29 @@ namespace MediaBrowser.Providers.All
             return false;
         }
 
-        private IEnumerable<string> GetFiles(IHasImages item, bool includeDirectories)
+        private IEnumerable<FileSystemInfo> GetFiles(IHasImages item, bool includeDirectories)
         {
             if (item.LocationType != LocationType.FileSystem)
             {
-                return new List<string>();
+                return new List<FileSystemInfo>();
             }
 
             var path = item.ContainingFolderPath;
 
             if (includeDirectories)
             {
-                return Directory.EnumerateFileSystemEntries(path, "*", SearchOption.TopDirectoryOnly);
+                return new DirectoryInfo(path).EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly)
+                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase) ||
+                (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
             }
-            return Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly);
+
+            return new DirectoryInfo(path).EnumerateFiles("*", SearchOption.TopDirectoryOnly)
+                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase));
         }
 
         public List<LocalImageInfo> GetImages(IHasImages item)
         {
-            var files = GetFileDictionary(GetFiles(item, true));
+            var files = GetFiles(item, true).ToList();
 
             var list = new List<LocalImageInfo>();
 
@@ -92,7 +96,7 @@ namespace MediaBrowser.Providers.All
             return list;
         }
 
-        private void PopulateImages(IHasImages item, List<LocalImageInfo> images, Dictionary<string, string> files)
+        private void PopulateImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files)
         {
             var imagePrefix = string.Empty;
 
@@ -130,7 +134,7 @@ namespace MediaBrowser.Providers.All
             }
         }
 
-        private void PopulatePrimaryImages(IHasImages item, List<LocalImageInfo> images, Dictionary<string, string> files, string imagePrefix)
+        private void PopulatePrimaryImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix)
         {
             AddImage(files, images, imagePrefix + "folder", ImageType.Primary);
             AddImage(files, images, imagePrefix + "cover", ImageType.Primary);
@@ -161,7 +165,7 @@ namespace MediaBrowser.Providers.All
             }
         }
 
-        private void PopulateBackdrops(IHasImages item, List<LocalImageInfo> images, Dictionary<string, string> files, string imagePrefix)
+        private void PopulateBackdrops(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix)
         {
             PopulateBackdrops(images, files, imagePrefix, "backdrop", "backdrop", ImageType.Backdrop);
 
@@ -179,19 +183,21 @@ namespace MediaBrowser.Providers.All
             PopulateBackdrops(images, files, imagePrefix, "background", "background-", ImageType.Backdrop);
             PopulateBackdrops(images, files, imagePrefix, "art", "art-", ImageType.Backdrop);
 
-            string extraFanartFolder;
-            if (files.TryGetValue("extrafanart", out extraFanartFolder))
+            var extraFanartFolder = files.OfType<DirectoryInfo>()
+                .FirstOrDefault(i => string.Equals(i.Name, "extrafanart", StringComparison.OrdinalIgnoreCase));
+
+            if (extraFanartFolder != null)
             {
-                PopulateBackdropsFromExtraFanart(extraFanartFolder, images);
+                PopulateBackdropsFromExtraFanart(extraFanartFolder.FullName, images);
             }
         }
 
         private void PopulateBackdropsFromExtraFanart(string path, List<LocalImageInfo> images)
         {
-            var imageFiles = Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly)
+            var imageFiles = new DirectoryInfo(path).EnumerateFiles("*", SearchOption.TopDirectoryOnly)
                 .Where(i =>
                 {
-                    var extension = Path.GetExtension(i);
+                    var extension = i.Extension;
 
                     if (string.IsNullOrEmpty(extension))
                     {
@@ -203,17 +209,17 @@ namespace MediaBrowser.Providers.All
 
             images.AddRange(imageFiles.Select(i => new LocalImageInfo
             {
-                Path = i,
+                FileInfo = i,
                 Type = ImageType.Backdrop
             }));
         }
 
-        private void PopulateScreenshots(List<LocalImageInfo> images, Dictionary<string, string> files, string imagePrefix)
+        private void PopulateScreenshots(List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix)
         {
             PopulateBackdrops(images, files, imagePrefix, "screenshot", "screenshot", ImageType.Screenshot);
         }
 
-        private void PopulateBackdrops(List<LocalImageInfo> images, Dictionary<string, string> files, string imagePrefix, string firstFileName, string subsequentFileNamePrefix, ImageType type)
+        private void PopulateBackdrops(List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, string firstFileName, string subsequentFileNamePrefix, ImageType type)
         {
             AddImage(files, images, imagePrefix + firstFileName, type);
 
@@ -246,7 +252,7 @@ namespace MediaBrowser.Providers.All
                 return;
             }
 
-            var files = GetFileDictionary(GetFiles(series, false));
+            var seriesFiles = GetFiles(series, false).ToList();
 
             // Try using the season name
             var prefix = season.Name.ToLower().Replace(" ", string.Empty);
@@ -265,39 +271,22 @@ namespace MediaBrowser.Providers.All
 
             foreach (var filename in filenamePrefixes)
             {
-                AddImage(files, images, filename + "-poster", ImageType.Primary);
-                AddImage(files, images, filename + "-fanart", ImageType.Backdrop);
-                AddImage(files, images, filename + "-banner", ImageType.Banner);
-                AddImage(files, images, filename + "-landscape", ImageType.Thumb);
+                AddImage(seriesFiles, images, filename + "-poster", ImageType.Primary);
+                AddImage(seriesFiles, images, filename + "-fanart", ImageType.Backdrop);
+                AddImage(seriesFiles, images, filename + "-banner", ImageType.Banner);
+                AddImage(seriesFiles, images, filename + "-landscape", ImageType.Thumb);
             }
         }
 
-        private Dictionary<string, string> GetFileDictionary(IEnumerable<string> paths)
+        private bool AddImage(List<FileSystemInfo> files, List<LocalImageInfo> images, string name, ImageType type)
         {
-            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var path in paths)
-            {
-                var filename = Path.GetFileName(path);
-
-                if (!string.IsNullOrEmpty(filename))
-                {
-                    dict[filename] = path;
-                }
-            }
-
-            return dict;
-        }
-
-        private bool AddImage(Dictionary<string, string> dict, List<LocalImageInfo> images, string name, ImageType type)
-        {
-            var image = GetImage(dict, name);
+            var image = GetImage(files, name) as FileInfo;
 
             if (image != null)
             {
                 images.Add(new LocalImageInfo
                 {
-                    Path = image,
+                    FileInfo = image,
                     Type = type
                 });
 
@@ -307,16 +296,14 @@ namespace MediaBrowser.Providers.All
             return false;
         }
 
-        private string GetImage(Dictionary<string, string> dict, string name)
+        private FileSystemInfo GetImage(IEnumerable<FileSystemInfo> files, string name)
         {
-            return BaseItem.SupportedImageExtensions
-                .Select(i =>
-                {
-                    var filename = name + i;
-                    string path;
+            var candidates = files
+                .Where(i => string.Equals(name, Path.GetFileNameWithoutExtension(i.Name), StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
-                    return dict.TryGetValue(filename, out path) ? path : null;
-                })
+            return BaseItem.SupportedImageExtensions
+                .Select(i => candidates.FirstOrDefault(c => string.Equals(c.Extension, i, StringComparison.OrdinalIgnoreCase)))
                 .FirstOrDefault(i => i != null);
         }
     }

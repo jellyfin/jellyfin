@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Providers
 
     public class LocalImageInfo
     {
-        public string Path { get; set; }
+        public FileInfo FileInfo { get; set; }
         public ImageType Type { get; set; }
     }
 
