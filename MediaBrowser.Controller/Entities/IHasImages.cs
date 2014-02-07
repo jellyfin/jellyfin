@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using System.IO;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -32,6 +33,13 @@ namespace MediaBrowser.Controller.Entities
         LocationType LocationType { get; }
 
         /// <summary>
+        /// Gets the images.
+        /// </summary>
+        /// <param name="imageType">Type of the image.</param>
+        /// <returns>IEnumerable{ItemImageInfo}.</returns>
+        IEnumerable<ItemImageInfo> GetImages(ImageType imageType);
+
+        /// <summary>
         /// Gets the image path.
         /// </summary>
         /// <param name="imageType">Type of the image.</param>
@@ -40,19 +48,20 @@ namespace MediaBrowser.Controller.Entities
         string GetImagePath(ImageType imageType, int imageIndex);
 
         /// <summary>
-        /// Gets the image date modified.
+        /// Gets the image information.
         /// </summary>
-        /// <param name="imagePath">The image path.</param>
-        /// <returns>DateTime.</returns>
-        DateTime GetImageDateModified(string imagePath);
+        /// <param name="imageType">Type of the image.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <returns>ItemImageInfo.</returns>
+        ItemImageInfo GetImageInfo(ImageType imageType, int imageIndex);
 
         /// <summary>
         /// Sets the image.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="index">The index.</param>
-        /// <param name="path">The path.</param>
-        void SetImagePath(ImageType type, int index, string path);
+        /// <param name="file">The file.</param>
+        void SetImagePath(ImageType type, int index, FileInfo file);
 
         /// <summary>
         /// Determines whether the specified type has image.
@@ -61,6 +70,13 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns><c>true</c> if the specified type has image; otherwise, <c>false</c>.</returns>
         bool HasImage(ImageType type, int imageIndex);
+
+        /// <summary>
+        /// Allowses the multiple images.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool AllowsMultipleImages(ImageType type);
 
         /// <summary>
         /// Swaps the images.
@@ -95,12 +111,6 @@ namespace MediaBrowser.Controller.Entities
         bool ValidateImages();
 
         /// <summary>
-        /// Gets or sets the backdrop image paths.
-        /// </summary>
-        /// <value>The backdrop image paths.</value>
-        List<string> BackdropImagePaths { get; set; }
-
-        /// <summary>
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
@@ -111,6 +121,14 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The containing folder path.</value>
         string ContainingFolderPath { get; }
+
+        /// <summary>
+        /// Adds the images.
+        /// </summary>
+        /// <param name="imageType">Type of the image.</param>
+        /// <param name="images">The images.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool AddImages(ImageType imageType, IEnumerable<FileInfo> images);
     }
 
     public static class HasImagesExtensions
@@ -136,10 +154,10 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
-        /// <param name="path">The path.</param>
-        public static void SetImagePath(this IHasImages item, ImageType imageType, string path)
+        /// <param name="file">The file.</param>
+        public static void SetImagePath(this IHasImages item, ImageType imageType, FileInfo file)
         {
-            item.SetImagePath(imageType, 0, path);
+            item.SetImagePath(imageType, 0, file);
         }
     }
 }

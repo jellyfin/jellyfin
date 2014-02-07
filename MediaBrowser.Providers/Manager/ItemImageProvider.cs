@@ -178,23 +178,16 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
-            if (images.Contains(ImageType.Backdrop) && item.BackdropImagePaths.Count < backdropLimit)
+            if (images.Contains(ImageType.Backdrop) && item.GetImages(ImageType.Backdrop).Count() < backdropLimit)
             {
                 return false;
             }
 
-            if (images.Contains(ImageType.Screenshot))
+            if (images.Contains(ImageType.Screenshot) && item.GetImages(ImageType.Screenshot).Count() < backdropLimit)
             {
-                var hasScreenshots = item as IHasScreenshots;
-                if (hasScreenshots != null)
-                {
-                    if (hasScreenshots.ScreenshotImagePaths.Count < screenshotLimit)
-                    {
-                        return false;
-                    }
-                }
-            } 
-            
+                return false;
+            }
+
             return true;
         }
 
@@ -220,7 +213,7 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
-                
+
                 var images = await provider.GetAllImages(item, cancellationToken).ConfigureAwait(false);
                 var list = images.ToList();
 
@@ -232,12 +225,12 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
 
-                await DownloadBackdrops(item, backdropLimit, provider, result, list, cancellationToken).ConfigureAwait(false);
+                await DownloadBackdrops(item, ImageType.Backdrop, backdropLimit, provider, result, list, cancellationToken).ConfigureAwait(false);
 
                 var hasScreenshots = item as IHasScreenshots;
                 if (hasScreenshots != null)
                 {
-                    await DownloadScreenshots(hasScreenshots, screenshotLimit, provider, result, list, cancellationToken).ConfigureAwait(false);
+                    await DownloadBackdrops(item, ImageType.Screenshot, screenshotLimit, provider, result, list, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -280,50 +273,42 @@ namespace MediaBrowser.Providers.Manager
 
                 if (image != null)
                 {
-                    var oldPath = item.GetImagePath(type);
+                    var currentImage = item.GetImageInfo(type, 0);
 
-                    item.SetImagePath(type, image.Path);
+                    if (currentImage == null || !string.Equals(currentImage.Path, image.Path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        item.SetImagePath(type, new FileInfo(image.Path));
+                        changed = true;
+                    }
+                }
+            }
 
-                    if (!string.Equals(oldPath, image.Path, StringComparison.OrdinalIgnoreCase))
+            var backdrops = images.Where(i => i.Type == ImageType.Backdrop).ToList();
+            if (backdrops.Count > 0)
+            {
+                var foundImages = images.Where(i => i.Type == ImageType.Backdrop)
+                    .Select(i => new FileInfo(i.Path))
+                    .ToList();
+
+                if (foundImages.Count > 0)
+                {
+                    if (item.AddImages(ImageType.Backdrop, foundImages))
                     {
                         changed = true;
                     }
                 }
             }
 
-            // The change reporting will only be accurate at the count level
-            // Improve this if/when needed
-            var backdrops = images.Where(i => i.Type == ImageType.Backdrop).ToList();
-            if (backdrops.Count > 0)
-            {
-                var oldCount = item.BackdropImagePaths.Count;
-
-                item.BackdropImagePaths = item.BackdropImagePaths
-                    .Concat(backdrops.Select(i => i.Path))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                if (oldCount != item.BackdropImagePaths.Count)
-                {
-                    changed = true;
-                }
-            }
-
             var hasScreenshots = item as IHasScreenshots;
             if (hasScreenshots != null)
             {
-                var screenshots = images.Where(i => i.Type == ImageType.Screenshot).ToList();
+                var foundImages = images.Where(i => i.Type == ImageType.Screenshot)
+                    .Select(i => new FileInfo(i.Path))
+                    .ToList();
 
-                if (screenshots.Count > 0)
+                if (foundImages.Count > 0)
                 {
-                    var oldCount = hasScreenshots.ScreenshotImagePaths.Count;
-
-                    hasScreenshots.ScreenshotImagePaths = hasScreenshots.ScreenshotImagePaths
-                        .Concat(screenshots.Select(i => i.Path))
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .ToList();
-
-                    if (oldCount != hasScreenshots.ScreenshotImagePaths.Count)
+                    if (item.AddImages(ImageType.Screenshot, foundImages))
                     {
                         changed = true;
                     }
@@ -360,46 +345,11 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private async Task DownloadBackdrops(IHasImages item, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, CancellationToken cancellationToken)
+        private async Task DownloadBackdrops(IHasImages item, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
-            const ImageType imageType = ImageType.Backdrop;
-
             foreach (var image in images.Where(i => i.Type == imageType))
             {
-                if (item.BackdropImagePaths.Count >= limit)
-                {
-                    break;
-                }
-
-                var url = image.Url;
-
-                try
-                {
-                    var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
-
-                    await _providerManager.SaveImage((BaseItem)item, response.Content, response.ContentType, imageType, null, cancellationToken).ConfigureAwait(false);
-                    result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
-                    break;
-                }
-                catch (HttpException ex)
-                {
-                    // Sometimes providers send back bad url's. Just move onto the next image
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
-                    {
-                        continue;
-                    }
-                    break;
-                }
-            }
-        }
-
-        private async Task DownloadScreenshots(IHasScreenshots item, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, CancellationToken cancellationToken)
-        {
-            const ImageType imageType = ImageType.Screenshot;
-
-            foreach (var image in images.Where(i => i.Type == imageType))
-            {
-                if (item.ScreenshotImagePaths.Count >= limit)
+                if (item.GetImages(imageType).Count() >= limit)
                 {
                     break;
                 }

@@ -258,8 +258,8 @@ namespace MediaBrowser.ServerApplication
                                            previews.Add(new PreviewItem(item.GetImagePath(ImageType.Thumb), "Thumb"));
                                        }
                                        previews.AddRange(
-                                           item.BackdropImagePaths.Select(
-                                               image => new PreviewItem(image, "Backdrop")));
+                                           item.GetImages(ImageType.Backdrop).Select(
+                                               image => new PreviewItem(image.Path, "Backdrop")));
                                    });
                 lstPreviews.ItemsSource = previews;
                 lstPreviews.Items.Refresh();

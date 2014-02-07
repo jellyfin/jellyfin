@@ -53,10 +53,9 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the image cache tag.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="imagePath">The image path.</param>
+        /// <param name="image">The image.</param>
         /// <returns>Guid.</returns>
-        Guid GetImageCacheTag(IHasImages item, ImageType imageType, string imagePath);
+        Guid GetImageCacheTag(IHasImages item, ItemImageInfo image);
 
         /// <summary>
         /// Gets the image cache tag.
@@ -86,5 +85,25 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{System.String}.</returns>
         Task<string> GetEnhancedImage(IHasImages item, ImageType imageType, int imageIndex);
+    }
+
+    public static class ImageProcessorExtensions
+    {
+        public static Guid? GetImageCacheTag(this IImageProcessor processor, IHasImages item, ImageType imageType)
+        {
+            return processor.GetImageCacheTag(item, imageType, 0);
+        }
+        
+        public static Guid? GetImageCacheTag(this IImageProcessor processor, IHasImages item, ImageType imageType, int imageIndex)
+        {
+            var imageInfo = item.GetImageInfo(imageType, imageIndex);
+
+            if (imageInfo == null)
+            {
+                return null;
+            }
+
+            return processor.GetImageCacheTag(item, imageInfo);
+        }
     }
 }

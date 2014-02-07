@@ -309,7 +309,7 @@ namespace MediaBrowser.ServerApplication
             ImageProcessor = new ImageProcessor(Logger, ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer);
             RegisterSingleInstance(ImageProcessor);
 
-            DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager);
+            DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(DtoService);
 
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);

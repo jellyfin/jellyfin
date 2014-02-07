@@ -619,27 +619,24 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// Gets the image cache tag.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="imagePath">The image path.</param>
+        /// <param name="image">The image.</param>
         /// <returns>Guid.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Guid GetImageCacheTag(IHasImages item, ImageType imageType, string imagePath)
+        public Guid GetImageCacheTag(IHasImages item, ItemImageInfo image)
         {
             if (item == null)
             {
                 throw new ArgumentNullException("item");
             }
 
-            if (string.IsNullOrEmpty(imagePath))
+            if (image == null)
             {
-                throw new ArgumentNullException("imagePath");
+                throw new ArgumentNullException("image");
             }
 
-            var dateModified = item.GetImageDateModified(imagePath);
+            var supportedEnhancers = GetSupportedEnhancers(item, image.Type);
 
-            var supportedEnhancers = GetSupportedEnhancers(item, imageType);
-
-            return GetImageCacheTag(item, imageType, imagePath, dateModified, supportedEnhancers.ToList());
+            return GetImageCacheTag(item, image.Type, image.Path, image.DateModified, supportedEnhancers.ToList());
         }
 
         /// <summary>
@@ -693,9 +690,10 @@ namespace MediaBrowser.Server.Implementations.Drawing
         {
             var enhancers = GetSupportedEnhancers(item, imageType).ToList();
 
-            var imagePath = item.GetImagePath(imageType, imageIndex);
+            var imageInfo = item.GetImageInfo(imageType, imageIndex);
+            var imagePath = imageInfo.Path;
 
-            var dateModified = item.GetImageDateModified(imagePath);
+            var dateModified = imageInfo.DateModified;
 
             var result = await GetEnhancedImage(imagePath, dateModified, item, imageType, imageIndex, enhancers);
 
