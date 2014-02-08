@@ -53,9 +53,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             var masterDictionary = new Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>>(StringComparer.OrdinalIgnoreCase);
 
-            // Populate counts of items
-            //SetItemCounts(null, allLibraryItems, masterDictionary);
-
             progress.Report(2);
 
             var numComplete = 0;

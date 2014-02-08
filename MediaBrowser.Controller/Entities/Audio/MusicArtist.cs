@@ -152,7 +152,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             // Refresh songs
             foreach (var item in songs)
             {
-                if (tasks.Count > 3)
+                if (tasks.Count >= 2)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     tasks.Clear();
