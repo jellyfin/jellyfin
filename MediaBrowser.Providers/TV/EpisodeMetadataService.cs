@@ -84,8 +84,8 @@ namespace MediaBrowser.Providers.TV
 
                 var filename = Path.GetFileName(item.Path);
 
-                item.IndexNumber = item.IndexNumber ?? TVUtils.GetEpisodeNumberFromFile(filename, item.Parent is Season);
-                item.IndexNumberEnd = item.IndexNumberEnd ?? TVUtils.GetEndingEpisodeNumberFromFile(filename);
+                item.IndexNumber = item.IndexNumber ?? TVUtils.GetEpisodeNumberFromFile(item.Path, item.Parent is Season);
+                item.IndexNumberEnd = item.IndexNumberEnd ?? TVUtils.GetEndingEpisodeNumberFromFile(item.Path);
 
                 if (!item.ParentIndexNumber.HasValue)
                 {

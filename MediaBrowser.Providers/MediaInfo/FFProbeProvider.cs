@@ -27,7 +27,8 @@ namespace MediaBrowser.Providers.MediaInfo
         ICustomMetadataProvider<Trailer>,
         ICustomMetadataProvider<Video>,
         ICustomMetadataProvider<Audio>,
-        IHasChangeMonitor
+        IHasChangeMonitor,
+        IHasOrder
     {
         private readonly ILogger _logger;
         private readonly IIsoManager _isoManager;
@@ -136,6 +137,15 @@ namespace MediaBrowser.Providers.MediaInfo
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
             return item.DateModified > date;
+        }
+
+        public int Order
+        {
+            get
+            {
+                // Run last
+                return 100;
+            }
         }
     }
 }
