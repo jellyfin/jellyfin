@@ -16,10 +16,9 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GameGenresPostScanTask"/> class.
+        /// Initializes a new instance of the <see cref="GameGenresPostScanTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="userManager">The user manager.</param>
         public GameGenresPostScanTask(ILibraryManager libraryManager)
         {
             _libraryManager = libraryManager;

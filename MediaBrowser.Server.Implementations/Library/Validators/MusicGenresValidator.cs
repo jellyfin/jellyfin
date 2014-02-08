@@ -48,9 +48,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             var masterDictionary = new Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>>(StringComparer.OrdinalIgnoreCase);
 
-            // Populate counts of items
-            //SetItemCounts(null, allLibraryItems, masterDictionary);
-
             progress.Report(2);
 
             var numComplete = 0;
@@ -99,7 +96,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             progress.Report(100);
         }
 
-        private async Task UpdateItemByNameCounts(string name, CancellationToken cancellationToken, Dictionary<Guid, Dictionary<CountType, int>> counts)
+        private Task UpdateItemByNameCounts(string name, CancellationToken cancellationToken, Dictionary<Guid, Dictionary<CountType, int>> counts)
         {
             var itemByName = _libraryManager.GetMusicGenre(name);
 
@@ -110,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 itemByName.SetItemByNameCounts(libraryId, itemCounts);
             }
 
-            await itemByName.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            return itemByName.RefreshMetadata(cancellationToken);
         }
 
         private void SetItemCounts(Guid userId, IEnumerable<BaseItem> allItems, Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>> masterDictionary)

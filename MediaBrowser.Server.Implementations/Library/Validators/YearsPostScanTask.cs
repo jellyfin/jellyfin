@@ -26,6 +26,8 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 .Distinct()
                 .ToList();
 
+            progress.Report(10);
+
             var count = allYears.Count;
             var numComplete = 0;
 

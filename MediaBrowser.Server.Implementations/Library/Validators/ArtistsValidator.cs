@@ -79,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // Only do this for artists accessed by name. Folder-based artists use ArtistInfoFromSongsProvider
+                // Only do this for artists accessed by name. Folder-based artists get it from the normal refresh
                 if (artist.IsAccessedByName && !artist.LockedFields.Contains(MetadataFields.Genres))
                 {
                     // Avoid implicitly captured closure
@@ -90,9 +90,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToList();
                 }
-
-                // Populate counts of items
-                //SetItemCounts(artist, null, allItems.OfType<IHasArtist>());
 
                 foreach (var lib in userLibraries)
                 {

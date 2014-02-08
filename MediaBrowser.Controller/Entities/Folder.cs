@@ -518,7 +518,7 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var child in children)
             {
-                if (tasks.Count > 5)
+                if (tasks.Count >= 2)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     tasks.Clear();
@@ -596,15 +596,8 @@ namespace MediaBrowser.Controller.Entities
 
             var percentages = new Dictionary<Guid, double>(list.Count);
 
-            var tasks = new List<Task>();
-
             foreach (var item in list)
             {
-                if (tasks.Count > 10)
-                {
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-                }
-
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var child = item;
@@ -624,12 +617,9 @@ namespace MediaBrowser.Controller.Entities
                     }
                 });
 
-                tasks.Add(child.ValidateChildrenWithCancellationSupport(innerProgress, cancellationToken, true, false, null));
+                await child.ValidateChildrenWithCancellationSupport(innerProgress, cancellationToken, true, false, null)
+                        .ConfigureAwait(false);
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         /// <summary>

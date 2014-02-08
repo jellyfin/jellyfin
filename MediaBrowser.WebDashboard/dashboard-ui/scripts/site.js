@@ -92,21 +92,16 @@ var Dashboard = {
         }
 
         var autoLoginUserId = getParameterByName('u');
+        var storedUserId = localStorage.getItem("userId");
         var userId;
 
-        if (autoLoginUserId) {
-            userId = localStorage.getItem("userId");
-
-            if (userId != autoLoginUserId) {
-
-                userId = autoLoginUserId;
-                Dashboard.setCurrentUser(userId);
-            }
+        if (autoLoginUserId && autoLoginUserId != storedUserId) {
+            
+            localStorage.setItem("userId", autoLoginUserId);
+            ApiClient.currentUserId(autoLoginUserId);
         }
 
-        userId = userId || localStorage.getItem("userId");
-
-        return userId;
+        return autoLoginUserId || storedUserId;
     },
 
     setCurrentUser: function (userId) {
