@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.Folders
             }
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item)
+        public List<LocalImageInfo> GetImages(IHasImages item, DirectoryService directoryService)
         {
             var name = _fileSystem.GetValidFilename(item.Name);
 
@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.Folders
 
             try
             {
-                return new LocalImageProvider().GetImages(item, path);
+                return new LocalImageProvider().GetImages(item, path, directoryService);
             }
             catch (DirectoryNotFoundException)
             {

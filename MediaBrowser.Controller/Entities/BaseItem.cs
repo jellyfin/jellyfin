@@ -565,8 +565,10 @@ namespace MediaBrowser.Controller.Entities
 
             if (IsFolder || Parent != null)
             {
+                options.DirectoryService = options.DirectoryService ?? new DirectoryService(Logger);
+
                 var files = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
-                    GetFileSystemChildren().ToList() :
+                    GetFileSystemChildren(options.DirectoryService).ToList() :
                     new List<FileSystemInfo>();
 
                 await BeforeRefreshMetadata(options, files, cancellationToken).ConfigureAwait(false);
@@ -609,11 +611,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        protected virtual IEnumerable<FileSystemInfo> GetFileSystemChildren()
+        protected virtual IEnumerable<FileSystemInfo> GetFileSystemChildren(DirectoryService directoryService)
         {
             var path = ContainingFolderPath;
 
-            return new DirectoryInfo(path).EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+            return directoryService.GetFileSystemEntries(path);
         }
 
         private async Task<bool> RefreshLocalTrailers(IHasTrailers item, MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
@@ -848,29 +850,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return IsParentalAllowed(user);
-        }
-
-        /// <summary>
-        /// Finds the particular item by searching through our parents and, if not found there, loading from repo
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentException"></exception>
-        protected BaseItem FindParentItem(Guid id)
-        {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentException();
-            }
-
-            var parent = Parent;
-            while (parent != null && !parent.IsRoot)
-            {
-                if (parent.Id == id) return parent;
-                parent = parent.Parent;
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -1226,10 +1205,13 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Validates that images within the item are still on the file system
         /// </summary>
-        public bool ValidateImages()
+        public bool ValidateImages(DirectoryService directoryService)
         {
+            var allDirectories = ImageInfos.Select(i => System.IO.Path.GetDirectoryName(i.Path)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            var allFiles = allDirectories.SelectMany(directoryService.GetFiles).Select(i => i.FullName).ToList();
+
             var deletedImages = ImageInfos
-                .Where(image => !File.Exists(image.Path))
+                .Where(image => !allFiles.Contains(image.Path, StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
             if (deletedImages.Count > 0)

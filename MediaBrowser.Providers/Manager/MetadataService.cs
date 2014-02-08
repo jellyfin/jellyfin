@@ -44,6 +44,7 @@ namespace MediaBrowser.Providers.Manager
         {
             result.ItemId = item.Id;
             result.ItemName = item.Name;
+            result.ItemType = item.GetType().Name;
 
             var series = item as IHasSeries;
 
@@ -64,6 +65,11 @@ namespace MediaBrowser.Providers.Manager
 
         public async Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
+            if (refreshOptions.DirectoryService == null)
+            {
+                refreshOptions.DirectoryService = new DirectoryService(Logger);
+            }
+
             var itemOfType = (TItemType)item;
             var config = GetMetadataOptions(itemOfType);
 
@@ -81,7 +87,7 @@ namespace MediaBrowser.Providers.Manager
             try
             {
                 // Always validate images and check for new locally stored ones.
-                if (itemImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>()))
+                if (itemImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>(), refreshOptions.DirectoryService))
                 {
                     updateType = updateType | ItemUpdateType.ImageUpdate;
                 }

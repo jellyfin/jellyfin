@@ -197,7 +197,7 @@
 
         reloadList(page, true);
 
-        $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionChange).on("websocketerror", onWebSocketConnectionChange).on("websocketclose", onWebSocketConnectionChange);
+        $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionChange);
 
         $('#divScheduledTasks', page).on('click', '.btnStartTask', function () {
 

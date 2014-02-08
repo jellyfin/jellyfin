@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.People
 {
-    public class PersonMetadataService : MetadataService<Person, ItemLookupInfo>
+    public class PersonMetadataService : MetadataService<Person, PersonLookupInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

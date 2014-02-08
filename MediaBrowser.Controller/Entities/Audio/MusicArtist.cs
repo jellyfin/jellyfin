@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, DirectoryService directoryService)
         {
             if (IsAccessedByName)
             {
@@ -60,17 +60,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return _cachedTask;
             }
 
-            return base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions);
-        }
-
-        public override string GetClientTypeName()
-        {
-            if (IsAccessedByName)
-            {
-                //return "Artist";
-            }
-
-            return base.GetClientTypeName();
+            return base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService);
         }
 
         public MusicArtist()

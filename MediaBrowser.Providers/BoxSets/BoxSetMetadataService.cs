@@ -11,12 +11,10 @@ using MediaBrowser.Providers.Manager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.BoxSets
 {
-    public class BoxSetMetadataService : MetadataService<BoxSet, ItemLookupInfo>
+    public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _iLocalizationManager;

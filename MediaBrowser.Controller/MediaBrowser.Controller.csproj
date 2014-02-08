@@ -146,6 +146,7 @@
     <Compile Include="Notifications\NotificationUpdateEventArgs.cs" />
     <Compile Include="Persistence\IFileOrganizationRepository.cs" />
     <Compile Include="Persistence\MediaStreamQuery.cs" />
+    <Compile Include="Providers\DirectoryService.cs" />
     <Compile Include="Providers\ICustomMetadataProvider.cs" />
     <Compile Include="Providers\IHasChangeMonitor.cs" />
     <Compile Include="Entities\IHasMetadata.cs" />

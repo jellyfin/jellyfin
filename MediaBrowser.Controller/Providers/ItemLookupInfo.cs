@@ -149,4 +149,9 @@ namespace MediaBrowser.Controller.Providers
     {
         
     }
+
+    public class SeasonInfo : ItemLookupInfo
+    {
+        
+    }
 }
