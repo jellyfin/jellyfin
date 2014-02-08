@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class MovieDbTrailerProvider : IRemoteMetadataProvider<Trailer, TrailerInfo>, IHasChangeMonitor
+    public class MovieDbTrailerProvider : IRemoteMetadataProvider<Trailer, TrailerInfo>
     {
         public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
         {

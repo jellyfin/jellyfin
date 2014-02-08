@@ -10,7 +10,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Episode
     /// </summary>
-    public class Episode : Video, IHasLookupInfo<EpisodeInfo>
+    public class Episode : Video, IHasLookupInfo<EpisodeInfo>, IHasSeries
     {
         /// <summary>
         /// Gets the season in which it aired.
@@ -136,6 +136,16 @@ namespace MediaBrowser.Controller.Entities.TV
         public Season Season
         {
             get { return FindParent<Season>(); }
+        }
+
+        [IgnoreDataMember]
+        public string SeriesName
+        {
+            get
+            {
+                var series = Series;
+                return series == null ? null : series.Name;
+            }
         }
 
         /// <summary>

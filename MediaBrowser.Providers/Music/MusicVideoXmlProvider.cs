@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Movies;

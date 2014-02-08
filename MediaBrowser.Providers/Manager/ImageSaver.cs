@@ -30,10 +30,6 @@ namespace MediaBrowser.Providers.Manager
         private readonly IServerConfigurationManager _config;
 
         /// <summary>
-        /// The remote image cache
-        /// </summary>
-        private readonly FileSystemRepository _remoteImageCache;
-        /// <summary>
         /// The _directory watchers
         /// </summary>
         private readonly ILibraryMonitor _libraryMonitor;
@@ -41,17 +37,18 @@ namespace MediaBrowser.Providers.Manager
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ImageSaver"/> class.
+        /// Initializes a new instance of the <see cref="ImageSaver" /> class.
         /// </summary>
         /// <param name="config">The config.</param>
         /// <param name="libraryMonitor">The directory watchers.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="logger">The logger.</param>
         public ImageSaver(IServerConfigurationManager config, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger)
         {
             _config = config;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _logger = logger;
-            _remoteImageCache = new FileSystemRepository(config.ApplicationPaths.DownloadedImagesDataPath);
         }
 
         /// <summary>
@@ -348,7 +345,7 @@ namespace MediaBrowser.Providers.Manager
             // None of the save local conditions passed, so store it in our internal folders
             if (string.IsNullOrEmpty(path))
             {
-                path = _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Id, filename + extension);
+                path = Path.Combine(_config.ApplicationPaths.GetInternalMetadataPath(item.Id), filename + extension);
             }
 
             return path;

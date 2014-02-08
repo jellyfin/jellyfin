@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.Movies
     /// <summary>
     /// Class MovieDbProvider
     /// </summary>
-    public class MovieDbProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IDisposable, IHasChangeMonitor
+    public class MovieDbProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IDisposable
     {
         internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(1, 1);
 

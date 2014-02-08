@@ -39,10 +39,5 @@ namespace MediaBrowser.Providers.Games
                 target.GameSystem = source.GameSystem;
             }
         }
-
-        protected override Task SaveItem(Game item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
     }
 }

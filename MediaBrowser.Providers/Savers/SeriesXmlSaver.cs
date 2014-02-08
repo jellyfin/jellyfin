@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
@@ -37,6 +36,12 @@ namespace MediaBrowser.Providers.Savers
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
         public bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
         {
+            var locationType = item.LocationType;
+            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
+            {
+                return false;
+            }
+
             var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
 

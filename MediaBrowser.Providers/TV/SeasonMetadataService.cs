@@ -35,11 +35,6 @@ namespace MediaBrowser.Providers.TV
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
-        protected override Task SaveItem(Season item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
-
         protected override ItemUpdateType BeforeMetadataRefresh(Season item)
         {
             var updateType = base.BeforeMetadataRefresh(item);

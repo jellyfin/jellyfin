@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasTags, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -39,7 +39,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
             Taglines = new List<string>();
-            Tags = new List<string>();
             Keywords = new List<string>();
         }
 
@@ -51,12 +50,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         public List<string> Keywords { get; set; }
 
         public List<MediaUrl> RemoteTrailers { get; set; }
-
-        /// <summary>
-        /// Gets or sets the tags.
-        /// </summary>
-        /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
 
         /// <summary>
         /// Gets or sets the taglines.

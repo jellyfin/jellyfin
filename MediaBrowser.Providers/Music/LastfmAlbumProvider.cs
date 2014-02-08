@@ -5,9 +5,11 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +41,7 @@ namespace MediaBrowser.Providers.Music
             if (lastFmData != null && lastFmData.album != null)
             {
                 result.HasMetadata = true;
+                result.Item = new MusicAlbum();
                 ProcessAlbumData(result.Item, lastFmData.album);
             }
 
@@ -72,18 +75,18 @@ namespace MediaBrowser.Providers.Music
             }
 
             var albumArtist = item.GetAlbumArtist();
-            //// Get each song, distinct by the combination of AlbumArtist and Album
-            //var songs = item.RecursiveChildren.OfType<Audio>().DistinctBy(i => (i.AlbumArtist ?? string.Empty) + (i.Album ?? string.Empty), StringComparer.OrdinalIgnoreCase).ToList();
+            // Get each song, distinct by the combination of AlbumArtist and Album
+            var songs = item.SongInfos.DistinctBy(i => (i.AlbumArtist ?? string.Empty) + (i.Album ?? string.Empty), StringComparer.OrdinalIgnoreCase).ToList();
 
-            //foreach (var song in songs.Where(song => !string.IsNullOrEmpty(song.Album) && !string.IsNullOrEmpty(song.AlbumArtist)))
-            //{
-            //    var result = await GetAlbumResult(song.AlbumArtist, song.Album, cancellationToken).ConfigureAwait(false);
+            foreach (var song in songs.Where(song => !string.IsNullOrEmpty(song.Album) && !string.IsNullOrEmpty(song.AlbumArtist)))
+            {
+                var result = await GetAlbumResult(song.AlbumArtist, song.Album, cancellationToken).ConfigureAwait(false);
 
-            //    if (result != null && result.album != null)
-            //    {
-            //        return result;
-            //    }
-            //}
+                if (result != null && result.album != null)
+                {
+                    return result;
+                }
+            }
 
             if (string.IsNullOrEmpty(albumArtist))
             {

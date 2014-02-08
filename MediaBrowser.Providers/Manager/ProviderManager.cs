@@ -470,7 +470,7 @@ namespace MediaBrowser.Providers.Manager
             }));
 
             // Savers
-            list.AddRange(_savers.Where(i => i.IsEnabledFor(item, ItemUpdateType.MetadataEdit)).OrderBy(i => i.Name).Select(i => new MetadataPlugin
+            list.AddRange(_savers.Where(i => IsSaverEnabledForItem(i, item, ItemUpdateType.MetadataEdit)).OrderBy(i => i.Name).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.MetadataSaver
@@ -506,7 +506,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         public async Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
         {
-            foreach (var saver in _savers.Where(i => i.IsEnabledFor(item, updateType)))
+            foreach (var saver in _savers.Where(i => IsSaverEnabledForItem(i, item, updateType)))
             {
                 _logger.Debug("Saving {0} to {1}.", item.Path ?? item.Name, saver.Name);
                 
@@ -514,13 +514,17 @@ namespace MediaBrowser.Providers.Manager
 
                 if (fileSaver != null)
                 {
-                    var locationType = item.LocationType;
-                    if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
-                    {
-                        throw new ArgumentException("Only file-system based items can save metadata.");
-                    }
+                    string path = null;
 
-                    var path = fileSaver.GetSavePath(item);
+                    try
+                    {
+                        path = fileSaver.GetSavePath(item);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error in {0} GetSavePath", ex, saver.Name);
+                        continue;
+                    }
 
                     var semaphore = _fileLocks.GetOrAdd(path, key => new SemaphoreSlim(1, 1));
 
@@ -552,6 +556,19 @@ namespace MediaBrowser.Providers.Manager
                         _logger.ErrorException("Error in metadata saver", ex);
                     }
                 }
+            }
+        }
+
+        private bool IsSaverEnabledForItem(IMetadataSaver saver, IHasMetadata item, ItemUpdateType updateType)
+        {
+            try
+            {
+                return saver.IsEnabledFor(item, updateType);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in {0}.IsEnabledFor", ex, saver.Name);
+                return false;
             }
         }
     }

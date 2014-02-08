@@ -42,11 +42,6 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
-        protected override Task SaveItem(MusicAlbum item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
-
         protected override ItemUpdateType BeforeSave(MusicAlbum item)
         {
             var updateType = base.BeforeSave(item);

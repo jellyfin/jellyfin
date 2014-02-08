@@ -247,7 +247,10 @@ namespace MediaBrowser.Controller.Providers
                     {
                         var val = reader.ReadElementContentAsString();
 
-
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.ForcedSortName = val;
+                        }
                         break;
                     }
 

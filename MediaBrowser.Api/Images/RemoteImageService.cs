@@ -378,7 +378,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.String.</returns>
         private string GetFullCachePath(string filename)
         {
-            return Path.Combine(_appPaths.DownloadedImagesDataPath, filename.Substring(0, 1), filename);
+            return Path.Combine(_appPaths.CachePath, "remote-images", filename.Substring(0, 1), filename);
         }
     }
 }

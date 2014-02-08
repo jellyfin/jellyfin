@@ -47,14 +47,12 @@ namespace MediaBrowser.Providers.Music
                 {
                     releaseId = releaseResult.ReleaseId;
                     result.HasMetadata = true;
-                    result.Item.SetProviderId(MetadataProviders.MusicBrainzAlbum, releaseId);
                 }
 
                 if (!string.IsNullOrEmpty(releaseResult.ReleaseGroupId))
                 {
                     releaseGroupId = releaseResult.ReleaseGroupId;
                     result.HasMetadata = true;
-                    result.Item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, releaseGroupId);
                 }
             }
 
@@ -63,7 +61,6 @@ namespace MediaBrowser.Providers.Music
             {
                 releaseGroupId = await GetReleaseGroupId(releaseId, cancellationToken).ConfigureAwait(false);
                 result.HasMetadata = true;
-                result.Item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, releaseGroupId);
             }
 
             if (result.HasMetadata)

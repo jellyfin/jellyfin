@@ -17,8 +17,8 @@ namespace MediaBrowser.Providers.Music
         public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo id, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicArtist>();
-           
-            var musicBrainzId = id.GetProviderId(MetadataProviders.MusicBrainzArtist) ?? await FindId(id, cancellationToken).ConfigureAwait(false);
+
+            var musicBrainzId = id.GetArtistId() ?? await FindId(id, cancellationToken).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
             {

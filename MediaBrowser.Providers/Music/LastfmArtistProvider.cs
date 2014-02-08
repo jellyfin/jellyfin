@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Music
         {
             var result = new MetadataResult<MusicArtist>();
 
-            var musicBrainzId = id.GetProviderId(MetadataProviders.MusicBrainzArtist);
+            var musicBrainzId = id.GetArtistId();
 
             if (!String.IsNullOrWhiteSpace(musicBrainzId))
             {

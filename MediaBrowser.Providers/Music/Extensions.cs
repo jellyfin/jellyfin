@@ -63,5 +63,19 @@ namespace MediaBrowser.Providers.Music
 
             return id;
         }
+
+        public static string GetArtistId(this ArtistInfo info)
+        {
+            string id;
+            info.ProviderIds.TryGetValue(MetadataProviders.MusicBrainzArtist.ToString(), out id);
+
+            if (string.IsNullOrEmpty(id))
+            {
+                return info.SongInfos.Select(i => i.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist))
+                    .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+            }
+
+            return id;
+        }
     }
 }

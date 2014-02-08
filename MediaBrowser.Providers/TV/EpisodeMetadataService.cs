@@ -71,11 +71,6 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        protected override Task SaveItem(Episode item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
-
         protected override ItemUpdateType BeforeMetadataRefresh(Episode item)
         {
             var updateType = base.BeforeMetadataRefresh(item);

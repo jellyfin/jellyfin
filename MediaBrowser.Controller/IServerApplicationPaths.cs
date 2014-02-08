@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System;
+using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.Controller
 {
@@ -101,9 +102,16 @@ namespace MediaBrowser.Controller
         string TranscodingTempPath { get; }
 
         /// <summary>
-        /// Gets the downloaded images data path.
+        /// Gets the internal metadata path.
         /// </summary>
-        /// <value>The downloaded images data path.</value>
-        string DownloadedImagesDataPath { get; }
+        /// <value>The internal metadata path.</value>
+        string InternalMetadataPath { get; }
+
+        /// <summary>
+        /// Gets the internal metadata path.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>System.String.</returns>
+        string GetInternalMetadataPath(Guid id);
     }
 }

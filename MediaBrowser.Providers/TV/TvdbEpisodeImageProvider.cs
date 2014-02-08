@@ -194,6 +194,11 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
+            if (!_config.Configuration.EnableTvDbUpdates && item.LocationType != LocationType.Virtual)
+            {
+                return false;
+            }
+
             if (!item.HasImage(ImageType.Primary))
             {
                 var episode = (Episode)item;
@@ -211,6 +216,7 @@ namespace MediaBrowser.Providers.TV
                     return files.Any(i => _fileSystem.GetLastWriteTimeUtc(i) > date);
                 }
             }
+
             return false;
         }
     }

@@ -35,11 +35,6 @@ namespace MediaBrowser.Providers.Videos
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
-        protected override Task SaveItem(Video item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
-
         public override int Order
         {
             get

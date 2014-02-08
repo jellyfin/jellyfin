@@ -192,6 +192,7 @@
     <Compile Include="Roku\RokuControllerFactory.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
+    <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="ServerManager\ServerManager.cs" />

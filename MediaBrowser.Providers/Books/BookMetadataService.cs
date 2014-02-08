@@ -39,10 +39,5 @@ namespace MediaBrowser.Providers.Books
                 target.SeriesName = source.SeriesName;
             }
         }
-
-        protected override Task SaveItem(Book item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
     }
 }

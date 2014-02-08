@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Implementations;
+﻿using System;
+using MediaBrowser.Common.Implementations;
 using MediaBrowser.Controller;
 using System.IO;
 
@@ -214,18 +215,6 @@ namespace MediaBrowser.Server.Implementations
         }
 
         /// <summary>
-        /// Gets the images data path.
-        /// </summary>
-        /// <value>The images data path.</value>
-        public string DownloadedImagesDataPath
-        {
-            get
-            {
-                return Path.Combine(DataPath, "remote-images");
-            }
-        }
-
-        /// <summary>
         /// Gets the artists path.
         /// </summary>
         /// <value>The artists path.</value>
@@ -248,6 +237,21 @@ namespace MediaBrowser.Server.Implementations
             {
                 return Path.Combine(ItemsByNamePath, "GameGenre");
             }
+        }
+
+        public string InternalMetadataPath
+        {
+            get
+            {
+                return Path.Combine(DataPath, "metadata");
+            }
+        }
+
+        public string GetInternalMetadataPath(Guid id)
+        {
+            var idString = id.ToString("N");
+
+            return Path.Combine(InternalMetadataPath, idString.Substring(0, 2), idString);
         }
     }
 }

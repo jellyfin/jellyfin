@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var hasChanges = item.ValidateImages();
 
-            foreach (var provider in providers.OfType<IImageFileProvider>())
+            foreach (var provider in providers.OfType<ILocalImageFileProvider>())
             {
                 var images = provider.GetImages(item);
 
@@ -117,8 +117,7 @@ namespace MediaBrowser.Providers.Manager
                             {
                                 var mimeType = "image/" + Path.GetExtension(response.Path).TrimStart('.').ToLower();
 
-                                var stream = _fileSystem.GetFileStream(response.Path, FileMode.Open, FileAccess.Read,
-                                    FileShare.Read, true);
+                                var stream = _fileSystem.GetFileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, true);
 
                                 await _providerManager.SaveImage((BaseItem)item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
                             }
@@ -335,7 +334,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (HttpException ex)
                 {
-                    // Sometimes providers send back bad url's. Just move onto the next image
+                    // Sometimes providers send back bad url's. Just move to the next image
                     if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                     {
                         continue;

@@ -9,12 +9,10 @@ using MediaBrowser.Providers.Manager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class ArtistMetadataService : MetadataService<MusicArtist, ItemLookupInfo>
+    public class ArtistMetadataService : MetadataService<MusicArtist, ArtistInfo>
     {
         private readonly ILibraryManager _libraryManager;
 
@@ -35,11 +33,6 @@ namespace MediaBrowser.Providers.Music
         protected override void MergeData(MusicArtist source, MusicArtist target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
-        }
-
-        protected override Task SaveItem(MusicArtist item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
         }
 
         protected override ItemUpdateType BeforeSave(MusicArtist item)

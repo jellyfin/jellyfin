@@ -37,10 +37,18 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Saves the provider result.
         /// </summary>
+        /// <param name="item">The item.</param>
         /// <param name="result">The result.</param>
         /// <returns>Task.</returns>
-        protected Task SaveProviderResult(MetadataStatus result)
+        protected Task SaveProviderResult(TItemType item, MetadataStatus result)
         {
+            result.ItemId = item.Id;
+            result.ItemName = item.Name;
+
+            var series = item as IHasSeries;
+
+            result.SeriesName = series == null ? null : series.SeriesName;
+
             return ProviderRepo.SaveMetadataStatus(result, CancellationToken.None);
         }
 
@@ -97,7 +105,6 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0)
                 {
-
                     var result = await RefreshWithProviders(itemOfType, refreshOptions, providers, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
@@ -140,7 +147,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (providersHadChanges || refreshResult.IsDirty)
             {
-                await SaveProviderResult(refreshResult).ConfigureAwait(false);
+                await SaveProviderResult(itemOfType, refreshResult).ConfigureAwait(false);
             }
         }
 
@@ -231,7 +238,10 @@ namespace MediaBrowser.Providers.Manager
             return providers;
         }
 
-        protected abstract Task SaveItem(TItemType item, ItemUpdateType reason, CancellationToken cancellationToken);
+        protected Task SaveItem(TItemType item, ItemUpdateType reason, CancellationToken cancellationToken)
+        {
+            return item.UpdateToRepository(reason, cancellationToken);
+        }
 
         public bool CanRefresh(IHasMetadata item)
         {
@@ -298,6 +308,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
+            // Local metadata is king - if any is found don't run remote providers
             if (!options.ReplaceAllMetadata && !hasLocalMetadata)
             {
                 await ExecuteRemoteProviders(item, temp, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
@@ -349,7 +360,14 @@ namespace MediaBrowser.Providers.Manager
             {
                 Logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
 
-                id = id ?? item.GetLookupInfo();
+                if (id == null)
+                {
+                    id = item.GetLookupInfo();
+                }
+                else
+                {
+                    MergeNewData(temp, id);
+                }
 
                 try
                 {
@@ -372,6 +390,15 @@ namespace MediaBrowser.Providers.Manager
                     refreshResult.ErrorMessage = ex.Message;
                     Logger.ErrorException("Error in {0}", ex, provider.Name);
                 }
+            }
+        }
+
+        private void MergeNewData(TItemType source, TIdType lookupInfo)
+        {
+            // Copy new provider id's that may have been obtained
+            foreach (var providerId in source.ProviderIds)
+            {
+                lookupInfo.ProviderIds[providerId.Key] = providerId.Value;
             }
         }
 

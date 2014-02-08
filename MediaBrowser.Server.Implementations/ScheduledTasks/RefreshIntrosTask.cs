@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
@@ -7,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers
+namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
     /// <summary>
     /// Class RefreshIntrosTask
@@ -24,12 +23,13 @@ namespace MediaBrowser.Providers
         private readonly ILogger _logger;
 
         private readonly IFileSystem _fileSystem;
-        
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="RefreshIntrosTask"/> class.
+        /// Initializes a new instance of the <see cref="RefreshIntrosTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="fileSystem">The file system.</param>
         public RefreshIntrosTask(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;

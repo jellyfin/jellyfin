@@ -66,12 +66,15 @@
   <ItemGroup>
     <Compile Include="AdultVideos\AdultVideoMetadataService.cs" />
     <Compile Include="AdultVideos\AdultVideoXmlProvider.cs" />
+    <Compile Include="All\InternalMetadataFolderImageProvider.cs" />
     <Compile Include="All\LocalImageProvider.cs" />
     <Compile Include="Books\BookMetadataService.cs" />
     <Compile Include="BoxSets\BoxSetMetadataService.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetImageProvider.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetProvider.cs" />
+    <Compile Include="Folders\CollectionFolderImageProvider.cs" />
     <Compile Include="Folders\FolderMetadataService.cs" />
+    <Compile Include="Folders\ImagesByNameImageProvider.cs" />
     <Compile Include="GameGenres\GameGenreMetadataService.cs" />
     <Compile Include="Games\GameMetadataService.cs" />
     <Compile Include="Games\GameSystemMetadataService.cs" />
@@ -145,8 +148,7 @@
     <Compile Include="People\PersonXmlProvider.cs" />
     <Compile Include="People\MovieDbPersonProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ProviderUtils.cs" />
-    <Compile Include="RefreshIntrosTask.cs" />
+    <Compile Include="Manager\ProviderUtils.cs" />
     <Compile Include="Savers\AlbumXmlSaver.cs" />
     <Compile Include="Savers\ArtistXmlSaver.cs" />
     <Compile Include="Savers\BoxSetXmlSaver.cs" />
