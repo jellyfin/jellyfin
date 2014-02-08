@@ -38,14 +38,14 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// The success
         /// </summary>
-        Success,
-        /// <summary>
-        /// The failure
-        /// </summary>
-        Failure,
+        Success = 0,
         /// <summary>
         /// The completed with errors
         /// </summary>
-        CompletedWithErrors
-    }
+        CompletedWithErrors = 1,
+         /// <summary>
+        /// The failure
+        /// </summary>
+        Failure = 2
+   }
 }

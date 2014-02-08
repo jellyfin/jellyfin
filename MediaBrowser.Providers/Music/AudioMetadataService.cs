@@ -44,10 +44,5 @@ namespace MediaBrowser.Providers.Music
                 target.Album = source.Album;
             }
         }
-
-        protected override Task SaveItem(Audio item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
     }
 }

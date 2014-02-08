@@ -90,17 +90,21 @@ var Dashboard = {
         if (!window.localStorage) {
             return null;
         }
-        
-        var userId = localStorage.getItem("userId");
 
-        if (!userId) {
-            var autoLoginUserId = getParameterByName('u');
+        var autoLoginUserId = getParameterByName('u');
+        var userId;
 
-            if (autoLoginUserId) {
+        if (autoLoginUserId) {
+            userId = localStorage.getItem("userId");
+
+            if (userId != autoLoginUserId) {
+
                 userId = autoLoginUserId;
-                localStorage.setItem("userId", userId);
+                Dashboard.setCurrentUser(userId);
             }
         }
+
+        userId = userId || localStorage.getItem("userId");
 
         return userId;
     },
@@ -110,7 +114,7 @@ var Dashboard = {
         if (window.localStorage) {
             localStorage.setItem("userId", userId);
         }
-        
+
         ApiClient.currentUserId(userId);
         Dashboard.getUserPromise = null;
     },
@@ -120,7 +124,7 @@ var Dashboard = {
         if (window.localStorage) {
             localStorage.removeItem("userId");
         }
-        
+
         Dashboard.getUserPromise = null;
         ApiClient.currentUserId(null);
         window.location = "login.html";
@@ -804,7 +808,7 @@ var Dashboard = {
         var location = window.location;
 
         var webSocketUrl = "ws://" + location.hostname;
-        
+
         if (systemInfo.HttpServerPortNumber == systemInfo.WebSocketPortNumber) {
 
             if (location.port) {
@@ -1282,9 +1286,9 @@ var Dashboard = {
 
         return html;
     },
-    
-    populateLanguages: function(select, languages) {
-        
+
+    populateLanguages: function (select, languages) {
+
         var html = "";
 
         html += "<option value=''></option>";

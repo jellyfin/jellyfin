@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
@@ -15,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    class MovieDbImageProvider : IRemoteImageProvider, IHasOrder
+    class MovieDbImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
@@ -206,6 +207,11 @@ namespace MediaBrowser.Providers.Movies
                 Url = url,
                 ResourcePool = MovieDbProvider.Current.MovieDbResourcePool
             });
+        }
+
+        public bool HasChanged(IHasMetadata item, DateTime date)
+        {
+            return MovieDbProvider.Current.HasChanged(item, date);
         }
     }
 }

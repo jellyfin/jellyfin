@@ -518,7 +518,7 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var child in children)
             {
-                if (tasks.Count > 3)
+                if (tasks.Count > 5)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     tasks.Clear();
@@ -549,7 +549,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    tasks.Add(RefreshChildMetadata(child, refreshOptions, recursive, innerProgress, cancellationToken));
+                    tasks.Add(RefreshChildMetadata(child, refreshOptions, false, innerProgress, cancellationToken));
                 }
             }
 

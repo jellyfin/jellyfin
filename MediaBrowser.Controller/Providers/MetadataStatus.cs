@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -12,6 +11,18 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The item identifier.</value>
         public Guid ItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the item.
+        /// </summary>
+        /// <value>The name of the item.</value>
+        public string ItemName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the series.
+        /// </summary>
+        /// <value>The name of the series.</value>
+        public string SeriesName { get; set; }
 
         /// <summary>
         /// Gets or sets the date last metadata refresh.

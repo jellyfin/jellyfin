@@ -34,10 +34,5 @@ namespace MediaBrowser.Providers.MusicGenres
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
-
-        protected override Task SaveItem(MusicGenre item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
     }
 }

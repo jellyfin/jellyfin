@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Book : BaseItem, IHasTags, IHasPreferredMetadataLanguage, IHasLookupInfo<BookInfo>
+    public class Book : BaseItem, IHasTags, IHasPreferredMetadataLanguage, IHasLookupInfo<BookInfo>, IHasSeries
     {
         public override string MediaType
         {

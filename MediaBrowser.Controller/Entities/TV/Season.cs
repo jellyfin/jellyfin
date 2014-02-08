@@ -1,11 +1,8 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
+﻿using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -14,7 +11,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Season
     /// </summary>
-    public class Season : Folder
+    public class Season : Folder, IHasSeries
     {
 
         /// <summary>
@@ -218,7 +215,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 episodes = episodes.Where(i => !i.IsVirtualUnaired);
             }
-            
+
             return LibraryManager
                 .Sort(episodes, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
                 .Cast<Episode>();
@@ -233,6 +230,16 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             // Don't block. Let either the entire series rating or episode rating determine it
             return false;
+        }
+
+        [IgnoreDataMember]
+        public string SeriesName
+        {
+            get
+            {
+                var series = Series;
+                return series == null ? null : series.Name;
+            }
         }
     }
 }

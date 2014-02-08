@@ -72,7 +72,7 @@
         });
 
     },
-    
+
     authenticateUserByName: function (username, password) {
 
         Dashboard.showLoadingMsg();
@@ -107,12 +107,17 @@
     loadUserList: function (users) {
         var html = "";
 
+        var isLocalhost = window.location.toString().toLowerCase().indexOf('localhost') != -1;
+
         for (var i = 0, length = users.length; i < length; i++) {
             var user = users[i];
 
             var linkId = "lnkUser" + i;
 
-            if (user.HasPassword) {
+            if (isLocalhost) {
+                html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-userid='" + user.Id + "' href='index.html?u=" + user.Id + "' data-ajax='false' \">";
+            }
+            else if (user.HasPassword) {
                 html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-userid='" + user.Id + "' href='#popupLogin' data-rel='popup' onclick='LoginPage.authenticatingLinkId=this.id;' \">";
             } else {
                 html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-userid='" + user.Id + "' href='#' onclick='LoginPage.authenticateUserLink(this);' \">";

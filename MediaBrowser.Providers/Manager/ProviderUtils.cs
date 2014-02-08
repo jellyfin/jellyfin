@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Providers
+namespace MediaBrowser.Providers.Manager
 {
     public static class ProviderUtils
     {

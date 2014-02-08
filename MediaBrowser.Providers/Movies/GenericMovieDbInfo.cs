@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -142,10 +143,6 @@ namespace MediaBrowser.Providers.Movies
                 {
                     movieItem.TmdbCollectionName = movieData.belongs_to_collection.name;
                 }
-            }
-            else
-            {
-                movie.SetProviderId(MetadataProviders.TmdbCollection, null); // clear out any old entry
             }
 
             float rating;

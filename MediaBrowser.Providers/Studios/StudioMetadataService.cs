@@ -33,10 +33,5 @@ namespace MediaBrowser.Providers.Studios
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
-
-        protected override Task SaveItem(Studio item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
     }
 }

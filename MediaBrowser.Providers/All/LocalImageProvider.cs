@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -13,15 +12,8 @@ using System.Linq;
 
 namespace MediaBrowser.Providers.All
 {
-    public class LocalImageProvider : IImageFileProvider
+    public class LocalImageProvider : ILocalImageFileProvider
     {
-        private readonly IFileSystem _fileSystem;
-
-        public LocalImageProvider(IFileSystem fileSystem)
-        {
-            _fileSystem = fileSystem;
-        }
-
         public string Name
         {
             get { return "Local Images"; }
@@ -91,12 +83,37 @@ namespace MediaBrowser.Providers.All
 
             var list = new List<LocalImageInfo>();
 
-            PopulateImages(item, list, files);
+            PopulateImages(item, list, files, true);
 
             return list;
         }
 
-        private void PopulateImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files)
+        public List<LocalImageInfo> GetImages(IHasImages item, string path)
+        {
+            return GetImages(item, new[] { path });
+        }
+
+        public List<LocalImageInfo> GetImages(IHasImages item, IEnumerable<string> paths)
+        {
+            var files = paths.SelectMany(i => new DirectoryInfo(i).EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+               .Where(i =>
+               {
+                   var ext = i.Extension;
+
+                   return !string.IsNullOrEmpty(ext) &&
+                       BaseItem.SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+               })
+               .Cast<FileSystemInfo>()
+               .ToList();
+
+            var list = new List<LocalImageInfo>();
+
+            PopulateImages(item, list, files, false);
+
+            return list;
+        }
+
+        private void PopulateImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, bool supportParentSeriesFiles)
         {
             var imagePrefix = string.Empty;
 
@@ -126,11 +143,14 @@ namespace MediaBrowser.Providers.All
             AddImage(files, images, imagePrefix + "thumb", ImageType.Thumb);
             AddImage(files, images, imagePrefix + "landscape", ImageType.Thumb);
 
-            var season = item as Season;
-
-            if (season != null)
+            if (supportParentSeriesFiles)
             {
-                PopulateSeasonImagesFromSeriesFolder(season, images);
+                var season = item as Season;
+
+                if (season != null)
+                {
+                    PopulateSeasonImagesFromSeriesFolder(season, images);
+                }
             }
         }
 
@@ -278,7 +298,7 @@ namespace MediaBrowser.Providers.All
             }
         }
 
-        private bool AddImage(List<FileSystemInfo> files, List<LocalImageInfo> images, string name, ImageType type)
+        private bool AddImage(IEnumerable<FileSystemInfo> files, List<LocalImageInfo> images, string name, ImageType type)
         {
             var image = GetImage(files, name) as FileInfo;
 

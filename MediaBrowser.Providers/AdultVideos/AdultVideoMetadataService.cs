@@ -34,10 +34,5 @@ namespace MediaBrowser.Providers.AdultVideos
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
-
-        protected override Task SaveItem(AdultVideo item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
     }
 }

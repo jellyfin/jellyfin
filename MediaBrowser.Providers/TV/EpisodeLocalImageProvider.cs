@@ -2,14 +2,12 @@
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class EpisodeLocalImageProvider : IImageFileProvider
+    public class EpisodeLocalLocalImageProvider : ILocalImageFileProvider
     {
         public string Name
         {
@@ -23,37 +21,46 @@ namespace MediaBrowser.Providers.TV
 
         public List<LocalImageInfo> GetImages(IHasImages item)
         {
+            var file = GetFile(item);
+
+            var list = new List<LocalImageInfo>();
+
+            if (file != null)
+            {
+                list.Add(new LocalImageInfo
+                {
+                    FileInfo = file,
+                    Type = ImageType.Primary
+                });
+            }
+
+            return list;
+        }
+
+        private FileInfo GetFile(IHasImages item)
+        {
             var parentPath = Path.GetDirectoryName(item.Path);
 
             var nameWithoutExtension = Path.GetFileNameWithoutExtension(item.Path);
             var thumbName = nameWithoutExtension + "-thumb";
 
-            return new DirectoryInfo(parentPath).EnumerateFiles("*", SearchOption.AllDirectories)
-                .Where(i =>
-                {
-                    if (BaseItem.SupportedImageExtensions.Contains(i.Extension))
-                    {
-                        var currentNameWithoutExtension = Path.GetFileNameWithoutExtension(i.Name);
+            var path = Path.Combine(parentPath, thumbName + ".jpg");
+            var fileInfo = new FileInfo(path);
 
-                        if (string.Equals(nameWithoutExtension, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
+            if (fileInfo.Exists)
+            {
+                return fileInfo;
+            }
 
-                        if (string.Equals(thumbName, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                    }
+            path = Path.Combine(parentPath, "metadata", nameWithoutExtension + ".jpg");
+            fileInfo = new FileInfo(path);
 
-                    return false;
-                })
-                .Select(i => new LocalImageInfo
-                {
-                    FileInfo = i,
-                    Type = ImageType.Primary
-                })
-                .ToList();
+            if (fileInfo.Exists)
+            {
+                return fileInfo;
+            }
+
+            return null;
         }
     }
 }

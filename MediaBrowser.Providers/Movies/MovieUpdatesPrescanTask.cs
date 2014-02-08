@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;

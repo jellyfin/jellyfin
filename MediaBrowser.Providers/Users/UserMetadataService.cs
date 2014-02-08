@@ -34,10 +34,5 @@ namespace MediaBrowser.Providers.Users
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
-
-        protected override Task SaveItem(User item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _userManager.UpdateUser(item);
-        }
     }
 }

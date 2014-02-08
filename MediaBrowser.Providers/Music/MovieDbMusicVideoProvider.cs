@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Providers.Movies;
 using System;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class MovieDbMusicVideoProvider : IRemoteMetadataProvider<MusicVideo, MusicVideoInfo>, IHasChangeMonitor
+    public class MovieDbMusicVideoProvider : IRemoteMetadataProvider<MusicVideo, MusicVideoInfo>
     {
         public Task<MetadataResult<MusicVideo>> GetMetadata(MusicVideoInfo info, CancellationToken cancellationToken)
         {

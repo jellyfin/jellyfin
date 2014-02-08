@@ -2,10 +2,8 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,7 +14,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using PersonInfo = MediaBrowser.Controller.Entities.PersonInfo;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -71,7 +68,7 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
-            if (!_config.Configuration.EnableTvDbUpdates)
+            if (!_config.Configuration.EnableTvDbUpdates && item.LocationType != LocationType.Virtual)
             {
                 return false;
             }
@@ -418,28 +415,6 @@ namespace MediaBrowser.Providers.TV
                                             if (!string.IsNullOrWhiteSpace(val))
                                             {
                                                 item.Name = val;
-                                            }
-                                        }
-                                        break;
-                                    }
-
-                                case "filename":
-                                    {
-                                        if (string.IsNullOrEmpty(item.PrimaryImagePath))
-                                        {
-                                            var val = reader.ReadElementContentAsString();
-                                            if (!string.IsNullOrWhiteSpace(val))
-                                            {
-                                                try
-                                                {
-                                                    var url = TVUtils.BannerUrl + val;
-
-                                                    //await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
-                                                }
-                                                catch (HttpException)
-                                                {
-                                                    status = ProviderRefreshStatus.CompletedWithErrors;
-                                                }
                                             }
                                         }
                                         break;

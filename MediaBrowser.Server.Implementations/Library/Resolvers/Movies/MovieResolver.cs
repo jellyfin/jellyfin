@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;

@@ -256,7 +256,7 @@ namespace MediaBrowser.Controller.Entities
 
         private string _sortName;
         /// <summary>
-        /// Gets or sets the name of the sort.
+        /// Gets the name of the sort.
         /// </summary>
         /// <value>The name of the sort.</value>
         [IgnoreDataMember]

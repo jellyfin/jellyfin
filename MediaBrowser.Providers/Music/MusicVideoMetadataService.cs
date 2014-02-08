@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -43,11 +44,6 @@ namespace MediaBrowser.Providers.Music
             {
                 target.Artist = source.Artist;
             }
-        }
-
-        protected override Task SaveItem(MusicVideo item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
         }
     }
 }

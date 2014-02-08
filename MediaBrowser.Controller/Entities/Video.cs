@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Video
     /// </summary>
-    public class Video : BaseItem, IHasMediaStreams, IHasAspectRatio
+    public class Video : BaseItem, IHasMediaStreams, IHasAspectRatio, IHasTags
     {
         public bool IsMultiPart { get; set; }
 
@@ -26,6 +26,7 @@ namespace MediaBrowser.Controller.Entities
         {
             PlayableStreamFileNames = new List<string>();
             AdditionalPartIds = new List<Guid>();
+            Tags = new List<string>();
         }
 
         /// <summary>
@@ -34,6 +35,12 @@ namespace MediaBrowser.Controller.Entities
         /// <value><c>true</c> if this instance has subtitles; otherwise, <c>false</c>.</value>
         public bool HasSubtitles { get; set; }
 
+        /// <summary>
+        /// Gets or sets the tags.
+        /// </summary>
+        /// <value>The tags.</value>
+        public List<string> Tags { get; set; }
+        
         /// <summary>
         /// Gets or sets the video bit rate.
         /// </summary>

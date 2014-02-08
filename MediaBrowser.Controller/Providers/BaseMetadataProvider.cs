@@ -40,8 +40,6 @@ namespace MediaBrowser.Controller.Providers
 
         protected static readonly Task<bool> FalseTaskResult = Task.FromResult(false);
 
-        protected static readonly SemaphoreSlim XmlParsingResourcePool = new SemaphoreSlim(4, 4);
-
         /// <summary>
         /// Supportses the specified item.
         /// </summary>

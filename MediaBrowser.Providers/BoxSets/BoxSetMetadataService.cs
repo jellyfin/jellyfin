@@ -41,11 +41,6 @@ namespace MediaBrowser.Providers.BoxSets
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
-        protected override Task SaveItem(BoxSet item, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            return _libraryManager.UpdateItem(item, reason, cancellationToken);
-        }
-
         protected override ItemUpdateType BeforeSave(BoxSet item)
         {
             var updateType = base.BeforeSave(item);

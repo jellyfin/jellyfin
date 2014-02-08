@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
@@ -34,15 +37,17 @@ namespace MediaBrowser.Controller.Entities
         DateTime DateLastSaved { get; set; }
 
         /// <summary>
-        /// Determines whether [is save local metadata enabled].
-        /// </summary>
-        /// <returns><c>true</c> if [is save local metadata enabled]; otherwise, <c>false</c>.</returns>
-        bool IsSaveLocalMetadataEnabled();
-
-        /// <summary>
         /// Gets a value indicating whether this instance is in mixed folder.
         /// </summary>
         /// <value><c>true</c> if this instance is in mixed folder; otherwise, <c>false</c>.</value>
         bool IsInMixedFolder { get; }
+
+        /// <summary>
+        /// Updates to repository.
+        /// </summary>
+        /// <param name="updateReason">The update reason.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken);
     }
 }

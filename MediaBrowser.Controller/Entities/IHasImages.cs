@@ -129,6 +129,12 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         bool AddImages(ImageType imageType, IEnumerable<FileInfo> images);
+
+        /// <summary>
+        /// Determines whether [is save local metadata enabled].
+        /// </summary>
+        /// <returns><c>true</c> if [is save local metadata enabled]; otherwise, <c>false</c>.</returns>
+        bool IsSaveLocalMetadataEnabled();
     }
 
     public static class HasImagesExtensions

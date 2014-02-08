@@ -19,11 +19,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using PersonInfo = MediaBrowser.Controller.Entities.PersonInfo;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasChangeMonitor
+    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>
     {
         internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(2, 2);
         internal static TvdbSeriesProvider Current { get; private set; }
