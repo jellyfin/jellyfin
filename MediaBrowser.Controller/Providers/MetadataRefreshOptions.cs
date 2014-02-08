@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Logging;
+using System;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -16,6 +17,8 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         [Obsolete]
         public bool ForceSave { get; set; }
+
+        public DirectoryService DirectoryService { get; set; }
     }
 
     public class ImageRefreshOptions

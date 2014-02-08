@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Providers
 
     public interface ILocalImageFileProvider : ILocalImageProvider
     {
-        List<LocalImageInfo> GetImages(IHasImages item);
+        List<LocalImageInfo> GetImages(IHasImages item, DirectoryService directoryService);
     }
 
     public class LocalImageInfo

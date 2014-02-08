@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.All
             return false;
         }
 
-        private IEnumerable<FileSystemInfo> GetFiles(IHasImages item, bool includeDirectories)
+        private IEnumerable<FileSystemInfo> GetFiles(IHasImages item, bool includeDirectories, DirectoryService directoryService)
         {
             if (item.LocationType != LocationType.FileSystem)
             {
@@ -68,34 +68,34 @@ namespace MediaBrowser.Providers.All
 
             if (includeDirectories)
             {
-                return new DirectoryInfo(path).EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly)
+                return directoryService.GetFileSystemEntries(path)
                 .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase) ||
                 (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
             }
 
-            return new DirectoryInfo(path).EnumerateFiles("*", SearchOption.TopDirectoryOnly)
+            return directoryService.GetFiles(path)
                 .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase));
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item)
+        public List<LocalImageInfo> GetImages(IHasImages item, DirectoryService directoryService)
         {
-            var files = GetFiles(item, true).ToList();
+            var files = GetFiles(item, true, directoryService).ToList();
 
             var list = new List<LocalImageInfo>();
 
-            PopulateImages(item, list, files, true);
+            PopulateImages(item, list, files, true, directoryService);
 
             return list;
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, string path)
+        public List<LocalImageInfo> GetImages(IHasImages item, string path, DirectoryService directoryService)
         {
-            return GetImages(item, new[] { path });
+            return GetImages(item, new[] { path }, directoryService);
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, IEnumerable<string> paths)
+        public List<LocalImageInfo> GetImages(IHasImages item, IEnumerable<string> paths, DirectoryService directoryService)
         {
-            var files = paths.SelectMany(i => new DirectoryInfo(i).EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+            var files = paths.SelectMany(directoryService.GetFiles)
                .Where(i =>
                {
                    var ext = i.Extension;
@@ -108,12 +108,12 @@ namespace MediaBrowser.Providers.All
 
             var list = new List<LocalImageInfo>();
 
-            PopulateImages(item, list, files, false);
+            PopulateImages(item, list, files, false, directoryService);
 
             return list;
         }
 
-        private void PopulateImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, bool supportParentSeriesFiles)
+        private void PopulateImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, bool supportParentSeriesFiles, DirectoryService directoryService)
         {
             var imagePrefix = string.Empty;
 
@@ -124,7 +124,7 @@ namespace MediaBrowser.Providers.All
             }
 
             PopulatePrimaryImages(item, images, files, imagePrefix);
-            PopulateBackdrops(item, images, files, imagePrefix);
+            PopulateBackdrops(item, images, files, imagePrefix, directoryService);
             PopulateScreenshots(images, files, imagePrefix);
 
             AddImage(files, images, imagePrefix + "logo", ImageType.Logo);
@@ -149,7 +149,7 @@ namespace MediaBrowser.Providers.All
 
                 if (season != null)
                 {
-                    PopulateSeasonImagesFromSeriesFolder(season, images);
+                    PopulateSeasonImagesFromSeriesFolder(season, images, directoryService);
                 }
             }
         }
@@ -185,7 +185,7 @@ namespace MediaBrowser.Providers.All
             }
         }
 
-        private void PopulateBackdrops(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix)
+        private void PopulateBackdrops(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, DirectoryService directoryService)
         {
             PopulateBackdrops(images, files, imagePrefix, "backdrop", "backdrop", ImageType.Backdrop);
 
@@ -208,13 +208,13 @@ namespace MediaBrowser.Providers.All
 
             if (extraFanartFolder != null)
             {
-                PopulateBackdropsFromExtraFanart(extraFanartFolder.FullName, images);
+                PopulateBackdropsFromExtraFanart(extraFanartFolder.FullName, images, directoryService);
             }
         }
 
-        private void PopulateBackdropsFromExtraFanart(string path, List<LocalImageInfo> images)
+        private void PopulateBackdropsFromExtraFanart(string path, List<LocalImageInfo> images, DirectoryService directoryService)
         {
-            var imageFiles = new DirectoryInfo(path).EnumerateFiles("*", SearchOption.TopDirectoryOnly)
+            var imageFiles = directoryService.GetFiles(path)
                 .Where(i =>
                 {
                     var extension = i.Extension;
@@ -262,7 +262,7 @@ namespace MediaBrowser.Providers.All
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private void PopulateSeasonImagesFromSeriesFolder(Season season, List<LocalImageInfo> images)
+        private void PopulateSeasonImagesFromSeriesFolder(Season season, List<LocalImageInfo> images, DirectoryService directoryService)
         {
             var seasonNumber = season.IndexNumber;
 
@@ -272,7 +272,7 @@ namespace MediaBrowser.Providers.All
                 return;
             }
 
-            var seriesFiles = GetFiles(series, false).ToList();
+            var seriesFiles = GetFiles(series, false, directoryService).ToList();
 
             // Try using the season name
             var prefix = season.Name.ToLower().Replace(" ", string.Empty);

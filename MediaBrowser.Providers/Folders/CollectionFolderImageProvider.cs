@@ -27,11 +27,11 @@ namespace MediaBrowser.Providers.Folders
             }
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item)
+        public List<LocalImageInfo> GetImages(IHasImages item, DirectoryService directoryService)
         {
             var collectionFolder = (CollectionFolder)item;
 
-            return new LocalImageProvider().GetImages(item, collectionFolder.PhysicalLocations);
+            return new LocalImageProvider().GetImages(item, collectionFolder.PhysicalLocations, directoryService);
         }
     }
 }

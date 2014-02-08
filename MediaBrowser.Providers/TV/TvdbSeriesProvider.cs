@@ -1079,33 +1079,5 @@ namespace MediaBrowser.Providers.TV
         {
             get { return "TheTVDB"; }
         }
-
-        public bool HasChanged(IHasMetadata item, DateTime date)
-        {
-            if (!_config.Configuration.EnableTvDbUpdates)
-            {
-                return false;
-            }
-
-            var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
-
-            if (!string.IsNullOrEmpty(seriesId))
-            {
-                var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesId);
-
-                var seriesXmlFilename = item.GetPreferredMetadataLanguage() + ".xml";
-
-                var filePath = Path.Combine(seriesDataPath, seriesXmlFilename);
-
-                var seriesFile = new FileInfo(filePath);
-
-                if (!seriesFile.Exists || _fileSystem.GetLastWriteTimeUtc(seriesFile) > date)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
     }
 }

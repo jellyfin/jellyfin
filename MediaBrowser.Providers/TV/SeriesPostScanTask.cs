@@ -174,8 +174,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     await series.RefreshMetadata(new MetadataRefreshOptions
                     {
-                    }, cancellationToken)
-                        .ConfigureAwait(false);
+                    }, cancellationToken).ConfigureAwait(false);
 
                     await series.ValidateChildren(new Progress<double>(), cancellationToken, true)
                         .ConfigureAwait(false);
@@ -469,6 +468,7 @@ namespace MediaBrowser.Providers.TV
             };
 
             await series.AddChild(season, cancellationToken).ConfigureAwait(false);
+
             await season.RefreshMetadata(new MetadataRefreshOptions
             {
             }, cancellationToken).ConfigureAwait(false);

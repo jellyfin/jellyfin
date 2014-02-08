@@ -2,8 +2,10 @@
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -19,48 +21,84 @@ namespace MediaBrowser.Providers.TV
             return item is Episode && item.LocationType == LocationType.FileSystem;
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item)
-        {
-            var file = GetFile(item);
-
-            var list = new List<LocalImageInfo>();
-
-            if (file != null)
-            {
-                list.Add(new LocalImageInfo
-                {
-                    FileInfo = file,
-                    Type = ImageType.Primary
-                });
-            }
-
-            return list;
-        }
-
-        private FileInfo GetFile(IHasImages item)
+        public List<LocalImageInfo> GetImages(IHasImages item, DirectoryService directoryService)
         {
             var parentPath = Path.GetDirectoryName(item.Path);
 
+            var parentPathFiles = directoryService.GetFileSystemEntries(parentPath);
+
             var nameWithoutExtension = Path.GetFileNameWithoutExtension(item.Path);
-            var thumbName = nameWithoutExtension + "-thumb";
 
-            var path = Path.Combine(parentPath, thumbName + ".jpg");
-            var fileInfo = new FileInfo(path);
+            var files = GetFilesFromParentFolder(nameWithoutExtension, parentPathFiles);
 
-            if (fileInfo.Exists)
+            if (files.Count > 0)
             {
-                return fileInfo;
+                return files;
             }
 
-            path = Path.Combine(parentPath, "metadata", nameWithoutExtension + ".jpg");
-            fileInfo = new FileInfo(path);
+            var metadataPath = Path.Combine(parentPath, "metadata");
 
-            if (fileInfo.Exists)
+            if (parentPathFiles.Any(i => string.Equals(i.FullName, metadataPath, StringComparison.OrdinalIgnoreCase)))
             {
-                return fileInfo;
+                return GetFilesFromParentFolder(nameWithoutExtension, directoryService.GetFiles(metadataPath));
             }
 
-            return null;
+            return new List<LocalImageInfo>();
+        }
+
+        private List<LocalImageInfo> GetFilesFromParentFolder(string filenameWithoutExtension, IEnumerable<FileSystemInfo> parentPathFiles)
+        {
+            var thumbName = filenameWithoutExtension + "-thumb";
+
+            return parentPathFiles
+              .Where(i =>
+              {
+                  if (BaseItem.SupportedImageExtensions.Contains(i.Extension))
+                  {
+                      var currentNameWithoutExtension = Path.GetFileNameWithoutExtension(i.Name);
+
+                      if (string.Equals(filenameWithoutExtension, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                      {
+                          return true;
+                      }
+
+                      if (string.Equals(thumbName, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                      {
+                          return true;
+                      }
+                  }
+
+                  return false;
+              })
+              .Select(i => new LocalImageInfo
+              {
+                  FileInfo = (FileInfo)i,
+                  Type = ImageType.Primary
+              })
+              .ToList();
+        }
+
+        private List<LocalImageInfo> GetFilesFromMetadataFolder(string filenameWithoutExtension, IEnumerable<FileInfo> metadataFiles)
+        {
+            return metadataFiles
+              .Where(i =>
+              {
+                  if (BaseItem.SupportedImageExtensions.Contains(i.Extension))
+                  {
+                      if (string.Equals(filenameWithoutExtension, Path.GetFileNameWithoutExtension(i.Name), StringComparison.OrdinalIgnoreCase))
+                      {
+                          return true;
+                      }
+                  }
+
+                  return false;
+              })
+              .Select(i => new LocalImageInfo
+              {
+                  FileInfo = i,
+                  Type = ImageType.Primary
+              })
+              .ToList();
         }
     }
 }

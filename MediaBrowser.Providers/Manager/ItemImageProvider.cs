@@ -34,13 +34,13 @@ namespace MediaBrowser.Providers.Manager
             _fileSystem = fileSystem;
         }
 
-        public bool ValidateImages(IHasImages item, IEnumerable<IImageProvider> providers)
+        public bool ValidateImages(IHasImages item, IEnumerable<IImageProvider> providers, DirectoryService directoryService)
         {
-            var hasChanges = item.ValidateImages();
+            var hasChanges = item.ValidateImages(directoryService);
 
             foreach (var provider in providers.OfType<ILocalImageFileProvider>())
             {
-                var images = provider.GetImages(item);
+                var images = provider.GetImages(item, directoryService);
 
                 if (MergeImages(item, images))
                 {

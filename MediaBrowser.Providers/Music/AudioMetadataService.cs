@@ -7,12 +7,10 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class AudioMetadataService : MetadataService<Audio, ItemLookupInfo>
+    public class AudioMetadataService : MetadataService<Audio, SongInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

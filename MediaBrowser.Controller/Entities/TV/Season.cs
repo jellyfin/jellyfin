@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -11,7 +12,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Season
     /// </summary>
-    public class Season : Folder, IHasSeries
+    public class Season : Folder, IHasSeries, IHasLookupInfo<SeasonInfo>
     {
 
         /// <summary>
@@ -240,6 +241,11 @@ namespace MediaBrowser.Controller.Entities.TV
                 var series = Series;
                 return series == null ? null : series.Name;
             }
+        }
+
+        public SeasonInfo GetLookupInfo()
+        {
+            return GetItemLookupInfo<SeasonInfo>();
         }
     }
 }

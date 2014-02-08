@@ -181,7 +181,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private async Task<bool> RefreshAdditionalParts(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshAdditionalParts(MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newItems = LoadAdditionalParts(fileSystemChildren).ToList();
 

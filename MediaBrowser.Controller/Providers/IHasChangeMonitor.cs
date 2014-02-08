@@ -1,5 +1,5 @@
-﻿using System;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
+using System;
 
 namespace MediaBrowser.Controller.Providers
 {

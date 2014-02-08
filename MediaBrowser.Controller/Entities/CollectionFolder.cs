@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +8,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.Entities
 
         public List<string> PhysicalLocationsList { get; set; }
 
-        protected override IEnumerable<FileSystemInfo> GetFileSystemChildren()
+        protected override IEnumerable<FileSystemInfo> GetFileSystemChildren(DirectoryService directoryService)
         {
             return CreateResolveArgs().FileSystemChildren;
         }
@@ -120,7 +120,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="refreshChildMetadata">if set to <c>true</c> [refresh child metadata].</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <returns>Task.</returns>
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, DirectoryService directoryService)
         {
             CreateResolveArgs();
             ResetDynamicChildren();

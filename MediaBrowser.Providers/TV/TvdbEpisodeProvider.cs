@@ -68,7 +68,8 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
-            if (!_config.Configuration.EnableTvDbUpdates && item.LocationType != LocationType.Virtual)
+            // Only enable for virtual items
+            if (item.LocationType != LocationType.Virtual)
             {
                 return false;
             }

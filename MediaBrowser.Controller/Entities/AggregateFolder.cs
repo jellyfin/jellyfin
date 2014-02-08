@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -56,7 +57,7 @@ namespace MediaBrowser.Controller.Entities
 
         public List<string> PhysicalLocationsList { get; set; }
 
-        protected override IEnumerable<FileSystemInfo> GetFileSystemChildren()
+        protected override IEnumerable<FileSystemInfo> GetFileSystemChildren(DirectoryService directoryService)
         {
             return CreateResolveArgs().FileSystemChildren;
         }
@@ -118,9 +119,9 @@ namespace MediaBrowser.Controller.Entities
         /// Get the children of this folder from the actual file system
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        protected override IEnumerable<BaseItem> GetNonCachedChildren()
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(DirectoryService directoryService)
         {
-            return base.GetNonCachedChildren().Concat(_virtualChildren);
+            return base.GetNonCachedChildren(directoryService).Concat(_virtualChildren);
         }
 
         /// <summary>

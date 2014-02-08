@@ -113,7 +113,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
         }
 
-        private async Task<bool> RefreshSpecialFeatures(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshSpecialFeatures(MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newItems = LoadSpecialFeatures(fileSystemChildren).ToList();
             var newItemIds = newItems.Select(i => i.Id).ToList();

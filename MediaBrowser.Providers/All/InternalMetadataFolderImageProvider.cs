@@ -54,13 +54,13 @@ namespace MediaBrowser.Providers.All
             }
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item)
+        public List<LocalImageInfo> GetImages(IHasImages item, DirectoryService directoryService)
         {
             var path = _config.ApplicationPaths.GetInternalMetadataPath(item.Id);
 
             try
             {
-                return new LocalImageProvider().GetImages(item, path);
+                return new LocalImageProvider().GetImages(item, path, directoryService);
             }
             catch (DirectoryNotFoundException)
             {

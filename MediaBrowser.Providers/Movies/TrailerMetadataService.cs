@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class TrailerMetadataService : MetadataService<Trailer, ItemLookupInfo>
+    public class TrailerMetadataService : MetadataService<Trailer, TrailerInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

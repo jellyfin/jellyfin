@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -108,7 +109,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Validates the images and returns true or false indicating if any were removed.
         /// </summary>
-        bool ValidateImages();
+        bool ValidateImages(DirectoryService directoryService);
 
         /// <summary>
         /// Gets a value indicating whether this instance is owned item.

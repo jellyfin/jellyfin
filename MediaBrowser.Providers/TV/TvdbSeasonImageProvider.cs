@@ -342,9 +342,13 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
-            if (!_config.Configuration.EnableTvDbUpdates && item.LocationType != LocationType.Virtual)
+            if (item.LocationType != LocationType.Virtual)
             {
-                return false;
+                // For non-virtual items, only enable if configured
+                if (!_config.Configuration.EnableTvDbUpdates)
+                {
+                    return false;
+                }
             }
 
             var season = (Season)item;

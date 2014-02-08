@@ -51,7 +51,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             string[] queries = {
 
-                                "create table if not exists MetadataStatus (ItemId GUID PRIMARY KEY, ItemName TEXT, SeriesName TEXT, DateLastMetadataRefresh datetime, DateLastImagesRefresh datetime, LastStatus TEXT, LastErrorMessage TEXT, MetadataProvidersRefreshed TEXT, ImageProvidersRefreshed TEXT)",
+                                "create table if not exists MetadataStatus (ItemId GUID PRIMARY KEY, ItemName TEXT, ItemType TEXT, SeriesName TEXT, DateLastMetadataRefresh datetime, DateLastImagesRefresh datetime, LastStatus TEXT, LastErrorMessage TEXT, MetadataProvidersRefreshed TEXT, ImageProvidersRefreshed TEXT)",
                                 "create index if not exists idx_MetadataStatus on MetadataStatus(ItemId)",
 
                                 //pragmas
@@ -71,6 +71,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             "ItemId",
             "ItemName",
+            "ItemType",
             "SeriesName",
             "DateLastMetadataRefresh",
             "DateLastImagesRefresh",
@@ -144,37 +145,42 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!reader.IsDBNull(2))
             {
-                result.SeriesName = reader.GetString(2);
+                result.ItemName = reader.GetString(2);
             }
 
             if (!reader.IsDBNull(3))
             {
-                result.DateLastMetadataRefresh = reader.GetDateTime(3).ToUniversalTime();
+                result.SeriesName = reader.GetString(3);
             }
 
             if (!reader.IsDBNull(4))
             {
-                result.DateLastImagesRefresh = reader.GetDateTime(4).ToUniversalTime();
+                result.DateLastMetadataRefresh = reader.GetDateTime(4).ToUniversalTime();
             }
 
             if (!reader.IsDBNull(5))
             {
-                result.LastStatus = (ProviderRefreshStatus)Enum.Parse(typeof(ProviderRefreshStatus), reader.GetString(5), true);
+                result.DateLastImagesRefresh = reader.GetDateTime(5).ToUniversalTime();
             }
 
             if (!reader.IsDBNull(6))
             {
-                result.LastErrorMessage = reader.GetString(6);
+                result.LastStatus = (ProviderRefreshStatus)Enum.Parse(typeof(ProviderRefreshStatus), reader.GetString(6), true);
             }
 
             if (!reader.IsDBNull(7))
             {
-                result.MetadataProvidersRefreshed = reader.GetString(7).Split('|').Where(i => !string.IsNullOrEmpty(i)).Select(i => new Guid(i)).ToList();
+                result.LastErrorMessage = reader.GetString(7);
             }
 
             if (!reader.IsDBNull(8))
             {
-                result.ImageProvidersRefreshed = reader.GetString(8).Split('|').Where(i => !string.IsNullOrEmpty(i)).Select(i => new Guid(i)).ToList();
+                result.MetadataProvidersRefreshed = reader.GetString(8).Split('|').Where(i => !string.IsNullOrEmpty(i)).Select(i => new Guid(i)).ToList();
+            }
+
+            if (!reader.IsDBNull(9))
+            {
+                result.ImageProvidersRefreshed = reader.GetString(9).Split('|').Where(i => !string.IsNullOrEmpty(i)).Select(i => new Guid(i)).ToList();
             }
 
             return result;
@@ -199,13 +205,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 
                 _saveStatusCommand.GetParameter(0).Value = status.ItemId;
                 _saveStatusCommand.GetParameter(1).Value = status.ItemName;
-                _saveStatusCommand.GetParameter(2).Value = status.SeriesName;
-                _saveStatusCommand.GetParameter(3).Value = status.DateLastMetadataRefresh;
-                _saveStatusCommand.GetParameter(4).Value = status.DateLastImagesRefresh;
-                _saveStatusCommand.GetParameter(5).Value = status.LastStatus.ToString();
-                _saveStatusCommand.GetParameter(6).Value = status.LastErrorMessage;
-                _saveStatusCommand.GetParameter(7).Value = string.Join("|", status.MetadataProvidersRefreshed.ToArray());
-                _saveStatusCommand.GetParameter(8).Value = string.Join("|", status.ImageProvidersRefreshed.ToArray());
+                _saveStatusCommand.GetParameter(2).Value = status.ItemType;
+                _saveStatusCommand.GetParameter(3).Value = status.SeriesName;
+                _saveStatusCommand.GetParameter(4).Value = status.DateLastMetadataRefresh;
+                _saveStatusCommand.GetParameter(5).Value = status.DateLastImagesRefresh;
+                _saveStatusCommand.GetParameter(6).Value = status.LastStatus.ToString();
+                _saveStatusCommand.GetParameter(7).Value = status.LastErrorMessage;
+                _saveStatusCommand.GetParameter(8).Value = string.Join("|", status.MetadataProvidersRefreshed.ToArray());
+                _saveStatusCommand.GetParameter(9).Value = string.Join("|", status.ImageProvidersRefreshed.ToArray());
 
                 _saveStatusCommand.Transaction = transaction;
 
