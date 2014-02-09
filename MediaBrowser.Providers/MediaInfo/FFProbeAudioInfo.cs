@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.IO;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -20,7 +21,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IItemRepository _itemRepo;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        
+
         public FFProbeAudioInfo(IMediaEncoder mediaEncoder, IItemRepository itemRepo)
         {
             _mediaEncoder = mediaEncoder;
@@ -185,7 +186,7 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
         }
 
-        private readonly char[] _nameDelimiters = new[] { '/', '|', ';', '\\' };
+        private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
 
         /// <summary>
         /// Splits the specified val.
@@ -210,13 +211,62 @@ namespace MediaBrowser.Providers.MediaInfo
             val = val.Replace(" featuring ", ArtistReplaceValue, StringComparison.OrdinalIgnoreCase)
                 .Replace(" feat. ", ArtistReplaceValue, StringComparison.OrdinalIgnoreCase);
 
+            var artistsFound = new List<string>();
+
+            foreach (var whitelistArtist in GetSplitWhitelist())
+            {
+                if (val.IndexOf(whitelistArtist, StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    val = val.Replace(whitelistArtist, "|", StringComparison.OrdinalIgnoreCase);
+
+                    // TODO: Preserve casing from original tag
+                    artistsFound.Add(whitelistArtist);
+                }
+            }
+
             // Only use the comma as a delimeter if there are no slashes or pipes. 
             // We want to be careful not to split names that have commas in them
             var delimeter = _nameDelimiters;
 
-            return val.Split(delimeter, StringSplitOptions.RemoveEmptyEntries)
+            var artists = val.Split(delimeter, StringSplitOptions.RemoveEmptyEntries)
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Select(i => i.Trim());
+
+            artistsFound.AddRange(artists);
+            return artistsFound;
+        }
+
+
+        private List<string> _splitWhiteList = null;
+
+        private IEnumerable<string> GetSplitWhitelist()
+        {
+            if (_splitWhiteList == null)
+            {
+                var file = GetType().Namespace + ".whitelist.txt";
+
+                using (var stream = GetType().Assembly.GetManifestResourceStream(file))
+                {
+                    using (var reader = new StreamReader(stream))
+                    {
+                        var list = new List<string>();
+
+                        while (!reader.EndOfStream)
+                        {
+                            var val = reader.ReadLine();
+
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                list.Add(val);
+                            }
+                        }
+
+                        _splitWhiteList = list;
+                    }
+                }
+            }
+
+            return _splitWhiteList;
         }
 
         /// <summary>
