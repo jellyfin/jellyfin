@@ -145,8 +145,8 @@ namespace MediaBrowser.Api.Images
     [Api(Description = "Gets a remote image")]
     public class GetRemoteImage
     {
-        [ApiMember(Name = "Url", Description = "The image url", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string Url { get; set; }
+        [ApiMember(Name = "ImageUrl", Description = "The image url", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ImageUrl { get; set; }
     }
 
     public class RemoteImageService : BaseApiService
@@ -303,7 +303,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>Task{System.Object}.</returns>
         private async Task<object> GetRemoteImage(GetRemoteImage request)
         {
-            var urlHash = request.Url.GetMD5();
+            var urlHash = request.ImageUrl.GetMD5();
             var pointerCachePath = GetFullCachePath(urlHash.ToString());
 
             string contentPath;
@@ -325,7 +325,7 @@ namespace MediaBrowser.Api.Images
                 // Means the file isn't cached yet
             }
 
-            await DownloadImage(request.Url, urlHash, pointerCachePath).ConfigureAwait(false);
+            await DownloadImage(request.ImageUrl, urlHash, pointerCachePath).ConfigureAwait(false);
 
             // Read the pointer file again
             using (var reader = new StreamReader(pointerCachePath))

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -13,7 +12,6 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using PersonInfo = MediaBrowser.Controller.Entities.PersonInfo;
 
 namespace MediaBrowser.Providers.Movies
 {

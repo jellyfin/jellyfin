@@ -1350,7 +1350,9 @@
                     links.push('<a class="textlink" href="http://www.themoviedb.org/collection/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
                 else if (item.Type == "Person")
                     links.push('<a class="textlink" href="http://www.themoviedb.org/person/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
-            }
+                else if (item.Type == "Series")
+                    links.push('<a class="textlink" href="http://www.themoviedb.org/tv/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
+    }
             if (providerIds.Tvdb) {
 
                 if (item.Type == "Series") {

@@ -127,7 +127,7 @@
     }
 
     function getDisplayUrl(url) {
-        return ApiClient.getUrl("Images/Remote", { url: url });
+        return ApiClient.getUrl("Images/Remote", { imageUrl: url });
     }
 
     function getRemoteImageHtml(image, imageType) {

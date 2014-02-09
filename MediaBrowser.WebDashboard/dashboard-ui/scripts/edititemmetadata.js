@@ -604,7 +604,7 @@
             $('#fldMetascore', page).hide();
         }
 
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "BoxSet" || item.Type == "MusicAlbum") {
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "BoxSet" || item.Type == "MusicAlbum" || item.Type == "Series") {
             $('#fldTmdb', page).show();
         } else {
             $('#fldTmdb', page).hide();
