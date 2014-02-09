@@ -17,7 +17,7 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    class SeriesPostScanTask : ILibraryPostScanTask
+    class SeriesPostScanTask : ILibraryPostScanTask, IHasOrder
     {
         /// <summary>
         /// The _library manager
@@ -87,6 +87,15 @@ namespace MediaBrowser.Providers.TV
                 percent *= 100;
 
                 progress.Report(percent);
+            }
+        }
+
+        public int Order
+        {
+            get
+            {
+                // Run after tvdb update task
+                return 1;
             }
         }
     }

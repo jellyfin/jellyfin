@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Savers
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
 
             // If new metadata has been downloaded and save local is on
-            if (item.IsSaveLocalMetadataEnabled() && (wasMetadataEdited || wasMetadataDownloaded))
+            if (wasMetadataEdited || wasMetadataDownloaded)
             {
                 return item is Game;
             }

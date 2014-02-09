@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.Savers
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
 
             // If new metadata has been downloaded and save local is on
-            if (item.IsSaveLocalMetadataEnabled() && (wasMetadataEdited || wasMetadataDownloaded))
+            if (wasMetadataEdited || wasMetadataDownloaded)
             {
                 var video = item as Video;
                 // Check parent for null to avoid running this against things like video backdrops

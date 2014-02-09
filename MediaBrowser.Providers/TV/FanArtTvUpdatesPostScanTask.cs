@@ -14,11 +14,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.Movies
+namespace MediaBrowser.Providers.TV
 {
-    class FanartMovieUpdatesPrescanTask : ILibraryPostScanTask
+    class FanArtTvUpdatesPostScanTask : ILibraryPostScanTask
     {
-        private const string UpdatesUrl = "http://api.fanart.tv/webservice/newmovies/{0}/{1}/";
+        private const string UpdatesUrl = "http://api.fanart.tv/webservice/newtv/{0}/{1}/";
 
         /// <summary>
         /// The _HTTP client
@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.Movies
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public FanartMovieUpdatesPrescanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem)
+        public FanArtTvUpdatesPostScanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _jsonSerializer = jsonSerializer;
             _config = config;
@@ -60,7 +60,7 @@ namespace MediaBrowser.Providers.Movies
                 return;
             }
 
-            var path = FanartMovieImageProvider.GetMoviesDataPath(_config.CommonApplicationPaths);
+            var path = FanartSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
             Directory.CreateDirectory(path);
             
@@ -82,11 +82,11 @@ namespace MediaBrowser.Providers.Movies
             // If this is our first time, don't do any updates and just record the timestamp
             if (!string.IsNullOrEmpty(lastUpdateTime))
             {
-                var moviesToUpdate = await GetMovieIdsToUpdate(existingDirectories, lastUpdateTime, cancellationToken).ConfigureAwait(false);
+                var seriesToUpdate = await GetSeriesIdsToUpdate(existingDirectories, lastUpdateTime, cancellationToken).ConfigureAwait(false);
 
                 progress.Report(5);
 
-                await UpdateMovies(moviesToUpdate, progress, cancellationToken).ConfigureAwait(false);
+                await UpdateSeries(seriesToUpdate, progress, cancellationToken).ConfigureAwait(false);
             }
 
             var newUpdateTime = Convert.ToInt64(DateTimeToUnixTimestamp(DateTime.UtcNow)).ToString(UsCulture);
@@ -96,7 +96,14 @@ namespace MediaBrowser.Providers.Movies
             progress.Report(100);
         }
 
-        private async Task<IEnumerable<string>> GetMovieIdsToUpdate(IEnumerable<string> existingIds, string lastUpdateTime, CancellationToken cancellationToken)
+        /// <summary>
+        /// Gets the series ids to update.
+        /// </summary>
+        /// <param name="existingSeriesIds">The existing series ids.</param>
+        /// <param name="lastUpdateTime">The last update time.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{System.String}}.</returns>
+        private async Task<IEnumerable<string>> GetSeriesIdsToUpdate(IEnumerable<string> existingSeriesIds, string lastUpdateTime, CancellationToken cancellationToken)
         {
             // First get last time
             using (var stream = await _httpClient.Get(new HttpRequestOptions
@@ -108,35 +115,42 @@ namespace MediaBrowser.Providers.Movies
 
             }).ConfigureAwait(false))
             {
+                // If empty fanart will return a string of "null", rather than an empty list
                 using (var reader = new StreamReader(stream))
                 {
                     var json = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                    // If empty fanart will return a string of "null", rather than an empty list
                     if (string.Equals(json, "null", StringComparison.OrdinalIgnoreCase))
                     {
                         return new List<string>();
                     }
 
-                    var updates = _jsonSerializer.DeserializeFromString<List<FanartUpdatesPrescanTask.FanArtUpdate>>(json);
+                    var existingDictionary = existingSeriesIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-                    var existingDictionary = existingIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+                    var updates = _jsonSerializer.DeserializeFromString<List<FanartUpdatesPostScanTask.FanArtUpdate>>(json);
 
                     return updates.Select(i => i.id).Where(existingDictionary.ContainsKey);
                 }
             }
         }
 
-        private async Task UpdateMovies(IEnumerable<string> idList, IProgress<double> progress, CancellationToken cancellationToken)
+        /// <summary>
+        /// Updates the series.
+        /// </summary>
+        /// <param name="idList">The id list.</param>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task UpdateSeries(IEnumerable<string> idList, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var list = idList.ToList();
             var numComplete = 0;
 
             foreach (var id in list)
             {
-                _logger.Info("Updating movie " + id);
+                _logger.Info("Updating series " + id);
 
-                await FanartMovieImageProvider.Current.DownloadMovieXml(id, cancellationToken).ConfigureAwait(false);
+                await FanartSeriesProvider.Current.DownloadSeriesXml(id, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;

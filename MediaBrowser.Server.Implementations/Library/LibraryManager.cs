@@ -38,24 +38,13 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Gets or sets the postscan tasks.
         /// </summary>
         /// <value>The postscan tasks.</value>
-        private IEnumerable<ILibraryPostScanTask> PostscanTasks { get; set; }
-        /// <summary>
-        /// Gets or sets the prescan tasks.
-        /// </summary>
-        /// <value>The prescan tasks.</value>
-        private IEnumerable<ILibraryPrescanTask> PrescanTasks { get; set; }
-
-        /// <summary>
-        /// Gets or sets the people prescan tasks.
-        /// </summary>
-        /// <value>The people prescan tasks.</value>
-        private IEnumerable<IPeoplePrescanTask> PeoplePrescanTasks { get; set; }
+        private ILibraryPostScanTask[] PostscanTasks { get; set; }
 
         /// <summary>
         /// Gets the intro providers.
         /// </summary>
         /// <value>The intro providers.</value>
-        private IEnumerable<IIntroProvider> IntroProviders { get; set; }
+        private IIntroProvider[] IntroProviders { get; set; }
 
         /// <summary>
         /// Gets the list of entity resolution ignore rules
@@ -205,26 +194,27 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
-        /// <param name="prescanTasks">The prescan tasks.</param>
         /// <param name="postscanTasks">The postscan tasks.</param>
-        /// <param name="peoplePrescanTasks">The people prescan tasks.</param>
         public void AddParts(IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IVirtualFolderCreator> pluginFolders,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPrescanTask> prescanTasks,
-            IEnumerable<ILibraryPostScanTask> postscanTasks,
-            IEnumerable<IPeoplePrescanTask> peoplePrescanTasks)
+            IEnumerable<ILibraryPostScanTask> postscanTasks)
         {
             EntityResolutionIgnoreRules = rules.ToArray();
             PluginFolderCreators = pluginFolders.ToArray();
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
-            IntroProviders = introProviders;
+            IntroProviders = introProviders.ToArray();
             Comparers = itemComparers.ToArray();
-            PrescanTasks = prescanTasks;
-            PostscanTasks = postscanTasks;
-            PeoplePrescanTasks = peoplePrescanTasks;
+
+            PostscanTasks = postscanTasks.OrderBy(i =>
+            {
+                var hasOrder = i as IHasOrder;
+
+                return hasOrder == null ? 0 : hasOrder.Order;
+
+            }).ToArray();
         }
 
         /// <summary>
@@ -845,7 +835,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new PeopleValidator(this, PeoplePrescanTasks, _logger).ValidatePeople(cancellationToken, progress);
+            return new PeopleValidator(this, _logger).ValidatePeople(cancellationToken, progress);
         }
 
         /// <summary>
@@ -970,14 +960,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
             innerProgress.RegisterAction(pct => progress.Report(2 + pct * .13));
 
-            // Run prescan tasks
-            await RunPrescanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
-
-            progress.Report(15);
-
             innerProgress = new ActionableProgress<double>();
 
-            innerProgress.RegisterAction(pct => progress.Report(15 + pct * .6));
+            innerProgress.RegisterAction(pct => progress.Report(2 + pct * .73));
 
             // Now validate the entire media library
             await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(), recursive: true).ConfigureAwait(false);
@@ -996,55 +981,6 @@ namespace MediaBrowser.Server.Implementations.Library
             // Bad practice, i know. But we keep a lot in memory, unfortunately.
             GC.Collect(2, GCCollectionMode.Forced, true);
             GC.Collect(2, GCCollectionMode.Forced, true);
-        }
-
-        /// <summary>
-        /// Runs the prescan tasks.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task RunPrescanTasks(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            var tasks = PrescanTasks.ToList();
-
-            var numComplete = 0;
-            var numTasks = tasks.Count;
-
-            foreach (var task in tasks)
-            {
-                var innerProgress = new ActionableProgress<double>();
-
-                // Prevent access to modified closure
-                var currentNumComplete = numComplete;
-
-                innerProgress.RegisterAction(pct =>
-                {
-                    double innerPercent = (currentNumComplete * 100) + pct;
-                    innerPercent /= numTasks;
-                    progress.Report(innerPercent);
-                });
-
-                try
-                {
-                    await task.Run(innerProgress, cancellationToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.Info("Pre-scan task cancelled: {0}", task.GetType().Name);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error running pre-scan task", ex);
-                }
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= numTasks;
-                progress.Report(percent * 100);
-            }
-
-            progress.Report(100);
         }
 
         /// <summary>

@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using MoreLinq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,19 +23,15 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// </summary>
         private readonly ILogger _logger;
 
-        private readonly IEnumerable<IPeoplePrescanTask> _prescanTasks;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="PeopleValidator" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="prescanTasks">The prescan tasks.</param>
         /// <param name="logger">The logger.</param>
-        public PeopleValidator(ILibraryManager libraryManager, IEnumerable<IPeoplePrescanTask> prescanTasks, ILogger logger)
+        public PeopleValidator(ILibraryManager libraryManager, ILogger logger)
         {
             _libraryManager = libraryManager;
             _logger = logger;
-            _prescanTasks = prescanTasks;
         }
 
         /// <summary>
@@ -51,11 +46,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             innerProgress.RegisterAction(pct => progress.Report(pct * .15));
 
-            // Run prescan tasks
-            await RunPrescanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
-
-            progress.Report(15);
-            
             var people = _libraryManager.RootFolder.GetRecursiveChildren()
                 .SelectMany(c => c.People)
                 .DistinctBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
@@ -93,56 +83,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             // Bad practice, i know. But we keep a lot in memory, unfortunately.
             GC.Collect(2, GCCollectionMode.Forced, true);
             GC.Collect(2, GCCollectionMode.Forced, true);
-        }
-
-        /// <summary>
-        /// Runs the prescan tasks.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task RunPrescanTasks(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            var tasks = _prescanTasks.ToList();
-
-            var numComplete = 0;
-            var numTasks = tasks.Count;
-
-            foreach (var task in tasks)
-            {
-                var innerProgress = new ActionableProgress<double>();
-
-                // Prevent access to modified closure
-                var currentNumComplete = numComplete;
-
-                innerProgress.RegisterAction(pct =>
-                {
-                    double innerPercent = (currentNumComplete * 100) + pct;
-                    innerPercent /= numTasks;
-                    progress.Report(innerPercent);
-                });
-
-                try
-                {
-                    await task.Run(innerProgress, cancellationToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.Info("Pre-scan task cancelled: {0}", task.GetType().Name);
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error running pre-scan task", ex);
-                }
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= numTasks;
-                progress.Report(percent * 100);
-            }
-
-            progress.Report(100);
         }
     }
 }

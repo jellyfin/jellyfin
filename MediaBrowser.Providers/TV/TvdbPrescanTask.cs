@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.TV
     /// <summary>
     /// Class TvdbPrescanTask
     /// </summary>
-    public class TvdbPrescanTask : ILibraryPrescanTask
+    public class TvdbPrescanTask : ILibraryPostScanTask
     {
         /// <summary>
         /// The server time URL

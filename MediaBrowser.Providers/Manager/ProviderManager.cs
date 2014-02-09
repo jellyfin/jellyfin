@@ -470,7 +470,7 @@ namespace MediaBrowser.Providers.Manager
             }));
 
             // Savers
-            list.AddRange(_savers.Where(i => IsSaverEnabledForItem(i, item, ItemUpdateType.MetadataEdit)).OrderBy(i => i.Name).Select(i => new MetadataPlugin
+            list.AddRange(_savers.Where(i => IsSaverEnabledForItem(i, item, ItemUpdateType.MetadataEdit, false)).OrderBy(i => i.Name).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.MetadataSaver
@@ -498,6 +498,14 @@ namespace MediaBrowser.Providers.Manager
 
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
 
+        public MetadataOptions GetMetadataOptions(IHasMetadata item)
+        {
+            var type = item.GetType().Name;
+            return ConfigurationManager.Configuration.MetadataOptions
+                .FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase)) ??
+                new MetadataOptions();
+        }
+        
         /// <summary>
         /// Saves the metadata.
         /// </summary>
@@ -506,7 +514,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         public async Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
         {
-            foreach (var saver in _savers.Where(i => IsSaverEnabledForItem(i, item, updateType)))
+            foreach (var saver in _savers.Where(i => IsSaverEnabledForItem(i, item, updateType, true)))
             {
                 _logger.Debug("Saving {0} to {1}.", item.Path ?? item.Name, saver.Name);
                 
@@ -559,10 +567,17 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private bool IsSaverEnabledForItem(IMetadataSaver saver, IHasMetadata item, ItemUpdateType updateType)
+        private bool IsSaverEnabledForItem(IMetadataSaver saver, IHasMetadata item, ItemUpdateType updateType, bool enforceConfiguration)
         {
+            var options = GetMetadataOptions(item);
+
             try
             {
+                if (enforceConfiguration && options.DisabledMetadataSavers.Contains(saver.Name, StringComparer.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
                 return saver.IsEnabledFor(item, updateType);
             }
             catch (Exception ex)

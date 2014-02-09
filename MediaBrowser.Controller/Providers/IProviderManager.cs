@@ -88,5 +88,12 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="updateType">Type of the update.</param>
         /// <returns>Task.</returns>
         Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType);
+
+        /// <summary>
+        /// Gets the metadata options.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>MetadataOptions.</returns>
+        MetadataOptions GetMetadataOptions(IHasMetadata item);
     }
 }

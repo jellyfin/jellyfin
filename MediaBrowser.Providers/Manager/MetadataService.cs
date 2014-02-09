@@ -71,7 +71,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var itemOfType = (TItemType)item;
-            var config = GetMetadataOptions(itemOfType);
+            var config = ProviderManager.GetMetadataOptions(item);
 
             var updateType = ItemUpdateType.Unspecified;
             var refreshResult = GetLastResult(item.Id);
@@ -155,15 +155,6 @@ namespace MediaBrowser.Providers.Manager
             {
                 await SaveProviderResult(itemOfType, refreshResult).ConfigureAwait(false);
             }
-        }
-
-        private readonly MetadataOptions _defaultOptions = new MetadataOptions();
-        protected MetadataOptions GetMetadataOptions(TItemType item)
-        {
-            var type = item.GetType().Name;
-            return ServerConfigurationManager.Configuration.MetadataOptions
-                .FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase)) ??
-                _defaultOptions;
         }
 
         /// <summary>
