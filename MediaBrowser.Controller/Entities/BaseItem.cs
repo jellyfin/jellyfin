@@ -1351,9 +1351,7 @@ namespace MediaBrowser.Controller.Entities
 
             FileSystem.SwapFiles(path1, path2);
 
-            info1.Path = path2;
-            info2.Path = path1;
-
+            // Refresh these values
             info1.DateModified = FileSystem.GetLastWriteTimeUtc(info1.Path);
             info2.DateModified = FileSystem.GetLastWriteTimeUtc(info2.Path);
 
