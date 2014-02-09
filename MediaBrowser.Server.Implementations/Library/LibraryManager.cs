@@ -955,7 +955,7 @@ namespace MediaBrowser.Server.Implementations.Library
             progress.Report(.5);
 
             // Start by just validating the children of the root, but go no further
-            await RootFolder.ValidateChildren(new Progress<double>(), cancellationToken, recursive: false);
+            await RootFolder.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(), recursive: false);
 
             progress.Report(1);
 
@@ -980,7 +980,7 @@ namespace MediaBrowser.Server.Implementations.Library
             innerProgress.RegisterAction(pct => progress.Report(15 + pct * .6));
 
             // Now validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, cancellationToken, recursive: true).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(), recursive: true).ConfigureAwait(false);
 
             progress.Report(75);
 
@@ -1109,7 +1109,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await userRootFolder.ValidateChildren(new Progress<double>(), cancellationToken, recursive: false).ConfigureAwait(false);
+            await userRootFolder.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(), recursive: false).ConfigureAwait(false);
         }
 
         /// <summary>

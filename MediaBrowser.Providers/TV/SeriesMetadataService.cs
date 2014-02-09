@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class SeriesMetadataService : MetadataService<Series, ItemLookupInfo>
+    public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
         private readonly ILibraryManager _libraryManager;
 

@@ -169,11 +169,19 @@ namespace MediaBrowser.Providers.TV
                 }
                 if (ids.tvrage_id > 0)
                 {
-                    series.SetProviderId(MetadataProviders.TvRageSeries, ids.tvrage_id.ToString(_usCulture));
+                    series.SetProviderId(MetadataProviders.TvRage, ids.tvrage_id.ToString(_usCulture));
                 }
                 if (ids.tvdb_id > 0)
                 {
                     series.SetProviderId(MetadataProviders.Tvdb, ids.tvdb_id.ToString(_usCulture));
+                }
+                if (!string.IsNullOrWhiteSpace(ids.freebase_id))
+                {
+                    series.SetProviderId(MetadataProviders.Freebase, ids.freebase_id);
+                }
+                if (!string.IsNullOrWhiteSpace(ids.freebase_mid))
+                {
+                    series.SetProviderId(MetadataProviders.FreebaseMachine, ids.freebase_mid);
                 }
             }
         }

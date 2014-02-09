@@ -158,33 +158,24 @@ namespace MediaBrowser.Providers.TV
             var automaticUpdatesEnabled = _config.Configuration.EnableTvDbUpdates;
 
             var seriesFile = files.FirstOrDefault(i => string.Equals(seriesXmlFilename, i.Name, StringComparison.OrdinalIgnoreCase));
-            if (seriesFile == null || !seriesFile.Exists)
+            // No need to check age if automatic updates are enabled
+            if (seriesFile == null || !seriesFile.Exists || (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalDays > 7))
             {
-                // No need to check age if automatic updates are enabled
-                if (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalDays > 7)
-                {
-                    download = true;
-                }
+                download = true;
             }
 
             var actorsXml = files.FirstOrDefault(i => string.Equals("actors.xml", i.Name, StringComparison.OrdinalIgnoreCase));
-            if (actorsXml == null || !actorsXml.Exists)
+            // No need to check age if automatic updates are enabled
+            if (actorsXml == null || !actorsXml.Exists || (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalDays > 7))
             {
-                // No need to check age if automatic updates are enabled
-                if (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalDays > 7)
-                {
-                    download = true;
-                }
+                download = true;
             }
 
             var bannersXml = files.FirstOrDefault(i => string.Equals("banners.xml", i.Name, StringComparison.OrdinalIgnoreCase));
-            if (bannersXml == null || !bannersXml.Exists)
+            // No need to check age if automatic updates are enabled
+            if (bannersXml == null || !bannersXml.Exists || (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalDays > 7))
             {
-                // No need to check age if automatic updates are enabled
-                if (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalDays > 7)
-                {
-                    download = true;
-                }
+                download = true;
             }
 
             // Only download if not already there
