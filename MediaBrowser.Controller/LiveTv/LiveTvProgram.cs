@@ -1,6 +1,9 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.LiveTv;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -183,6 +186,13 @@ namespace MediaBrowser.Controller.LiveTv
         public override string GetClientTypeName()
         {
             return "Program";
+        }
+
+        public override Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
+        {
+            // Avoid library manager and keep out of in-memory cache
+            // Not great that this class has to know about that, but we'll improve that later.
+            return ItemRepository.SaveItem(this, cancellationToken);
         }
     }
 }

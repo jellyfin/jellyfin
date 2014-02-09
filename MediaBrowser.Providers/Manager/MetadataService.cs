@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0)
                 {
-                    var result = await RefreshWithProviders(itemOfType, refreshOptions, providers, cancellationToken).ConfigureAwait(false);
+                    var result = await RefreshWithProviders(itemOfType, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
@@ -254,7 +254,7 @@ namespace MediaBrowser.Providers.Manager
             return item is TItemType;
         }
 
-        protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item, MetadataRefreshOptions options, List<IMetadataProvider> providers, CancellationToken cancellationToken)
+        protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item, MetadataRefreshOptions options, List<IMetadataProvider> providers, ItemImageProvider imageService, CancellationToken cancellationToken)
         {
             var refreshResult = new RefreshResult
             {
@@ -285,6 +285,11 @@ namespace MediaBrowser.Providers.Manager
 
                     if (localItem.HasMetadata)
                     {
+                        if (imageService.MergeImages(item, localItem.Images))
+                        {
+                            refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
+                        }
+
                         if (!string.IsNullOrEmpty(localItem.Item.Name))
                         {
                             MergeData(localItem.Item, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);

@@ -20,9 +20,9 @@ namespace MediaBrowser.Providers.Folders
             _logger = logger;
         }
 
-        protected override void Fetch(Folder item, string path, CancellationToken cancellationToken)
+        protected override void Fetch(LocalMetadataResult<Folder> result, string path, CancellationToken cancellationToken)
         {
-            new BaseItemXmlParser<Folder>(_logger).Fetch(item, path, cancellationToken);
+            new BaseItemXmlParser<Folder>(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
         protected override FileInfo GetXmlFile(ItemInfo info)

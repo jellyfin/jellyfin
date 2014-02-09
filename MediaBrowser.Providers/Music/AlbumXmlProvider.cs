@@ -17,9 +17,9 @@ namespace MediaBrowser.Providers.Music
             _logger = logger;
         }
 
-        protected override void Fetch(MusicAlbum item, string path, CancellationToken cancellationToken)
+        protected override void Fetch(LocalMetadataResult<MusicAlbum> result, string path, CancellationToken cancellationToken)
         {
-            new BaseItemXmlParser<MusicAlbum>(_logger).Fetch(item, path, cancellationToken);
+            new BaseItemXmlParser<MusicAlbum>(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
         protected override FileInfo GetXmlFile(ItemInfo info)

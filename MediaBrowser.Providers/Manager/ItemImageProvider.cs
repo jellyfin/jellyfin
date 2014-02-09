@@ -262,7 +262,7 @@ namespace MediaBrowser.Providers.Manager
             return providers;
         }
 
-        private bool MergeImages(IHasImages item, List<LocalImageInfo> images)
+        public bool MergeImages(IHasImages item, List<LocalImageInfo> images)
         {
             var changed = false;
 

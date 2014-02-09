@@ -17,9 +17,9 @@ namespace MediaBrowser.Providers.LiveTv
             _logger = logger;
         }
 
-        protected override void Fetch(LiveTvChannel item, string path, CancellationToken cancellationToken)
+        protected override void Fetch(LocalMetadataResult<LiveTvChannel> result, string path, CancellationToken cancellationToken)
         {
-            new BaseItemXmlParser<LiveTvChannel>(_logger).Fetch(item, path, cancellationToken);
+            new BaseItemXmlParser<LiveTvChannel>(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
         protected override FileInfo GetXmlFile(ItemInfo info)
