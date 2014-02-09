@@ -55,20 +55,11 @@ namespace MediaBrowser.Providers.Savers
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
 
             // If new metadata has been downloaded and save local is on
-            if (item.IsSaveLocalMetadataEnabled() && (wasMetadataEdited || wasMetadataDownloaded))
+            if (wasMetadataEdited || wasMetadataDownloaded)
             {
                 if (!(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum) &&
                     !(item is Season) &&
                     !(item is GameSystem))
-                {
-                    return true;
-                }
-            }
-
-            // If new metadata has been downloaded or metadata was manually edited, proceed
-            if (wasMetadataDownloaded || wasMetadataEdited)
-            {
-                if (item is AggregateFolder || item is UserRootFolder || item is CollectionFolder)
                 {
                     return true;
                 }

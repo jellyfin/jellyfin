@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Music;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,11 +13,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.Music
 {
-    class FanArtTvUpdatesPrescanTask : ILibraryPostScanTask
+    class FanartUpdatesPostScanTask : ILibraryPostScanTask
     {
-        private const string UpdatesUrl = "http://api.fanart.tv/webservice/newtv/{0}/{1}/";
+        private const string UpdatesUrl = "http://api.fanart.tv/webservice/newmusic/{0}/{1}/";
 
         /// <summary>
         /// The _HTTP client
@@ -37,7 +36,7 @@ namespace MediaBrowser.Providers.TV
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public FanArtTvUpdatesPrescanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem)
+        public FanartUpdatesPostScanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _jsonSerializer = jsonSerializer;
             _config = config;
@@ -60,10 +59,10 @@ namespace MediaBrowser.Providers.TV
                 return;
             }
 
-            var path = FanartSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
+            var path = FanartArtistProvider.GetArtistDataPath(_config.CommonApplicationPaths);
 
             Directory.CreateDirectory(path);
-            
+
             var timestampFile = Path.Combine(path, "time.txt");
 
             var timestampFileInfo = new FileInfo(timestampFile);
@@ -82,11 +81,11 @@ namespace MediaBrowser.Providers.TV
             // If this is our first time, don't do any updates and just record the timestamp
             if (!string.IsNullOrEmpty(lastUpdateTime))
             {
-                var seriesToUpdate = await GetSeriesIdsToUpdate(existingDirectories, lastUpdateTime, cancellationToken).ConfigureAwait(false);
+                var artistsToUpdate = await GetArtistIdsToUpdate(existingDirectories, lastUpdateTime, cancellationToken).ConfigureAwait(false);
 
                 progress.Report(5);
 
-                await UpdateSeries(seriesToUpdate, progress, cancellationToken).ConfigureAwait(false);
+                await UpdateArtists(artistsToUpdate, progress, cancellationToken).ConfigureAwait(false);
             }
 
             var newUpdateTime = Convert.ToInt64(DateTimeToUnixTimestamp(DateTime.UtcNow)).ToString(UsCulture);
@@ -97,13 +96,13 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <summary>
-        /// Gets the series ids to update.
+        /// Gets the artist ids to update.
         /// </summary>
-        /// <param name="existingSeriesIds">The existing series ids.</param>
+        /// <param name="existingArtistIds">The existing series ids.</param>
         /// <param name="lastUpdateTime">The last update time.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{System.String}}.</returns>
-        private async Task<IEnumerable<string>> GetSeriesIdsToUpdate(IEnumerable<string> existingSeriesIds, string lastUpdateTime, CancellationToken cancellationToken)
+        private async Task<IEnumerable<string>> GetArtistIdsToUpdate(IEnumerable<string> existingArtistIds, string lastUpdateTime, CancellationToken cancellationToken)
         {
             // First get last time
             using (var stream = await _httpClient.Get(new HttpRequestOptions
@@ -125,9 +124,9 @@ namespace MediaBrowser.Providers.TV
                         return new List<string>();
                     }
 
-                    var existingDictionary = existingSeriesIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+                    var existingDictionary = existingArtistIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-                    var updates = _jsonSerializer.DeserializeFromString<List<FanartUpdatesPrescanTask.FanArtUpdate>>(json);
+                    var updates = _jsonSerializer.DeserializeFromString<List<FanArtUpdate>>(json);
 
                     return updates.Select(i => i.id).Where(existingDictionary.ContainsKey);
                 }
@@ -135,22 +134,20 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <summary>
-        /// Updates the series.
+        /// Updates the artists.
         /// </summary>
         /// <param name="idList">The id list.</param>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task UpdateSeries(IEnumerable<string> idList, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task UpdateArtists(IEnumerable<string> idList, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var list = idList.ToList();
             var numComplete = 0;
 
             foreach (var id in list)
             {
-                _logger.Info("Updating series " + id);
-
-                await FanartSeriesProvider.Current.DownloadSeriesXml(id, cancellationToken).ConfigureAwait(false);
+                await UpdateArtist(id, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;
@@ -159,6 +156,19 @@ namespace MediaBrowser.Providers.TV
 
                 progress.Report(percent + 5);
             }
+        }
+
+        /// <summary>
+        /// Updates the artist.
+        /// </summary>
+        /// <param name="musicBrainzId">The musicBrainzId.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private Task UpdateArtist(string musicBrainzId, CancellationToken cancellationToken)
+        {
+            _logger.Info("Updating artist " + musicBrainzId);
+
+            return FanartArtistProvider.Current.DownloadArtistXml(musicBrainzId, cancellationToken);
         }
 
         /// <summary>

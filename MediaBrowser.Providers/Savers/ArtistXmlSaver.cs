@@ -47,20 +47,10 @@ namespace MediaBrowser.Providers.Savers
             var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
 
-            // If new metadata has been downloaded and save local is on
-            if (item.IsSaveLocalMetadataEnabled() && (wasMetadataEdited || wasMetadataDownloaded))
+            // If new metadata has been downloaded or metadata was manually edited, proceed
+            if (wasMetadataEdited || wasMetadataDownloaded)
             {
                 if (item is MusicArtist)
-                {
-                    return true;
-                }
-            }
-
-            // If new metadata has been downloaded or metadata was manually edited, proceed
-            if (wasMetadataDownloaded || wasMetadataEdited)
-            {
-                var artist = item as MusicArtist;
-                if (artist != null && artist.IsAccessedByName)
                 {
                     return true;
                 }

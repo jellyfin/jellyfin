@@ -4,19 +4,27 @@
 
         Dashboard.showLoadingMsg();
 
-        // After saving chapter task, now save server config
-        ApiClient.getServerConfiguration().done(function (config) {
+        $.ajax({
+            type: "POST",
+            url: ApiClient.getUrl("System/Configuration/SaveLocalMetadata", { Enabled: $('#chkSaveLocalMetadata', page).checked() })
+            
+        }).done(function() {
+            
 
-            config.SaveLocalMeta = $('#chkSaveLocalMetadata', page).checked();
-            config.PreferredMetadataLanguage = $('#selectLanguage', page).val();
-            config.MetadataCountryCode = $('#selectCountry', page).val();
+            // After saving chapter task, now save server config
+            ApiClient.getServerConfiguration().done(function (config) {
 
-            ApiClient.updateServerConfiguration(config).done(function (result) {
+                config.PreferredMetadataLanguage = $('#selectLanguage', page).val();
+                config.MetadataCountryCode = $('#selectCountry', page).val();
 
-                navigateToNextPage();
+                ApiClient.updateServerConfiguration(config).done(function (result) {
 
+                    navigateToNextPage();
+
+                });
             });
         });
+        
 
     }
 

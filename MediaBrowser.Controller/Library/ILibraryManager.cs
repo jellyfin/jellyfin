@@ -162,17 +162,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
-        /// <param name="prescanTasks">The prescan tasks.</param>
         /// <param name="postscanTasks">The postscan tasks.</param>
-        /// <param name="peoplePrescanTasks">The people prescan tasks.</param>
         void AddParts(IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IVirtualFolderCreator> pluginFolders,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPrescanTask> prescanTasks,
-            IEnumerable<ILibraryPostScanTask> postscanTasks,
-            IEnumerable<IPeoplePrescanTask> peoplePrescanTasks);
+            IEnumerable<ILibraryPostScanTask> postscanTasks);
 
         /// <summary>
         /// Sorts the specified items.

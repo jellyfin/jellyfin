@@ -1,10 +1,15 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -41,6 +46,13 @@ namespace MediaBrowser.Api
     public class GetMetadataPlugins : IReturn<List<MetadataPluginSummary>>
     {
 
+    }
+
+    [Route("/System/Configuration/SaveLocalMetadata", "POST")]
+    [Api(("Updates saving of local metadata and images for all types"))]
+    public class UpdateSaveLocalMetadata : IReturnVoid
+    {
+        public bool Enabled { get; set; }
     }
 
     public class ConfigurationService : BaseApiService
@@ -105,6 +117,84 @@ namespace MediaBrowser.Api
         public object Get(GetMetadataPlugins request)
         {
             return ToOptimizedSerializedResultUsingCache(_providerManager.GetAllMetadataPlugins().ToList());
+        }
+
+        /// <summary>
+        /// This is a temporary method used until image settings get broken out.
+        /// </summary>
+        /// <param name="request"></param>
+        public void Post(UpdateSaveLocalMetadata request)
+        {
+            var config = _configurationManager.Configuration;
+
+            if (request.Enabled)
+            {
+                config.SaveLocalMeta = true;
+
+                foreach (var options in config.MetadataOptions)
+                {
+                    options.DisabledMetadataSavers = new string[] { };
+                }
+            }
+            else
+            {
+                config.SaveLocalMeta = false;
+
+                DisableSaversForType(typeof(Game), config);
+                DisableSaversForType(typeof(GameSystem), config);
+                DisableSaversForType(typeof(Movie), config);
+                DisableSaversForType(typeof(Trailer), config);
+                DisableSaversForType(typeof(BoxSet), config);
+                DisableSaversForType(typeof(Book), config);
+                DisableSaversForType(typeof(Series), config);
+                DisableSaversForType(typeof(Season), config);
+                DisableSaversForType(typeof(Episode), config);
+                DisableSaversForType(typeof(MusicAlbum), config);
+                DisableSaversForType(typeof(MusicArtist), config);
+                DisableSaversForType(typeof(AdultVideo), config);
+                DisableSaversForType(typeof(MusicVideo), config);
+                DisableSaversForType(typeof(Video), config);
+            }
+
+            _configurationManager.SaveConfiguration();
+        }
+
+        private void DisableSaversForType(Type type, ServerConfiguration config)
+        {
+            var options = GetMetadataOptions(type, config);
+
+            const string mediabrowserSaverName = "Media Browser Xml";
+
+            if (!options.DisabledMetadataSavers.Contains(mediabrowserSaverName, StringComparer.OrdinalIgnoreCase))
+            {
+                var list = options.DisabledMetadataSavers.ToList();
+
+                list.Add(mediabrowserSaverName);
+
+                options.DisabledMetadataSavers = list.ToArray();
+            }
+        }
+
+        private MetadataOptions GetMetadataOptions(Type type, ServerConfiguration config)
+        {
+            var options = config.MetadataOptions
+                .FirstOrDefault(i => string.Equals(i.ItemType, type.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (options == null)
+            {
+                var list = config.MetadataOptions.ToList();
+
+                options = new MetadataOptions
+                {
+                    ItemType = type.Name
+                };
+
+                list.Add(options);
+
+                config.MetadataOptions = list.ToArray();
+            }
+
+            return options;
         }
     }
 }
