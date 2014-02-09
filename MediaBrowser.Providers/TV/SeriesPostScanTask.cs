@@ -176,7 +176,7 @@ namespace MediaBrowser.Providers.TV
                     {
                     }, cancellationToken).ConfigureAwait(false);
 
-                    await series.ValidateChildren(new Progress<double>(), cancellationToken, true)
+                    await series.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(), true)
                         .ConfigureAwait(false);
                 }
             }

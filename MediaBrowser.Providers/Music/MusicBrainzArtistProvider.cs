@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Music
         {
             var result = new MetadataResult<MusicArtist>();
 
-            var musicBrainzId = id.GetArtistId() ?? await FindId(id, cancellationToken).ConfigureAwait(false);
+            var musicBrainzId = id.GetMusicBrainzArtistId() ?? await FindId(id, cancellationToken).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
             {

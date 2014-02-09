@@ -38,6 +38,9 @@ namespace MediaBrowser.Model.Entities
         Zap2It,
         NesBox,
         NesBoxRom,
-        TvRageSeries
+        TvRage,
+        Freebase,
+        FreebaseMachine,
+        AudioDbArtist
     }
 }

@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Music
         {
             var result = new MetadataResult<MusicArtist>();
 
-            var musicBrainzId = id.GetArtistId();
+            var musicBrainzId = id.GetMusicBrainzArtistId();
 
             if (!String.IsNullOrWhiteSpace(musicBrainzId))
             {
@@ -161,7 +161,11 @@ namespace MediaBrowser.Providers.Music
 
         public int Order
         {
-            get { return 1; }
+            get
+            {
+                // After fanart & audiodb
+                return 2;
+            }
         }
     }
 }

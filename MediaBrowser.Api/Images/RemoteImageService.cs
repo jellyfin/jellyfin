@@ -320,6 +320,10 @@ namespace MediaBrowser.Api.Images
                     return ToStaticFileResult(contentPath);
                 }
             }
+            catch (DirectoryNotFoundException)
+            {
+                // Means the file isn't cached yet
+            }
             catch (FileNotFoundException)
             {
                 // Means the file isn't cached yet
@@ -356,7 +360,6 @@ namespace MediaBrowser.Api.Images
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
-
             using (var stream = result.Content)
             {
                 using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
@@ -365,6 +368,7 @@ namespace MediaBrowser.Api.Images
                 }
             }
 
+            Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
             using (var writer = new StreamWriter(pointerCachePath))
             {
                 await writer.WriteAsync(fullCachePath).ConfigureAwait(false);

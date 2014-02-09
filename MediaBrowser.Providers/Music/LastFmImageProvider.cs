@@ -151,7 +151,11 @@ namespace MediaBrowser.Providers.Music
 
         public int Order
         {
-            get { return 1; }
+            get
+            {
+                // After all others
+                return 3;
+            }
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)

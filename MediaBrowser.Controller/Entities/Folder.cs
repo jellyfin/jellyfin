@@ -299,26 +299,24 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The current validation cancellation token source.</value>
         private CancellationTokenSource CurrentValidationCancellationTokenSource { get; set; }
 
+        public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions());
+        }
+
         /// <summary>
         /// Validates that the children of the folder still exist
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="metadataRefreshOptions">The metadata refresh options.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        /// <param name="forceRefreshMetadata">if set to <c>true</c> [force refresh metadata].</param>
         /// <returns>Task.</returns>
-        public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
+        public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true)
         {
-            var directoryService = new DirectoryService(Logger);
+            metadataRefreshOptions.DirectoryService = metadataRefreshOptions.DirectoryService ?? new DirectoryService(Logger);
 
-            return ValidateChildrenWithCancellationSupport(progress, cancellationToken, recursive ?? true, true,
-
-                new MetadataRefreshOptions
-                {
-                    ReplaceAllMetadata = forceRefreshMetadata,
-                    DirectoryService = directoryService
-
-                }, directoryService);
+            return ValidateChildrenWithCancellationSupport(progress, cancellationToken, recursive, true, metadataRefreshOptions, metadataRefreshOptions.DirectoryService);
         }
 
         private async Task ValidateChildrenWithCancellationSupport(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, DirectoryService directoryService)
@@ -531,7 +529,7 @@ namespace MediaBrowser.Controller.Entities
 
                 cancellationToken.ThrowIfCancellationRequested();
                 var innerProgress = new ActionableProgress<double>();
-                
+
                 // Avoid implicitly captured closure
                 var currentChild = child;
                 innerProgress.RegisterAction(p =>

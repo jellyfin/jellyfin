@@ -111,13 +111,15 @@ namespace MediaBrowser.Api
                 .OfType<MusicArtist>()
                 .ToList();
 
-            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), cancellationToken, true, request.Forced));
+            var options = GetRefreshOptions(request);
+
+            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), cancellationToken, options, true));
 
             await Task.WhenAll(musicArtistRefreshTasks).ConfigureAwait(false);
 
             try
             {
-                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
+                await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -250,9 +252,11 @@ namespace MediaBrowser.Api
         {
             var item = _dtoService.GetItemByDtoId(request.Id);
 
+            var options = GetRefreshOptions(request);
+            
             try
             {
-                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
+                await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
 
                 if (item.IsFolder)
                 {
@@ -267,7 +271,7 @@ namespace MediaBrowser.Api
                     {
                         var folder = (Folder)item;
 
-                        await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive, request.Forced).ConfigureAwait(false);
+                        await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, options, request.Recursive).ConfigureAwait(false);
                     }
                 }
             }
@@ -295,7 +299,7 @@ namespace MediaBrowser.Api
                 {
                     var folder = (Folder)child;
 
-                    await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive, request.Forced).ConfigureAwait(false);
+                    await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, options, request.Recursive).ConfigureAwait(false);
                 }
             }
         }

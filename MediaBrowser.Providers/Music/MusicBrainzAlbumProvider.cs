@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.Music
 
             if (string.IsNullOrEmpty(releaseId))
             {
-                var artistMusicBrainzId = id.GetArtistId();
+                var artistMusicBrainzId = id.GetMusicBrainzArtistId();
 
                 var releaseResult = await GetReleaseResult(artistMusicBrainzId, id.GetAlbumArtist(), id.Name, cancellationToken).ConfigureAwait(false);
 
