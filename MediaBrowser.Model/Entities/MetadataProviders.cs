@@ -37,6 +37,7 @@ namespace MediaBrowser.Model.Entities
         MusicBrainzReleaseGroup,
         Zap2It,
         NesBox,
-        NesBoxRom
+        NesBoxRom,
+        TvRageSeries
     }
 }

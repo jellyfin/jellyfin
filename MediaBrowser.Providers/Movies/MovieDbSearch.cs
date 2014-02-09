@@ -29,6 +29,11 @@ namespace MediaBrowser.Providers.Movies
             _json = json;
         }
 
+        public Task<string> FindSeriesId(ItemLookupInfo idInfo, CancellationToken cancellationToken)
+        {
+            return FindId(idInfo, "tv", cancellationToken);
+        }
+
         public Task<string> FindMovieId(ItemLookupInfo idInfo, CancellationToken cancellationToken)
         {
             return FindId(idInfo, "movie", cancellationToken);

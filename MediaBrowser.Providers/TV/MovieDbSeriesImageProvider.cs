@@ -1,11 +1,12 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Movies;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,14 +14,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.Movies
+namespace MediaBrowser.Providers.TV
 {
-    class MovieDbImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
+    public class MovieDbSeriesImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
 
-        public MovieDbImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public MovieDbSeriesImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
@@ -38,15 +39,7 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasImages item)
         {
-            var trailer = item as Trailer;
-
-            if (trailer != null)
-            {
-                return !trailer.IsLocalTrailer;
-            }
-
-            // Don't support local trailers
-            return item is Movie || item is MusicVideo;
+            return item is Series;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -137,20 +130,18 @@ namespace MediaBrowser.Providers.Movies
         /// Gets the posters.
         /// </summary>
         /// <param name="images">The images.</param>
-        /// <returns>IEnumerable{MovieDbProvider.Poster}.</returns>
-        private IEnumerable<MovieDbProvider.Poster> GetPosters(MovieDbProvider.Images images)
+        private IEnumerable<MovieDbSeriesProvider.Poster> GetPosters(MovieDbSeriesProvider.Images images)
         {
-            return images.posters ?? new List<MovieDbProvider.Poster>();
+            return images.posters ?? new List<MovieDbSeriesProvider.Poster>();
         }
 
         /// <summary>
         /// Gets the backdrops.
         /// </summary>
         /// <param name="images">The images.</param>
-        /// <returns>IEnumerable{MovieDbProvider.Backdrop}.</returns>
-        private IEnumerable<MovieDbProvider.Backdrop> GetBackdrops(MovieDbProvider.Images images)
+        private IEnumerable<MovieDbSeriesProvider.Backdrop> GetBackdrops(MovieDbSeriesProvider.Images images)
         {
-            var eligibleBackdrops = images.backdrops == null ? new List<MovieDbProvider.Backdrop>() :
+            var eligibleBackdrops = images.backdrops == null ? new List<MovieDbSeriesProvider.Backdrop>() :
                 images.backdrops
                 .ToList();
 
@@ -165,7 +156,7 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MovieImages}.</returns>
-        private async Task<MovieDbProvider.Images> FetchImages(BaseItem item, IJsonSerializer jsonSerializer,
+        private async Task<MovieDbSeriesProvider.Images> FetchImages(BaseItem item, IJsonSerializer jsonSerializer,
             CancellationToken cancellationToken)
         {
             var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
@@ -176,9 +167,9 @@ namespace MediaBrowser.Providers.Movies
                 return null;
             }
 
-            await MovieDbProvider.Current.EnsureMovieInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
+            await MovieDbSeriesProvider.Current.EnsureSeriesInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
 
-            var path = MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
+            var path = MovieDbSeriesProvider.Current.GetDataFilePath(tmdbId, language);
 
             if (!string.IsNullOrEmpty(path))
             {
@@ -186,7 +177,7 @@ namespace MediaBrowser.Providers.Movies
 
                 if (fileInfo.Exists)
                 {
-                    return jsonSerializer.DeserializeFromFile<MovieDbProvider.CompleteMovieData>(path).images;
+                    return jsonSerializer.DeserializeFromFile<MovieDbSeriesProvider.RootObject>(path).images;
                 }
             }
 
@@ -195,7 +186,11 @@ namespace MediaBrowser.Providers.Movies
 
         public int Order
         {
-            get { return 0; }
+            get
+            {
+                // After tvdb and fanart
+                return 2;
+            }
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
@@ -210,7 +205,7 @@ namespace MediaBrowser.Providers.Movies
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
-            return MovieDbProvider.Current.HasChanged(item, date);
+            return MovieDbSeriesProvider.Current.HasChanged(item, date);
         }
     }
 }

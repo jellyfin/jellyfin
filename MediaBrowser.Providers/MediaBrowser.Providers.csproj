@@ -171,6 +171,8 @@
     <Compile Include="TV\FanArtTvUpdatesPrescanTask.cs" />
     <Compile Include="TV\FanartSeasonProvider.cs" />
     <Compile Include="TV\FanartSeriesProvider.cs" />
+    <Compile Include="TV\MovieDbSeriesImageProvider.cs" />
+    <Compile Include="TV\MovieDbSeriesProvider.cs" />
     <Compile Include="TV\SeriesMetadataService.cs" />
     <Compile Include="TV\TvdbEpisodeImageProvider.cs" />
     <Compile Include="People\TvdbPersonImageProvider.cs" />
