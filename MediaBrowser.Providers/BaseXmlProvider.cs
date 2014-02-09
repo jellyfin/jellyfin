@@ -13,9 +13,9 @@ namespace MediaBrowser.Providers
     {
         protected IFileSystem FileSystem;
 
-        public async Task<MetadataResult<T>> GetMetadata(ItemInfo info, CancellationToken cancellationToken)
+        public async Task<LocalMetadataResult<T>> GetMetadata(ItemInfo info, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<T>();
+            var result = new LocalMetadataResult<T>();
 
             var file = GetXmlFile(info);
 
@@ -32,7 +32,7 @@ namespace MediaBrowser.Providers
             {
                 result.Item = new T();
 
-                Fetch(result.Item, path, cancellationToken);
+                Fetch(result, path, cancellationToken);
                 result.HasMetadata = true;
             }
             catch (FileNotFoundException)
@@ -47,7 +47,7 @@ namespace MediaBrowser.Providers
             return result;
         }
 
-        protected abstract void Fetch(T item, string path, CancellationToken cancellationToken);
+        protected abstract void Fetch(LocalMetadataResult<T> result, string path, CancellationToken cancellationToken);
 
         protected BaseXmlProvider(IFileSystem fileSystem)
         {

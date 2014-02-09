@@ -215,11 +215,12 @@ namespace MediaBrowser.Providers.MediaInfo
 
             foreach (var whitelistArtist in GetSplitWhitelist())
             {
-                if (val.IndexOf(whitelistArtist, StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    val = val.Replace(whitelistArtist, "|", StringComparison.OrdinalIgnoreCase);
+                var originalVal = val;
+                val = val.Replace(whitelistArtist, "|", StringComparison.OrdinalIgnoreCase);
 
-                    // TODO: Preserve casing from original tag
+                if (!string.Equals(originalVal, val, StringComparison.OrdinalIgnoreCase))
+                {
+                    // TODO: Preserve casing from original value
                     artistsFound.Add(whitelistArtist);
                 }
             }

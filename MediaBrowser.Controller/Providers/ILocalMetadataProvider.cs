@@ -1,6 +1,7 @@
-﻿using System.Threading;
+﻿using MediaBrowser.Controller.Entities;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -17,7 +18,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MetadataResult{`0}}.</returns>
-        Task<MetadataResult<TItemType>> GetMetadata(ItemInfo info, CancellationToken cancellationToken);
+        Task<LocalMetadataResult<TItemType>> GetMetadata(ItemInfo info, CancellationToken cancellationToken);
     }
 
     public class ItemInfo
@@ -25,5 +26,19 @@ namespace MediaBrowser.Controller.Providers
         public string Path { get; set; }
 
         public bool IsInMixedFolder { get; set; }
+    }
+
+    public class LocalMetadataResult<T>
+        where T : IHasMetadata
+    {
+        public bool HasMetadata { get; set; }
+        public T Item { get; set; }
+        
+        public List<LocalImageInfo> Images { get; set; }
+
+        public LocalMetadataResult()
+        {
+            Images = new List<LocalImageInfo>();
+        }
     }
 }

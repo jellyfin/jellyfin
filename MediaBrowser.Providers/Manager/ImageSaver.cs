@@ -345,6 +345,10 @@ namespace MediaBrowser.Providers.Manager
             // None of the save local conditions passed, so store it in our internal folders
             if (string.IsNullOrEmpty(path))
             {
+                if (string.IsNullOrEmpty(filename))
+                {
+                    filename = "folder";
+                }
                 path = Path.Combine(_config.ApplicationPaths.GetInternalMetadataPath(item.Id), filename + extension);
             }
 

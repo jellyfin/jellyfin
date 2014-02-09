@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
@@ -24,6 +25,12 @@ namespace MediaBrowser.Providers.All
         public bool Supports(IHasImages item)
         {
             if (!item.IsSaveLocalMetadataEnabled())
+            {
+                return true;
+            }
+
+            // Extracted images will be saved in here
+            if (item is Audio)
             {
                 return true;
             }

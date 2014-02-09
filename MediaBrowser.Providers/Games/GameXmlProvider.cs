@@ -17,9 +17,9 @@ namespace MediaBrowser.Providers.Games
             _logger = logger;
         }
 
-        protected override void Fetch(Game item, string path, CancellationToken cancellationToken)
+        protected override void Fetch(LocalMetadataResult<Game> result, string path, CancellationToken cancellationToken)
         {
-            new GameXmlParser(_logger).Fetch(item, path, cancellationToken);
+            new GameXmlParser(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
         protected override FileInfo GetXmlFile(ItemInfo info)

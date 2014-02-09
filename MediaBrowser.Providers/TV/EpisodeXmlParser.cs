@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -15,14 +16,18 @@ namespace MediaBrowser.Providers.TV
     /// </summary>
     public class EpisodeXmlParser : BaseItemXmlParser<Episode>
     {
+        private List<LocalImageInfo> _imagesFound;
+
         public EpisodeXmlParser(ILogger logger)
             : base(logger)
         {
         }
 
-        public void FetchAsync(Episode item, string metadataFile, CancellationToken cancellationToken)
+        public void Fetch(Episode item, List<LocalImageInfo> images, string metadataFile, CancellationToken cancellationToken)
         {
-             Fetch(item, metadataFile, cancellationToken);
+            _imagesFound = images;
+
+            Fetch(item, metadataFile, cancellationToken);
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -66,17 +71,22 @@ namespace MediaBrowser.Providers.TV
 
                         if (!string.IsNullOrWhiteSpace(filename))
                         {
-                            //// Strip off everything but the filename. Some metadata tools like MetaBrowser v1.0 will have an 'episodes' prefix
-                            //// even though it's actually using the metadata folder.
-                            //filename = Path.GetFileName(filename);
+                            // Strip off everything but the filename. Some metadata tools like MetaBrowser v1.0 will have an 'episodes' prefix
+                            // even though it's actually using the metadata folder.
+                            filename = Path.GetFileName(filename);
 
-                            //var seasonFolder = Path.GetDirectoryName(item.Path);
-                            //filename = Path.Combine(seasonFolder, "metadata", filename);
+                            var parentFolder = Path.GetDirectoryName(item.Path);
+                            filename = Path.Combine(parentFolder, "metadata", filename);
+                            var file = new FileInfo(filename);
 
-                            //if (File.Exists(filename))
-                            //{
-                            //    item.SetImagePath(ImageType.Primary, 0, filename);
-                            //}
+                            if (file.Exists)
+                            {
+                                _imagesFound.Add(new LocalImageInfo
+                                {
+                                    Type = ImageType.Primary,
+                                    FileInfo = file
+                                });
+                            }
                         }
                         break;
                     }

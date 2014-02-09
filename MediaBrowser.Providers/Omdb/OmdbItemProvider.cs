@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.Omdb
 
         public string Name
         {
-            get { return "OMDb"; }
+            get { return "IMDb via The Open Movie Database"; }
         }
 
         public Task<ItemUpdateType> FetchAsync(Series item, CancellationToken cancellationToken)

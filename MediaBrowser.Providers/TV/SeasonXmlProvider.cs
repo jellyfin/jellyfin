@@ -20,9 +20,9 @@ namespace MediaBrowser.Providers.TV
             _logger = logger;
         }
 
-        protected override void Fetch(Season item, string path, CancellationToken cancellationToken)
+        protected override void Fetch(LocalMetadataResult<Season> result, string path, CancellationToken cancellationToken)
         {
-            new BaseItemXmlParser<Season>(_logger).Fetch(item, path, cancellationToken);
+            new BaseItemXmlParser<Season>(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
         protected override FileInfo GetXmlFile(ItemInfo info)

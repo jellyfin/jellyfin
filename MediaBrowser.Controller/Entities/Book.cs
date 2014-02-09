@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using System.Linq;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
 
@@ -42,7 +43,18 @@ namespace MediaBrowser.Controller.Entities
 
         public BookInfo GetLookupInfo()
         {
-            return GetItemLookupInfo<BookInfo>();
+            var info = GetItemLookupInfo<BookInfo>();
+
+            if (string.IsNullOrEmpty(SeriesName))
+            {
+                info.SeriesName = Parents.Select(i => i.Name).FirstOrDefault();
+            }
+            else
+            {
+                info.SeriesName = SeriesName;
+            }
+
+            return info;
         }
     }
 }

@@ -17,9 +17,9 @@ namespace MediaBrowser.Providers.Movies
             _logger = logger;
         }
 
-        protected override void Fetch(Movie item, string path, CancellationToken cancellationToken)
+        protected override void Fetch(LocalMetadataResult<Movie> result, string path, CancellationToken cancellationToken)
         {
-            new MovieXmlParser(_logger).Fetch(item, path, cancellationToken);
+            new MovieXmlParser(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
         protected override FileInfo GetXmlFile(ItemInfo info)
