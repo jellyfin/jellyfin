@@ -144,21 +144,22 @@
                             </div>
                             <div data-role="fieldcontain" id="fldAirDays" style="display: none;">
                                 <label for="selectAirDays">Air Days:</label>
-                                <div data-role="editableListviewContainer" style="width: 78%; display: inline-block;">
-                                    <div>
-                                        <select name="selectAirDays" id="selectAirDays" data-mini="true" data-inline="true">
-                                            <option value=''></option>
-                                            <option value='Monday'>Monday</option>
-                                            <option value='Tuesday'>Tuesday</option>
-                                            <option value='Wednesday'>Wednesday</option>
-                                            <option value='Thursday'>Thursday</option>
-                                            <option value='Friday'>Friday</option>
-                                            <option value='Saturday'>Saturday</option>
-                                            <option value='Sunday'>Sunday</option>
-                                        </select>
-                                        <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this,EditItemMetadataPage.sortDaysOfTheWeek)" style="vertical-align: top;">Add</a>
-                                    </div>
-                                    <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listAirDays"></ul>
+
+                                <div data-role="controlgroup" data-mini="true">
+                                    <input type="checkbox" class="chkAirDay" id="chkSunday" data-day="Sunday">
+                                    <label for="chkSunday">Sunday</label>
+                                    <input type="checkbox" class="chkAirDay" id="chkMonday" data-day="Monday">
+                                    <label for="chkMonday">Monday</label>
+                                    <input type="checkbox" class="chkAirDay" id="chkTuesday" data-day="Tuesday">
+                                    <label for="chkTuesday">Tuesday</label>
+                                    <input type="checkbox" class="chkAirDay" id="chkWednesday" data-day="Wednesday">
+                                    <label for="chkWednesday">Wednesday</label>
+                                    <input type="checkbox" class="chkAirDay" id="chkThursday" data-day="Thursday">
+                                    <label for="chkThursday">Thursday</label>
+                                    <input type="checkbox" class="chkAirDay" id="chkFriday" data-day="Friday">
+                                    <label for="chkFriday">Friday</label>
+                                    <input type="checkbox" class="chkAirDay" id="chkSaturday" data-day="Saturday">
+                                    <label for="chkSaturday">Saturday</label>
                                 </div>
 
                             </div>

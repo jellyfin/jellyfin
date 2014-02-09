@@ -868,7 +868,12 @@
 
         $('#select3dFormat', page).val(item.Video3DFormat || "").selectmenu('refresh');
 
-        populateListView($('#listAirDays', page), item.AirDays);
+        $('.chkAirDay', page).each(function() {
+
+            this.checked = (item.AirDays || []).indexOf(this.getAttribute('data-day')) != -1;
+
+        }).checkboxradio('refresh');
+        
         populateListView($('#listGenres', page), item.Genres);
 
         populateListView($('#listStudios', page), (item.Studios || []).map(function (element) { return element.Name || ''; }));
@@ -1160,6 +1165,12 @@
             $('#lock' + field).val(field).slider('refresh');
         }
     }
+    
+    function getSelectedAirDays(form) {
+        return $('.chkAirDay:checked', form).map(function() {
+            return this.getAttribute('data-day');
+        }).get();
+    }
 
     function editItemMetadataPage() {
 
@@ -1199,7 +1210,7 @@
                 AwardSummary: $('#txtAwardSummary', form).val(),
                 Overview: $('#txtOverview', form).val(),
                 Status: $('#selectStatus', form).val(),
-                AirDays: editableListViewValues($("#listAirDays", form)),
+                AirDays: getSelectedAirDays(form),
                 AirTime: convertTo12HourFormat($('#txtAirTime', form).val()),
                 Genres: editableListViewValues($("#listGenres", form)),
                 Tags: editableListViewValues($("#listTags", form)),
