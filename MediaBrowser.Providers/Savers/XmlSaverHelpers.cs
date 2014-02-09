@@ -307,7 +307,7 @@ namespace MediaBrowser.Providers.Savers
             {
                 builder.Append("<AwardSummary>" + SecurityElement.Escape(hasAwards.AwardSummary) + "</AwardSummary>");
             }
-            
+
             var hasBudget = item as IHasBudget;
             if (hasBudget != null)
             {
@@ -396,67 +396,81 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
-            var tvcom = item.GetProviderId(MetadataProviders.Tvcom);
+            var externalId = item.GetProviderId(MetadataProviders.Tvcom);
 
-            if (!string.IsNullOrEmpty(tvcom))
+            if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<TVcomId>" + SecurityElement.Escape(tvcom) + "</TVcomId>");
+                builder.Append("<TVcomId>" + SecurityElement.Escape(externalId) + "</TVcomId>");
             }
 
-            var rt = item.GetProviderId(MetadataProviders.RottenTomatoes);
+            externalId = item.GetProviderId(MetadataProviders.RottenTomatoes);
 
-            if (!string.IsNullOrEmpty(rt))
+            if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<RottenTomatoesId>" + SecurityElement.Escape(rt) + "</RottenTomatoesId>");
+                builder.Append("<RottenTomatoesId>" + SecurityElement.Escape(externalId) + "</RottenTomatoesId>");
             }
 
-            var zap2It = item.GetProviderId(MetadataProviders.Zap2It);
+            externalId = item.GetProviderId(MetadataProviders.Zap2It);
 
-            if (!string.IsNullOrEmpty(zap2It))
+            if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<Zap2ItId>" + SecurityElement.Escape(zap2It) + "</Zap2ItId>");
+                builder.Append("<Zap2ItId>" + SecurityElement.Escape(externalId) + "</Zap2ItId>");
             }
 
-            var mbz = item.GetProviderId(MetadataProviders.MusicBrainzAlbum);
+            externalId = item.GetProviderId(MetadataProviders.MusicBrainzAlbum);
 
-            if (!string.IsNullOrEmpty(mbz))
+            if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<MusicBrainzAlbumId>" + SecurityElement.Escape(mbz) + "</MusicBrainzAlbumId>");
+                builder.Append("<MusicBrainzAlbumId>" + SecurityElement.Escape(externalId) + "</MusicBrainzAlbumId>");
             }
 
-            mbz = item.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist);
+            externalId = item.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist);
 
-            if (!string.IsNullOrEmpty(mbz))
+            if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<MusicBrainzAlbumArtistId>" + SecurityElement.Escape(mbz) + "</MusicBrainzAlbumArtistId>");
+                builder.Append("<MusicBrainzAlbumArtistId>" + SecurityElement.Escape(externalId) + "</MusicBrainzAlbumArtistId>");
             }
 
-            mbz = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
+            externalId = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
-            if (!string.IsNullOrEmpty(mbz))
+            if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<MusicBrainzArtistId>" + SecurityElement.Escape(mbz) + "</MusicBrainzArtistId>");
+                builder.Append("<MusicBrainzArtistId>" + SecurityElement.Escape(externalId) + "</MusicBrainzArtistId>");
             }
 
-            mbz = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+            externalId = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
-            if (!string.IsNullOrEmpty(mbz))
+            if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<MusicBrainzReleaseGroupId>" + SecurityElement.Escape(mbz) + "</MusicBrainzReleaseGroupId>");
+                builder.Append("<MusicBrainzReleaseGroupId>" + SecurityElement.Escape(externalId) + "</MusicBrainzReleaseGroupId>");
             }
 
-            var gamesdb = item.GetProviderId(MetadataProviders.Gamesdb);
+            externalId = item.GetProviderId(MetadataProviders.Gamesdb);
 
-            if (!string.IsNullOrEmpty(gamesdb))
+            if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<GamesDbId>" + SecurityElement.Escape(gamesdb) + "</GamesDbId>");
+                builder.Append("<GamesDbId>" + SecurityElement.Escape(externalId) + "</GamesDbId>");
             }
 
-            var tmdbCollection = item.GetProviderId(MetadataProviders.TmdbCollection);
+            externalId = item.GetProviderId(MetadataProviders.TmdbCollection);
 
-            if (!string.IsNullOrEmpty(tmdbCollection))
+            if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<TMDbCollectionId>" + SecurityElement.Escape(tmdbCollection) + "</TMDbCollectionId>");
+                builder.Append("<TMDbCollectionId>" + SecurityElement.Escape(externalId) + "</TMDbCollectionId>");
+            }
+
+            externalId = item.GetProviderId(MetadataProviders.AudioDbArtist);
+
+            if (!string.IsNullOrEmpty(externalId))
+            {
+                builder.Append("<AudioDbArtistId>" + SecurityElement.Escape(externalId) + "</AudioDbArtistId>");
+            }
+
+            externalId = item.GetProviderId(MetadataProviders.TvRage);
+
+            if (!string.IsNullOrEmpty(externalId))
+            {
+                builder.Append("<TvRageId>" + SecurityElement.Escape(externalId) + "</TvRageId>");
             }
 
             var hasTagline = item as IHasTaglines;

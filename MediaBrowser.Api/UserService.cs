@@ -68,7 +68,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Users/{Id}/Authenticate", "POST")]
     [Api(Description = "Authenticates a user")]
-    public class AuthenticateUser : IReturnVoid
+    public class AuthenticateUser : IReturn<AuthenticationResult>
     {
         /// <summary>
         /// Gets or sets the id.

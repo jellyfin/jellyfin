@@ -6,6 +6,7 @@
     var browsableImagePageSize = 10;
     var browsableImageStartIndex = 0;
     var browsableImageType = 'Primary';
+    var selectedProvider;
 
     function updateTabs(page, item) {
 
@@ -56,7 +57,7 @@
         options.startIndex = browsableImageStartIndex;
         options.limit = browsableImagePageSize;
 
-        var provider = $('#selectImageProvider', page).val();
+        var provider = selectedProvider || '';
 
         if (provider) {
             options.ProviderName = provider;
@@ -253,6 +254,10 @@
     function reload(page) {
 
         Dashboard.showLoadingMsg();
+
+        browsableImageStartIndex = 0;
+        browsableImageType = 'Primary';
+        selectedProvider = null;
 
         MetadataEditor.getItemPromise().done(function (item) {
 
@@ -529,7 +534,6 @@
 
         var page = this;
 
-
         $('.libraryTree', page).on('itemclicked', function (event, data) {
 
             if (data.id != currentItem.Id) {
@@ -542,14 +546,13 @@
                 //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemImagesPage?id=' + data.id;
 
-                browsableImageStartIndex = 0;
-                browsableImageType = 'Primary';
-
                 reload(page);
             }
         });
 
         $('.lnkBrowseImages', page).on('click', function () {
+
+            selectedProvider = null;
 
             reloadBrowsableImages(page);
         });
@@ -558,6 +561,7 @@
 
             browsableImageType = this.value;
             browsableImageStartIndex = 0;
+            selectedProvider = null;
 
             reloadBrowsableImages(page);
         });
@@ -565,6 +569,7 @@
         $('#selectImageProvider', page).on('change', function () {
 
             browsableImageStartIndex = 0;
+            selectedProvider = this.value;
 
             reloadBrowsableImages(page);
         });
@@ -574,9 +579,6 @@
         var page = this;
 
         reload(page);
-
-        browsableImageStartIndex = 0;
-        browsableImageType = 'Primary';
 
         $('#uploadImage', page).on("change", function () {
             setFiles(page, this.files);

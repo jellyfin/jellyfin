@@ -73,7 +73,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ImageProviderInfo}.</returns>
-        IEnumerable<ImageProviderInfo> GetImageProviderInfo(IHasImages item);
+        IEnumerable<ImageProviderInfo> GetRemoteImageProviderInfo(IHasImages item);
 
         /// <summary>
         /// Gets all metadata plugins.

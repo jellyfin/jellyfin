@@ -701,7 +701,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     }
                 }
             }
-
         }
 
         internal async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
@@ -726,6 +725,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             foreach (var channelInfo in allChannelsList)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 try
                 {
                     var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, cancellationToken).ConfigureAwait(false);
@@ -758,8 +759,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var guideDays = GetGuideDays(list.Count);
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             foreach (var item in list)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 // Avoid implicitly captured closure
                 var currentChannel = item;
 

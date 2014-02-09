@@ -719,6 +719,24 @@ namespace MediaBrowser.Controller.Providers
                         }
                         break;
                     }
+                case "TvRageId":
+                    {
+                        var id = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(id))
+                        {
+                            item.SetProviderId(MetadataProviders.TvRage, id);
+                        }
+                        break;
+                    }
+                case "AudioDbArtistId":
+                    {
+                        var id = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(id))
+                        {
+                            item.SetProviderId(MetadataProviders.AudioDbArtist, id);
+                        }
+                        break;
+                    }
                 case "RottenTomatoesId":
                     var rtId = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(rtId))

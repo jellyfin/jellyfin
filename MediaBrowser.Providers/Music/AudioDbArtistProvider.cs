@@ -66,6 +66,11 @@ namespace MediaBrowser.Providers.Music
             item.HomePageUrl = result.strWebsite;
             item.Overview = result.strBiographyEN;
 
+            if (!string.IsNullOrEmpty(result.strGenre))
+            {
+                item.Genres = new List<string> { result.strGenre };
+            }
+
             item.SetProviderId(MetadataProviders.AudioDbArtist, result.idArtist);
             item.SetProviderId(MetadataProviders.MusicBrainzArtist, result.strMusicBrainzID);
         }
@@ -84,7 +89,7 @@ namespace MediaBrowser.Providers.Music
 
             if (fileInfo.Exists)
             {
-                if (_config.Configuration.EnableFanArtUpdates || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
                 {
                     return _cachedTask;
                 }
@@ -136,9 +141,9 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         /// <param name="appPaths">The application paths.</param>
         /// <returns>System.String.</returns>
-        internal static string GetArtistDataPath(IApplicationPaths appPaths)
+        private static string GetArtistDataPath(IApplicationPaths appPaths)
         {
-            var dataPath = Path.Combine(appPaths.DataPath, "audiodb");
+            var dataPath = Path.Combine(appPaths.CachePath, "audiodb-artist");
 
             return dataPath;
         }

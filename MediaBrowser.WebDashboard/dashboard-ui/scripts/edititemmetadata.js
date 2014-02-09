@@ -67,25 +67,6 @@
         return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
     }
 
-    function getLiveTvServiceNode(item, folderState) {
-
-        var state = folderState;
-
-        var name = item.Name;
-
-        var cssClass = "editorNode";
-
-        var htmlName = "<div class='" + cssClass + "'>";
-
-        htmlName += name;
-
-        htmlName += "</div>";
-
-        var rel = item.IsFolder ? 'folder' : 'default';
-
-        return { attr: { id: item.Name, rel: rel, itemtype: 'livetvservice' }, data: htmlName, state: state };
-    }
-
     function loadChildrenOfRootNode(callback) {
 
 
@@ -102,31 +83,26 @@
 
             nodes.push(getNode(rootFolder, 'open'));
 
-            if (liveTvInfo.Services.length) {
-                nodes.push({ attr: { id: 'livetv', rel: 'folder', itemtype: 'livetv' }, data: 'Live TV', state: 'open' });
+            for (var i = 0, length = liveTvInfo.Services.length; i < length; i++) {
+
+                var service = liveTvInfo.Services[i];
+                
+                var name = service.Name;
+
+                var cssClass = "editorNode";
+
+                var htmlName = "<div class='" + cssClass + "'>";
+
+                htmlName += name;
+
+                htmlName += "</div>";
+
+                nodes.push({ attr: { id: name, rel: 'folder', itemtype: 'livetvservice' }, data: htmlName, state: 'closed' });
             }
 
             callback(nodes);
 
         });
-    }
-
-    function loadLiveTvServices(openItems, callback) {
-
-        ApiClient.getLiveTvInfo().done(function (info) {
-
-            var nodes = info.Services.map(function (i) {
-
-                var state = openItems.indexOf(i.Id) == -1 ? 'closed' : 'open';
-
-                return getLiveTvServiceNode(i, state);
-
-            });
-
-            callback(nodes);
-
-        });
-
     }
 
     function loadLiveTvChannels(service, openItems, callback) {
@@ -156,12 +132,6 @@
         }
 
         var id = node.attr("id");
-
-        if (id == 'livetv') {
-
-            loadLiveTvServices(openItems, callback);
-            return;
-        }
 
         var itemtype = node.attr("itemtype");
 
@@ -690,6 +660,18 @@
             $('#fldMusicBrainzAlbumArtistId', page).hide();
         }
 
+        if (item.Type == "MusicArtist" || item.Type == "MusicAlbum") {
+            $('#fldAudioDbArtistId', page).show();
+        } else {
+            $('#fldAudioDbArtistId', page).hide();
+        }
+
+        if (item.Type == "MusicAlbum") {
+            $('#fldAudioDbAlbumId', page).show();
+        } else {
+            $('#fldAudioDbAlbumId', page).hide();
+        }
+
         if (item.Type == "MusicArtist" || item.Type == "Audio") {
             $('#fldMusicBrainzArtistId', page).show();
         } else {
@@ -989,6 +971,8 @@
         $('#txtMusicBrainzArtistId', page).val(providerIds.MusicBrainzArtist || "");
         $('#txtMusicBrainzAlbumId', page).val(providerIds.MusicBrainzAlbum || "");
         $('#txtMusicBrainzAlbumArtistId', page).val(providerIds.MusicBrainzAlbumArtist || "");
+        $('#txtAudioDbArtist', page).val(providerIds.AudioDbArtist || "");
+        $('#txtAudioDbAlbum', page).val(providerIds.AudioDbAlbum || "");
         $('#txtMusicBrainzReleaseGroupId', page).val(providerIds.MusicBrainzReleaseGroup || "");
         $('#txtRottenTomatoes', page).val(providerIds.RottenTomatoes || "");
         $('#txtZap2It', page).val(providerIds.Zap2It || "");
@@ -1231,26 +1215,29 @@
                 LockedFields: $('.selectLockedField', form).map(function () {
                     var value = $(this).val();
                     if (value != '') return value;
-                }).get(),
-
-                ProviderIds:
-                {
-                    Gamesdb: $('#txtGamesDb', form).val(),
-                    Imdb: $('#txtImdb', form).val(),
-                    Tmdb: $('#txtTmdb', form).val(),
-                    TmdbCollection: $('#txtTmdbCollection', form).val(),
-                    Tvdb: $('#txtTvdb', form).val(),
-                    Tvcom: $('#txtTvCom', form).val(),
-                    MusicBrainzAlbum: $('#txtMusicBrainzAlbumId', form).val(),
-                    MusicBrainzAlbumArtist: $('#txtMusicBrainzAlbumArtistId', form).val(),
-                    MusicBrainzArtist: $('#txtMusicBrainzArtistId', form).val(),
-                    MusicBrainzReleaseGroup: $('#txtMusicBrainzReleaseGroupId', form).val(),
-                    RottenTomatoes: $('#txtRottenTomatoes', form).val(),
-                    Zap2It: $('#txtZap2It', form).val(),
-                    NesBox: $('#txtNesBoxName', form).val(),
-                    NesBoxRom: $('#txtNesBoxRom', form).val()
-                }
+                }).get()
             };
+
+            item.ProviderIds = $.extend(currentItem.ProviderIds, {
+                
+                Gamesdb: $('#txtGamesDb', form).val(),
+                Imdb: $('#txtImdb', form).val(),
+                Tmdb: $('#txtTmdb', form).val(),
+                TmdbCollection: $('#txtTmdbCollection', form).val(),
+                Tvdb: $('#txtTvdb', form).val(),
+                Tvcom: $('#txtTvCom', form).val(),
+                AudioDbArtist: $('#txtAudioDbArtist', form).val(),
+                AudioDbAlbum: $('#txtAudioDbAlbum', form).val(),
+                MusicBrainzAlbum: $('#txtMusicBrainzAlbumId', form).val(),
+                MusicBrainzAlbumArtist: $('#txtMusicBrainzAlbumArtistId', form).val(),
+                MusicBrainzArtist: $('#txtMusicBrainzArtistId', form).val(),
+                MusicBrainzReleaseGroup: $('#txtMusicBrainzReleaseGroupId', form).val(),
+                RottenTomatoes: $('#txtRottenTomatoes', form).val(),
+                Zap2It: $('#txtZap2It', form).val(),
+                NesBox: $('#txtNesBoxName', form).val(),
+                NesBoxRom: $('#txtNesBoxRom', form).val()
+                
+            });
 
             item.PreferredMetadataLanguage = $('#selectLanguage', form).val();
             item.PreferredMetadataCountryCode = $('#selectCountry', form).val();
@@ -1321,12 +1308,6 @@
             }
         };
 
-        self.sortDaysOfTheWeek = function (list) {
-            var days = new Array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
-            list.sort(function (a, b) { return days.indexOf(a) > days.indexOf(b); });
-            return list;
-        };
-
         self.removeElementFromListview = function (source) {
             var list = $(source).parents('ul[data-role="listview"]');
             $(source).parent().remove();
@@ -1395,6 +1376,34 @@
                 }
             } else {
                 $('#btnOpenImdb', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtAudioDbArtist', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                $('#btnOpenAudioDbArtist', page).attr('href', 'http://www.theaudiodb.com/artist/' + val);
+
+            } else {
+                $('#btnOpenAudioDbArtist', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtAudioDbAlbum', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                $('#btnOpenAudioDbAlbum', page).attr('href', 'http://www.theaudiodb.com/album/' + val);
+
+            } else {
+                $('#btnOpenAudioDbAlbum', page).attr('href', '#');
             }
 
         });
@@ -1546,7 +1555,7 @@
                 refreshPromise = ApiClient.refreshStudio(currentItem.Name, force);
             }
             else {
-                refreshPromise = ApiClient.refreshItem(currentItem.Id, force, $('#chkRecursive', page).checked());
+                refreshPromise = ApiClient.refreshItem(currentItem.Id, force, true);
             }
 
             refreshPromise.done(function () {

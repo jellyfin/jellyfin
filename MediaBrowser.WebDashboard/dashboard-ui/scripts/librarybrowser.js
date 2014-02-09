@@ -1118,7 +1118,7 @@
                 var displayIndexNumber = item.IndexNumber;
 
                 var number = "E" + displayIndexNumber;
-                
+
                 if (includeParentInfo !== false) {
                     number = "S" + item.ParentIndexNumber + ", " + number;
                 }
@@ -1352,7 +1352,7 @@
                     links.push('<a class="textlink" href="http://www.themoviedb.org/person/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
                 else if (item.Type == "Series")
                     links.push('<a class="textlink" href="http://www.themoviedb.org/tv/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
-    }
+            }
             if (providerIds.Tvdb) {
 
                 if (item.Type == "Series") {
@@ -1377,13 +1377,29 @@
             }
             if (providerIds.MusicBrainzArtist) {
 
-                links.push('<a class="textlink" href="http://musicbrainz.org/artist/' + providerIds.MusicBrainzArtist + '" target="_blank">MusicBrainz Artist</a>');
+                var text = item.Type == "MusicArtist" ? "MusicBrainz" : "MusicBrainz Artist";
+
+                links.push('<a class="textlink" href="http://musicbrainz.org/artist/' + providerIds.MusicBrainzArtist + '" target="_blank">' + text + '</a>');
 
             }
             if (providerIds.MusicBrainzReleaseGroup) {
 
                 links.push('<a class="textlink" href="http://musicbrainz.org/release-group/' + providerIds.MusicBrainzReleaseGroup + '" target="_blank">MusicBrainz Release Group</a>');
 
+            }
+            if (providerIds.AudioDbArtist) {
+
+                if (item.Type == "MusicArtist")
+                    links.push('<a class="textlink" href="http://www.theaudiodb.com/artist/' + providerIds.AudioDbArtist + '" target="_blank">TheAudioDB</a>');
+                else
+                    links.push('<a class="textlink" href="http://www.theaudiodb.com/artist/' + providerIds.AudioDbArtist + '" target="_blank">TheAudioDB Artist</a>');
+            }
+            if (providerIds.AudioDbAlbum) {
+
+                if (item.Type == "MusicAlbum")
+                    links.push('<a class="textlink" href="http://www.theaudiodb.com/album/' + providerIds.AudioDbAlbum + '" target="_blank">TheAudioDB</a>');
+                else
+                    links.push('<a class="textlink" href="http://www.theaudiodb.com/album/' + providerIds.AudioDbAlbum + '" target="_blank">TheAudioDB Album</a>');
             }
             if (providerIds.Gamesdb) {
                 links.push('<a class="textlink" href="http://thegamesdb.net/game/' + providerIds.Gamesdb + '" target="_blank">GamesDB</a>');
