@@ -39,6 +39,19 @@ namespace MediaBrowser.Providers.Music
 
         public static void SaveImageInfo(IApplicationPaths appPaths, ILogger logger, string musicBrainzId, string url, string size)
         {
+            if (appPaths == null)
+            {
+                throw new ArgumentNullException("appPaths");
+            }
+            if (string.IsNullOrEmpty(musicBrainzId))
+            {
+                throw new ArgumentNullException("musicBrainzId");
+            }
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new ArgumentNullException("url");
+            }
+
             var cachePath = Path.Combine(appPaths.CachePath, "lastfm", musicBrainzId, "image.txt");
 
             try
