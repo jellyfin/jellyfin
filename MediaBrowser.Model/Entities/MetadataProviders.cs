@@ -39,8 +39,7 @@ namespace MediaBrowser.Model.Entities
         NesBox,
         NesBoxRom,
         TvRage,
-        Freebase,
-        FreebaseMachine,
-        AudioDbArtist
+        AudioDbArtist,
+        AudioDbAlbum
     }
 }

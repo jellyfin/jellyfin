@@ -1,4 +1,4 @@
-﻿using System.IO;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -6,9 +6,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,13 +21,17 @@ namespace MediaBrowser.Providers.MediaInfo
     {
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
+        private readonly IApplicationPaths _appPaths;
+        private readonly IJsonSerializer _json;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public FFProbeAudioInfo(IMediaEncoder mediaEncoder, IItemRepository itemRepo)
+        public FFProbeAudioInfo(IMediaEncoder mediaEncoder, IItemRepository itemRepo, IApplicationPaths appPaths, IJsonSerializer json)
         {
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
+            _appPaths = appPaths;
+            _json = json;
         }
 
         public async Task<ItemUpdateType> Probe<T>(T item, CancellationToken cancellationToken)
@@ -48,10 +54,30 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var idString = item.Id.ToString("N");
+            var cachePath = Path.Combine(_appPaths.CachePath, "ffprobe-audio", idString.Substring(0, 2), idString, "v" + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
+
+            try
+            {
+                return _json.DeserializeFromFile<InternalMediaInfoResult>(cachePath);
+            }
+            catch (FileNotFoundException)
+            {
+
+            }
+            catch (DirectoryNotFoundException)
+            {
+            }
+
             const InputType type = InputType.File;
             var inputPath = new[] { item.Path };
 
-            return await _mediaEncoder.GetMediaInfo(inputPath, type, false, cancellationToken).ConfigureAwait(false);
+            var result = await _mediaEncoder.GetMediaInfo(inputPath, type, false, cancellationToken).ConfigureAwait(false);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+            _json.SerializeToFile(result, cachePath);
+
+            return result;
         }
 
         /// <summary>

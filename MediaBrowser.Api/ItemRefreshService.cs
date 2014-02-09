@@ -308,8 +308,8 @@ namespace MediaBrowser.Api
         {
             return new MetadataRefreshOptions
             {
-                MetadataRefreshMode = request.Forced ? MetadataRefreshMode.FullRefresh : MetadataRefreshMode.EnsureMetadata,
-                ImageRefreshMode = request.Forced ? ImageRefreshMode.FullRefresh : ImageRefreshMode.Default,
+                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                ImageRefreshMode = ImageRefreshMode.FullRefresh,
                 ReplaceAllMetadata = request.Forced
             };
         }

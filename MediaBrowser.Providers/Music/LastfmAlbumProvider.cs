@@ -175,7 +175,10 @@ namespace MediaBrowser.Providers.Music
             var musicBrainzId = item.GetProviderId(MetadataProviders.MusicBrainzAlbum) ??
                 item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
-            LastfmHelper.SaveImageInfo(_config.ApplicationPaths, _logger, musicBrainzId, url, imageSize);
+            if (!string.IsNullOrEmpty(musicBrainzId) && !string.IsNullOrEmpty(url))
+            {
+                LastfmHelper.SaveImageInfo(_config.ApplicationPaths, _logger, musicBrainzId, url, imageSize);
+            }
         }
 
         /// <summary>
@@ -197,7 +200,7 @@ namespace MediaBrowser.Providers.Music
         {
             get
             {
-                // After embedded provider and fanart
+                // After fanart & audiodb
                 return 2;
             }
         }

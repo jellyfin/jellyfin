@@ -193,7 +193,7 @@ namespace MediaBrowser.Api.Images
 
         private List<ImageProviderInfo> GetImageProviders(BaseItem item)
         {
-            return _providerManager.GetImageProviderInfo(item).ToList();
+            return _providerManager.GetRemoteImageProviderInfo(item).ToList();
         }
 
         public object Get(GetRemoteImages request)
@@ -224,7 +224,7 @@ namespace MediaBrowser.Api.Images
             var result = new RemoteImageResult
             {
                 TotalRecordCount = imagesList.Count,
-                Providers = images.Select(i => i.ProviderName)
+                Providers = imagesList.Select(i => i.ProviderName)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList()
             };

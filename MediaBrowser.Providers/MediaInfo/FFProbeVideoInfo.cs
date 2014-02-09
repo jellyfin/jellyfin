@@ -1,4 +1,5 @@
 ﻿using DvdLib.Ifo;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -8,6 +9,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -26,10 +28,12 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IItemRepository _itemRepo;
         private readonly IBlurayExaminer _blurayExaminer;
         private readonly ILocalizationManager _localization;
+        private readonly IApplicationPaths _appPaths;
+        private readonly IJsonSerializer _json;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization)
+        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -37,6 +41,8 @@ namespace MediaBrowser.Providers.MediaInfo
             _itemRepo = itemRepo;
             _blurayExaminer = blurayExaminer;
             _localization = localization;
+            _appPaths = appPaths;
+            _json = json;
         }
 
         public async Task<ItemUpdateType> ProbeVideo<T>(T item, CancellationToken cancellationToken)
@@ -84,6 +90,23 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var idString = item.Id.ToString("N");
+            var cachePath = Path.Combine(_appPaths.CachePath, "ffprobe-video", idString.Substring(0, 2), idString, "v" + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
+
+            try
+            {
+                return _json.DeserializeFromFile<InternalMediaInfoResult>(cachePath);
+            }
+            catch (FileNotFoundException)
+            {
+
+            }
+            catch (DirectoryNotFoundException)
+            {
+            }
+
             var type = InputType.File;
             var inputPath = isoMount == null ? new[] { item.Path } : new[] { isoMount.MountedPath };
 
@@ -94,7 +117,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 inputPath = MediaEncoderHelpers.GetInputArgument(video.Path, video.LocationType == LocationType.Remote, video.VideoType, video.IsoType, isoMount, video.PlayableStreamFileNames, out type);
             }
 
-            return await _mediaEncoder.GetMediaInfo(inputPath, type, false, cancellationToken).ConfigureAwait(false);
+            var result = await _mediaEncoder.GetMediaInfo(inputPath, type, false, cancellationToken).ConfigureAwait(false);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+            _json.SerializeToFile(result, cachePath);
+
+            return result;
         }
 
         protected async Task Fetch(Video video, CancellationToken cancellationToken, InternalMediaInfoResult data, IIsoMount isoMount)

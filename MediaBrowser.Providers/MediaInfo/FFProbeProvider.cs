@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -15,6 +16,7 @@ using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -36,6 +38,8 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IItemRepository _itemRepo;
         private readonly IBlurayExaminer _blurayExaminer;
         private readonly ILocalizationManager _localization;
+        private readonly IApplicationPaths _appPaths;
+        private readonly IJsonSerializer _json;
 
         public string Name
         {
@@ -87,7 +91,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return FetchAudioInfo(item, cancellationToken);
         }
 
-        public FFProbeProvider(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization)
+        public FFProbeProvider(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -95,6 +99,8 @@ namespace MediaBrowser.Providers.MediaInfo
             _itemRepo = itemRepo;
             _blurayExaminer = blurayExaminer;
             _localization = localization;
+            _appPaths = appPaths;
+            _json = json;
         }
 
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.Unspecified);
@@ -116,7 +122,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
-            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization);
+            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json);
 
             return prober.ProbeVideo(item, cancellationToken);
         }
@@ -129,7 +135,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
-            var prober = new FFProbeAudioInfo(_mediaEncoder, _itemRepo);
+            var prober = new FFProbeAudioInfo(_mediaEncoder, _itemRepo, _appPaths, _json);
 
             return prober.Probe(item, cancellationToken);
         }

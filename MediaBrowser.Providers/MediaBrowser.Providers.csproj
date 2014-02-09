@@ -119,6 +119,8 @@
     <Compile Include="Music\AlbumImageFromSongProvider.cs" />
     <Compile Include="Music\AlbumMetadataService.cs" />
     <Compile Include="Music\ArtistMetadataService.cs" />
+    <Compile Include="Music\AudioDbAlbumImageProvider.cs" />
+    <Compile Include="Music\AudioDbAlbumProvider.cs" />
     <Compile Include="Music\AudioDbArtistImageProvider.cs" />
     <Compile Include="Music\AudioDbArtistProvider.cs" />
     <Compile Include="Music\AudioMetadataService.cs" />

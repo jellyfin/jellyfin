@@ -75,7 +75,7 @@ namespace MediaBrowser.Api
         protected object ToOptimizedSerializedResultUsingCache<T>(T result)
            where T : class
         {
-            return ResultFactory.GetOptimizedSerializedResultUsingCache(Request, result);
+            return ToOptimizedResult(result);
         }
         
         /// <summary>

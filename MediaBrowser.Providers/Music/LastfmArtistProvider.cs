@@ -117,7 +117,10 @@ namespace MediaBrowser.Providers.Music
             string imageSize;
             var url = LastfmHelper.GetImageUrl(data, out imageSize);
 
-            LastfmHelper.SaveImageInfo(_config.ApplicationPaths, _logger, musicBrainzId, url, imageSize);
+            if (!string.IsNullOrEmpty(musicBrainzId) && !string.IsNullOrEmpty(url))
+            {
+                LastfmHelper.SaveImageInfo(_config.ApplicationPaths, _logger, musicBrainzId, url, imageSize);
+            }
         }
 
         /// <summary>

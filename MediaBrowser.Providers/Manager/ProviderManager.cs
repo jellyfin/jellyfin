@@ -275,7 +275,7 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{IImageProvider}.</returns>
-        public IEnumerable<ImageProviderInfo> GetImageProviderInfo(IHasImages item)
+        public IEnumerable<ImageProviderInfo> GetRemoteImageProviderInfo(IHasImages item)
         {
             return GetRemoteImageProviders(item).Select(i => new ImageProviderInfo
             {
