@@ -466,6 +466,13 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<AudioDbArtistId>" + SecurityElement.Escape(externalId) + "</AudioDbArtistId>");
             }
 
+            externalId = item.GetProviderId(MetadataProviders.AudioDbAlbum);
+
+            if (!string.IsNullOrEmpty(externalId))
+            {
+                builder.Append("<AudioDbAlbumId>" + SecurityElement.Escape(externalId) + "</AudioDbAlbumId>");
+            }
+
             externalId = item.GetProviderId(MetadataProviders.TvRage);
 
             if (!string.IsNullOrEmpty(externalId))

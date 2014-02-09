@@ -737,6 +737,15 @@ namespace MediaBrowser.Controller.Providers
                         }
                         break;
                     }
+                case "AudioDbAlbumId":
+                    {
+                        var id = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(id))
+                        {
+                            item.SetProviderId(MetadataProviders.AudioDbAlbum, id);
+                        }
+                        break;
+                    }
                 case "RottenTomatoesId":
                     var rtId = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(rtId))
