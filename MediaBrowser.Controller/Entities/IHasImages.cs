@@ -136,6 +136,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <returns><c>true</c> if [is save local metadata enabled]; otherwise, <c>false</c>.</returns>
         bool IsSaveLocalMetadataEnabled();
+
+        /// <summary>
+        /// Gets a value indicating whether [supports local metadata].
+        /// </summary>
+        /// <value><c>true</c> if [supports local metadata]; otherwise, <c>false</c>.</value>
+        bool SupportsLocalMetadata { get; }
     }
 
     public static class HasImagesExtensions

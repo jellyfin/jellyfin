@@ -15,7 +15,7 @@ namespace MediaBrowser.Providers.Folders
 
         public bool Supports(IHasImages item)
         {
-            return item is CollectionFolder && item.LocationType == LocationType.FileSystem;
+            return item is CollectionFolder && item.SupportsLocalMetadata;
         }
 
         public int Order

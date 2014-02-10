@@ -273,8 +273,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 if (item.LocationType == LocationType.FileSystem)
                 {
-                    return collections.Where(i => i.LocationType == LocationType.FileSystem &&
-                                                  i.PhysicalLocations.Contains(item.Path)).Cast<T>();
+                    return collections.Where(i => i.PhysicalLocations.Contains(item.Path)).Cast<T>();
                 }
             }
 
@@ -283,7 +282,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 if (item.Id == user.RootFolder.Id)
                 {
-                    return new T[] { item };
+                    return new[] { item };
                 }
 
                 return new T[] { };

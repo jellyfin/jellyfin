@@ -69,17 +69,7 @@ namespace MediaBrowser.Api.Library
         public object Get(GetPhyscialPaths request)
         {
             var result = _libraryManager.RootFolder.Children
-                .SelectMany(c =>
-                {
-                    var locationType = c.LocationType;
-
-                    if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
-                    {
-                        return c.PhysicalLocations;
-                    }
-
-                    return new List<string>();
-                })
+                .SelectMany(c => c.PhysicalLocations)
                 .ToList();
 
             return ToOptimizedSerializedResultUsingCache(result);

@@ -1399,22 +1399,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Distinct()
                 .SelectMany(i => i.Children)
                 .OfType<CollectionFolder>()
-                .Where(i =>
-                {
-                    var locationType = i.LocationType;
-
-                    if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
-                    {
-                        return false;
-                    }
-
-                    if (string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-
-                    return i.PhysicalLocations.Contains(item.Path);
-                })
+                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path))
                 .Select(i => i.CollectionType)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct()

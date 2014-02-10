@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -26,9 +27,7 @@ namespace MediaBrowser.Providers.All
 
         public bool Supports(IHasImages item)
         {
-            var locationType = item.LocationType;
-
-            if (locationType == LocationType.FileSystem)
+            if (item.SupportsLocalMetadata)
             {
                 // Episode has it's own provider
                 if (item.IsOwnedItem || item is Episode || item is Audio)
@@ -39,7 +38,7 @@ namespace MediaBrowser.Providers.All
                 return true;
             }
 
-            if (locationType == LocationType.Virtual)
+            if (item.LocationType == LocationType.Virtual)
             {
                 var season = item as Season;
 

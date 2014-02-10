@@ -185,7 +185,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return LocationType == Model.Entities.LocationType.Virtual && PremiereDate.HasValue && PremiereDate.Value < DateTime.UtcNow;
+                return LocationType == LocationType.Virtual && PremiereDate.HasValue && PremiereDate.Value < DateTime.UtcNow;
             }
         }
 
@@ -198,7 +198,7 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public bool IsVirtualUnaired
         {
-            get { return LocationType == Model.Entities.LocationType.Virtual && IsUnaired; }
+            get { return LocationType == LocationType.Virtual && IsUnaired; }
         }
 
         [IgnoreDataMember]

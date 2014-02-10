@@ -93,13 +93,9 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var series = season.Series;
 
-                    if (series != null)
+                    if (series != null && series.SupportsLocalMetadata)
                     {
-                        var seriesLocationType = series.LocationType;
-                        if (seriesLocationType == LocationType.FileSystem || seriesLocationType == LocationType.Offline)
-                        {
-                            saveLocally = true;
-                        }
+                        saveLocally = true;
                     }
                 }
             }
