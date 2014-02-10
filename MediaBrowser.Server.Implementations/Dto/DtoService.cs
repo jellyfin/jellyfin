@@ -1213,6 +1213,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             var unplayed = 0;
             long runtime = 0;
 
+            DateTime? dateLastMediaAdded = null;
             double totalPercentPlayed = 0;
 
             IEnumerable<BaseItem> children;
@@ -1231,6 +1232,15 @@ namespace MediaBrowser.Server.Implementations.Dto
             // Loop through each recursive child
             foreach (var child in children)
             {
+                if (!dateLastMediaAdded.HasValue)
+                {
+                    dateLastMediaAdded = child.DateCreated;
+                }
+                else
+                {
+                    dateLastMediaAdded = new[] { dateLastMediaAdded.Value, child.DateCreated }.Max();
+                }
+
                 var userdata = _userDataRepository.GetUserData(user.Id, child.GetUserDataKey());
 
                 recursiveItemCount++;
@@ -1280,6 +1290,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (runtime > 0 && fields.Contains(ItemFields.CumulativeRunTimeTicks))
             {
                 dto.CumulativeRunTimeTicks = runtime;
+            }
+
+            if (fields.Contains(ItemFields.DateLastMediaAdded))
+            {
+                dto.DateLastMediaAdded = dateLastMediaAdded;
             }
         }
 
