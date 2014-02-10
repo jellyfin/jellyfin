@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return true;
             }
 
-            if (item.LocationType == LocationType.FileSystem)
+            if (item.SupportsLocalMetadata)
             {
                 var video = item as Video;
 

@@ -243,8 +243,8 @@ namespace MediaBrowser.Api
         public object Get(GetFile request)
         {
             var item = _dtoService.GetItemByDtoId(request.Id);
-
-            if (item.LocationType == LocationType.Remote || item.LocationType == LocationType.Virtual)
+            var locationType = item.LocationType;
+            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
             {
                 throw new ArgumentException("This command cannot be used for remote or virtual items.");
             }
@@ -331,8 +331,7 @@ namespace MediaBrowser.Api
         {
             if (item.Parent is AggregateFolder)
             {
-                return user.RootFolder.GetChildren(user, true).FirstOrDefault(i => i.LocationType == LocationType.FileSystem &&
-                                                                                   i.PhysicalLocations.Contains(item.Path));
+                return user.RootFolder.GetChildren(user, true).FirstOrDefault(i => i.PhysicalLocations.Contains(item.Path));
             }
 
             return item;
@@ -442,12 +441,9 @@ namespace MediaBrowser.Api
 
             var parent = item.Parent;
 
-            if (item.LocationType == LocationType.Offline)
-            {
-                throw new InvalidOperationException(string.Format("{0} is currently offline.", item.Name));
-            }
+            var locationType = item.LocationType;
 
-            if (item.LocationType == LocationType.FileSystem)
+            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
             {
                 foreach (var path in item.GetDeletePaths().ToList())
                 {

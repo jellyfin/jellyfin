@@ -157,6 +157,16 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public virtual bool SupportsLocalMetadata
+        {
+            get
+            {
+                var locationType = LocationType;
+
+                return locationType == LocationType.FileSystem || locationType == LocationType.Offline;
+            }
+        }
+
         /// <summary>
         /// This is just a helper for convenience
         /// </summary>

@@ -161,7 +161,6 @@ namespace MediaBrowser.Server.Implementations.IO
                 .RootFolder
                 .Children
                 .OfType<Folder>()
-                .Where(i => i.LocationType != LocationType.Remote && i.LocationType != LocationType.Virtual)
                 .SelectMany(f => f.PhysicalLocations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(i => i)

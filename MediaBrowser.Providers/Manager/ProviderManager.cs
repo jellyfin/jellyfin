@@ -351,7 +351,7 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
-            if (item.LocationType != LocationType.FileSystem && provider is ILocalMetadataProvider)
+            if (!item.SupportsLocalMetadata && provider is ILocalMetadataProvider)
             {
                 return false;
             }

@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.TV
 
         public bool Supports(IHasImages item)
         {
-            return item is Episode && item.LocationType == LocationType.FileSystem;
+            return item is Episode && item.SupportsLocalMetadata;
         }
 
         public List<LocalImageInfo> GetImages(IHasImages item, IDirectoryService directoryService)
@@ -73,29 +73,6 @@ namespace MediaBrowser.Providers.TV
               .Select(i => new LocalImageInfo
               {
                   FileInfo = (FileInfo)i,
-                  Type = ImageType.Primary
-              })
-              .ToList();
-        }
-
-        private List<LocalImageInfo> GetFilesFromMetadataFolder(string filenameWithoutExtension, IEnumerable<FileInfo> metadataFiles)
-        {
-            return metadataFiles
-              .Where(i =>
-              {
-                  if (BaseItem.SupportedImageExtensions.Contains(i.Extension))
-                  {
-                      if (string.Equals(filenameWithoutExtension, Path.GetFileNameWithoutExtension(i.Name), StringComparison.OrdinalIgnoreCase))
-                      {
-                          return true;
-                      }
-                  }
-
-                  return false;
-              })
-              .Select(i => new LocalImageInfo
-              {
-                  FileInfo = i,
                   Type = ImageType.Primary
               })
               .ToList();

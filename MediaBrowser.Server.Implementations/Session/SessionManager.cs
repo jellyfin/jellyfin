@@ -615,12 +615,8 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             var items = command.ItemIds.Select(i => _libraryManager.GetItemById(new Guid(i)))
+                .Where(i => i.LocationType != LocationType.Virtual)
                 .ToList();
-
-            if (items.Any(i => i.LocationType == LocationType.Virtual))
-            {
-                throw new ArgumentException("Virtual items are not playable.");
-            }
 
             if (command.PlayCommand != PlayCommand.PlayNow)
             {

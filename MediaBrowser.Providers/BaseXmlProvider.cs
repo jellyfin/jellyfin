@@ -60,9 +60,14 @@ namespace MediaBrowser.Providers
 
         protected abstract FileInfo GetXmlFile(ItemInfo info);
 
+        protected virtual FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        {
+            return GetXmlFile(info);
+        }
+
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
-            var file = GetXmlFile(new ItemInfo { IsInMixedFolder = item.IsInMixedFolder, Path = item.Path });
+            var file = GetXmlFile(new ItemInfo { IsInMixedFolder = item.IsInMixedFolder, Path = item.Path }, directoryService);
 
             if (file == null)
             {

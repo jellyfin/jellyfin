@@ -22,8 +22,7 @@ namespace MediaBrowser.Providers.Savers
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
         public bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
         {
-            var locationType = item.LocationType;
-            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
+            if (!item.SupportsLocalMetadata)
             {
                 return false;
             }

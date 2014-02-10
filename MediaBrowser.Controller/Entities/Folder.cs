@@ -1052,50 +1052,17 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            try
+            if (string.Equals(Path, path, StringComparison.OrdinalIgnoreCase))
             {
-                var locationType = LocationType;
-
-                if (locationType == LocationType.Remote && string.Equals(Path, path, StringComparison.OrdinalIgnoreCase))
-                {
-                    return this;
-                }
-
-                if (locationType != LocationType.Virtual && PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
-                {
-                    return this;
-                }
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
+                return this;
             }
 
-            return RecursiveChildren.Where(i => i.LocationType != LocationType.Virtual).FirstOrDefault(i =>
+            if (PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
             {
-                try
-                {
-                    if (string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
+                return this;
+            }
 
-                    if (i.LocationType != LocationType.Remote)
-                    {
-                        if (i.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                    return false;
-                }
-            });
+            return RecursiveChildren.FirstOrDefault(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase));
         }
 
         public override bool IsPlayed(User user)

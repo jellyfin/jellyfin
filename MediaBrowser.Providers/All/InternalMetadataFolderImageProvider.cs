@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
 
@@ -35,16 +34,7 @@ namespace MediaBrowser.Providers.All
                 return true;
             }
 
-            var locationType = item.LocationType;
-
-            if (locationType == LocationType.FileSystem ||
-                locationType == LocationType.Offline)
-            {
-                return false;
-            }
-
-            // These always save locally
-            if (item is IItemByName || item is User)
+            if (item.SupportsLocalMetadata)
             {
                 return false;
             }

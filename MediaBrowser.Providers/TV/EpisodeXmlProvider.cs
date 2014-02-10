@@ -30,5 +30,15 @@ namespace MediaBrowser.Providers.TV
 
             return new FileInfo(metadataFile);
         }
+
+        protected override FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        {
+            var metadataPath = Path.GetDirectoryName(info.Path);
+            metadataPath = Path.Combine(metadataPath, "metadata");
+
+            var metadataFile = Path.Combine(metadataPath, Path.ChangeExtension(Path.GetFileName(info.Path), ".xml"));
+
+            return directoryService.GetFile(metadataFile);
+        }
     }
 }
