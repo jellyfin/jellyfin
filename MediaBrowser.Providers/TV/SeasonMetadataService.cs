@@ -1,25 +1,19 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
     public class SeasonMetadataService : MetadataService<Season, SeasonInfo>
     {
-        private readonly ILibraryManager _libraryManager;
-
-        public SeasonMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public SeasonMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem)
             : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
         {
-            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -33,21 +27,6 @@ namespace MediaBrowser.Providers.TV
         protected override void MergeData(Season source, Season target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
-        }
-
-        protected override ItemUpdateType BeforeMetadataRefresh(Season item)
-        {
-            var updateType = base.BeforeMetadataRefresh(item);
-
-            var currentIndexNumber = item.IndexNumber;
-
-            item.IndexNumber = item.IndexNumber ?? TVUtils.GetSeasonNumberFromPath(item.Path);
-
-            if ((currentIndexNumber ?? -1) != (item.IndexNumber ?? -1))
-            {
-                updateType = updateType | ItemUpdateType.MetadataImport;
-            }
-            return updateType;
         }
     }
 }

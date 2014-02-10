@@ -66,7 +66,7 @@ namespace MediaBrowser.Providers.TV
             return Task.FromResult(result);
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
             // Only enable for virtual items
             if (item.LocationType != LocationType.Virtual)

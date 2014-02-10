@@ -15,6 +15,7 @@ namespace MediaBrowser.Model.Configuration
         public ImageOption[] ImageOptions { get; set; }
 
         public string[] DisabledMetadataSavers { get; set; }
+        public string[] LocalMetadataReaders { get; set; }
 
         public MetadataOptions()
             : this(3, 1280)
@@ -35,6 +36,7 @@ namespace MediaBrowser.Model.Configuration
 
             ImageOptions = imageOptions.ToArray();
             DisabledMetadataSavers = new string[] { };
+            LocalMetadataReaders = new string[] { };
         }
 
         public int GetLimit(ImageType type)

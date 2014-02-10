@@ -1,9 +1,9 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -49,5 +49,11 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// This is called before any metadata refresh and returns ItemUpdateType indictating if changes were made, and what.
+        /// </summary>
+        /// <returns>ItemUpdateType.</returns>
+        ItemUpdateType BeforeMetadataRefresh();
     }
 }

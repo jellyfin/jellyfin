@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Localization;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -243,9 +244,40 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        /// <summary>
+        /// Gets the lookup information.
+        /// </summary>
+        /// <returns>SeasonInfo.</returns>
         public SeasonInfo GetLookupInfo()
         {
             return GetItemLookupInfo<SeasonInfo>();
+        }
+
+        /// <summary>
+        /// This is called before any metadata refresh and returns ItemUpdateType indictating if changes were made, and what.
+        /// </summary>
+        /// <returns>ItemUpdateType.</returns>
+        public override ItemUpdateType BeforeMetadataRefresh()
+        {
+            var updateType = base.BeforeMetadataRefresh();
+
+            var locationType = LocationType;
+
+            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+            {
+                if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
+                {
+                    IndexNumber = IndexNumber ?? TVUtils.GetSeasonNumberFromPath(Path);
+
+                    // If a change was made record it
+                    if (IndexNumber.HasValue)
+                    {
+                        updateType = updateType | ItemUpdateType.MetadataImport;
+                    }
+                }
+            }
+
+            return updateType;
         }
     }
 }

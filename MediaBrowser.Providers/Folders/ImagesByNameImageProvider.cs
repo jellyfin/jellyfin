@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.Folders
             }
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, DirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(IHasImages item, IDirectoryService directoryService)
         {
             var name = _fileSystem.GetValidFilename(item.Name);
 

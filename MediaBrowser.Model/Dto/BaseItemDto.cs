@@ -32,6 +32,8 @@ namespace MediaBrowser.Model.Dto
         /// <value>The date created.</value>
         public DateTime? DateCreated { get; set; }
 
+        public DateTime? DateLastMediaAdded { get; set; }
+        
         public int? AirsBeforeSeasonNumber { get; set; }
         public int? AirsAfterSeasonNumber { get; set; }
         public int? AirsBeforeEpisodeNumber { get; set; }

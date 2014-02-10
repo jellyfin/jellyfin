@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.All
             return false;
         }
 
-        private IEnumerable<FileSystemInfo> GetFiles(IHasImages item, bool includeDirectories, DirectoryService directoryService)
+        private IEnumerable<FileSystemInfo> GetFiles(IHasImages item, bool includeDirectories, IDirectoryService directoryService)
         {
             if (item.LocationType != LocationType.FileSystem)
             {
@@ -77,7 +77,7 @@ namespace MediaBrowser.Providers.All
                 .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase));
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, DirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(IHasImages item, IDirectoryService directoryService)
         {
             var files = GetFiles(item, true, directoryService).ToList();
 
@@ -88,12 +88,12 @@ namespace MediaBrowser.Providers.All
             return list;
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, string path, DirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(IHasImages item, string path, IDirectoryService directoryService)
         {
             return GetImages(item, new[] { path }, directoryService);
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, IEnumerable<string> paths, DirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(IHasImages item, IEnumerable<string> paths, IDirectoryService directoryService)
         {
             var files = paths.SelectMany(directoryService.GetFiles)
                .Where(i =>
@@ -113,7 +113,7 @@ namespace MediaBrowser.Providers.All
             return list;
         }
 
-        private void PopulateImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, bool supportParentSeriesFiles, DirectoryService directoryService)
+        private void PopulateImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, bool supportParentSeriesFiles, IDirectoryService directoryService)
         {
             var imagePrefix = string.Empty;
 
@@ -185,7 +185,7 @@ namespace MediaBrowser.Providers.All
             }
         }
 
-        private void PopulateBackdrops(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, DirectoryService directoryService)
+        private void PopulateBackdrops(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, IDirectoryService directoryService)
         {
             PopulateBackdrops(images, files, imagePrefix, "backdrop", "backdrop", ImageType.Backdrop);
 
@@ -212,7 +212,7 @@ namespace MediaBrowser.Providers.All
             }
         }
 
-        private void PopulateBackdropsFromExtraFanart(string path, List<LocalImageInfo> images, DirectoryService directoryService)
+        private void PopulateBackdropsFromExtraFanart(string path, List<LocalImageInfo> images, IDirectoryService directoryService)
         {
             var imageFiles = directoryService.GetFiles(path)
                 .Where(i =>
@@ -262,7 +262,7 @@ namespace MediaBrowser.Providers.All
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private void PopulateSeasonImagesFromSeriesFolder(Season season, List<LocalImageInfo> images, DirectoryService directoryService)
+        private void PopulateSeasonImagesFromSeriesFolder(Season season, List<LocalImageInfo> images, IDirectoryService directoryService)
         {
             var seasonNumber = season.IndexNumber;
 

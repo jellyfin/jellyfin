@@ -563,6 +563,8 @@ namespace MediaBrowser.Controller.Entities
         {
             var locationType = LocationType;
 
+            var requiresSave = false;
+
             if (IsFolder || Parent != null)
             {
                 options.DirectoryService = options.DirectoryService ?? new DirectoryService(Logger);
@@ -571,13 +573,34 @@ namespace MediaBrowser.Controller.Entities
                     GetFileSystemChildren(options.DirectoryService).ToList() :
                     new List<FileSystemInfo>();
 
-                await BeforeRefreshMetadata(options, files, cancellationToken).ConfigureAwait(false);
+                var ownedItemsChanged = await RefreshedOwnedItems(options, files, cancellationToken).ConfigureAwait(false);
+
+                if (ownedItemsChanged)
+                {
+                    requiresSave = true;
+                }
             }
 
+            var dateLastSaved = DateLastSaved;
+
             await ProviderManager.RefreshMetadata(this, options, cancellationToken).ConfigureAwait(false);
+
+            // If it wasn't saved by the provider process, save now
+            if (requiresSave && dateLastSaved == DateLastSaved)
+            {
+                await UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+            }
         }
 
-        protected virtual async Task BeforeRefreshMetadata(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        /// <summary>
+        /// Refreshes owned items such as trailers, theme videos, special features, etc.
+        /// Returns true or false indicating if changes were found.
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="fileSystemChildren"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
             var themeSongsChanged = false;
 
@@ -605,13 +628,10 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (themeSongsChanged || themeVideosChanged || localTrailersChanged)
-            {
-                options.ForceSave = true;
-            }
+            return themeSongsChanged || themeVideosChanged || localTrailersChanged;
         }
 
-        protected virtual IEnumerable<FileSystemInfo> GetFileSystemChildren(DirectoryService directoryService)
+        protected virtual IEnumerable<FileSystemInfo> GetFileSystemChildren(IDirectoryService directoryService)
         {
             var path = ContainingFolderPath;
 
@@ -1205,7 +1225,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Validates that images within the item are still on the file system
         /// </summary>
-        public bool ValidateImages(DirectoryService directoryService)
+        public bool ValidateImages(IDirectoryService directoryService)
         {
             var allDirectories = ImageInfos.Select(i => System.IO.Path.GetDirectoryName(i.Path)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             var allFiles = allDirectories.SelectMany(directoryService.GetFiles).Select(i => i.FullName).ToList();
@@ -1389,6 +1409,23 @@ namespace MediaBrowser.Controller.Entities
                 IndexNumber = IndexNumber,
                 ParentIndexNumber = ParentIndexNumber
             };
+        }
+
+        /// <summary>
+        /// This is called before any metadata refresh and returns ItemUpdateType indictating if changes were made, and what.
+        /// </summary>
+        /// <returns>ItemUpdateType.</returns>
+        public virtual ItemUpdateType BeforeMetadataRefresh()
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Path))
+            {
+                Name = System.IO.Path.GetFileNameWithoutExtension(Path);
+                updateType = updateType | ItemUpdateType.MetadataEdit;
+            }
+
+            return updateType;
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
@@ -16,13 +15,6 @@ namespace MediaBrowser.Providers.Savers
     /// </summary>
     public class GameXmlSaver : IMetadataFileSaver
     {
-        private readonly IServerConfigurationManager _config;
-
-        public GameXmlSaver(IServerConfigurationManager config)
-        {
-            _config = config;
-        }
-
         public string Name
         {
             get

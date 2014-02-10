@@ -1,26 +1,19 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
     public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
     {
-        private readonly ILibraryManager _libraryManager;
-
-        public EpisodeMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public EpisodeMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem)
             : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
         {
-            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -69,51 +62,6 @@ namespace MediaBrowser.Providers.TV
             {
                 target.IndexNumberEnd = source.IndexNumberEnd;
             }
-        }
-
-        protected override ItemUpdateType BeforeMetadataRefresh(Episode item)
-        {
-            var updateType = base.BeforeMetadataRefresh(item);
-
-            var locationType = item.LocationType;
-            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
-            {
-                var currentIndexNumber = item.IndexNumber;
-                var currentIndexNumberEnd = item.IndexNumberEnd;
-                var currentParentIndexNumber = item.ParentIndexNumber;
-
-                var filename = Path.GetFileName(item.Path);
-
-                item.IndexNumber = item.IndexNumber ?? TVUtils.GetEpisodeNumberFromFile(item.Path, item.Parent is Season);
-                item.IndexNumberEnd = item.IndexNumberEnd ?? TVUtils.GetEndingEpisodeNumberFromFile(item.Path);
-
-                if (!item.ParentIndexNumber.HasValue)
-                {
-                    var season = item.Season;
-
-                    if (season != null)
-                    {
-                        item.ParentIndexNumber = season.IndexNumber;
-                    }
-                }
-
-                if ((currentIndexNumber ?? -1) != (item.IndexNumber ?? -1))
-                {
-                    updateType = updateType | ItemUpdateType.MetadataImport;
-                }
-
-                if ((currentIndexNumberEnd ?? -1) != (item.IndexNumberEnd ?? -1))
-                {
-                    updateType = updateType | ItemUpdateType.MetadataImport;
-                }
-
-                if ((currentParentIndexNumber ?? -1) != (item.ParentIndexNumber ?? -1))
-                {
-                    updateType = updateType | ItemUpdateType.MetadataImport;
-                }
-            }
-
-            return updateType;
         }
     }
 }

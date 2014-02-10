@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.All
             }
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, DirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(IHasImages item, IDirectoryService directoryService)
         {
             var path = _config.ApplicationPaths.GetInternalMetadataPath(item.Id);
 

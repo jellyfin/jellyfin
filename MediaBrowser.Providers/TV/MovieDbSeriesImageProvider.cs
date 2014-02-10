@@ -203,7 +203,7 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
             return MovieDbSeriesProvider.Current.HasChanged(item, date);
         }

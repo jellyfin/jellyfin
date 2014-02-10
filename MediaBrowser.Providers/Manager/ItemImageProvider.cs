@@ -34,7 +34,7 @@ namespace MediaBrowser.Providers.Manager
             _fileSystem = fileSystem;
         }
 
-        public bool ValidateImages(IHasImages item, IEnumerable<IImageProvider> providers, DirectoryService directoryService)
+        public bool ValidateImages(IHasImages item, IEnumerable<IImageProvider> providers, IDirectoryService directoryService)
         {
             var hasChanges = item.ValidateImages(directoryService);
 
@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.Manager
 
         public async Task<RefreshResult> RefreshImages(IHasImages item, IEnumerable<IImageProvider> imageProviders, ImageRefreshOptions refreshOptions, MetadataOptions savedOptions, CancellationToken cancellationToken)
         {
-            var result = new RefreshResult { UpdateType = ItemUpdateType.Unspecified };
+            var result = new RefreshResult { UpdateType = ItemUpdateType.None };
 
             var providers = GetImageProviders(item, imageProviders).ToList();
 

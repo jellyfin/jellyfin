@@ -99,7 +99,7 @@ namespace MediaBrowser.Providers.Music
 
         private ItemUpdateType SetAlbumArtistFromSongs(MusicAlbum item, IEnumerable<Audio> songs)
         {
-            var updateType = ItemUpdateType.Unspecified;
+            var updateType = ItemUpdateType.None;
             
             var albumArtist = songs
                 .Select(i => i.AlbumArtist)
@@ -119,7 +119,7 @@ namespace MediaBrowser.Providers.Music
 
         private ItemUpdateType SetArtistsFromSongs(MusicAlbum item, IEnumerable<Audio> songs)
         {
-            var updateType = ItemUpdateType.Unspecified;
+            var updateType = ItemUpdateType.None;
 
             var currentList = item.Artists.ToList();
 
@@ -137,7 +137,7 @@ namespace MediaBrowser.Providers.Music
 
         private ItemUpdateType SetDateFromSongs(MusicAlbum item, List<Audio> songs)
         {
-            var updateType = ItemUpdateType.Unspecified;
+            var updateType = ItemUpdateType.None;
 
             var date = songs.Select(i => i.PremiereDate)
                             .FirstOrDefault(i => i.HasValue);

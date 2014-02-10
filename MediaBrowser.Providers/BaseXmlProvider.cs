@@ -39,6 +39,10 @@ namespace MediaBrowser.Providers
             {
                 result.HasMetadata = false;
             }
+            catch (DirectoryNotFoundException)
+            {
+                result.HasMetadata = false;
+            }
             finally
             {
                 XmlProviderUtils.XmlParsingResourcePool.Release();
@@ -56,7 +60,7 @@ namespace MediaBrowser.Providers
 
         protected abstract FileInfo GetXmlFile(ItemInfo info);
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
             var file = GetXmlFile(new ItemInfo { IsInMixedFolder = item.IsInMixedFolder, Path = item.Path });
 

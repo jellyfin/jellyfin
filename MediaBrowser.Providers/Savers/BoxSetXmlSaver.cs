@@ -1,25 +1,16 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Savers
 {
     public class BoxSetXmlSaver : IMetadataFileSaver
     {
-        private readonly IServerConfigurationManager _config;
-
-        public BoxSetXmlSaver(IServerConfigurationManager config)
-        {
-            _config = config;
-        }
-
         public string Name
         {
             get

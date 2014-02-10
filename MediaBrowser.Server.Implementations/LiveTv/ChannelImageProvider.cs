@@ -103,7 +103,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             get { return 0; }
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
             return !item.HasImage(ImageType.Primary) && (DateTime.UtcNow - date).TotalDays >= 1;
         }

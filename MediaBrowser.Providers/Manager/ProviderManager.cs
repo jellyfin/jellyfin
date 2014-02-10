@@ -279,8 +279,7 @@ namespace MediaBrowser.Providers.Manager
         {
             return GetRemoteImageProviders(item).Select(i => new ImageProviderInfo
             {
-                Name = i.Name,
-                Order = GetOrder(item, i)
+                Name = i.Name
             });
         }
 
@@ -298,21 +297,39 @@ namespace MediaBrowser.Providers.Manager
                     return false;
                 }
 
-            }).OrderBy(i => GetOrder(item, i));
+            }).OrderBy(GetOrder);
         }
 
         public IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(IHasMetadata item)
             where T : IHasMetadata
         {
-            return GetMetadataProvidersInternal<T>(item, false);
+            var options = GetMetadataOptions(item);
+
+            return GetMetadataProvidersInternal<T>(item, options, false);
         }
 
-        private IEnumerable<IMetadataProvider<T>> GetMetadataProvidersInternal<T>(IHasMetadata item, bool includeDisabled)
+        private IEnumerable<IMetadataProvider<T>> GetMetadataProvidersInternal<T>(IHasMetadata item, MetadataOptions options, bool includeDisabled)
             where T : IHasMetadata
         {
             return _metadataProviders.OfType<IMetadataProvider<T>>()
                 .Where(i => CanRefresh(i, item, includeDisabled))
-                .OrderBy(i => GetOrder(item, i));
+                .OrderBy(i =>
+                {
+                    // See if there's a user-defined order
+                    if (i is ILocalMetadataProvider)
+                    {
+                        var index = Array.IndexOf(options.LocalMetadataReaders, i.Name);
+
+                        if (index != -1)
+                        {
+                            return index;
+                        }
+                    }
+
+                    // Not configured. Just return some high number to put it at the end.
+                    return 100;
+                })
+                .ThenBy(GetOrder);
         }
 
         private IEnumerable<IRemoteImageProvider> GetRemoteImageProviders(IHasImages item)
@@ -354,10 +371,9 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Gets the order.
         /// </summary>
-        /// <param name="item">The item.</param>
         /// <param name="provider">The provider.</param>
         /// <returns>System.Int32.</returns>
-        private int GetOrder(IHasImages item, IImageProvider provider)
+        private int GetOrder(IImageProvider provider)
         {
             var hasOrder = provider as IHasOrder;
 
@@ -372,19 +388,18 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Gets the order.
         /// </summary>
-        /// <param name="item">The item.</param>
         /// <param name="provider">The provider.</param>
         /// <returns>System.Int32.</returns>
-        private int GetOrder(IHasMetadata item, IMetadataProvider provider)
+        private int GetOrder(IMetadataProvider provider)
         {
             var hasOrder = provider as IHasOrder;
 
-            if (hasOrder == null)
+            if (hasOrder != null)
             {
-                return 0;
+                return hasOrder.Order;
             }
 
-            return hasOrder.Order;
+            return 0;
         }
 
         public IEnumerable<MetadataPluginSummary> GetAllMetadataPlugins()
@@ -432,6 +447,8 @@ namespace MediaBrowser.Providers.Manager
                 Parent = new Folder()
             };
 
+            var options = GetMetadataOptions(dummy);
+
             var summary = new MetadataPluginSummary
             {
                 ItemType = typeof(T).Name
@@ -439,7 +456,7 @@ namespace MediaBrowser.Providers.Manager
 
             var imageProviders = GetImageProviders(dummy).ToList();
 
-            AddMetadataPlugins(summary.Plugins, dummy);
+            AddMetadataPlugins(summary.Plugins, dummy, options);
             AddImagePlugins(summary.Plugins, dummy, imageProviders);
 
             summary.SupportedImageTypes = imageProviders.OfType<IRemoteImageProvider>()
@@ -450,10 +467,10 @@ namespace MediaBrowser.Providers.Manager
             return summary;
         }
 
-        private void AddMetadataPlugins<T>(List<MetadataPlugin> list, T item)
+        private void AddMetadataPlugins<T>(List<MetadataPlugin> list, T item, MetadataOptions options)
             where T : IHasMetadata
         {
-            var providers = GetMetadataProvidersInternal<T>(item, true).ToList();
+            var providers = GetMetadataProvidersInternal<T>(item, options, true).ToList();
 
             // Locals
             list.AddRange(providers.Where(i => (i is ILocalMetadataProvider)).Select(i => new MetadataPlugin
@@ -496,16 +513,21 @@ namespace MediaBrowser.Providers.Manager
             }));
         }
 
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
-
         public MetadataOptions GetMetadataOptions(IHasMetadata item)
         {
             var type = item.GetType().Name;
+
+            if (item is Trailer)
+            {
+                type = typeof(Movie).Name;
+            }
+
             return ConfigurationManager.Configuration.MetadataOptions
                 .FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase)) ??
                 new MetadataOptions();
         }
-        
+
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
         /// <summary>
         /// Saves the metadata.
         /// </summary>
@@ -517,7 +539,7 @@ namespace MediaBrowser.Providers.Manager
             foreach (var saver in _savers.Where(i => IsSaverEnabledForItem(i, item, updateType, true)))
             {
                 _logger.Debug("Saving {0} to {1}.", item.Path ?? item.Name, saver.Name);
-                
+
                 var fileSaver = saver as IMetadataFileSaver;
 
                 if (fileSaver != null)

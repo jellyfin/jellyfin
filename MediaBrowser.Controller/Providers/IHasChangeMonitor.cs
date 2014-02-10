@@ -9,8 +9,9 @@ namespace MediaBrowser.Controller.Providers
         /// Determines whether the specified item has changed.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="directoryService">The directory service.</param>
         /// <param name="date">The date.</param>
         /// <returns><c>true</c> if the specified item has changed; otherwise, <c>false</c>.</returns>
-        bool HasChanged(IHasMetadata item, DateTime date);
+        bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date);
     }
 }

@@ -1,12 +1,11 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Savers
 {

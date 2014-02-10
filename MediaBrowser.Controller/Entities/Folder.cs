@@ -319,7 +319,7 @@ namespace MediaBrowser.Controller.Entities
             return ValidateChildrenWithCancellationSupport(progress, cancellationToken, recursive, true, metadataRefreshOptions, metadataRefreshOptions.DirectoryService);
         }
 
-        private async Task ValidateChildrenWithCancellationSupport(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, DirectoryService directoryService)
+        private async Task ValidateChildrenWithCancellationSupport(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -373,7 +373,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <returns>Task.</returns>
-        protected async virtual Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, DirectoryService directoryService)
+        protected async virtual Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
             var locationType = LocationType;
 
@@ -593,7 +593,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task ValidateSubFolders(IList<Folder> children, DirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var list = children;
             var childCount = list.Count;
@@ -679,7 +679,7 @@ namespace MediaBrowser.Controller.Entities
         /// Get the children of this folder from the actual file system
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        protected virtual IEnumerable<BaseItem> GetNonCachedChildren(DirectoryService directoryService)
+        protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
             return LibraryManager.ResolvePaths<BaseItem>(GetFileSystemChildren(directoryService), this);
         }
@@ -927,17 +927,21 @@ namespace MediaBrowser.Controller.Entities
             return item;
         }
 
-        protected override Task BeforeRefreshMetadata(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
+            var changesFound = false;
+
             if (SupportsShortcutChildren && LocationType == LocationType.FileSystem)
             {
                 if (RefreshLinkedChildren(fileSystemChildren))
                 {
-                    options.ForceSave = true;
+                    changesFound = true;
                 }
             }
 
-            return base.BeforeRefreshMetadata(options, fileSystemChildren, cancellationToken);
+            var baseHasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+
+            return baseHasChanges || changesFound;
         }
 
         /// <summary>

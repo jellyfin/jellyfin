@@ -33,7 +33,7 @@ namespace MediaBrowser.Providers.Omdb
 
             if (string.IsNullOrEmpty(imdbId))
             {
-                return ItemUpdateType.Unspecified;
+                return ItemUpdateType.None;
             }
 
             var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;

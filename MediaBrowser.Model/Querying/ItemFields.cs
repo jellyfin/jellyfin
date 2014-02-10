@@ -42,6 +42,11 @@ namespace MediaBrowser.Model.Querying
         DateCreated,
 
         /// <summary>
+        /// The date last media added
+        /// </summary>
+        DateLastMediaAdded,
+
+        /// <summary>
         /// Item display preferences
         /// </summary>
         DisplayPreferencesId,

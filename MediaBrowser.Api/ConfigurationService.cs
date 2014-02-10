@@ -143,7 +143,6 @@ namespace MediaBrowser.Api
                 DisableSaversForType(typeof(Game), config);
                 DisableSaversForType(typeof(GameSystem), config);
                 DisableSaversForType(typeof(Movie), config);
-                DisableSaversForType(typeof(Trailer), config);
                 DisableSaversForType(typeof(BoxSet), config);
                 DisableSaversForType(typeof(Book), config);
                 DisableSaversForType(typeof(Series), config);
