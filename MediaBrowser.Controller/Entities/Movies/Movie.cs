@@ -96,9 +96,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.GetUserDataKey();
         }
 
-        protected override async Task BeforeRefreshMetadata(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            await base.BeforeRefreshMetadata(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+            var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
             // Must have a parent to have special features
             // In other words, it must be part of the Parent/Child tree
@@ -108,9 +108,11 @@ namespace MediaBrowser.Controller.Entities.Movies
 
                 if (specialFeaturesChanged)
                 {
-                    options.ForceSave = true;
+                    hasChanges = true;
                 }
             }
+
+            return hasChanges;
         }
 
         private async Task<bool> RefreshSpecialFeatures(MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)

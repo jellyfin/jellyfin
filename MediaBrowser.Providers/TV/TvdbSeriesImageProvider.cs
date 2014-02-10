@@ -337,7 +337,7 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
             if (!_config.Configuration.EnableTvDbUpdates)
             {

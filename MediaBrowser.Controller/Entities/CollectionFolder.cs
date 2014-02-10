@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.Entities
 
         public List<string> PhysicalLocationsList { get; set; }
 
-        protected override IEnumerable<FileSystemInfo> GetFileSystemChildren(DirectoryService directoryService)
+        protected override IEnumerable<FileSystemInfo> GetFileSystemChildren(IDirectoryService directoryService)
         {
             return CreateResolveArgs().FileSystemChildren;
         }
@@ -119,8 +119,9 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="refreshChildMetadata">if set to <c>true</c> [refresh child metadata].</param>
         /// <param name="refreshOptions">The refresh options.</param>
+        /// <param name="directoryService">The directory service.</param>
         /// <returns>Task.</returns>
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, DirectoryService directoryService)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
             CreateResolveArgs();
             ResetDynamicChildren();

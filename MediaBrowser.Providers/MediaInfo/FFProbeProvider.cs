@@ -13,10 +13,11 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Serialization;
+using System.Linq;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -46,47 +47,47 @@ namespace MediaBrowser.Providers.MediaInfo
             get { return "ffprobe"; }
         }
 
-        public Task<ItemUpdateType> FetchAsync(Episode item, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Episode item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, cancellationToken);
+            return FetchVideoInfo(item, directoryService, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(MusicVideo item, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(MusicVideo item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, cancellationToken);
+            return FetchVideoInfo(item, directoryService, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(Movie item, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Movie item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, cancellationToken);
+            return FetchVideoInfo(item, directoryService, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(AdultVideo item, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(AdultVideo item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, cancellationToken);
+            return FetchVideoInfo(item, directoryService, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(LiveTvVideoRecording item, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(LiveTvVideoRecording item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, cancellationToken);
+            return FetchVideoInfo(item, directoryService, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(Trailer item, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Trailer item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, cancellationToken);
+            return FetchVideoInfo(item, directoryService, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(Video item, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Video item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, cancellationToken);
+            return FetchVideoInfo(item, directoryService, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(Audio item, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Audio item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return FetchAudioInfo(item, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(LiveTvAudioRecording item, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(LiveTvAudioRecording item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return FetchAudioInfo(item, cancellationToken);
         }
@@ -103,8 +104,8 @@ namespace MediaBrowser.Providers.MediaInfo
             _json = json;
         }
 
-        private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.Unspecified);
-        public Task<ItemUpdateType> FetchVideoInfo<T>(T item, CancellationToken cancellationToken)
+        private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
+        public Task<ItemUpdateType> FetchVideoInfo<T>(T item, IDirectoryService directoryService, CancellationToken cancellationToken)
             where T : Video
         {
             if (item.LocationType != LocationType.FileSystem)
@@ -124,7 +125,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json);
 
-            return prober.ProbeVideo(item, cancellationToken);
+            return prober.ProbeVideo(item, directoryService, cancellationToken);
         }
 
         public Task<ItemUpdateType> FetchAudioInfo<T>(T item, CancellationToken cancellationToken)
@@ -140,9 +141,26 @@ namespace MediaBrowser.Providers.MediaInfo
             return prober.Probe(item, cancellationToken);
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
-            return item.DateModified > date;
+            if (item.DateModified > date)
+            {
+                return true;
+            }
+
+            if (item.LocationType == LocationType.FileSystem)
+            {
+                var video = item as Video;
+
+                if (video != null)
+                {
+                    var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json);
+
+                    return !video.SubtitleFiles.SequenceEqual(prober.GetSubtitleFiles(video, directoryService).Select(i => i.FullName).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
+                }
+            }
+
+            return false;
         }
 
         public int Order

@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.TV
             return item is Episode && item.LocationType == LocationType.FileSystem;
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, DirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(IHasImages item, IDirectoryService directoryService)
         {
             var parentPath = Path.GetDirectoryName(item.Path);
 

@@ -265,11 +265,6 @@ namespace MediaBrowser.Model.Configuration
 
             MetadataOptions = options.ToArray();
         }
-
-        public MetadataOptions GetMetadataOptions(string type)
-        {
-            return MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase));
-        }
     }
 
     public enum ImageSavingConvention

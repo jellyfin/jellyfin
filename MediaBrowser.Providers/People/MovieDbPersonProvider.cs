@@ -133,7 +133,7 @@ namespace MediaBrowser.Providers.People
                 return;
             }
 
-            var url = string.Format(@"http://api.themoviedb.org/3/person/{1}?api_key={0}&append_to_response=credits,images", MovieDbProvider.ApiKey, id);
+            var url = string.Format(@"http://api.themoviedb.org/3/person/{1}?api_key={0}&append_to_response=credits,images,external_ids", MovieDbProvider.ApiKey, id);
 
             using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
@@ -267,6 +267,14 @@ namespace MediaBrowser.Providers.People
             public List<Profile> profiles { get; set; }
         }
 
+        public class ExternalIds
+        {
+            public string imdb_id { get; set; }
+            public string freebase_mid { get; set; }
+            public string freebase_id { get; set; }
+            public int tvrage_id { get; set; }
+        }
+
         public class PersonResult
         {
             public bool adult { get; set; }
@@ -283,6 +291,7 @@ namespace MediaBrowser.Providers.People
             public string profile_path { get; set; }
             public Credits credits { get; set; }
             public Images images { get; set; }
+            public ExternalIds external_ids { get; set; }
         }
 
         #endregion

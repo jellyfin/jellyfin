@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -45,7 +46,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _json = json;
         }
 
-        public async Task<ItemUpdateType> ProbeVideo<T>(T item, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> ProbeVideo<T>(T item, IDirectoryService directoryService, CancellationToken cancellationToken)
             where T : Video
         {
             var isoMount = await MountIsoIfNeeded(item, cancellationToken).ConfigureAwait(false);
@@ -72,7 +73,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Fetch(item, cancellationToken, result, isoMount).ConfigureAwait(false);
+                await Fetch(item, cancellationToken, result, isoMount, directoryService).ConfigureAwait(false);
 
             }
             finally
@@ -125,7 +126,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return result;
         }
 
-        protected async Task Fetch(Video video, CancellationToken cancellationToken, InternalMediaInfoResult data, IIsoMount isoMount)
+        protected async Task Fetch(Video video, CancellationToken cancellationToken, InternalMediaInfoResult data, IIsoMount isoMount, IDirectoryService directoryService)
         {
             if (data.format != null)
             {
@@ -148,7 +149,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchBdInfo(video, chapters, mediaStreams, inputPath, cancellationToken);
             }
 
-            AddExternalSubtitles(video, mediaStreams);
+            AddExternalSubtitles(video, mediaStreams, directoryService);
 
             FetchWtvInfo(video, data);
 
@@ -342,76 +343,104 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
+        public IEnumerable<FileInfo> GetSubtitleFiles(Video video, IDirectoryService directoryService)
+        {
+            var containingPath = video.ContainingFolderPath;
+
+            if (string.IsNullOrEmpty(containingPath))
+            {
+                throw new ArgumentException(string.Format("Cannot search for items that don't have a path: {0} {1}", video.Name, video.Id));
+            }
+
+            var files = directoryService.GetFiles(containingPath);
+
+            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
+
+            return files.Where(i =>
+            {
+                if (!i.Attributes.HasFlag(FileAttributes.Directory) &&
+                    SubtitleExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
+                {
+                    var fullName = i.FullName;
+
+                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullName);
+
+                    if (string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                    if (fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension + ".", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
+        }
+
         /// <summary>
         /// Adds the external subtitles.
         /// </summary>
         /// <param name="video">The video.</param>
         /// <param name="currentStreams">The current streams.</param>
-        private void AddExternalSubtitles(Video video, List<MediaStream> currentStreams)
+        private void AddExternalSubtitles(Video video, List<MediaStream> currentStreams, IDirectoryService directoryService)
         {
-            //var useParent = !video.ResolveArgs.IsDirectory;
+            var files = GetSubtitleFiles(video, directoryService);
 
-            //if (useParent && video.Parent == null)
-            //{
-            //    return;
-            //}
+            var startIndex = currentStreams.Count;
+            var streams = new List<MediaStream>();
 
-            //var fileSystemChildren = useParent
-            //                             ? video.Parent.ResolveArgs.FileSystemChildren
-            //                             : video.ResolveArgs.FileSystemChildren;
+            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
 
-            //var startIndex = currentStreams.Count;
-            //var streams = new List<MediaStream>();
+            foreach (var file in files)
+            {
+                var fullName = file.FullName;
 
-            //var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullName);
 
-            //foreach (var file in fileSystemChildren
-            //    .Where(f => !f.Attributes.HasFlag(FileAttributes.Directory) && SubtitleExtensions.Contains(Path.GetExtension(f.FullName), StringComparer.OrdinalIgnoreCase)))
-            //{
-            //    var fullName = file.FullName;
+                // If the subtitle file matches the video file name
+                if (string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    streams.Add(new MediaStream
+                    {
+                        Index = startIndex++,
+                        Type = MediaStreamType.Subtitle,
+                        IsExternal = true,
+                        Path = fullName,
+                        Codec = Path.GetExtension(fullName).ToLower().TrimStart('.')
+                    });
+                }
+                else if (fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension + ".", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Support xbmc naming conventions - 300.spanish.srt
+                    var language = fileNameWithoutExtension.Split('.').LastOrDefault();
 
-            //    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullName);
+                    // Try to translate to three character code
+                    // Be flexible and check against both the full and three character versions
+                    var culture = _localization.GetCultures()
+                        .FirstOrDefault(i => string.Equals(i.DisplayName, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.ThreeLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.TwoLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase));
 
-            //    // If the subtitle file matches the video file name
-            //    if (string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
-            //    {
-            //        streams.Add(new MediaStream
-            //        {
-            //            Index = startIndex++,
-            //            Type = MediaStreamType.Subtitle,
-            //            IsExternal = true,
-            //            Path = fullName,
-            //            Codec = Path.GetExtension(fullName).ToLower().TrimStart('.')
-            //        });
-            //    }
-            //    else if (fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension + ".", StringComparison.OrdinalIgnoreCase))
-            //    {
-            //        // Support xbmc naming conventions - 300.spanish.srt
-            //        var language = fileNameWithoutExtension.Split('.').LastOrDefault();
+                    if (culture != null)
+                    {
+                        language = culture.ThreeLetterISOLanguageName;
+                    }
 
-            //        // Try to translate to three character code
-            //        // Be flexible and check against both the full and three character versions
-            //        var culture = _localization.GetCultures()
-            //            .FirstOrDefault(i => string.Equals(i.DisplayName, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.ThreeLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.TwoLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase));
+                    streams.Add(new MediaStream
+                    {
+                        Index = startIndex++,
+                        Type = MediaStreamType.Subtitle,
+                        IsExternal = true,
+                        Path = fullName,
+                        Codec = Path.GetExtension(fullName).ToLower().TrimStart('.'),
+                        Language = language
+                    });
+                }
+            }
 
-            //        if (culture != null)
-            //        {
-            //            language = culture.ThreeLetterISOLanguageName;
-            //        }
+            video.SubtitleFiles = streams.Select(i => i.Path).OrderBy(i => i).ToList();
 
-            //        streams.Add(new MediaStream
-            //        {
-            //            Index = startIndex++,
-            //            Type = MediaStreamType.Subtitle,
-            //            IsExternal = true,
-            //            Path = fullName,
-            //            Codec = Path.GetExtension(fullName).ToLower().TrimStart('.'),
-            //            Language = language
-            //        });
-            //    }
-            //}
-
-            //currentStreams.AddRange(streams);
+            currentStreams.AddRange(streams);
         }
 
         /// <summary>

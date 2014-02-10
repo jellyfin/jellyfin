@@ -4,11 +4,11 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.Manager
             var itemOfType = (TItemType)item;
             var config = ProviderManager.GetMetadataOptions(item);
 
-            var updateType = ItemUpdateType.Unspecified;
+            var updateType = ItemUpdateType.None;
             var refreshResult = GetLastResult(item.Id);
             refreshResult.LastErrorMessage = string.Empty;
             refreshResult.LastStatus = ProviderRefreshStatus.Success;
@@ -106,7 +106,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0 || !refreshResult.DateLastMetadataRefresh.HasValue)
                 {
-                    updateType = updateType | BeforeMetadataRefresh(itemOfType);
+                    updateType = updateType | item.BeforeMetadataRefresh();
                 }
 
                 if (providers.Count > 0)
@@ -138,15 +138,10 @@ namespace MediaBrowser.Providers.Manager
 
             updateType = updateType | BeforeSave(itemOfType);
 
-            var providersHadChanges = updateType > ItemUpdateType.Unspecified;
+            var providersHadChanges = updateType > ItemUpdateType.None;
 
             if (refreshOptions.ForceSave || providersHadChanges)
             {
-                if (string.IsNullOrEmpty(item.Name))
-                {
-                    throw new InvalidOperationException(item.GetType().Name + " has no name: " + item.Path);
-                }
-
                 // Save to database
                 await SaveItem(itemOfType, updateType, cancellationToken);
             }
@@ -158,23 +153,13 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Befores the metadata refresh.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>ItemUpdateType.</returns>
-        protected virtual ItemUpdateType BeforeMetadataRefresh(TItemType item)
-        {
-            return ItemUpdateType.Unspecified;
-        }
-
-        /// <summary>
         /// Befores the save.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>ItemUpdateType.</returns>
         protected virtual ItemUpdateType BeforeSave(TItemType item)
         {
-            return ItemUpdateType.Unspecified;
+            return ItemUpdateType.None;
         }
 
         /// <summary>
@@ -198,15 +183,37 @@ namespace MediaBrowser.Providers.Manager
                 var currentItem = item;
 
                 var providersWithChanges = providers.OfType<IHasChangeMonitor>()
-                    .Where(i => i.HasChanged(currentItem, currentItem.DateLastSaved))
+                    .Where(i => i.HasChanged(currentItem, options.DirectoryService, currentItem.DateLastSaved))
+                    .Cast<IMetadataProvider<TItemType>>()
                     .ToList();
 
-                // If local providers are the only ones with changes, then just run those
-                if (providersWithChanges.All(i => i is ILocalMetadataProvider))
+                if (providersWithChanges.Count == 0)
                 {
-                    providers = providersWithChanges.Count == 0 ?
-                        new List<IMetadataProvider<TItemType>>() :
-                        providers.Where(i => i is ILocalMetadataProvider).ToList();
+                    providers = new List<IMetadataProvider<TItemType>>();
+                }
+                else
+                {
+                    providers = providers.Where(i =>
+                    {
+                        // If any provider reports a change, always run local ones as well
+                        if (i is ILocalMetadataProvider)
+                        {
+                            return true;
+                        }
+
+                        var anyRemoteProvidersChanged = providersWithChanges.OfType<IRemoteMetadataProvider>()
+                            .Any();
+
+                        // If any remote providers changed, run them all so that priorities can be honored
+                        if (i is IRemoteMetadataProvider)
+                        {
+                            return anyRemoteProvidersChanged;
+                        }
+
+                        // Run custom providers if they report a change or any remote providers change
+                        return anyRemoteProvidersChanged || providersWithChanges.Contains(i);
+
+                    }).ToList();
                 }
             }
 
@@ -227,7 +234,7 @@ namespace MediaBrowser.Providers.Manager
                 var currentItem = item;
 
                 providers = providers.OfType<IHasChangeMonitor>()
-                    .Where(i => i.HasChanged(currentItem, dateLastImageRefresh.Value))
+                    .Where(i => i.HasChanged(currentItem, options.DirectoryService, dateLastImageRefresh.Value))
                     .Cast<IImageProvider>()
                     .ToList();
             }
@@ -249,7 +256,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var refreshResult = new RefreshResult
             {
-                UpdateType = ItemUpdateType.Unspecified,
+                UpdateType = ItemUpdateType.None,
                 Providers = providers.Select(i => i.GetType().FullName.GetMD5()).ToList()
             };
 
@@ -316,26 +323,26 @@ namespace MediaBrowser.Providers.Manager
                 await ExecuteRemoteProviders(item, temp, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
-            if (refreshResult.UpdateType > ItemUpdateType.Unspecified)
+            if (refreshResult.UpdateType > ItemUpdateType.None)
             {
                 MergeData(temp, item, item.LockedFields, true, true);
             }
 
             foreach (var provider in providers.OfType<ICustomMetadataProvider<TItemType>>())
             {
-                await RunCustomProvider(provider, item, refreshResult, cancellationToken).ConfigureAwait(false);
+                await RunCustomProvider(provider, item, options.DirectoryService, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
             return refreshResult;
         }
 
-        private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, RefreshResult refreshResult, CancellationToken cancellationToken)
+        private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, IDirectoryService directoryService, RefreshResult refreshResult, CancellationToken cancellationToken)
         {
             Logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
 
             try
             {
-                refreshResult.UpdateType = refreshResult.UpdateType | await provider.FetchAsync(item, cancellationToken).ConfigureAwait(false);
+                refreshResult.UpdateType = refreshResult.UpdateType | await provider.FetchAsync(item, directoryService, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {

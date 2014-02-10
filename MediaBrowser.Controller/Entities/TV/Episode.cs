@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -259,6 +261,55 @@ namespace MediaBrowser.Controller.Entities.TV
             id.IndexNumberEnd = IndexNumberEnd;
 
             return id;
+        }
+
+        public override ItemUpdateType BeforeMetadataRefresh()
+        {
+            var updateType = base.BeforeMetadataRefresh();
+
+            var locationType = LocationType;
+            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+            {
+                if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
+                {
+                    IndexNumber = IndexNumber ?? TVUtils.GetEpisodeNumberFromFile(Path, Parent is Season);
+
+                    // If a change was made record it
+                    if (IndexNumber.HasValue)
+                    {
+                        updateType = updateType | ItemUpdateType.MetadataImport;
+                    }
+                }
+
+                if (!IndexNumberEnd.HasValue && !string.IsNullOrEmpty(Path))
+                {
+                    IndexNumberEnd = IndexNumberEnd ?? TVUtils.GetEndingEpisodeNumberFromFile(Path);
+
+                    // If a change was made record it
+                    if (IndexNumberEnd.HasValue)
+                    {
+                        updateType = updateType | ItemUpdateType.MetadataImport;
+                    }
+                }
+            }
+
+            if (!ParentIndexNumber.HasValue)
+            {
+                var season = Season;
+
+                if (season != null)
+                {
+                    ParentIndexNumber = season.IndexNumber;
+                }
+
+                // If a change was made record it
+                if (ParentIndexNumber.HasValue)
+                {
+                    updateType = updateType | ItemUpdateType.MetadataImport;
+                }
+            }
+
+            return updateType;
         }
     }
 }

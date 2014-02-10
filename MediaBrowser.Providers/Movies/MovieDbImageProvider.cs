@@ -208,7 +208,7 @@ namespace MediaBrowser.Providers.Movies
             });
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
             return MovieDbProvider.Current.HasChanged(item, date);
         }

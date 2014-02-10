@@ -6,40 +6,40 @@ namespace MediaBrowser.Model.Entities
     /// </summary>
     public enum MetadataProviders
     {
-        Gamesdb,
+        Gamesdb = 1,
         /// <summary>
         /// The imdb
         /// </summary>
-        Imdb,
+        Imdb = 2,
         /// <summary>
         /// The TMDB
         /// </summary>
-        Tmdb,
+        Tmdb = 3,
         /// <summary>
         /// The TVDB
         /// </summary>
-        Tvdb,
+        Tvdb = 4,
         /// <summary>
         /// The tvcom
         /// </summary>
-        Tvcom,
+        Tvcom = 5,
         /// <summary>
         /// The rotten tomatoes
         /// </summary>
-        RottenTomatoes,
+        RottenTomatoes = 6,
         /// <summary>
         /// Tmdb Collection Id
         /// </summary>
-        TmdbCollection,
-        MusicBrainzAlbum,
-        MusicBrainzAlbumArtist,
-        MusicBrainzArtist,
-        MusicBrainzReleaseGroup,
-        Zap2It,
-        NesBox,
-        NesBoxRom,
-        TvRage,
-        AudioDbArtist,
-        AudioDbAlbum
+        TmdbCollection = 7,
+        MusicBrainzAlbum = 8,
+        MusicBrainzAlbumArtist = 9,
+        MusicBrainzArtist = 10,
+        MusicBrainzReleaseGroup = 11,
+        Zap2It = 12,
+        NesBox = 13,
+        NesBoxRom = 14,
+        TvRage = 15,
+        AudioDbArtist = 16,
+        AudioDbAlbum = 17
     }
 }

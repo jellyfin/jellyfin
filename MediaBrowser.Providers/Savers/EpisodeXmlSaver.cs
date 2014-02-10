@@ -1,23 +1,27 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Savers
 {
     public class EpisodeXmlSaver : IMetadataFileSaver
     {
-        private readonly IServerConfigurationManager _config;
         private readonly IItemRepository _itemRepository;
+
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
+        public EpisodeXmlSaver(IItemRepository itemRepository)
+        {
+            _itemRepository = itemRepository;
+        }
 
         /// <summary>
         /// Determines whether [is enabled for] [the specified item].
@@ -51,14 +55,6 @@ namespace MediaBrowser.Providers.Savers
             {
                 return "Media Browser Xml";
             }
-        }
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
-        public EpisodeXmlSaver(IServerConfigurationManager config, IItemRepository itemRepository)
-        {
-            _config = config;
-            _itemRepository = itemRepository;
         }
 
         /// <summary>

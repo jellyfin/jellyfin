@@ -6,7 +6,16 @@ using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
-    public class DirectoryService
+    public interface IDirectoryService
+    {
+        List<FileSystemInfo> GetFileSystemEntries(string path);
+        IEnumerable<FileInfo> GetFiles(string path);
+        IEnumerable<DirectoryInfo> GetDirectories(string path);
+        FileInfo GetFile(string path);
+        DirectoryInfo GetDirectory(string path);
+    }
+
+    public class DirectoryService : IDirectoryService
     {
         private readonly ILogger _logger;
 

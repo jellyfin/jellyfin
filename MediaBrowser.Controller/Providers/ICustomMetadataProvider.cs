@@ -12,6 +12,6 @@ namespace MediaBrowser.Controller.Providers
     public interface ICustomMetadataProvider<TItemType> : IMetadataProvider<TItemType>, ICustomMetadataProvider
         where TItemType : IHasMetadata
     {
-        Task<ItemUpdateType> FetchAsync(TItemType item, CancellationToken cancellationToken);
+        Task<ItemUpdateType> FetchAsync(TItemType item, IDirectoryService directoryService, CancellationToken cancellationToken);
     }
 }

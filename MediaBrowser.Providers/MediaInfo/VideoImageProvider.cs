@@ -126,7 +126,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return item.LocationType == LocationType.FileSystem && item is Video;
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
             return item.DateModified > date;
         }

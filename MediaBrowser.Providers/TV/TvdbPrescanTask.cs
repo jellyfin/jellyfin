@@ -98,8 +98,19 @@ namespace MediaBrowser.Providers.TV
 
             string newUpdateTime;
 
-            var existingDirectories = Directory.EnumerateDirectories(path).Select(Path.GetFileName).ToList();
+            var existingDirectories = Directory.EnumerateDirectories(path)
+                .Select(Path.GetFileName)
+                .ToList();
 
+            var seriesIdsInLibrary = _libraryManager.RootFolder.RecursiveChildren
+               .OfType<Series>()
+               .Select(i => i.GetProviderId(MetadataProviders.Tvdb))
+               .Where(i => !string.IsNullOrEmpty(i))
+               .ToList();
+
+            var missingSeries = seriesIdsInLibrary.Except(existingDirectories, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            
             // If this is our first time, update all series
             if (string.IsNullOrEmpty(lastUpdateTime))
             {
@@ -116,6 +127,8 @@ namespace MediaBrowser.Providers.TV
                     newUpdateTime = GetUpdateTime(stream);
                 }
 
+                existingDirectories.AddRange(missingSeries);
+
                 await UpdateSeries(existingDirectories, path, null, progress, cancellationToken).ConfigureAwait(false);
             }
             else
@@ -130,7 +143,10 @@ namespace MediaBrowser.Providers.TV
 
                 var nullableUpdateValue = lastUpdateValue == 0 ? (long?)null : lastUpdateValue;
 
-                await UpdateSeries(seriesToUpdate.Item1, path, nullableUpdateValue, progress, cancellationToken).ConfigureAwait(false);
+                var listToUpdate = seriesToUpdate.Item1.ToList();
+                listToUpdate.AddRange(missingSeries);
+
+                await UpdateSeries(listToUpdate, path, nullableUpdateValue, progress, cancellationToken).ConfigureAwait(false);
             }
 
             File.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);

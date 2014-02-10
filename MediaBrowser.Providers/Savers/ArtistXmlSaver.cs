@@ -1,11 +1,7 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Providers.Music;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -15,13 +11,6 @@ namespace MediaBrowser.Providers.Savers
 {
     class ArtistXmlSaver : IMetadataFileSaver
     {
-        private readonly IServerConfigurationManager _config;
-
-        public ArtistXmlSaver(IServerConfigurationManager config)
-        {
-            _config = config;
-        }
-
         public string Name
         {
             get

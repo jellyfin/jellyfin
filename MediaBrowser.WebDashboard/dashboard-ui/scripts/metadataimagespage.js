@@ -209,6 +209,7 @@
         }
 
         html += '</fieldset>';
+        html += '<div class="fieldDescription">Choose the file formats to save your metadata to.</div>';
 
         $('.metadataSavers', page).html(html).show().trigger('create');
     }
@@ -257,20 +258,42 @@
             return;
         }
 
-        html += '<fieldset data-role="controlgroup">';
-        html += '<legend>Local Metadata Readers:</legend>';
+        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Preferred Local Metadata:</div>';
+        html += '<ul data-role="listview" data-inset="true" data-mini="true" style="margin-top:.5em;margin-bottom:.5em;">';
 
         for (var i = 0, length = plugins.length; i < length; i++) {
 
             var plugin = plugins[i];
 
-            var id = 'chkMetadataLocal' + i;
+            if (i > 0) {
+                html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
 
-            html += '<input type="checkbox" name="' + id + '" id="' + id + '" data-mini="true">';
-            html += '<label for="' + id + '">' + plugin.Name + '</label>';
+                html += '<a href="#" style="font-size:13px;font-weight:normal;">' + plugin.Name + '</a>';
+
+                html += '<a class="btnLocalReaderUp" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-u">Up</a>';
+
+                html += '</li>';
+            }
+            else if (plugins.length > 1) {
+                html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
+
+                html += '<a href="#" style="font-size:13px;font-weight:normal;">' + plugin.Name + '</a>';
+
+                html += '<a class="btnLocalReaderDown" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-d">Down</a>';
+
+                html += '</li>';
+            }
+            else {
+                html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
+
+                html += plugin.Name;
+
+                html += '</li>';
+            }
         }
 
-        html += '</fieldset>';
+        html += '</ul>';
+        html += '<div class="fieldDescription">Rank your preferred local metadata sources in order of priority. The first file found will be read.</div>';
 
         $('.metadataReaders', page).html(html).show().trigger('create');
     }
@@ -285,9 +308,9 @@
 
             loadTabs(page, [
 
-                { name: 'Game', type: 'Game' },
-                { name: 'Game System', type: 'GameSystem' },
-                { name: 'Game Genre', type: 'GameGenre' }
+                { name: 'Games', type: 'Game' },
+                { name: 'Game Systems', type: 'GameSystem' },
+                { name: 'Game Genres', type: 'GameGenre' }
             ]);
 
             $('.gamesTab', page).addClass('ui-btn-active');
@@ -296,9 +319,8 @@
 
             loadTabs(page, [
 
-                { name: 'Movie', type: 'Movie' },
-                { name: 'Trailer', type: 'Trailer' },
-                { name: 'Collection', type: 'BoxSet' }
+                { name: 'Movies', type: 'Movie' },
+                { name: 'Collections', type: 'BoxSet' }
             ]);
 
             $('.moviesTab', page).addClass('ui-btn-active');
@@ -308,8 +330,8 @@
             loadTabs(page, [
 
                 { name: 'Series', type: 'Series' },
-                { name: 'Season', type: 'Season' },
-                { name: 'Episode', type: 'Episode' }
+                { name: 'Seasons', type: 'Season' },
+                { name: 'Episodes', type: 'Episode' }
             ]);
 
             $('.tvTab', page).addClass('ui-btn-active');
@@ -318,11 +340,11 @@
 
             loadTabs(page, [
 
-                { name: 'Artist', type: 'MusicArtist' },
-                { name: 'Album', type: 'MusicAlbum' },
-                { name: 'Song', type: 'Audio' },
-                { name: 'Music Video', type: 'MusicVideo' },
-                { name: 'Music Genre', type: 'MusicGenre' }
+                { name: 'Artists', type: 'MusicArtist' },
+                { name: 'Albums', type: 'MusicAlbum' },
+                { name: 'Songs', type: 'Audio' },
+                { name: 'Music Videos', type: 'MusicVideo' },
+                { name: 'Music Genres', type: 'MusicGenre' }
             ]);
 
             $('.musicTab', page).addClass('ui-btn-active');
@@ -331,11 +353,12 @@
 
             loadTabs(page, [
 
-                { name: 'Person', type: 'Person' },
-                { name: 'Genre', type: 'Genre' },
-                { name: 'Studio', type: 'Studio' },
-                { name: 'Book', type: 'Book' },
-                { name: 'Adult Video', type: 'AdultVideo' }
+                { name: 'People', type: 'Person' },
+                { name: 'Genres', type: 'Genre' },
+                { name: 'Studios', type: 'Studio' },
+                { name: 'Books', type: 'Book' },
+                { name: 'Home Videos', type: 'Video' },
+                { name: 'Adult Videos', type: 'AdultVideo' }
             ]);
 
             $('.othersTab', page).addClass('ui-btn-active');
@@ -345,6 +368,12 @@
     function saveSettingsIntoConfig(form, config) {
 
         config.DisabledMetadataSavers = $('.chkMetadataSaver:not(:checked)', form).get().map(function (c) {
+
+            return c.getAttribute('data-pluginname');
+
+        });
+
+        config.LocalMetadataReaders = $('.localReaderOption', form).get().map(function (c) {
 
             return c.getAttribute('data-pluginname');
 

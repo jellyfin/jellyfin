@@ -27,7 +27,14 @@ namespace MediaBrowser.Controller.Entities
             PlayableStreamFileNames = new List<string>();
             AdditionalPartIds = new List<Guid>();
             Tags = new List<string>();
+            SubtitleFiles = new List<string>();
         }
+
+        /// <summary>
+        /// Gets or sets the subtitle paths.
+        /// </summary>
+        /// <value>The subtitle paths.</value>
+        public List<string> SubtitleFiles { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has subtitles.
@@ -156,9 +163,9 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        protected override async Task BeforeRefreshMetadata(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            await base.BeforeRefreshMetadata(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+            var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
             // Must have a parent to have additional parts
             // In other words, it must be part of the Parent/Child tree
@@ -169,9 +176,11 @@ namespace MediaBrowser.Controller.Entities
 
                 if (additionalPartsChanged)
                 {
-                    options.ForceSave = true;
+                    hasChanges = true;
                 }
             }
+
+            return hasChanges;
         }
 
         /// <summary>

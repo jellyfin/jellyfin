@@ -1,18 +1,15 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Savers
 {
@@ -21,12 +18,10 @@ namespace MediaBrowser.Providers.Savers
     /// </summary>
     public class MovieXmlSaver : IMetadataFileSaver
     {
-        private readonly IServerConfigurationManager _config;
         private readonly IItemRepository _itemRepository;
 
-        public MovieXmlSaver(IServerConfigurationManager config, IItemRepository itemRepository)
+        public MovieXmlSaver(IItemRepository itemRepository)
         {
-            _config = config;
             _itemRepository = itemRepository;
         }
 

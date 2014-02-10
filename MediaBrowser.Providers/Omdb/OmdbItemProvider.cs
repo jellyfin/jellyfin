@@ -27,18 +27,18 @@ namespace MediaBrowser.Providers.Omdb
             get { return "IMDb via The Open Movie Database"; }
         }
 
-        public Task<ItemUpdateType> FetchAsync(Series item, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Series item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return new OmdbProvider(_jsonSerializer, _httpClient).Fetch(item, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(Movie item, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Movie item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return new OmdbProvider(_jsonSerializer, _httpClient).Fetch(item, cancellationToken);
         }
 
-        private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.Unspecified);
-        public Task<ItemUpdateType> FetchAsync(Trailer item, CancellationToken cancellationToken)
+        private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
+        public Task<ItemUpdateType> FetchAsync(Trailer item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             if (item.IsLocalTrailer)
             {

@@ -9,7 +9,7 @@
         <div data-role="content">
 
             <div class="content-primary">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true" style="margin-bottom: 20px!important;">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true" style="margin-bottom: 30px!important;">
                     <a href="metadata.html" data-role="button">Basics</a>
                     <a href="metadataimages.html?type=movies" data-role="button" class="categoryTab moviesTab">Movies</a>
                     <a href="metadataimages.html?type=tv" data-role="button" class="categoryTab tvTab">TV</a>
@@ -27,89 +27,95 @@
 
                 <br />
                 <div class="tabContent">
-                    <form class="metadataImagesConfigurationForm">
+                    <form class="metadataImagesConfigurationForm" style="margin-top: .5em;">
 
-                        <div class="metadataReaders" style="margin-bottom: 2em;">
+                        <div class="metadataReaders" style="margin-bottom: 2.5em;">
                         </div>
-                        <div class="metadataFetchers" style="margin-bottom: 2em;">
+                        <div class="metadataFetchers" style="margin-bottom: 2.5em;">
                         </div>
-                        <div class="metadataSavers" style="margin-bottom: 2em;">
+                        <div class="metadataSavers" style="margin-bottom: 2.5em;">
                         </div>
-                        <div class="imageFetchers" style="margin-bottom: 2em;">
+                        <div class="imageFetchers" style="margin-bottom: 2.5em;">
                         </div>
 
-                        <div class="backdropFields" style="margin-bottom: 2em; display: none;">
+                        <div data-role="collapsible">
+                            <h2>Image Settings</h2>
                             <div>
-                                <label for="txtMaxBackdrops">Max number of backdrops per item: </label>
-                                <input type="number" id="txtMaxBackdrops" name="txtMaxBackdrops" pattern="[0-9]*" required="required" min="0" data-mini="true" />
-                            </div>
+                                <br />
+                                <div class="backdropFields" style="margin-bottom: 2em; display: none;">
+                                    <div>
+                                        <label for="txtMaxBackdrops">Maximum number of backdrops per item: </label>
+                                        <input type="number" id="txtMaxBackdrops" name="txtMaxBackdrops" pattern="[0-9]*" required="required" min="0" data-mini="true" />
+                                    </div>
 
-                            <div>
-                                <label for="txtMinBackdropDownloadWidth">Minimum backdrop download width: </label>
-                                <input type="number" id="txtMinBackdropDownloadWidth" name="txtMinBackdropDownloadWidth" pattern="[0-9]*" required="required" min="0" data-mini="true" />
+                                    <div>
+                                        <label for="txtMinBackdropDownloadWidth">Minimum backdrop download width: </label>
+                                        <input type="number" id="txtMinBackdropDownloadWidth" name="txtMinBackdropDownloadWidth" pattern="[0-9]*" required="required" min="0" data-mini="true" />
+                                    </div>
+                                </div>
+
+                                <div class="screenshotFields" style="margin-bottom: 2em; display: none;">
+                                    <div>
+                                        <label for="txtMaxScreenshots">Maximum number of screenshots per item: </label>
+                                        <input type="number" id="txtMaxScreenshots" name="txtMaxScreenshots" pattern="[0-9]*" required="required" min="0" data-mini="true" />
+                                    </div>
+
+                                    <div>
+                                        <label for="txtMinScreenshotDownloadWidth">Minimum screenshot download width: </label>
+                                        <input type="number" id="txtMinScreenshotDownloadWidth" name="txtMinScreenshotDownloadWidth" pattern="[0-9]*" required="required" min="0" data-mini="true" />
+                                    </div>
+                                </div>
+
+                                <fieldset data-role="controlgroup" style="border-bottom: 1px solid #ddd;">
+                                    <legend>Fetch Images:</legend>
+                                    <div class="imageType" data-imagetype="Primary" style="display: none;">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadPrimary" name="chkDownloadPrimary" />
+                                        <label for="chkDownloadPrimary">Primary</label>
+                                    </div>
+
+
+                                    <div class="imageType" data-imagetype="Art" style="display: none;">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadArt" name="chkDownloadArt" />
+                                        <label for="chkDownloadArt">Art</label>
+                                    </div>
+
+                                    <div class="imageType" data-imagetype="BoxRear" style="display: none;">
+                                        <input type="checkbox" data-mini="true" id="chkBack" name="chkBack" />
+                                        <label for="chkBack">Back</label>
+                                    </div>
+
+                                    <div class="imageType" data-imagetype="Banner" style="display: none;">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadBanner" name="chkDownloadBanner" />
+                                        <label for="chkDownloadBanner">Banner</label>
+                                    </div>
+
+                                    <div class="imageType" data-imagetype="Box" style="display: none;">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadBox" name="chkDownloadBox" />
+                                        <label for="chkDownloadBox">Box</label>
+                                    </div>
+
+                                    <div class="imageType" data-imagetype="Disc" style="display: none;">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadDisc" name="chkDownloadDisc" />
+                                        <label for="chkDownloadDisc">Disc</label>
+                                    </div>
+
+                                    <div class="imageType" data-imagetype="Logo" style="display: none;">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadLogo" name="chkDownloadLogo" />
+                                        <label for="chkDownloadLogo">Logo</label>
+                                    </div>
+
+                                    <div class="imageType" data-imagetype="Menu" style="display: none;">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadMenu" name="chkDownloadMenu" />
+                                        <label for="chkDownloadMenu">Menu</label>
+                                    </div>
+
+                                    <div class="imageType" data-imagetype="Thumb" style="display: none;">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadThumb" name="chkDownloadThumb" />
+                                        <label for="chkDownloadThumb">Thumb</label>
+                                    </div>
+                                </fieldset>
                             </div>
                         </div>
-
-                        <div class="screenshotFields" style="margin-bottom: 2em; display: none;">
-                            <div>
-                                <label for="txtMaxScreenshots">Max number of screenshots per item: </label>
-                                <input type="number" id="txtMaxScreenshots" name="txtMaxScreenshots" pattern="[0-9]*" required="required" min="0" data-mini="true" />
-                            </div>
-
-                            <div>
-                                <label for="txtMinScreenshotDownloadWidth">Minimum screenshot download width: </label>
-                                <input type="number" id="txtMinScreenshotDownloadWidth" name="txtMinScreenshotDownloadWidth" pattern="[0-9]*" required="required" min="0" data-mini="true" />
-                            </div>
-                        </div>
-
-                        <fieldset data-role="controlgroup" style="border-bottom: 1px solid #ddd;">
-                            <legend>Fetch Images:</legend>
-                            <div class="imageType" data-imagetype="Primary" style="display: none;">
-                                <input type="checkbox" data-mini="true" id="chkDownloadPrimary" name="chkDownloadPrimary" />
-                                <label for="chkDownloadPrimary">Primary</label>
-                            </div>
-
-
-                            <div class="imageType" data-imagetype="Art" style="display: none;">
-                                <input type="checkbox" data-mini="true" id="chkDownloadArt" name="chkDownloadArt" />
-                                <label for="chkDownloadArt">Art</label>
-                            </div>
-
-                            <div class="imageType" data-imagetype="BoxRear" style="display: none;">
-                                <input type="checkbox" data-mini="true" id="chkBack" name="chkBack" />
-                                <label for="chkBack">Back</label>
-                            </div>
-
-                            <div class="imageType" data-imagetype="Banner" style="display: none;">
-                                <input type="checkbox" data-mini="true" id="chkDownloadBanner" name="chkDownloadBanner" />
-                                <label for="chkDownloadBanner">Banner</label>
-                            </div>
-
-                            <div class="imageType" data-imagetype="Box" style="display: none;">
-                                <input type="checkbox" data-mini="true" id="chkDownloadBox" name="chkDownloadBox" />
-                                <label for="chkDownloadBox">Box</label>
-                            </div>
-
-                            <div class="imageType" data-imagetype="Disc" style="display: none;">
-                                <input type="checkbox" data-mini="true" id="chkDownloadDisc" name="chkDownloadDisc" />
-                                <label for="chkDownloadDisc">Disc</label>
-                            </div>
-
-                            <div class="imageType" data-imagetype="Logo" style="display: none;">
-                                <input type="checkbox" data-mini="true" id="chkDownloadLogo" name="chkDownloadLogo" />
-                                <label for="chkDownloadLogo">Logo</label>
-                            </div>
-
-                            <div class="imageType" data-imagetype="Menu" style="display: none;">
-                                <input type="checkbox" data-mini="true" id="chkDownloadMenu" name="chkDownloadMenu" />
-                                <label for="chkDownloadMenu">Menu</label>
-                            </div>
-
-                            <div class="imageType" data-imagetype="Thumb" style="display: none;">
-                                <input type="checkbox" data-mini="true" id="chkDownloadThumb" name="chkDownloadThumb" />
-                                <label for="chkDownloadThumb">Thumb</label>
-                            </div>
-                        </fieldset>
 
                         <br />
                         <br />

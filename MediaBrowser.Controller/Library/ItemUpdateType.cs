@@ -5,7 +5,7 @@ namespace MediaBrowser.Controller.Library
     [Flags]
     public enum ItemUpdateType
     {
-        Unspecified = 1,
+        None = 1,
         MetadataImport = 2,
         ImageUpdate = 4,
         MetadataDownload = 8,

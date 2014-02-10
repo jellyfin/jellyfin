@@ -85,10 +85,12 @@ namespace MediaBrowser.Providers.BoxSets
 
         private BoxSet GetItem(RootObject obj)
         {
-            var item = new BoxSet();
+            var item = new BoxSet
+            {
+                Name = obj.name, 
+                Overview = obj.overview
+            };
 
-            item.Name = obj.name;
-            item.Overview = obj.overview;
             item.SetProviderId(MetadataProviders.Tmdb, obj.id.ToString(_enUs));
 
             return item;

@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities
         /// Get the children of this folder from the actual file system
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        protected override IEnumerable<BaseItem> GetNonCachedChildren(DirectoryService directoryService)
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
             return base.GetNonCachedChildren(directoryService).Concat(LibraryManager.RootFolder.VirtualChildren);
         }
