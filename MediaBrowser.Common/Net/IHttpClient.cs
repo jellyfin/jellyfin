@@ -65,6 +65,14 @@ namespace MediaBrowser.Common.Net
         Task<Stream> Post(string url, Dictionary<string, string> postData, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Posts the specified options with post data
+        /// </summary>
+        /// <param name="options">The options</param>
+        /// <param name="postData">The post data</param>
+        /// <returns>Task{Stream}</returns>
+        Task<Stream> Post(HttpRequestOptions options, Dictionary<string, string> postData);
+
+        /// <summary>
         /// Posts the specified options.
         /// </summary>
         /// <param name="options">The options.</param>
