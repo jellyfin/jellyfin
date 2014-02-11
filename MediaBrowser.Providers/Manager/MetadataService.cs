@@ -140,7 +140,8 @@ namespace MediaBrowser.Providers.Manager
 
             var providersHadChanges = updateType > ItemUpdateType.None;
 
-            if (refreshOptions.ForceSave || providersHadChanges)
+            // Save if changes were made, or it's never been saved before
+            if (refreshOptions.ForceSave || providersHadChanges || item.DateLastSaved == default(DateTime))
             {
                 // Save to database
                 await SaveItem(itemOfType, updateType, cancellationToken);

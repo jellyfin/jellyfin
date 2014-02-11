@@ -63,10 +63,10 @@ namespace MediaBrowser.Controller.Entities
 
         protected override IEnumerable<FileSystemInfo> GetFileSystemChildren(IDirectoryService directoryService)
         {
-            return CreateResolveArgs().FileSystemChildren;
+            return CreateResolveArgs(directoryService).FileSystemChildren;
         }
 
-        private ItemResolveArgs CreateResolveArgs()
+        private ItemResolveArgs CreateResolveArgs(IDirectoryService directoryService)
         {
             var path = ContainingFolderPath;
 
@@ -85,7 +85,7 @@ namespace MediaBrowser.Controller.Entities
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
 
-                var fileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, FileSystem, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
+                var fileSystemDictionary = FileData.GetFilteredFileSystemEntries(directoryService, args.Path, FileSystem, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
 
                 // Need to remove subpaths that may have been resolved from shortcuts
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
@@ -123,7 +123,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
-            CreateResolveArgs();
+            CreateResolveArgs(directoryService);
             ResetDynamicChildren();
 
             return NullTaskResult;

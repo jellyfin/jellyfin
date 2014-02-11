@@ -497,7 +497,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
 
-                var fileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, _fileSystem, _logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
+                var directoryService = new DirectoryService(_logger);
+
+                var fileSystemDictionary = FileData.GetFilteredFileSystemEntries(directoryService, args.Path, _fileSystem, _logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
 
                 // Need to remove subpaths that may have been resolved from shortcuts
                 // Example: if \\server\movies exists, then strip out \\server\movies\action

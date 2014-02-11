@@ -1,8 +1,8 @@
-﻿using System;
+﻿using MediaBrowser.Model.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -34,7 +34,15 @@ namespace MediaBrowser.Controller.Providers
             {
                 //_logger.Debug("Getting files for " + path);
 
-                entries = new DirectoryInfo(path).EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly).ToList();
+                try
+                {
+                    entries = new DirectoryInfo(path).EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly).ToList();
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    entries = new List<FileSystemInfo>();
+                }
+
                 _cache.Add(path, entries);
             }
 

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -60,7 +61,22 @@ namespace MediaBrowser.Controller.Providers
 
         public void SetFormatFromMimeType(string mimeType)
         {
-
+            if (mimeType.EndsWith("gif", StringComparison.OrdinalIgnoreCase))
+            {
+                Format = ImageFormat.Gif;
+            }
+            else if (mimeType.EndsWith("bmp", StringComparison.OrdinalIgnoreCase))
+            {
+                Format = ImageFormat.Bmp;
+            }
+            else if (mimeType.EndsWith("png", StringComparison.OrdinalIgnoreCase))
+            {
+                Format = ImageFormat.Png;
+            }
+            else
+            {
+                Format = ImageFormat.Jpg;
+            }
         }
     }
 }

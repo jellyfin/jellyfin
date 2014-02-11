@@ -166,8 +166,8 @@
 
         html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Image Fetchers:</div>';
 
-        html += '<div style="display:inline-block;width: 85%;vertical-align:top;">';
-        html += '<div data-role="controlgroup">';
+        html += '<div style="display:inline-block;width: 75%;vertical-align:top;">';
+        html += '<div data-role="controlgroup" class="imageFetcherGroup">';
 
         for (i = 0, length = plugins.length; i < length; i++) {
 
@@ -189,20 +189,53 @@
 
             for (i = 0, length = plugins.length; i < length; i++) {
 
-                plugin = plugins[i];
-
+                html += '<div style="margin:6px 0;">';
                 if (i == 0) {
-                    html += '<button type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin-top:6px;margin-bottom:6px;">Down</button>';
-                } else {
-                    html += '<button type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin-top:6px;margin-bottom:6px;">Up</button>';
+                    html += '<button data-inline="true" disabled="disabled" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
+                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
+                } else if (i == (plugins.length - 1)) {
+                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
+                    html += '<button data-inline="true" disabled="disabled" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
                 }
+                else {
+                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
+                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
+                }
+                html += '</div>';
             }
         }
 
         html += '</div>';
-        html += '<div class="fieldDescription" style="width:85%;">Enable and rank your preferred image fetchers in order of priority.</div>';
+        html += '<div class="fieldDescription" style="width:75%;">Enable and rank your preferred image fetchers in order of priority.</div>';
 
-        $('.imageFetchers', page).html(html).show().trigger('create');
+        var elem = $('.imageFetchers', page).html(html).show().trigger('create');
+
+        $('.btnDown', elem).on('click', function () {
+            var index = parseInt(this.getAttribute('data-pluginindex'));
+
+            var elemToMove = $('.imageFetcherGroup .ui-checkbox', page)[index];
+
+            var insertAfter = $(elemToMove).next('.ui-checkbox')[0];
+
+            elemToMove.parentNode.removeChild(elemToMove);
+            $(elemToMove).insertAfter(insertAfter);
+
+            $('.imageFetcherGroup', page).controlgroup('destroy').controlgroup();
+        });
+
+        $('.btnUp', elem).on('click', function () {
+
+            var index = parseInt(this.getAttribute('data-pluginindex'));
+
+            var elemToMove = $('.imageFetcherGroup .ui-checkbox', page)[index];
+
+            var insertBefore = $(elemToMove).prev('.ui-checkbox')[0];
+
+            elemToMove.parentNode.removeChild(elemToMove);
+            $(elemToMove).insertBefore(insertBefore);
+
+            $('.imageFetcherGroup', page).controlgroup('destroy').controlgroup();
+        });
     }
 
     function renderMetadataSavers(page, type, config, metadataInfo) {
@@ -256,8 +289,8 @@
 
         html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Metadata Fetchers:</div>';
 
-        html += '<div style="display:inline-block;width: 85%;vertical-align:top;">';
-        html += '<div data-role="controlgroup">';
+        html += '<div style="display:inline-block;width: 75%;vertical-align:top;">';
+        html += '<div data-role="controlgroup" class="metadataFetcherGroup">';
 
         for (i = 0, length = plugins.length; i < length; i++) {
 
@@ -279,20 +312,53 @@
 
             for (i = 0, length = plugins.length; i < length; i++) {
 
-                plugin = plugins[i];
-
+                html += '<div style="margin:6px 0;">';
                 if (i == 0) {
-                    html += '<button type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin-top:6px;margin-bottom:6px;">Down</button>';
-                } else {
-                    html += '<button type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin-top:6px;margin-bottom:6px;">Up</button>';
+                    html += '<button data-inline="true" disabled="disabled" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
+                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
+                } else if (i == (plugins.length - 1)) {
+                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
+                    html += '<button data-inline="true" disabled="disabled" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
                 }
+                else {
+                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
+                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
+                }
+                html += '</div>';
             }
         }
 
         html += '</div>';
-        html += '<div class="fieldDescription" style="width:85%;">Enable and rank your preferred metadata fetchers in order of priority. Lower priority fetchers will only be used to fill in missing information.</div>';
+        html += '<div class="fieldDescription" style="width:75%;">Enable and rank your preferred metadata fetchers in order of priority. Lower priority fetchers will only be used to fill in missing information.</div>';
 
-        $('.metadataFetchers', page).html(html).show().trigger('create');
+        var elem = $('.metadataFetchers', page).html(html).show().trigger('create');
+
+        $('.btnDown', elem).on('click', function () {
+            var index = parseInt(this.getAttribute('data-pluginindex'));
+
+            var elemToMove = $('.metadataFetcherGroup .ui-checkbox', page)[index];
+
+            var insertAfter = $(elemToMove).next('.ui-checkbox')[0];
+
+            elemToMove.parentNode.removeChild(elemToMove);
+            $(elemToMove).insertAfter(insertAfter);
+
+            $('.metadataFetcherGroup', page).controlgroup('destroy').controlgroup();
+        });
+
+        $('.btnUp', elem).on('click', function () {
+
+            var index = parseInt(this.getAttribute('data-pluginindex'));
+
+            var elemToMove = $('.metadataFetcherGroup .ui-checkbox', page)[index];
+
+            var insertBefore = $(elemToMove).prev('.ui-checkbox')[0];
+
+            elemToMove.parentNode.removeChild(elemToMove);
+            $(elemToMove).insertBefore(insertBefore);
+
+            $('.metadataFetcherGroup', page).controlgroup('destroy').controlgroup();
+        });
     }
 
     function renderMetadataLocals(page, type, config, metadataInfo) {

@@ -32,19 +32,7 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
-            var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
-            var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
-
-            // If new metadata has been downloaded or metadata was manually edited, proceed
-            if (wasMetadataEdited || wasMetadataDownloaded)
-            {
-                if (item is MusicArtist)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return item is MusicArtist && updateType >= ItemUpdateType.MetadataDownload;
         }
 
         /// <summary>
