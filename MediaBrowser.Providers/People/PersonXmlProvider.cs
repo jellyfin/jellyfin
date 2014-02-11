@@ -22,9 +22,9 @@ namespace MediaBrowser.Providers.People
             new BaseItemXmlParser<Person>(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
-        protected override FileInfo GetXmlFile(ItemInfo info)
+        protected override FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
-            return new FileInfo(Path.Combine(info.Path, "person.xml"));
+            return directoryService.GetFile(Path.Combine(info.Path, "person.xml"));
         }
     }
 }

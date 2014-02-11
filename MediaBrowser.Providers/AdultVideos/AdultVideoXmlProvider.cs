@@ -23,7 +23,7 @@ namespace MediaBrowser.Providers.AdultVideos
             new MovieXmlParser(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
-        protected override FileInfo GetXmlFile(ItemInfo info)
+        protected override FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             return MovieXmlProvider.GetXmlFileInfo(info, FileSystem);
         }

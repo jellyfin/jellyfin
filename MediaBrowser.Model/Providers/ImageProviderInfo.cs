@@ -1,4 +1,7 @@
-﻿namespace MediaBrowser.Model.Providers
+﻿using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
+
+namespace MediaBrowser.Model.Providers
 {
     /// <summary>
     /// Class ImageProviderInfo.
@@ -10,5 +13,12 @@
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
+        public List<ImageType> SupportedImages { get; set; }
+
+        public ImageProviderInfo()
+        {
+            SupportedImages = new List<ImageType>();
+        }
     }
 }

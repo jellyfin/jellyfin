@@ -67,5 +67,13 @@ namespace MediaBrowser.Controller.LiveTv
         {
             return false;
         }
+
+        public override bool SupportsLocalMetadata
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }

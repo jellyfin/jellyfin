@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Games
             new GameXmlParser(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
-        protected override FileInfo GetXmlFile(ItemInfo info)
+        protected override FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             var fileInfo = FileSystem.GetFileSystemInfo(info.Path);
 

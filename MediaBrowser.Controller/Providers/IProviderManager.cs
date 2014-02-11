@@ -94,6 +94,6 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>MetadataOptions.</returns>
-        MetadataOptions GetMetadataOptions(IHasMetadata item);
+        MetadataOptions GetMetadataOptions(IHasImages item);
     }
 }

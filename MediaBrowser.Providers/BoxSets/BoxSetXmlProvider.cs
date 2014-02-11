@@ -25,9 +25,9 @@ namespace MediaBrowser.Providers.BoxSets
             new BaseItemXmlParser<BoxSet>(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
-        protected override FileInfo GetXmlFile(ItemInfo info)
+        protected override FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
-            return new FileInfo(Path.Combine(info.Path, "collection.xml"));
+            return directoryService.GetFile(Path.Combine(info.Path, "collection.xml"));
         }
     }
 }
