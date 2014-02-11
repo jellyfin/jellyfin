@@ -1534,7 +1534,7 @@
 
             var refreshPromise;
 
-            var force = true;
+            var force = $('#selectRefreshMode', page).val()=='all';
 
             if (currentItem.Type == "MusicArtist") {
                 refreshPromise = ApiClient.refreshArtist(currentItem.Name, force);

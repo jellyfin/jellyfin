@@ -793,10 +793,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 double percent = numComplete;
                 percent /= allChannelsList.Count;
 
-                progress.Report(90 * percent + 10);
+                progress.Report(80 * percent + 10);
             }
 
             _programs = programs.ToDictionary(i => i.Id);
+
+            // Load these now which will prefetch metadata
+            await GetRecordings(new RecordingQuery(), cancellationToken).ConfigureAwait(false);
+            
+            progress.Report(100);
         }
 
         private double GetGuideDays(int channelCount)

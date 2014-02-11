@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var result = new RefreshResult { UpdateType = ItemUpdateType.None };
 
-            var providers = GetImageProviders(item, imageProviders).ToList();
+            var providers = imageProviders.ToList();
 
             var providerIds = new List<Guid>();
 
@@ -213,7 +213,7 @@ namespace MediaBrowser.Providers.Manager
 
                 _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
 
-                var images = await provider.GetAllImages(item, cancellationToken).ConfigureAwait(false);
+                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, provider.Name).ConfigureAwait(false);
                 var list = images.ToList();
 
                 foreach (var type in _singularImages)
@@ -242,24 +242,6 @@ namespace MediaBrowser.Providers.Manager
                 result.Status = ProviderRefreshStatus.CompletedWithErrors;
                 _logger.ErrorException("Error in {0}", ex, provider.Name);
             }
-        }
-
-        /// <summary>
-        /// Gets the image providers.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="imageProviders">The image providers.</param>
-        /// <returns>IEnumerable{IImageProvider}.</returns>
-        private IEnumerable<IImageProvider> GetImageProviders(IHasImages item, IEnumerable<IImageProvider> imageProviders)
-        {
-            var providers = imageProviders;
-
-            if (!_config.Configuration.EnableInternetProviders)
-            {
-                providers = providers.Where(i => !(i is IRemoteImageProvider));
-            }
-
-            return providers;
         }
 
         public bool MergeImages(IHasImages item, List<LocalImageInfo> images)

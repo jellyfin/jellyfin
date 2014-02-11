@@ -15,8 +15,14 @@ namespace MediaBrowser.Model.Configuration
         public ImageOption[] ImageOptions { get; set; }
 
         public string[] DisabledMetadataSavers { get; set; }
-        public string[] LocalMetadataReaders { get; set; }
+        public string[] LocalMetadataReaderOrder { get; set; }
 
+        public string[] DisabledMetadataFetchers { get; set; }
+        public string[] MetadataFetcherOrder { get; set; }
+
+        public string[] DisabledImageFetchers { get; set; }
+        public string[] ImageFetcherOrder { get; set; }
+        
         public MetadataOptions()
             : this(3, 1280)
         {
@@ -36,7 +42,12 @@ namespace MediaBrowser.Model.Configuration
 
             ImageOptions = imageOptions.ToArray();
             DisabledMetadataSavers = new string[] { };
-            LocalMetadataReaders = new string[] { };
+            LocalMetadataReaderOrder = new string[] { };
+
+            DisabledMetadataFetchers = new string[] { };
+            MetadataFetcherOrder = new string[] { };
+            DisabledImageFetchers = new string[] { };
+            ImageFetcherOrder = new string[] { };
         }
 
         public int GetLimit(ImageType type)

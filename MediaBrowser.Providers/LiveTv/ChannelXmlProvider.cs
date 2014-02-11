@@ -22,9 +22,9 @@ namespace MediaBrowser.Providers.LiveTv
             new BaseItemXmlParser<LiveTvChannel>(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
-        protected override FileInfo GetXmlFile(ItemInfo info)
+        protected override FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
-            return new FileInfo(Path.Combine(info.Path, "channel.xml"));
+            return directoryService.GetFile(Path.Combine(info.Path, "channel.xml"));
         }
     }
 }

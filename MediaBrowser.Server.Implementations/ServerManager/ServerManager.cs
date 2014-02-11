@@ -210,7 +210,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("{0} failed processing WebSocket message {1}", ex, i.GetType().Name, result.MessageType);
+                    _logger.ErrorException("{0} failed processing WebSocket message {1}", ex, i.GetType().Name, result.MessageType ?? string.Empty);
                 }
             }));
 

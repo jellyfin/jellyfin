@@ -35,9 +35,17 @@
                                     Save
                                 </button>
                             </div>
-                            <div style="display: inline-block; vertical-align: bottom;">
+                            <div style="vertical-align: bottom; display: inline-block;">
                                 <div class="fldRefresh" style="display: none;">
-                                    <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-inline="true">Refresh Metadata</button>
+                                    <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-inline="true">Refresh</button>
+                                </div>
+                            </div>
+                            <div style="display: inline-block; vertical-align: top;">
+                                <div class="fldRefresh" style="display: none;">
+                                    <select data-mini="true" data-inline="true" id="selectRefreshMode">
+                                        <option value="all">Refresh All Data</option>
+                                        <option value="missing">Add Missing Data Only</option>
+                                    </select>
                                 </div>
                             </div>
                             <div style="vertical-align: bottom; display: inline-block;">

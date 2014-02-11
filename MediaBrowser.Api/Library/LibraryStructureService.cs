@@ -167,15 +167,32 @@ namespace MediaBrowser.Api.Library
         public bool RefreshLibrary { get; set; }
     }
 
-    [Route("/Library/Changes/Path", "POST")]
+    [Route("/Library/Changes/New", "POST")]
     public class ReportChangedPath : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        [ApiMember(Name = "Path", Description = "The path that was changed.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "Path", Description = "The path that was changed.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Path { get; set; }
+
+        [ApiMember(Name = "ImageUrl", Description = "Optional thumbnail image url of the content.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string ImageUrl { get; set; }
+    }
+
+    [Route("/Library/Episodes/New", "POST")]
+    public class ReportNewEpisode : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        [ApiMember(Name = "TvdbId", Description = "The tvdb id of the new episode.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string TvdbId { get; set; }
+
+        [ApiMember(Name = "ImageUrl", Description = "Optional thumbnail image url of the content.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string ImageUrl { get; set; }
     }
     
     /// <summary>

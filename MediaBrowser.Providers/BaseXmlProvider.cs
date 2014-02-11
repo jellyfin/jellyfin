@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
@@ -17,7 +18,7 @@ namespace MediaBrowser.Providers
         {
             var result = new LocalMetadataResult<T>();
 
-            var file = GetXmlFile(info);
+            var file = GetXmlFile(info, new DirectoryService(new NullLogger()));
 
             if (file == null)
             {
@@ -58,12 +59,7 @@ namespace MediaBrowser.Providers
             FileSystem = fileSystem;
         }
 
-        protected abstract FileInfo GetXmlFile(ItemInfo info);
-
-        protected virtual FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
-        {
-            return GetXmlFile(info);
-        }
+        protected abstract FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService);
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {

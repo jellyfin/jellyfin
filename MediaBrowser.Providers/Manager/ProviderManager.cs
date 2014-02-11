@@ -211,7 +211,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
         public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasImages item, CancellationToken cancellationToken, string providerName = null, ImageType? type = null)
         {
-            var providers = GetRemoteImageProviders(item);
+            var providers = GetRemoteImageProviders(item, true);
 
             if (!string.IsNullOrEmpty(providerName))
             {
@@ -277,27 +277,38 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>IEnumerable{IImageProvider}.</returns>
         public IEnumerable<ImageProviderInfo> GetRemoteImageProviderInfo(IHasImages item)
         {
-            return GetRemoteImageProviders(item).Select(i => new ImageProviderInfo
+            return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo
             {
-                Name = i.Name
+                Name = i.Name,
+                SupportedImages = i.GetSupportedImages(item).ToList()
             });
         }
 
         public IEnumerable<IImageProvider> GetImageProviders(IHasImages item)
         {
-            return ImageProviders.Where(i =>
+            return GetImageProviders(item, GetMetadataOptions(item), false);
+        }
+
+        private IEnumerable<IImageProvider> GetImageProviders(IHasImages item, MetadataOptions options, bool includeDisabled)
+        {
+            return ImageProviders.Where(i => CanRefresh(i, item, options, includeDisabled))
+            .OrderBy(i =>
             {
-                try
+                // See if there's a user-defined order
+                if (!(i is ILocalImageProvider))
                 {
-                    return i.Supports(item);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("{0} failed in Supports for type {1}", ex, i.GetType().Name, item.GetType().Name);
-                    return false;
+                    var index = Array.IndexOf(options.ImageFetcherOrder, i.Name);
+
+                    if (index != -1)
+                    {
+                        return index;
+                    }
                 }
 
-            }).OrderBy(GetOrder);
+                // Not configured. Just return some high number to put it at the end.
+                return 100;
+            })
+            .ThenBy(GetOrder);
         }
 
         public IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(IHasMetadata item)
@@ -312,13 +323,13 @@ namespace MediaBrowser.Providers.Manager
             where T : IHasMetadata
         {
             return _metadataProviders.OfType<IMetadataProvider<T>>()
-                .Where(i => CanRefresh(i, item, includeDisabled))
+                .Where(i => CanRefresh(i, item, options, includeDisabled))
                 .OrderBy(i =>
                 {
                     // See if there's a user-defined order
                     if (i is ILocalMetadataProvider)
                     {
-                        var index = Array.IndexOf(options.LocalMetadataReaders, i.Name);
+                        var index = Array.IndexOf(options.LocalMetadataReaderOrder, i.Name);
 
                         if (index != -1)
                         {
@@ -326,29 +337,46 @@ namespace MediaBrowser.Providers.Manager
                         }
                     }
 
+                    // See if there's a user-defined order
+                    if (i is IRemoteMetadataProvider)
+                    {
+                        var index = Array.IndexOf(options.MetadataFetcherOrder, i.Name);
+
+                        if (index != -1)
+                        {
+                            return index;
+                        }
+                    }
+                    
                     // Not configured. Just return some high number to put it at the end.
                     return 100;
                 })
                 .ThenBy(GetOrder);
         }
 
-        private IEnumerable<IRemoteImageProvider> GetRemoteImageProviders(IHasImages item)
+        private IEnumerable<IRemoteImageProvider> GetRemoteImageProviders(IHasImages item, bool includeDisabled)
         {
-            return GetImageProviders(item).OfType<IRemoteImageProvider>();
+            var options = GetMetadataOptions(item);
+
+            return GetImageProviders(item, options, includeDisabled).OfType<IRemoteImageProvider>();
         }
 
-        /// <summary>
-        /// Determines whether this instance can refresh the specified provider.
-        /// </summary>
-        /// <param name="provider">The provider.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="includeDisabled">if set to <c>true</c> [include disabled].</param>
-        /// <returns><c>true</c> if this instance can refresh the specified provider; otherwise, <c>false</c>.</returns>
-        private bool CanRefresh(IMetadataProvider provider, IHasMetadata item, bool includeDisabled)
+        private bool CanRefresh(IMetadataProvider provider, IHasMetadata item, MetadataOptions options, bool includeDisabled)
         {
-            if (!includeDisabled && !ConfigurationManager.Configuration.EnableInternetProviders && provider is IRemoteMetadataProvider)
+            if (!includeDisabled)
             {
-                return false;
+                if (provider is IRemoteMetadataProvider)
+                {
+                    if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                    {
+                        return false;
+                    }
+
+                    if (Array.IndexOf(options.DisabledMetadataFetchers, provider.Name) != -1)
+                    {
+                        return false;
+                    }
+                }
             }
 
             if (!item.SupportsLocalMetadata && provider is ILocalMetadataProvider)
@@ -366,6 +394,40 @@ namespace MediaBrowser.Providers.Manager
             }
 
             return true;
+        }
+
+        private bool CanRefresh(IImageProvider provider, IHasImages item, MetadataOptions options, bool includeDisabled)
+        {
+            if (!includeDisabled)
+            {
+                if (provider is IRemoteImageProvider)
+                {
+                    if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                    {
+                        return false;
+                    }
+
+                    if (Array.IndexOf(options.DisabledImageFetchers, provider.Name) != -1)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            if (!item.SupportsLocalMetadata && provider is ILocalImageProvider)
+            {
+                return false;
+            }
+
+            try
+            {
+                return provider.Supports(item);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("{0} failed in Supports for type {1}", ex, provider.GetType().Name, item.GetType().Name);
+                return false;
+            }
         }
 
         /// <summary>
@@ -454,7 +516,7 @@ namespace MediaBrowser.Providers.Manager
                 ItemType = typeof(T).Name
             };
 
-            var imageProviders = GetImageProviders(dummy).ToList();
+            var imageProviders = GetImageProviders(dummy, options, true).ToList();
 
             AddMetadataPlugins(summary.Plugins, dummy, options);
             AddImagePlugins(summary.Plugins, dummy, imageProviders);
@@ -513,7 +575,7 @@ namespace MediaBrowser.Providers.Manager
             }));
         }
 
-        public MetadataOptions GetMetadataOptions(IHasMetadata item)
+        public MetadataOptions GetMetadataOptions(IHasImages item)
         {
             var type = item.GetType().Name;
 

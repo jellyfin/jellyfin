@@ -159,7 +159,15 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>ItemUpdateType.</returns>
         protected virtual ItemUpdateType BeforeSave(TItemType item)
         {
-            return ItemUpdateType.None;
+            var updateType = ItemUpdateType.None;
+
+            if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(item.Path))
+            {
+                item.Name = Path.GetFileNameWithoutExtension(item.Path);
+                updateType = updateType | ItemUpdateType.MetadataEdit;
+            }
+
+            return updateType;
         }
 
         /// <summary>
@@ -318,7 +326,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // Local metadata is king - if any is found don't run remote providers
-            if (!options.ReplaceAllMetadata && !hasLocalMetadata)
+            if ((!options.ReplaceAllMetadata && !hasLocalMetadata) || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh)
             {
                 await ExecuteRemoteProviders(item, temp, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
             }

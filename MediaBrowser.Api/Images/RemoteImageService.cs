@@ -221,10 +221,17 @@ namespace MediaBrowser.Api.Images
 
             var imagesList = images.ToList();
 
+            var allProviders = _providerManager.GetRemoteImageProviderInfo(item);
+
+            if (request.Type.HasValue)
+            {
+                allProviders = allProviders.Where(i => i.SupportedImages.Contains(request.Type.Value));
+            }
+
             var result = new RemoteImageResult
             {
                 TotalRecordCount = imagesList.Count,
-                Providers = imagesList.Select(i => i.ProviderName)
+                Providers = allProviders.Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList()
             };

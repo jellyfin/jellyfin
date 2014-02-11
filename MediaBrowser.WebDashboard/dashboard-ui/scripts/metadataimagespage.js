@@ -162,20 +162,45 @@
             return;
         }
 
-        html += '<fieldset data-role="controlgroup">';
-        html += '<legend>Image Fetchers:</legend>';
+        var i, length, plugin, id;
 
-        for (var i = 0, length = plugins.length; i < length; i++) {
+        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Image Fetchers:</div>';
 
-            var plugin = plugins[i];
+        html += '<div style="display:inline-block;width: 85%;vertical-align:top;">';
+        html += '<div data-role="controlgroup">';
 
-            var id = 'chkImageFetcher' + i;
+        for (i = 0, length = plugins.length; i < length; i++) {
 
-            html += '<input class="chkImageFetcher" type="checkbox" name="' + id + '" id="' + id + '" data-mini="true" data-pluginname="' + plugin.Name + '">';
+            plugin = plugins[i];
+
+            id = 'chkImageFetcher' + i;
+
+            var isChecked = config.DisabledImageFetchers.indexOf(plugin.Name) == -1 ? ' checked="checked"' : '';
+
+            html += '<input class="chkImageFetcher" type="checkbox" name="' + id + '" id="' + id + '" data-pluginname="' + plugin.Name + '" data-mini="true"' + isChecked + '>';
             html += '<label for="' + id + '">' + plugin.Name + '</label>';
         }
 
-        html += '</fieldset>';
+        html += '</div>';
+        html += '</div>';
+
+        if (plugins.length > 1) {
+            html += '<div style="display:inline-block;vertical-align:top;margin-left:5px;">';
+
+            for (i = 0, length = plugins.length; i < length; i++) {
+
+                plugin = plugins[i];
+
+                if (i == 0) {
+                    html += '<button type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin-top:6px;margin-bottom:6px;">Down</button>';
+                } else {
+                    html += '<button type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin-top:6px;margin-bottom:6px;">Up</button>';
+                }
+            }
+        }
+
+        html += '</div>';
+        html += '<div class="fieldDescription" style="width:85%;">Enable and rank your preferred image fetchers in order of priority.</div>';
 
         $('.imageFetchers', page).html(html).show().trigger('create');
     }
@@ -227,20 +252,45 @@
             return;
         }
 
-        html += '<fieldset data-role="controlgroup">';
-        html += '<legend>Metadata Fetchers:</legend>';
+        var i, length, plugin, id;
 
-        for (var i = 0, length = plugins.length; i < length; i++) {
+        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Metadata Fetchers:</div>';
 
-            var plugin = plugins[i];
+        html += '<div style="display:inline-block;width: 85%;vertical-align:top;">';
+        html += '<div data-role="controlgroup">';
 
-            var id = 'chkMetadataFetcher' + i;
+        for (i = 0, length = plugins.length; i < length; i++) {
 
-            html += '<input type="checkbox" name="' + id + '" id="' + id + '" data-mini="true">';
+            plugin = plugins[i];
+
+            id = 'chkMetadataFetcher' + i;
+
+            var isChecked = config.DisabledMetadataFetchers.indexOf(plugin.Name) == -1 ? ' checked="checked"' : '';
+
+            html += '<input class="chkMetadataFetcher" type="checkbox" name="' + id + '" id="' + id + '" data-pluginname="' + plugin.Name + '" data-mini="true"' + isChecked + '>';
             html += '<label for="' + id + '">' + plugin.Name + '</label>';
         }
 
-        html += '</fieldset>';
+        html += '</div>';
+        html += '</div>';
+
+        if (plugins.length > 1) {
+            html += '<div style="display:inline-block;vertical-align:top;margin-left:5px;">';
+
+            for (i = 0, length = plugins.length; i < length; i++) {
+
+                plugin = plugins[i];
+
+                if (i == 0) {
+                    html += '<button type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin-top:6px;margin-bottom:6px;">Down</button>';
+                } else {
+                    html += '<button type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin-top:6px;margin-bottom:6px;">Up</button>';
+                }
+            }
+        }
+
+        html += '</div>';
+        html += '<div class="fieldDescription" style="width:85%;">Enable and rank your preferred metadata fetchers in order of priority. Lower priority fetchers will only be used to fill in missing information.</div>';
 
         $('.metadataFetchers', page).html(html).show().trigger('create');
     }
@@ -253,7 +303,7 @@
 
         var html = '';
 
-        if (!plugins.length) {
+        if (plugins.length < 2) {
             $('.metadataReaders', page).html(html).hide().trigger('create');
             return;
         }
@@ -373,7 +423,31 @@
 
         });
 
-        config.LocalMetadataReaders = $('.localReaderOption', form).get().map(function (c) {
+        config.LocalMetadataReaderOrder = $('.localReaderOption', form).get().map(function (c) {
+
+            return c.getAttribute('data-pluginname');
+
+        });
+
+        config.DisabledMetadataFetchers = $('.chkMetadataFetcher:not(:checked)', form).get().map(function (c) {
+
+            return c.getAttribute('data-pluginname');
+
+        });
+
+        config.MetadataFetcherOrder = $('.chkMetadataFetcher', form).get().map(function (c) {
+
+            return c.getAttribute('data-pluginname');
+
+        });
+
+        config.DisabledImageFetchers = $('.chkImageFetcher:not(:checked)', form).get().map(function (c) {
+
+            return c.getAttribute('data-pluginname');
+
+        });
+
+        config.ImageFetcherOrder = $('.chkImageFetcher', form).get().map(function (c) {
 
             return c.getAttribute('data-pluginname');
 
