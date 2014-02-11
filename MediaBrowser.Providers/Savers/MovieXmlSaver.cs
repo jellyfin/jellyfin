@@ -46,15 +46,12 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
-            var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
-            var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
+            var video = item as Video;
 
-            // If new metadata has been downloaded and save local is on
-            if (wasMetadataEdited || wasMetadataDownloaded)
+            // Check parent for null to avoid running this against things like video backdrops
+            if (video != null && !(item is Episode) && !video.IsOwnedItem)
             {
-                var video = item as Video;
-                // Check parent for null to avoid running this against things like video backdrops
-                return video != null && !(item is Episode) && !video.IsOwnedItem;
+                return updateType >= ItemUpdateType.MetadataDownload;
             }
 
             return false;

@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
 using System.Security;
@@ -32,16 +31,7 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
-            var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
-            var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
-
-            // If new metadata has been downloaded and save local is on
-            if (wasMetadataEdited || wasMetadataDownloaded)
-            {
-                return item is GameSystem;
-            }
-
-            return false;
+            return item is GameSystem && updateType >= ItemUpdateType.MetadataDownload;
         }
 
         /// <summary>

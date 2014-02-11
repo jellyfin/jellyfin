@@ -27,16 +27,7 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
-            var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
-            var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
-
-            // If new metadata has been downloaded or metadata was manually edited, proceed
-            if ((wasMetadataEdited || wasMetadataDownloaded))
-            {
-                return item is LiveTvChannel;
-            }
-
-            return false;
+            return item is LiveTvChannel && updateType >= ItemUpdateType.MetadataDownload;
         }
 
         public string Name

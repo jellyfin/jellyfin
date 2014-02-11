@@ -36,16 +36,7 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
-            var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
-            var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
-
-            // If new metadata has been downloaded or metadata was manually edited, proceed
-            if ((wasMetadataEdited || wasMetadataDownloaded))
-            {
-                return item is Person;
-            }
-
-            return false;
+            return item is Person && updateType >= ItemUpdateType.MetadataDownload;
         }
 
         /// <summary>

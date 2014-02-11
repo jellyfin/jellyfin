@@ -97,18 +97,6 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is system file.
-        /// </summary>
-        /// <value><c>true</c> if this instance is system file; otherwise, <c>false</c>.</value>
-        public bool IsSystemFile
-        {
-            get
-            {
-                return (FileInfo.Attributes & FileAttributes.System) == FileAttributes.System;
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether this instance is vf.
         /// </summary>
         /// <value><c>true</c> if this instance is vf; otherwise, <c>false</c>.</value>
@@ -235,22 +223,6 @@ namespace MediaBrowser.Controller.Library
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Gets the meta file by path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>FileSystemInfo.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public FileSystemInfo GetMetaFileByPath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException();
-            }
-
-            return GetFileSystemEntryByPath(path);
         }
 
         /// <summary>

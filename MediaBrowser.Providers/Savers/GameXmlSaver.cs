@@ -36,16 +36,7 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
-            var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
-            var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
-
-            // If new metadata has been downloaded and save local is on
-            if (wasMetadataEdited || wasMetadataDownloaded)
-            {
-                return item is Game;
-            }
-
-            return false;
+            return item is Game && updateType >= ItemUpdateType.MetadataDownload;
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");

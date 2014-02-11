@@ -32,16 +32,7 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
-            var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
-            var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
-
-            // If new metadata has been downloaded and save local is on
-            if (wasMetadataEdited || wasMetadataDownloaded)
-            {
-                return item is MusicAlbum;
-            }
-
-            return false;
+            return item is MusicAlbum && updateType >= ItemUpdateType.MetadataDownload;
         }
 
         /// <summary>

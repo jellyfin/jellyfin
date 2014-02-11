@@ -34,24 +34,13 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
-            var folder = item as Folder;
-
-            if (folder == null)
-            {
-                return false;
-            }
-
-            var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
-            var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
-
-            // If new metadata has been downloaded and save local is on
-            if (wasMetadataEdited || wasMetadataDownloaded)
+            if (item is Folder)
             {
                 if (!(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum) &&
                     !(item is Season) &&
                     !(item is GameSystem))
                 {
-                    return true;
+                    return updateType >= ItemUpdateType.MetadataDownload;
                 }
             }
 
