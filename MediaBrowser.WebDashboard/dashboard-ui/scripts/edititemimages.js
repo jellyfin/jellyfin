@@ -7,7 +7,6 @@
     var browsableImageStartIndex = 0;
     var browsableImageType = 'Primary';
     var selectedProvider;
-    var allLanguages = false;
 
     function updateTabs(page, item) {
 
@@ -57,7 +56,6 @@
         options.type = browsableImageType;
         options.startIndex = browsableImageStartIndex;
         options.limit = browsableImagePageSize;
-        options.IncludeAllLanguages = allLanguages;
 
         var provider = selectedProvider || '';
 
@@ -572,14 +570,6 @@
 
             browsableImageStartIndex = 0;
             selectedProvider = this.value;
-
-            reloadBrowsableImages(page);
-        });
-
-        $('#chkAllLanguages', page).on('change', function () {
-
-            browsableImageStartIndex = 0;
-            allLanguages = this.checked;
 
             reloadBrowsableImages(page);
         });

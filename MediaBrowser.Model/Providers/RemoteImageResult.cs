@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Providers
 {
@@ -25,16 +24,5 @@ namespace MediaBrowser.Model.Providers
         /// </summary>
         /// <value>The providers.</value>
         public List<string> Providers { get; set; }
-    }
-
-    public class RemoteImageQuery
-    {
-        public string ProviderName { get; set; }
-
-        public ImageType? ImageType { get; set; }
-
-        public bool IncludeDisabledProviders { get; set; }
-
-        public bool IncludeAllLanguages { get; set; }
     }
 }

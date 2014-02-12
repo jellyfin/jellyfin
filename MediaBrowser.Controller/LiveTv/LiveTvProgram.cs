@@ -190,8 +190,6 @@ namespace MediaBrowser.Controller.LiveTv
 
         public override Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            DateLastSaved = DateTime.UtcNow;
-            
             // Avoid library manager and keep out of in-memory cache
             // Not great that this class has to know about that, but we'll improve that later.
             return ItemRepository.SaveItem(this, cancellationToken);
