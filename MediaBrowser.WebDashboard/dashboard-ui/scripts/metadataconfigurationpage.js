@@ -41,7 +41,6 @@
         $('#chkSaveLocal', page).checked(config.SaveLocalMeta).checkboxradio("refresh");
         $('#selectLanguage', page).val(config.PreferredMetadataLanguage).selectmenu("refresh");
         $('#selectCountry', page).val(config.MetadataCountryCode).selectmenu("refresh");
-        $('#chkEnableInternetProviders', page).checked(config.EnableInternetProviders).checkboxradio("refresh");
 
         $('#selectImageSavingConvention', page).val(config.ImageSavingConvention).selectmenu("refresh");
 
@@ -57,7 +56,6 @@
 
             config.ImageSavingConvention = $('#selectImageSavingConvention', form).val();
 
-            config.EnableInternetProviders = $('#chkEnableInternetProviders', form).checked();
             config.SaveLocalMeta = $('#chkSaveLocal', form).checked();
             config.PreferredMetadataLanguage = $('#selectLanguage', form).val();
             config.MetadataCountryCode = $('#selectCountry', form).val();

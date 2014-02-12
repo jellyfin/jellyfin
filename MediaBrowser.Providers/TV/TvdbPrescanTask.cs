@@ -73,7 +73,9 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableInternetProviders)
+            var seriesConfig = _config.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, typeof(Series).Name, StringComparison.OrdinalIgnoreCase));
+
+            if (seriesConfig != null && seriesConfig.DisabledMetadataFetchers.Contains(TvdbSeriesProvider.Current.Name, StringComparer.OrdinalIgnoreCase))
             {
                 progress.Report(100);
                 return;

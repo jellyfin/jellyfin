@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
@@ -172,12 +173,14 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
+        private readonly ISessionManager _sessionMananger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService" /> class.
         /// </summary>
         /// <param name="xmlSerializer">The XML serializer.</param>
         /// <param name="userManager">The user manager.</param>
+        /// <param name="dtoService">The dto service.</param>
         /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
         public UserService(IXmlSerializer xmlSerializer, IUserManager userManager, IDtoService dtoService)
             : base()
@@ -300,17 +303,15 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var success = await _userManager.AuthenticateUser(user, request.Password).ConfigureAwait(false);
+            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
 
-            if (!success)
-            {
-                // Unauthorized
-                throw new UnauthorizedAccessException("Invalid user or password entered.");
-            }
+            var session = await _sessionMananger.AuthenticateNewSession(user, request.Password, auth.Client, auth.Version,
+                        auth.DeviceId, auth.Device, Request.RemoteIp).ConfigureAwait(false);
 
             var result = new AuthenticationResult
             {
-                User = _dtoService.GetUserDto(user)
+                User = _dtoService.GetUserDto(user),
+                SessionInfo = _dtoService.GetSessionInfoDto(session)
             };
 
             return result;
