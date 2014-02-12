@@ -182,7 +182,7 @@ namespace MediaBrowser.Api
         /// <param name="userManager">The user manager.</param>
         /// <param name="dtoService">The dto service.</param>
         /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
-        public UserService(IXmlSerializer xmlSerializer, IUserManager userManager, IDtoService dtoService)
+        public UserService(IXmlSerializer xmlSerializer, IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger)
             : base()
         {
             if (xmlSerializer == null)
@@ -193,6 +193,7 @@ namespace MediaBrowser.Api
             _xmlSerializer = xmlSerializer;
             _userManager = userManager;
             _dtoService = dtoService;
+            _sessionMananger = sessionMananger;
         }
 
         public object Get(GetPublicUsers request)
