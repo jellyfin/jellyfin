@@ -213,7 +213,14 @@ namespace MediaBrowser.Providers.Manager
 
                 _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
 
-                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, provider.Name).ConfigureAwait(false);
+                var images = await _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery
+                {
+                    ProviderName = provider.Name,
+                    IncludeAllLanguages = false,
+                    IncludeDisabledProviders = false,
+
+                }, cancellationToken).ConfigureAwait(false);
+
                 var list = images.ToList();
                 int minWidth;
 
