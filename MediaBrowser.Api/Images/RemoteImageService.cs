@@ -40,6 +40,9 @@ namespace MediaBrowser.Api.Images
 
         [ApiMember(Name = "ProviderName", Description = "Optional. The image provider to use", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ProviderName { get; set; }
+
+        [ApiMember(Name = "IncludeAllLanguages", Description = "Optional.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool IncludeAllLanguages { get; set; }
     }
 
     [Route("/Items/{Id}/RemoteImages", "GET")]
@@ -217,7 +220,14 @@ namespace MediaBrowser.Api.Images
 
         private RemoteImageResult GetRemoteImageResult(BaseItem item, BaseRemoteImageRequest request)
         {
-            var images = _providerManager.GetAvailableRemoteImages(item, CancellationToken.None, request.ProviderName, request.Type).Result;
+            var images = _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery
+            {
+                ProviderName = request.ProviderName,
+                IncludeAllLanguages = request.IncludeAllLanguages,
+                IncludeDisabledProviders = true,
+                ImageType = request.Type
+
+            }, CancellationToken.None).Result;
 
             var imagesList = images.ToList();
 

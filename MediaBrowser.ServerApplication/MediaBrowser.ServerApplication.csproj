@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{156EA256-AD2D-4D2F-B116-2ED4B9EFD869}</ProjectGuid>
+    <ProjectGuid>{68468A75-9778-4F9B-98EE-17B223B0314B}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MediaBrowser.ServerApplication</RootNamespace>
