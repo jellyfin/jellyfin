@@ -253,8 +253,6 @@ namespace MediaBrowser.Providers.TV
 
         private void FetchMainEpisodeInfo(Episode item, string xmlFile, CancellationToken cancellationToken)
         {
-            var status = ProviderRefreshStatus.Success;
-
             using (var streamReader = new StreamReader(xmlFile, Encoding.UTF8))
             {
                 if (!item.LockedFields.Contains(MetadataFields.Cast))

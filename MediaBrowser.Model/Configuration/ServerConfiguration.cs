@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using MediaBrowser.Model.Weather;
+﻿using MediaBrowser.Model.Weather;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Configuration
 {

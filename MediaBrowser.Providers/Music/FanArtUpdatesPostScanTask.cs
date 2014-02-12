@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableInternetProviders || !_config.Configuration.EnableFanArtUpdates)
+            if (!_config.Configuration.EnableFanArtUpdates)
             {
                 progress.Report(100);
                 return;

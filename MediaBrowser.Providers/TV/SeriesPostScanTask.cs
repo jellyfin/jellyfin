@@ -171,7 +171,9 @@ namespace MediaBrowser.Providers.TV
                 hasNewSeasons = await AddDummySeasonFolders(series, cancellationToken).ConfigureAwait(false);
             }
 
-            if (_config.Configuration.EnableInternetProviders)
+            var seriesConfig = _config.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, typeof(Series).Name, StringComparison.OrdinalIgnoreCase));
+
+            if (seriesConfig == null || !seriesConfig.DisabledMetadataFetchers.Contains(TvdbSeriesProvider.Current.Name, StringComparer.OrdinalIgnoreCase))
             {
                 hasNewEpisodes = await AddMissingEpisodes(group.ToList(), seriesDataPath, episodeLookup, cancellationToken)
                     .ConfigureAwait(false);

@@ -375,11 +375,6 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (provider is IRemoteMetadataProvider)
                 {
-                    if (!ConfigurationManager.Configuration.EnableInternetProviders)
-                    {
-                        return false;
-                    }
-
                     if (Array.IndexOf(options.DisabledMetadataFetchers, provider.Name) != -1)
                     {
                         return false;
@@ -410,11 +405,6 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (provider is IRemoteImageProvider)
                 {
-                    if (!ConfigurationManager.Configuration.EnableInternetProviders)
-                    {
-                        return false;
-                    }
-
                     if (Array.IndexOf(options.DisabledImageFetchers, provider.Name) != -1)
                     {
                         return false;
