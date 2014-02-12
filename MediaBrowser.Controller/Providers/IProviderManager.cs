@@ -62,10 +62,11 @@ namespace MediaBrowser.Controller.Providers
         /// Gets the available remote images.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="providerName">Name of the provider.</param>
+        /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasImages item, RemoteImageQuery query, CancellationToken cancellationToken);
+        Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasImages item, CancellationToken cancellationToken, string providerName = null, ImageType? type = null);
 
         /// <summary>
         /// Gets the image providers.
