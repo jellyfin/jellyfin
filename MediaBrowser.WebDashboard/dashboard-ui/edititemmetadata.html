@@ -428,10 +428,6 @@
                         <div data-role="collapsible" data-mini="true" id="metadataSettingsCollapsible" style="display: none; margin-top: 1em;">
                             <h3>Metadata Settings</h3>
                             <div>
-                                <p>
-                                    <label for="enableInternetProviders">Enable internet metadata providers for this item.</label>
-                                    <input data-mini="true" type="checkbox" id="enableInternetProviders" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
-                                </p>
                                 <div data-role="fieldcontain">
                                     <label for="selectLanguage">Preferred language: </label>
                                     <select id="selectLanguage" data-mini="true"></select>
@@ -443,8 +439,12 @@
                                     <select id="selectCountry" data-mini="true"></select>
                                 </div>
                                 <div class="fieldDescription editorfieldDescription">Leave empty to inherit settings from a parent item, or the global default value.</div>
-                                <br />
 
+                                <p>
+                                    <br />
+                                    <label for="enableInternetProviders">Lock this item to prevent future changes.</label>
+                                    <input data-mini="true" type="checkbox" id="enableInternetProviders" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
+                                </p>
                                 <div id="providerSettingsContainer" style="display: none">
                                 </div>
                             </div>

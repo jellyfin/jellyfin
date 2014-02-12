@@ -864,7 +864,7 @@
         populateListView($('#listKeywords', page), item.Keywords);
 
         var enableInternetProviders = (item.EnableInternetProviders || false);
-        $("#enableInternetProviders", page).attr('checked', enableInternetProviders).checkboxradio('refresh');
+        $("#enableInternetProviders", page).attr('checked', !enableInternetProviders).checkboxradio('refresh');
         if (enableInternetProviders) {
             $('#providerSettingsContainer', page).show();
         } else {
@@ -1301,7 +1301,7 @@
         };
 
         self.setProviderSettingsContainerVisibility = function (source) {
-            if ($(source).prop('checked')) {
+            if (!$(source).prop('checked')) {
                 $('#providerSettingsContainer').show();
             } else {
                 $('#providerSettingsContainer').hide();

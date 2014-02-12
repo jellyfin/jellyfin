@@ -205,26 +205,31 @@ namespace MediaBrowser.Providers.Manager
         /// Gets the available remote images.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="providerName">Name of the provider.</param>
-        /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasImages item, CancellationToken cancellationToken, string providerName = null, ImageType? type = null)
+        public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasImages item, RemoteImageQuery query, CancellationToken cancellationToken)
         {
-            var providers = GetRemoteImageProviders(item, true);
+            var providers = GetRemoteImageProviders(item, query.IncludeDisabledProviders);
 
-            if (!string.IsNullOrEmpty(providerName))
+            if (!string.IsNullOrEmpty(query.ProviderName))
             {
+                var providerName = query.ProviderName;
+
                 providers = providers.Where(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
             }
 
             var preferredLanguage = item.GetPreferredMetadataLanguage();
 
-            var tasks = providers.Select(i => GetImages(item, cancellationToken, i, preferredLanguage, type));
+            var language = query.IncludeAllLanguages ? null : preferredLanguage;
+
+            var tasks = providers.Select(i => GetImages(item, cancellationToken, i, language, query.ImageType));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            return results.SelectMany(i => i);
+            var images = results.SelectMany(i => i);
+
+            return images;
         }
 
         /// <summary>
@@ -244,12 +249,15 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var result = await i.GetImages(item, type.Value, cancellationToken).ConfigureAwait(false);
 
-                    return FilterImages(result, preferredLanguage);
+                    return string.IsNullOrEmpty(preferredLanguage) ? result :
+                        FilterImages(result, preferredLanguage);
                 }
                 else
                 {
                     var result = await i.GetAllImages(item, cancellationToken).ConfigureAwait(false);
-                    return FilterImages(result, preferredLanguage);
+
+                    return string.IsNullOrEmpty(preferredLanguage) ? result :
+                        FilterImages(result, preferredLanguage);
                 }
             }
             catch (Exception ex)
@@ -347,7 +355,7 @@ namespace MediaBrowser.Providers.Manager
                             return index;
                         }
                     }
-                    
+
                     // Not configured. Just return some high number to put it at the end.
                     return 100;
                 })
