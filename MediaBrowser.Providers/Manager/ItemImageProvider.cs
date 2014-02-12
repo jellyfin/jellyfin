@@ -222,21 +222,25 @@ namespace MediaBrowser.Providers.Manager
                 }, cancellationToken).ConfigureAwait(false);
 
                 var list = images.ToList();
+                int minWidth;
 
                 foreach (var type in _singularImages)
                 {
                     if (savedOptions.IsEnabled(type) && !item.HasImage(type))
                     {
-                        await DownloadImage(item, provider, result, list, type, cancellationToken).ConfigureAwait(false);
+                        minWidth = savedOptions.GetMinWidth(type);
+                        await DownloadImage(item, provider, result, list, minWidth, type, cancellationToken).ConfigureAwait(false);
                     }
                 }
 
-                await DownloadBackdrops(item, ImageType.Backdrop, backdropLimit, provider, result, list, cancellationToken).ConfigureAwait(false);
+                minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
+                await DownloadBackdrops(item, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
 
                 var hasScreenshots = item as IHasScreenshots;
                 if (hasScreenshots != null)
                 {
-                    await DownloadBackdrops(item, ImageType.Screenshot, screenshotLimit, provider, result, list, cancellationToken).ConfigureAwait(false);
+                    minWidth = savedOptions.GetMinWidth(ImageType.Screenshot);
+                    await DownloadBackdrops(item, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -306,10 +310,15 @@ namespace MediaBrowser.Providers.Manager
             return changed;
         }
 
-        private async Task DownloadImage(IHasImages item, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, ImageType type, CancellationToken cancellationToken)
+        private async Task DownloadImage(IHasImages item, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, ImageType type, CancellationToken cancellationToken)
         {
             foreach (var image in images.Where(i => i.Type == type))
             {
+                if (image.Width.HasValue && image.Width.Value < minWidth)
+                {
+                    continue;
+                }
+
                 var url = image.Url;
 
                 try
@@ -333,13 +342,18 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private async Task DownloadBackdrops(IHasImages item, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, CancellationToken cancellationToken)
+        private async Task DownloadBackdrops(IHasImages item, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
         {
             foreach (var image in images.Where(i => i.Type == imageType))
             {
                 if (item.GetImages(imageType).Count() >= limit)
                 {
                     break;
+                }
+
+                if (image.Width.HasValue && image.Width.Value < minWidth)
+                {
+                    continue;
                 }
 
                 var url = image.Url;
