@@ -244,7 +244,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 using (response.Content)
                 {
-                    return ResultFactory.GetResult(null, response.ContentType, responseHeaders);
+                    return ResultFactory.GetResult(new MemoryStream(), response.ContentType, responseHeaders);
                 }
             }
 
