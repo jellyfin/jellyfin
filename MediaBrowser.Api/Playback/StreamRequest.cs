@@ -61,15 +61,11 @@ namespace MediaBrowser.Api.Playback
         public bool Static { get; set; }
 
         /// <summary>
-        /// This is an xbox 360 param that is used with dlna. If true the item's image should be returned instead of audio or video.
-        /// No need to put this in api docs since it's dlna only
-        /// </summary>
-        public bool AlbumArt { get; set; }
-
-        /// <summary>
         /// For testing purposes
         /// </summary>
         public bool ThrowDebugError { get; set; }
+
+        public string Params { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest

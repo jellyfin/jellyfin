@@ -681,7 +681,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
-            return LibraryManager.ResolvePaths<BaseItem>(GetFileSystemChildren(directoryService), this);
+            return LibraryManager.ResolvePaths<BaseItem>(GetFileSystemChildren(directoryService), directoryService, this);
         }
 
         /// <summary>

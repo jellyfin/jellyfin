@@ -46,11 +46,8 @@ namespace MediaBrowser.Providers.Movies
 
         private async Task<string> FindId(ItemLookupInfo idInfo, string searchType, CancellationToken cancellationToken)
         {
-            int? yearInName;
             var name = idInfo.Name;
-            NameParser.ParseName(name, out name, out yearInName);
-
-            var year = idInfo.Year ?? yearInName;
+            var year = idInfo.Year;
 
             _logger.Info("MovieDbProvider: Finding id for item: " + name);
             var language = idInfo.MetadataLanguage.ToLower();
@@ -266,5 +263,24 @@ namespace MediaBrowser.Providers.Movies
             public int total_results { get; set; }
         }
 
+        public class TvResult
+        {
+            public string backdrop_path { get; set; }
+            public int id { get; set; }
+            public string original_name { get; set; }
+            public string first_air_date { get; set; }
+            public string poster_path { get; set; }
+            public double popularity { get; set; }
+            public string name { get; set; }
+            public double vote_average { get; set; }
+            public int vote_count { get; set; }
+        }
+
+        public class ExternalIdLookupResult
+        {
+            public List<object> movie_results { get; set; }
+            public List<object> person_results { get; set; }
+            public List<TvResult> tv_results { get; set; }
+        }
     }
 }

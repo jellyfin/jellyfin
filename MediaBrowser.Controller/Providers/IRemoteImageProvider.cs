@@ -24,18 +24,9 @@ namespace MediaBrowser.Controller.Providers
         /// Gets the images.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the images.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken);
+        Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the image response.

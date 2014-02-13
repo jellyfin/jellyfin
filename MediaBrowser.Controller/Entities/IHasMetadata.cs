@@ -51,9 +51,9 @@ namespace MediaBrowser.Controller.Entities
         Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
-        /// This is called before any metadata refresh and returns ItemUpdateType indictating if changes were made, and what.
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made
         /// </summary>
-        /// <returns>ItemUpdateType.</returns>
-        ItemUpdateType BeforeMetadataRefresh();
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool BeforeMetadataRefresh();
     }
 }

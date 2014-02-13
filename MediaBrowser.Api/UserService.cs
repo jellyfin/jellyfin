@@ -189,7 +189,7 @@ namespace MediaBrowser.Api
             {
                 throw new ArgumentNullException("xmlSerializer");
             }
-
+            
             _xmlSerializer = xmlSerializer;
             _userManager = userManager;
             _dtoService = dtoService;

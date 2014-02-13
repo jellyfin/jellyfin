@@ -254,12 +254,12 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns ItemUpdateType indictating if changes were made, and what.
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made
         /// </summary>
-        /// <returns>ItemUpdateType.</returns>
-        public override ItemUpdateType BeforeMetadataRefresh()
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        public override bool BeforeMetadataRefresh()
         {
-            var updateType = base.BeforeMetadataRefresh();
+            var hasChanges = base.BeforeMetadataRefresh();
 
             var locationType = LocationType;
 
@@ -272,12 +272,12 @@ namespace MediaBrowser.Controller.Entities.TV
                     // If a change was made record it
                     if (IndexNumber.HasValue)
                     {
-                        updateType = updateType | ItemUpdateType.MetadataImport;
+                        hasChanges = true;
                     }
                 }
             }
 
-            return updateType;
+            return hasChanges;
         }
     }
 }

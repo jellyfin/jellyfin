@@ -1,23 +1,19 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Providers.MusicGenres
+namespace MediaBrowser.Providers.Photos
 {
-    public class MusicGenreMetadataService : MetadataService<MusicGenre, ItemLookupInfo>
+    class PhotoMetadataService : MetadataService<Photo, ItemLookupInfo>
     {
-        private readonly ILibraryManager _libraryManager;
-
-        public MusicGenreMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public PhotoMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem)
             : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
         {
-            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -28,7 +24,7 @@ namespace MediaBrowser.Providers.MusicGenres
         /// <param name="lockedFields">The locked fields.</param>
         /// <param name="replaceData">if set to <c>true</c> [replace data].</param>
         /// <param name="mergeMetadataSettings">if set to <c>true</c> [merge metadata settings].</param>
-        protected override void MergeData(MusicGenre source, MusicGenre target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(Photo source, Photo target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

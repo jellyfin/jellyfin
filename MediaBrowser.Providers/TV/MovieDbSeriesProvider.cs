@@ -50,22 +50,37 @@ namespace MediaBrowser.Providers.TV
             var result = new MetadataResult<Series>();
 
             var tmdbId = info.GetProviderId(MetadataProviders.Tmdb);
-            var imdbId = info.GetProviderId(MetadataProviders.Imdb);
-            var tvdbId = info.GetProviderId(MetadataProviders.Tvdb);
 
-            // Commenting our searching by imdb/tvdb because as of now it's not supported. 
-            // But this is how movies work so most likely this can eventually be enabled.
+            if (string.IsNullOrEmpty(tmdbId))
+            {
+                var imdbId = info.GetProviderId(MetadataProviders.Imdb);
 
-            if (string.IsNullOrEmpty(tmdbId) /*&& string.IsNullOrEmpty(imdbId) && string.IsNullOrEmpty(tvdbId)*/)
+                if (!string.IsNullOrEmpty(imdbId))
+                {
+                    tmdbId = await FindIdByExternalId(imdbId, "imdb_id", cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            if (string.IsNullOrEmpty(tmdbId))
+            {
+                var tvdbId = info.GetProviderId(MetadataProviders.Tvdb);
+
+                if (!string.IsNullOrEmpty(tvdbId))
+                {
+                    tmdbId = await FindIdByExternalId(tvdbId, "tvdb_id", cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            if (string.IsNullOrEmpty(tmdbId))
             {
                 tmdbId = await new MovieDbSearch(_logger, _jsonSerializer).FindSeriesId(info, cancellationToken).ConfigureAwait(false);
             }
 
-            if (!string.IsNullOrEmpty(tmdbId) /*|| !string.IsNullOrEmpty(imdbId) || !string.IsNullOrEmpty(tvdbId)*/)
+            if (!string.IsNullOrEmpty(tmdbId))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                result.Item = await FetchMovieData(tmdbId, imdbId, tvdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                result.Item = await FetchMovieData(tmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 result.HasMetadata = result.Item != null;
             }
@@ -73,42 +88,28 @@ namespace MediaBrowser.Providers.TV
             return result;
         }
 
-        private async Task<Series> FetchMovieData(string tmdbId, string imdbId, string tvdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
+        private async Task<Series> FetchMovieData(string tmdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
         {
             string dataFilePath = null;
             RootObject seriesInfo = null;
 
-            // Id could be ImdbId or TmdbId
-            if (string.IsNullOrEmpty(tmdbId))
+            if (!string.IsNullOrEmpty(tmdbId))
             {
-                if (string.IsNullOrWhiteSpace(imdbId))
-                {
-                    seriesInfo = await FetchMainResult(imdbId, language, cancellationToken).ConfigureAwait(false);
-                }
-                if (seriesInfo == null)
-                {
-                    if (string.IsNullOrWhiteSpace(imdbId))
-                    {
-                        seriesInfo = await FetchMainResult(tvdbId, language, cancellationToken).ConfigureAwait(false);
-                    }
-                }
-
-                if (seriesInfo == null)
-                {
-                    return null;
-                }
-
-                tmdbId = seriesInfo.id.ToString(_usCulture);
-
-                dataFilePath = MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
-                Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
-                _jsonSerializer.SerializeToFile(seriesInfo, dataFilePath);
+                seriesInfo = await FetchMainResult(tmdbId, language, cancellationToken).ConfigureAwait(false);
             }
 
-            await EnsureSeriesInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
+            if (seriesInfo == null)
+            {
+                return null;
+            }
 
-            dataFilePath = dataFilePath ?? GetDataFilePath(tmdbId, language);
-            seriesInfo = seriesInfo ?? _jsonSerializer.DeserializeFromFile<RootObject>(dataFilePath);
+            tmdbId = seriesInfo.id.ToString(_usCulture);
+
+            dataFilePath = MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
+            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+            _jsonSerializer.SerializeToFile(seriesInfo, dataFilePath);
+
+            await EnsureSeriesInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
 
             var item = new Series();
 
@@ -223,8 +224,6 @@ namespace MediaBrowser.Providers.TV
                 url += string.Format("&language={0}", language);
             }
 
-            RootObject mainResult;
-
             cancellationToken.ThrowIfCancellationRequested();
 
             using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
@@ -235,38 +234,8 @@ namespace MediaBrowser.Providers.TV
 
             }).ConfigureAwait(false))
             {
-                mainResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
+                return _jsonSerializer.DeserializeFromStream<RootObject>(json);
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (mainResult != null && string.IsNullOrEmpty(mainResult.overview))
-            {
-                if (!string.IsNullOrEmpty(language) && !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
-                {
-                    _logger.Info("Couldn't find meta for language " + language + ". Trying English...");
-
-                    url = string.Format(GetTvInfo3, id, MovieDbProvider.ApiKey) + "&include_image_language=en,null&language=en";
-
-                    using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
-                    {
-                        Url = url,
-                        CancellationToken = cancellationToken,
-                        AcceptHeader = MovieDbProvider.AcceptHeader
-
-                    }).ConfigureAwait(false))
-                    {
-                        mainResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
-                    }
-
-                    if (String.IsNullOrEmpty(mainResult.overview))
-                    {
-                        _logger.Error("Unable to find information for (id:" + id + ")");
-                        return null;
-                    }
-                }
-            }
-            return mainResult;
         }
         
         private readonly Task _cachedTask = Task.FromResult(true);
@@ -336,6 +305,37 @@ namespace MediaBrowser.Providers.TV
             }
 
             return false;
+        }
+
+        private async Task<string> FindIdByExternalId(string id, string externalSource, CancellationToken cancellationToken)
+        {
+            var url = string.Format("http://api.themoviedb.org/3/tv/find/{0}?api_key={1}&external_source={2}", 
+                id, 
+                MovieDbProvider.ApiKey,
+                externalSource);
+
+            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                AcceptHeader = MovieDbProvider.AcceptHeader
+
+            }).ConfigureAwait(false))
+            {
+                var result = _jsonSerializer.DeserializeFromStream<MovieDbSearch.ExternalIdLookupResult>(json);
+
+                if (result != null && result.tv_results != null)
+                {
+                    var tv = result.tv_results.FirstOrDefault();
+
+                    if (tv != null)
+                    {
+                        return tv.id.ToString(_usCulture);
+                    }
+                }
+            }
+
+            return null;
         }
 
         public class CreatedBy

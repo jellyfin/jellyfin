@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,17 +19,17 @@ namespace MediaBrowser.Controller.Entities
             return base.GetNonCachedChildren(directoryService).Concat(LibraryManager.RootFolder.VirtualChildren);
         }
 
-        public override ItemUpdateType BeforeMetadataRefresh()
+        public override bool BeforeMetadataRefresh()
         {
-            var updateType = base.BeforeMetadataRefresh();
+            var hasChanges = base.BeforeMetadataRefresh();
 
             if (string.Equals("default", Name, System.StringComparison.OrdinalIgnoreCase))
             {
                 Name = "Default Media Library";
-                updateType = updateType | ItemUpdateType.MetadataEdit;
+                hasChanges = true;
             }
 
-            return updateType;
+            return hasChanges;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,15 +19,18 @@ namespace MediaBrowser.Controller.Library
         private readonly IServerApplicationPaths _appPaths;
         private readonly ILibraryManager _libraryManager;
 
+        public IDirectoryService DirectoryService { get; private set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemResolveArgs" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public ItemResolveArgs(IServerApplicationPaths appPaths, ILibraryManager libraryManager)
+        public ItemResolveArgs(IServerApplicationPaths appPaths, ILibraryManager libraryManager, IDirectoryService directoryService)
         {
             _appPaths = appPaths;
             _libraryManager = libraryManager;
+            DirectoryService = directoryService;
         }
 
         /// <summary>

@@ -462,21 +462,27 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
+        public BaseItem ResolvePath(FileSystemInfo fileInfo, Folder parent = null)
+        {
+            return ResolvePath(fileInfo, new DirectoryService(_logger), parent);
+        }
+
         /// <summary>
         /// Resolves a path into a BaseItem
         /// </summary>
         /// <param name="fileInfo">The file info.</param>
+        /// <param name="directoryService">The directory service.</param>
         /// <param name="parent">The parent.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public BaseItem ResolvePath(FileSystemInfo fileInfo, Folder parent = null)
+        /// <exception cref="System.ArgumentNullException">fileInfo</exception>
+        public BaseItem ResolvePath(FileSystemInfo fileInfo, IDirectoryService directoryService, Folder parent = null)
         {
             if (fileInfo == null)
             {
                 throw new ArgumentNullException("fileInfo");
             }
 
-            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, this)
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, this, directoryService)
             {
                 Parent = parent,
                 Path = fileInfo.FullName,
@@ -496,8 +502,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
-
-                var directoryService = new DirectoryService(_logger);
 
                 var fileSystemDictionary = FileData.GetFilteredFileSystemEntries(directoryService, args.Path, _fileSystem, _logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
 
@@ -555,9 +559,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="files">The files.</param>
+        /// <param name="directoryService">The directory service.</param>
         /// <param name="parent">The parent.</param>
         /// <returns>List{``0}.</returns>
-        public List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, Folder parent)
+        public List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, IDirectoryService directoryService, Folder parent)
             where T : BaseItem
         {
             var list = new List<T>();
@@ -566,7 +571,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 try
                 {
-                    var item = ResolvePath(f, parent) as T;
+                    var item = ResolvePath(f, directoryService, parent) as T;
 
                     if (item != null)
                     {
@@ -594,10 +599,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
 
-            if (!Directory.Exists(rootFolderPath))
-            {
-                Directory.CreateDirectory(rootFolderPath);
-            }
+            Directory.CreateDirectory(rootFolderPath);
 
             var rootFolder = RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
 

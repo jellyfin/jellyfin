@@ -157,7 +157,13 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var id in source.ProviderIds)
             {
-                target.ProviderIds[id.Key] = id.Value;
+                var key = id.Key;
+
+                // Don't replace existing Id's.
+                if (!target.ProviderIds.ContainsKey(key))
+                {
+                    target.ProviderIds[key] = id.Value;
+                }
             }
 
             MergeAlbumArtist(source, target, lockedFields, replaceData);

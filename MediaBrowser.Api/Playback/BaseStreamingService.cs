@@ -1160,6 +1160,72 @@ namespace MediaBrowser.Api.Playback
         }
 
         /// <summary>
+        /// Parses the parameters.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        private void ParseParams(StreamRequest request)
+        {
+            var vals = request.Params.Split(';');
+
+            var videoRequest = request as VideoStreamRequest;
+
+            for (var i = 0; i < vals.Length; i++)
+            {
+                var val = vals[i];
+
+                if (string.IsNullOrWhiteSpace(val))
+                {
+                    continue;
+                }
+
+                if (i == 0)
+                {
+                    request.DeviceId = val;
+                }
+                else if (i == 1)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.VideoCodec = (VideoCodecs)Enum.Parse(typeof(VideoCodecs), val, true);
+                    }
+                }
+                else if (i == 2)
+                {
+                    request.AudioCodec = (AudioCodecs)Enum.Parse(typeof(AudioCodecs), val, true);
+                }
+                else if (i == 3)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.AudioStreamIndex = int.Parse(val, UsCulture);
+                    }
+                }
+                else if (i == 4)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.SubtitleStreamIndex = int.Parse(val, UsCulture);
+                    }
+                }
+                else if (i == 5)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.VideoBitRate = int.Parse(val, UsCulture);
+                    }
+                }
+                else if (i == 6)
+                {
+                    request.AudioBitRate = int.Parse(val, UsCulture);
+                }
+                else if (i == 7)
+                {
+                    request.AudioChannels = int.Parse(val, UsCulture);
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the state.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -1167,6 +1233,11 @@ namespace MediaBrowser.Api.Playback
         /// <returns>StreamState.</returns>
         protected async Task<StreamState> GetState(StreamRequest request, CancellationToken cancellationToken)
         {
+            if (!string.IsNullOrWhiteSpace(request.Params))
+            {
+                ParseParams(request);
+            }
+
             if (request.ThrowDebugError)
             {
                 throw new InvalidOperationException("You asked for a debug error, you got one.");

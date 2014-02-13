@@ -263,32 +263,32 @@ namespace MediaBrowser.Controller.Entities.TV
             return id;
         }
 
-        public override ItemUpdateType BeforeMetadataRefresh()
+        public override bool BeforeMetadataRefresh()
         {
-            var updateType = base.BeforeMetadataRefresh();
+            var hasChanges = base.BeforeMetadataRefresh();
 
             var locationType = LocationType;
             if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
             {
                 if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
                 {
-                    IndexNumber = IndexNumber ?? TVUtils.GetEpisodeNumberFromFile(Path, Parent is Season);
+                    IndexNumber = TVUtils.GetEpisodeNumberFromFile(Path, Parent is Season);
 
                     // If a change was made record it
                     if (IndexNumber.HasValue)
                     {
-                        updateType = updateType | ItemUpdateType.MetadataImport;
+                        hasChanges = true;
                     }
                 }
 
                 if (!IndexNumberEnd.HasValue && !string.IsNullOrEmpty(Path))
                 {
-                    IndexNumberEnd = IndexNumberEnd ?? TVUtils.GetEndingEpisodeNumberFromFile(Path);
+                    IndexNumberEnd = TVUtils.GetEndingEpisodeNumberFromFile(Path);
 
                     // If a change was made record it
                     if (IndexNumberEnd.HasValue)
                     {
-                        updateType = updateType | ItemUpdateType.MetadataImport;
+                        hasChanges = true;
                     }
                 }
             }
@@ -302,14 +302,25 @@ namespace MediaBrowser.Controller.Entities.TV
                     ParentIndexNumber = season.IndexNumber;
                 }
 
+                if (!ParentIndexNumber.HasValue && !string.IsNullOrEmpty(Path))
+                {
+                    ParentIndexNumber = TVUtils.GetSeasonNumberFromPath(Path);
+
+                    // If a change was made record it
+                    if (ParentIndexNumber.HasValue)
+                    {
+                        hasChanges = true;
+                    }
+                }
+
                 // If a change was made record it
                 if (ParentIndexNumber.HasValue)
                 {
-                    updateType = updateType | ItemUpdateType.MetadataImport;
+                    hasChanges = true;
                 }
             }
 
-            return updateType;
+            return hasChanges;
         }
     }
 }

@@ -192,7 +192,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task{System.Boolean}.</returns>
         private async Task<bool> RefreshAdditionalParts(MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newItems = LoadAdditionalParts(fileSystemChildren).ToList();
+            var newItems = LoadAdditionalParts(fileSystemChildren, options.DirectoryService).ToList();
 
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
@@ -211,7 +211,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the additional parts.
         /// </summary>
         /// <returns>IEnumerable{Video}.</returns>
-        private IEnumerable<Video> LoadAdditionalParts(IEnumerable<FileSystemInfo> fileSystemChildren)
+        private IEnumerable<Video> LoadAdditionalParts(IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
         {
             IEnumerable<FileSystemInfo> files;
 
@@ -242,7 +242,7 @@ namespace MediaBrowser.Controller.Entities
                 });
             }
 
-            return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
+            return LibraryManager.ResolvePaths<Video>(files, directoryService, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = LibraryManager.GetItemById(video.Id) as Video;
