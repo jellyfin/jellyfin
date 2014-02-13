@@ -77,7 +77,7 @@ namespace MediaBrowser.Api
         {
             return ToOptimizedResult(result);
         }
-        
+
         /// <summary>
         /// To the cached result.
         /// </summary>
@@ -87,12 +87,13 @@ namespace MediaBrowser.Api
         /// <param name="cacheDuration">Duration of the cache.</param>
         /// <param name="factoryFn">The factory fn.</param>
         /// <param name="contentType">Type of the content.</param>
+        /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="System.ArgumentNullException">cacheKey</exception>
-        protected object ToCachedResult<T>(Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType)
+        protected object ToCachedResult<T>(Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string,string> responseHeaders = null)
           where T : class
         {
-            return ResultFactory.GetCachedResult(Request, cacheKey, lastDateModified, cacheDuration, factoryFn, contentType);
+            return ResultFactory.GetCachedResult(Request, cacheKey, lastDateModified, cacheDuration, factoryFn, contentType, responseHeaders);
         }
 
         /// <summary>
