@@ -70,6 +70,8 @@ namespace MediaBrowser.Common.Net
 
         public string RequestContent { get; set; }
 
+        public bool BufferContent { get; set; }
+        
         private string GetHeaderValue(string name)
         {
             string value;
@@ -85,6 +87,7 @@ namespace MediaBrowser.Common.Net
         public HttpRequestOptions()
         {
             EnableHttpCompression = true;
+            BufferContent = true;
 
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }

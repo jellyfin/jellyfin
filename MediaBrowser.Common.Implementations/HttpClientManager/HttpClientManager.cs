@@ -276,6 +276,26 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
 
+                if (!options.BufferContent)
+                {
+                    var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false);
+
+                    var httpResponse = (HttpWebResponse)response;
+
+                    EnsureSuccessStatusCode(httpResponse);
+
+                    options.CancellationToken.ThrowIfCancellationRequested();
+                    
+                    return new HttpResponseInfo
+                    {
+                        Content = httpResponse.GetResponseStream(),
+
+                        StatusCode = httpResponse.StatusCode,
+
+                        ContentType = httpResponse.ContentType
+                    };
+                }
+                
                 using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
                 {
                     var httpResponse = (HttpWebResponse)response;
