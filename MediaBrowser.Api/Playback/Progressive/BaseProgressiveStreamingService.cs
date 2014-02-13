@@ -1,5 +1,4 @@
-﻿using System;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -10,9 +9,9 @@ using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,11 +23,13 @@ namespace MediaBrowser.Api.Playback.Progressive
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
         protected readonly IImageProcessor ImageProcessor;
+        protected readonly IHttpClient HttpClient;
 
-        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IImageProcessor imageProcessor)
+        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IImageProcessor imageProcessor, IHttpClient httpClient)
             : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager)
         {
             ImageProcessor = imageProcessor;
+            HttpClient = httpClient;
         }
 
         /// <summary>
@@ -157,7 +158,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             //    // ??
             //    contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
             //}
-          
+
 
             if (!string.IsNullOrEmpty(contentFeatures))
             {
@@ -194,7 +195,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             if (request.Static && state.IsRemote)
             {
                 AddDlnaHeaders(state, responseHeaders, true);
-                
+
                 return GetStaticRemoteStreamResult(state.MediaPath, responseHeaders, isHeadRequest).Result;
             }
 
@@ -230,44 +231,34 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             responseHeaders["Accept-Ranges"] = "none";
 
-            var httpClient = new HttpClient();
-
-            using (var message = new HttpRequestMessage(HttpMethod.Get, mediaPath))
+            var response = await HttpClient.GetResponse(new HttpRequestOptions
             {
-                var useragent = GetUserAgent(mediaPath);
+                Url = mediaPath,
+                UserAgent = GetUserAgent(mediaPath),
+                BufferContent = false
 
-                if (!string.IsNullOrEmpty(useragent))
+            }).ConfigureAwait(false);
+
+
+            if (isHeadRequest)
+            {
+                using (response.Content)
                 {
-                    message.Headers.Add("User-Agent", useragent);
+                    return ResultFactory.GetResult(null, response.ContentType, responseHeaders);
                 }
-
-                var response = await httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
-
-                response.EnsureSuccessStatusCode();
-
-                var contentType = response.Content.Headers.ContentType.MediaType;
-
-                // Headers only
-                if (isHeadRequest)
-                {
-                    response.Dispose();
-                    httpClient.Dispose();
-
-                    return ResultFactory.GetResult(null, contentType, responseHeaders);
-                }
-
-                var result = new StaticRemoteStreamWriter(response, httpClient);
-
-                result.Options["Content-Type"] = contentType;
-
-                // Add the response headers to the result object
-                foreach (var header in responseHeaders)
-                {
-                    result.Options[header.Key] = header.Value;
-                }
-
-                return result;
             }
+
+            var result = new StaticRemoteStreamWriter(response);
+
+            result.Options["Content-Type"] = response.ContentType;
+
+            // Add the response headers to the result object
+            foreach (var header in responseHeaders)
+            {
+                result.Options[header.Key] = header.Value;
+            }
+
+            return result;
         }
 
         /// <summary>

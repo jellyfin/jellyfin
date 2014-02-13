@@ -1222,6 +1222,27 @@ namespace MediaBrowser.Api.Playback
                 {
                     request.AudioChannels = int.Parse(val, UsCulture);
                 }
+                else if (i == 8)
+                {
+                    if (videoRequest != null)
+                    {
+                        request.StartTimeTicks = long.Parse(val, UsCulture);
+                    }
+                }
+                else if (i == 9)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.Profile = val;
+                    }
+                }
+                else if (i == 10)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.Level = val;
+                    }
+                }
             }
         }
 

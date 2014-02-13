@@ -1,7 +1,7 @@
-﻿using ServiceStack.Web;
+﻿using MediaBrowser.Common.Net;
+using ServiceStack.Web;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback
@@ -14,22 +14,16 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// The _input stream
         /// </summary>
-        private readonly HttpResponseMessage _msg;
-
-        private readonly HttpClient _client;
+        private readonly HttpResponseInfo _response;
 
         /// <summary>
         /// The _options
         /// </summary>
         private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StaticRemoteStreamWriter"/> class.
-        /// </summary>
-        public StaticRemoteStreamWriter(HttpResponseMessage msg, HttpClient client)
+        public StaticRemoteStreamWriter(HttpResponseInfo response)
         {
-            _msg = msg;
-            _client = client;
+            _response = response;
         }
 
         /// <summary>
@@ -59,15 +53,9 @@ namespace MediaBrowser.Api.Playback
         /// <returns>Task.</returns>
         public async Task WriteToAsync(Stream responseStream)
         {
-            using (_client)
+            using (var remoteStream = _response.Content)
             {
-                using (_msg)
-                {
-                    using (var remoteStream = await _msg.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                    {
-                        await remoteStream.CopyToAsync(responseStream, 819200).ConfigureAwait(false);
-                    }
-                }
+                await remoteStream.CopyToAsync(responseStream, 819200).ConfigureAwait(false);
             }
         }
     }

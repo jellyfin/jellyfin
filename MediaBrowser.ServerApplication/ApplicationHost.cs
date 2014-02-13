@@ -259,32 +259,35 @@ namespace MediaBrowser.ServerApplication
                 // Not there, no big deal
             }
 
-            try
+            Task.Run(() =>
             {
-                Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "remote-images"), true);
-            }
-            catch (IOException)
-            {
-                // Not there, no big deal
-            }
+                try
+                {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "remote-images"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
 
-            try
-            {
-                Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "extracted-video-images"), true);
-            }
-            catch (IOException)
-            {
-                // Not there, no big deal
-            }
+                try
+                {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "extracted-video-images"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
 
-            try
-            {
-                Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "extracted-audio-images"), true);
-            }
-            catch (IOException)
-            {
-                // Not there, no big deal
-            }
+                try
+                {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "extracted-audio-images"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
+            });
         }
 
         /// <summary>

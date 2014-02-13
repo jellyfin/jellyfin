@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -42,8 +43,8 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public class AudioService : BaseProgressiveStreamingService
     {
-        public AudioService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IImageProcessor imageProcessor)
-            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, imageProcessor)
+        public AudioService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IImageProcessor imageProcessor, IHttpClient httpClient)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, imageProcessor, httpClient)
         {
         }
 
@@ -94,7 +95,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 audioTranscodeParams.Add("-ac " + channels.Value);
             }
-            
+
             if (request.AudioSampleRate.HasValue)
             {
                 audioTranscodeParams.Add("-ar " + request.AudioSampleRate.Value);
