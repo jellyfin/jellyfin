@@ -707,6 +707,11 @@ namespace MediaBrowser.Api.Images
             var currentItem = item;
             var currentRequest = request;
 
+            var responseHeaders = new Dictionary<string, string>();
+
+            responseHeaders.Add("transferMode.dlna.org", "Interactive");
+            responseHeaders.Add("realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*");
+
             return ToCachedResult(cacheGuid, originalFileImageDateModified, cacheDuration, () => new ImageWriter
             {
                 Item = currentItem,
@@ -716,7 +721,7 @@ namespace MediaBrowser.Api.Images
                 OriginalImagePath = imageInfo.Path,
                 ImageProcessor = _imageProcessor
 
-            }, contentType);
+            }, contentType, responseHeaders);
         }
 
         private string GetMimeType(ImageOutputFormat format, string path)
