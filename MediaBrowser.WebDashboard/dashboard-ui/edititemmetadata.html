@@ -461,8 +461,40 @@
                 </form>
             </div>
         </div>
+        <div data-role="popup" data-transition="slidefade" id="popupConfirmDelete" class="popup" data-theme="a">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>Confirm Deletion</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="popupConfirmDeleteForm">
+                    <p>The following file location <strong style='color: red;'>will be deleted</strong>:</p>
+                    <p class="deletePath"></p>
+
+                    <p>If you wish to continue, please confirm by entering the value of <span id="challengeValueText"></span></p>
+
+                    <p>
+                        <input type="number" id="txtDeleteTest" data-mini="true" pattern="[0-9]*" required="required" />
+                        <input id="fldChallengeValue" type="hidden" />
+                    </p>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check">
+                            Ok
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
+                            Cancel
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
+
         <script type="text/javascript">
             $('.editItemMetadataForm').off('submit', EditItemMetadataPage.onSubmit).on('submit', EditItemMetadataPage.onSubmit);
+            $('.popupConfirmDeleteForm').off('submit', EditItemMetadataPage.onDeleteFormSubmitted).on('submit', EditItemMetadataPage.onDeleteFormSubmitted);
         </script>
 
     </div>

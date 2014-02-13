@@ -191,9 +191,9 @@
 }
 
     .galleryImageContainer:hover {
-        -moz-box-shadow: 0 0 20px 3px #2572EB;
-        -webkit-box-shadow: 0 0 20px 3px #2572EB;
-        box-shadow: 0 0 20px 3px #2572EB;
+        -moz-box-shadow: 0 0 20px 3px #38c;
+        -webkit-box-shadow: 0 0 20px 3px #38c;
+        box-shadow: 0 0 20px 3px #38c;
     }
 
 .galleryImage {
@@ -456,9 +456,9 @@ a.itemTag:hover {
 }
 
 .itemDetailGalleryLink img:hover {
-    -moz-box-shadow: 0 0 20px 3px #2572EB;
-    -webkit-box-shadow: 0 0 20px 3px #2572EB;
-    box-shadow: 0 0 20px 3px #2572EB;
+    -moz-box-shadow: 0 0 20px 3px #38c;
+    -webkit-box-shadow: 0 0 20px 3px #38c;
+    box-shadow: 0 0 20px 3px #38c;
 }
 
 .parentName {

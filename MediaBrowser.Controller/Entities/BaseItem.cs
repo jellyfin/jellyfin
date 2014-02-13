@@ -472,7 +472,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads local trailers from the file system
         /// </summary>
         /// <returns>List{Video}.</returns>
-        private IEnumerable<Trailer> LoadLocalTrailers(List<FileSystemInfo> fileSystemChildren)
+        private IEnumerable<Trailer> LoadLocalTrailers(List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
                 .Where(i => string.Equals(i.Name, TrailerFolderName, StringComparison.OrdinalIgnoreCase))
@@ -484,7 +484,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => System.IO.Path.GetFileNameWithoutExtension(i.Name).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
                 );
 
-            return LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
+            return LibraryManager.ResolvePaths<Trailer>(files, directoryService, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = LibraryManager.GetItemById(video.Id) as Trailer;
@@ -504,7 +504,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the theme songs.
         /// </summary>
         /// <returns>List{Audio.Audio}.</returns>
-        private IEnumerable<Audio.Audio> LoadThemeSongs(List<FileSystemInfo> fileSystemChildren)
+        private IEnumerable<Audio.Audio> LoadThemeSongs(List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
                 .Where(i => string.Equals(i.Name, ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
@@ -516,7 +516,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => string.Equals(System.IO.Path.GetFileNameWithoutExtension(i.Name), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
                 );
 
-            return LibraryManager.ResolvePaths<Audio.Audio>(files, null).Select(audio =>
+            return LibraryManager.ResolvePaths<Audio.Audio>(files, directoryService, null).Select(audio =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = LibraryManager.GetItemById(audio.Id) as Audio.Audio;
@@ -536,13 +536,13 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the video backdrops.
         /// </summary>
         /// <returns>List{Video}.</returns>
-        private IEnumerable<Video> LoadThemeVideos(IEnumerable<FileSystemInfo> fileSystemChildren)
+        private IEnumerable<Video> LoadThemeVideos(IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
                 .Where(i => string.Equals(i.Name, ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly));
 
-            return LibraryManager.ResolvePaths<Video>(files, null).Select(item =>
+            return LibraryManager.ResolvePaths<Video>(files, directoryService, null).Select(item =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = LibraryManager.GetItemById(item.Id) as Video;
@@ -579,15 +579,22 @@ namespace MediaBrowser.Controller.Entities
             {
                 options.DirectoryService = options.DirectoryService ?? new DirectoryService(Logger);
 
-                var files = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
-                    GetFileSystemChildren(options.DirectoryService).ToList() :
-                    new List<FileSystemInfo>();
-
-                var ownedItemsChanged = await RefreshedOwnedItems(options, files, cancellationToken).ConfigureAwait(false);
-
-                if (ownedItemsChanged)
+                try
                 {
-                    requiresSave = true;
+                    var files = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
+                        GetFileSystemChildren(options.DirectoryService).ToList() :
+                        new List<FileSystemInfo>();
+
+                    var ownedItemsChanged = await RefreshedOwnedItems(options, files, cancellationToken).ConfigureAwait(false);
+
+                    if (ownedItemsChanged)
+                    {
+                        requiresSave = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error refreshing owned items for {0}", ex, Path ?? Name);
                 }
             }
 
@@ -650,7 +657,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshLocalTrailers(IHasTrailers item, MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newItems = LoadLocalTrailers(fileSystemChildren).ToList();
+            var newItems = LoadLocalTrailers(fileSystemChildren, options.DirectoryService).ToList();
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
             var itemsChanged = !item.LocalTrailerIds.SequenceEqual(newItemIds);
@@ -666,7 +673,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newThemeVideos = LoadThemeVideos(fileSystemChildren).ToList();
+            var newThemeVideos = LoadThemeVideos(fileSystemChildren, options.DirectoryService).ToList();
 
             var newThemeVideoIds = newThemeVideos.Select(i => i.Id).ToList();
 
@@ -686,7 +693,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         private async Task<bool> RefreshThemeSongs(IHasThemeMedia item, MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newThemeSongs = LoadThemeSongs(fileSystemChildren).ToList();
+            var newThemeSongs = LoadThemeSongs(fileSystemChildren, options.DirectoryService).ToList();
             var newThemeSongIds = newThemeSongs.Select(i => i.Id).ToList();
 
             var themeSongsChanged = !item.ThemeSongIds.SequenceEqual(newThemeSongIds);
@@ -1422,20 +1429,19 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns ItemUpdateType indictating if changes were made, and what.
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made
         /// </summary>
-        /// <returns>ItemUpdateType.</returns>
-        public virtual ItemUpdateType BeforeMetadataRefresh()
+        public virtual bool BeforeMetadataRefresh()
         {
-            var updateType = ItemUpdateType.None;
+            var hasChanges = false;
 
             if (string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Path))
             {
                 Name = System.IO.Path.GetFileNameWithoutExtension(Path);
-                updateType = updateType | ItemUpdateType.MetadataEdit;
+                hasChanges = true;
             }
 
-            return updateType;
+            return hasChanges;
         }
     }
 }

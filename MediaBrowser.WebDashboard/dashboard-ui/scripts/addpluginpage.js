@@ -270,7 +270,7 @@
 
         if (pkg.previewImage || pkg.thumbImage) {
 
-            var color = pkg.tileColor || "#2572EB";
+            var color = pkg.tileColor || "#38c";
             var img = pkg.previewImage ? pkg.previewImage : pkg.thumbImage;
             $('#pPreviewImage', page).show().html("<img src='" + img + "' style='max-width: 100%;-moz-box-shadow: 0 0 20px 3px " + color + ";-webkit-box-shadow: 0 0 20px 3px " + color + ";box-shadow: 0 0 20px 3px " + color + ";' />");
         } else {

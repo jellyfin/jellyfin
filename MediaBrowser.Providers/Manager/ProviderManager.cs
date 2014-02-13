@@ -237,32 +237,27 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="i">The i.</param>
+        /// <param name="provider">The provider.</param>
         /// <param name="preferredLanguage">The preferred language.</param>
         /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        private async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken, IRemoteImageProvider i, string preferredLanguage, ImageType? type = null)
+        private async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken, IRemoteImageProvider provider, string preferredLanguage, ImageType? type = null)
         {
             try
             {
+                var result = await provider.GetImages(item, cancellationToken).ConfigureAwait(false);
+
                 if (type.HasValue)
                 {
-                    var result = await i.GetImages(item, type.Value, cancellationToken).ConfigureAwait(false);
-
-                    return string.IsNullOrEmpty(preferredLanguage) ? result :
-                        FilterImages(result, preferredLanguage);
+                    result = result.Where(i => i.Type == type.Value);
                 }
-                else
-                {
-                    var result = await i.GetAllImages(item, cancellationToken).ConfigureAwait(false);
 
-                    return string.IsNullOrEmpty(preferredLanguage) ? result :
-                        FilterImages(result, preferredLanguage);
-                }
+                return string.IsNullOrEmpty(preferredLanguage) ? result :
+                    FilterImages(result, preferredLanguage);
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("{0} failed in GetImageInfos for type {1}", ex, i.GetType().Name, item.GetType().Name);
+                _logger.ErrorException("{0} failed in GetImageInfos for type {1}", ex, provider.GetType().Name, item.GetType().Name);
                 return new List<RemoteImageInfo>();
             }
         }

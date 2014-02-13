@@ -48,9 +48,9 @@
 }
 
 .posterItem:hover .posterItemImage {
-    -moz-box-shadow: 0 0 12px 7px #2572EB;
-    -webkit-box-shadow: 0 0 12px 7px #2572EB;
-    box-shadow: 0 0 12px 7px #2572EB;
+    -moz-box-shadow: 0 0 12px 7px #38c;
+    -webkit-box-shadow: 0 0 12px 7px #38c;
+    box-shadow: 0 0 12px 7px #38c;
 }
 
 .coveredPosterItemImage {

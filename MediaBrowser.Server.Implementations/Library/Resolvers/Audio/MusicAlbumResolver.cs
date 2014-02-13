@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -62,14 +63,17 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// Determine if the supplied file data points to a music album
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="directoryService">The directory service.</param>
         /// <returns><c>true</c> if [is music album] [the specified data]; otherwise, <c>false</c>.</returns>
-        public static bool IsMusicAlbum(string path)
+        public static bool IsMusicAlbum(string path, IDirectoryService directoryService)
         {
             // If list contains at least 2 audio files or at least one and no video files consider it to contain music
             var foundAudio = 0;
 
-            foreach (var fullName in Directory.EnumerateFiles(path))
+            foreach (var file in directoryService.GetFiles(path))
             {
+                var fullName = file.FullName;
+
                 if (EntityResolutionHelper.IsAudioFile(fullName))
                 {
                     // Don't resolve these into audio files
@@ -104,7 +108,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                 //if (args.Parent is MusicArtist) return true;  //saves us from testing children twice
                 if (ContainsMusic(args.FileSystemChildren)) return true;
             }
-
 
             return false;
         }

@@ -86,7 +86,7 @@
             for (var i = 0, length = liveTvInfo.Services.length; i < length; i++) {
 
                 var service = liveTvInfo.Services[i];
-                
+
                 var name = service.Name;
 
                 var cssClass = "editorNode";
@@ -770,14 +770,11 @@
 
             if (item.Type == "Episode") {
                 $('#lblIndexNumber', page).html('Episode number');
-            }
-            else if (item.Type == "Season") {
+            } else if (item.Type == "Season") {
                 $('#lblIndexNumber', page).html('Season number');
-            }
-            else if (item.Type == "Audio") {
+            } else if (item.Type == "Audio") {
                 $('#lblIndexNumber', page).html('Track number');
-            }
-            else {
+            } else {
                 $('#lblIndexNumber', page).html('Number');
             }
         } else {
@@ -789,11 +786,9 @@
 
             if (item.Type == "Episode") {
                 $('#lblParentIndexNumber', page).html('Season number');
-            }
-            else if (item.Type == "Audio") {
+            } else if (item.Type == "Audio") {
                 $('#lblParentIndexNumber', page).html('Disc number');
-            }
-            else {
+            } else {
                 $('#lblParentIndexNumber', page).html('Parent number');
             }
         } else {
@@ -850,12 +845,12 @@
 
         $('#select3dFormat', page).val(item.Video3DFormat || "").selectmenu('refresh');
 
-        $('.chkAirDay', page).each(function() {
+        $('.chkAirDay', page).each(function () {
 
             this.checked = (item.AirDays || []).indexOf(this.getAttribute('data-day')) != -1;
 
         }).checkboxradio('refresh');
-        
+
         populateListView($('#listGenres', page), item.Genres);
 
         populateListView($('#listStudios', page), (item.Studios || []).map(function (element) { return element.Name || ''; }));
@@ -918,8 +913,7 @@
                 date = parseISO8601Date(item.DateCreated, { toLocal: true });
 
                 $('#txtDateAdded', page).val(date.toISOString().slice(0, 10));
-            }
-            catch (e) {
+            } catch (e) {
                 $('#txtDateAdded', page).val('');
             }
         } else {
@@ -931,8 +925,7 @@
                 date = parseISO8601Date(item.PremiereDate, { toLocal: true });
 
                 $('#txtPremiereDate', page).val(date.toISOString().slice(0, 10));
-            }
-            catch (e) {
+            } catch (e) {
                 $('#txtPremiereDate', page).val('');
             }
         } else {
@@ -944,8 +937,7 @@
                 date = parseISO8601Date(item.EndDate, { toLocal: true });
 
                 $('#txtEndDate', page).val(date.toISOString().slice(0, 10));
-            }
-            catch (e) {
+            } catch (e) {
                 $('#txtEndDate', page).val('');
             }
         } else {
@@ -1105,12 +1097,12 @@
         }
         return html;
     }
+
     function populateInternetProviderSettings(page, item, lockedFields) {
         var container = $('#providerSettingsContainer', page);
         lockedFields = lockedFields || new Array();
 
         var metadatafields = [
-
             { name: "Name" },
             { name: "Overview" },
             { name: "Genres" },
@@ -1149,11 +1141,30 @@
             $('#lock' + field).val(field).slider('refresh');
         }
     }
-    
+
     function getSelectedAirDays(form) {
-        return $('.chkAirDay:checked', form).map(function() {
+        return $('.chkAirDay:checked', form).map(function () {
             return this.getAttribute('data-day');
         }).get();
+    }
+
+    function performDelete(page) {
+
+        $('#btnDelete', page).buttonEnabled(false);
+        $('#btnRefresh', page).buttonEnabled(false);
+        $('.btnSave', page).buttonEnabled(false);
+
+        $('#refreshLoading', page).show();
+
+        var parentId = currentItem.ParentId;
+
+        ApiClient.deleteItem(currentItem.Id).done(function () {
+
+            var elem = $('#' + parentId)[0];
+
+            $('.libraryTree').jstree("select_node", elem, true)
+                .jstree("delete_node", '#' + currentItem.Id);
+        });
     }
 
     function editItemMetadataPage() {
@@ -1211,7 +1222,7 @@
                 OfficialRating: $('#selectOfficialRating', form).val(),
                 CustomRating: $('#selectCustomRating', form).val(),
                 People: currentItem.People,
-                EnableInternetProviders: $("#enableInternetProviders", form).prop('checked'),
+                EnableInternetProviders: !$("#enableInternetProviders", form).prop('checked'),
                 LockedFields: $('.selectLockedField', form).map(function () {
                     var value = $(this).val();
                     if (value != '') return value;
@@ -1219,7 +1230,7 @@
             };
 
             item.ProviderIds = $.extend(currentItem.ProviderIds, {
-                
+
                 Gamesdb: $('#txtGamesDb', form).val(),
                 Imdb: $('#txtImdb', form).val(),
                 Tmdb: $('#txtTmdb', form).val(),
@@ -1236,7 +1247,7 @@
                 Zap2It: $('#txtZap2It', form).val(),
                 NesBox: $('#txtNesBoxName', form).val(),
                 NesBoxRom: $('#txtNesBoxRom', form).val()
-                
+
             });
 
             item.PreferredMetadataLanguage = $('#selectLanguage', form).val();
@@ -1312,6 +1323,19 @@
             var list = $(source).parents('ul[data-role="listview"]');
             $(source).parent().remove();
             list.listview('refresh');
+        };
+
+        self.onDeleteFormSubmitted = function () {
+
+            var page = $(this).parents('.page');
+
+            if ($('#fldChallengeValue', page).val() != $('#txtDeleteTest', page).val()) {
+                alert('The value entered is not correct. Please try again.');
+            } else {
+                performDelete(page);
+            }
+
+            return false;
         };
     }
 
@@ -1534,7 +1558,7 @@
 
             var refreshPromise;
 
-            var force = $('#selectRefreshMode', page).val()=='all';
+            var force = $('#selectRefreshMode', page).val() == 'all';
 
             if (currentItem.Type == "MusicArtist") {
                 refreshPromise = ApiClient.refreshArtist(currentItem.Name, force);
@@ -1565,39 +1589,39 @@
             });
         });
 
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        }
+
         $('#btnDelete', this).on('click', function () {
 
-            var msg = "<p>Are you sure you wish to delete this item from your library?</p>";
-
             if (currentItem.LocationType != "Remote" && currentItem.LocationType != "Virtual") {
-                msg = "<p>The following media location will be deleted:</p>";
-                msg += "<p>" + currentItem.Path + "</p>";
-                msg += "<p>Are you sure you wish to continue?</p>";
+                $('.deletePath', page).html((currentItem.Path || ''));
+
+                var val1 = getRandomInt(6, 12);
+                var val2 = getRandomInt(8, 16);
+
+                $('#challengeValueText', page).html(val1 + ' * ' + val2 + ':');
+
+                var val = val1 * val2;
+
+                $('#fldChallengeValue', page).val(val);
+
+                $('#popupConfirmDelete', page).popup('open');
+
+            } else {
+
+                var msg = "<p>Are you sure you wish to delete this item from your library?</p>";
+
+                Dashboard.confirm(msg, "Confirm Deletion", function (result) {
+
+                    if (result) {
+
+                        performDelete(page);
+                    }
+
+                });
             }
-
-            Dashboard.confirm(msg, "Confirm Deletion", function (result) {
-
-                if (result) {
-
-                    $('#btnDelete', page).buttonEnabled(false);
-                    $('#btnRefresh', page).buttonEnabled(false);
-                    $('.btnSave', page).buttonEnabled(false);
-
-                    $('#refreshLoading', page).show();
-
-                    var parentId = currentItem.ParentId;
-
-                    ApiClient.deleteItem(currentItem.Id).done(function () {
-
-                        var elem = $('#' + parentId)[0];
-
-                        $('.libraryTree').jstree("select_node", elem, true)
-                            .jstree("delete_node", '#' + currentItem.Id);
-                    });
-                }
-
-            });
-
         });
 
         $('.libraryTree', page).on('itemclicked', function (event, data) {
@@ -1605,7 +1629,7 @@
             if (data.itemType == "livetvservice") {
                 return;
             }
-            
+
             if (data.id != currentItem.Id) {
 
                 MetadataEditor.currentItemId = data.id;

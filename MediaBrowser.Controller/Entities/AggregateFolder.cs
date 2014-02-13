@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var path = ContainingFolderPath;
 
-            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager)
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager, directoryService)
             {
                 FileInfo = new DirectoryInfo(path),
                 Path = path,

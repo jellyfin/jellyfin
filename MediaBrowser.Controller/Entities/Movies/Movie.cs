@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
@@ -117,7 +118,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         private async Task<bool> RefreshSpecialFeatures(MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newItems = LoadSpecialFeatures(fileSystemChildren).ToList();
+            var newItems = LoadSpecialFeatures(fileSystemChildren, options.DirectoryService).ToList();
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
             var itemsChanged = !SpecialFeatureIds.SequenceEqual(newItemIds);
@@ -135,13 +136,13 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// Loads the special features.
         /// </summary>
         /// <returns>IEnumerable{Video}.</returns>
-        private IEnumerable<Video> LoadSpecialFeatures(IEnumerable<FileSystemInfo> fileSystemChildren)
+        private IEnumerable<Video> LoadSpecialFeatures(IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
                 .Where(i => string.Equals(i.Name, "extras", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "specials", StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly));
 
-            return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
+            return LibraryManager.ResolvePaths<Video>(files, directoryService, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = LibraryManager.GetItemById(video.Id) as Video;
@@ -165,6 +166,27 @@ namespace MediaBrowser.Controller.Entities.Movies
         public MovieInfo GetLookupInfo()
         {
             return GetItemLookupInfo<MovieInfo>();
+        }
+
+        public override bool BeforeMetadataRefresh()
+        {
+            var hasChanges = base.BeforeMetadataRefresh();
+
+            if (!ProductionYear.HasValue)
+            {
+                int? yearInName = null;
+                string name;
+
+                NameParser.ParseName(Name, out name, out yearInName);
+
+                if (yearInName.HasValue)
+                {
+                    ProductionYear = yearInName;
+                    hasChanges = true;
+                }
+            }
+
+            return hasChanges;
         }
     }
 }

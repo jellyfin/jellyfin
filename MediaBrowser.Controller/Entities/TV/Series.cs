@@ -228,5 +228,26 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             return GetItemLookupInfo<SeriesInfo>();
         }
+
+        public override bool BeforeMetadataRefresh()
+        {
+            var hasChanges = base.BeforeMetadataRefresh();
+
+            if (!ProductionYear.HasValue)
+            {
+                int? yearInName = null;
+                string name;
+
+                NameParser.ParseName(Name, out name, out yearInName);
+
+                if (yearInName.HasValue)
+                {
+                    ProductionYear = yearInName;
+                    hasChanges = true;
+                }
+            }
+
+            return hasChanges;
+        }
     }
 }

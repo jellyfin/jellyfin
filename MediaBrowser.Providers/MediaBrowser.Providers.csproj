@@ -151,6 +151,11 @@
     <Compile Include="People\PersonMetadataService.cs" />
     <Compile Include="People\PersonXmlProvider.cs" />
     <Compile Include="People\MovieDbPersonProvider.cs" />
+    <Compile Include="Photos\ExifReader.cs" />
+    <Compile Include="Photos\ExifTags.cs" />
+    <Compile Include="Photos\PhotoHelper.cs" />
+    <Compile Include="Photos\PhotoMetadataService.cs" />
+    <Compile Include="Photos\PhotoProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Manager\ProviderUtils.cs" />
     <Compile Include="Savers\AlbumXmlSaver.cs" />

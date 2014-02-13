@@ -159,7 +159,7 @@
         html += '</ul>';
 
         if (addPathMappingInfo) {
-            html += '<p>Use <a href="librarypathmapping.html">path substitution</a> to map server paths to network shares that clients are able to access.</p>';
+            html += '<p>Use <a href="librarypathmapping.html" style="font-weight:normal;">path substitution</a> to map server paths to network shares that clients are able to access.</p>';
         }
 
         html += '<p>';
@@ -315,7 +315,7 @@
             { name: "Games*", value: "games" },
             { name: "Home videos", value: "homevideos" },
             { name: "Music videos", value: "musicvideos" },
-            { name: "Photos*", value: "photos" },
+            { name: "Photos", value: "photos" },
             { name: "Trailers", value: "trailers" },
             { name: "Adult videos", value: "adultvideos" },
             { name: "Mixed content", value: "mixed" }

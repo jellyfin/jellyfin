@@ -55,12 +55,7 @@ namespace MediaBrowser.Providers.Genres
             };
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
-        {
-            return GetImages(item, imageType == ImageType.Primary, imageType == ImageType.Thumb, cancellationToken);
-        }
-
-        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
         {
             return GetImages(item, true, true, cancellationToken);
         }

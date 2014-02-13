@@ -106,7 +106,10 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0 || !refreshResult.DateLastMetadataRefresh.HasValue)
                 {
-                    updateType = updateType | item.BeforeMetadataRefresh();
+                    if (item.BeforeMetadataRefresh())
+                    {
+                        updateType = updateType | ItemUpdateType.MetadataImport;
+                    }
                 }
 
                 if (providers.Count > 0)
@@ -416,7 +419,13 @@ namespace MediaBrowser.Providers.Manager
             // Copy new provider id's that may have been obtained
             foreach (var providerId in source.ProviderIds)
             {
-                lookupInfo.ProviderIds[providerId.Key] = providerId.Value;
+                var key = providerId.Key;
+
+                // Don't replace existing Id's.
+                if (!lookupInfo.ProviderIds.ContainsKey(key))
+                {
+                    lookupInfo.ProviderIds[key] = providerId.Value;
+                }
             }
         }
 

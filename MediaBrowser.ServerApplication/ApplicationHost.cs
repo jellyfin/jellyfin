@@ -31,7 +31,6 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
-using MediaBrowser.Providers;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
@@ -240,6 +239,52 @@ namespace MediaBrowser.ServerApplication
             });
 
             LogManager.RemoveConsoleOutput();
+        }
+
+        public override Task Init(IProgress<double> progress)
+        {
+            DeleteDeprecatedModules();
+
+            return base.Init(progress);
+        }
+
+        private void DeleteDeprecatedModules()
+        {
+            try
+            {
+                File.Delete(Path.Combine(ApplicationPaths.PluginsPath, "MBPhoto.dll"));
+            }
+            catch (IOException)
+            {
+                // Not there, no big deal
+            }
+
+            try
+            {
+                Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "remote-images"), true);
+            }
+            catch (IOException)
+            {
+                // Not there, no big deal
+            }
+
+            try
+            {
+                Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "extracted-video-images"), true);
+            }
+            catch (IOException)
+            {
+                // Not there, no big deal
+            }
+
+            try
+            {
+                Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "extracted-audio-images"), true);
+            }
+            catch (IOException)
+            {
+                // Not there, no big deal
+            }
         }
 
         /// <summary>

@@ -253,7 +253,7 @@ h1 .imageLink {
     color: #fff!important;
     text-shadow: none!important;
     font-weight: 400!important;
-    font-size: 16px;
+    font-size: 15px;
 }
 
     .sidebarLinks a:hover {
@@ -262,7 +262,7 @@ h1 .imageLink {
     }
 
     .sidebarLinks a.selectedSidebarLink {
-        background: #2572EB!important;
+        background: #38c!important;
         color: #fff!important;
     }
 
@@ -310,7 +310,7 @@ h1 .imageLink {
     }
 
 .selectedDashboardPanelLink {
-    background: #2572EB;
+    background: #38c;
     color: #fff!important;
 }
 
@@ -570,9 +570,9 @@ h1 .imageLink {
 }
 
 .posterViewItem:hover, .userItem:hover, .tileItem:hover {
-    -moz-box-shadow: 0 0 20px 3px #2572EB;
-    -webkit-box-shadow: 0 0 20px 3px #2572EB;
-    box-shadow: 0 0 20px 3px #2572EB;
+    -moz-box-shadow: 0 0 20px 3px #38c;
+    -webkit-box-shadow: 0 0 20px 3px #38c;
+    box-shadow: 0 0 20px 3px #38c;
 }
 
 @media all and (min-width: 750px) {
