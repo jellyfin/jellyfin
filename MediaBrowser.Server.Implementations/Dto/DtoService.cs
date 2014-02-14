@@ -900,8 +900,16 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.Path))
             {
-                dto.Path = item.Path;
-                dto.MappedPaths = GetMappedPaths(item);
+                var locationType = item.LocationType;
+
+                if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+                {
+                    dto.Path = GetMappedPath(item.Path);
+                }
+                else
+                {
+                    dto.Path = item.Path;
+                }
             }
 
             dto.PremiereDate = item.PremiereDate;
@@ -1135,39 +1143,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private List<string> GetMappedPaths(BaseItem item)
+        private string GetMappedPath(string path)
         {
-            var list = new List<string>();
-
-            var locationType = item.LocationType;
-
-            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+            foreach (var map in _config.Configuration.PathSubstitutions)
             {
-                var path = item.Path;
-                var mappedPaths = _config.Configuration.PathSubstitutions
-                    .Select(p => GetMappedPath(path, p))
-                    .Where(p => !string.Equals(p, path, StringComparison.OrdinalIgnoreCase))
-                    .Distinct(StringComparer.OrdinalIgnoreCase);
-
-                list.AddRange(mappedPaths);
-            }
-
-            return list;
-        }
-
-        private string GetMappedPath(string path, PathSubstitution map)
-        {
-            var toValue = map.To ?? string.Empty;
-
-            path = path.Replace(map.From, toValue, StringComparison.OrdinalIgnoreCase);
-
-            if (toValue.IndexOf('/') != -1)
-            {
-                path = path.Replace('\\', '/');
-            }
-            else
-            {
-                path = path.Replace('/', '\\');
+                path = _fileSystem.SubstitutePath(path, map.From, map.To);
             }
 
             return path;

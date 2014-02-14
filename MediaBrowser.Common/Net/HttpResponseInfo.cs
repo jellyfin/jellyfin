@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Specialized;
+using System.IO;
 using System.Net;
 
 namespace MediaBrowser.Common.Net
@@ -31,5 +32,11 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <value>The temp file path.</value>
         public string TempFilePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the headers.
+        /// </summary>
+        /// <value>The headers.</value>
+        public NameValueCollection Headers { get; set; }
     }
 }

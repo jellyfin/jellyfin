@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
@@ -331,6 +332,35 @@ namespace MediaBrowser.Common.Implementations.IO
             }
 
             return path.TrimEnd(Path.DirectorySeparatorChar);
+        }
+
+        public string SubstitutePath(string path, string from, string to)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+            if (string.IsNullOrWhiteSpace(from))
+            {
+                throw new ArgumentNullException("from");
+            }
+            if (string.IsNullOrWhiteSpace(to))
+            {
+                throw new ArgumentNullException("to");
+            }
+
+            path = path.Replace(from, to, StringComparison.OrdinalIgnoreCase);
+
+            if (to.IndexOf('/') != -1)
+            {
+                path = path.Replace('\\', '/');
+            }
+            else
+            {
+                path = path.Replace('/', '\\');
+            }
+
+            return path;
         }
     }
 }

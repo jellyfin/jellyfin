@@ -292,7 +292,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                         StatusCode = httpResponse.StatusCode,
 
-                        ContentType = httpResponse.ContentType
+                        ContentType = httpResponse.ContentType,
+
+                        Headers = httpResponse.Headers
                     };
                 }
                 
@@ -318,7 +320,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                             StatusCode = httpResponse.StatusCode,
 
-                            ContentType = httpResponse.ContentType
+                            ContentType = httpResponse.ContentType,
+
+                            Headers = httpResponse.Headers
                         };
                     }
                 }
@@ -495,7 +499,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                         StatusCode = httpResponse.StatusCode,
 
-                        ContentType = httpResponse.ContentType
+                        ContentType = httpResponse.ContentType,
+
+                        Headers = httpResponse.Headers
                     };
                 }
             }

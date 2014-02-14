@@ -48,6 +48,11 @@ namespace MediaBrowser.Providers.Movies
         {
             var name = idInfo.Name;
             var year = idInfo.Year;
+            int? yearInName = null;
+
+            NameParser.ParseName(name, out name, out yearInName);
+
+            year = year ?? yearInName;
 
             _logger.Info("MovieDbProvider: Finding id for item: " + name);
             var language = idInfo.MetadataLanguage.ToLower();

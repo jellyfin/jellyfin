@@ -572,11 +572,6 @@ namespace MediaBrowser.Providers.Manager
         {
             var type = item.GetType().Name;
 
-            if (item is Trailer)
-            {
-                type = typeof(Movie).Name;
-            }
-
             return ConfigurationManager.Configuration.MetadataOptions
                 .FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase)) ??
                 new MetadataOptions();

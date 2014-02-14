@@ -1,18 +1,16 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.ServerApplication.Logging;
+using MediaBrowser.ServerApplication.Native;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
-using MediaBrowser.ServerApplication.Native;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -46,6 +44,8 @@ namespace MediaBrowser.ServerApplication
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IDisplayPreferencesRepository _displayPreferencesManager;
         private readonly IItemRepository _itemRepository;
+
+        private LogForm _logForm;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
@@ -120,9 +120,9 @@ namespace MediaBrowser.ServerApplication
 
             Dispatcher.InvokeAsync(() =>
             {
-                var logWindow = App.Current.Windows.OfType<LogWindow>().FirstOrDefault();
+                var isLogWindowOpen = _logForm != null;
 
-                if ((logWindow == null && _configurationManager.Configuration.ShowLogWindow) || (logWindow != null && !_configurationManager.Configuration.ShowLogWindow))
+                if ((!isLogWindowOpen && _configurationManager.Configuration.ShowLogWindow) || (isLogWindowOpen && !_configurationManager.Configuration.ShowLogWindow))
                 {
                     _logManager.ReloadLogger(_configurationManager.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
                 }
@@ -154,7 +154,7 @@ namespace MediaBrowser.ServerApplication
                 // Add our log window if specified
                 if (_configurationManager.Configuration.ShowLogWindow)
                 {
-                    Trace.Listeners.Add(new WindowTraceListener(new LogWindow(_logManager)));
+                    Trace.Listeners.Add(new WindowTraceListener(new LogForm(_logManager)));
                 }
                 else
                 {
@@ -171,13 +171,10 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         void CloseLogWindow()
         {
-            Dispatcher.InvokeAsync(() =>
+            if (_logForm != null)
             {
-                foreach (var win in Application.Current.Windows.OfType<LogWindow>())
-                {
-                    win.Close();
-                }
-            });
+                _logForm.ShutDown();
+            }
         }
 
         /// <summary>

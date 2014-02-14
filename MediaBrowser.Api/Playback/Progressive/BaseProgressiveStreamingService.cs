@@ -229,22 +229,22 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <returns>Task{System.Object}.</returns>
         private async Task<object> GetStaticRemoteStreamResult(string mediaPath, Dictionary<string, string> responseHeaders, bool isHeadRequest)
         {
-            responseHeaders["Accept-Ranges"] = "none";
-
-            var response = await HttpClient.GetResponse(new HttpRequestOptions
+            var options = new HttpRequestOptions
             {
                 Url = mediaPath,
                 UserAgent = GetUserAgent(mediaPath),
                 BufferContent = false
+            };
 
-            }).ConfigureAwait(false);
+            var response = await HttpClient.GetResponse(options).ConfigureAwait(false);
 
+            responseHeaders["Accept-Ranges"] = "none";
 
             if (isHeadRequest)
             {
                 using (response.Content)
                 {
-                    return ResultFactory.GetResult(new MemoryStream(), response.ContentType, responseHeaders);
+                    return ResultFactory.GetResult(new byte[] { }, response.ContentType, responseHeaders);
                 }
             }
 
@@ -280,7 +280,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 responseHeaders["Accept-Ranges"] = "none";
 
-                return ResultFactory.GetResult(null, contentType, responseHeaders);
+                return ResultFactory.GetResult(new byte[] { }, contentType, responseHeaders);
             }
 
             if (!File.Exists(outputPath))
