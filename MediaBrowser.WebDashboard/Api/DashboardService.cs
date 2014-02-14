@@ -416,7 +416,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "thirdparty/jquerymobile-1.4.0/jquery.mobile-1.4.0.min.css",
+                                "thirdparty/jquerymobile-1.4.1/jquery.mobile-1.4.1.min.css",
                                 "css/all.css" + versionString
                             };
 
@@ -569,9 +569,7 @@ namespace MediaBrowser.WebDashboard.Api
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
             await AppendResource(memoryStream, "thirdparty/jquery-2.0.3.min.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.0/jquery.mobile-1.4.0.min.js", newLineBytes).ConfigureAwait(false);
-
-            //await AppendResource(memoryStream, "thirdparty/jquery.infinite-scroll-helper.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.1/jquery.mobile-1.4.1.min.js", newLineBytes).ConfigureAwait(false);
 
             var versionString = string.Format("window.dashboardVersion='{0}';", _appHost.ApplicationVersion);
             var versionBytes = Encoding.UTF8.GetBytes(versionString);
