@@ -1,8 +1,0 @@
-﻿<Window x:Class="MediaBrowser.ServerApplication.Logging.LogWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Media Browser Log" Height="300" Width="968">
-    <Grid>
-        <ListBox x:Name="lbxLogData" Margin="10,10,0,0"/>
-    </Grid>
-</Window>

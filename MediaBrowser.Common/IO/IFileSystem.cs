@@ -103,5 +103,14 @@ namespace MediaBrowser.Common.IO
         /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
         string NormalizePath(string path);
+
+        /// <summary>
+        /// Substitutes the path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="from">From.</param>
+        /// <param name="to">To.</param>
+        /// <returns>System.String.</returns>
+        string SubstitutePath(string path, string from, string to);
     }
 }

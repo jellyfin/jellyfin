@@ -436,6 +436,7 @@
             loadTabs(page, [
 
                 { name: 'Movies', type: 'Movie' },
+                { name: 'Trailers', type: 'Trailer' },
                 { name: 'Collections', type: 'BoxSet' }
             ]);
 

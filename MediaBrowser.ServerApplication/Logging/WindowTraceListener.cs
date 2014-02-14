@@ -10,12 +10,12 @@ namespace MediaBrowser.ServerApplication.Logging
         /// <summary>
         /// The _window
         /// </summary>
-        private readonly LogWindow _window;
+        private readonly LogForm _window;
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowTraceListener" /> class.
         /// </summary>
         /// <param name="window">The window.</param>
-        public WindowTraceListener(LogWindow window)
+        public WindowTraceListener(LogForm window)
         {
             _window = window;
             _window.Show();

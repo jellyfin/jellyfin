@@ -195,7 +195,7 @@ namespace MediaBrowser.Providers.Manager
                 var currentItem = item;
 
                 var providersWithChanges = providers.OfType<IHasChangeMonitor>()
-                    .Where(i => i.HasChanged(currentItem, options.DirectoryService, currentItem.DateLastSaved))
+                    .Where(i => HasChanged(currentItem, i, currentItem.DateLastSaved, options.DirectoryService))
                     .Cast<IMetadataProvider<TItemType>>()
                     .ToList();
 
@@ -242,11 +242,8 @@ namespace MediaBrowser.Providers.Manager
 
             if (!runAllProviders)
             {
-                // Avoid implicitly captured closure
-                var currentItem = item;
-
                 providers = providers.OfType<IHasChangeMonitor>()
-                    .Where(i => i.HasChanged(currentItem, options.DirectoryService, dateLastImageRefresh.Value))
+                    .Where(i => HasChanged(item, i, dateLastImageRefresh.Value, options.DirectoryService))
                     .Cast<IImageProvider>()
                     .ToList();
             }
@@ -436,6 +433,19 @@ namespace MediaBrowser.Providers.Manager
             get
             {
                 return 0;
+            }
+        }
+
+        private bool HasChanged(IHasMetadata item, IHasChangeMonitor changeMonitor, DateTime date, IDirectoryService directoryService)
+        {
+            try
+            {
+                return changeMonitor.HasChanged(item, directoryService, date);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error in {0}.HasChanged", ex, changeMonitor.GetType().Name);
+                return false;
             }
         }
     }

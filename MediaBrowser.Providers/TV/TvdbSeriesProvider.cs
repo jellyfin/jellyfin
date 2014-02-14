@@ -56,6 +56,18 @@ namespace MediaBrowser.Providers.TV
             if (string.IsNullOrEmpty(seriesId))
             {
                 seriesId = await FindSeries(itemId.Name, cancellationToken).ConfigureAwait(false);
+
+                if (string.IsNullOrEmpty(seriesId))
+                {
+                    int? yearInName = null;
+                    string nameWithoutYear;
+                    NameParser.ParseName(itemId.Name, out nameWithoutYear, out yearInName);
+
+                    if (!string.IsNullOrEmpty(nameWithoutYear) && !string.Equals(nameWithoutYear, itemId.Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        seriesId = await FindSeries(nameWithoutYear, cancellationToken).ConfigureAwait(false);
+                    }
+                }
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -246,16 +258,6 @@ namespace MediaBrowser.Providers.TV
                         }
                     }
                 }
-            }
-
-            // Try stripping off the year if it was supplied
-            var parenthIndex = name.LastIndexOf('(');
-
-            if (parenthIndex != -1)
-            {
-                var newName = name.Substring(0, parenthIndex);
-
-                return await FindSeries(newName, cancellationToken);
             }
 
             _logger.Info("TVDb Provider - Could not find " + name + ". Check name on Thetvdb.org.");

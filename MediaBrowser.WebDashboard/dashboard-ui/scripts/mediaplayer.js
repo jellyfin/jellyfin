@@ -1773,6 +1773,8 @@
                 html += "</div>";
             }
 
+            html += '<div style="padding: 5px;"><a data-role="button" data-icon="gear" href="usersettings.html?userid=' + Dashboard.getCurrentUserId() + '" data-mini="true" data-theme="a">Preferences</a></div>';
+
             return html;
         }
 
@@ -1857,6 +1859,8 @@
 
                 html += "</div>";
             }
+
+            html += '<div style="padding: 5px;"><a data-role="button" data-icon="gear" href="usersettings.html?userid=' + Dashboard.getCurrentUserId() + '" data-mini="true" data-theme="a">Preferences</a></div>';
 
             return html;
         }
@@ -1969,7 +1973,7 @@
 
                     showFlyout(flyout, '#audioTracksButton');
 
-                    flyout.html(getAudioTracksHtml(currentItem, cultures)).scrollTop(0);
+                    flyout.html(getAudioTracksHtml(currentItem, cultures)).trigger('create').scrollTop(0);
                 });
             }
         };
@@ -2010,7 +2014,7 @@
 
                     showFlyout(flyout, '#subtitleButton');
 
-                    flyout.html(getSubtitleTracksHtml(currentItem, cultures)).scrollTop(0);
+                    flyout.html(getSubtitleTracksHtml(currentItem, cultures)).trigger('create').scrollTop(0);
                 });
 
             }
