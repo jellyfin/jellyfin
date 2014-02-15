@@ -170,6 +170,12 @@
     <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
     <Compile Include="IO\FileSystemFactory.cs" />
+    <Compile Include="LibraryViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LibraryViewer.Designer.cs">
+      <DependentUpon>LibraryViewer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Logging\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -197,10 +203,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="LibraryExplorer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -213,9 +215,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ApplicationHost.cs" />
-    <Compile Include="LibraryExplorer.xaml.cs">
-      <DependentUpon>LibraryExplorer.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Logging\WindowTraceListener.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -240,6 +239,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="LibraryViewer.resx">
+      <DependentUpon>LibraryViewer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Logging\LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>
     </EmbeddedResource>
