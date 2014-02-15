@@ -124,19 +124,10 @@ namespace MediaBrowser.ServerApplication
             _mainWindow = win;
         }
 
-        private void HideMainWindow()
-        {
-            if (_mainWindow != null)
-            {
-                _mainWindow.Hide();
-                _mainWindow = null;
-            }
-        }
-
-        private SplashWindow _splashWindow;
+        private SplashForm _splashWindow;
         private void ShowSplashWindow(Progress<double> progress)
         {
-            var win = new SplashWindow(_appHost.ApplicationVersion, progress);
+            var win = new SplashForm(_appHost.ApplicationVersion, progress);
             win.Show();
 
             _splashWindow = win;
