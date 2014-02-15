@@ -138,6 +138,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ServerNotifyIcon.cs" />
     <Compile Include="Splash\SplashForm.cs">
       <SubType>Form</SubType>
     </Compile>
