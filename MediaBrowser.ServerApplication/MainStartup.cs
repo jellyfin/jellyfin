@@ -1,10 +1,13 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.ServerApplication.Native;
+using MediaBrowser.ServerApplication.Splash;
 using Microsoft.Win32;
 using System;
 using System.Configuration.Install;
@@ -14,14 +17,13 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Windows;
+using System.Windows.Forms;
 
 namespace MediaBrowser.ServerApplication
 {
     public class MainStartup
     {
         private static ApplicationHost _appHost;
-
-        private static App _app;
 
         private static ILogger _logger;
 
@@ -201,6 +203,8 @@ namespace MediaBrowser.ServerApplication
             logger.Info("Application Path: {0}", appPaths.ApplicationPath);
         }
 
+        private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
+
         /// <summary>
         /// Runs the application.
         /// </summary>
@@ -209,25 +213,66 @@ namespace MediaBrowser.ServerApplication
         /// <param name="runService">if set to <c>true</c> [run service].</param>
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService)
         {
-            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
-            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
-
             _appHost = new ApplicationHost(appPaths, logManager, runService);
 
-            _app = new App(_appHost, _appHost.LogManager.GetLogger("App"), runService);
+            var initProgress = new Progress<double>();
 
             if (runService)
             {
-                _app.AppStarted += (sender, args) => StartService(logManager);
+                StartService(logManager);
             }
             else
             {
+                ShowSplashScreen(_appHost.ApplicationVersion, initProgress, logManager.GetLogger("Splash"));
+                
                 // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
                 SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT |
                              ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
             }
 
-            _app.Run();
+            var task = _appHost.Init(initProgress);
+            Task.WaitAll(task);
+
+            task = _appHost.RunStartupTasks();
+            Task.WaitAll(task);
+
+            if (!runService)
+            {
+                HideSplashScreen();
+            }
+
+            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+            
+            task = ApplicationTaskCompletionSource.Task;
+            Task.WaitAll(task);
+        }
+
+        private static SplashForm _splash;
+        private static Thread _splashThread;
+        private static void ShowSplashScreen(Version appVersion, Progress<double> progress, ILogger logger)
+        {
+            var thread = new Thread(() =>
+            {
+                _splash = new SplashForm(appVersion, progress);
+
+                _splash.ShowDialog();
+            });
+           
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.IsBackground = true;
+            thread.Start();
+
+            _splashThread = thread;
+        }
+
+        private static void HideSplashScreen()
+        {
+            if (_splash != null)
+            {
+                _splash.Close();
+                _splashThread = null;
+            }
         }
 
         static void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -257,6 +302,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         static void service_Disposed(object sender, EventArgs e)
         {
+            ApplicationTaskCompletionSource.SetResult(true);
             OnServiceShutdown();
         }
 
@@ -270,8 +316,6 @@ namespace MediaBrowser.ServerApplication
             {
                 SetErrorMode(ErrorModes.SYSTEM_DEFAULT);
             }
-
-            _app.Dispatcher.Invoke(_app.Shutdown);
         }
 
         /// <summary>
@@ -392,7 +436,7 @@ namespace MediaBrowser.ServerApplication
 
             if (!_isRunningAsService)
             {
-                _app.OnUnhandledException(exception);
+                MessageBox.Show("Unhandled exception: " + exception.Message);
             }
 
             if (!Debugger.IsAttached)
@@ -467,7 +511,7 @@ namespace MediaBrowser.ServerApplication
             if (!_isRunningAsService)
             {
                 _logger.Info("Executing windows forms restart");
-                System.Windows.Forms.Application.Restart();
+                Application.Restart();
 
                 ShutdownWindowsApplication();
             }
@@ -475,7 +519,7 @@ namespace MediaBrowser.ServerApplication
 
         private static void ShutdownWindowsApplication()
         {
-            _app.Dispatcher.Invoke(_app.Shutdown);
+            ApplicationTaskCompletionSource.SetResult(true);
         }
 
         private static void ShutdownWindowsService()

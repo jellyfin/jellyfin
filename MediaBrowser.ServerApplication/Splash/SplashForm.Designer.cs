@@ -56,6 +56,7 @@
             this.panelMainContainer.Padding = new System.Windows.Forms.Padding(1);
             this.panelMainContainer.Size = new System.Drawing.Size(648, 347);
             this.panelMainContainer.TabIndex = 0;
+            this.panelMainContainer.UseWaitCursor = true;
             // 
             // panel3
             // 
@@ -65,6 +66,7 @@
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(646, 69);
             this.panel3.TabIndex = 2;
+            this.panel3.UseWaitCursor = true;
             // 
             // panel2
             // 
@@ -78,6 +80,7 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(646, 205);
             this.panel2.TabIndex = 1;
+            this.panel2.UseWaitCursor = true;
             // 
             // panelProgress
             // 
@@ -86,6 +89,7 @@
             this.panelProgress.Name = "panelProgress";
             this.panelProgress.Size = new System.Drawing.Size(0, 13);
             this.panelProgress.TabIndex = 3;
+            this.panelProgress.UseWaitCursor = true;
             // 
             // panel4
             // 
@@ -94,6 +98,7 @@
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(648, 13);
             this.panel4.TabIndex = 2;
+            this.panel4.UseWaitCursor = true;
             // 
             // lblVersion
             // 
@@ -106,6 +111,7 @@
             this.lblVersion.Size = new System.Drawing.Size(270, 59);
             this.lblVersion.TabIndex = 1;
             this.lblVersion.Text = "Version 1234";
+            this.lblVersion.UseWaitCursor = true;
             // 
             // lblStatus
             // 
@@ -118,6 +124,7 @@
             this.lblStatus.Size = new System.Drawing.Size(599, 59);
             this.lblStatus.TabIndex = 0;
             this.lblStatus.Text = "Loading Media Browser Server";
+            this.lblStatus.UseWaitCursor = true;
             // 
             // panel1
             // 
@@ -128,17 +135,19 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(646, 140);
             this.panel1.TabIndex = 0;
+            this.panel1.UseWaitCursor = true;
             // 
             // pictureBox1
             // 
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox1.Image = global::MediaBrowser.ServerApplication.Properties.Resources.mb3logo800;
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(646, 140);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
+            this.pictureBox1.UseWaitCursor = true;
             // 
             // SplashForm
             // 
@@ -154,6 +163,7 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Media Browser";
+            this.UseWaitCursor = true;
             this.panelMainContainer.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
