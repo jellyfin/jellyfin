@@ -1,9 +1,8 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.Updates;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.ServerApplication.Native;
@@ -16,7 +15,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
-using System.Windows;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MediaBrowser.ServerApplication
@@ -32,7 +32,6 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Defines the entry point of the application.
         /// </summary>
-        [STAThread]
         public static void Main()
         {
             var startFlag = Environment.GetCommandLineArgs().ElementAtOrDefault(1);
@@ -239,6 +238,8 @@ namespace MediaBrowser.ServerApplication
             if (!runService)
             {
                 HideSplashScreen();
+
+                ShowMainForm();
             }
 
             SystemEvents.SessionEnding += SystemEvents_SessionEnding;
@@ -246,6 +247,24 @@ namespace MediaBrowser.ServerApplication
             
             task = ApplicationTaskCompletionSource.Task;
             Task.WaitAll(task);
+        }
+
+        private static MainForm _mainForm;
+        private static Thread _mainFormThread;
+        private static void ShowMainForm()
+        {
+            var thread = new Thread(() =>
+            {
+                _mainForm = new MainForm(_appHost.LogManager, _appHost, _appHost.ServerConfigurationManager, _appHost.UserManager, _appHost.LibraryManager, _appHost.JsonSerializer, _appHost.DisplayPreferencesRepository, _appHost.ItemRepository);
+
+                _mainForm.ShowDialog();
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.IsBackground = true;
+            thread.Start();
+
+            _mainFormThread = thread;
         }
 
         private static SplashForm _splash;
@@ -270,8 +289,13 @@ namespace MediaBrowser.ServerApplication
         {
             if (_splash != null)
             {
-                _splash.Close();
-                _splashThread = null;
+                Action act = () =>
+                {
+                    _splash.Close();
+                    _splashThread = null;
+                };
+
+                _splash.Invoke(act);
             }
         }
 
