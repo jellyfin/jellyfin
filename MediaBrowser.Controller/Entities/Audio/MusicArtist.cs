@@ -142,7 +142,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             // Refresh songs
             foreach (var item in songs)
             {
-                if (tasks.Count >= 2)
+                if (tasks.Count >= 3)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     tasks.Clear();
@@ -166,7 +166,8 @@ namespace MediaBrowser.Controller.Entities.Audio
                     }
                 });
 
-                tasks.Add(RefreshItem(item, refreshOptions, innerProgress, cancellationToken));
+                var taskChild = item;
+                tasks.Add(Task.Run(async () => await RefreshItem(taskChild, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false), cancellationToken));
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -178,7 +179,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             // Refresh all non-songs
             foreach (var item in others)
             {
-                if (tasks.Count > 4)
+                if (tasks.Count > 3)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     tasks.Clear();

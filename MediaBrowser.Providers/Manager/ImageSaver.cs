@@ -62,14 +62,14 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">mimeType</exception>
-        public async Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+        public async Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(mimeType))
             {
                 throw new ArgumentNullException("mimeType");
             }
 
-            var saveLocally = item.IsSaveLocalMetadataEnabled() && item.Parent != null && !(item is Audio);
+            var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.IsOwnedItem && !(item is Audio);
 
             if (item is IItemByName || item is User)
             {
@@ -93,7 +93,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var series = season.Series;
 
-                    if (series != null && series.SupportsLocalMetadata)
+                    if (series != null && series.SupportsLocalMetadata && series.IsSaveLocalMetadataEnabled())
                     {
                         saveLocally = true;
                     }
@@ -224,7 +224,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="mimeType">Type of the MIME.</param>
         /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        private string[] GetSavePaths(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
+        private string[] GetSavePaths(IHasImages item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
             if (_config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy || !saveLocally)
             {
@@ -261,7 +261,7 @@ namespace MediaBrowser.Providers.Manager
         /// <exception cref="System.ArgumentNullException">imageIndex
         /// or
         /// imageIndex</exception>
-        private void SetImagePath(BaseItem item, ImageType type, int? imageIndex, string path)
+        private void SetImagePath(IHasImages item, ImageType type, int? imageIndex, string path)
         {
             item.SetImagePath(type, imageIndex ?? 0, new FileInfo(path));
         }
@@ -280,7 +280,7 @@ namespace MediaBrowser.Providers.Manager
         /// or
         /// imageIndex
         /// </exception>
-        private string GetStandardSavePath(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
+        private string GetStandardSavePath(IHasImages item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
             string filename;
 
@@ -378,7 +378,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="mimeType">Type of the MIME.</param>
         /// <returns>IEnumerable{System.String}.</returns>
         /// <exception cref="System.ArgumentNullException">imageIndex</exception>
-        private string[] GetCompatibleSavePaths(BaseItem item, ImageType type, int? imageIndex, string mimeType)
+        private string[] GetCompatibleSavePaths(IHasImages item, ImageType type, int? imageIndex, string mimeType)
         {
             var season = item as Season;
 
@@ -405,13 +405,13 @@ namespace MediaBrowser.Providers.Manager
                         return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart", extension) };
                     }
 
-                    if (season != null && item.IndexNumber.HasValue)
+                    if (season != null && season.IndexNumber.HasValue)
                     {
                         var seriesFolder = season.SeriesPath;
 
-                        var seasonMarker = item.IndexNumber.Value == 0
+                        var seasonMarker = season.IndexNumber.Value == 0
                                                ? "-specials"
-                                               : item.IndexNumber.Value.ToString("00", UsCulture);
+                                               : season.IndexNumber.Value.ToString("00", UsCulture);
 
                         var imageFilename = "season" + seasonMarker + "-fanart" + extension;
 
@@ -442,13 +442,13 @@ namespace MediaBrowser.Providers.Manager
 
             if (type == ImageType.Primary)
             {
-                if (season != null && item.IndexNumber.HasValue)
+                if (season != null && season.IndexNumber.HasValue)
                 {
                     var seriesFolder = season.SeriesPath;
 
-                    var seasonMarker = item.IndexNumber.Value == 0
+                    var seasonMarker = season.IndexNumber.Value == 0
                                            ? "-specials"
-                                           : item.IndexNumber.Value.ToString("00", UsCulture);
+                                           : season.IndexNumber.Value.ToString("00", UsCulture);
 
                     var imageFilename = "season" + seasonMarker + "-poster" + extension;
 
@@ -479,13 +479,13 @@ namespace MediaBrowser.Providers.Manager
 
             if (type == ImageType.Banner)
             {
-                if (season != null && item.IndexNumber.HasValue)
+                if (season != null && season.IndexNumber.HasValue)
                 {
                     var seriesFolder = season.SeriesPath;
 
-                    var seasonMarker = item.IndexNumber.Value == 0
+                    var seasonMarker = season.IndexNumber.Value == 0
                                            ? "-specials"
-                                           : item.IndexNumber.Value.ToString("00", UsCulture);
+                                           : season.IndexNumber.Value.ToString("00", UsCulture);
 
                     var imageFilename = "season" + seasonMarker + "-banner" + extension;
 
@@ -495,13 +495,13 @@ namespace MediaBrowser.Providers.Manager
 
             if (type == ImageType.Thumb)
             {
-                if (season != null && item.IndexNumber.HasValue)
+                if (season != null && season.IndexNumber.HasValue)
                 {
                     var seriesFolder = season.SeriesPath;
 
-                    var seasonMarker = item.IndexNumber.Value == 0
+                    var seasonMarker = season.IndexNumber.Value == 0
                                            ? "-specials"
-                                           : item.IndexNumber.Value.ToString("00", UsCulture);
+                                           : season.IndexNumber.Value.ToString("00", UsCulture);
 
                     var imageFilename = "season" + seasonMarker + "-landscape" + extension;
 

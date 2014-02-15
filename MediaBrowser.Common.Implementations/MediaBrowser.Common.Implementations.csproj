@@ -92,7 +92,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScheduledTasks\ScheduledTaskWorker.cs" />
     <Compile Include="ScheduledTasks\TaskManager.cs" />
-    <Compile Include="ScheduledTasks\Tasks\StatisticsTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\DeleteCacheFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\DeleteLogFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\PluginUpdateTask.cs" />
@@ -105,6 +104,7 @@
     <Compile Include="Serialization\XmlSerializer.cs" />
     <Compile Include="Updates\ApplicationUpdater.cs" />
     <Compile Include="Updates\InstallationManager.cs" />
+    <Compile Include="Security\UsageReporter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

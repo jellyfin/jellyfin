@@ -117,6 +117,7 @@
     <Compile Include="EntryPoints\Notifications\RemoteNotifications.cs" />
     <Compile Include="EntryPoints\Notifications\WebSocketNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
+    <Compile Include="EntryPoints\UsageEntryPoint.cs" />
     <Compile Include="FileOrganization\EpisodeFileOrganizer.cs" />
     <Compile Include="FileOrganization\FileOrganizationService.cs" />
     <Compile Include="FileOrganization\NameUtils.cs" />
