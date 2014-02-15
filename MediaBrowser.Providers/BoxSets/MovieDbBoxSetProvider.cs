@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.BoxSets
 {
     public class MovieDbBoxSetProvider : IRemoteMetadataProvider<BoxSet, BoxSetInfo>
     {
-        private  readonly CultureInfo _enUs = new CultureInfo("en-US");
+        private readonly CultureInfo _enUs = new CultureInfo("en-US");
         private const string GetCollectionInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&append_to_response=images";
 
         internal static MovieDbBoxSetProvider Current;
@@ -45,7 +45,12 @@ namespace MediaBrowser.Providers.BoxSets
             // We don't already have an Id, need to fetch it
             if (string.IsNullOrEmpty(tmdbId))
             {
-                tmdbId = await GetTmdbId(id, cancellationToken).ConfigureAwait(false);
+                var searchResult = await new MovieDbSearch(_logger, _json).FindCollectionId(id, cancellationToken).ConfigureAwait(false);
+
+                if (searchResult != null)
+                {
+                    tmdbId = searchResult.id.ToString(_enUs);
+                }
             }
 
             var result = new MetadataResult<BoxSet>();
@@ -87,7 +92,7 @@ namespace MediaBrowser.Providers.BoxSets
         {
             var item = new BoxSet
             {
-                Name = obj.name, 
+                Name = obj.name,
                 Overview = obj.overview
             };
 
@@ -189,12 +194,7 @@ namespace MediaBrowser.Providers.BoxSets
 
             return DownloadInfo(tmdbId, preferredMetadataLanguage, cancellationToken);
         }
-        
-        private Task<string> GetTmdbId(ItemLookupInfo id, CancellationToken cancellationToken)
-        {
-            return new MovieDbSearch(_logger, _json).FindCollectionId(id, cancellationToken);
-        }
-        
+
         public string Name
         {
             get { return "TheMovieDb"; }
@@ -209,7 +209,7 @@ namespace MediaBrowser.Providers.BoxSets
 
             return Path.Combine(path, filename);
         }
-        
+
         private static string GetDataPath(IApplicationPaths appPaths, string tmdbId)
         {
             var dataPath = GetCollectionsDataPath(appPaths);

@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -16,26 +15,23 @@ namespace MediaBrowser.Providers.Omdb
 {
     public class OmdbProvider
     {
-        private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
+        internal readonly SemaphoreSlim ResourcePool = new SemaphoreSlim(1, 1);
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
+        public static OmdbProvider Current;
 
         public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
+
+            Current = this;
         }
 
-        public async Task<ItemUpdateType> Fetch(BaseItem item, CancellationToken cancellationToken)
+        public async Task Fetch(BaseItem item, string imdbId, CancellationToken cancellationToken)
         {
-            var imdbId = item.GetProviderId(MetadataProviders.Imdb);
-
-            if (string.IsNullOrEmpty(imdbId))
-            {
-                return ItemUpdateType.None;
-            }
-
             var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;
 
             var url = string.Format("http://www.omdbapi.com/?i={0}&tomatoes=true", imdbParam);
@@ -43,7 +39,7 @@ namespace MediaBrowser.Providers.Omdb
             using (var stream = await _httpClient.Get(new HttpRequestOptions
             {
                 Url = url,
-                ResourcePool = _resourcePool,
+                ResourcePool = ResourcePool,
                 CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))
@@ -98,16 +94,13 @@ namespace MediaBrowser.Providers.Omdb
 
                 ParseAdditionalMetadata(item, result);
             }
-
-            return ItemUpdateType.MetadataDownload;
         }
 
         private void ParseAdditionalMetadata(BaseItem item, RootObject result)
         {
             // Grab series genres because imdb data is better than tvdb. Leave movies alone
             // But only do it if english is the preferred language because this data will not be localized
-            if (!item.LockedFields.Contains(MetadataFields.Genres) &&
-                ShouldFetchGenres(item) &&
+            if (ShouldFetchGenres(item) &&
                 !string.IsNullOrWhiteSpace(result.Genre) &&
                 !string.Equals(result.Genre, "n/a", StringComparison.OrdinalIgnoreCase))
             {
@@ -146,21 +139,10 @@ namespace MediaBrowser.Providers.Omdb
             var lang = item.GetPreferredMetadataLanguage();
 
             // The data isn't localized and so can only be used for english users
-            if (!string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            // Only fetch if other providers didn't get anything
-            if (item is Trailer)
-            {
-                return item.Genres.Count == 0;
-            }
-
-            return item is Series || item is Movie;
+            return string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
         }
 
-        protected class RootObject
+        public class RootObject
         {
             public string Title { get; set; }
             public string Year { get; set; }

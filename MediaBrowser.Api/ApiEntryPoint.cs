@@ -32,7 +32,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The application paths
         /// </summary>
-        private readonly IServerApplicationPaths AppPaths;
+        private readonly IServerApplicationPaths _appPaths;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiEntryPoint" /> class.
@@ -42,7 +42,7 @@ namespace MediaBrowser.Api
         public ApiEntryPoint(ILogger logger, IServerApplicationPaths appPaths)
         {
             Logger = logger;
-            AppPaths = appPaths;
+            _appPaths = appPaths;
 
             Instance = this;
         }
@@ -71,7 +71,7 @@ namespace MediaBrowser.Api
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            foreach (var file in Directory.EnumerateFiles(AppPaths.TranscodingTempPath)
+            foreach (var file in Directory.EnumerateFiles(_appPaths.TranscodingTempPath)
                 .Where(i => EntityResolutionHelper.VideoFileExtensions.Contains(Path.GetExtension(i)))
                 .ToList())
             {

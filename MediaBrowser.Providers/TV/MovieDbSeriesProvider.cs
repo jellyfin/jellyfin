@@ -73,7 +73,12 @@ namespace MediaBrowser.Providers.TV
 
             if (string.IsNullOrEmpty(tmdbId))
             {
-                tmdbId = await new MovieDbSearch(_logger, _jsonSerializer).FindSeriesId(info, cancellationToken).ConfigureAwait(false);
+                var searchResult = await new MovieDbSearch(_logger, _jsonSerializer).FindSeriesId(info, cancellationToken).ConfigureAwait(false);
+
+                if (searchResult != null)
+                {
+                    tmdbId = searchResult.id.ToString(_usCulture);
+                }
             }
 
             if (!string.IsNullOrEmpty(tmdbId))
@@ -434,7 +439,7 @@ namespace MediaBrowser.Providers.TV
         {
             get
             {
-                // After Tvdb
+                // After Omdb and Tvdb
                 return 2;
             }
         }

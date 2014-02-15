@@ -29,22 +29,22 @@ namespace MediaBrowser.Providers.Movies
             _json = json;
         }
 
-        public Task<string> FindSeriesId(ItemLookupInfo idInfo, CancellationToken cancellationToken)
+        public Task<TmdbMovieSearchResult> FindSeriesId(ItemLookupInfo idInfo, CancellationToken cancellationToken)
         {
             return FindId(idInfo, "tv", cancellationToken);
         }
 
-        public Task<string> FindMovieId(ItemLookupInfo idInfo, CancellationToken cancellationToken)
+        public Task<TmdbMovieSearchResult> FindMovieId(ItemLookupInfo idInfo, CancellationToken cancellationToken)
         {
             return FindId(idInfo, "movie", cancellationToken);
         }
 
-        public Task<string> FindCollectionId(ItemLookupInfo idInfo, CancellationToken cancellationToken)
+        public Task<TmdbMovieSearchResult> FindCollectionId(ItemLookupInfo idInfo, CancellationToken cancellationToken)
         {
             return FindId(idInfo, "collection", cancellationToken);
         }
 
-        private async Task<string> FindId(ItemLookupInfo idInfo, string searchType, CancellationToken cancellationToken)
+        private async Task<TmdbMovieSearchResult> FindId(ItemLookupInfo idInfo, string searchType, CancellationToken cancellationToken)
         {
             var name = idInfo.Name;
             var year = idInfo.Year;
@@ -101,7 +101,7 @@ namespace MediaBrowser.Providers.Movies
             return id;
         }
 
-        private async Task<string> AttemptFindId(string name, string type, int? year, string language, CancellationToken cancellationToken)
+        private async Task<TmdbMovieSearchResult> AttemptFindId(string name, string type, int? year, string language, CancellationToken cancellationToken)
         {
             var url3 = string.Format(Search3, WebUtility.UrlEncode(name), ApiKey, language, type);
 
@@ -114,16 +114,16 @@ namespace MediaBrowser.Providers.Movies
             }).ConfigureAwait(false))
             {
                 var searchResult = _json.DeserializeFromStream<TmdbMovieSearchResults>(json);
-                return FindIdOfBestResult(searchResult.results, name, year);
+                return FindBestResult(searchResult.results, name, year);
             }
         }
 
-        private string FindIdOfBestResult(List<TmdbMovieSearchResult> results, string name, int? year)
+        private TmdbMovieSearchResult FindBestResult(List<TmdbMovieSearchResult> results, string name, int? year)
         {
             if (year.HasValue)
             {
                 // Take the first result from the same year
-                var id = results.Where(i =>
+                var result = results.FirstOrDefault(i =>
                 {
                     // Make sure it has a name
                     if (!string.IsNullOrEmpty(i.title ?? i.name))
@@ -138,17 +138,15 @@ namespace MediaBrowser.Providers.Movies
                     }
 
                     return false;
-                })
-                    .Select(i => i.id.ToString(CultureInfo.InvariantCulture))
-                    .FirstOrDefault();
+                });
 
-                if (!string.IsNullOrEmpty(id))
+                if (result != null)
                 {
-                    return id;
+                    return null;
                 }
 
                 // Take the first result within one year
-                id = results.Where(i =>
+                result = results.FirstOrDefault(i =>
                 {
                     // Make sure it has a name
                     if (!string.IsNullOrEmpty(i.title ?? i.name))
@@ -163,27 +161,23 @@ namespace MediaBrowser.Providers.Movies
                     }
 
                     return false;
-                })
-                   .Select(i => i.id.ToString(CultureInfo.InvariantCulture))
-                   .FirstOrDefault();
+                });
 
-                if (!string.IsNullOrEmpty(id))
+                if (result != null)
                 {
-                    return id;
+                    return null;
                 }
             }
 
             // Just take the first one
-            return results.Where(i => !string.IsNullOrEmpty(i.title ?? i.name))
-                .Select(i => i.id.ToString(CultureInfo.InvariantCulture))
-                .FirstOrDefault();
+            return results.FirstOrDefault(i => !string.IsNullOrEmpty(i.title ?? i.name));
         }
 
 
         /// <summary>
         /// Class TmdbMovieSearchResult
         /// </summary>
-        private class TmdbMovieSearchResult
+        public class TmdbMovieSearchResult
         {
             /// <summary>
             /// Gets or sets a value indicating whether this <see cref="TmdbMovieSearchResult" /> is adult.

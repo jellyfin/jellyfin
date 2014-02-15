@@ -176,7 +176,7 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <value><c>true</c> if this instance is running as service; otherwise, <c>false</c>.</value>
         public abstract bool IsRunningAsService { get; }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
@@ -547,7 +547,7 @@ namespace MediaBrowser.Common.Implementations
         {
             Container.Register(typeInterface, typeImplementation);
         }
-        
+
         /// <summary>
         /// Resolves this instance.
         /// </summary>
@@ -709,7 +709,14 @@ namespace MediaBrowser.Common.Implementations
                 {
                     Logger.Info("Disposing " + part.GetType().Name);
 
-                    part.Dispose();
+                    try
+                    {
+                        part.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error disposing {0}", ex, part.GetType().Name);
+                    }
                 }
             }
         }
