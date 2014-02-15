@@ -231,7 +231,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmOpenExplorer_click(object sender, RoutedEventArgs e)
         {
-            new LibraryExplorer(_jsonSerializer, _logger, _appHost, _userManager, _libraryManager, _displayPreferencesManager, _itemRepository).Show();
+            new LibraryViewer(_jsonSerializer, _userManager, _libraryManager, _displayPreferencesManager, _itemRepository).Show();
         }
 
         /// <summary>
