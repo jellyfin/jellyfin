@@ -196,8 +196,11 @@
     <Compile Include="Networking\NativeMethods.cs" />
     <Compile Include="Networking\NetworkManager.cs" />
     <Compile Include="Networking\NetworkShares.cs" />
-    <Compile Include="Splash\SplashWindow.xaml.cs">
-      <DependentUpon>SplashWindow.xaml</DependentUpon>
+    <Compile Include="Splash\SplashForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Splash\SplashForm.Designer.cs">
+      <DependentUpon>SplashForm.cs</DependentUpon>
     </Compile>
     <Page Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -220,10 +223,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Splash\SplashWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -248,6 +247,9 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Splash\SplashForm.resx">
+      <DependentUpon>SplashForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.manifest" />
     <None Include="FFMpeg\ARIALUNI.7z" />
@@ -301,42 +303,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\icon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\folder.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\movie.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\series.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\season.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\episode.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\audio.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\artist.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\persons.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\album.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\boxset.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\trailer.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\folder.jpg" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
