@@ -327,7 +327,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // Local metadata is king - if any is found don't run remote providers
-            if ((!options.ReplaceAllMetadata && !hasLocalMetadata) || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh)
+            if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh))
             {
                 await ExecuteRemoteProviders(item, temp, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
             }

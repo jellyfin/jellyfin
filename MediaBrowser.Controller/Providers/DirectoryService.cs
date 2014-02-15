@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using System.Collections.Concurrent;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +20,7 @@ namespace MediaBrowser.Controller.Providers
     {
         private readonly ILogger _logger;
 
-        private readonly Dictionary<string, List<FileSystemInfo>> _cache = new Dictionary<string, List<FileSystemInfo>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, List<FileSystemInfo>> _cache = new ConcurrentDictionary<string, List<FileSystemInfo>>(StringComparer.OrdinalIgnoreCase);
 
         public DirectoryService(ILogger logger)
         {
@@ -43,7 +44,7 @@ namespace MediaBrowser.Controller.Providers
                     entries = new List<FileSystemInfo>();
                 }
 
-                _cache.Add(path, entries);
+                _cache.TryAdd(path, entries);
             }
 
             return entries;

@@ -99,7 +99,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             // Refresh songs
             foreach (var item in items)
             {
-                if (tasks.Count >= 2)
+                if (tasks.Count >= 4)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     tasks.Clear();
@@ -123,7 +123,9 @@ namespace MediaBrowser.Controller.Entities.Movies
                     }
                 });
 
-                tasks.Add(RefreshItem(item, refreshOptions, innerProgress, cancellationToken));
+                // Avoid implicitly captured closure
+                var taskChild = item;
+                tasks.Add(Task.Run(async () => await RefreshItem(taskChild, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false), cancellationToken));
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);

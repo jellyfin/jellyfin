@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.Movies
     /// <summary>
     /// Class MovieDbProvider
     /// </summary>
-    public class MovieDbProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IDisposable
+    public class MovieDbProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IDisposable, IHasOrder
     {
         internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(1, 1);
 
@@ -528,6 +528,15 @@ namespace MediaBrowser.Providers.Movies
             public Images images { get; set; }
             public Keywords keywords { get; set; }
             public Trailers trailers { get; set; }
+        }
+
+        public int Order
+        {
+            get
+            {
+                // After Omdb
+                return 1;
+            }
         }
     }
 }

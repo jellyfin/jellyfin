@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class MovieDbTrailerProvider : IRemoteMetadataProvider<Trailer, TrailerInfo>
+    public class MovieDbTrailerProvider : IRemoteMetadataProvider<Trailer, TrailerInfo>, IHasOrder
     {
         public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
         {
@@ -21,6 +21,15 @@ namespace MediaBrowser.Providers.Movies
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
             return MovieDbProvider.Current.HasChanged(item, date);
+        }
+
+        public int Order
+        {
+            get
+            {
+                // After Omdb
+                return 1;
+            }
         }
     }
 }

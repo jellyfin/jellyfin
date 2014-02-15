@@ -102,7 +102,11 @@ namespace MediaBrowser.Controller.Entities
 
         public TrailerInfo GetLookupInfo()
         {
-            return GetItemLookupInfo<TrailerInfo>();
+            var info = GetItemLookupInfo<TrailerInfo>();
+
+            info.IsLocalTrailer = IsLocalTrailer;
+
+            return info;
         }
     }
 }

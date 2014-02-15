@@ -2,24 +2,31 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Movies;
+using MediaBrowser.Providers.TV;
+using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Omdb
 {
-    public class OmdbItemProvider : ICustomMetadataProvider<Series>, 
-        ICustomMetadataProvider<Movie>, ICustomMetadataProvider<Trailer>
+    public class OmdbItemProvider : IRemoteMetadataProvider<Series, SeriesInfo>,
+        IRemoteMetadataProvider<Movie, MovieInfo>, IRemoteMetadataProvider<Trailer, TrailerInfo>
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
+        private readonly ILogger _logger;
 
-        public OmdbItemProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public OmdbItemProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogger logger)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public string Name
@@ -27,25 +34,110 @@ namespace MediaBrowser.Providers.Omdb
             get { return "IMDb via The Open Movie Database"; }
         }
 
-        public Task<ItemUpdateType> FetchAsync(Series item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
         {
-            return new OmdbProvider(_jsonSerializer, _httpClient).Fetch(item, cancellationToken);
-        }
-
-        public Task<ItemUpdateType> FetchAsync(Movie item, IDirectoryService directoryService, CancellationToken cancellationToken)
-        {
-            return new OmdbProvider(_jsonSerializer, _httpClient).Fetch(item, cancellationToken);
-        }
-
-        private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
-        public Task<ItemUpdateType> FetchAsync(Trailer item, IDirectoryService directoryService, CancellationToken cancellationToken)
-        {
-            if (item.IsLocalTrailer)
+            var result = new MetadataResult<Series>
             {
-                return _cachedTask;
+                Item = new Series()
+            };
+
+            var imdbId = info.GetProviderId(MetadataProviders.Imdb);
+
+            if (string.IsNullOrEmpty(imdbId))
+            {
+                var searchResult = await GetSeriesImdbId(info, cancellationToken).ConfigureAwait(false);
+
+                imdbId = searchResult.Item1;
+
+                if (!string.IsNullOrEmpty(searchResult.Item2))
+                {
+                    result.Item.SetProviderId(MetadataProviders.Tvdb, searchResult.Item2);
+                }
+            }
+            
+            if (!string.IsNullOrEmpty(imdbId))
+            {
+                result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                result.HasMetadata = true;
+
+                await new OmdbProvider(_jsonSerializer, _httpClient).Fetch(result.Item, imdbId, cancellationToken)
+                        .ConfigureAwait(false);
             }
 
-            return new OmdbProvider(_jsonSerializer, _httpClient).Fetch(item, cancellationToken);
+            return result;
+        }
+
+        public Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
+        {
+            return GetMovieResult<Movie>(info, cancellationToken);
+        }
+
+        public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
+        {
+            var result = new MetadataResult<Trailer>();
+
+            if (info.IsLocalTrailer)
+            {
+                return Task.FromResult(result);
+            }
+
+            return GetMovieResult<Trailer>(info, cancellationToken);
+        }
+
+        private async Task<MetadataResult<T>> GetMovieResult<T>(ItemLookupInfo info, CancellationToken cancellationToken)
+            where T : Video, new()
+        {
+            var result = new MetadataResult<T>
+            {
+                Item = new T()
+            };
+
+            var imdbId = info.GetProviderId(MetadataProviders.Imdb);
+
+            if (string.IsNullOrEmpty(imdbId))
+            {
+                var searchResult = await GetMovieImdbId(info, cancellationToken).ConfigureAwait(false);
+
+                imdbId = searchResult.Item1;
+
+                if (!string.IsNullOrEmpty(searchResult.Item2))
+                {
+                    result.Item.SetProviderId(MetadataProviders.Tmdb, searchResult.Item2);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(imdbId))
+            {
+                result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                result.HasMetadata = true;
+
+                await new OmdbProvider(_jsonSerializer, _httpClient).Fetch(result.Item, imdbId, cancellationToken)
+                        .ConfigureAwait(false);
+            }
+
+            return result;
+        }
+
+        private async Task<Tuple<string, string>> GetMovieImdbId(ItemLookupInfo info, CancellationToken cancellationToken)
+        {
+            var result = await new GenericMovieDbInfo<Movie>(_logger, _jsonSerializer).GetMetadata(info, cancellationToken)
+                        .ConfigureAwait(false);
+
+            var imdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Imdb) : null;
+            var tmdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Tmdb) : null;
+
+            return new Tuple<string, string>(imdb, tmdb);
+        }
+
+        private async Task<Tuple<string,string>> GetSeriesImdbId(SeriesInfo info, CancellationToken cancellationToken)
+        {
+            var result = await TvdbSeriesProvider.Current.GetMetadata(info, cancellationToken)
+                   .ConfigureAwait(false);
+
+            var imdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Imdb) : null;
+            var tvdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Tvdb) : null;
+
+            return new Tuple<string, string>(imdb, tvdb);
         }
     }
 }

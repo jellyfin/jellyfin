@@ -1236,7 +1236,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            return LibraryManager.UpdateItem(this, ItemUpdateType.ImageUpdate, cancellationToken);
+            return LibraryManager.UpdateItem(this, updateReason, cancellationToken);
         }
 
         /// <summary>

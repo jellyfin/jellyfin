@@ -154,7 +154,9 @@ namespace MediaBrowser.ServerApplication
                 // Add our log window if specified
                 if (_configurationManager.Configuration.ShowLogWindow)
                 {
-                    Trace.Listeners.Add(new WindowTraceListener(new LogForm(_logManager)));
+                    _logForm = new LogForm(_logManager);
+
+                    Trace.Listeners.Add(new WindowTraceListener(_logForm));
                 }
                 else
                 {

@@ -22,7 +22,7 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>
+    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
         internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(2, 2);
         internal static TvdbSeriesProvider Current { get; private set; }
@@ -1071,6 +1071,15 @@ namespace MediaBrowser.Providers.TV
         public string Name
         {
             get { return "TheTVDB"; }
+        }
+
+        public int Order
+        {
+            get
+            {
+                // After Omdb
+                return 1;
+            }
         }
     }
 }
