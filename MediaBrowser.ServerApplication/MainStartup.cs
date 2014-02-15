@@ -239,7 +239,7 @@ namespace MediaBrowser.ServerApplication
             {
                 HideSplashScreen();
 
-                ShowMainForm();
+                ShowTrayIcon();
             }
 
             SystemEvents.SessionEnding += SystemEvents_SessionEnding;
@@ -249,22 +249,13 @@ namespace MediaBrowser.ServerApplication
             Task.WaitAll(task);
         }
 
-        private static MainForm _mainForm;
-        private static Thread _mainFormThread;
-        private static void ShowMainForm()
+        private static ServerNotifyIcon _serverNotifyIcon;
+        private static void ShowTrayIcon()
         {
-            var thread = new Thread(() =>
-            {
-                _mainForm = new MainForm(_appHost.LogManager, _appHost, _appHost.ServerConfigurationManager, _appHost.UserManager, _appHost.LibraryManager, _appHost.JsonSerializer, _appHost.DisplayPreferencesRepository, _appHost.ItemRepository);
-
-                _mainForm.ShowDialog();
-            });
-
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.IsBackground = true;
-            thread.Start();
-
-            _mainFormThread = thread;
+            //Application.EnableVisualStyles();
+            //Application.SetCompatibleTextRenderingDefault(false);
+            _serverNotifyIcon = new ServerNotifyIcon(_appHost.LogManager, _appHost, _appHost.ServerConfigurationManager, _appHost.UserManager, _appHost.LibraryManager, _appHost.JsonSerializer, _appHost.DisplayPreferencesRepository, _appHost.ItemRepository);
+            Application.Run();
         }
 
         private static SplashForm _splash;
@@ -535,6 +526,7 @@ namespace MediaBrowser.ServerApplication
             if (!_isRunningAsService)
             {
                 _logger.Info("Executing windows forms restart");
+                _serverNotifyIcon.Visible = false;
                 Application.Restart();
 
                 ShutdownWindowsApplication();
@@ -543,6 +535,8 @@ namespace MediaBrowser.ServerApplication
 
         private static void ShutdownWindowsApplication()
         {
+            _serverNotifyIcon.Visible = false;
+            Application.Exit();
             ApplicationTaskCompletionSource.SetResult(true);
         }
 
