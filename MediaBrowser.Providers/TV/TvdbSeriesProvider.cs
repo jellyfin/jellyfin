@@ -191,7 +191,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             // Only download if not already there
-            // The prescan task will take care of updates so we don't need to re-download here
+            // The post-scan task will take care of updates so we don't need to re-download here
             if (download)
             {
                 return DownloadSeriesZip(seriesId, seriesDataPath, null, preferredMetadataLanguage, cancellationToken);

@@ -163,7 +163,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var locationType = LocationType;
 
-                return locationType == LocationType.FileSystem || locationType == LocationType.Offline;
+                return locationType != LocationType.Remote && locationType != LocationType.Virtual;
             }
         }
 
@@ -581,7 +581,7 @@ namespace MediaBrowser.Controller.Entities
 
                 try
                 {
-                    var files = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
+                    var files = locationType != LocationType.Remote && locationType != LocationType.Virtual ?
                         GetFileSystemChildren(options.DirectoryService).ToList() :
                         new List<FileSystemInfo>();
 

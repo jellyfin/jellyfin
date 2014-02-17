@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -167,32 +166,30 @@ namespace MediaBrowser.Api.Library
         public bool RefreshLibrary { get; set; }
     }
 
-    [Route("/Library/Changes/New", "POST")]
-    public class ReportChangedPath : IReturnVoid
+    [Route("/Library/Downloaded", "POST")]
+    public class ReportContentDownloaded : IReturnVoid
     {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Path", Description = "The path that was changed.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "Path", Description = "The path being downloaded to.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Path { get; set; }
 
         [ApiMember(Name = "ImageUrl", Description = "Optional thumbnail image url of the content.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string ImageUrl { get; set; }
+
+        [ApiMember(Name = "Name", Description = "The name of the content.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Name { get; set; }
     }
 
-    [Route("/Library/Episodes/New", "POST")]
-    public class ReportNewEpisode : IReturnVoid
+    [Route("/Library/Downloading", "POST")]
+    public class ReportContentDownloading : IReturnVoid
     {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "TvdbId", Description = "The tvdb id of the new episode.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string TvdbId { get; set; }
+        [ApiMember(Name = "Path", Description = "The path being downloaded to.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Path { get; set; }
 
         [ApiMember(Name = "ImageUrl", Description = "Optional thumbnail image url of the content.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string ImageUrl { get; set; }
+
+        [ApiMember(Name = "Name", Description = "The name of the content.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Name { get; set; }
     }
     
     /// <summary>
@@ -240,21 +237,6 @@ namespace MediaBrowser.Api.Library
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _logger = logger;
-        }
-
-        /// <summary>
-        /// Posts the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <exception cref="System.ArgumentException">Please supply a Path</exception>
-        public void Post(ReportChangedPath request)
-        {
-            if (string.IsNullOrEmpty(request.Path))
-            {
-                throw new ArgumentException("Please supply a Path");
-            }
-
-            _libraryMonitor.ReportFileSystemChanged(request.Path);
         }
 
         /// <summary>

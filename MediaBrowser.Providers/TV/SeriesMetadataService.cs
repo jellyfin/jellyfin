@@ -32,6 +32,31 @@ namespace MediaBrowser.Providers.TV
         protected override void MergeData(Series source, Series target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+
+            if (replaceData || target.SeasonCount == 0)
+            {
+                target.SeasonCount = source.SeasonCount;
+            }
+
+            if (replaceData || string.IsNullOrEmpty(target.AirTime))
+            {
+                target.AirTime = source.AirTime;
+            }
+
+            if (replaceData || !target.Status.HasValue)
+            {
+                target.Status = source.Status;
+            }
+
+            if (replaceData || target.AirDays.Count == 0)
+            {
+                target.AirDays = source.AirDays;
+            } 
+            
+            if (mergeMetadataSettings)
+            {
+                target.DisplaySpecialsWithSeasons = source.DisplaySpecialsWithSeasons;
+            }
         }
 
         protected override ItemUpdateType BeforeSave(Series item)

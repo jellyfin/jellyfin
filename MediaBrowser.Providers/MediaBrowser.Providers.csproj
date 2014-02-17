@@ -180,6 +180,7 @@
     <Compile Include="TV\FanArtTvUpdatesPostScanTask.cs" />
     <Compile Include="TV\FanartSeasonProvider.cs" />
     <Compile Include="TV\FanartSeriesProvider.cs" />
+    <Compile Include="TV\MissingEpisodeProvider.cs" />
     <Compile Include="TV\MovieDbSeriesImageProvider.cs" />
     <Compile Include="TV\MovieDbSeriesProvider.cs" />
     <Compile Include="TV\SeriesMetadataService.cs" />

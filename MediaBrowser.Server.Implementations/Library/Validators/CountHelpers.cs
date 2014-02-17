@@ -13,51 +13,46 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
     /// </summary>
     internal static class CountHelpers
     {
-        /// <summary>
-        /// Adds to dictionary.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="counts">The counts.</param>
-        internal static void AddToDictionary(BaseItem item, Dictionary<CountType, int> counts)
+        private static CountType? GetCountType(BaseItem item)
         {
             if (item is Movie)
             {
-                IncrementCount(counts, CountType.Movie);
+                return CountType.Movie;
             }
-            else if (item is Trailer)
+            if (item is Episode)
             {
-                IncrementCount(counts, CountType.Trailer);
+                return CountType.Episode;
             }
-            else if (item is Series)
+            if (item is Game)
             {
-                IncrementCount(counts, CountType.Series);
+                return CountType.Game;
             }
-            else if (item is Game)
+            if (item is Audio)
             {
-                IncrementCount(counts, CountType.Game);
+                return CountType.Song;
             }
-            else if (item is Audio)
+            if (item is Trailer)
             {
-                IncrementCount(counts, CountType.Song);
+                return CountType.Trailer;
             }
-            else if (item is MusicAlbum)
+            if (item is Series)
             {
-                IncrementCount(counts, CountType.MusicAlbum);
+                return CountType.Series;
             }
-            else if (item is Episode)
+            if (item is MusicAlbum)
             {
-                IncrementCount(counts, CountType.Episode);
+                return CountType.MusicAlbum;
             }
-            else if (item is MusicVideo)
+            if (item is MusicVideo)
             {
-                IncrementCount(counts, CountType.MusicVideo);
+                return CountType.MusicVideo;
             }
-            else if (item is AdultVideo)
+            if (item is AdultVideo)
             {
-                IncrementCount(counts, CountType.AdultVideo);
+                return CountType.AdultVideo;
             }
 
-            IncrementCount(counts, CountType.Total);
+            return null;
         }
 
         /// <summary>
@@ -129,6 +124,8 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <param name="masterDictionary">The master dictionary.</param>
         internal static void SetItemCounts(Guid userId, BaseItem media, IEnumerable<string> names, Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>> masterDictionary)
         {
+            var countType = GetCountType(media);
+
             foreach (var name in names)
             {
                 Dictionary<Guid, Dictionary<CountType, int>> libraryCounts;
@@ -148,7 +145,12 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                     libraryCounts.Add(userLibId, userDictionary);
                 }
 
-                AddToDictionary(media, userDictionary);
+                if (countType.HasValue)
+                {
+                    IncrementCount(userDictionary, countType.Value);
+                }
+
+                IncrementCount(userDictionary, CountType.Total);
             }
         }
     }
