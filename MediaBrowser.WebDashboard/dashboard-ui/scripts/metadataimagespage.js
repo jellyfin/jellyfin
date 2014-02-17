@@ -531,35 +531,17 @@
 
         });
 
-        if ($('.backdropFields:visible', form).length) {
+        config.ImageOptions.push({
+            Type: 'Backdrop',
+            Limit: $('#txtMaxBackdrops', form).val(),
+            MinWidth: $('#txtMinBackdropDownloadWidth', form).val()
+        });
 
-            config.ImageOptions.push({
-                Type: 'Backdrop',
-                Limit: $('#txtMaxBackdrops', form).val(),
-                MinWidth: $('#txtMinBackdropDownloadWidth', form).val()
-            });
-        } else {
-            config.ImageOptions.push({
-                Type: 'Backdrop',
-                Limit: 0,
-                MinWidth: 0
-            });
-        }
-
-        if ($('.screenshotFields:visible', form).length) {
-
-            config.ImageOptions.push({
-                Type: 'Screenshot',
-                Limit: $('#txtMaxScreenshots', form).val(),
-                MinWidth: $('#txtMinScreenshotDownloadWidth', form).val()
-            });
-        } else {
-            config.ImageOptions.push({
-                Type: 'Screenshot',
-                Limit: 0,
-                MinWidth: 0
-            });
-        }
+        config.ImageOptions.push({
+            Type: 'Screenshot',
+            Limit: $('#txtMaxScreenshots', form).val(),
+            MinWidth: $('#txtMinScreenshotDownloadWidth', form).val()
+        });
     }
 
     function onSubmit() {

@@ -1,12 +1,10 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
+﻿using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 

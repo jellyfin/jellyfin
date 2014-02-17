@@ -142,7 +142,7 @@ namespace MediaBrowser.Providers.Movies
 
                 if (result != null)
                 {
-                    return null;
+                    return result;
                 }
 
                 // Take the first result within one year
@@ -165,7 +165,7 @@ namespace MediaBrowser.Providers.Movies
 
                 if (result != null)
                 {
-                    return null;
+                    return result;
                 }
             }
 

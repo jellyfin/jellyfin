@@ -19,6 +19,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteStreamsCommand;
         private IDbCommand _saveStreamCommand;
 
+        private SqliteShrinkMemoryTimer _shrinkMemoryTimer;
+        
         public SqliteMediaStreamsRepository(IDbConnection connection, ILogManager logManager)
         {
             _connection = connection;
@@ -51,6 +53,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.RunQueries(queries, _logger);
 
             PrepareStatements();
+
+            _shrinkMemoryTimer = new SqliteShrinkMemoryTimer(_connection, _writeLock, _logger);
         }
 
         private readonly string[] _saveColumns =
@@ -356,6 +360,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     lock (_disposeLock)
                     {
+                        if (_shrinkMemoryTimer != null)
+                        {
+                            _shrinkMemoryTimer.Dispose();
+                            _shrinkMemoryTimer = null;
+                        }
+
                         if (_connection != null)
                         {
                             if (_connection.IsOpen())

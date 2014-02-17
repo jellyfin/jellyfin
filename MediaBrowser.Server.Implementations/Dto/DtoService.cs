@@ -902,7 +902,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 var locationType = item.LocationType;
 
-                if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+                if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
                 {
                     dto.Path = GetMappedPath(item.Path);
                 }

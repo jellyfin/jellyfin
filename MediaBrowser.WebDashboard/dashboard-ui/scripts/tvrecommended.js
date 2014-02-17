@@ -2,6 +2,8 @@
 
     $(document).on('pagebeforeshow', "#tvRecommendedPage", function () {
 
+        var screenWidth = $(window).width();
+
         var page = this;
 
         var options = {
@@ -9,7 +11,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
-            Limit: 15,
+            Limit: screenWidth >= 1920 ? 20 : (screenWidth >= 1440 ? 16 : 15),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             Filters: "IsUnplayed",
@@ -36,7 +38,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
             Filters: "IsResumable",
-            Limit: 3,
+            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1440 ? 4 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             ExcludeLocationTypes: "Virtual"

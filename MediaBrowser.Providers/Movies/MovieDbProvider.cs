@@ -1,9 +1,11 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Linq;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -30,14 +32,16 @@ namespace MediaBrowser.Providers.Movies
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger _logger;
+        private readonly ILocalizationManager _localization;
 
-        public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger)
+        public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _logger = logger;
+            _localization = localization;
             Current = this;
         }
 
@@ -222,19 +226,26 @@ namespace MediaBrowser.Providers.Movies
         {
             var url = string.Format(GetMovieInfo3, id, ApiKey);
 
-            // Get images in english and with no language
-            url += "&include_image_language=en,null";
+            var imageLanguages = _localization.GetCultures()
+                .Select(i => i.TwoLetterISOLanguageName)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            imageLanguages.Add("null");
 
             if (!string.IsNullOrEmpty(language))
             {
                 // If preferred language isn't english, get those images too
-                if (!string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+                if (imageLanguages.Contains(language, StringComparer.OrdinalIgnoreCase))
                 {
-                    url += string.Format(",{0}", language);
+                    imageLanguages.Add(language);
                 }
 
                 url += string.Format("&language={0}", language);
             }
+
+            // Get images in english and with no language
+            url += "&include_image_language=" + string.Join(",", imageLanguages.ToArray());
 
             CompleteMovieData mainResult;
 

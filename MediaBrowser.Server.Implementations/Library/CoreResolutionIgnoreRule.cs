@@ -17,17 +17,15 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// Any folder named in this list will be ignored - can be added to at runtime for extensibility
         /// </summary>
-        private static readonly Dictionary<string,string> IgnoreFolders = new List<string>
+        private static readonly Dictionary<string, string> IgnoreFolders = new List<string>
         {
-            "metadata",
-            "certificate",
-            "backup",
-            "ps3_update",
-            "ps3_vprm",
-            "adv_obj",
-            "extrafanart",
-            "extrathumbs",
-            ".actors"
+                "metadata",
+                "ps3_update",
+                "ps3_vprm",
+                "extrafanart",
+                "extrathumbs",
+                ".actors",
+                ".wd_tv"
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
@@ -51,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // https://github.com/MediaBrowser/MediaBrowser/issues/427
             if (filename.IndexOf("._", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                return true;    
+                return true;
             }
 
             // Ignore hidden files and folders

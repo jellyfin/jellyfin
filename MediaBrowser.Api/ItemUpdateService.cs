@@ -211,11 +211,6 @@ namespace MediaBrowser.Api
 
         private void UpdateItem(BaseItemDto request, BaseItem item)
         {
-            if (item.LocationType == LocationType.Offline)
-            {
-                throw new InvalidOperationException(string.Format("{0} is currently offline.", item.Name));
-            }
-
             item.Name = request.Name;
 
             // Only set the forced value if they changed it, or there's already one

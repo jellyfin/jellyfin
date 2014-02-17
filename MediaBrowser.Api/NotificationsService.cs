@@ -35,7 +35,7 @@ namespace MediaBrowser.Api
 
     [Route("/Notifications/{UserId}", "POST")]
     [Api(Description = "Adds a notifications")]
-    public class AddNotification : IReturn<Notification>
+    public class AddUserNotification : IReturn<Notification>
     {
         [ApiMember(Name = "Id", Description = "The Id of the new notification. If unspecified one will be provided.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public Guid? Id { get; set; }
@@ -61,7 +61,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Level", Description = "The notification level", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public NotificationLevel Level { get; set; }
     }
-
+    
     [Route("/Notifications/{UserId}/Read", "POST")]
     [Api(Description = "Marks notifications as read")]
     public class MarkRead : IReturnVoid
@@ -93,7 +93,7 @@ namespace MediaBrowser.Api
             _notificationsRepo = notificationsRepo;
         }
 
-        public object Post(AddNotification request)
+        public object Post(AddUserNotification request)
         {
             var task = AddNotification(request);
 
@@ -107,7 +107,7 @@ namespace MediaBrowser.Api
             return result;
         }
 
-        private async Task<Notification> AddNotification(AddNotification request)
+        private async Task<Notification> AddNotification(AddUserNotification request)
         {
             var notification = new Notification
             {

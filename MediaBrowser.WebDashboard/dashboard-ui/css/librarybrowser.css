@@ -105,7 +105,7 @@
 }
 
 .listHeader {
-    margin-top: .5em;
+    margin-top: .75em;
     margin-bottom: 0;
     padding-left: 7px;
 }
@@ -784,13 +784,13 @@ a.itemTag:hover {
 @media all and (min-width: 1440px) {
 
     .ehsContent {
-        max-width: 950px;
+        max-width: 1240px;
     }
 }
 
 @media all and (min-width: 1920px) {
     .ehsContent {
-        max-width: 1260px;
+        max-width: 1540px;
     }
 }
 

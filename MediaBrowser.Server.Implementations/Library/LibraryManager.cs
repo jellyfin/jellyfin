@@ -1312,7 +1312,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task UpdateItem(BaseItem item, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            if (item.LocationType == LocationType.FileSystem)
+            var locationType = item.LocationType;
+            if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
             {
                 await _providerManagerFactory().SaveMetadata(item, updateReason).ConfigureAwait(false);
             }

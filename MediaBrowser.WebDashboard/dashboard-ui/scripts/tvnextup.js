@@ -2,11 +2,13 @@
 
     $(document).on('pagebeforeshow', "#tvNextUpPage", function () {
 
+        var screenWidth = $(window).width();
+
         var page = this;
 
         var options = {
 
-            Limit: 24,
+            Limit: screenWidth >= 1920 ? 25 : 24,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated",
             UserId: Dashboard.getCurrentUserId(),
             ExcludeLocationTypes: "Virtual"

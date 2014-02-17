@@ -19,7 +19,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _writeLock = writeLock;
             _logger = logger;
 
-            _shrinkMemoryTimer = new Timer(TimerCallback, null, TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(30));
+            _shrinkMemoryTimer = new Timer(TimerCallback, null, TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(10));
         }
 
         private async void TimerCallback(object state)

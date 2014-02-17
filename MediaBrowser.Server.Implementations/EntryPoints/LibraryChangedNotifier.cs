@@ -69,6 +69,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         void libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
+            if (e.Item.LocationType == LocationType.Virtual)
+            {
+                return;
+            }
+
             lock (_libraryChangedSyncLock)
             {
                 if (LibraryUpdateTimer == null)
@@ -97,6 +102,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
         {
+            if (e.Item.LocationType == LocationType.Virtual)
+            {
+                return;
+            }
+
             lock (_libraryChangedSyncLock)
             {
                 if (LibraryUpdateTimer == null)
@@ -120,6 +130,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         void libraryManager_ItemRemoved(object sender, ItemChangeEventArgs e)
         {
+            if (e.Item.LocationType == LocationType.Virtual)
+            {
+                return;
+            }
+
             lock (_libraryChangedSyncLock)
             {
                 if (LibraryUpdateTimer == null)

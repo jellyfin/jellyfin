@@ -282,7 +282,8 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
             {
-                Logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
+                var providerName = provider.GetType().Name;
+                Logger.Debug("Running {0} for {1}", providerName, item.Path ?? item.Name);
 
                 var itemInfo = new ItemInfo { Path = item.Path, IsInMixedFolder = item.IsInMixedFolder };
 
@@ -308,6 +309,10 @@ namespace MediaBrowser.Providers.Manager
                         }
 
                         Logger.Error("Invalid local metadata found for: " + item.Path);
+                    }
+                    else
+                    {
+                        Logger.Debug("{0} returned no metadata for {1}", providerName, item.Path ?? item.Name);
                     }
                 }
                 catch (OperationCanceledException)
@@ -376,7 +381,8 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var provider in providers)
             {
-                Logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
+                var providerName = provider.GetType().Name;
+                Logger.Debug("Running {0} for {1}", providerName, item.Path ?? item.Name);
 
                 if (id == null)
                 {
@@ -396,6 +402,10 @@ namespace MediaBrowser.Providers.Manager
                         MergeData(result.Item, temp, new List<MetadataFields>(), false, false);
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
+                    }
+                    else
+                    {
+                        Logger.Debug("{0} returned no metadata for {1}", providerName, item.Path ?? item.Name);
                     }
                 }
                 catch (OperationCanceledException)
