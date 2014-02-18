@@ -1330,7 +1330,7 @@
             var page = $(this).parents('.page');
 
             if ($('#fldChallengeValue', page).val() != $('#txtDeleteTest', page).val()) {
-                alert('The value entered is not correct. Please try again.');
+                Dashboard.alert('The value entered is not correct. Please try again.');
             } else {
                 performDelete(page);
             }
