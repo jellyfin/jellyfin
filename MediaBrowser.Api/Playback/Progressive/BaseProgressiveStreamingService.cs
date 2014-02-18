@@ -9,6 +9,7 @@ using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -280,7 +281,13 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 responseHeaders["Accept-Ranges"] = "none";
 
-                return ResultFactory.GetResult(new byte[] { }, contentType, responseHeaders);
+                var value = ResultFactory.GetResult(new byte[]{}, contentType, responseHeaders);
+                if (value as IHasOptions != null)
+                {
+                    if (((IHasOptions)value).Options.ContainsKey("Content-Length"))
+                        ((IHasOptions)value).Options.Remove("Content-Length"); 
+                }
+                return value;
             }
 
             if (!File.Exists(outputPath))
