@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Web;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -287,7 +288,16 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Headers only
             if (isHeadRequest)
             {
-                return ResultFactory.GetResult(new byte[] { }, contentType, responseHeaders);
+                var streamResult = ResultFactory.GetResult(new byte[] { }, contentType, responseHeaders);
+                var hasOptions = streamResult as IHasOptions;
+                if (hasOptions != null)
+                {
+                    if (hasOptions.Options.ContainsKey("Content-Length"))
+                    {
+                        hasOptions.Options.Remove("Content-Length");
+                    }
+                }
+                return streamResult;
             }
 
             if (!File.Exists(outputPath))
