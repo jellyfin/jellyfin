@@ -163,14 +163,7 @@
         } else {
             $("#btnInstallDiv", page).hide();
             $("#pSelectVersion", page).hide();
-            var msg = "This plugin must be installed from ";
-            switch (pkg.targetSystem) {
-                case "MBClassic":
-                    msg += "the MBClassic Configurator";
-                    break;
-                default:
-                    msg += pkg.targetSystem;
-            }
+            var msg = "This plug-in must be installed from " + pkg.targetSystem;
             $("#nonServerMsg", page).html(msg).show();
         }
 
