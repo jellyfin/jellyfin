@@ -4,21 +4,26 @@
 
         Dashboard.showLoadingMsg();
 
-        // After saving chapter task, now save server config
-        ApiClient.getServerConfiguration().done(function (config) {
+        $.ajax({
+            type: "POST",
+            url: ApiClient.getUrl("System/Configuration/VideoImageExtraction", { Enabled: $('#chkVideoImages', page).checked() })
 
-            config.EnableVideoImageExtraction = $('#chkVIdeoImages', page).checked();
-            config.ImageSavingConvention = $('#selectImageSavingConvention', page).val();
+        }).done(function () {
 
-            config.EnableMovieChapterImageExtraction = $('#chkMovies', page).checked();
 
-            ApiClient.updateServerConfiguration(config).done(function (result) {
+            // After saving chapter task, now save server config
+            ApiClient.getServerConfiguration().done(function (config) {
 
-                navigateToNextPage();
+                config.ImageSavingConvention = $('#selectImageSavingConvention', page).val();
+                config.EnableMovieChapterImageExtraction = $('#chkMovies', page).checked();
 
+                ApiClient.updateServerConfiguration(config).done(function (result) {
+
+                    navigateToNextPage();
+
+                });
             });
         });
-
     }
 
     function navigateToNextPage() {

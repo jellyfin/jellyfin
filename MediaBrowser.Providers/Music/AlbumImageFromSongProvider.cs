@@ -33,7 +33,7 @@ namespace MediaBrowser.Providers.Music
 
         public string Name
         {
-            get { return "Embedded Image"; }
+            get { return "Image Extractor"; }
         }
 
         public bool Supports(IHasImages item)

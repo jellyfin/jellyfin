@@ -61,6 +61,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _deleteChildrenCommand;
         private IDbCommand _saveChildrenCommand;
+        private IDbCommand _deleteItemCommand;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -156,6 +157,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _deleteChildrenCommand.CommandText = "delete from ChildrenIds where ParentId=@ParentId";
             _deleteChildrenCommand.Parameters.Add(_deleteChildrenCommand, "@ParentId");
 
+            _deleteItemCommand = _connection.CreateCommand();
+            _deleteItemCommand.CommandText = "delete from TypedBaseItems where guid=@Id";
+            _deleteItemCommand.Parameters.Add(_deleteItemCommand, "@Id");
+            
             _saveChildrenCommand = _connection.CreateCommand();
             _saveChildrenCommand.CommandText = "replace into ChildrenIds (ParentId, ItemId) values (@ParentId, @ItemId)";
             _saveChildrenCommand.Parameters.Add(_saveChildrenCommand, "@ParentId");
@@ -463,6 +468,64 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
+        public async Task DeleteItem(Guid id, CancellationToken cancellationToken)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            IDbTransaction transaction = null;
+
+            try
+            {
+                transaction = _connection.BeginTransaction();
+
+                // First delete children
+                _deleteChildrenCommand.GetParameter(0).Value = id;
+                _deleteChildrenCommand.Transaction = transaction;
+                _deleteChildrenCommand.ExecuteNonQuery();
+
+                // Delete the item
+                _deleteItemCommand.GetParameter(0).Value = id;
+                _deleteItemCommand.Transaction = transaction;
+                _deleteItemCommand.ExecuteNonQuery();
+                
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Failed to save children:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
+        }
+
         public async Task SaveChildren(Guid parentId, IEnumerable<Guid> children, CancellationToken cancellationToken)
         {
             if (parentId == Guid.Empty)
@@ -474,8 +537,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 throw new ArgumentNullException("children");
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
 
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 

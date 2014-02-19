@@ -113,16 +113,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public string Name
         {
-            get { return "Embedded Image"; }
+            get { return "Screen Grabber"; }
         }
 
         public bool Supports(IHasImages item)
         {
-            if (!_config.Configuration.EnableVideoImageExtraction)
-            {
-                return false;
-            }
-
             return item.LocationType == LocationType.FileSystem && item is Video;
         }
 

@@ -55,6 +55,13 @@ namespace MediaBrowser.Api
         public bool Enabled { get; set; }
     }
 
+    [Route("/System/Configuration/VideoImageExtraction", "POST")]
+    [Api(("Updates image extraction for all types"))]
+    public class UpdateVideoImageExtraction : IReturnVoid
+    {
+        public bool Enabled { get; set; }
+    }
+
     public class ConfigurationService : BaseApiService
     {
         /// <summary>
@@ -123,6 +130,20 @@ namespace MediaBrowser.Api
         /// This is a temporary method used until image settings get broken out.
         /// </summary>
         /// <param name="request"></param>
+        public void Post(UpdateVideoImageExtraction request)
+        {
+            var config = _configurationManager.Configuration;
+
+            EnableImageExtractionForType(typeof(Movie), config, request.Enabled);
+            EnableImageExtractionForType(typeof(Episode), config, request.Enabled);
+            EnableImageExtractionForType(typeof(AdultVideo), config, request.Enabled);
+            EnableImageExtractionForType(typeof(MusicVideo), config, request.Enabled);
+            EnableImageExtractionForType(typeof(Video), config, request.Enabled);
+            EnableImageExtractionForType(typeof(Trailer), config, request.Enabled);
+
+            _configurationManager.SaveConfiguration();
+        }
+
         public void Post(UpdateSaveLocalMetadata request)
         {
             var config = _configurationManager.Configuration;
@@ -157,7 +178,7 @@ namespace MediaBrowser.Api
 
             _configurationManager.SaveConfiguration();
         }
-
+        
         private void DisableSaversForType(Type type, ServerConfiguration config)
         {
             var options = GetMetadataOptions(type, config);
@@ -171,6 +192,32 @@ namespace MediaBrowser.Api
                 list.Add(mediabrowserSaverName);
 
                 options.DisabledMetadataSavers = list.ToArray();
+            }
+        }
+
+        private void EnableImageExtractionForType(Type type, ServerConfiguration config, bool enabled)
+        {
+            var options = GetMetadataOptions(type, config);
+
+            const string imageProviderName = "Screen Grabber";
+
+            var contains = options.DisabledImageFetchers.Contains(imageProviderName, StringComparer.OrdinalIgnoreCase);
+
+            if (!enabled && !contains)
+            {
+                var list = options.DisabledImageFetchers.ToList();
+
+                list.Add(imageProviderName);
+
+                options.DisabledImageFetchers = list.ToArray();
+            }
+            else if (enabled && contains)
+            {
+                var list = options.DisabledImageFetchers.ToList();
+
+                list.Remove(imageProviderName);
+
+                options.DisabledImageFetchers = list.ToArray();
             }
         }
 

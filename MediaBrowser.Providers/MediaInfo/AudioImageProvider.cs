@@ -151,7 +151,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public string Name
         {
-            get { return "Embedded Image"; }
+            get { return "Image Extractor"; }
         }
 
         public bool Supports(IHasImages item)

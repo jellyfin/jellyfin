@@ -272,7 +272,7 @@ namespace MediaBrowser.Providers.TV
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if ((_configurationManager.Configuration.EnableTmdbUpdates) || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
                 {
                     return _cachedTask;
                 }

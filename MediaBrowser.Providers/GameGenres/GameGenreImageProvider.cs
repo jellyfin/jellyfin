@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.GameGenres
 
         public static string ProviderName
         {
-            get { return "Media Browser Images"; }
+            get { return "Media Browser Designs"; }
         }
 
         public bool Supports(IHasImages item)

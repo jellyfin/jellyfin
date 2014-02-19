@@ -431,7 +431,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (fileInfo.Exists)
             {
-                if (_config.Configuration.EnableFanArtUpdates || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
                 {
                     return _cachedTask;
                 }

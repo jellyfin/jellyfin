@@ -330,5 +330,12 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         void RegisterItem(BaseItem item);
+
+        /// <summary>
+        /// Deletes the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>Task.</returns>
+        Task DeleteItem(BaseItem item);
     }
 }
