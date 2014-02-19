@@ -719,7 +719,7 @@ namespace MediaBrowser.Controller.Providers
                         }
                         break;
                     }
-                case "TvRageId":
+                case "TVRageId":
                     {
                         var id = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(id))

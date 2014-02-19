@@ -9,18 +9,18 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The file system
         /// </summary>
-        FileSystem = 1,
+        FileSystem = 0,
         /// <summary>
         /// The remote
         /// </summary>
-        Remote = 2,
+        Remote = 1,
         /// <summary>
         /// The virtual
         /// </summary>
-        Virtual = 3,
+        Virtual = 2,
         /// <summary>
         /// The offline
         /// </summary>
-        Offline = 4
+        Offline = 3
     }
 }

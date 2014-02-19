@@ -435,9 +435,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (!compress || string.IsNullOrEmpty(requestedCompressionType))
             {
-                var stream = await factoryFn().ConfigureAwait(false);
-
                 var rangeHeader = requestContext.GetHeader("Range");
+
+                var stream = await factoryFn().ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(rangeHeader))
                 {
@@ -448,34 +448,54 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 if (isHeadRequest)
                 {
+                    stream.Dispose();
+
                     return GetHttpResult(new byte[] { }, contentType);
                 }
 
                 return new StreamWriter(stream, contentType, _logger);
             }
 
-            if (isHeadRequest)
-            {
-                return GetHttpResult(new byte[] { }, contentType);
-            }
-
             string content;
+            long originalContentLength = 0;
 
             using (var stream = await factoryFn().ConfigureAwait(false))
             {
-                using (var reader = new StreamReader(stream))
+                using (var memoryStream = new MemoryStream())
                 {
-                    content = await reader.ReadToEndAsync().ConfigureAwait(false);
+                    await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                    memoryStream.Position = 0;
+
+                    originalContentLength = memoryStream.Length;
+
+                    using (var reader = new StreamReader(memoryStream))
+                    {
+                        content = await reader.ReadToEndAsync().ConfigureAwait(false);
+                    }
                 }
             }
 
             if (!SupportsCompression)
             {
+                responseHeaders["Content-Length"] = originalContentLength.ToString(UsCulture);
+                
+                if (isHeadRequest)
+                {
+                    return GetHttpResult(new byte[] { }, contentType);
+                }
+
                 return new HttpResult(content, contentType);
             }
 
             var contents = content.Compress(requestedCompressionType);
 
+            responseHeaders["Content-Length"] = contents.Length.ToString(UsCulture);
+
+            if (isHeadRequest)
+            {
+                return GetHttpResult(new byte[] { }, contentType);
+            }
+            
             return new CompressedResult(contents, requestedCompressionType, contentType);
         }
 

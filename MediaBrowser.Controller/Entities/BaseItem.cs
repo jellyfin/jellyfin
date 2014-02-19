@@ -216,7 +216,17 @@ namespace MediaBrowser.Controller.Entities
         /// Returns true if this item should not attempt to fetch metadata
         /// </summary>
         /// <value><c>true</c> if [dont fetch meta]; otherwise, <c>false</c>.</value>
+        [Obsolete("Please use IsLocked instead of DontFetchMeta")]
         public bool DontFetchMeta { get; set; }
+
+        [IgnoreDataMember]
+        public bool IsLocked
+        {
+            get
+            {
+                return DontFetchMeta;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the locked fields.

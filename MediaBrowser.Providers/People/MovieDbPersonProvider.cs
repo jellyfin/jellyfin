@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,9 +22,9 @@ namespace MediaBrowser.Providers.People
     public class MovieDbPersonProvider : IRemoteMetadataProvider<Person, PersonLookupInfo>
     {
         const string DataFileName = "info.json";
-        
+
         internal static MovieDbPersonProvider Current { get; private set; }
-        
+
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
@@ -41,6 +42,73 @@ namespace MediaBrowser.Providers.People
             get { return "TheMovieDb"; }
         }
 
+        public async Task<IEnumerable<SearchResult<PersonLookupInfo>>> GetSearchResults(PersonLookupInfo searchInfo, CancellationToken cancellationToken)
+        {
+            var tmdbId = searchInfo.GetProviderId(MetadataProviders.Tmdb);
+
+            var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+
+            var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+
+            if (!string.IsNullOrEmpty(tmdbId))
+            {
+                await EnsurePersonInfo(tmdbId, cancellationToken).ConfigureAwait(false);
+
+                var dataFilePath = GetPersonDataFilePath(_configurationManager.ApplicationPaths, tmdbId);
+                var info = _jsonSerializer.DeserializeFromFile<PersonResult>(dataFilePath);
+
+                var images = (info.images ?? new Images()).profiles ?? new List<Profile>();
+
+                var result = new SearchResult<PersonLookupInfo>
+                {
+                    Item = new PersonLookupInfo
+                    {
+                        Name = info.name
+                    },
+
+                    ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].file_path)
+                };
+
+                result.Item.SetProviderId(MetadataProviders.Tmdb, info.id.ToString(_usCulture));
+                result.Item.SetProviderId(MetadataProviders.Imdb, info.imdb_id.ToString(_usCulture));
+
+                return new[] { result };
+            }
+
+            var url = string.Format(@"http://api.themoviedb.org/3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(searchInfo.Name), MovieDbProvider.ApiKey);
+
+            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                AcceptHeader = MovieDbProvider.AcceptHeader
+
+            }).ConfigureAwait(false))
+            {
+                var result = _jsonSerializer.DeserializeFromStream<PersonSearchResults>(json) ??
+                             new PersonSearchResults();
+
+                return result.Results.Select(i => GetSearchResult(i, tmdbImageUrl));
+            }
+        }
+
+        private SearchResult<PersonLookupInfo> GetSearchResult(PersonSearchResult i, string baseImageUrl)
+        {
+            var result = new SearchResult<PersonLookupInfo>
+            {
+                Item = new PersonLookupInfo
+                {
+                    Name = i.Name
+                },
+
+                ImageUrl = string.IsNullOrEmpty(i.Profile_Path) ? null : (baseImageUrl + i.Profile_Path)
+            };
+
+            result.Item.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(_usCulture));
+
+            return result;
+        }
+
         public async Task<MetadataResult<Person>> GetMetadata(PersonLookupInfo id, CancellationToken cancellationToken)
         {
             var tmdbId = id.GetProviderId(MetadataProviders.Tmdb);
@@ -48,7 +116,7 @@ namespace MediaBrowser.Providers.People
             // We don't already have an Id, need to fetch it
             if (string.IsNullOrEmpty(tmdbId))
             {
-                tmdbId = await GetTmdbId(id.Name, cancellationToken).ConfigureAwait(false);
+                tmdbId = await GetTmdbId(id, cancellationToken).ConfigureAwait(false);
             }
 
             var result = new MetadataResult<Person>();
@@ -100,26 +168,14 @@ namespace MediaBrowser.Providers.People
         /// <summary>
         /// Gets the TMDB id.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        private async Task<string> GetTmdbId(string name, CancellationToken cancellationToken)
+        private async Task<string> GetTmdbId(PersonLookupInfo info, CancellationToken cancellationToken)
         {
-            string url = string.Format(@"http://api.themoviedb.org/3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(name), MovieDbProvider.ApiKey);
-            PersonSearchResults searchResult = null;
+            var results = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
 
-            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = cancellationToken,
-                AcceptHeader = MovieDbProvider.AcceptHeader
-
-            }).ConfigureAwait(false))
-            {
-                searchResult = _jsonSerializer.DeserializeFromStream<PersonSearchResults>(json);
-            }
-
-            return searchResult != null && searchResult.Total_Results > 0 ? searchResult.Results[0].Id.ToString(_usCulture) : null;
+            return results.Select(i => i.Item.GetProviderId(MetadataProviders.Tmdb)).FirstOrDefault();
         }
 
         internal async Task EnsurePersonInfo(string id, CancellationToken cancellationToken)

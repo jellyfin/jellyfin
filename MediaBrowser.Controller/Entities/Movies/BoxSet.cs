@@ -99,7 +99,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             // Refresh songs
             foreach (var item in items)
             {
-                if (tasks.Count >= 4)
+                if (tasks.Count >= 3)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     tasks.Clear();

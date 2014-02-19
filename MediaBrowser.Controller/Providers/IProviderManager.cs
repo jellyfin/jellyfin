@@ -55,8 +55,10 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="metadataServices">The metadata services.</param>
         /// <param name="metadataProviders">The metadata providers.</param>
         /// <param name="savers">The savers.</param>
+        /// <param name="imageSavers">The image savers.</param>
         void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders,
-            IEnumerable<IMetadataSaver> savers);
+            IEnumerable<IMetadataSaver> savers,
+            IEnumerable<IImageSaver> imageSavers);
 
         /// <summary>
         /// Gets the available remote images.

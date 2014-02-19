@@ -664,7 +664,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (fields.Contains(ItemFields.Settings))
             {
                 dto.LockedFields = item.LockedFields;
-                dto.EnableInternetProviders = !item.DontFetchMeta;
+                dto.LockData = item.DontFetchMeta;
             }
 
             var hasBudget = item as IHasBudget;

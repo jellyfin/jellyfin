@@ -1,5 +1,4 @@
-﻿using System;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -26,10 +25,8 @@ namespace MediaBrowser.Controller.Providers
     }
 
     public class MetadataResult<T>
-        where T : IHasMetadata
     {
         public bool HasMetadata { get; set; }
         public T Item { get; set; }
     }
-
 }

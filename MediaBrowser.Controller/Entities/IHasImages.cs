@@ -148,6 +148,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is in mixed folder; otherwise, <c>false</c>.</value>
         bool IsInMixedFolder { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is locked.
+        /// </summary>
+        /// <value><c>true</c> if this instance is locked; otherwise, <c>false</c>.</value>
+        bool IsLocked { get; }
     }
 
     public static class HasImagesExtensions

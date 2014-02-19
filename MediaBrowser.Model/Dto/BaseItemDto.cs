@@ -657,7 +657,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets a value indicating whether [enable internet providers].
         /// </summary>
         /// <value><c>true</c> if [enable internet providers]; otherwise, <c>false</c>.</value>
-        public bool? EnableInternetProviders { get; set; }
+        public bool? LockData { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance can resume.
