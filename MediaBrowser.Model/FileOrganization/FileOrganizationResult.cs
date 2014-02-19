@@ -89,6 +89,12 @@ namespace MediaBrowser.Model.FileOrganization
         /// <value>The duplicate paths.</value>
         public List<string> DuplicatePaths { get; set; }
 
+        /// <summary>
+        /// Gets or sets the size of the file.
+        /// </summary>
+        /// <value>The size of the file.</value>
+        public long FileSize { get; set; }
+
         public FileOrganizationResult()
         {
             DuplicatePaths = new List<string>();

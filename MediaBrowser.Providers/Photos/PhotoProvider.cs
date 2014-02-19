@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -13,10 +14,12 @@ namespace MediaBrowser.Providers.Photos
     public class PhotoProvider : ICustomMetadataProvider<Photo>, IHasChangeMonitor
     {
         private readonly ILogger _logger;
+        private readonly IImageProcessor _imageProcessor;
 
-        public PhotoProvider(ILogger logger)
+        public PhotoProvider(ILogger logger, IImageProcessor imageProcessor)
         {
             _logger = logger;
+            _imageProcessor = imageProcessor;
         }
 
         public Task<ItemUpdateType> FetchAsync(Photo item, IDirectoryService directoryService, CancellationToken cancellationToken)
@@ -37,9 +40,6 @@ namespace MediaBrowser.Providers.Photos
                         string manufacturer;
                         string model;
 
-                        int xResolution;
-                        int yResolution;
-
                         reader.GetTagValue(ExifTags.FNumber, out aperture);
                         reader.GetTagValue(ExifTags.ExposureTime, out shutterSpeed);
                         reader.GetTagValue(ExifTags.DateTimeOriginal, out dateTaken);
@@ -47,9 +47,6 @@ namespace MediaBrowser.Providers.Photos
                         reader.GetTagValue(ExifTags.Make, out manufacturer);
                         reader.GetTagValue(ExifTags.Model, out model);
 
-                        reader.GetTagValue(ExifTags.XResolution, out xResolution);
-                        reader.GetTagValue(ExifTags.YResolution, out yResolution);
-                        
                         if (dateTaken > DateTime.MinValue)
                         {
                             item.DateCreated = dateTaken;
@@ -60,6 +57,10 @@ namespace MediaBrowser.Providers.Photos
                         var cameraModel = manufacturer ?? string.Empty;
                         cameraModel += " ";
                         cameraModel += model ?? string.Empty;
+
+                        var size = _imageProcessor.GetImageSize(item.Path);
+                        var xResolution = size.Width;
+                        var yResolution = size.Height;
 
                         item.Overview = "Taken " + dateTaken.ToString("F") + "\n" +
                                         (!string.IsNullOrWhiteSpace(cameraModel) ? "With a " + cameraModel : "") +

@@ -50,7 +50,8 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 Date = DateTime.UtcNow,
                 OriginalPath = path,
                 OriginalFileName = Path.GetFileName(path),
-                Type = FileOrganizerType.Episode
+                Type = FileOrganizerType.Episode,
+                FileSize = new FileInfo(path).Length
             };
 
             var seriesName = TVUtils.GetSeriesNameFromEpisodeFile(path);
@@ -100,6 +101,17 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 result.Status = FileSortingStatus.Failure;
                 result.StatusMessage = msg;
                 _logger.Warn(msg);
+            }
+
+            var previousResult = _organizationService.GetResultBySourcePath(path);
+
+            if (previousResult != null)
+            {
+                // Don't keep saving the same result over and over if nothing has changed
+                if (previousResult.Status == result.Status && result.Status != FileSortingStatus.Success)
+                {
+                    return previousResult;
+                }
             }
 
             await _organizationService.SaveResult(result, CancellationToken.None).ConfigureAwait(false);

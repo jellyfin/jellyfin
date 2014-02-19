@@ -38,11 +38,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             return null;
         }
 
-        protected static string[] ImageExtensions = { ".tiff", ".jpg", ".png", ".aiff" };
+        protected static string[] ImageExtensions = { ".tiff", ".jpeg", ".jpg", ".png", ".aiff" };
         protected bool IsImageFile(string path)
         {
             return !path.EndsWith("folder.jpg", StringComparison.OrdinalIgnoreCase)
-                && !path.EndsWith("backdrop.jpg", StringComparison.OrdinalIgnoreCase)
                 && ImageExtensions.Any(p => path.EndsWith(p, StringComparison.OrdinalIgnoreCase));
         }
 

@@ -64,6 +64,18 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             return _repo.GetResult(id);
         }
 
+        public FileOrganizationResult GetResultBySourcePath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+            
+            var id = path.GetMD5().ToString("N");
+
+            return GetResult(id);
+        }
+
         public Task DeleteOriginalFile(string resultId)
         {
             var result = _repo.GetResult(resultId);

@@ -106,16 +106,6 @@ namespace MediaBrowser.Providers.Manager
             return Task.FromResult(true);
         }
 
-        /// <summary>
-        /// Saves the image.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="url">The URL.</param>
-        /// <param name="resourcePool">The resource pool.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="imageIndex">Index of the image.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         public async Task SaveImage(IHasImages item, string url, SemaphoreSlim resourcePool, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             var response = await _httpClient.GetResponse(new HttpRequestOptions
@@ -130,28 +120,11 @@ namespace MediaBrowser.Providers.Manager
                     .ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Saves the image.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="source">The source.</param>
-        /// <param name="mimeType">Type of the MIME.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="imageIndex">Index of the image.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         public Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
         }
 
-        /// <summary>
-        /// Gets the available remote images.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="query">The query.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
         public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasImages item, RemoteImageQuery query, CancellationToken cancellationToken)
         {
             var providers = GetRemoteImageProviders(item, query.IncludeDisabledProviders);
@@ -327,7 +300,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     return false;
                 }
-                
+
                 if (provider is IRemoteImageProvider)
                 {
                     if (Array.IndexOf(options.DisabledImageFetchers, provider.Name) != -1)
@@ -397,7 +370,7 @@ namespace MediaBrowser.Providers.Manager
             // Not configured. Just return some high number to put it at the end.
             return 100;
         }
-        
+
         private int GetDefaultOrder(IMetadataProvider provider)
         {
             var hasOrder = provider as IHasOrder;
@@ -531,7 +504,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
-        
+
         /// <summary>
         /// Saves the metadata.
         /// </summary>
@@ -613,13 +586,44 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        //private IEnumerable<TLookupType> GetRemoteSearchResults<TLookupType>(TLookupType searchInfo,
-        //    CancellationToken cancellationToken)
-        //    where TLookupType : ItemLookupInfo
-        //{
-        //    var providers = _metadataProviders.OfType<IRemoteSearchProvider<TLookupType>>();
+        public async Task<IEnumerable<SearchResult<TLookupType>>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo,
+            CancellationToken cancellationToken)
+            where TItemType : BaseItem, new()
+            where TLookupType : ItemLookupInfo
+        {
+            // Give it a dummy path just so that it looks like a file system item
+            var dummy = new TItemType
+            {
+                Path = "C:\\",
 
+                // Dummy this up to fool the local trailer check
+                Parent = new Folder()
+            };
 
-        //}
+            var options = GetMetadataOptions(dummy);
+
+            var providers = GetMetadataProvidersInternal<TItemType>(dummy, options, searchInfo.IncludeDisabledProviders)
+                .OfType<IRemoteSearchProvider<TLookupType>>();
+
+            if (!string.IsNullOrEmpty(searchInfo.SearchProviderName))
+            {
+                providers = providers.Where(i => string.Equals(i.Name, searchInfo.SearchProviderName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            foreach (var provider in providers)
+            {
+                var results = await provider.GetSearchResults(searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
+
+                var list = results.ToList();
+
+                if (list.Count > 0)
+                {
+                    return list;
+                }
+            }
+
+            // Nothing found
+            return new List<SearchResult<TLookupType>>();
+        }
     }
 }

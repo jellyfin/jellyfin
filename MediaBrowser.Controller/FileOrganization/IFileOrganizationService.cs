@@ -54,6 +54,13 @@ namespace MediaBrowser.Controller.FileOrganization
         FileOrganizationResult GetResult(string id);
 
         /// <summary>
+        /// Gets the result by source path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>FileOrganizationResult.</returns>
+        FileOrganizationResult GetResultBySourcePath(string path);
+        
+        /// <summary>
         /// Saves the result.
         /// </summary>
         /// <param name="result">The result.</param>

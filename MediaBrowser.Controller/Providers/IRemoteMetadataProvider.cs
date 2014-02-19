@@ -19,6 +19,8 @@ namespace MediaBrowser.Controller.Providers
     public interface IRemoteSearchProvider<TLookupInfoType>
         where TLookupInfoType : ItemLookupInfo
     {
+        string Name { get; }
+
         Task<IEnumerable<SearchResult<TLookupInfoType>>> GetSearchResults(TLookupInfoType searchInfo, CancellationToken cancellationToken);
     }
     
@@ -28,5 +30,22 @@ namespace MediaBrowser.Controller.Providers
         public T Item { get; set; }
 
         public string ImageUrl { get; set; }
+    }
+
+    public class RemoteSearchQuery<T>
+        where T : ItemLookupInfo
+    {
+        public T SearchInfo { get; set; }
+
+        /// <summary>
+        /// If set will only search within the given provider
+        /// </summary>
+        public string SearchProviderName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include disabled providers].
+        /// </summary>
+        /// <value><c>true</c> if [include disabled providers]; otherwise, <c>false</c>.</value>
+        public bool IncludeDisabledProviders { get; set; }
     }
 }
