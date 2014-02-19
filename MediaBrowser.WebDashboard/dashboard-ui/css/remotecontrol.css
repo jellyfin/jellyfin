@@ -1,4 +1,4 @@
-﻿#remoteControlFlyout {
+﻿.remoteControlFlyout {
     width: 300px;
     min-height: 400px;
 }
@@ -69,13 +69,13 @@
 }
 
 @media all and (min-height: 500px) {
-    #remoteControlFlyout {
+    .remoteControlFlyout {
         min-height: 450px;
     }
 }
 
 @media all and (min-height: 600px) {
-    #remoteControlFlyout {
+    .remoteControlFlyout {
         min-height: 500px;
     }
 }
@@ -87,19 +87,19 @@
 }
 
 @media all and (min-width: 400px) {
-    #remoteControlFlyout {
+    .remoteControlFlyout {
         width: 360px;
     }
 }
 
 @media all and (min-width: 500px) {
-    #remoteControlFlyout {
+    .remoteControlFlyout {
         width: 450px;
     }
 }
 
 @media all and (min-width: 600px) {
-    #remoteControlFlyout {
+    .remoteControlFlyout {
         width: 550px;
     }
 }

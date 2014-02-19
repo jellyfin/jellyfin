@@ -521,7 +521,7 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var child in children)
             {
-                if (tasks.Count >= 4)
+                if (tasks.Count >= 3)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     tasks.Clear();

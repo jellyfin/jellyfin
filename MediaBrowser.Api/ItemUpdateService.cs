@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using ServiceStack;
 using System;
 using System.Linq;
@@ -94,8 +93,8 @@ namespace MediaBrowser.Api
         {
             var item = _dtoService.GetItemByDtoId(request.ItemId);
 
-            var newEnableInternetProviders = request.EnableInternetProviders ?? true;
-            var dontFetchMetaChanged = item.DontFetchMeta != !newEnableInternetProviders;
+            var newLockData = request.LockData ?? false;
+            var dontFetchMetaChanged = item.DontFetchMeta != newLockData;
 
             UpdateItem(request, item);
 
@@ -107,7 +106,7 @@ namespace MediaBrowser.Api
 
                 foreach (var child in folder.RecursiveChildren.ToList())
                 {
-                    child.DontFetchMeta = !newEnableInternetProviders;
+                    child.DontFetchMeta = newLockData;
                     await _libraryManager.UpdateItem(child, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
                 }
             }
@@ -307,15 +306,12 @@ namespace MediaBrowser.Api
             {
                 hasAspectRatio.AspectRatio = request.AspectRatio;
             }
-            
-            item.DontFetchMeta = !(request.EnableInternetProviders ?? true);
-            if (request.EnableInternetProviders ?? true)
+
+            item.DontFetchMeta = (request.LockData ?? false);
+
+            if (request.LockedFields != null)
             {
                 item.LockedFields = request.LockedFields;
-            }
-            else
-            {
-                item.LockedFields.Clear();
             }
 
             // Only allow this for series. Runtimes for media comes from ffprobe.

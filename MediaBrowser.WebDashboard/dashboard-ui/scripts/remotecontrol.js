@@ -64,7 +64,7 @@
 
         var item = options.item;
 
-        var html = '<div data-role="popup" id="remoteControlFlyout" data-transition="slidedown" data-theme="a">';
+        var html = '<div data-role="popup" class="remoteControlFlyout" data-transition="slidedown" data-theme="a">';
 
         html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>';
 
@@ -100,7 +100,7 @@
 
         $(document.body).append(html);
 
-        var popup = $('#remoteControlFlyout').popup({ history: false, tolerance: 0, corners: false }).trigger('create').popup("open").on("popupafterclose", function () {
+        var popup = $('.remoteControlFlyout').popup({ history: false, tolerance: 0, corners: false }).trigger('create').popup("open").on("popupafterclose", function () {
 
             if (ApiClient.isWebSocketOpen()) {
                 ApiClient.sendWebSocketMessage("SessionsStop");
@@ -109,6 +109,8 @@
             $(ApiClient).off("websocketmessage.remotecontrol");
 
             $(this).off("popupafterclose").remove();
+
+            $('.remoteControlFlyout').popup("destroy").remove();
         });
 
         popup.on('click', '.trSession', function () {
@@ -131,7 +133,7 @@
             var checkboxes = $('.chkClient', popup);
 
             if (!checkboxes.length) {
-                $('#remoteControlFlyout').popup("close");
+                $('.remoteControlFlyout').popup("close");
                 return false;
             }
 
@@ -356,7 +358,7 @@
 
                             renderVideos(themeSongsElem, result.Items, 'Theme Songs');
 
-                            $('#remoteControlFlyout').popup("reposition", { tolerance: 0 });
+                            $('.remoteControlFlyout').popup("reposition", { tolerance: 0 });
                         });
                     }
                 }
@@ -445,7 +447,7 @@
 
         if (!sessions.length) {
             elem.html('<p>There are currently no available media browser sessions to control.</p>');
-            $('#remoteControlFlyout').popup("reposition", {});
+            $('.remoteControlFlyout').popup("reposition", {});
             return;
         }
 
@@ -542,8 +544,6 @@
         $('.tdSelectSession', elem).html('<input type="radio" class="chkClient" name="chkClient" />');
 
         $('.chkClient:first', elem).checked(true);
-
-        $('#remoteControlFlyout').popup("reposition", { tolerance: 0 });
     }
 
     function getSessionNowPlayingTime(session) {
@@ -642,7 +642,7 @@
 
     function showMenu(sessions, options) {
 
-        var html = '<div data-role="popup" data-transition="slidedown" id="remoteControlFlyout" data-theme="a">';
+        var html = '<div data-role="popup" data-transition="slidedown" class="remoteControlFlyout" data-theme="a">';
 
         html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>';
 
@@ -702,7 +702,7 @@
 
         $(document.body).append(html);
 
-        var popup = $('#remoteControlFlyout').popup({ history: false, tolerance: 0, corners: false }).trigger('create').popup("open").on("popupafterclose", function () {
+        var popup = $('.remoteControlFlyout').popup({ history: false, tolerance: 0, corners: false }).trigger('create').popup("open").on("popupafterclose", function () {
 
             if (ApiClient.isWebSocketOpen()) {
                 ApiClient.sendWebSocketMessage("SessionsStop");
@@ -711,6 +711,8 @@
             $(ApiClient).off("websocketmessage.remotecontrol");
 
             $(this).off("popupafterclose").remove();
+
+            $('.remoteControlFlyout').popup("destroy").remove();
         });
 
         renderSessionsInControlMenu(popup, sessions, options);

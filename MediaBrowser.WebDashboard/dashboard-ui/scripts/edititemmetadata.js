@@ -22,7 +22,7 @@
 
         var htmlName = "<div class='" + cssClass + "'>";
 
-        if (item.EnableInternetProviders === false) {
+        if (item.LockData) {
             htmlName += '<img src="css/images/editor/lock.png" />';
         }
 
@@ -858,12 +858,12 @@
         populateListView($('#listTags', page), item.Tags);
         populateListView($('#listKeywords', page), item.Keywords);
 
-        var enableInternetProviders = (item.EnableInternetProviders || false);
-        $("#enableInternetProviders", page).attr('checked', !enableInternetProviders).checkboxradio('refresh');
-        if (enableInternetProviders) {
-            $('#providerSettingsContainer', page).show();
-        } else {
+        var lockData = (item.LockData || false);
+        var chkLockData = $("#chkLockData", page).attr('checked', lockData).checkboxradio('refresh');
+        if (chkLockData.checked()) {
             $('#providerSettingsContainer', page).hide();
+        } else {
+            $('#providerSettingsContainer', page).show();
         }
         populateInternetProviderSettings(page, item, item.LockedFields);
 
@@ -1222,7 +1222,7 @@
                 OfficialRating: $('#selectOfficialRating', form).val(),
                 CustomRating: $('#selectCustomRating', form).val(),
                 People: currentItem.People,
-                EnableInternetProviders: !$("#enableInternetProviders", form).prop('checked'),
+                LockData: $("#chkLockData", form).prop('checked'),
                 LockedFields: $('.selectLockedField', form).map(function () {
                     var value = $(this).val();
                     if (value != '') return value;

@@ -52,11 +52,10 @@ namespace MediaBrowser.Providers.Manager
 
         private readonly IFileSystem _fileSystem;
 
-        private readonly IProviderRepository _providerRepo;
-
         private IMetadataService[] _metadataServices = { };
         private IMetadataProvider[] _metadataProviders = { };
         private IEnumerable<IMetadataSaver> _savers;
+        private IImageSaver[] _imageSavers;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
@@ -66,15 +65,13 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="fileSystem">The file system.</param>
-        /// <param name="providerRepo">The provider repo.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IProviderRepository providerRepo)
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
-            _providerRepo = providerRepo;
         }
 
         /// <summary>
@@ -84,13 +81,16 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="metadataServices">The metadata services.</param>
         /// <param name="metadataProviders">The metadata providers.</param>
         /// <param name="metadataSavers">The metadata savers.</param>
-        public void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders, IEnumerable<IMetadataSaver> metadataSavers)
+        /// <param name="imageSavers">The image savers.</param>
+        public void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders, IEnumerable<IMetadataSaver> metadataSavers,
+            IEnumerable<IImageSaver> imageSavers)
         {
             ImageProviders = imageProviders.ToArray();
 
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
             _metadataProviders = metadataProviders.ToArray();
             _savers = metadataSavers.ToArray();
+            _imageSavers = imageSavers.ToArray();
         }
 
         public Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -105,62 +105,6 @@ namespace MediaBrowser.Providers.Manager
             _logger.Error("Unable to find a metadata service for item of type " + item.GetType().Name);
             return Task.FromResult(true);
         }
-
-        /// <summary>
-        /// Saves to library filesystem.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="dataToSave">The data to save.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task SaveToLibraryFilesystem(BaseItem item, string path, Stream dataToSave, CancellationToken cancellationToken)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException();
-            }
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException();
-            }
-            if (dataToSave == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                dataToSave.Dispose();
-                cancellationToken.ThrowIfCancellationRequested();
-            }
-
-            //Tell the watchers to ignore
-            _libraryMonitor.ReportFileSystemChangeBeginning(path);
-
-            if (dataToSave.CanSeek)
-            {
-                dataToSave.Position = 0;
-            }
-
-            try
-            {
-                using (dataToSave)
-                {
-                    using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                    {
-                        await dataToSave.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
-                    }
-                }
-            }
-            finally
-            {
-                //Remove the ignore
-                _libraryMonitor.ReportFileSystemChangeComplete(path, false);
-            }
-        }
-
 
         /// <summary>
         /// Saves the image.
@@ -252,25 +196,19 @@ namespace MediaBrowser.Providers.Manager
                     result = result.Where(i => i.Type == type.Value);
                 }
 
-                return string.IsNullOrEmpty(preferredLanguage) ? result :
-                    FilterImages(result, preferredLanguage);
+                if (string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase))
+                {
+                    result = result.Where(i => string.IsNullOrEmpty(i.Language) ||
+                                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("{0} failed in GetImageInfos for type {1}", ex, provider.GetType().Name, item.GetType().Name);
                 return new List<RemoteImageInfo>();
             }
-        }
-
-        private IEnumerable<RemoteImageInfo> FilterImages(IEnumerable<RemoteImageInfo> images, string preferredLanguage)
-        {
-            if (string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase))
-            {
-                images = images.Where(i => string.IsNullOrEmpty(i.Language) ||
-                                           string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
-            }
-
-            return images;
         }
 
         /// <summary>
@@ -294,13 +232,16 @@ namespace MediaBrowser.Providers.Manager
 
         private IEnumerable<IImageProvider> GetImageProviders(IHasImages item, MetadataOptions options, bool includeDisabled)
         {
+            // Avoid implicitly captured closure
+            var currentOptions = options;
+
             return ImageProviders.Where(i => CanRefresh(i, item, options, includeDisabled))
             .OrderBy(i =>
             {
                 // See if there's a user-defined order
                 if (!(i is ILocalImageProvider))
                 {
-                    var index = Array.IndexOf(options.ImageFetcherOrder, i.Name);
+                    var index = Array.IndexOf(currentOptions.ImageFetcherOrder, i.Name);
 
                     if (index != -1)
                     {
@@ -325,36 +266,13 @@ namespace MediaBrowser.Providers.Manager
         private IEnumerable<IMetadataProvider<T>> GetMetadataProvidersInternal<T>(IHasMetadata item, MetadataOptions options, bool includeDisabled)
             where T : IHasMetadata
         {
+            // Avoid implicitly captured closure
+            var currentOptions = options;
+
             return _metadataProviders.OfType<IMetadataProvider<T>>()
-                .Where(i => CanRefresh(i, item, options, includeDisabled))
-                .OrderBy(i =>
-                {
-                    // See if there's a user-defined order
-                    if (i is ILocalMetadataProvider)
-                    {
-                        var index = Array.IndexOf(options.LocalMetadataReaderOrder, i.Name);
-
-                        if (index != -1)
-                        {
-                            return index;
-                        }
-                    }
-
-                    // See if there's a user-defined order
-                    if (i is IRemoteMetadataProvider)
-                    {
-                        var index = Array.IndexOf(options.MetadataFetcherOrder, i.Name);
-
-                        if (index != -1)
-                        {
-                            return index;
-                        }
-                    }
-
-                    // Not configured. Just return some high number to put it at the end.
-                    return 100;
-                })
-                .ThenBy(GetOrder);
+                .Where(i => CanRefresh(i, item, currentOptions, includeDisabled))
+                .OrderBy(i => GetConfiguredOrder(i, options))
+                .ThenBy(GetDefaultOrder);
         }
 
         private IEnumerable<IRemoteImageProvider> GetRemoteImageProviders(IHasImages item, bool includeDisabled)
@@ -368,6 +286,12 @@ namespace MediaBrowser.Providers.Manager
         {
             if (!includeDisabled)
             {
+                // If locked only allow local providers
+                if (item.IsLocked && !(provider is ILocalMetadataProvider) && !(provider is IForcedProvider))
+                {
+                    return false;
+                }
+
                 if (provider is IRemoteMetadataProvider)
                 {
                     if (Array.IndexOf(options.DisabledMetadataFetchers, provider.Name) != -1)
@@ -398,6 +322,12 @@ namespace MediaBrowser.Providers.Manager
         {
             if (!includeDisabled)
             {
+                // If locked only allow local providers
+                if (item.IsLocked && !(provider is ILocalImageProvider))
+                {
+                    return false;
+                }
+                
                 if (provider is IRemoteImageProvider)
                 {
                     if (Array.IndexOf(options.DisabledImageFetchers, provider.Name) != -1)
@@ -440,12 +370,35 @@ namespace MediaBrowser.Providers.Manager
             return hasOrder.Order;
         }
 
-        /// <summary>
-        /// Gets the order.
-        /// </summary>
-        /// <param name="provider">The provider.</param>
-        /// <returns>System.Int32.</returns>
-        private int GetOrder(IMetadataProvider provider)
+        private int GetConfiguredOrder(IMetadataProvider provider, MetadataOptions options)
+        {
+            // See if there's a user-defined order
+            if (provider is ILocalMetadataProvider)
+            {
+                var index = Array.IndexOf(options.LocalMetadataReaderOrder, provider.Name);
+
+                if (index != -1)
+                {
+                    return index;
+                }
+            }
+
+            // See if there's a user-defined order
+            if (provider is IRemoteMetadataProvider)
+            {
+                var index = Array.IndexOf(options.MetadataFetcherOrder, provider.Name);
+
+                if (index != -1)
+                {
+                    return index;
+                }
+            }
+
+            // Not configured. Just return some high number to put it at the end.
+            return 100;
+        }
+        
+        private int GetDefaultOrder(IMetadataProvider provider)
         {
             var hasOrder = provider as IHasOrder;
 
@@ -578,6 +531,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
+        
         /// <summary>
         /// Saves the metadata.
         /// </summary>
@@ -658,5 +612,14 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
         }
+
+        //private IEnumerable<TLookupType> GetRemoteSearchResults<TLookupType>(TLookupType searchInfo,
+        //    CancellationToken cancellationToken)
+        //    where TLookupType : ItemLookupInfo
+        //{
+        //    var providers = _metadataProviders.OfType<IRemoteSearchProvider<TLookupType>>();
+
+
+        //}
     }
 }

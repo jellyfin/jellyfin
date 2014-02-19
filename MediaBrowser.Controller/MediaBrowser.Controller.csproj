@@ -147,9 +147,11 @@
     <Compile Include="Persistence\MediaStreamQuery.cs" />
     <Compile Include="Providers\DirectoryService.cs" />
     <Compile Include="Providers\ICustomMetadataProvider.cs" />
+    <Compile Include="Providers\IForcedProvider.cs" />
     <Compile Include="Providers\IHasChangeMonitor.cs" />
     <Compile Include="Entities\IHasMetadata.cs" />
     <Compile Include="Providers\IImageProvider.cs" />
+    <Compile Include="Providers\IImageSaver.cs" />
     <Compile Include="Providers\ILocalMetadataProvider.cs" />
     <Compile Include="Providers\IProviderRepository.cs" />
     <Compile Include="Providers\IRemoteImageProvider.cs" />
@@ -216,7 +218,7 @@
     <Compile Include="Plugins\IPluginConfigurationPage.cs" />
     <Compile Include="Plugins\IServerEntryPoint.cs" />
     <Compile Include="Providers\IImageEnhancer.cs" />
-    <Compile Include="Providers\BaseProviderInfo.cs" />
+    <Compile Include="Providers\ProviderRefreshStatus.cs" />
     <Compile Include="Resolvers\IResolverIgnoreRule.cs" />
     <Compile Include="Resolvers\EntityResolutionHelper.cs" />
     <Compile Include="Resolvers\ResolverPriority.cs" />
@@ -224,7 +226,6 @@
     <Compile Include="Library\ItemResolveArgs.cs" />
     <Compile Include="IO\FileData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\BaseMetadataProvider.cs" />
     <Compile Include="Session\ISessionController.cs" />
     <Compile Include="Session\ISessionControllerFactory.cs" />
     <Compile Include="Session\PlaybackInfo.cs" />

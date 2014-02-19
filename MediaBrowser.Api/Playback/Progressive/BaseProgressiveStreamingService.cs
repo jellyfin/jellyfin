@@ -240,6 +240,13 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             responseHeaders["Accept-Ranges"] = "none";
 
+            var length = response.Headers["Content-Length"];
+
+            if (!string.IsNullOrEmpty(length))
+            {
+                responseHeaders["Content-Length"] = length;
+            }
+
             if (isHeadRequest)
             {
                 using (response.Content)
@@ -273,13 +280,13 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Use the command line args with a dummy playlist path
             var outputPath = GetOutputFilePath(state);
 
+            responseHeaders["Accept-Ranges"] = "none";
+
             var contentType = MimeTypes.GetMimeType(outputPath);
 
             // Headers only
             if (isHeadRequest)
             {
-                responseHeaders["Accept-Ranges"] = "none";
-
                 return ResultFactory.GetResult(new byte[] { }, contentType, responseHeaders);
             }
 
@@ -294,7 +301,6 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var result = new ProgressiveStreamWriter(outputPath, Logger, FileSystem);
 
-            result.Options["Accept-Ranges"] = "none";
             result.Options["Content-Type"] = contentType;
 
             // Add the response headers to the result object

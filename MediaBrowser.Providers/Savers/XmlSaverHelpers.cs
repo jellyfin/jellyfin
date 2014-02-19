@@ -22,6 +22,8 @@ namespace MediaBrowser.Providers.Savers
                
                     "Added",
                     "AspectRatio",
+                    "AudioDbAlbumId",
+                    "AudioDbArtistId",
                     "AwardSummary",
                     "BirthDate",
                     "Budget",
@@ -73,6 +75,7 @@ namespace MediaBrowser.Providers.Savers
                     "TVcomId",
                     "TvDbId",
                     "Type",
+                    "TVRageId",
                     "VoteCount",
                     "Website",
                     "Zap2ItId"
@@ -477,7 +480,7 @@ namespace MediaBrowser.Providers.Savers
 
             if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<TvRageId>" + SecurityElement.Escape(externalId) + "</TvRageId>");
+                builder.Append("<TVRageId>" + SecurityElement.Escape(externalId) + "</TVRageId>");
             }
 
             var hasTagline = item as IHasTaglines;

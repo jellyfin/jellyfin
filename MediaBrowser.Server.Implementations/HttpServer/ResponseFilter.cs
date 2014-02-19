@@ -69,7 +69,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                         var response = (HttpListenerResponse)res.OriginalResponse;
 
                         response.ContentLength64 = length;
-
+                       
                         // Disable chunked encoding. Technically this is only needed when using Content-Range, but
                         // anytime we know the content length there's no need for it
                         response.SendChunked = false;
