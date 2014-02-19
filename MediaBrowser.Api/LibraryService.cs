@@ -435,56 +435,11 @@ namespace MediaBrowser.Api
             Task.WaitAll(task);
         }
 
-        private async Task DeleteItem(DeleteItem request)
+        private Task DeleteItem(DeleteItem request)
         {
             var item = _dtoService.GetItemByDtoId(request.Id);
 
-            var parent = item.Parent;
-
-            var locationType = item.LocationType;
-
-            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
-            {
-                foreach (var path in item.GetDeletePaths().ToList())
-                {
-                    if (Directory.Exists(path))
-                    {
-                        Directory.Delete(path, true);
-                    }
-                    else if (File.Exists(path))
-                    {
-                        File.Delete(path);
-                    }
-                }
-
-                if (parent != null)
-                {
-                    try
-                    {
-                        await parent.ValidateChildren(new Progress<double>(), CancellationToken.None)
-                                  .ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error refreshing item", ex);
-                    }
-                }
-            }
-            else if (parent != null)
-            {
-                try
-                {
-                    await parent.RemoveChild(item, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error removing item", ex);
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("Don't know how to delete " + item.Name);
-            }
+            return _libraryManager.DeleteItem(item);
         }
 
         /// <summary>

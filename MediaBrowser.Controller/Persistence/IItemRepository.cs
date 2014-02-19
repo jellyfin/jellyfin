@@ -27,6 +27,14 @@ namespace MediaBrowser.Controller.Persistence
         Task SaveItem(BaseItem item, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Deletes the item.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task DeleteItem(Guid id, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Gets the critic reviews.
         /// </summary>
         /// <param name="itemId">The item id.</param>

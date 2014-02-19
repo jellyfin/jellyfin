@@ -166,8 +166,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableTmdbUpdates { get; set; }
         public bool EnableFanArtUpdates { get; set; }
 
-        public bool EnableVideoImageExtraction { get; set; }
-
         /// <summary>
         /// Gets or sets the image saving convention.
         /// </summary>
@@ -218,7 +216,6 @@ namespace MediaBrowser.Model.Configuration
             EnableHttpLevelLogging = true;
             EnableDashboardResponseCaching = true;
 
-            EnableVideoImageExtraction = true;
             EnableMovieChapterImageExtraction = true;
             EnableEpisodeChapterImageExtraction = false;
             EnableOtherVideoChapterImageExtraction = false;

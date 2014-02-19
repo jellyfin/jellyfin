@@ -408,6 +408,83 @@ namespace MediaBrowser.Server.Implementations.Library
             LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
         }
 
+        public async Task DeleteItem(BaseItem item)
+        {
+            var parent = item.Parent;
+
+            var locationType = item.LocationType;
+
+            var children = item.IsFolder
+                ? ((Folder)item).RecursiveChildren.ToList()
+                : new List<BaseItem>();
+
+            foreach (var metadataPath in GetMetadataPaths(item, children))
+            {
+                _logger.Debug("Deleting path {0}", metadataPath);
+
+                try
+                {
+                    Directory.Delete(metadataPath, true);
+                }
+                catch (DirectoryNotFoundException)
+                {
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error deleting {0}", ex, metadataPath);
+                }
+            }
+
+            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+            {
+                foreach (var path in item.GetDeletePaths().ToList())
+                {
+                    if (Directory.Exists(path))
+                    {
+                        _logger.Debug("Deleting path {0}", path);
+                        Directory.Delete(path, true);
+                    }
+                    else if (File.Exists(path))
+                    {
+                        _logger.Debug("Deleting path {0}", path);
+                        File.Delete(path);
+                    }
+                }
+
+                if (parent != null)
+                {
+                    await parent.ValidateChildren(new Progress<double>(), CancellationToken.None)
+                              .ConfigureAwait(false);
+                }
+            }
+            else if (parent != null)
+            {
+                await parent.RemoveChild(item, CancellationToken.None).ConfigureAwait(false);
+            }
+            else
+            {
+                throw new InvalidOperationException("Don't know how to delete " + item.Name);
+            }
+
+            foreach (var child in children)
+            {
+                await ItemRepository.DeleteItem(child.Id, CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+
+        private IEnumerable<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
+        {
+            var list = new List<string>
+            {
+                ConfigurationManager.ApplicationPaths.GetInternalMetadataPath(item.Id)
+            };
+
+            list.AddRange(children.Select(i => ConfigurationManager.ApplicationPaths.GetInternalMetadataPath(i.Id)));
+
+            return list;
+        }
+
         /// <summary>
         /// Resolves the item.
         /// </summary>
