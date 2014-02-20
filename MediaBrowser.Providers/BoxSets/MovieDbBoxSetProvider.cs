@@ -236,7 +236,7 @@ namespace MediaBrowser.Providers.BoxSets
 
         private static string GetCollectionsDataPath(IApplicationPaths appPaths)
         {
-            var dataPath = Path.Combine(appPaths.DataPath, "tmdb-collections");
+            var dataPath = Path.Combine(appPaths.CachePath, "tmdb-collections");
 
             return dataPath;
         }

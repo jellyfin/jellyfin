@@ -1,7 +1,8 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaInfo;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -41,17 +42,23 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
         private readonly IItemRepository _itemRepo;
 
+        private readonly IApplicationPaths _appPaths;
+
+        private readonly IEncodingManager _encodingManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
         /// <param name="logManager">The log manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="itemRepo">The item repo.</param>
-        public ChapterImagesTask(ILogManager logManager, ILibraryManager libraryManager, IItemRepository itemRepo)
+        public ChapterImagesTask(ILogManager logManager, ILibraryManager libraryManager, IItemRepository itemRepo, IApplicationPaths appPaths, IEncodingManager encodingManager)
         {
             _logger = logManager.GetLogger(GetType().Name);
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
+            _appPaths = appPaths;
+            _encodingManager = encodingManager;
 
             libraryManager.ItemAdded += libraryManager_ItemAdded;
             libraryManager.ItemUpdated += libraryManager_ItemAdded;
@@ -102,7 +109,14 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 {
                     var chapters = _itemRepo.GetChapters(item.Id).ToList();
 
-                    await FFMpegManager.Instance.PopulateChapterImages(item, chapters, true, true, CancellationToken.None);
+                    await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
+                    {
+                        SaveChapters = true,
+                        ExtractImages = true,
+                        Video = item,
+                        Chapters = chapters
+
+                    }, CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
@@ -137,7 +151,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var numComplete = 0;
 
-            var failHistoryPath = Path.Combine(FFMpegManager.Instance.ChapterImagesPath, "failures.txt");
+            var failHistoryPath = Path.Combine(_appPaths.CachePath, "chapter-failures.txt");
 
             List<string> previouslyFailedImages;
 
@@ -166,7 +180,14 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
                 var chapters = _itemRepo.GetChapters(video.Id).ToList();
 
-                var success = await FFMpegManager.Instance.PopulateChapterImages(video, chapters, extract, true, cancellationToken);
+                var success = await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
+                {
+                    SaveChapters = true,
+                    ExtractImages = extract,
+                    Video = video,
+                    Chapters = chapters
+
+                }, CancellationToken.None);
 
                 if (!success)
                 {

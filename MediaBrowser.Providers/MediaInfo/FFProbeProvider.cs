@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
-using MediaBrowser.Controller.MediaInfo;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -42,6 +42,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILocalizationManager _localization;
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
+        private readonly IEncodingManager _encodingManager;
 
         public string Name
         {
@@ -124,7 +125,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
-            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json);
+            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager);
 
             return prober.ProbeVideo(item, directoryService, cancellationToken);
         }
@@ -155,7 +156,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (video != null)
                 {
-                    var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json);
+                    var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager);
 
                     return !video.SubtitleFiles.SequenceEqual(prober.GetSubtitleFiles(video, directoryService).Select(i => i.FullName).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
                 }

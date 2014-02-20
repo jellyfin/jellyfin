@@ -179,6 +179,7 @@
     <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
+    <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="MediaEncoder\MediaEncoder.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
     <Compile Include="News\NewsService.cs" />

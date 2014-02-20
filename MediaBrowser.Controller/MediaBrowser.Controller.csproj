@@ -135,8 +135,10 @@
     <Compile Include="LiveTv\SeriesTimerInfo.cs" />
     <Compile Include="LiveTv\TimerInfo.cs" />
     <Compile Include="Localization\ILocalizationManager.cs" />
-    <Compile Include="MediaInfo\IMediaEncoder.cs" />
-    <Compile Include="MediaInfo\InternalMediaInfoResult.cs" />
+    <Compile Include="MediaEncoding\ChapterImageRefreshOptions.cs" />
+    <Compile Include="MediaEncoding\IEncodingManager.cs" />
+    <Compile Include="MediaEncoding\IMediaEncoder.cs" />
+    <Compile Include="MediaEncoding\InternalMediaInfoResult.cs" />
     <Compile Include="Net\IHasResultFactory.cs" />
     <Compile Include="Net\IHttpResultFactory.cs" />
     <Compile Include="Net\IHttpServer.cs" />
@@ -198,7 +200,7 @@
     <Compile Include="IServerApplicationPaths.cs" />
     <Compile Include="Library\SearchHintInfo.cs" />
     <Compile Include="Providers\IProviderManager.cs" />
-    <Compile Include="MediaInfo\MediaEncoderHelpers.cs" />
+    <Compile Include="MediaEncoding\MediaEncoderHelpers.cs" />
     <Compile Include="Providers\MetadataProviderPriority.cs" />
     <Compile Include="Resolvers\BaseItemResolver.cs" />
     <Compile Include="Resolvers\BaseVideoResolver.cs" />
@@ -209,7 +211,6 @@
     <Compile Include="Localization\BaseStrings.cs" />
     <Compile Include="Localization\LocalizedStringData.cs" />
     <Compile Include="Localization\LocalizedStrings.cs" />
-    <Compile Include="MediaInfo\FFMpegManager.cs" />
     <Compile Include="Persistence\IDisplayPreferencesRepository.cs" />
     <Compile Include="Persistence\IItemRepository.cs" />
     <Compile Include="Persistence\IRepository.cs" />

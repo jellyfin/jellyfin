@@ -1,12 +1,12 @@
-﻿using System;
+﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Controller.MediaInfo
+namespace MediaBrowser.Controller.MediaEncoding
 {
     /// <summary>
     /// Class MediaEncoderHelpers

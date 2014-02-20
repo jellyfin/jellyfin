@@ -96,7 +96,6 @@
     <Compile Include="PackageReviewService.cs" />
     <Compile Include="PackageService.cs" />
     <Compile Include="Playback\EndlessStreamCopy.cs" />
-    <Compile Include="Playback\Hls\AudioHlsService.cs" />
     <Compile Include="Playback\Hls\BaseHlsService.cs" />
     <Compile Include="Playback\Hls\DynamicHlsService.cs" />
     <Compile Include="Playback\Hls\HlsSegmentService.cs" />

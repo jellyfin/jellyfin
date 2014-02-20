@@ -17,7 +17,7 @@ using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
-using MediaBrowser.Controller.MediaInfo;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.News;
 using MediaBrowser.Controller.Notifications;
@@ -161,6 +161,8 @@ namespace MediaBrowser.ServerApplication
 
         private ILocalizationManager LocalizationManager { get; set; }
 
+        private IEncodingManager EncodingManager { get; set; }
+        
         /// <summary>
         /// Gets or sets the user data repository.
         /// </summary>
@@ -272,6 +274,15 @@ namespace MediaBrowser.ServerApplication
 
                 try
                 {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "chapter-images"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
+
+                try
+                {
                     Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "extracted-video-images"), true);
                 }
                 catch (IOException)
@@ -374,6 +385,10 @@ namespace MediaBrowser.ServerApplication
             await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
             progress.Report(90);
 
+            EncodingManager = new EncodingManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository,
+                MediaEncoder);
+            RegisterSingleInstance(EncodingManager);
+
             LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, MediaEncoder, TaskManager);
             RegisterSingleInstance(LiveTvManager);
 
@@ -419,8 +434,6 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void SetKernelProperties()
         {
-            new FFMpegManager(MediaEncoder, Logger, ItemRepository, FileSystemManager, ServerConfigurationManager);
-
             LocalizedStrings.StringFiles = GetExports<LocalizedStringData>();
 
             SetStaticProperties();
