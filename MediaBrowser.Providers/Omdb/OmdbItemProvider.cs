@@ -47,7 +47,7 @@ namespace MediaBrowser.Providers.Omdb
 
         public string Name
         {
-            get { return "IMDb via The Open Movie Database"; }
+            get { return "The Open Movie Database"; }
         }
 
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
