@@ -912,32 +912,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        /// <summary>
-        /// Determine if we have changed vs the passed in copy
-        /// </summary>
-        /// <param name="copy">The copy.</param>
-        /// <returns><c>true</c> if the specified copy has changed; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual bool HasChanged(BaseItem copy)
-        {
-            if (copy == null)
-            {
-                throw new ArgumentNullException();
-            }
-            if (IsInMixedFolder != copy.IsInMixedFolder)
-            {
-                Logger.Debug(Name + " changed due to different value for IsInMixedFolder.");
-                return true;
-            }
-
-            var changed = copy.DateModified != DateModified;
-            if (changed)
-            {
-                Logger.Debug(Name + " changed - original creation: " + DateCreated + " new creation: " + copy.DateCreated + " original modified: " + DateModified + " new modified: " + copy.DateModified);
-            }
-            return changed;
-        }
-
         public virtual string GetClientTypeName()
         {
             return GetType().Name;

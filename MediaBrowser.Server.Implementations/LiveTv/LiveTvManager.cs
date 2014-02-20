@@ -726,7 +726,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             foreach (var channelInfo in allChannelsList)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 try
                 {
                     var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, cancellationToken).ConfigureAwait(false);
@@ -764,7 +764,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             foreach (var item in list)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 // Avoid implicitly captured closure
                 var currentChannel = item;
 
@@ -793,15 +793,42 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 double percent = numComplete;
                 percent /= allChannelsList.Count;
 
-                progress.Report(80 * percent + 10);
+                progress.Report(70 * percent + 10);
             }
 
             _programs = programs.ToDictionary(i => i.Id);
+            progress.Report(80);
 
             // Load these now which will prefetch metadata
             await GetRecordings(new RecordingQuery(), cancellationToken).ConfigureAwait(false);
-            
+            progress.Report(85);
+
+            await DeleteOldPrograms(_programs.Keys.ToList(), progress, cancellationToken).ConfigureAwait(false);
+
             progress.Report(100);
+        }
+
+        private async Task DeleteOldPrograms(List<Guid> currentIdList, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var list = _itemRepo.GetItemsOfType(typeof(LiveTvProgram)).ToList();
+
+            var numComplete = 0;
+
+            foreach (var program in list)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!currentIdList.Contains(program.Id))
+                {
+                    await _libraryManager.DeleteItem(program).ConfigureAwait(false);
+                }
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= list.Count;
+
+                progress.Report(15 * percent + 85);
+            }
         }
 
         private double GetGuideDays(int channelCount)

@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Providers;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,29 +11,27 @@ namespace MediaBrowser.Controller.Providers
     {
     }
 
-    public interface IRemoteMetadataProvider<TItemType, TLookupInfoType> : IMetadataProvider<TItemType>, IRemoteMetadataProvider
+    public interface IRemoteMetadataProvider<TItemType, in TLookupInfoType> : IMetadataProvider<TItemType>, IRemoteMetadataProvider, IRemoteSearchProvider<TLookupInfoType>
         where TItemType : IHasMetadata, IHasLookupInfo<TLookupInfoType>
         where TLookupInfoType : ItemLookupInfo, new()
     {
         Task<MetadataResult<TItemType>> GetMetadata(TLookupInfoType info, CancellationToken cancellationToken);
     }
 
-    public interface IRemoteSearchProvider<TLookupInfoType>
+    public interface IRemoteSearchProvider<in TLookupInfoType> : IMetadataProvider
         where TLookupInfoType : ItemLookupInfo
     {
-        string Name { get; }
+        Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TLookupInfoType searchInfo, CancellationToken cancellationToken);
 
-        Task<IEnumerable<SearchResult<TLookupInfoType>>> GetSearchResults(TLookupInfoType searchInfo, CancellationToken cancellationToken);
+        /// <summary>
+        /// Gets the image response.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{HttpResponseInfo}.</returns>
+        Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken);
     }
     
-    public class SearchResult<T>
-        where T : ItemLookupInfo
-    {
-        public T Item { get; set; }
-
-        public string ImageUrl { get; set; }
-    }
-
     public class RemoteSearchQuery<T>
         where T : ItemLookupInfo
     {

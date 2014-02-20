@@ -408,8 +408,14 @@ namespace MediaBrowser.Server.Implementations.Library
             LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
         }
 
-        public async Task DeleteItem(BaseItem item)
+        public async Task DeleteItem(BaseItem item, DeleteOptions options)
         {
+            _logger.Debug("Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                item.GetType().Name,
+                item.Name,
+                item.Path ?? string.Empty,
+                item.Id);
+
             var parent = item.Parent;
 
             var locationType = item.LocationType;
@@ -436,7 +442,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+            if (options.DeleteFileLocation && (locationType == LocationType.FileSystem || locationType == LocationType.Offline))
             {
                 foreach (var path in item.GetDeletePaths().ToList())
                 {
@@ -462,15 +468,14 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 await parent.RemoveChild(item, CancellationToken.None).ConfigureAwait(false);
             }
-            else
-            {
-                throw new InvalidOperationException("Don't know how to delete " + item.Name);
-            }
 
+            await ItemRepository.DeleteItem(item.Id, CancellationToken.None).ConfigureAwait(false);
             foreach (var child in children)
             {
                 await ItemRepository.DeleteItem(child.Id, CancellationToken.None).ConfigureAwait(false);
             }
+
+            ReportItemRemoved(item);
         }
 
         private IEnumerable<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)

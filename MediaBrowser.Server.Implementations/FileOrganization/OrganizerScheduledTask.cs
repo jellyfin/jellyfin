@@ -2,8 +2,8 @@
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.FileOrganization;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -20,8 +20,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
         private readonly IFileOrganizationService _organizationService;
+        private readonly IProviderManager _providerManager;
 
-        public OrganizerScheduledTask(ILibraryMonitor libraryMonitor, ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, IServerConfigurationManager config, IFileOrganizationService organizationService)
+        public OrganizerScheduledTask(ILibraryMonitor libraryMonitor, ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, IServerConfigurationManager config, IFileOrganizationService organizationService, IProviderManager providerManager)
         {
             _libraryMonitor = libraryMonitor;
             _libraryManager = libraryManager;
@@ -29,6 +30,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _fileSystem = fileSystem;
             _config = config;
             _organizationService = organizationService;
+            _providerManager = providerManager;
         }
 
         public string Name
@@ -48,7 +50,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new TvFolderOrganizer(_libraryManager, _logger, _fileSystem, _libraryMonitor, _organizationService, _config)
+            return new TvFolderOrganizer(_libraryManager, _logger, _fileSystem, _libraryMonitor, _organizationService, _config, _providerManager)
                 .Organize(_config.Configuration.TvFileOrganizationOptions, cancellationToken, progress);
         }
 

@@ -1,7 +1,10 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -14,6 +17,11 @@ namespace MediaBrowser.Providers.Music
 {
     public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>
     {
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
+        {
+            return new List<RemoteSearchResult>();
+        }
+
         public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo id, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicArtist>();
@@ -114,6 +122,11 @@ namespace MediaBrowser.Providers.Music
         public string Name
         {
             get { return "MusicBrainz"; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

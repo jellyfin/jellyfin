@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.FileOrganization;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.FileOrganization;
@@ -24,8 +24,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         private readonly IFileSystem _fileSystem;
         private readonly IFileOrganizationService _organizationService;
         private readonly IServerConfigurationManager _config;
+        private readonly IProviderManager _providerManager;
 
-        public TvFolderOrganizer(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IFileOrganizationService organizationService, IServerConfigurationManager config)
+        public TvFolderOrganizer(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IFileOrganizationService organizationService, IServerConfigurationManager config, IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -33,6 +34,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _libraryMonitor = libraryMonitor;
             _organizationService = organizationService;
             _config = config;
+            _providerManager = providerManager;
         }
 
         public async Task Organize(TvFileOrganizationOptions options, CancellationToken cancellationToken, IProgress<double> progress)
@@ -57,9 +59,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 foreach (var file in eligibleFiles)
                 {
                     var organizer = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager,
-                        _libraryMonitor);
+                        _libraryMonitor, _providerManager);
 
-                    var result = await organizer.OrganizeEpisodeFile(file.FullName, options, false).ConfigureAwait(false);
+                    var result = await organizer.OrganizeEpisodeFile(file.FullName, options, false, cancellationToken).ConfigureAwait(false);
 
                     if (result.Status == FileSortingStatus.Success)
                     {

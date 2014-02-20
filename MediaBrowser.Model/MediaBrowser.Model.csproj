@@ -112,6 +112,7 @@
     <Compile Include="Notifications\NotificationResult.cs" />
     <Compile Include="Notifications\NotificationsSummary.cs" />
     <Compile Include="Providers\RemoteImageResult.cs" />
+    <Compile Include="Providers\RemoteSearchResult.cs" />
     <Compile Include="Querying\ArtistsQuery.cs" />
     <Compile Include="Querying\EpisodeQuery.cs" />
     <Compile Include="Querying\ItemCountsQuery.cs" />

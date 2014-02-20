@@ -8,15 +8,16 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -46,6 +47,11 @@ namespace MediaBrowser.Providers.TV
         public string Name
         {
             get { return "TheMovieDb"; }
+        }
+
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
+        {
+            return new List<RemoteSearchResult>();
         }
 
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
@@ -452,6 +458,11 @@ namespace MediaBrowser.Providers.TV
                 // After Omdb and Tvdb
                 return 2;
             }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

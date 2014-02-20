@@ -1,9 +1,11 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -34,17 +36,54 @@ namespace MediaBrowser.Providers.TV
             Current = this;
         }
 
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
+        {
+            var list = new List<RemoteSearchResult>();
+
+            string seriesTvdbId;
+            searchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesTvdbId);
+
+            if (!string.IsNullOrEmpty(seriesTvdbId))
+            {
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesTvdbId);
+
+                try
+                {
+                    var item = FetchEpisodeData(searchInfo, seriesDataPath, cancellationToken);
+
+                    if (item != null)
+                    {
+                        list.Add(new RemoteSearchResult
+                        {
+                            IndexNumber = item.IndexNumber,
+                            Name = item.Name,
+                            ParentIndexNumber = item.ParentIndexNumber,
+                            PremiereDate = item.PremiereDate,
+                            ProductionYear = item.ProductionYear,
+                            ProviderIds = item.ProviderIds,
+                            SearchProviderName = Name,
+                            IndexNumberEnd = item.IndexNumberEnd
+                        });
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+                    // Don't fail the provider because this will just keep on going and going.
+                }
+            }
+
+            return list;
+        }
+
         public string Name
         {
             get { return "TheTVDB"; }
         }
 
-        public Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo id, CancellationToken cancellationToken)
+        public Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
-            var episodeId = id;
-
             string seriesTvdbId;
-            episodeId.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesTvdbId);
+            searchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesTvdbId);
 
             var result = new MetadataResult<Episode>();
 
@@ -54,7 +93,7 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    result.Item = FetchEpisodeData(episodeId, seriesDataPath, cancellationToken);
+                    result.Item = FetchEpisodeData(searchInfo, seriesDataPath, cancellationToken);
                     result.HasMetadata = result.Item != null;
                 }
                 catch (FileNotFoundException)
@@ -192,9 +231,9 @@ namespace MediaBrowser.Providers.TV
 
             var episode = new Episode
             {
-                 IndexNumber = id.IndexNumber,
-                 ParentIndexNumber = id.ParentIndexNumber,
-                 IndexNumberEnd = id.IndexNumberEnd
+                IndexNumber = id.IndexNumber,
+                ParentIndexNumber = id.ParentIndexNumber,
+                IndexNumberEnd = id.IndexNumberEnd
             };
 
             try
@@ -673,6 +712,11 @@ namespace MediaBrowser.Providers.TV
                     }
                 }
             }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

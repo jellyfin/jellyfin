@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.TV
                                group series by tvdbId into g
                                select g;
 
-            await new MissingEpisodeProvider(_logger, _config).Run(seriesGroups, cancellationToken).ConfigureAwait(false);
+            await new MissingEpisodeProvider(_logger, _config, _libraryManager).Run(seriesGroups, cancellationToken).ConfigureAwait(false);
 
             var numComplete = 0;
 

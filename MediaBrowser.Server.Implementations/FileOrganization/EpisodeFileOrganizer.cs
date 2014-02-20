@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.FileOrganization;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
@@ -28,10 +27,11 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         private readonly IFileSystem _fileSystem;
         private readonly IFileOrganizationService _organizationService;
         private readonly IServerConfigurationManager _config;
+        private readonly IProviderManager _providerManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public EpisodeFileOrganizer(IFileOrganizationService organizationService, IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor)
+        public EpisodeFileOrganizer(IFileOrganizationService organizationService, IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager)
         {
             _organizationService = organizationService;
             _config = config;
@@ -39,9 +39,10 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _logger = logger;
             _libraryManager = libraryManager;
             _libraryMonitor = libraryMonitor;
+            _providerManager = providerManager;
         }
 
-        public async Task<FileOrganizationResult> OrganizeEpisodeFile(string path, TvFileOrganizationOptions options, bool overwriteExisting)
+        public async Task<FileOrganizationResult> OrganizeEpisodeFile(string path, TvFileOrganizationOptions options, bool overwriteExisting, CancellationToken cancellationToken)
         {
             _logger.Info("Sorting file {0}", path);
 
@@ -77,7 +78,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
                         result.ExtractedEndingEpisodeNumber = endingEpisodeNumber;
 
-                        OrganizeEpisode(path, seriesName, season.Value, episode.Value, endingEpisodeNumber, options, overwriteExisting, result);
+                        await OrganizeEpisode(path, seriesName, season.Value, episode.Value, endingEpisodeNumber, options, overwriteExisting, result, cancellationToken).ConfigureAwait(false);
                     }
                     else
                     {
@@ -119,20 +120,20 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             return result;
         }
 
-        public async Task<FileOrganizationResult> OrganizeWithCorrection(EpisodeFileOrganizationRequest request, TvFileOrganizationOptions options)
+        public async Task<FileOrganizationResult> OrganizeWithCorrection(EpisodeFileOrganizationRequest request, TvFileOrganizationOptions options, CancellationToken cancellationToken)
         {
             var result = _organizationService.GetResult(request.ResultId);
 
             var series = (Series)_libraryManager.GetItemById(new Guid(request.SeriesId));
 
-            OrganizeEpisode(result.OriginalPath, series, request.SeasonNumber, request.EpisodeNumber, request.EndingEpisodeNumber, _config.Configuration.TvFileOrganizationOptions, true, result);
+            await OrganizeEpisode(result.OriginalPath, series, request.SeasonNumber, request.EpisodeNumber, request.EndingEpisodeNumber, _config.Configuration.TvFileOrganizationOptions, true, result, cancellationToken).ConfigureAwait(false);
 
             await _organizationService.SaveResult(result, CancellationToken.None).ConfigureAwait(false);
 
             return result;
         }
 
-        private void OrganizeEpisode(string sourcePath, string seriesName, int seasonNumber, int episodeNumber, int? endingEpiosdeNumber, TvFileOrganizationOptions options, bool overwriteExisting, FileOrganizationResult result)
+        private Task OrganizeEpisode(string sourcePath, string seriesName, int seasonNumber, int episodeNumber, int? endingEpiosdeNumber, TvFileOrganizationOptions options, bool overwriteExisting, FileOrganizationResult result, CancellationToken cancellationToken)
         {
             var series = GetMatchingSeries(seriesName, result);
 
@@ -142,18 +143,18 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 result.Status = FileSortingStatus.Failure;
                 result.StatusMessage = msg;
                 _logger.Warn(msg);
-                return;
+                return Task.FromResult(true);
             }
 
-            OrganizeEpisode(sourcePath, series, seasonNumber, episodeNumber, endingEpiosdeNumber, options, overwriteExisting, result);
+            return OrganizeEpisode(sourcePath, series, seasonNumber, episodeNumber, endingEpiosdeNumber, options, overwriteExisting, result, cancellationToken);
         }
 
-        private void OrganizeEpisode(string sourcePath, Series series, int seasonNumber, int episodeNumber, int? endingEpiosdeNumber, TvFileOrganizationOptions options, bool overwriteExisting, FileOrganizationResult result)
+        private async Task OrganizeEpisode(string sourcePath, Series series, int seasonNumber, int episodeNumber, int? endingEpiosdeNumber, TvFileOrganizationOptions options, bool overwriteExisting, FileOrganizationResult result, CancellationToken cancellationToken)
         {
             _logger.Info("Sorting file {0} into series {1}", sourcePath, series.Path);
 
             // Proceed to sort the file
-            var newPath = GetNewPath(sourcePath, series, seasonNumber, episodeNumber, endingEpiosdeNumber, options);
+            var newPath = await GetNewPath(sourcePath, series, seasonNumber, episodeNumber, endingEpiosdeNumber, options, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(newPath))
             {
@@ -326,24 +327,32 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         /// <param name="endingEpisodeNumber">The ending episode number.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        private string GetNewPath(string sourcePath, Series series, int seasonNumber, int episodeNumber, int? endingEpisodeNumber, TvFileOrganizationOptions options)
+        private async Task<string> GetNewPath(string sourcePath, Series series, int seasonNumber, int episodeNumber, int? endingEpisodeNumber, TvFileOrganizationOptions options, CancellationToken cancellationToken)
         {
-            // If season and episode numbers match
-            var currentEpisodes = series.RecursiveChildren.OfType<Episode>()
-                .Where(i => i.IndexNumber.HasValue &&
-                            i.IndexNumber.Value == episodeNumber &&
-                            i.ParentIndexNumber.HasValue &&
-                            i.ParentIndexNumber.Value == seasonNumber)
-                .ToList();
+            var episodeInfo = new EpisodeInfo
+            {
+                IndexNumber = episodeNumber,
+                IndexNumberEnd = endingEpisodeNumber,
+                MetadataCountryCode = series.GetPreferredMetadataCountryCode(),
+                MetadataLanguage = series.GetPreferredMetadataLanguage(),
+                ParentIndexNumber = seasonNumber,
+                SeriesProviderIds = series.ProviderIds
+            };
 
-            if (currentEpisodes.Count == 0)
+            var searchResults = await _providerManager.GetRemoteSearchResults<Episode, EpisodeInfo>(new RemoteSearchQuery<EpisodeInfo>
+            {
+                SearchInfo = episodeInfo
+
+            }, cancellationToken).ConfigureAwait(false);
+
+            var episode = searchResults.FirstOrDefault();
+
+            if (episode == null)
             {
                 return null;
             }
 
             var newPath = GetSeasonFolderPath(series, seasonNumber, options);
-
-            var episode = currentEpisodes.First();
 
             var episodeFileName = GetEpisodeFileName(sourcePath, series.Name, seasonNumber, episodeNumber, endingEpisodeNumber, episode.Name, options);
 

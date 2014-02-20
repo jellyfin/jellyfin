@@ -367,22 +367,32 @@ namespace MediaBrowser.Providers.TV
             return Path.Combine(dataPath, "fanart.xml");
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
-        internal Task EnsureSeriesXml(string tvdbId, CancellationToken cancellationToken)
+        private readonly SemaphoreSlim _ensureSemaphore = new SemaphoreSlim(1, 1);
+        internal async Task EnsureSeriesXml(string tvdbId, CancellationToken cancellationToken)
         {
-            var xmlPath = GetSeriesDataPath(_config.ApplicationPaths, tvdbId);
+            var xmlPath = GetFanartXmlPath(tvdbId);
 
-            var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
+            // Only allow one thread in here at a time since every season will be calling this method, possibly concurrently
+            await _ensureSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            if (fileInfo.Exists)
+            try
             {
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
-                {
-                    return _cachedTask;
-                }
-            }
+                var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
 
-            return DownloadSeriesXml(tvdbId, cancellationToken);
+                if (fileInfo.Exists)
+                {
+                    if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                    {
+                        return;
+                    }
+                }
+
+                await DownloadSeriesXml(tvdbId, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _ensureSemaphore.Release();
+            }
         }
 
         /// <summary>

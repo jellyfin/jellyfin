@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
 using System;
@@ -40,6 +41,11 @@ namespace MediaBrowser.Providers.BoxSets
             _fileSystem = fileSystem;
             _localization = localization;
             Current = this;
+        }
+
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(BoxSetInfo searchInfo, CancellationToken cancellationToken)
+        {
+            return new List<RemoteSearchResult>();
         }
 
         public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo id, CancellationToken cancellationToken)
@@ -281,6 +287,11 @@ namespace MediaBrowser.Providers.BoxSets
             public string backdrop_path { get; set; }
             public List<Part> parts { get; set; }
             public Images images { get; set; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

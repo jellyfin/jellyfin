@@ -96,5 +96,19 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <returns>MetadataOptions.</returns>
         MetadataOptions GetMetadataOptions(IHasImages item);
+
+        /// <summary>
+        /// Gets the remote search results.
+        /// </summary>
+        /// <typeparam name="TItemType">The type of the t item type.</typeparam>
+        /// <typeparam name="TLookupType">The type of the t lookup type.</typeparam>
+        /// <param name="searchInfo">The search information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{SearchResult{``1}}}.</returns>
+        Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(
+            RemoteSearchQuery<TLookupType> searchInfo,
+            CancellationToken cancellationToken)
+            where TItemType : BaseItem, new()
+            where TLookupType : ItemLookupInfo;
     }
 }

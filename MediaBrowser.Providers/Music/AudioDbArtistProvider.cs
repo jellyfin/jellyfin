@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -34,6 +35,11 @@ namespace MediaBrowser.Providers.Music
             _httpClient = httpClient;
             _json = json;
             Current = this;
+        }
+
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
+        {
+            return new List<RemoteSearchResult>();
         }
 
         public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo info, CancellationToken cancellationToken)
@@ -212,6 +218,11 @@ namespace MediaBrowser.Providers.Music
                 // After musicbrainz
                 return 1;
             }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

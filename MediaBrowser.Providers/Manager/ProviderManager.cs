@@ -586,7 +586,7 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        public async Task<IEnumerable<SearchResult<TLookupType>>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo,
+        public async Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo,
             CancellationToken cancellationToken)
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo
@@ -623,7 +623,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // Nothing found
-            return new List<SearchResult<TLookupType>>();
+            return new List<RemoteSearchResult>();
         }
     }
 }

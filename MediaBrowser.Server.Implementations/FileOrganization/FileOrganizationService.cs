@@ -3,9 +3,9 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.FileOrganization;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -25,8 +25,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly IProviderManager _providerManager;
 
-        public FileOrganizationService(ITaskManager taskManager, IFileOrganizationRepository repo, ILogger logger, ILibraryMonitor libraryMonitor, ILibraryManager libraryManager, IServerConfigurationManager config, IFileSystem fileSystem)
+        public FileOrganizationService(ITaskManager taskManager, IFileOrganizationRepository repo, ILogger logger, ILibraryMonitor libraryMonitor, ILibraryManager libraryManager, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager)
         {
             _taskManager = taskManager;
             _repo = repo;
@@ -35,6 +36,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _libraryManager = libraryManager;
             _config = config;
             _fileSystem = fileSystem;
+            _providerManager = providerManager;
         }
 
         public void BeginProcessNewFiles()
@@ -103,9 +105,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             }
 
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
-                _libraryMonitor);
+                _libraryMonitor, _providerManager);
 
-            await organizer.OrganizeEpisodeFile(result.OriginalPath, _config.Configuration.TvFileOrganizationOptions, true)
+            await organizer.OrganizeEpisodeFile(result.OriginalPath, _config.Configuration.TvFileOrganizationOptions, true, CancellationToken.None)
                     .ConfigureAwait(false);
         }
 
@@ -117,9 +119,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         public async Task PerformEpisodeOrganization(EpisodeFileOrganizationRequest request)
         {
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
-                _libraryMonitor);
+                _libraryMonitor, _providerManager);
 
-            await organizer.OrganizeWithCorrection(request, _config.Configuration.TvFileOrganizationOptions).ConfigureAwait(false);
+            await organizer.OrganizeWithCorrection(request, _config.Configuration.TvFileOrganizationOptions, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

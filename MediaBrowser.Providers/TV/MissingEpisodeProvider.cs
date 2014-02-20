@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -20,13 +21,15 @@ namespace MediaBrowser.Providers.TV
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
+        private readonly ILibraryManager _libraryManager;
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config)
+        public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _logger = logger;
             _config = config;
+            _libraryManager = libraryManager;
         }
 
         public async Task Run(IEnumerable<IGrouping<string, Series>> series, CancellationToken cancellationToken)
@@ -268,7 +271,7 @@ namespace MediaBrowser.Providers.TV
             {
                 _logger.Info("Removing missing/unaired episode {0} {1}x{2}", episodeToRemove.Series.Name, episodeToRemove.ParentIndexNumber, episodeToRemove.IndexNumber);
 
-                await episodeToRemove.Parent.RemoveChild(episodeToRemove, cancellationToken).ConfigureAwait(false);
+                await _libraryManager.DeleteItem(episodeToRemove).ConfigureAwait(false);
 
                 hasChanges = true;
             }
@@ -327,7 +330,7 @@ namespace MediaBrowser.Providers.TV
             {
                 _logger.Info("Removing virtual season {0} {1}", seasonToRemove.Series.Name, seasonToRemove.IndexNumber);
 
-                await seasonToRemove.Parent.RemoveChild(seasonToRemove, cancellationToken).ConfigureAwait(false);
+                await _libraryManager.DeleteItem(seasonToRemove).ConfigureAwait(false);
 
                 hasChanges = true;
             }

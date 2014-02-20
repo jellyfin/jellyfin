@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -46,6 +47,11 @@ namespace MediaBrowser.Providers.TV
         private const string RootUrl = "http://www.thetvdb.com/api/";
         private const string SeriesQuery = "GetSeries.php?seriesname={0}";
         private const string SeriesGetZip = "http://www.thetvdb.com/api/{0}/series/{1}/all/{2}.zip";
+
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
+        {
+            return new List<RemoteSearchResult>();
+        }
 
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo itemId, CancellationToken cancellationToken)
         {
@@ -1080,6 +1086,11 @@ namespace MediaBrowser.Providers.TV
                 // After Omdb
                 return 1;
             }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }
