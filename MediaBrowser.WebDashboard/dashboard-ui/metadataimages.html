@@ -46,8 +46,9 @@
                                     <div>
                                         <label for="txtMaxBackdrops">Maximum number of backdrops per item: </label>
                                         <input type="number" id="txtMaxBackdrops" name="txtMaxBackdrops" pattern="[0-9]*" required="required" min="0" data-mini="true" />
+                                        <div class="fieldDescription">To prevent duplicate backdrop downloading, backdrops are only automatically downloaded when there are no backdrops present. Once an item has a single backdrop, further changes will need to be made manually using the metadata manager.</div>
                                     </div>
-
+                                    <br />
                                     <div>
                                         <label for="txtMinBackdropDownloadWidth">Minimum backdrop download width: </label>
                                         <input type="number" id="txtMinBackdropDownloadWidth" name="txtMinBackdropDownloadWidth" pattern="[0-9]*" required="required" min="0" data-mini="true" />

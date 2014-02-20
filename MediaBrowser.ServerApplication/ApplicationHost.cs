@@ -363,7 +363,7 @@ namespace MediaBrowser.ServerApplication
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
 
-            var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, Logger, LibraryMonitor, LibraryManager, ServerConfigurationManager, FileSystemManager);
+            var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, Logger, LibraryMonitor, LibraryManager, ServerConfigurationManager, FileSystemManager, ProviderManager);
             RegisterSingleInstance<IFileOrganizationService>(fileOrganizationService);
 
             progress.Report(15);

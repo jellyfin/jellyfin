@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class AudioDbAlbumProvider : IRemoteMetadataProvider<MusicAlbum,AlbumInfo>, IHasOrder
+    public class AudioDbAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
@@ -34,6 +35,11 @@ namespace MediaBrowser.Providers.Music
             _json = json;
 
             Current = this;
+        }
+
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
+        {
+            return new List<RemoteSearchResult>();
         }
 
         public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo info, CancellationToken cancellationToken)
@@ -81,7 +87,7 @@ namespace MediaBrowser.Providers.Music
             item.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
             item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, result.strMusicBrainzID);
         }
-        
+
         public string Name
         {
             get { return "TheAudioDB"; }
@@ -112,7 +118,7 @@ namespace MediaBrowser.Providers.Music
             var url = AudioDbArtistProvider.BaseUrl + "/album-mb.php?i=" + musicBrainzReleaseGroupId;
 
             var path = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
-            
+
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             using (var response = await _httpClient.Get(new HttpRequestOptions
@@ -205,6 +211,11 @@ namespace MediaBrowser.Providers.Music
         public class RootObject
         {
             public List<Album> album { get; set; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

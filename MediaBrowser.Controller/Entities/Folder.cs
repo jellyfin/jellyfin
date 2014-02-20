@@ -181,8 +181,6 @@ namespace MediaBrowser.Controller.Entities
 
             item.Parent = null;
 
-            LibraryManager.ReportItemRemoved(item);
-
             return ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken);
         }
 
@@ -220,7 +218,6 @@ namespace MediaBrowser.Controller.Entities
                 {LocalizedStrings.Instance.GetString("GenreDispPref")},
                 {LocalizedStrings.Instance.GetString("DirectorDispPref")},
                 {LocalizedStrings.Instance.GetString("YearDispPref")},
-                //{LocalizedStrings.Instance.GetString("OfficialRatingDispPref"), null},
                 {LocalizedStrings.Instance.GetString("StudioDispPref")}
             };
 

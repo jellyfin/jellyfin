@@ -287,7 +287,7 @@
 
         var i, length, plugin, id;
 
-        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Metadata Fetchers:</div>';
+        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Metadata Downloaders:</div>';
 
         html += '<div style="display:inline-block;width: 75%;vertical-align:top;">';
         html += '<div data-role="controlgroup" class="metadataFetcherGroup">';
@@ -329,7 +329,7 @@
         }
 
         html += '</div>';
-        html += '<div class="fieldDescription" style="width:75%;">Enable and rank your preferred metadata fetchers in order of priority. Lower priority fetchers will only be used to fill in missing information.</div>';
+        html += '<div class="fieldDescription" style="width:75%;">Enable and rank your preferred metadata downloaders in order of priority. Lower priority downloaders will only be used to fill in missing information.</div>';
 
         var elem = $('.metadataFetchers', page).html(html).show().trigger('create');
 

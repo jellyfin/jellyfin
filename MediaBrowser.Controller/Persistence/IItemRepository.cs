@@ -96,6 +96,13 @@ namespace MediaBrowser.Controller.Persistence
         IEnumerable<Guid> GetChildren(Guid parentId);
 
         /// <summary>
+        /// Gets the type of the items of.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>IEnumerable{Guid}.</returns>
+        IEnumerable<BaseItem> GetItemsOfType(Type type);
+        
+        /// <summary>
         /// Saves the children.
         /// </summary>
         /// <param name="parentId">The parent id.</param>

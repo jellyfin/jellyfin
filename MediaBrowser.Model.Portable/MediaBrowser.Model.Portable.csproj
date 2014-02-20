@@ -338,6 +338,9 @@
     <Compile Include="..\MediaBrowser.Model\Providers\RemoteImageResult.cs">
       <Link>Providers\RemoteImageResult.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Providers\RemoteSearchResult.cs">
+      <Link>Providers\RemoteSearchResult.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\ArtistsQuery.cs">
       <Link>Querying\ArtistsQuery.cs</Link>
     </Compile>

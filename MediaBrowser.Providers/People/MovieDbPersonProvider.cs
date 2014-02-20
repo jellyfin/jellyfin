@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
 using System;
@@ -42,7 +43,7 @@ namespace MediaBrowser.Providers.People
             get { return "TheMovieDb"; }
         }
 
-        public async Task<IEnumerable<SearchResult<PersonLookupInfo>>> GetSearchResults(PersonLookupInfo searchInfo, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(PersonLookupInfo searchInfo, CancellationToken cancellationToken)
         {
             var tmdbId = searchInfo.GetProviderId(MetadataProviders.Tmdb);
 
@@ -59,18 +60,15 @@ namespace MediaBrowser.Providers.People
 
                 var images = (info.images ?? new Images()).profiles ?? new List<Profile>();
 
-                var result = new SearchResult<PersonLookupInfo>
+                var result = new RemoteSearchResult
                 {
-                    Item = new PersonLookupInfo
-                    {
-                        Name = info.name
-                    },
+                    Name = info.name,
 
                     ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].file_path)
                 };
 
-                result.Item.SetProviderId(MetadataProviders.Tmdb, info.id.ToString(_usCulture));
-                result.Item.SetProviderId(MetadataProviders.Imdb, info.imdb_id.ToString(_usCulture));
+                result.SetProviderId(MetadataProviders.Tmdb, info.id.ToString(_usCulture));
+                result.SetProviderId(MetadataProviders.Imdb, info.imdb_id.ToString(_usCulture));
 
                 return new[] { result };
             }
@@ -92,19 +90,16 @@ namespace MediaBrowser.Providers.People
             }
         }
 
-        private SearchResult<PersonLookupInfo> GetSearchResult(PersonSearchResult i, string baseImageUrl)
+        private RemoteSearchResult GetSearchResult(PersonSearchResult i, string baseImageUrl)
         {
-            var result = new SearchResult<PersonLookupInfo>
+            var result = new RemoteSearchResult
             {
-                Item = new PersonLookupInfo
-                {
-                    Name = i.Name
-                },
+                Name = i.Name,
 
                 ImageUrl = string.IsNullOrEmpty(i.Profile_Path) ? null : (baseImageUrl + i.Profile_Path)
             };
 
-            result.Item.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(_usCulture));
+            result.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(_usCulture));
 
             return result;
         }
@@ -175,7 +170,7 @@ namespace MediaBrowser.Providers.People
         {
             var results = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
 
-            return results.Select(i => i.Item.GetProviderId(MetadataProviders.Tmdb)).FirstOrDefault();
+            return results.Select(i => i.GetProviderId(MetadataProviders.Tmdb)).FirstOrDefault();
         }
 
         internal async Task EnsurePersonInfo(string id, CancellationToken cancellationToken)
@@ -351,5 +346,10 @@ namespace MediaBrowser.Providers.People
         }
 
         #endregion
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

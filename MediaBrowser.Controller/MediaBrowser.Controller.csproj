@@ -111,6 +111,7 @@
     <Compile Include="Entities\IHasAwards.cs" />
     <Compile Include="Entities\Photo.cs" />
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />
+    <Compile Include="Library\DeleteOptions.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\IMetadataSaver.cs" />
     <Compile Include="Library\ItemUpdateType.cs" />

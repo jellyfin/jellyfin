@@ -281,24 +281,29 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     if (reader.Read())
                     {
-                        var typeString = reader.GetString(0);
-
-                        var type = _typeMapper.GetType(typeString);
-
-                        if (type == null)
-                        {
-                            _logger.Debug("Unknown type {0}", typeString);
-
-                            return null;
-                        }
-
-                        using (var stream = reader.GetMemoryStream(1))
-                        {
-                            return _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
-                        }
+                        return GetItem(reader);
                     }
                 }
                 return null;
+            }
+        }
+
+        private BaseItem GetItem(IDataReader reader)
+        {
+            var typeString = reader.GetString(0);
+
+            var type = _typeMapper.GetType(typeString);
+
+            if (type == null)
+            {
+                _logger.Debug("Unknown type {0}", typeString);
+
+                return null;
+            }
+
+            using (var stream = reader.GetMemoryStream(1))
+            {
+                return _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
             }
         }
 
@@ -463,6 +468,34 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     while (reader.Read())
                     {
                         yield return reader.GetGuid(0);
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<BaseItem> GetItemsOfType(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select type,data from TypedBaseItems where type = @type";
+
+                cmd.Parameters.Add(cmd, "@type", DbType.String).Value = type.FullName;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        var item = GetItem(reader);
+
+                        if (item != null)
+                        {
+                            yield return item;
+                        }
                     }
                 }
             }
