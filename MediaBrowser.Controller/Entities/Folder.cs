@@ -137,9 +137,11 @@ namespace MediaBrowser.Controller.Entities
 
         protected void RemoveChildrenInternal(IEnumerable<BaseItem> children)
         {
+            var ids = children.Select(i => i.Id).ToList();
+
             lock (_childrenSyncLock)
             {
-                _children = ActualChildren.Except(children).ToList();
+                _children = ActualChildren.Where(i => !ids.Contains(i.Id)).ToList();
             }
         }
 
