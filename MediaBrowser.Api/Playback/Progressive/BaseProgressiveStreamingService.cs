@@ -146,10 +146,14 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 contentFeatures = "DLNA.ORG_PN=AVC_MP4_MP_HD_720p_AAC";
             }
-            //else if (string.Equals(extension, ".mpeg", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
-            //}
+            else if (string.Equals(extension, ".mpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
+            }
+            else if (string.Equals(extension, ".ts", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
+            }
             //else if (string.Equals(extension, ".wmv", StringComparison.OrdinalIgnoreCase))
             //{
             //    contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
