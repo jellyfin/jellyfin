@@ -274,7 +274,7 @@ namespace MediaBrowser.Api
         /// Kills the transcoding job.
         /// </summary>
         /// <param name="job">The job.</param>
-        private async void KillTranscodingJob(TranscodingJob job)
+        private void KillTranscodingJob(TranscodingJob job)
         {
             lock (_activeTranscodingJobs)
             {
