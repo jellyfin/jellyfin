@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -15,63 +16,65 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.MediaInfo
+namespace MediaBrowser.Server.Implementations.MediaEncoder
 {
-    /// <summary>
-    /// Class FFMpegManager
-    /// </summary>
-    public class FFMpegManager
+    public class EncodingManager : IEncodingManager
     {
         private readonly IServerConfigurationManager _config;
-        private readonly IMediaEncoder _encoder;
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepo;
+        private readonly IMediaEncoder _encoder;
 
-        private readonly IFileSystem _fileSystem;
-
-        public static FFMpegManager Instance { get; private set; }
-        
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FFMpegManager" /> class.
-        /// </summary>
-        /// <param name="encoder">The encoder.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="itemRepo">The item repo.</param>
-        /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public FFMpegManager(IMediaEncoder encoder, ILogger logger, IItemRepository itemRepo, IFileSystem fileSystem, IServerConfigurationManager config)
+        public EncodingManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IMediaEncoder encoder)
         {
-            _encoder = encoder;
+            _config = config;
+            _fileSystem = fileSystem;
             _logger = logger;
             _itemRepo = itemRepo;
-            _fileSystem = fileSystem;
-            _config = config;
-
-            // TODO: Remove this static instance
-            Instance = this;
+            _encoder = encoder;
         }
 
-        /// <summary>
-        /// Gets the chapter images data path.
-        /// </summary>
-        /// <value>The chapter images data path.</value>
-        public string ChapterImagesPath
-        {
-            get
-            {
-                return Path.Combine(_config.ApplicationPaths.DataPath, "chapter-images");
-            }
-        }
-
-        /// <summary>
-        /// Gets the subtitle cache path.
-        /// </summary>
-        /// <value>The subtitle cache path.</value>
         private string SubtitleCachePath
         {
             get
             {
                 return Path.Combine(_config.ApplicationPaths.CachePath, "subtitles");
             }
+        }
+        
+        public string GetSubtitleCachePath(string originalSubtitlePath, string outputSubtitleExtension)
+        {
+            var ticksParam = _fileSystem.GetLastWriteTimeUtc(originalSubtitlePath).Ticks;
+
+            var filename = (originalSubtitlePath + ticksParam).GetMD5() + outputSubtitleExtension;
+
+            var prefix = filename.Substring(0, 1);
+
+            return Path.Combine(SubtitleCachePath, prefix, filename);
+        }
+
+        public string GetSubtitleCachePath(string mediaPath, int subtitleStreamIndex, string outputSubtitleExtension)
+        {
+            var ticksParam = string.Empty;
+
+            var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
+
+            var filename = (mediaPath + "_" + subtitleStreamIndex.ToString(_usCulture) + "_" + date.Ticks.ToString(_usCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
+
+            var prefix = filename.Substring(0, 1);
+
+            return Path.Combine(SubtitleCachePath, prefix, filename);
+        }
+
+        /// <summary>
+        /// Gets the chapter images data path.
+        /// </summary>
+        /// <value>The chapter images data path.</value>
+        private string GetChapterImagesPath(Guid itemId)
+        {
+            return Path.Combine(_config.ApplicationPaths.GetInternalMetadataPath(itemId), "chapters");
         }
 
         /// <summary>
@@ -95,7 +98,7 @@ namespace MediaBrowser.Controller.MediaInfo
                     return false;
                 }
             }
-            else 
+            else
             {
                 if (!_config.Configuration.EnableOtherVideoChapterImageExtraction)
                 {
@@ -112,18 +115,13 @@ namespace MediaBrowser.Controller.MediaInfo
         /// </summary>
         private static readonly long FirstChapterTicks = TimeSpan.FromSeconds(15).Ticks;
 
-        /// <summary>
-        /// Extracts the chapter images.
-        /// </summary>
-        /// <param name="video">The video.</param>
-        /// <param name="chapters">The chapters.</param>
-        /// <param name="extractImages">if set to <c>true</c> [extract images].</param>
-        /// <param name="saveChapters">if set to <c>true</c> [save chapters].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task<bool> PopulateChapterImages(Video video, List<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken)
+        public async Task<bool> RefreshChapterImages(ChapterImageRefreshOptions options, CancellationToken cancellationToken)
         {
+            var extractImages = options.ExtractImages;
+            var video = options.Video;
+            var chapters = options.Chapters;
+            var saveChapters = options.SaveChapters;
+
             if (!IsEligibleForChapterImageExtraction(video))
             {
                 extractImages = false;
@@ -173,9 +171,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
                         try
                         {
-                            var parentPath = Path.GetDirectoryName(path);
-
-                            Directory.CreateDirectory(parentPath);
+                            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                             using (var stream = await _encoder.ExtractImage(inputPath, type, false, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false))
                             {
@@ -217,6 +213,28 @@ namespace MediaBrowser.Controller.MediaInfo
             return success;
         }
 
+        private string GetChapterImagePath(Video video, long chapterPositionTicks)
+        {
+            var filename = video.DateModified.Ticks.ToString(_usCulture) + "_" + chapterPositionTicks.ToString(_usCulture) + ".jpg";
+
+            return Path.Combine(GetChapterImagesPath(video.Id), filename);
+        }
+
+        private List<string> GetSavedChapterImages(Video video)
+        {
+            var path = GetChapterImagesPath(video.Id);
+
+            try
+            {
+                return Directory.EnumerateFiles(path)
+                    .ToList();
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new List<string>();
+            }
+        }
+
         private void DeleteDeadImages(IEnumerable<string> images, IEnumerable<ChapterInfo> chapters)
         {
             var deadImages = images
@@ -236,61 +254,6 @@ namespace MediaBrowser.Controller.MediaInfo
                 {
                     _logger.ErrorException("Error deleting {0}.", ex, image);
                 }
-            }
-        }
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
-        /// <summary>
-        /// Gets the subtitle cache path.
-        /// </summary>
-        /// <param name="mediaPath">The media path.</param>
-        /// <param name="subtitleStream">The subtitle stream.</param>
-        /// <param name="outputExtension">The output extension.</param>
-        /// <returns>System.String.</returns>
-        public string GetSubtitleCachePath(string mediaPath, MediaStream subtitleStream, string outputExtension)
-        {
-            var ticksParam = string.Empty;
-
-            if (subtitleStream.IsExternal)
-            {
-                ticksParam += _fileSystem.GetLastWriteTimeUtc(subtitleStream.Path).Ticks;
-            }
-
-            var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
-
-            var filename = (mediaPath + "_" + subtitleStream.Index.ToString(_usCulture) + "_" + date.Ticks.ToString(_usCulture) + ticksParam).GetMD5() + outputExtension;
-
-            var prefix = filename.Substring(0, 1);
-
-            return Path.Combine(SubtitleCachePath, prefix, filename);
-        }
-
-        public string GetChapterImagePath(Video video, long chapterPositionTicks)
-        {
-            var filename = video.DateModified.Ticks.ToString(_usCulture) + "_" + chapterPositionTicks.ToString(_usCulture) + ".jpg";
-
-            var videoId = video.Id.ToString();
-            var prefix = videoId.Substring(0, 1);
-
-            return Path.Combine(ChapterImagesPath, prefix, videoId, filename);
-        }
-
-        public List<string> GetSavedChapterImages(Video video)
-        {
-            var videoId = video.Id.ToString();
-            var prefix = videoId.Substring(0, 1);
-
-            var path = Path.Combine(ChapterImagesPath, prefix, videoId);
-
-            try
-            {
-                return Directory.EnumerateFiles(path)
-                    .ToList();
-            }
-            catch (DirectoryNotFoundException)
-            {
-                return new List<string>();
             }
         }
     }

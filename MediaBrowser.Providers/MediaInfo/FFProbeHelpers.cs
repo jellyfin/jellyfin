@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.MediaInfo;
+﻿using MediaBrowser.Controller.MediaEncoding;
 using System;
 using System.Collections.Generic;
 

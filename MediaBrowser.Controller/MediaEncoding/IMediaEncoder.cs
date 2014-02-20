@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.MediaInfo
+namespace MediaBrowser.Controller.MediaEncoding
 {
     /// <summary>
     /// Interface IMediaEncoder

@@ -1,6 +1,6 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.MediaInfo;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;

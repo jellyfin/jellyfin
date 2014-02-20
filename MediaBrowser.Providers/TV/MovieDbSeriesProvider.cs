@@ -202,7 +202,7 @@ namespace MediaBrowser.Providers.TV
 
         internal static string GetSeriesDataPath(IApplicationPaths appPaths)
         {
-            var dataPath = Path.Combine(appPaths.DataPath, "tmdb-tv");
+            var dataPath = Path.Combine(appPaths.CachePath, "tmdb-tv");
 
             return dataPath;
         }

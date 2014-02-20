@@ -3,7 +3,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
-using MediaBrowser.Controller.MediaInfo;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -31,10 +31,11 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILocalizationManager _localization;
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
+        private readonly IEncodingManager _encodingManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json)
+        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -44,6 +45,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _localization = localization;
             _appPaths = appPaths;
             _json = json;
+            _encodingManager = encodingManager;
         }
 
         public async Task<ItemUpdateType> ProbeVideo<T>(T item, IDirectoryService directoryService, CancellationToken cancellationToken)
@@ -167,7 +169,14 @@ namespace MediaBrowser.Providers.MediaInfo
 
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
 
-            await FFMpegManager.Instance.PopulateChapterImages(video, chapters, false, false, cancellationToken).ConfigureAwait(false);
+            await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
+            {
+                Chapters = chapters,
+                Video = video,
+                ExtractImages = false,
+                SaveChapters = false
+
+            }, cancellationToken).ConfigureAwait(false);
 
             await _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
 

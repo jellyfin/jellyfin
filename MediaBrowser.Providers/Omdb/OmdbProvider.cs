@@ -1,8 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Globalization;
