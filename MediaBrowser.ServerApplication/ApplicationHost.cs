@@ -298,6 +298,24 @@ namespace MediaBrowser.ServerApplication
                 {
                     // Not there, no big deal
                 }
+
+                try
+                {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-tv"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
+
+                try
+                {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-collections"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
             });
         }
 
