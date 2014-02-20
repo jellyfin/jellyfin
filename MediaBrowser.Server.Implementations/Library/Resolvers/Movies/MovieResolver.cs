@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -365,24 +364,23 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <typeparam name="T"></typeparam>
         /// <param name="movies">The movies.</param>
         /// <returns>``0.</returns>
-        private T GetMultiFileMovie<T>(List<T> movies)
+        private T GetMultiFileMovie<T>(IEnumerable<T> movies)
                where T : Video, new()
         {
-            var multiPartMovies = movies.OrderBy(i => i.Path)
-                .Where(i => EntityResolutionHelper.IsMultiPartFile(i.Path))
-                .ToList();
+            var sortedMovies = movies.OrderBy(i => i.Path).ToList();
 
-            // They must all be part of the sequence
-            if (multiPartMovies.Count != movies.Count)
+            var firstMovie = sortedMovies[0];
+
+            // They must all be part of the sequence if we're going to consider it a multi-part movie
+            // Only support up to 8 (matches Plex), to help avoid incorrect detection
+            if (sortedMovies.All(i => EntityResolutionHelper.IsMultiPartFile(i.Path)) && sortedMovies.Count <= 8)
             {
-                return null;
+                firstMovie.IsMultiPart = true;
+
+                return firstMovie;
             }
 
-            var firstPart = multiPartMovies[0];
-
-            firstPart.IsMultiPart = true;
-
-            return firstPart;
+            return null;
         }
 
         /// <summary>
