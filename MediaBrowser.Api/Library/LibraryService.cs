@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Common;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -16,21 +14,6 @@ namespace MediaBrowser.Api.Library
     [Api(Description = "Gets a list of physical paths from virtual folders")]
     public class GetPhyscialPaths : IReturn<List<string>>
     {
-    }
-
-    /// <summary>
-    /// Class GetItemTypes
-    /// </summary>
-    [Route("/Library/ItemTypes", "GET")]
-    [Api(Description = "Gets a list of BaseItem types")]
-    public class GetItemTypes : IReturn<List<string>>
-    {
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has internet provider.
-        /// </summary>
-        /// <value><c>true</c> if this instance has internet provider; otherwise, <c>false</c>.</value>
-        [ApiMember(Name = "HasInternetProvider", Description = "Optional filter by item types that have internet providers. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool HasInternetProvider { get; set; }
     }
 
     /// <summary>
@@ -73,47 +56,6 @@ namespace MediaBrowser.Api.Library
                 .ToList();
 
             return ToOptimizedSerializedResultUsingCache(result);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetItemTypes request)
-        {
-            var allTypes = _appHost.AllConcreteTypes.Where(t => t.IsSubclassOf(typeof(BaseItem)));
-
-            if (request.HasInternetProvider)
-            {
-                allTypes = allTypes.Where(t =>
-                {
-                    if (t == typeof(UserRootFolder) || t == typeof(AggregateFolder) || t == typeof(Folder) || t == typeof(CollectionFolder) || t == typeof(Year))
-                    {
-                        return false;
-                    }
-
-                    if (t == typeof(User))
-                    {
-                        return false;
-                    }
-
-                    // For now it seems internet providers generally only deal with video subclasses
-                    if (t == typeof(Video))
-                    {
-                        return false;
-                    }
-
-                    if (t.IsSubclassOf(typeof(BasePluginFolder)))
-                    {
-                        return false;
-                    }
-
-                    return true;
-                });
-            }
-
-            return allTypes.Select(t => t.Name).OrderBy(s => s).ToList();
         }
     }
 }
