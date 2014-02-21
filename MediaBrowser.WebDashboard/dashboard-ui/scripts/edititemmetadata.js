@@ -1,422 +1,5 @@
 ﻿(function ($, document, window) {
 
-    function getNode(item, folderState) {
-
-        var state = item.IsFolder ? folderState : '';
-
-        var name = item.Name;
-
-        // Channel number
-        if (item.Number) {
-            name = item.Number + " - " + name;
-        }
-        if (item.IndexNumber != null && item.Type != "Season") {
-            name = item.IndexNumber + " - " + name;
-        }
-
-        var cssClass = "editorNode";
-
-        if (item.LocationType == "Offline") {
-            cssClass += " offlineEditorNode";
-        }
-
-        var htmlName = "<div class='" + cssClass + "'>";
-
-        if (item.LockData) {
-            htmlName += '<img src="css/images/editor/lock.png" />';
-        }
-
-        htmlName += name;
-
-        if (!item.LocalTrailerCount && item.Type == "Movie") {
-            htmlName += '<img src="css/images/editor/missingtrailer.png" title="Missing local trailer." />';
-        }
-
-        if (!item.ImageTags || !item.ImageTags.Primary) {
-            htmlName += '<img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." />';
-        }
-
-        if (!item.BackdropImageTags || !item.BackdropImageTags.length) {
-            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "Channel") {
-                htmlName += '<img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." />';
-            }
-        }
-
-        if (!item.ImageTags || !item.ImageTags.Logo) {
-            if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Series" || item.Type == "MusicArtist" || item.Type == "BoxSet") {
-                htmlName += '<img src="css/images/editor/missinglogo.png" title="Missing logo image." />';
-            }
-        }
-
-        if (item.Type == "Episode" && item.LocationType == "Virtual") {
-
-            try {
-                if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate, { toLocal: true }).getTime())) {
-                    htmlName += '<img src="css/images/editor/missing.png" title="Missing episode." />';
-                }
-            } catch (err) {
-
-            }
-
-        }
-
-        htmlName += "</div>";
-
-        var rel = item.IsFolder ? 'folder' : 'default';
-
-        return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
-    }
-
-    function loadChildrenOfRootNode(callback, openItems) {
-
-        var promise1 = $.getJSON(ApiClient.getUrl("Library/MediaFolders"));
-
-        var promise2 = ApiClient.getLiveTvInfo();
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            var mediaFolders = response1[0].Items;
-            var liveTvInfo = response2[0];
-
-            var nodes = [];
-
-            var i, length;
-
-            for (i = 0, length = mediaFolders.length; i < length; i++) {
-
-                var state = openItems.indexOf(mediaFolders[i].Id) == -1 ? 'closed' : 'open';
-                
-                nodes.push(getNode(mediaFolders[i], state));
-            }
-
-            for (i = 0, length = liveTvInfo.Services.length; i < length; i++) {
-
-                var service = liveTvInfo.Services[i];
-
-                var name = service.Name;
-
-                var cssClass = "editorNode";
-
-                var htmlName = "<div class='" + cssClass + "'>";
-
-                htmlName += name;
-
-                htmlName += "</div>";
-
-                nodes.push({ attr: { id: name, rel: 'folder', itemtype: 'livetvservice' }, data: htmlName, state: 'closed' });
-            }
-
-            callback(nodes);
-
-        });
-    }
-
-    function loadLiveTvChannels(service, openItems, callback) {
-
-        ApiClient.getLiveTvChannels({ ServiceName: service }).done(function (result) {
-
-            var nodes = result.Items.map(function (i) {
-
-                var state = openItems.indexOf(i.Id) == -1 ? 'closed' : 'open';
-
-                return getNode(i, state);
-
-            });
-
-            callback(nodes);
-
-        });
-
-    }
-
-    function loadNode(page, node, openItems, selectedId, currentUser, callback) {
-
-        if (node == '-1') {
-
-            loadChildrenOfRootNode(callback, openItems);
-            return;
-        }
-
-        var id = node.attr("id");
-
-        var itemtype = node.attr("itemtype");
-
-        if (itemtype == 'livetvservice') {
-
-            loadLiveTvChannels(id, openItems, callback);
-            return;
-        }
-
-        var query = {
-            ParentId: id,
-            Fields: 'Settings'
-        };
-
-        if (itemtype != "Season" && itemtype != "Series") {
-            query.SortBy = "SortName";
-        }
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
-
-            var nodes = result.Items.map(function (i) {
-
-                var state = openItems.indexOf(i.Id) == -1 ? 'closed' : 'open';
-
-                return getNode(i, state);
-
-            });
-
-            callback(nodes);
-
-            if (selectedId && result.Items.filter(function (f) {
-
-                return f.Id == selectedId;
-
-            }).length) {
-
-                selectNode(page, selectedId);
-            }
-
-        });
-
-    }
-
-    function selectNode(page, id) {
-
-        var elem = $('#' + id, page)[0];
-
-        $.jstree._reference(".libraryTree", page).select_node(elem);
-
-        if (elem) {
-            elem.scrollIntoView();
-        }
-
-        $(document).scrollTop(0);
-    }
-
-    function initializeTree(page, currentUser, openItems, selectedId) {
-
-        $('.libraryTree', page).jstree({
-
-            "plugins": ["themes", "ui", "json_data"],
-
-            data: function (node, callback) {
-                loadNode(page, node, openItems, selectedId, currentUser, callback);
-            },
-
-            json_data: {
-
-                data: function (node, callback) {
-                    loadNode(page, node, openItems, selectedId, currentUser, callback);
-                }
-
-            },
-
-            core: { initially_open: [], load_open: true, html_titles: true },
-            ui: { initially_select: [] },
-
-            themes: {
-                theme: 'mb3',
-                url: 'thirdparty/jstree1.0/themes/mb3/style.css?v=' + Dashboard.initialServerVersion
-            }
-
-        }).off('select_node.jstree').on('select_node.jstree', function (event, data) {
-
-            var eventData = {
-                id: data.rslt.obj.attr("id"),
-                itemType: data.rslt.obj.attr("itemtype")
-            };
-
-            $(this).trigger('itemclicked', [eventData]);
-
-        });
-    }
-
-    $(document).on('pagebeforeshow', ".metadataEditorPage", function () {
-
-        window.MetadataEditor = new metadataEditor();
-
-        var page = this;
-
-        Dashboard.getCurrentUser().done(function (user) {
-
-            var id = MetadataEditor.currentItemId;
-
-            if (id) {
-
-                ApiClient.getAncestorItems(id, user.Id).done(function (ancestors) {
-
-                    var ids = ancestors.map(function (i) {
-                        return i.Id;
-                    });
-
-                    initializeTree(page, user, ids, id);
-                });
-
-            } else {
-                initializeTree(page, user, []);
-            }
-
-        });
-
-    }).on('pagebeforehide', ".metadataEditorPage", function () {
-
-        var page = this;
-
-        $('.libraryTree', page).off('select_node.jstree');
-
-    });
-
-    function metadataEditor() {
-
-        var self = this;
-
-        function ensureInitialValues() {
-
-            if (self.currentItemType || self.currentItemName || self.currentItemId) {
-                return;
-            }
-
-            var url = window.location.hash || window.location.toString();
-
-            var name = getParameterByName('person', url);
-
-            if (name) {
-                self.currentItemType = "Person";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('studio', url);
-
-            if (name) {
-                self.currentItemType = "Studio";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('genre', url);
-
-            if (name) {
-                self.currentItemType = "Genre";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('musicgenre', url);
-
-            if (name) {
-                self.currentItemType = "MusicGenre";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('gamegenre', url);
-
-            if (name) {
-                self.currentItemType = "GameGenre";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('musicartist', url);
-
-            if (name) {
-                self.currentItemType = "MusicArtist";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('channelid', url);
-
-            if (name) {
-                self.currentItemType = "Channel";
-                self.currentItemId = name;
-                return;
-            }
-
-            var id = getParameterByName('id', url);
-
-            if (id) {
-                self.currentItemId = id;
-                self.currentItemType = null;
-            }
-        };
-
-        self.getItemPromise = function () {
-
-            var currentItemType = self.currentItemType;
-            var currentItemName = self.currentItemName;
-            var currentItemId = self.currentItemId;
-
-            if (currentItemType == "Channel") {
-                return ApiClient.getLiveTvChannel(currentItemId);
-            }
-
-            if (currentItemType == "Person") {
-                return ApiClient.getPerson(currentItemName, Dashboard.getCurrentUserId());
-            }
-
-            if (currentItemType == "Studio") {
-                return ApiClient.getStudio(currentItemName, Dashboard.getCurrentUserId());
-            }
-
-            if (currentItemType == "Genre") {
-                return ApiClient.getGenre(currentItemName, Dashboard.getCurrentUserId());
-            }
-
-            if (currentItemType == "MusicGenre") {
-                return ApiClient.getMusicGenre(currentItemName, Dashboard.getCurrentUserId());
-            }
-
-            if (currentItemType == "GameGenre") {
-                return ApiClient.getGameGenre(currentItemName, Dashboard.getCurrentUserId());
-            }
-
-            if (currentItemType == "MusicArtist" && currentItemName) {
-                return ApiClient.getArtist(currentItemName, Dashboard.getCurrentUserId());
-            }
-
-            if (currentItemId) {
-                return ApiClient.getItem(Dashboard.getCurrentUserId(), currentItemId);
-            }
-
-            return ApiClient.getRootFolder(Dashboard.getCurrentUserId());
-        };
-
-        self.getEditQueryString = function (item) {
-
-            var query;
-
-            if (item.Type == "Person" ||
-                item.Type == "Studio" ||
-                item.Type == "Genre" ||
-                item.Type == "MusicGenre" ||
-                item.Type == "GameGenre" ||
-                item.Type == "MusicArtist") {
-                query = item.Type + "=" + ApiClient.encodeName(item.Name);
-
-            } else {
-                query = "id=" + item.Id;
-            }
-
-            var context = getParameterByName('context');
-
-            if (context) {
-                query += "&context=" + context;
-            }
-
-            return query;
-        };
-
-        ensureInitialValues();
-    }
-
-
-})(jQuery, document, window);
-
-(function ($, document, window) {
-
     var currentItem;
 
     var languagesPromise;
@@ -451,6 +34,10 @@
             var languages = response2[0];
             var countries = response3[0];
 
+            $.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
+                loadExternalIds(page, item, idList);
+            });
+
             Dashboard.populateLanguages($('#selectLanguage', page), languages);
             Dashboard.populateCountries($('#selectCountry', page), countries);
 
@@ -467,12 +54,6 @@
             $('#refreshLoading', page).hide();
 
             currentItem = item;
-
-            if (item.IsFolder) {
-                $('#fldRecursive', page).css("display", "inline-block");
-            } else {
-                $('#fldRecursive', page).hide();
-            }
 
             if (item.Type != "Channel" &&
                 item.Type != "Genre" &&
@@ -502,6 +83,55 @@
 
             Dashboard.hideLoadingMsg();
         });
+    }
+
+    function onExternalIdChange() {
+
+        var formatString = this.getAttribute('data-formatstring');
+        var buttonClass = this.getAttribute('data-buttonclass');
+
+        if (this.value) {
+            $('.' + buttonClass).attr('href', formatString.replace('{0}', this.value));
+        } else {
+            $('.' + buttonClass).attr('href', '#');
+        }
+    }
+
+    function loadExternalIds(page, item, externalIds) {
+
+        var html = '';
+
+        var providerIds = item.ProviderIds || {};
+
+        for (var i = 0, length = externalIds.length; i < length; i++) {
+
+            var idInfo = externalIds[i];
+
+            var id = "txt1" + idInfo.Key;
+            var buttonId = "btnOpen1" + idInfo.Key;
+            var formatString = idInfo.UrlFormatString || '';
+
+            html += '<div data-role="fieldcontain">';
+            html += '<label for="' + id + '">' + idInfo.Name + ' Id:</label>';
+
+            html += '<div style="display: inline-block; width: 250px;">';
+
+            var value = providerIds[idInfo.Key] || '';
+
+            html += '<input class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" data-mini="true" />';
+
+            html += '</div>';
+
+            if (formatString) {
+                html += '<a class="' + buttonId + '" href="#" target="_blank" data-icon="arrow-r" data-inline="true" data-iconpos="notext" data-role="button" style="float: none; width: 1.75em"></a>';
+            }
+
+            html += '</div>';
+        }
+
+        var elem = $('.externalIds', page).html(html).trigger('create');
+
+        $('.txtExternalId', elem).on('change', onExternalIdChange).trigger('change');
     }
 
     function setFieldVisibilities(page, item) {
@@ -538,20 +168,6 @@
             $('#albumAssociationMessage', page).hide();
         }
 
-        if (item.MediaType == "Game" || item.Type == "MusicAlbum") {
-            $('#fldGamesDb', page).show();
-        } else {
-            $('#fldGamesDb', page).hide();
-        }
-
-        if (item.MediaType == "Game" && (item.GameSystem == "Nintendo" || item.GameSystem == "Super Nintendo")) {
-            $('#fldNesBoxName', page).show();
-            $('#fldNesBoxRom', page).show();
-        } else {
-            $('#fldNesBoxName', page).hide();
-            $('#fldNesBoxRom', page).hide();
-        }
-
         if (item.MediaType == "Game") {
             $('#fldPlayers', page).show();
         } else {
@@ -561,11 +177,9 @@
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicVideo" || item.Type == "Series" || item.Type == "Game") {
             $('#fldCriticRating', page).show();
             $('#fldCriticRatingSummary', page).show();
-            $('#fldRottenTomatoes', page).show();
         } else {
             $('#fldCriticRating', page).hide();
             $('#fldCriticRatingSummary', page).hide();
-            $('#fldRottenTomatoes', page).hide();
         }
 
         if (item.Type == "Movie") {
@@ -578,38 +192,6 @@
             $('#fldMetascore', page).show();
         } else {
             $('#fldMetascore', page).hide();
-        }
-
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "BoxSet" || item.Type == "MusicAlbum" || item.Type == "Series") {
-            $('#fldTmdb', page).show();
-        } else {
-            $('#fldTmdb', page).hide();
-        }
-
-        if (item.Type == "Movie") {
-            $('#fldTmdbCollection', page).show();
-        } else {
-            $('#fldTmdbCollection', page).hide();
-        }
-
-        if (item.Type == "Series" || item.Type == "Season" || item.Type == "Episode" || item.Type == "MusicAlbum") {
-            $('#fldTvdb', page).show();
-            $('#fldTvCom', page).show();
-        } else {
-            $('#fldTvdb', page).hide();
-            $('#fldTvCom', page).hide();
-        }
-
-        if (item.Type == "Series" || item.Type == "Season" || item.Type == "Episode") {
-            $('#fldTvCom', page).show();
-        } else {
-            $('#fldTvCom', page).hide();
-        }
-
-        if (item.Type == "Series") {
-            $('#fldZap2It', page).show();
-        } else {
-            $('#fldZap2It', page).hide();
         }
 
         if (item.Type == "Series") {
@@ -640,54 +222,6 @@
         } else {
             $('#fldArtist', page).hide();
             $('#fldAlbum', page).hide();
-        }
-
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "Series" || item.Type == "Season" || item.Type == "Episode" || item.Type == "MusicVideo") {
-            $('#fldImdb', page).show();
-        } else {
-            $('#fldImdb', page).hide();
-        }
-
-        if (item.Type == "Audio" || item.Type == "MusicArtist" || item.Type == "MusicAlbum") {
-            $('#fldMusicBrainz', page).show();
-        } else {
-            $('#fldMusicBrainz', page).hide();
-        }
-
-        if (item.Type == "MusicAlbum" || item.Type == "Audio") {
-            $('#fldMusicBrainzAlbumId', page).show();
-        } else {
-            $('#fldMusicBrainzAlbumId', page).hide();
-        }
-
-        if (item.Type == "Audio") {
-            $('#fldMusicBrainzAlbumArtistId', page).show();
-        } else {
-            $('#fldMusicBrainzAlbumArtistId', page).hide();
-        }
-
-        if (item.Type == "MusicArtist" || item.Type == "MusicAlbum") {
-            $('#fldAudioDbArtistId', page).show();
-        } else {
-            $('#fldAudioDbArtistId', page).hide();
-        }
-
-        if (item.Type == "MusicAlbum") {
-            $('#fldAudioDbAlbumId', page).show();
-        } else {
-            $('#fldAudioDbAlbumId', page).hide();
-        }
-
-        if (item.Type == "MusicArtist" || item.Type == "Audio") {
-            $('#fldMusicBrainzArtistId', page).show();
-        } else {
-            $('#fldMusicBrainzArtistId', page).hide();
-        }
-
-        if (item.Type == "MusicAlbum" || item.Type == "Audio") {
-            $('#fldMusicBrainzReleaseGroupId', page).show();
-        } else {
-            $('#fldMusicBrainzReleaseGroupId', page).hide();
         }
 
         if (item.Type == "Episode") {
@@ -958,25 +492,6 @@
 
         $('#txtOriginalAspectRatio', page).val(item.AspectRatio || "");
 
-        var providerIds = item.ProviderIds || {};
-
-        $('#txtGamesDb', page).val(providerIds.Gamesdb || "");
-        $('#txtImdb', page).val(providerIds.Imdb || "");
-        $('#txtTmdb', page).val(providerIds.Tmdb || "");
-        $('#txtTmdbCollection', page).val(providerIds.TmdbCollection || "");
-        $('#txtTvdb', page).val(providerIds.Tvdb || "");
-        $('#txtTvCom', page).val(providerIds.Tvcom || "");
-        $('#txtMusicBrainzArtistId', page).val(providerIds.MusicBrainzArtist || "");
-        $('#txtMusicBrainzAlbumId', page).val(providerIds.MusicBrainzAlbum || "");
-        $('#txtMusicBrainzAlbumArtistId', page).val(providerIds.MusicBrainzAlbumArtist || "");
-        $('#txtAudioDbArtist', page).val(providerIds.AudioDbArtist || "");
-        $('#txtAudioDbAlbum', page).val(providerIds.AudioDbAlbum || "");
-        $('#txtMusicBrainzReleaseGroupId', page).val(providerIds.MusicBrainzReleaseGroup || "");
-        $('#txtRottenTomatoes', page).val(providerIds.RottenTomatoes || "");
-        $('#txtZap2It', page).val(providerIds.Zap2It || "");
-        $('#txtNesBoxName', page).val(providerIds.NesBox || "");
-        $('#txtNesBoxRom', page).val(providerIds.NesBoxRom || "");
-
         $('#selectLanguage', page).val(item.PreferredMetadataLanguage || "").selectmenu('refresh');
         $('#selectCountry', page).val(item.PreferredMetadataCountryCode || "").selectmenu('refresh');
 
@@ -988,8 +503,6 @@
         } else {
             $('#txtSeriesRuntime', page).val("");
         }
-
-        $('.txtProviderId', page).trigger('change');
     }
 
     function convertTo24HourFormat(time) {
@@ -1235,25 +748,13 @@
                 }).get()
             };
 
-            item.ProviderIds = $.extend(currentItem.ProviderIds, {
+            item.ProviderIds = $.extend({}, currentItem.ProviderIds || {});
 
-                Gamesdb: $('#txtGamesDb', form).val(),
-                Imdb: $('#txtImdb', form).val(),
-                Tmdb: $('#txtTmdb', form).val(),
-                TmdbCollection: $('#txtTmdbCollection', form).val(),
-                Tvdb: $('#txtTvdb', form).val(),
-                Tvcom: $('#txtTvCom', form).val(),
-                AudioDbArtist: $('#txtAudioDbArtist', form).val(),
-                AudioDbAlbum: $('#txtAudioDbAlbum', form).val(),
-                MusicBrainzAlbum: $('#txtMusicBrainzAlbumId', form).val(),
-                MusicBrainzAlbumArtist: $('#txtMusicBrainzAlbumArtistId', form).val(),
-                MusicBrainzArtist: $('#txtMusicBrainzArtistId', form).val(),
-                MusicBrainzReleaseGroup: $('#txtMusicBrainzReleaseGroupId', form).val(),
-                RottenTomatoes: $('#txtRottenTomatoes', form).val(),
-                Zap2It: $('#txtZap2It', form).val(),
-                NesBox: $('#txtNesBoxName', form).val(),
-                NesBoxRom: $('#txtNesBoxRom', form).val()
+            $('.txtExternalId', form).each(function () {
 
+                var providerkey = this.getAttribute('data-providerkey');
+
+                item.ProviderIds[providerkey] = this.value;
             });
 
             item.PreferredMetadataLanguage = $('#selectLanguage', form).val();
@@ -1350,209 +851,6 @@
     $(document).on('pageinit', "#editItemMetadataPage", function () {
 
         var page = this;
-
-        $('#txtGamesDb', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val) {
-
-                $('#btnOpenGamesDb', page).attr('href', 'http://thegamesdb.net/game/' + val);
-            } else {
-                $('#btnOpenGamesDb', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtNesBoxName', this).on('change', function () {
-
-            var val = this.value;
-            var urlPrefix = currentItem.GameSystem == "Nintendo" ? "http://nesbox.com/game/" : "http://snesbox.com/game/";
-
-            if (val) {
-
-                $('#btnOpenNesBox', page).attr('href', urlPrefix + val);
-            } else {
-                $('#btnOpenNesBox', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtNesBoxRom', this).on('change', function () {
-
-            var val = this.value;
-            var romName = $('#txtNesBoxName', page).val();
-            var urlPrefix = currentItem.GameSystem == "Nintendo" ? "http://nesbox.com/game/" : "http://snesbox.com/game/";
-
-            if (val && romName) {
-
-                $('#btnOpenNesBoxRom', page).attr('href', urlPrefix + romName + '/rom/' + val);
-            } else {
-                $('#btnOpenNesBoxRom', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtImdb', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val) {
-
-                if (currentItem.Type == "Person") {
-                    $('#btnOpenImdb', page).attr('href', 'http://www.imdb.com/name/' + val);
-                } else {
-                    $('#btnOpenImdb', page).attr('href', 'http://www.imdb.com/title/' + val);
-                }
-            } else {
-                $('#btnOpenImdb', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtAudioDbArtist', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val) {
-
-                $('#btnOpenAudioDbArtist', page).attr('href', 'http://www.theaudiodb.com/artist/' + val);
-
-            } else {
-                $('#btnOpenAudioDbArtist', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtAudioDbAlbum', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val) {
-
-                $('#btnOpenAudioDbAlbum', page).attr('href', 'http://www.theaudiodb.com/album/' + val);
-
-            } else {
-                $('#btnOpenAudioDbAlbum', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtMusicBrainzAlbumId', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val) {
-
-                $('#btnOpenMusicBrainzAlbum', page).attr('href', 'http://musicbrainz.org/release/' + val);
-
-            } else {
-                $('#btnOpenMusicBrainzAlbum', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtMusicBrainzAlbumArtistId', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val) {
-
-                $('#btnOpenMusicBrainzAlbumArtist', page).attr('href', 'http://musicbrainz.org/artist/' + val);
-
-            } else {
-                $('#btnOpenMusicBrainzAlbumArtist', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtMusicBrainzArtistId', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val) {
-
-                $('#btnOpenMusicBrainzArtist', page).attr('href', 'http://musicbrainz.org/artist/' + val);
-
-            } else {
-                $('#btnOpenMusicBrainzArtist', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtMusicBrainzReleaseGroupId', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val) {
-
-                $('#btnOpenMusicbrainzReleaseGroup', page).attr('href', 'http://musicbrainz.org/release-group/' + val);
-            } else {
-                $('#btnOpenMusicbrainzReleaseGroup', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtTmdb', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val) {
-
-                if (currentItem.Type == "Movie" || currentItem.Type == "Trailer" || currentItem.Type == "MusicVideo")
-                    $('#btnOpenTmdb', page).attr('href', 'http://www.themoviedb.org/movie/' + val);
-                else if (currentItem.Type == "BoxSet")
-                    $('#btnOpenTmdb', page).attr('href', 'http://www.themoviedb.org/collection/' + val);
-                else if (currentItem.Type == "Person")
-                    $('#btnOpenTmdb', page).attr('href', 'http://www.themoviedb.org/person/' + val);
-
-            } else {
-                $('#btnOpenTmdb', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtTmdbCollection', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val) {
-
-                $('#btnOpenTmdbCollection', page).attr('href', 'http://www.themoviedb.org/collection/' + val);
-
-            } else {
-                $('#btnOpenTmdbCollection', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtTvdb', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val && currentItem.Type == "Series") {
-
-                $('#btnOpenTvdb', page).attr('href', 'http://thetvdb.com/index.php?tab=series&id=' + val);
-
-            } else {
-                $('#btnOpenTvdb', page).attr('href', '#');
-            }
-
-        });
-
-        $('#txtZap2It', this).on('change', function () {
-
-            var val = this.value;
-
-            if (val) {
-
-                $('#btnOpenZap2It', page).attr('href', 'http://tvlistings.zap2it.com/tv/dexter/' + val);
-
-            } else {
-                $('#btnOpenZap2It', page).attr('href', '#');
-            }
-
-        });
 
         $('#btnRefresh', this).on('click', function () {
 

@@ -656,7 +656,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     return null;
                 }
-                
+
                 var value = item.GetProviderId(i.Key);
 
                 if (string.IsNullOrEmpty(value))
@@ -671,6 +671,18 @@ namespace MediaBrowser.Providers.Manager
                 };
 
             }).Where(i => i != null);
+        }
+
+        public IEnumerable<ExternalIdInfo> GetExternalIdInfos(IHasProviderIds item)
+        {
+            return GetExternalIds(item)
+                .Select(i => new ExternalIdInfo
+                {
+                    Name = i.Name,
+                    Key = i.Key,
+                    UrlFormatString = i.UrlFormatString
+
+                });
         }
     }
 }

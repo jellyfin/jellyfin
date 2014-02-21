@@ -475,6 +475,9 @@
     <Content Include="dashboard-ui\scripts\livetvtimers.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\scripts\editorsidebar.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\scripts\musicalbumartists.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
