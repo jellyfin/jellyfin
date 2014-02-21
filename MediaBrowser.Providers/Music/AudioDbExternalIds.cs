@@ -77,7 +77,7 @@ namespace MediaBrowser.Providers.Music
     {
         public string Name
         {
-            get { return "TheAudioDb"; }
+            get { return "TheAudioDb Artist"; }
         }
 
         public string Key

@@ -163,7 +163,7 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasProviderIds item)
         {
-            return !(item is Person);
+            return item is Movie || item is Trailer || item is MusicVideo || item is Series || item is Episode;
         }
     }
 
