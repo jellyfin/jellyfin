@@ -895,7 +895,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         protected virtual bool GetBlockUnratedValue(UserConfiguration config)
         {
-            return config.BlockNotRated;
+            return config.BlockUnratedItems.Contains(UnratedItem.Other);
         }
 
         /// <summary>

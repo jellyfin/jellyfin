@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Linq;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -36,6 +38,11 @@ namespace MediaBrowser.Controller.LiveTv
             {
                 return Path;
             }
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedItems.Contains(UnratedItem.LiveTvChannel);
         }
 
         /// <summary>

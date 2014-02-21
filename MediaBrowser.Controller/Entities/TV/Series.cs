@@ -217,7 +217,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
-            return config.BlockUnratedSeries;
+            return config.BlockUnratedItems.Contains(UnratedItem.Series);
         }
 
         public string PreferredMetadataLanguage { get; set; }
