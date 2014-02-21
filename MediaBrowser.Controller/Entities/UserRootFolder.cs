@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.Equals("default", Name, System.StringComparison.OrdinalIgnoreCase))
             {
-                Name = "Default Media Library";
+                Name = "Media Folders";
                 hasChanges = true;
             }
 

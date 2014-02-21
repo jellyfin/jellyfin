@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Entities;
 using System;
 using System.IO;
 using System.Linq;
@@ -27,12 +26,11 @@ namespace MediaBrowser.Api.Library
         /// <param name="fileSystem">The file system.</param>
         /// <param name="virtualFolderName">Name of the virtual folder.</param>
         /// <param name="mediaPath">The media path.</param>
-        /// <param name="user">The user.</param>
         /// <param name="appPaths">The app paths.</param>
         /// <exception cref="System.IO.DirectoryNotFoundException">The media folder does not exist</exception>
-        public static void RemoveMediaPath(IFileSystem fileSystem, string virtualFolderName, string mediaPath, User user, IServerApplicationPaths appPaths)
+        public static void RemoveMediaPath(IFileSystem fileSystem, string virtualFolderName, string mediaPath, IServerApplicationPaths appPaths)
         {
-            var rootFolderPath = user != null ? user.RootFolderPath : appPaths.DefaultUserViewsPath;
+            var rootFolderPath = appPaths.DefaultUserViewsPath;
             var path = Path.Combine(rootFolderPath, virtualFolderName);
 
             if (!Directory.Exists(path))
@@ -54,18 +52,17 @@ namespace MediaBrowser.Api.Library
         /// <param name="fileSystem">The file system.</param>
         /// <param name="virtualFolderName">Name of the virtual folder.</param>
         /// <param name="path">The path.</param>
-        /// <param name="user">The user.</param>
         /// <param name="appPaths">The app paths.</param>
-        /// <exception cref="System.ArgumentException">The path is not valid.</exception>
         /// <exception cref="System.IO.DirectoryNotFoundException">The path does not exist.</exception>
-        public static void AddMediaPath(IFileSystem fileSystem, string virtualFolderName, string path, User user, IServerApplicationPaths appPaths)
+        /// <exception cref="System.ArgumentException">The path is not valid.</exception>
+        public static void AddMediaPath(IFileSystem fileSystem, string virtualFolderName, string path, IServerApplicationPaths appPaths)
         {
             if (!Directory.Exists(path))
             {
                 throw new DirectoryNotFoundException("The path does not exist.");
             }
 
-            var rootFolderPath = user != null ? user.RootFolderPath : appPaths.DefaultUserViewsPath;
+            var rootFolderPath = appPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
             var shortcutFilename = Path.GetFileNameWithoutExtension(path);

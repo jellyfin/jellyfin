@@ -17,12 +17,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if items with no rating info should be blocked; otherwise, <c>false</c>.</value>
         public bool BlockNotRated { get; set; }
-        
-        /// <summary>
-        /// Gets or sets a value indicating whether [use custom library].
-        /// </summary>
-        /// <value><c>true</c> if [use custom library]; otherwise, <c>false</c>.</value>
-        public bool UseCustomLibrary { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is administrator.
@@ -71,7 +65,9 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableLiveTvAccess { get; set; }
 
         public bool EnableMediaPlayback { get; set; }
-        
+
+        public string[] BlockedMediaFolders { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -84,6 +80,8 @@ namespace MediaBrowser.Model.Configuration
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;
+
+            BlockedMediaFolders = new string[] { };
         }
     }
 }

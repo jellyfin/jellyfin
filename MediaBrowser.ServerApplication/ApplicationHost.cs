@@ -254,6 +254,14 @@ namespace MediaBrowser.ServerApplication
         {
             try
             {
+                MigrateUserFolders();
+            }
+            catch (IOException ex)
+            {
+            }
+
+            try
+            {
                 File.Delete(Path.Combine(ApplicationPaths.PluginsPath, "MBPhoto.dll"));
             }
             catch (IOException)
@@ -317,6 +325,35 @@ namespace MediaBrowser.ServerApplication
                     // Not there, no big deal
                 }
             });
+        }
+
+        private void MigrateUserFolders()
+        {
+            var rootPath = ApplicationPaths.RootFolderPath;
+
+            var folders = new DirectoryInfo(rootPath).EnumerateDirectories("*", SearchOption.TopDirectoryOnly).Where(i => !string.Equals(i.Name, "default", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (var folder in folders)
+            {
+                MigrateUserFolder(folder);
+            }
+        }
+
+        private void MigrateUserFolder(DirectoryInfo folder)
+        {
+            var foldersInDefault = new DirectoryInfo(ApplicationPaths.DefaultUserViewsPath).EnumerateDirectories("*", SearchOption.TopDirectoryOnly).ToList();
+
+            var foldersInUserView = folder.EnumerateDirectories("*", SearchOption.TopDirectoryOnly).ToList();
+
+            var foldersToMove = foldersInUserView.Where(i => !foldersInDefault.Any(f => string.Equals(f.Name, i.Name, StringComparison.OrdinalIgnoreCase))).ToList();
+
+            foreach (var folderToMove in foldersToMove)
+            {
+                folderToMove.MoveTo(Path.Combine(ApplicationPaths.DefaultUserViewsPath, folderToMove.Name));
+            }
+
+            Directory.Delete(folder.FullName, true);
         }
 
         /// <summary>

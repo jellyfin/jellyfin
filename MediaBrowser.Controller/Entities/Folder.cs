@@ -277,6 +277,19 @@ namespace MediaBrowser.Controller.Entities
             get { return GetRecursiveChildren(); }
         }
 
+        public override bool IsVisible(User user)
+        {
+            if (this is ICollectionFolder)
+            {
+                if (user.Configuration.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
+            return base.IsVisible(user);
+        }
+
         private List<BaseItem> LoadChildrenInternal()
         {
             return LoadChildren().ToList();
@@ -762,15 +775,15 @@ namespace MediaBrowser.Controller.Entities
                     {
                         list.Add(child);
                     }
-                }
 
-                if (recursive && child.IsFolder)
-                {
-                    var folder = (Folder)child;
-
-                    if (folder.AddChildrenToList(user, includeLinkedChildren, list, true, filter))
+                    if (recursive && child.IsFolder)
                     {
-                        hasLinkedChildren = true;
+                        var folder = (Folder)child;
+
+                        if (folder.AddChildrenToList(user, includeLinkedChildren, list, true, filter))
+                        {
+                            hasLinkedChildren = true;
+                        }
                     }
                 }
             }
