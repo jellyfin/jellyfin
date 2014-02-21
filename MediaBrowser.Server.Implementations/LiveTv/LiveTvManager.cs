@@ -284,6 +284,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (!fileInfo.Exists)
             {
+                _logger.Debug("Creating directory {0}", path);
+
                 Directory.CreateDirectory(path);
                 fileInfo = new DirectoryInfo(path);
 

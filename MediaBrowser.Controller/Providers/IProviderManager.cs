@@ -56,9 +56,11 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="metadataProviders">The metadata providers.</param>
         /// <param name="savers">The savers.</param>
         /// <param name="imageSavers">The image savers.</param>
+        /// <param name="externalIds">The external ids.</param>
         void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> savers,
-            IEnumerable<IImageSaver> imageSavers);
+            IEnumerable<IImageSaver> imageSavers,
+            IEnumerable<IExternalId> externalIds);
 
         /// <summary>
         /// Gets the available remote images.
@@ -81,6 +83,13 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <returns>IEnumerable{MetadataPlugin}.</returns>
         IEnumerable<MetadataPluginSummary> GetAllMetadataPlugins();
+
+        /// <summary>
+        /// Gets the external urls.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>IEnumerable{ExternalUrl}.</returns>
+        IEnumerable<ExternalUrl> GetExternalUrls(IHasProviderIds item);
 
         /// <summary>
         /// Saves the metadata.

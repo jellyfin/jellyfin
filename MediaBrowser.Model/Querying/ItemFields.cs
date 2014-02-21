@@ -52,6 +52,11 @@ namespace MediaBrowser.Model.Querying
         DisplayPreferencesId,
 
         /// <summary>
+        /// The external urls
+        /// </summary>
+        ExternalUrls,
+
+        /// <summary>
         /// Genres
         /// </summary>
         Genres,

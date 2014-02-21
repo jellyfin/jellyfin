@@ -57,6 +57,8 @@ namespace MediaBrowser.Providers.Manager
         private IEnumerable<IMetadataSaver> _savers;
         private IImageSaver[] _imageSavers;
 
+        private IExternalId[] _externalIds;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
@@ -82,8 +84,10 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="metadataProviders">The metadata providers.</param>
         /// <param name="metadataSavers">The metadata savers.</param>
         /// <param name="imageSavers">The image savers.</param>
+        /// <param name="externalIds">The external ids.</param>
         public void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders, IEnumerable<IMetadataSaver> metadataSavers,
-            IEnumerable<IImageSaver> imageSavers)
+            IEnumerable<IImageSaver> imageSavers,
+            IEnumerable<IExternalId> externalIds)
         {
             ImageProviders = imageProviders.ToArray();
 
@@ -91,6 +95,7 @@ namespace MediaBrowser.Providers.Manager
             _metadataProviders = metadataProviders.ToArray();
             _savers = metadataSavers.ToArray();
             _imageSavers = imageSavers.ToArray();
+            _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
         }
 
         public Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -624,6 +629,48 @@ namespace MediaBrowser.Providers.Manager
 
             // Nothing found
             return new List<RemoteSearchResult>();
+        }
+
+        public IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
+        {
+            return _externalIds.Where(i =>
+            {
+                try
+                {
+                    return i.Supports(item);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in {0}.Suports", ex, i.GetType().Name);
+                    return false;
+                }
+            });
+        }
+
+        public IEnumerable<ExternalUrl> GetExternalUrls(IHasProviderIds item)
+        {
+            return GetExternalIds(item)
+                .Select(i =>
+            {
+                if (string.IsNullOrEmpty(i.UrlFormatString))
+                {
+                    return null;
+                }
+                
+                var value = item.GetProviderId(i.Key);
+
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                return new ExternalUrl
+                {
+                    Name = i.Name,
+                    Url = string.Format(i.UrlFormatString, value)
+                };
+
+            }).Where(i => i != null);
         }
     }
 }

@@ -88,6 +88,7 @@
     <Compile Include="LiveTv\TimerInfoDto.cs" />
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="News\NewsItem.cs" />
+    <Compile Include="Providers\ExternalIdInfo.cs" />
     <Compile Include="Providers\ImageProviderInfo.cs" />
     <Compile Include="Providers\RemoteImageInfo.cs" />
     <Compile Include="Dto\StudioDto.cs" />
