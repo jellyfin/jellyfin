@@ -54,7 +54,7 @@
                     $('#playExternalButtonContainer', page).hide();
                 }
 
-                if (item.LocalTrailerCount && item.LocationType !== "Offline" && user.Configuration.EnableMediaPlayback) {
+                if (item.LocalTrailerCount && item.LocationType !== "Offline" && item.PlayAccess == 'Full') {
                     $('#trailerButtonContainer', page).show();
                 } else {
                     $('#trailerButtonContainer', page).hide();
@@ -823,7 +823,7 @@
             var chapter = chapters[i];
             var chapterName = chapter.Name || "Chapter " + i;
 
-            var onclick = user.Configuration.EnableMediaPlayback ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
+            var onclick = item.PlayAccess == 'Full' ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
 
             html += '<a class="posterItem smallBackdropPosterItem" href="#play-Chapter-' + i + '"' + onclick + '>';
 
@@ -952,7 +952,7 @@
 
             var href = "itemdetails.html?id=" + item.Id;
 
-            var onclick = user.Configuration.EnableMediaPlayback ? ' onclick="MediaPlayer.playById(\'' + item.Id + '\'); return false;"' : "";
+            var onclick = item.PlayAccess == 'Full' ? ' onclick="MediaPlayer.playById(\'' + item.Id + '\'); return false;"' : "";
 
             html += '<a class="' + cssClass + '" href="' + href + '"' + onclick + '>';
 

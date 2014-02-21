@@ -2561,7 +2561,7 @@
             }
         }
 
-        if (item.LocalTrailerCount && currentUser.Configuration.EnableMediaPlayback) {
+        if (item.LocalTrailerCount && item.PlayAccess == 'Full') {
             html += '<button type="button" data-mini="true" data-inline="true" data-icon="video" data-iconpos="notext" class="btnPlayTrailer" data-itemid="' + item.Id + '" title="Play Trailer" style="' + buttonMargin + '">Play Trailer</button>';
             buttonCount++;
         }

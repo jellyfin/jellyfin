@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -476,6 +477,21 @@ namespace MediaBrowser.Controller.Entities
 
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Gets the play access.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>PlayAccess.</returns>
+        public PlayAccess GetPlayAccess(User user)
+        {
+            if (!user.Configuration.EnableMediaPlayback)
+            {
+                return PlayAccess.None;
+            }
+
+            return PlayAccess.Full;
         }
 
         /// <summary>

@@ -1009,7 +1009,7 @@
 
         self.canPlay = function (item, user) {
 
-            if (!user.Configuration.EnableMediaPlayback) {
+            if (item.PlayAccess != 'Full') {
                 return false;
             }
 

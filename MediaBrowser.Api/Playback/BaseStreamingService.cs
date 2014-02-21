@@ -12,6 +12,7 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Library;
 using MediaBrowser.Model.LiveTv;
 using System;
 using System.Collections.Generic;
@@ -1268,11 +1269,6 @@ namespace MediaBrowser.Api.Playback
 
             var user = AuthorizationRequestFilterAttribute.GetCurrentUser(Request, UserManager);
 
-            if (user != null && !user.Configuration.EnableMediaPlayback)
-            {
-                throw new ArgumentException(string.Format("{0} is not allowed to play media.", user.Name));
-            }
-
             var url = Request.PathInfo;
 
             if (!request.AudioCodec.HasValue)
@@ -1287,6 +1283,11 @@ namespace MediaBrowser.Api.Playback
             };
 
             var item = DtoService.GetItemByDtoId(request.Id);
+
+            if (user != null && item.GetPlayAccess(user) != PlayAccess.Full)
+            {
+                throw new ArgumentException(string.Format("{0} is not allowed to play media.", user.Name));
+            }
 
             if (item is ILiveTvRecording)
             {
