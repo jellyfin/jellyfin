@@ -67,7 +67,7 @@
         return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
     }
 
-    function loadChildrenOfRootNode(callback) {
+    function loadChildrenOfRootNode(callback, openItems) {
 
         var promise1 = $.getJSON(ApiClient.getUrl("Library/MediaFolders"));
 
@@ -84,7 +84,9 @@
 
             for (i = 0, length = mediaFolders.length; i < length; i++) {
 
-                nodes.push(getNode(mediaFolders[i], 'closed'));
+                var state = openItems.indexOf(mediaFolders[i].Id) == -1 ? 'closed' : 'open';
+                
+                nodes.push(getNode(mediaFolders[i], state));
             }
 
             for (i = 0, length = liveTvInfo.Services.length; i < length; i++) {
@@ -131,7 +133,7 @@
 
         if (node == '-1') {
 
-            loadChildrenOfRootNode(callback);
+            loadChildrenOfRootNode(callback, openItems);
             return;
         }
 
