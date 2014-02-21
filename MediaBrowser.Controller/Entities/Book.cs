@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
-            return config.BlockUnratedBooks;
+            return config.BlockUnratedItems.Contains(UnratedItem.Book);
         }
 
         public BookInfo GetLookupInfo()

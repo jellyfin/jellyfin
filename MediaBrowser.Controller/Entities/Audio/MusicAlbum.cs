@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
-            return config.BlockUnratedMusic;
+            return config.BlockUnratedItems.Contains(UnratedItem.Music);
         }
 
         public AlbumInfo GetLookupInfo()

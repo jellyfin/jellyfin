@@ -4,6 +4,7 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -97,7 +98,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
-            return config.BlockUnratedTrailers;
+            return config.BlockUnratedItems.Contains(UnratedItem.Trailer);
         }
 
         public TrailerInfo GetLookupInfo()

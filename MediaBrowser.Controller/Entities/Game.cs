@@ -3,6 +3,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -107,7 +108,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
-            return config.BlockUnratedGames;
+            return config.BlockUnratedItems.Contains(UnratedItem.Game);
         }
 
         public GameInfo GetLookupInfo()

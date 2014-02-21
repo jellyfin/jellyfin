@@ -13,12 +13,6 @@ namespace MediaBrowser.Model.Configuration
         public int? MaxParentalRating { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether items with no rating information should be blocked.
-        /// </summary>
-        /// <value><c>true</c> if items with no rating info should be blocked; otherwise, <c>false</c>.</value>
-        public bool BlockNotRated { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is administrator.
         /// </summary>
         /// <value><c>true</c> if this instance is administrator; otherwise, <c>false</c>.</value>
@@ -54,19 +48,14 @@ namespace MediaBrowser.Model.Configuration
         public bool DisplayUnairedEpisodes { get; set; }
         public bool EnableRemoteControlOfOtherUsers { get; set; }
 
-        public bool BlockUnratedMovies { get; set; }
-        public bool BlockUnratedTrailers { get; set; }
-        public bool BlockUnratedSeries { get; set; }
-        public bool BlockUnratedMusic { get; set; }
-        public bool BlockUnratedGames { get; set; }
-        public bool BlockUnratedBooks { get; set; }
-
         public bool EnableLiveTvManagement { get; set; }
         public bool EnableLiveTvAccess { get; set; }
 
         public bool EnableMediaPlayback { get; set; }
 
         public string[] BlockedMediaFolders { get; set; }
+
+        public UnratedItem[] BlockUnratedItems { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
@@ -75,13 +64,26 @@ namespace MediaBrowser.Model.Configuration
         {
             IsAdministrator = true;
             EnableRemoteControlOfOtherUsers = true;
-            BlockNotRated = false;
 
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;
 
             BlockedMediaFolders = new string[] { };
+            BlockUnratedItems = new UnratedItem[] { };
         }
+    }
+
+    public enum UnratedItem
+    {
+        Movie,
+        Trailer,
+        Series,
+        Music,
+        Game,
+        Book,
+        LiveTvChannel,
+        LiveTvProgram,
+        Other
     }
 }

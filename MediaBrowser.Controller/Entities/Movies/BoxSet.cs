@@ -57,7 +57,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
-            return config.BlockUnratedMovies;
+            return config.BlockUnratedItems.Contains(UnratedItem.Movie);
         }
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)

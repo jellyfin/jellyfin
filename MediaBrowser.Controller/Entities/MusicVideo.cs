@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -53,7 +54,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
-            return config.BlockUnratedMusic;
+            return config.BlockUnratedItems.Contains(UnratedItem.Music);
         }
 
         public MusicVideoInfo GetLookupInfo()

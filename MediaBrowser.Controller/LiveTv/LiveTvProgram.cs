@@ -1,9 +1,11 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.LiveTv;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -195,6 +197,11 @@ namespace MediaBrowser.Controller.LiveTv
             // Avoid library manager and keep out of in-memory cache
             // Not great that this class has to know about that, but we'll improve that later.
             return ItemRepository.SaveItem(this, cancellationToken);
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram);
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using System.Linq;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -74,6 +76,11 @@ namespace MediaBrowser.Controller.LiveTv
             {
                 return false;
             }
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram);
         }
     }
 }
