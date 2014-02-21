@@ -16,16 +16,10 @@ namespace MediaBrowser.Model.Providers
         public string Key { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the item.
+        /// Gets or sets the URL format string.
         /// </summary>
-        /// <value>The type of the item.</value>
-        public string ItemType { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the format string.
-        /// </summary>
-        /// <value>The format string.</value>
-        public string FormatString { get; set; }
+        /// <value>The URL format string.</value>
+        public string UrlFormatString { get; set; }
     }
 
     public class ExternalUrl

@@ -92,6 +92,13 @@ namespace MediaBrowser.Controller.Providers
         IEnumerable<ExternalUrl> GetExternalUrls(IHasProviderIds item);
 
         /// <summary>
+        /// Gets the external identifier infos.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>IEnumerable{ExternalIdInfo}.</returns>
+        IEnumerable<ExternalIdInfo> GetExternalIdInfos(IHasProviderIds item);
+
+        /// <summary>
         /// Saves the metadata.
         /// </summary>
         /// <param name="item">The item.</param>

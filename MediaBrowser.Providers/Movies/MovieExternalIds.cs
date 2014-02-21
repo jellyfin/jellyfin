@@ -52,6 +52,52 @@ namespace MediaBrowser.Providers.Movies
         }
     }
 
+    public class RottenTomatoesExternalId : IExternalId
+    {
+        public string Name
+        {
+            get { return "Rotten Tomatoes"; }
+        }
+
+        public string Key
+        {
+            get { return MetadataProviders.RottenTomatoes.ToString(); }
+        }
+
+        public string UrlFormatString
+        {
+            get { return null; }
+        }
+
+        public bool Supports(IHasProviderIds item)
+        {
+            return item is Movie || item is Trailer || item is MusicVideo;
+        }
+    }
+
+    public class MovieDbMovieCollectionExternalId : IExternalId
+    {
+        public string Name
+        {
+            get { return "TheMovieDb Collection"; }
+        }
+
+        public string Key
+        {
+            get { return MetadataProviders.TmdbCollection.ToString(); }
+        }
+
+        public string UrlFormatString
+        {
+            get { return "http://www.themoviedb.org/collection/{0}"; }
+        }
+
+        public bool Supports(IHasProviderIds item)
+        {
+            return item is Movie || item is Trailer || item is MusicVideo;
+        }
+    }
+
     public class MovieDbPersonExternalId : IExternalId
     {
         public string Name
