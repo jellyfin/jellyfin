@@ -45,11 +45,13 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BDInfo">
-      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.7\lib\net35\BDInfo.dll</HintPath>
+    <Reference Include="BDInfo, Version=1.0.5165.30944, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.8\lib\net35\BDInfo.dll</HintPath>
     </Reference>
-    <Reference Include="DvdLib">
-      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.7\lib\net35\DvdLib.dll</HintPath>
+    <Reference Include="DvdLib, Version=1.0.5165.30944, Culture=neutral, PublicKeyToken=7a2f3f5ec8d93575, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.8\lib\net35\DvdLib.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
