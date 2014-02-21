@@ -76,6 +76,7 @@
     <Compile Include="Entities\PackageReviewInfo.cs" />
     <Compile Include="FileOrganization\FileOrganizationResult.cs" />
     <Compile Include="FileOrganization\FileOrganizationQuery.cs" />
+    <Compile Include="Library\PlayAccess.cs" />
     <Compile Include="LiveTv\ChannelInfoDto.cs" />
     <Compile Include="LiveTv\ChannelQuery.cs" />
     <Compile Include="LiveTv\ProgramInfoDto.cs" />

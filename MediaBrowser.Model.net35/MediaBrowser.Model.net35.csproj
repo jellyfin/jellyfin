@@ -220,6 +220,9 @@
     <Compile Include="..\MediaBrowser.Model\IO\IZipClient.cs">
       <Link>IO\IZipClient.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Library\PlayAccess.cs">
+      <Link>Library\PlayAccess.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelInfoDto.cs">
       <Link>LiveTv\ChannelInfoDto.cs</Link>
     </Compile>

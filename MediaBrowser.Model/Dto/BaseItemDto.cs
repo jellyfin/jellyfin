@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Library;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -153,6 +154,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The cumulative run time ticks.</value>
         public long? CumulativeRunTimeTicks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the original run time ticks.
+        /// </summary>
+        /// <value>The original run time ticks.</value>
+        public long? OriginalRunTimeTicks { get; set; }
         
         /// <summary>
         /// Gets or sets the run time ticks.
@@ -160,6 +167,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The run time ticks.</value>
         public long? RunTimeTicks { get; set; }
 
+        /// <summary>
+        /// Gets or sets the play access.
+        /// </summary>
+        /// <value>The play access.</value>
+        public PlayAccess PlayAccess { get; set; }
+        
         /// <summary>
         /// Gets or sets the aspect ratio.
         /// </summary>

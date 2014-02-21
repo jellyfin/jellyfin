@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using System;
@@ -604,19 +605,19 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSessionForRemoteControl(sessionId);
 
+            var items = command.ItemIds.Select(i => _libraryManager.GetItemById(new Guid(i)))
+                .Where(i => i.LocationType != LocationType.Virtual)
+                .ToList();
+
             if (session.UserId.HasValue)
             {
                 var user = _userManager.GetUserById(session.UserId.Value);
 
-                if (!user.Configuration.EnableMediaPlayback)
+                if (items.Any(i => i.GetPlayAccess(user) != PlayAccess.Full))
                 {
                     throw new ArgumentException(string.Format("{0} is not allowed to play media.", user.Name));
                 }
             }
-
-            var items = command.ItemIds.Select(i => _libraryManager.GetItemById(new Guid(i)))
-                .Where(i => i.LocationType != LocationType.Virtual)
-                .ToList();
 
             if (command.PlayCommand != PlayCommand.PlayNow)
             {

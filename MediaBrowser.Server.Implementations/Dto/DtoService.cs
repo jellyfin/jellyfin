@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -185,6 +184,8 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.UserData.Played = dto.PlayedPercentage.HasValue && dto.PlayedPercentage.Value >= 100;
             }
+
+            dto.PlayAccess = item.GetPlayAccess(user);
         }
 
         private int GetChildCount(Folder folder, User user)
