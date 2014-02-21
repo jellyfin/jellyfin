@@ -258,7 +258,7 @@ namespace MediaBrowser.Api.Library
 
         public object Get(GetMediaFolders request)
         {
-            var items = _libraryManager.GetUserRootFolder().Children.ToList();
+            var items = _libraryManager.GetUserRootFolder().Children.OrderBy(i => i.SortName).ToList();
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))
