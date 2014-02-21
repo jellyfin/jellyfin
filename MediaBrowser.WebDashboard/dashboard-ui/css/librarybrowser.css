@@ -789,9 +789,6 @@ a.itemTag:hover {
 }
 
 @media all and (min-width: 1920px) {
-    .ehsContent {
-        max-width: 1540px;
-    }
 }
 
 .detailPageParentLink {

@@ -320,19 +320,19 @@
 
 @media all and (min-width: 1920px) {
 
-    .squarePosterItem {
-        width: 204px;
-    }
-
-        .squarePosterItem .posterItemImage {
-            height: 204px;
-        }
-
     .portraitPosterItem {
-        width: 164px;
+        width: 160px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 246px;
+            height: 240px;
+        }
+
+    .squarePosterItem {
+        width: 184px;
+    }
+
+        .squarePosterItem .posterItemImage {
+            height: 184px;
         }
 }
