@@ -319,6 +319,9 @@
     <Compile Include="..\MediaBrowser.Model\Plugins\PluginInfo.cs">
       <Link>Plugins\PluginInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Providers\ExternalIdInfo.cs">
+      <Link>Providers\ExternalIdInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Providers\ImageProviderInfo.cs">
       <Link>Providers\ImageProviderInfo.cs</Link>
     </Compile>

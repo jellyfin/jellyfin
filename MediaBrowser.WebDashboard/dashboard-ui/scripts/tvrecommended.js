@@ -38,7 +38,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1440 ? 4 : 3),
+            Limit: screenWidth >= 1920 ? 4 : (screenWidth >= 1440 ? 4 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             ExcludeLocationTypes: "Virtual"

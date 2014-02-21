@@ -14,6 +14,10 @@
     display: none;
 }
 
+.libraryTree {
+    margin-left: .25em;
+}
+
 .offlineEditorNode {
     color: #cc3333;
 }
@@ -94,23 +98,6 @@
         height: 450px;
     }
 
-    .editPageSidebar {
-        position: fixed;
-        top: 48px;
-        bottom: 0;
-        left: 0;
-        width: 27.5%;
-        overflow-y: scroll;
-        overflow-x: auto!important;
-        display: block;
-        border-right: 1px solid #555;
-    }
-
-    .editPageInnerContent {
-        float: right;
-        width: 70%;
-    }
-
     .remoteBannerImage {
         width: 450px;
         height: 83px;
@@ -158,6 +145,23 @@
 
     .availableImagesList {
         width: 700px;
+    }
+
+    .editPageSidebar {
+        position: fixed;
+        top: 48px;
+        bottom: 0;
+        left: 0;
+        width: 30%;
+        overflow-y: scroll;
+        overflow-x: auto!important;
+        display: block;
+        border-right: 1px solid #555;
+    }
+
+    .editPageInnerContent {
+        float: right;
+        width: 67.5%;
     }
 }
 
@@ -213,11 +217,11 @@
 @media all and (min-width: 1800px) {
 
     .editPageSidebar {
-        width: 22.5%;
+        width: 25%;
     }
 
     .editPageInnerContent {
-        width: 75%;
+        width: 72.5%;
     }
 }
 

@@ -72,9 +72,9 @@
             { name: 'Live TV Programs', value: 'LiveTvProgram' },
             { name: 'Movies', value: 'Movie' },
             { name: 'Music', value: 'Music' },
-            { name: 'Others', value: 'Other' },
             { name: 'Trailers', value: 'Trailer' },
-            { name: 'TV Shows', value: 'Series' }
+            { name: 'TV Shows', value: 'Series' },
+            { name: 'Others', value: 'Other' }
         ];
 
         var html = '';

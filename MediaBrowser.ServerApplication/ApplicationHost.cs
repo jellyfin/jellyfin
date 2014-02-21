@@ -423,7 +423,7 @@ namespace MediaBrowser.ServerApplication
             ImageProcessor = new ImageProcessor(Logger, ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer);
             RegisterSingleInstance(ImageProcessor);
 
-            DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager);
+            DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager);
             RegisterSingleInstance(DtoService);
 
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
@@ -617,7 +617,8 @@ namespace MediaBrowser.ServerApplication
 
             ProviderManager.AddParts(GetExports<IImageProvider>(), GetExports<IMetadataService>(), GetExports<IMetadataProvider>(),
                                     GetExports<IMetadataSaver>(),
-                                    GetExports<IImageSaver>());
+                                    GetExports<IImageSaver>(),
+                                    GetExports<IExternalId>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 

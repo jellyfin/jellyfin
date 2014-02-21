@@ -1,10 +1,11 @@
 ﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Library;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Library;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -76,6 +77,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The premiere date.</value>
         public DateTime? PremiereDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the external urls.
+        /// </summary>
+        /// <value>The external urls.</value>
+        public ExternalUrl[] ExternalUrls { get; set; }
 
         /// <summary>
         /// Gets or sets the critic rating.

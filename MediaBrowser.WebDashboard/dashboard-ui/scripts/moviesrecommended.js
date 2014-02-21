@@ -11,7 +11,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
-            Limit: screenWidth >= 1440 ? 16 : 12,
+            Limit: screenWidth >= 1440 ? 21 : 12,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,DateCreated,UserData",
             Filters: "IsUnplayed"
@@ -33,7 +33,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1440 ? 4 : 3),
+            Limit: screenWidth >= 1920 ? 4 : (screenWidth >= 1440 ? 4 : 3),
             Recursive: true,
             Fields: "DateCreated,UserData"
         };
@@ -63,7 +63,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Trailer",
-            Limit: screenWidth >= 1440 ? 8 : 6,
+            Limit: screenWidth >= 1440 ? 7 : 6,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,DateCreated,UserData",
             Filters: "IsUnplayed"

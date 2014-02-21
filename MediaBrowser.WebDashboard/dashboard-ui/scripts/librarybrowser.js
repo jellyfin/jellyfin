@@ -1333,90 +1333,15 @@
                 links.push('<a class="textlink" href="' + item.HomePageUrl + '" target="_blank">Website</a>');
             }
 
-            var providerIds = item.ProviderIds || {};
+            if (item.ExternalUrls) {
 
-            if (providerIds.Imdb) {
-                if (item.Type == "Person") {
-                    links.push('<a class="textlink" href="http://www.imdb.com/name/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
-                }
-                else {
-                    links.push('<a class="textlink" href="http://www.imdb.com/title/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
-                }
-            }
-            if (providerIds.Tmdb) {
-                if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicVideo")
-                    links.push('<a class="textlink" href="http://www.themoviedb.org/movie/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
-                else if (item.Type == "BoxSet")
-                    links.push('<a class="textlink" href="http://www.themoviedb.org/collection/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
-                else if (item.Type == "Person")
-                    links.push('<a class="textlink" href="http://www.themoviedb.org/person/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
-                else if (item.Type == "Series")
-                    links.push('<a class="textlink" href="http://www.themoviedb.org/tv/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
-            }
-            if (providerIds.Tvdb) {
+                for (var i = 0, length = item.ExternalUrls.length; i < length; i++) {
 
-                if (item.Type == "Series") {
-                    links.push('<a class="textlink" href="http://thetvdb.com/index.php?tab=series&id=' + providerIds.Tvdb + '" target="_blank">TheTVDB</a>');
+                    var url = item.ExternalUrls[i];
+
+                    links.push('<a class="textlink" href="' + url.Url + '" target="_blank">' + url.Name + '</a>');
                 }
             }
-            if (providerIds.Tvcom) {
-                if (item.Type == "Episode")
-                    links.push('<a class="textlink" href="http://www.tv.com/shows/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
-                else if (item.Type == "Person")
-                    links.push('<a class="textlink" href="http://www.tv.com/people/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
-            }
-            if (providerIds.MusicBrainzAlbum) {
-
-                links.push('<a class="textlink" href="http://musicbrainz.org/release/' + providerIds.MusicBrainzAlbum + '" target="_blank">MusicBrainz Album</a>');
-
-            }
-            if (providerIds.MusicBrainzAlbumArtist) {
-
-                links.push('<a class="textlink" href="http://musicbrainz.org/artist/' + providerIds.MusicBrainzAlbumArtist + '" target="_blank">MusicBrainz Album Artist</a>');
-
-            }
-            if (providerIds.MusicBrainzArtist) {
-
-                var text = item.Type == "MusicArtist" ? "MusicBrainz" : "MusicBrainz Artist";
-
-                links.push('<a class="textlink" href="http://musicbrainz.org/artist/' + providerIds.MusicBrainzArtist + '" target="_blank">' + text + '</a>');
-
-            }
-            if (providerIds.MusicBrainzReleaseGroup) {
-
-                links.push('<a class="textlink" href="http://musicbrainz.org/release-group/' + providerIds.MusicBrainzReleaseGroup + '" target="_blank">MusicBrainz Release Group</a>');
-
-            }
-            if (providerIds.AudioDbArtist) {
-
-                if (item.Type == "MusicArtist")
-                    links.push('<a class="textlink" href="http://www.theaudiodb.com/artist/' + providerIds.AudioDbArtist + '" target="_blank">TheAudioDB</a>');
-                else
-                    links.push('<a class="textlink" href="http://www.theaudiodb.com/artist/' + providerIds.AudioDbArtist + '" target="_blank">TheAudioDB Artist</a>');
-            }
-            if (providerIds.AudioDbAlbum) {
-
-                if (item.Type == "MusicAlbum")
-                    links.push('<a class="textlink" href="http://www.theaudiodb.com/album/' + providerIds.AudioDbAlbum + '" target="_blank">TheAudioDB</a>');
-                else
-                    links.push('<a class="textlink" href="http://www.theaudiodb.com/album/' + providerIds.AudioDbAlbum + '" target="_blank">TheAudioDB Album</a>');
-            }
-            if (providerIds.Gamesdb) {
-                links.push('<a class="textlink" href="http://thegamesdb.net/game/' + providerIds.Gamesdb + '" target="_blank">GamesDB</a>');
-            }
-
-            if (providerIds.NesBox) {
-
-                if (item.GameSystem == "Nintendo") {
-                    links.push('<a class="textlink" href="http://nesbox.com/game/' + providerIds.NesBox + '" target="_blank">NESbox</a>');
-                }
-                else if (item.GameSystem == "Super Nintendo") {
-                    links.push('<a class="textlink" href="http://snesbox.com/game/' + providerIds.NesBox + '" target="_blank">SNESbox</a>');
-                }
-            }
-
-            if (providerIds.Zap2It)
-                links.push('<a class="textlink" href="http://tvlistings.zap2it.com/tv/dexter/' + providerIds.Zap2It + '?aid=zap2it" target="_blank">Zap2It</a>');
 
             if (links.length) {
 

@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -35,8 +36,9 @@ namespace MediaBrowser.Server.Implementations.Dto
         private readonly IImageProcessor _imageProcessor;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly IProviderManager _providerManager;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem)
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -46,6 +48,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             _imageProcessor = imageProcessor;
             _config = config;
             _fileSystem = fileSystem;
+            _providerManager = providerManager;
         }
 
         /// <summary>
@@ -687,6 +690,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (fields.Contains(ItemFields.HomePageUrl))
             {
                 dto.HomePageUrl = item.HomePageUrl;
+            }
+
+            if (fields.Contains(ItemFields.ExternalUrls))
+            {
+                dto.ExternalUrls = _providerManager.GetExternalUrls(item).ToArray();
             }
 
             if (fields.Contains(ItemFields.Tags))

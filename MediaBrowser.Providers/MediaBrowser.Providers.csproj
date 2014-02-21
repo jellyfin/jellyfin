@@ -99,6 +99,7 @@
     <Compile Include="MediaInfo\FFProbeProvider.cs" />
     <Compile Include="MediaInfo\FFProbeVideoInfo.cs" />
     <Compile Include="Movies\MovieDbTrailerProvider.cs" />
+    <Compile Include="Movies\MovieExternalIds.cs" />
     <Compile Include="Movies\TrailerMetadataService.cs" />
     <Compile Include="Movies\GenericMovieDbInfo.cs" />
     <Compile Include="Movies\MovieDbSearch.cs" />
@@ -123,11 +124,13 @@
     <Compile Include="Music\AudioDbAlbumProvider.cs" />
     <Compile Include="Music\AudioDbArtistImageProvider.cs" />
     <Compile Include="Music\AudioDbArtistProvider.cs" />
+    <Compile Include="Music\AudioDbExternalIds.cs" />
     <Compile Include="Music\AudioMetadataService.cs" />
     <Compile Include="Music\Extensions.cs" />
     <Compile Include="Music\LastfmArtistProvider.cs" />
     <Compile Include="Music\MovieDbMusicVideoProvider.cs" />
     <Compile Include="Music\MusicBrainzArtistProvider.cs" />
+    <Compile Include="Music\MusicExternalIds.cs" />
     <Compile Include="Music\MusicVideoMetadataService.cs" />
     <Compile Include="Music\MusicVideoXmlProvider.cs" />
     <Compile Include="Omdb\OmdbProvider.cs" />
@@ -196,6 +199,7 @@
     <Compile Include="TV\SeriesXmlProvider.cs" />
     <Compile Include="TV\SeriesXmlParser.cs" />
     <Compile Include="TV\TvdbPrescanTask.cs" />
+    <Compile Include="TV\TvExternalIds.cs" />
     <Compile Include="Users\UserMetadataService.cs" />
     <Compile Include="Videos\VideoMetadataService.cs" />
     <Compile Include="Xbmc\XbmcImageSaver.cs" />
