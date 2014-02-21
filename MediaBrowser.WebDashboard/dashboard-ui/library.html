@@ -9,19 +9,11 @@
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">Media Folders</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Folders</a>
                     <a href="librarypathmapping.html" data-role="button">Path Substitution</a>
                     <a href="librarysettings.html" data-role="button">Advanced</a>
                 </div>
                 <div class="readOnlyContent">
-                    <p>
-                        <label for="selectUser">Manage user library: </label>
-                        <select id="selectUser" class="selectUser" data-mini="true"></select>
-                    </p>
-                    <p id="fldUseDefaultLibrary" style="display: none;">
-                        <input type="checkbox" id="chkUseDefaultLibrary" name="chkUseDefaultLibrary" onchange="MediaLibraryPage.setUseDefaultMediaLibrary(this.checked);" />
-                        <label for="chkUseDefaultLibrary">Use default media library</label>
-                    </p>
                     <p style="margin: 2em 0;">Refer to the <a href="https://github.com/MediaBrowser/MediaBrowser/wiki/Library-Structure" target="_blank">media library wiki.</a> for suggested folder structures.</p>
                     <div id="divMediaLibrary">
                         <p>

@@ -20,35 +20,6 @@ namespace MediaBrowser.Controller.Entities
         public static IXmlSerializer XmlSerializer { get; set; }
 
         /// <summary>
-        /// Gets the root folder path.
-        /// </summary>
-        /// <value>The root folder path.</value>
-        [IgnoreDataMember]
-        public string RootFolderPath
-        {
-            get
-            {
-                var path = Configuration.UseCustomLibrary ? GetRootFolderPath(Name) : ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
-
-                Directory.CreateDirectory(path);
-
-                return path;
-            }
-        }
-
-        /// <summary>
-        /// Gets the root folder path based on a given username
-        /// </summary>
-        /// <param name="username">The username.</param>
-        /// <returns>System.String.</returns>
-        private string GetRootFolderPath(string username)
-        {
-            var safeFolderName = FileSystem.GetValidFilename(username);
-
-            return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.RootFolderPath, safeFolderName);
-        }
-
-        /// <summary>
         /// Gets or sets the password.
         /// </summary>
         /// <value>The password.</value>
@@ -98,23 +69,15 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// The _root folder
-        /// </summary>
-        private UserRootFolder _rootFolder;
-        /// <summary>
         /// Gets the root folder.
         /// </summary>
         /// <value>The root folder.</value>
         [IgnoreDataMember]
-        public UserRootFolder RootFolder
+        public Folder RootFolder
         {
             get
             {
-                return _rootFolder ?? (LibraryManager.GetUserRootFolder(RootFolderPath));
-            }
-            private set
-            {
-                _rootFolder = value;
+                return LibraryManager.GetUserRootFolder();
             }
         }
 
@@ -166,22 +129,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Reloads the root media folder
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public async Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            Logger.Info("Validating media library for {0}", Name);
-            await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await RootFolder.ValidateChildren(progress, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Renames the user.
         /// </summary>
         /// <param name="newName">The new name.</param>
@@ -215,28 +162,9 @@ namespace MediaBrowser.Controller.Entities
                 {
                     Directory.CreateDirectory(newConfigDirectory);
                 }
-
-                var customLibraryPath = GetRootFolderPath(Name);
-
-                // Move the root folder path if using a custom library
-                if (Directory.Exists(customLibraryPath))
-                {
-                    var newRootFolderPath = GetRootFolderPath(newName);
-                    if (Directory.Exists(newRootFolderPath))
-                    {
-                        Directory.Delete(newRootFolderPath, true);
-                    }
-                    Directory.Move(customLibraryPath, newRootFolderPath);
-                }
             }
 
             Name = newName;
-
-            // Force these to be lazy loaded again
-            RootFolder = null;
-
-            // Kick off a task to validate the media library
-            Task.Run(() => ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
 
             return RefreshMetadata(new MetadataRefreshOptions
             {
@@ -318,16 +246,8 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("config");
             }
 
-            var customLibraryChanged = config.UseCustomLibrary != Configuration.UseCustomLibrary;
-
             Configuration = config;
             SaveConfiguration(serializer);
-
-            // Force these to be lazy loaded again
-            if (customLibraryChanged)
-            {
-                RootFolder = null;
-            }
         }
     }
 }

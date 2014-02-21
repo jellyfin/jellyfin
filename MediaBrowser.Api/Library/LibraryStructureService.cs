@@ -28,15 +28,8 @@ namespace MediaBrowser.Api.Library
     }
 
     [Route("/Library/VirtualFolders", "POST")]
-    [Route("/Users/{UserId}/VirtualFolders", "POST")]
     public class AddVirtualFolder : IReturnVoid
     {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        public string UserId { get; set; }
-
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -57,15 +50,8 @@ namespace MediaBrowser.Api.Library
     }
 
     [Route("/Library/VirtualFolders", "DELETE")]
-    [Route("/Users/{UserId}/VirtualFolders", "DELETE")]
     public class RemoveVirtualFolder : IReturnVoid
     {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        public string UserId { get; set; }
-
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -80,15 +66,8 @@ namespace MediaBrowser.Api.Library
     }
 
     [Route("/Library/VirtualFolders/Name", "POST")]
-    [Route("/Users/{UserId}/VirtualFolders/Name", "POST")]
     public class RenameVirtualFolder : IReturnVoid
     {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        public string UserId { get; set; }
-
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -109,15 +88,8 @@ namespace MediaBrowser.Api.Library
     }
 
     [Route("/Library/VirtualFolders/Paths", "POST")]
-    [Route("/Users/{UserId}/VirtualFolders/Paths", "POST")]
     public class AddMediaPath : IReturnVoid
     {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        public string UserId { get; set; }
-
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -138,15 +110,8 @@ namespace MediaBrowser.Api.Library
     }
 
     [Route("/Library/VirtualFolders/Paths", "DELETE")]
-    [Route("/Users/{UserId}/VirtualFolders/Paths", "DELETE")]
     public class RemoveMediaPath : IReturnVoid
     {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        public string UserId { get; set; }
-
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -275,18 +240,7 @@ namespace MediaBrowser.Api.Library
 
             var name = _fileSystem.GetValidFilename(request.Name);
 
-            string rootFolderPath;
-
-            if (string.IsNullOrEmpty(request.UserId))
-            {
-                rootFolderPath = _appPaths.DefaultUserViewsPath;
-            }
-            else
-            {
-                var user = _userManager.GetUserById(new Guid(request.UserId));
-
-                rootFolderPath = user.RootFolderPath;
-            }
+            var rootFolderPath = _appPaths.DefaultUserViewsPath;
 
             var virtualFolderPath = Path.Combine(rootFolderPath, name);
 
@@ -344,18 +298,7 @@ namespace MediaBrowser.Api.Library
                 throw new ArgumentNullException("request");
             }
 
-            string rootFolderPath;
-
-            if (string.IsNullOrEmpty(request.UserId))
-            {
-                rootFolderPath = _appPaths.DefaultUserViewsPath;
-            }
-            else
-            {
-                var user = _userManager.GetUserById(new Guid(request.UserId));
-
-                rootFolderPath = user.RootFolderPath;
-            }
+            var rootFolderPath = _appPaths.DefaultUserViewsPath;
 
             var currentPath = Path.Combine(rootFolderPath, request.Name);
             var newPath = Path.Combine(rootFolderPath, request.NewName);
@@ -417,18 +360,7 @@ namespace MediaBrowser.Api.Library
                 throw new ArgumentNullException("request");
             }
 
-            string rootFolderPath;
-
-            if (string.IsNullOrEmpty(request.UserId))
-            {
-                rootFolderPath = _appPaths.DefaultUserViewsPath;
-            }
-            else
-            {
-                var user = _userManager.GetUserById(new Guid(request.UserId));
-
-                rootFolderPath = user.RootFolderPath;
-            }
+            var rootFolderPath = _appPaths.DefaultUserViewsPath;
 
             var path = Path.Combine(rootFolderPath, request.Name);
 
@@ -478,16 +410,7 @@ namespace MediaBrowser.Api.Library
 
             try
             {
-                if (string.IsNullOrEmpty(request.UserId))
-                {
-                    LibraryHelpers.AddMediaPath(_fileSystem, request.Name, request.Path, null, _appPaths);
-                }
-                else
-                {
-                    var user = _userManager.GetUserById(new Guid(request.UserId));
-
-                    LibraryHelpers.AddMediaPath(_fileSystem, request.Name, request.Path, user, _appPaths);
-                }
+                LibraryHelpers.AddMediaPath(_fileSystem, request.Name, request.Path, _appPaths);
 
                 // Need to add a delay here or directory watchers may still pick up the changes
                 var task = Task.Delay(1000);
@@ -524,16 +447,7 @@ namespace MediaBrowser.Api.Library
 
             try
             {
-                if (string.IsNullOrEmpty(request.UserId))
-                {
-                    LibraryHelpers.RemoveMediaPath(_fileSystem, request.Name, request.Path, null, _appPaths);
-                }
-                else
-                {
-                    var user = _userManager.GetUserById(new Guid(request.UserId));
-
-                    LibraryHelpers.RemoveMediaPath(_fileSystem, request.Name, request.Path, user, _appPaths);
-                }
+                LibraryHelpers.RemoveMediaPath(_fileSystem, request.Name, request.Path, _appPaths);
 
                 // Need to add a delay here or directory watchers may still pick up the changes
                 var task = Task.Delay(1000);

@@ -38,9 +38,36 @@
         $('#selectMaxParentalRating', page).html(html).selectmenu("refresh");
     }
 
-    function loadUser(page, user, loggedInUser, allParentalRatings) {
+    function loadMediaFolders(page, user, mediaFolders) {
+
+        var html = '';
+
+        html += '<fieldset data-role="controlgroup">';
+
+        html += '<legend>Media Folders</legend>';
+
+        for (var i = 0, length = mediaFolders.length; i < length; i++) {
+
+            var folder = mediaFolders[i];
+
+            var id = 'mediaFolder' + i;
+
+            var checkedAttribute = user.Configuration.BlockedMediaFolders.indexOf(folder.Name) == -1 ? ' checked="checked"' : '';
+
+            html += '<input class="chkMediaFolder" data-foldername="' + folder.Name + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<label for="' + id + '">' + folder.Name + '</label>';
+        }
+
+        html += '</fieldset>';
+
+        $('.libraryAccess', page).html(html).trigger('create');
+    }
+
+    function loadUser(page, user, loggedInUser, allParentalRatings, mediaFolders) {
 
         Dashboard.setPageTitle(user.Name);
+
+        loadMediaFolders(page, user, mediaFolders);
 
         populateRatings(allParentalRatings, page);
 
@@ -61,7 +88,7 @@
         $('#selectMaxParentalRating', page).val(ratingValue).selectmenu("refresh");
 
         $('#chkBlockNotRated', page).checked(user.Configuration.BlockNotRated || false).checkboxradio("refresh");
-        
+
         $('#chkHideUnratedMovies', page).checked(user.Configuration.BlockUnratedMovies || false).checkboxradio("refresh");
         $('#chkHideUnratedTrailers', page).checked(user.Configuration.BlockUnratedTrailers || false).checkboxradio("refresh");
         $('#chkHideUnratedSeries', page).checked(user.Configuration.BlockUnratedSeries || false).checkboxradio("refresh");
@@ -93,6 +120,12 @@
         user.Configuration.BlockUnratedMusic = $('#chkHideUnratedMusic', page).checked();
         user.Configuration.BlockUnratedGames = $('#chkHideUnratedGames', page).checked();
         user.Configuration.BlockUnratedBooks = $('#chkHideUnratedBooks', page).checked();
+
+        user.Configuration.BlockedMediaFolders = $('.chkMediaFolder:not(:checked)', page).map(function () {
+
+            return this.getAttribute('data-foldername');
+
+        }).get();
 
         ApiClient.updateUser(user).done(function () {
             onSaveComplete(page);
@@ -146,9 +179,11 @@
 
         var promise3 = ApiClient.getParentalRatings();
 
-        $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+        var promise4 = $.getJSON(ApiClient.getUrl("Library/MediaFolders"));
 
-            loadUser(page, response1[0] || response1, response2[0], response3[0]);
+        $.when(promise1, promise2, promise3, promise4).done(function (response1, response2, response3, response4) {
+
+            loadUser(page, response1[0] || response1, response2[0], response3[0], response4[0].Items);
 
         });
     });

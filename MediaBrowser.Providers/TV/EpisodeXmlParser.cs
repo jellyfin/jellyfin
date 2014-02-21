@@ -23,9 +23,12 @@ namespace MediaBrowser.Providers.TV
         {
         }
 
+        private string _xmlPath;
+
         public void Fetch(Episode item, List<LocalImageInfo> images, string metadataFile, CancellationToken cancellationToken)
         {
             _imagesFound = images;
+            _xmlPath = metadataFile;
 
             Fetch(item, metadataFile, cancellationToken);
         }
@@ -75,8 +78,8 @@ namespace MediaBrowser.Providers.TV
                             // even though it's actually using the metadata folder.
                             filename = Path.GetFileName(filename);
 
-                            var parentFolder = Path.GetDirectoryName(item.Path);
-                            filename = Path.Combine(parentFolder, "metadata", filename);
+                            var parentFolder = Path.GetDirectoryName(_xmlPath);
+                            filename = Path.Combine(parentFolder, filename);
                             var file = new FileInfo(filename);
 
                             if (file.Exists)

@@ -1300,7 +1300,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
-         * Gets the virtual folder for a view. Specify a userId to get a user view, or omit for the default view.
+         * Gets the virtual folder list
          */
         self.getVirtualFolders = function (userId) {
 
@@ -1477,16 +1477,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
-        * Removes a virtual folder from either the default view or a user view
+        * Removes a virtual folder
         * @param {String} name
         */
-        self.removeVirtualFolder = function (name, userId, refreshLibrary) {
+        self.removeVirtualFolder = function (name, refreshLibrary) {
 
             if (!name) {
                 throw new Error("null name");
             }
 
-            var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
+            var url = "Library/VirtualFolders";
 
             url = self.getUrl(url, {
                 refreshLibrary: refreshLibrary ? true : false,
@@ -1500,10 +1500,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
-       * Adds a virtual folder to either the default view or a user view
+       * Adds a virtual folder
        * @param {String} name
        */
-        self.addVirtualFolder = function (name, type, userId, refreshLibrary) {
+        self.addVirtualFolder = function (name, type, refreshLibrary) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1518,7 +1518,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             options.refreshLibrary = refreshLibrary ? true : false;
             options.name = name;
 
-            var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
+            var url = "Library/VirtualFolders";
 
             url = self.getUrl(url, options);
 
@@ -1529,18 +1529,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
-       * Renames a virtual folder, within either the default view or a user view
+       * Renames a virtual folder
        * @param {String} name
        */
-        self.renameVirtualFolder = function (name, newName, userId, refreshLibrary) {
+        self.renameVirtualFolder = function (name, newName, refreshLibrary) {
 
             if (!name) {
                 throw new Error("null name");
             }
 
-            var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
-
-            url += "/Name";
+            var url = "Library/VirtualFolders/Name";
 
             url = self.getUrl(url, {
                 refreshLibrary: refreshLibrary ? true : false,
@@ -1555,10 +1553,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
-        * Adds an additional mediaPath to an existing virtual folder, within either the default view or a user view
+        * Adds an additional mediaPath to an existing virtual folder
         * @param {String} name
         */
-        self.addMediaPath = function (virtualFolderName, mediaPath, userId, refreshLibrary) {
+        self.addMediaPath = function (virtualFolderName, mediaPath, refreshLibrary) {
 
             if (!virtualFolderName) {
                 throw new Error("null virtualFolderName");
@@ -1568,9 +1566,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null mediaPath");
             }
 
-            var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
-
-            url += "/Paths";
+            var url = "Library/VirtualFolders/Paths";
 
             url = self.getUrl(url, {
                 refreshLibrary: refreshLibrary ? true : false,
@@ -1585,10 +1581,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
-        * Removes a media path from a virtual folder, within either the default view or a user view
+        * Removes a media path from a virtual folder
         * @param {String} name
         */
-        self.removeMediaPath = function (virtualFolderName, mediaPath, userId, refreshLibrary) {
+        self.removeMediaPath = function (virtualFolderName, mediaPath, refreshLibrary) {
 
             if (!virtualFolderName) {
                 throw new Error("null virtualFolderName");
@@ -1598,9 +1594,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null mediaPath");
             }
 
-            var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
-
-            url += "/Paths";
+            var url = "Library/VirtualFolders/Paths";
 
             url = self.getUrl(url, {
                 refreshLibrary: refreshLibrary ? true : false,

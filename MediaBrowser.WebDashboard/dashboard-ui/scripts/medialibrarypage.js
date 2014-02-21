@@ -5,84 +5,20 @@
         var page = this;
         MediaLibraryPage.lastVirtualFolderName = "";
 
-        MediaLibraryPage.reloadUsers(page);
-
-        $('#selectUser', page).on('change.reloadLibrary', function() {
-
-            MediaLibraryPage.reloadLibrary(page);
-
-        });
+        MediaLibraryPage.reloadLibrary(page);
     },
     
-    onPageHide: function() {
-
-        var page = this;
-        $('#selectUser', page).off('click.reloadLibrary');
-    },
-
-    reloadUsers: function (page) {
-
-        ApiClient.getUsers().done(function (users) {
-
-
-            var html = users.map(function (u) {
-
-                return '<option value="' + u.Id + '">' + u.Name + '</option>';
-
-            });
-
-            html = '<option value="">Default Library</option>' + html;
-
-            $('#selectUser', page).html(html).val('').selectmenu('refresh');
-
-            MediaLibraryPage.reloadLibrary(page);
-        });
-    },
-    
-    getCurrentUserId: function(page) {
-
-        return $('#selectUser', page).val();
-    },
-
     reloadLibrary: function (page) {
 
         Dashboard.showLoadingMsg();
 
-        var userId = MediaLibraryPage.getCurrentUserId(page);
+        ApiClient.getVirtualFolders().done(function (result) {
+            MediaLibraryPage.reloadVirtualFolders(page, result);
+        });
 
-        if (userId) {
-
-            ApiClient.getUser(userId).done(function (user) {
-
-                $('#fldUseDefaultLibrary', page).show();
-
-                $('#chkUseDefaultLibrary', page).checked(!user.Configuration.UseCustomLibrary).checkboxradio("refresh");
-
-                if (user.Configuration.UseCustomLibrary) {
-
-                    ApiClient.getVirtualFolders(userId).done(function (result) {
-                        MediaLibraryPage.reloadVirtualFolders(page, result);
-                    });
-
-                    $(".editing_default", page).hide();
-                    $('#divMediaLibrary', page).show();
-                } else {
-                    $('#divMediaLibrary', page).hide();
-                    Dashboard.hideLoadingMsg();
-                }
-
-            });
-
-        } else {
-
-            ApiClient.getVirtualFolders().done(function (result) {
-                MediaLibraryPage.reloadVirtualFolders(page, result);
-            });
-
-            $('#fldUseDefaultLibrary', page).hide();
-            $('#divMediaLibrary', page).show();
-            Dashboard.setPageTitle("Media Library");
-        }
+        $('#fldUseDefaultLibrary', page).hide();
+        $('#divMediaLibrary', page).show();
+        Dashboard.setPageTitle("Media Library");
     },
 
     shouldRefreshLibraryAfterChanges: function () {
@@ -152,14 +88,14 @@
 
             var location = virtualFolder.Locations[i];
             html += '<li>';
-            html += '<a class="lnkMediaLocation" href="#">' + location + '</a>';
+            html += '<a style="font-size:14px;" class="lnkMediaLocation" href="#">' + location + '</a>';
             html += '<a href="#" data-index="' + i + '" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteMediaLocation(this);"></a>';
             html += '</li>';
         }
         html += '</ul>';
 
         if (addPathMappingInfo) {
-            html += '<p>Use <a href="librarypathmapping.html" style="font-weight:normal;">path substitution</a> to map server paths to network shares that clients are able to access.</p>';
+            html += '<p style="margin:1.5em 0;">Optional: <a href="librarypathmapping.html">Path substitution</a> can map server paths to network shares that clients can access for direct playback.</p>';
         }
 
         html += '<p>';
@@ -173,38 +109,17 @@
         return html;
     },
 
-    setUseDefaultMediaLibrary: function (useDefaultLibrary) {
-
-        Dashboard.showLoadingMsg();
-
-        var page = $.mobile.activePage;
-        var userId = MediaLibraryPage.getCurrentUserId(page);
-
-        ApiClient.getUser(userId).done(function (user) {
-
-            user.Configuration.UseCustomLibrary = !useDefaultLibrary;
-
-            ApiClient.updateUser(user).done(function () {
-                MediaLibraryPage.reloadLibrary(page);
-            });
-
-            $(".editing_default", page).hide();
-        });
-    },
-
     addVirtualFolder: function () {
 
         $('.collectionTypeFieldDescription').show();
 
         MediaLibraryPage.getTextValue("Add Media Folder", "Name (Movies, Music, TV, etc):", "", true, function (name, type) {
 
-            var userId = MediaLibraryPage.getCurrentUserId($.mobile.activePage);
-
             MediaLibraryPage.lastVirtualFolderName = name;
 
             var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
 
-            ApiClient.addVirtualFolder(name, type, userId, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
+            ApiClient.addVirtualFolder(name, type, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
 
         });
     },
@@ -219,11 +134,9 @@
 
                 MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
 
-                var userId = MediaLibraryPage.getCurrentUserId($.mobile.activePage);
-
                 var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
 
-                ApiClient.addMediaPath(virtualFolder.Name, path, userId, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
+                ApiClient.addMediaPath(virtualFolder.Name, path, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
             }
 
         });
@@ -336,11 +249,9 @@
 
             if (virtualFolder.Name != newName) {
 
-                var userId = MediaLibraryPage.getCurrentUserId($.mobile.activePage);
-
                 var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
 
-                ApiClient.renameVirtualFolder(virtualFolder.Name, newName, userId, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
+                ApiClient.renameVirtualFolder(virtualFolder.Name, newName, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
             }
         });
     },
@@ -369,11 +280,9 @@
 
             if (confirmResult) {
 
-                var userId = MediaLibraryPage.getCurrentUserId($.mobile.activePage);
-
                 var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
 
-                ApiClient.removeVirtualFolder(virtualFolder.Name, userId, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
+                ApiClient.removeVirtualFolder(virtualFolder.Name, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
             }
 
         });
@@ -394,11 +303,9 @@
 
             if (confirmResult) {
 
-                var userId = MediaLibraryPage.getCurrentUserId($.mobile.activePage);
-
                 var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
 
-                ApiClient.removeMediaPath(virtualFolder.Name, location, userId, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
+                ApiClient.removeMediaPath(virtualFolder.Name, location, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
             }
         });
     },
@@ -419,4 +326,4 @@
     }
 };
 
-$(document).on('pageshow', ".mediaLibraryPage", MediaLibraryPage.onPageShow).on('pagehide', ".mediaLibraryPage", MediaLibraryPage.onPageHide);
+$(document).on('pageshow', ".mediaLibraryPage", MediaLibraryPage.onPageShow);

@@ -1,10 +1,19 @@
 ﻿var LoginPage = {
 
     onPageShow: function () {
+        
         Dashboard.showLoadingMsg();
 
+        var isLocalhost = window.location.toString().toLowerCase().indexOf('localhost') != -1;
+        
+        if (isLocalhost) {
+            $('.localhostMessage', this).show();
+        } else {
+            $('.localhostMessage', this).hide();
+        }
+
         // Show all users on localhost
-        var promise1 = window.location.toString().toLowerCase().indexOf('localhost') == -1 ? ApiClient.getPublicUsers() : ApiClient.getUsers({ IsDisabled: false });
+        var promise1 = !isLocalhost ? ApiClient.getPublicUsers() : ApiClient.getUsers({ IsDisabled: false });
         var promise2 = ApiClient.getServerConfiguration();
 
         $.when(promise1, promise2).done(function (response1, response2) {

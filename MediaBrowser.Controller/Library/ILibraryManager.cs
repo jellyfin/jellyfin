@@ -202,9 +202,8 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the user root folder.
         /// </summary>
-        /// <param name="userRootPath">The user root path.</param>
         /// <returns>UserRootFolder.</returns>
-        UserRootFolder GetUserRootFolder(string userRootPath);
+        Folder GetUserRootFolder();
 
         /// <summary>
         /// Creates the item.

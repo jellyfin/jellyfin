@@ -69,21 +69,25 @@
 
     function loadChildrenOfRootNode(callback) {
 
-
-        var promise1 = ApiClient.getRootFolder(Dashboard.getCurrentUserId());
+        var promise1 = $.getJSON(ApiClient.getUrl("Library/MediaFolders"));
 
         var promise2 = ApiClient.getLiveTvInfo();
 
         $.when(promise1, promise2).done(function (response1, response2) {
 
-            var rootFolder = response1[0];
+            var mediaFolders = response1[0].Items;
             var liveTvInfo = response2[0];
 
             var nodes = [];
 
-            nodes.push(getNode(rootFolder, 'open'));
+            var i, length;
 
-            for (var i = 0, length = liveTvInfo.Services.length; i < length; i++) {
+            for (i = 0, length = mediaFolders.length; i < length; i++) {
+
+                nodes.push(getNode(mediaFolders[i], 'closed'));
+            }
+
+            for (i = 0, length = liveTvInfo.Services.length; i < length; i++) {
 
                 var service = liveTvInfo.Services[i];
 
