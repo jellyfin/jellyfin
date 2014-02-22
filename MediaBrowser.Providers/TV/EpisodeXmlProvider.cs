@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
@@ -19,7 +20,11 @@ namespace MediaBrowser.Providers.TV
 
         protected override void Fetch(LocalMetadataResult<Episode> result, string path, CancellationToken cancellationToken)
         {
-            new EpisodeXmlParser(_logger).Fetch(result.Item, path, cancellationToken);
+            var images = new List<LocalImageInfo>();
+
+            new EpisodeXmlParser(_logger).Fetch(result.Item, images, path, cancellationToken);
+
+            result.Images = images;
         }
 
         protected override FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
