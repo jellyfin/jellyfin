@@ -516,8 +516,6 @@ namespace MediaBrowser.Providers.MediaInfo
             var path = mount == null ? item.Path : mount.MountedPath;
             var dvd = new Dvd(path);
 
-            item.RunTimeTicks = dvd.Titles.Select(GetRuntime).Max();
-
             var primaryTitle = dvd.Titles.OrderByDescending(GetRuntime).FirstOrDefault();
 
             uint? titleNumber = null;
@@ -525,6 +523,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (primaryTitle != null)
             {
                 titleNumber = primaryTitle.TitleNumber;
+                item.RunTimeTicks = GetRuntime(primaryTitle);
             }
 
             item.PlayableStreamFileNames = GetPrimaryPlaylistVobFiles(item, mount, titleNumber)

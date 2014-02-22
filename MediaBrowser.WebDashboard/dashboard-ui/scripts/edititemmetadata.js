@@ -62,7 +62,7 @@
                 item.Type != "GameGenre" &&
                 item.Type != "Person" &&
                 item.Type != "MusicArtist" &&
-                item.Type != "UserRootFolder") {
+                item.Type != "CollectionFolder") {
                 $('#fldDelete', page).show();
             } else {
                 $('#fldDelete', page).hide();

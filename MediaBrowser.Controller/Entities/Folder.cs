@@ -424,7 +424,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     BaseItem currentChild;
 
-                    if (currentChildren.TryGetValue(child.Id, out currentChild))
+                    if (currentChildren.TryGetValue(child.Id, out currentChild) && child.IsInMixedFolder == currentChild.IsInMixedFolder)
                     {
                         var currentChildLocationType = currentChild.LocationType;
                         if (currentChildLocationType != LocationType.Remote &&
@@ -433,7 +433,6 @@ namespace MediaBrowser.Controller.Entities
                             currentChild.DateModified = child.DateModified;
                         }
 
-                        currentChild.IsInMixedFolder = child.IsInMixedFolder;
                         currentChild.IsOffline = false;
                     }
                     else

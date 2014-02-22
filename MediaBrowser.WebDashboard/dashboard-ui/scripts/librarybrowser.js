@@ -645,31 +645,6 @@
                 options.tag = item.ImageTags[type];
             }
 
-            if (item.Type == "Studio") {
-
-                return ApiClient.getStudioImageUrl(item.Name, options);
-            }
-            if (item.Type == "Person") {
-
-                return ApiClient.getPersonImageUrl(item.Name, options);
-            }
-            if (item.Type == "Genre") {
-
-                return ApiClient.getGenreImageUrl(item.Name, options);
-            }
-            if (item.Type == "MusicGenre") {
-
-                return ApiClient.getMusicGenreImageUrl(item.Name, options);
-            }
-            if (item.Type == "GameGenre") {
-
-                return ApiClient.getGameGenreImageUrl(item.Name, options);
-            }
-            if (item.Type == "MusicArtist") {
-
-                return ApiClient.getArtistImageUrl(item.Name, options);
-            }
-
             // For search hints
             return ApiClient.getImageUrl(item.Id || item.ItemId, options);
 
@@ -1501,25 +1476,6 @@
             var itemId = item.Id;
             var type = item.Type;
 
-            if (type == "Person") {
-                itemId = item.Name;
-            }
-            else if (type == "Studio") {
-                itemId = item.Name;
-            }
-            else if (type == "Genre") {
-                itemId = item.Name;
-            }
-            else if (type == "MusicGenre") {
-                itemId = item.Name;
-            }
-            else if (type == "GameGenre") {
-                itemId = item.Name;
-            }
-            else if (type == "MusicArtist") {
-                itemId = item.Name;
-            }
-
             if ((item.MediaType || item.IsFolder) && item.Type != "Channel" && item.Type != "MusicArtist") {
                 if (userData.Played) {
                     html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/checkedon.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
@@ -1529,22 +1485,22 @@
             }
 
             if (typeof userData.Likes == "undefined") {
-                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
+                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
             }
             else if (userData.Likes) {
-                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLike" src="css/images/userdata/thumbs_up_on.png" alt="Like" title="Like" />';
+                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
+                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLike" src="css/images/userdata/thumbs_up_on.png" alt="Like" title="Like" />';
             }
             else {
-                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislike" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgDislike" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" />';
+                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
             }
 
             if (userData.IsFavorite) {
-                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgFavorite" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" />';
+                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgFavorite" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" />';
             } else {
-                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgFavoriteOff" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" />';
+                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgFavoriteOff" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" />';
             }
 
             return html;
@@ -1576,33 +1532,12 @@
         markFavorite: function (link) {
 
             var id = link.getAttribute('data-itemid');
-            var type = link.getAttribute('data-type');
 
             var $link = $(link);
 
             var markAsFavorite = $link.hasClass('imgFavoriteOff');
 
-            if (type == "Person") {
-                ApiClient.updateFavoritePersonStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-            }
-            else if (type == "Studio") {
-                ApiClient.updateFavoriteStudioStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-            }
-            else if (type == "MusicArtist") {
-                ApiClient.updateFavoriteArtistStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-            }
-            else if (type == "Genre") {
-                ApiClient.updateFavoriteGenreStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-            }
-            else if (type == "MusicGenre") {
-                ApiClient.updateFavoriteMusicGenreStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-            }
-            else if (type == "GameGenre") {
-                ApiClient.updateFavoriteGameGenreStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-            }
-            else {
-                ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-            }
+            ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
 
             if (markAsFavorite) {
                 link.src = "css/images/userdata/heart_on.png";
@@ -1616,20 +1551,19 @@
         markLike: function (link) {
 
             var id = link.getAttribute('data-itemid');
-            var type = link.getAttribute('data-type');
 
             var $link = $(link);
 
             if ($link.hasClass('imgLikeOff')) {
 
-                LibraryBrowser.updateUserItemRating(type, id, true);
+                ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
 
                 link.src = "css/images/userdata/thumbs_up_on.png";
                 $link.addClass('imgLike').removeClass('imgLikeOff');
 
             } else {
 
-                LibraryBrowser.clearUserItemRating(type, id);
+                ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
 
                 link.src = "css/images/userdata/thumbs_up_off.png";
                 $link.addClass('imgLikeOff').removeClass('imgLike');
@@ -1643,20 +1577,19 @@
         markDislike: function (link) {
 
             var id = link.getAttribute('data-itemid');
-            var type = link.getAttribute('data-type');
 
             var $link = $(link);
 
             if ($link.hasClass('imgDislikeOff')) {
 
-                LibraryBrowser.updateUserItemRating(type, id, false);
+                ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, false);
 
                 link.src = "css/images/userdata/thumbs_down_on.png";
                 $link.addClass('imgDislike').removeClass('imgDislikeOff');
 
             } else {
 
-                LibraryBrowser.clearUserItemRating(type, id);
+                ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
 
                 link.src = "css/images/userdata/thumbs_down_off.png";
                 $link.addClass('imgDislikeOff').removeClass('imgDislike');
@@ -1665,56 +1598,6 @@
             $link.next().removeClass('imgLike').addClass('imgLikeOff').each(function () {
                 this.src = "css/images/userdata/thumbs_up_off.png";
             });
-        },
-
-        updateUserItemRating: function (type, id, likes) {
-
-            if (type == "Person") {
-                ApiClient.updatePersonRating(Dashboard.getCurrentUserId(), id, likes);
-            }
-            else if (type == "Studio") {
-                ApiClient.updateStudioRating(Dashboard.getCurrentUserId(), id, likes);
-            }
-            else if (type == "MusicArtist") {
-                ApiClient.updateArtistRating(Dashboard.getCurrentUserId(), id, likes);
-            }
-            else if (type == "Genre") {
-                ApiClient.updateGenreRating(Dashboard.getCurrentUserId(), id, likes);
-            }
-            else if (type == "MusicGenre") {
-                ApiClient.updateMusicGenreRating(Dashboard.getCurrentUserId(), id, likes);
-            }
-            else if (type == "GameGenre") {
-                ApiClient.updateGameGenreRating(Dashboard.getCurrentUserId(), id, likes);
-            }
-            else {
-                ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, likes);
-            }
-        },
-
-        clearUserItemRating: function (type, id) {
-
-            if (type == "Person") {
-                ApiClient.clearPersonRating(Dashboard.getCurrentUserId(), id);
-            }
-            else if (type == "Studio") {
-                ApiClient.clearStudioRating(Dashboard.getCurrentUserId(), id);
-            }
-            else if (type == "MusicArtist") {
-                ApiClient.clearArtistRating(Dashboard.getCurrentUserId(), id);
-            }
-            else if (type == "Genre") {
-                ApiClient.clearGenreRating(Dashboard.getCurrentUserId(), id);
-            }
-            else if (type == "MusicGenre") {
-                ApiClient.clearMusicGenreRating(Dashboard.getCurrentUserId(), id);
-            }
-            else if (type == "GameGenre") {
-                ApiClient.clearGameGenreRating(Dashboard.getCurrentUserId(), id);
-            }
-            else {
-                ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
-            }
         },
 
         getDetailImageHtml: function (item, href) {
@@ -1733,159 +1616,27 @@
 
             if (imageTags.Primary) {
 
-                if (item.Type == "Person") {
-                    url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Primary,
-                        type: "Primary"
-                    });
-                }
-                else if (item.Type == "Genre") {
-                    url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Primary,
-                        type: "Primary"
-                    });
-                }
-                else if (item.Type == "MusicGenre") {
-                    url = ApiClient.getMusicGenreImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Primary,
-                        type: "Primary"
-                    });
-                }
-                else if (item.Type == "GameGenre") {
-                    url = ApiClient.getGameGenreImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Primary,
-                        type: "Primary"
-                    });
-                }
-                else if (item.Type == "Studio") {
-                    url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Primary,
-                        type: "Primary"
-                    });
-                }
-                else if (item.Type == "MusicArtist") {
-                    url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Primary,
-                        type: "Primary"
-                    });
-                }
-                else {
-                    url = ApiClient.getImageUrl(item.Id, {
-                        type: "Primary",
-                        maxheight: imageHeight,
-                        tag: item.ImageTags.Primary
-                    });
-                }
+                url = ApiClient.getImageUrl(item.Id, {
+                    type: "Primary",
+                    maxheight: imageHeight,
+                    tag: item.ImageTags.Primary
+                });
             }
             else if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
-                if (item.Type == "Person") {
-                    url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: item.BackdropImageTags[0],
-                        type: "Backdrop"
-                    });
-                }
-                else if (item.Type == "Genre") {
-                    url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: item.BackdropImageTags[0],
-                        type: "Backdrop"
-                    });
-                }
-                else if (item.Type == "MusicGenre") {
-                    url = ApiClient.getMusicGenreImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: item.BackdropImageTags[0],
-                        type: "Backdrop"
-                    });
-                }
-                else if (item.Type == "GameGenre") {
-                    url = ApiClient.getGameGenreImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: item.BackdropImageTags[0],
-                        type: "Backdrop"
-                    });
-                }
-                else if (item.Type == "Studio") {
-                    url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: item.BackdropImageTags[0],
-                        type: "Backdrop"
-                    });
-                }
-                else if (item.Type == "MusicArtist") {
-                    url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: item.BackdropImageTags[0],
-                        type: "Backdrop"
-                    });
-                }
-                else {
-                    url = ApiClient.getImageUrl(item.Id, {
-                        type: "Backdrop",
-                        maxheight: imageHeight,
-                        tag: item.BackdropImageTags[0]
-                    });
-                }
+                url = ApiClient.getImageUrl(item.Id, {
+                    type: "Backdrop",
+                    maxheight: imageHeight,
+                    tag: item.BackdropImageTags[0]
+                });
             }
             else if (imageTags.Thumb) {
 
-                if (item.Type == "Person") {
-                    url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Thumb,
-                        type: "Thumb"
-                    });
-                }
-                else if (item.Type == "Genre") {
-                    url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Thumb,
-                        type: "Thumb"
-                    });
-                }
-                else if (item.Type == "MusicGenre") {
-                    url = ApiClient.getMusicGenreImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Thumb,
-                        type: "Thumb"
-                    });
-                }
-                else if (item.Type == "GameGenre") {
-                    url = ApiClient.getGameGenreImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Thumb,
-                        type: "Thumb"
-                    });
-                }
-                else if (item.Type == "Studio") {
-                    url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Thumb,
-                        type: "Thumb"
-                    });
-                }
-                else if (item.Type == "MusicArtist") {
-                    url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: imageHeight,
-                        tag: imageTags.Thumb,
-                        type: "Thumb"
-                    });
-                }
-                else {
-                    url = ApiClient.getImageUrl(item.Id, {
-                        type: "Thumb",
-                        maxheight: imageHeight,
-                        tag: item.ImageTags.Thumb
-                    });
-                }
+                url = ApiClient.getImageUrl(item.Id, {
+                    type: "Thumb",
+                    maxheight: imageHeight,
+                    tag: item.ImageTags.Thumb
+                });
             }
             else if (imageTags.Disc) {
 

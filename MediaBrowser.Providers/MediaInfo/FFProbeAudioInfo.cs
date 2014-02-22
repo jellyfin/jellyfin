@@ -183,7 +183,10 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.ProductionYear = FFProbeHelpers.GetDictionaryNumericValue(tags, "date");
 
             // Several different forms of retaildate
-            audio.PremiereDate = FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ?? FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ?? FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date");
+            audio.PremiereDate = FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ?? 
+                FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ?? 
+                FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ?? 
+                FFProbeHelpers.GetDictionaryDateTime(tags, "date");
 
             // If we don't have a ProductionYear try and get it from PremiereDate
             if (audio.PremiereDate.HasValue && !audio.ProductionYear.HasValue)
