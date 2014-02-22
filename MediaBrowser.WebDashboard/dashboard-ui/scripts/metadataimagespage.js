@@ -386,7 +386,7 @@
 
                 html += '<a href="#" style="font-size:13px;font-weight:normal;">' + plugin.Name + '</a>';
 
-                html += '<a class="btnLocalReaderUp" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-u">Up</a>';
+                html += '<a class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-u">Up</a>';
 
                 html += '</li>';
             }
@@ -395,7 +395,7 @@
 
                 html += '<a href="#" style="font-size:13px;font-weight:normal;">' + plugin.Name + '</a>';
 
-                html += '<a class="btnLocalReaderDown" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-d">Down</a>';
+                html += '<a class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-d">Down</a>';
 
                 html += '</li>';
             }
@@ -411,7 +411,38 @@
         html += '</ul>';
         html += '<div class="fieldDescription">Rank your preferred local metadata sources in order of priority. The first file found will be read.</div>';
 
-        $('.metadataReaders', page).html(html).show().trigger('create');
+        var elem = $('.metadataReaders', page).html(html).show().trigger('create');
+
+        $(elem).on('click', '.btnLocalReaderMove', function () {
+
+            var li = $(this).parents('.localReaderOption');
+            var ul = li.parents('ul');
+
+            if ($(this).hasClass('btnLocalReaderDown')) {
+
+                var next = li.next();
+
+                li.remove().insertAfter(next);
+
+            } else {
+                
+                var prev = li.prev();
+
+                li.remove().insertBefore(prev);
+            }
+
+            $('.localReaderOption', ul).each(function () {
+
+                if ($(this).prev('.localReaderOption').length) {
+                    $('.btnLocalReaderMove', this).addClass('btnLocalReaderUp').removeClass('btnLocalReaderDown').attr('data-icon', 'arrow-u').removeClass('ui-icon-arrow-d').addClass('ui-icon-arrow-u');
+                } else {
+                    $('.btnLocalReaderMove', this).addClass('btnLocalReaderDown').removeClass('btnLocalReaderUp').attr('data-icon', 'arrow-d').removeClass('ui-icon-arrow-u').addClass('ui-icon-arrow-d');
+                }
+                
+            });
+
+            ul.listview('destroy').listview({});
+        });
     }
 
     function loadPage(page) {

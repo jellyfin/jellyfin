@@ -107,8 +107,8 @@
 .editorTile {
     display: inline-block;
     margin: 5px;
-    padding: 10px;
-    border: 1px solid #505050;
+    padding: 8px;
+    border: 1px solid #444;
     background-image: -webkit-gradient(linear,left top,left bottom,from(#444),to(#2d2d2d));
     background-image: -webkit-linear-gradient(#444,#2d2d2d);
     background-image: -moz-linear-gradient(#444,#2d2d2d);
@@ -118,7 +118,7 @@
 }
 
 .imageEditorTile {
-    width: 192px;
+    width: 256px;
     padding-bottom: 0;
 }
 
