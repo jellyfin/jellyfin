@@ -295,7 +295,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         if (imageService.MergeImages(item, localItem.Images))
                         {
-                            refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
+                            refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;
                         }
 
                         if (!string.IsNullOrEmpty(localItem.Item.Name))
