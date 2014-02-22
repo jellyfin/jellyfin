@@ -819,15 +819,6 @@ namespace MediaBrowser.Model.ApiClient
         string GetPersonImageUrl(string name, ImageOptions options);
 
         /// <summary>
-        /// Gets the year image URL.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">item</exception>
-        string GetYearImageUrl(BaseItemDto item, ImageOptions options);
-
-        /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
         /// <param name="year">The year.</param>

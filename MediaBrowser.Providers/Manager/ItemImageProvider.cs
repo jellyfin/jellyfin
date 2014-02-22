@@ -119,13 +119,13 @@ namespace MediaBrowser.Providers.Manager
 
                                 var stream = _fileSystem.GetFileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, true);
 
-                                await _providerManager.SaveImage((BaseItem)item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
+                                await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
                             }
                             else
                             {
                                 var mimeType = "image/" + response.Format.ToString().ToLower();
 
-                                await _providerManager.SaveImage((BaseItem)item, response.Stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
+                                await _providerManager.SaveImage(item, response.Stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
                             }
 
                             result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
@@ -325,7 +325,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
 
-                    await _providerManager.SaveImage((BaseItem)item, response.Content, response.ContentType, type, null, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, response.Content, response.ContentType, type, null, cancellationToken).ConfigureAwait(false);
 
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
                     break;
@@ -362,7 +362,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
 
-                    await _providerManager.SaveImage((BaseItem)item, response.Content, response.ContentType, imageType, null, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, response.Content, response.ContentType, imageType, null, cancellationToken).ConfigureAwait(false);
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
                     break;
                 }

@@ -279,7 +279,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (ibnPathChanged)
             {
-                _itemsByName.Clear();
+                RemoveItemsByNameFromCache();
             }
 
             var newSeasonZeroName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
@@ -300,6 +300,32 @@ namespace MediaBrowser.Server.Implementations.Library
                     _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
                 }
             });
+        }
+
+        private void RemoveItemsByNameFromCache()
+        {
+            RemoveItemsFromCache(i => i is Person);
+            RemoveItemsFromCache(i => i is Year);
+            RemoveItemsFromCache(i => i is Genre);
+            RemoveItemsFromCache(i => i is MusicGenre);
+            RemoveItemsFromCache(i => i is GameGenre);
+            RemoveItemsFromCache(i => i is Studio);
+            RemoveItemsFromCache(i =>
+            {
+                var artist = i as MusicArtist;
+                return artist != null && artist.IsAccessedByName;
+            });
+        }
+
+        private void RemoveItemsFromCache(Func<BaseItem, bool> remove)
+        {
+            var items = _libraryItemsCache.ToList().Where(i => remove(i.Value)).ToList();
+
+            foreach (var item in items)
+            {
+                BaseItem value;
+                _libraryItemsCache.TryRemove(item.Key, out value);
+            }
         }
 
         /// <summary>
@@ -378,28 +404,17 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="item">The item.</param>
         private void UpdateItemInLibraryCache(BaseItem item)
         {
-            if (item is IItemByName)
-            {
-                var hasDualAccess = item as IHasDualAccess;
-                if (hasDualAccess != null)
-                {
-                    if (hasDualAccess.IsAccessedByName)
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    return;
-                }
-            }
-
             RegisterItem(item);
         }
 
         public void RegisterItem(BaseItem item)
         {
-            LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
+            RegisterItem(item.Id, item);
+        }
+
+        private void RegisterItem(Guid id, BaseItem item)
+        {
+            LibraryItemsCache.AddOrUpdate(id, item, delegate { return item; });
         }
 
         public async Task DeleteItem(BaseItem item, DeleteOptions options)
@@ -580,7 +595,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
 
                 var fileSystemDictionary = FileData.GetFilteredFileSystemEntries(directoryService, args.Path, _fileSystem, _logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
-                
+
                 // Need to remove subpaths that may have been resolved from shortcuts
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
                 if (isPhysicalRoot)
@@ -790,11 +805,6 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetItemByName<MusicArtist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name);
         }
 
-        /// <summary>
-        /// The images by name item cache
-        /// </summary>
-        private readonly ConcurrentDictionary<string, BaseItem> _itemsByName = new ConcurrentDictionary<string, BaseItem>(StringComparer.OrdinalIgnoreCase);
-
         private T GetItemByName<T>(string path, string name)
             where T : BaseItem, new()
         {
@@ -812,24 +822,26 @@ namespace MediaBrowser.Server.Implementations.Library
 
             string subFolderPrefix = null;
 
-            if (typeof(T) == typeof(Person) && ConfigurationManager.Configuration.EnablePeoplePrefixSubFolders)
+            var type = typeof(T);
+
+            if (type == typeof(Person) && ConfigurationManager.Configuration.EnablePeoplePrefixSubFolders)
             {
                 subFolderPrefix = validFilename.Substring(0, 1);
             }
 
-            var key = string.IsNullOrEmpty(subFolderPrefix) ?
+            var fullPath = string.IsNullOrEmpty(subFolderPrefix) ?
                 Path.Combine(path, validFilename) :
                 Path.Combine(path, subFolderPrefix, validFilename);
 
+            var id = fullPath.GetMBId(type);
+
             BaseItem obj;
 
-            if (!_itemsByName.TryGetValue(key, out obj))
+            if (!_libraryItemsCache.TryGetValue(id, out obj))
             {
-                var tuple = CreateItemByName<T>(key, name);
+                obj = CreateItemByName<T>(fullPath, name, id);
 
-                obj = tuple.Item2;
-
-                _itemsByName.AddOrUpdate(key, obj, (keyName, oldValue) => obj);
+                RegisterItem(id, obj);
             }
 
             return obj as T;
@@ -843,7 +855,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="name">The name.</param>
         /// <returns>Task{``0}.</returns>
         /// <exception cref="System.IO.IOException">Path not created:  + path</exception>
-        private Tuple<bool, T> CreateItemByName<T>(string path, string name)
+        private T CreateItemByName<T>(string path, string name, Guid id)
             where T : BaseItem, new()
         {
             var isArtist = typeof(T) == typeof(MusicArtist);
@@ -856,7 +868,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (existing != null)
                 {
-                    return new Tuple<bool, T>(false, existing);
+                    return existing;
                 }
             }
 
@@ -877,10 +889,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 isNew = true;
             }
 
-            var type = typeof(T);
-
-            var id = path.GetMBId(type);
-
             var item = isNew ? null : RetrieveItem(id) as T;
 
             if (item == null)
@@ -893,7 +901,6 @@ namespace MediaBrowser.Server.Implementations.Library
                     DateModified = _fileSystem.GetLastWriteTimeUtc(fileInfo),
                     Path = path
                 };
-                isNew = true;
             }
 
             if (isArtist)
@@ -901,7 +908,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 (item as MusicArtist).IsAccessedByName = true;
             }
 
-            return new Tuple<bool, T>(isNew, item);
+            return item;
         }
 
         /// <summary>
