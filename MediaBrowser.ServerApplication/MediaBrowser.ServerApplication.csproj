@@ -149,7 +149,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="app.manifest" />
-    <None Include="Native\RegisterServer.bat" />
+    <EmbeddedResource Include="Native\RegisterServer.bat" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

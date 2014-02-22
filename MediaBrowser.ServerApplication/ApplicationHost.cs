@@ -324,6 +324,15 @@ namespace MediaBrowser.ServerApplication
                 {
                     // Not there, no big deal
                 }
+
+                try
+                {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-movies"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
             });
         }
 
@@ -457,6 +466,8 @@ namespace MediaBrowser.ServerApplication
             await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
             progress.Report(100);
 
+            SetStaticProperties();
+
             await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
 
             SetKernelProperties();
@@ -490,8 +501,6 @@ namespace MediaBrowser.ServerApplication
         private void SetKernelProperties()
         {
             LocalizedStrings.StringFiles = GetExports<LocalizedStringData>();
-
-            SetStaticProperties();
         }
 
         /// <summary>
