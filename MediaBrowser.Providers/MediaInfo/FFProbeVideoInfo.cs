@@ -515,14 +515,14 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var path = mount == null ? item.Path : mount.MountedPath;
             var dvd = new Dvd(path);
-
+            
             var primaryTitle = dvd.Titles.OrderByDescending(GetRuntime).FirstOrDefault();
 
-            uint? titleNumber = null;
+            byte? titleNumber = null;
 
             if (primaryTitle != null)
             {
-                titleNumber = primaryTitle.TitleNumber;
+                titleNumber = primaryTitle.VideoTitleSetNumber;
                 item.RunTimeTicks = GetRuntime(primaryTitle);
             }
 
