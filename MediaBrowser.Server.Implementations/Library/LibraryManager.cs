@@ -717,6 +717,8 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var userRootPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
+                Directory.CreateDirectory(userRootPath);
+
                 _userRootFolder = RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ??
                                   (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath));
             }
