@@ -48,13 +48,13 @@
     <Reference Include="Alchemy">
       <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
     </Reference>
-    <Reference Include="BDInfo, Version=1.0.5165.40800, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="BDInfo, Version=1.0.5167.21152, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.9\lib\net35\BDInfo.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.10\lib\net35\BDInfo.dll</HintPath>
     </Reference>
-    <Reference Include="DvdLib, Version=1.0.5165.40800, Culture=neutral, PublicKeyToken=7a2f3f5ec8d93575, processorArchitecture=MSIL">
+    <Reference Include="DvdLib, Version=1.0.5167.21152, Culture=neutral, PublicKeyToken=7a2f3f5ec8d93575, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.9\lib\net35\DvdLib.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.10\lib\net35\DvdLib.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
