@@ -43,7 +43,7 @@ var Dashboard = {
 
         //$.mobile.popup.prototype.options.theme = "c";
         //$.mobile.popup.prototype.options.transition = "none";
-        //$.mobile.defaultPageTransition = "none";
+        $.mobile.defaultPageTransition = "none";
         //$.mobile.collapsible.prototype.options.contentTheme = "a";
     },
 

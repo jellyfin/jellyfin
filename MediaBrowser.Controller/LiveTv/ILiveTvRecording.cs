@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Providers;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Library;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -20,5 +21,7 @@ namespace MediaBrowser.Controller.LiveTv
         bool IsParentalAllowed(User user);
 
         Task RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken);
+
+        PlayAccess GetPlayAccess(User user);
     }
 }

@@ -209,7 +209,7 @@
             html += '</select>';
 
             html += '<p>';
-            html += '<button type="submit" data-theme="b" data-icon="ok">OK</button>';
+            html += '<button type="submit" data-theme="b" data-icon="check">OK</button>';
             html += '<button type="button" data-icon="delete" onclick="$(this).parents(\'.popup\').popup(\'close\');">Cancel</button>';
             html += '</p>';
             html += '</form>';

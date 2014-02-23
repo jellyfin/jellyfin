@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,126 +39,72 @@ namespace MediaBrowser.Providers.Music
                 .OfType<MusicAlbum>()
                 .ToList();
 
-            AttachMovieSoundtracks(allItems, musicAlbums, cancellationToken);
+            var itemsWithSoundtracks = allItems.OfType<IHasSoundtracks>().ToList();
 
-            progress.Report(25);
+            foreach (var item in itemsWithSoundtracks)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            AttachTvSoundtracks(allItems, musicAlbums, cancellationToken);
+                item.SoundtrackIds = GetSoundtrackIds(item, musicAlbums).ToList();
+            }
 
             progress.Report(50);
 
-            AttachGameSoundtracks(allItems, musicAlbums, cancellationToken);
+            itemsWithSoundtracks = itemsWithSoundtracks.Where(i => i.SoundtrackIds.Count > 0).ToList();
 
-            progress.Report(75);
-
-            AttachAlbumLinks(allItems, musicAlbums, cancellationToken);
+            foreach (var album in musicAlbums)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                
+                album.SoundtrackIds = GetAlbumLinks(album.Id, itemsWithSoundtracks).ToList();
+            }
 
             progress.Report(100);
         }
 
-        private void AttachMovieSoundtracks(IEnumerable<BaseItem> allItems, List<MusicAlbum> allAlbums, CancellationToken cancellationToken)
+        private IEnumerable<Guid> GetSoundtrackIds(IHasSoundtracks item, IEnumerable<MusicAlbum> albums)
         {
-            foreach (var movie in allItems
-                .Where(i => (i is Movie) || (i is Trailer)))
-            {
-                var hasSoundtracks = (IHasSoundtracks) movie;
+            var itemName = GetComparableName(item.Name);
 
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var tmdbId = movie.GetProviderId(MetadataProviders.Tmdb);
-
-                if (string.IsNullOrEmpty(tmdbId))
-                {
-                    hasSoundtracks.SoundtrackIds = new List<Guid>();
-                    continue;
-                }
-
-                hasSoundtracks.SoundtrackIds = allAlbums
-                .Where(i => string.Equals(tmdbId, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase))
-                .Select(i => i.Id)
-                .ToList();
-            }
+            return albums.Where(i => string.Equals(itemName, GetComparableName(i.Name), StringComparison.OrdinalIgnoreCase)).Select(i => i.Id);
         }
 
-        private void AttachTvSoundtracks(IEnumerable<BaseItem> allItems, List<MusicAlbum> allAlbums, CancellationToken cancellationToken)
+        private static string GetComparableName(string name)
         {
-            foreach (var series in allItems.OfType<Series>())
-            {
-                cancellationToken.ThrowIfCancellationRequested();
+            name = " " + name + " ";
 
-                var tvdbId = series.GetProviderId(MetadataProviders.Tvdb);
+            name = name.Replace(".", " ")
+            .Replace("_", " ")
+            .Replace("&", " ")
+            .Replace("!", " ")
+            .Replace("(", " ")
+            .Replace(")", " ")
+            .Replace(",", " ")
+            .Replace("-", " ")
+            .Replace(" a ", String.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace(" the ", String.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace(" ", String.Empty);
 
-                if (string.IsNullOrEmpty(tvdbId))
-                {
-                    series.SoundtrackIds = new List<Guid>();
-                    continue;
-                }
-
-                series.SoundtrackIds = allAlbums
-                .Where(i => string.Equals(tvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase))
-                .Select(i => i.Id)
-                .ToList();
-            }
+            return name.Trim();
         }
 
-        private void AttachGameSoundtracks(IEnumerable<BaseItem> allItems, List<MusicAlbum> allAlbums, CancellationToken cancellationToken)
+        /// <summary>
+        /// Removes the diacritics.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns>System.String.</returns>
+        private static string RemoveDiacritics(string text)
         {
-            foreach (var game in allItems.OfType<Game>())
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var gamesdb = game.GetProviderId(MetadataProviders.Gamesdb);
-
-                if (string.IsNullOrEmpty(gamesdb))
-                {
-                    game.SoundtrackIds = new List<Guid>();
-                    continue;
-                }
-
-                game.SoundtrackIds = allAlbums
-                .Where(i => string.Equals(gamesdb, i.GetProviderId(MetadataProviders.Gamesdb), StringComparison.OrdinalIgnoreCase))
-                .Select(i => i.Id)
-                .ToList();
-            }
+            return String.Concat(
+                text.Normalize(NormalizationForm.FormD)
+                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
+                                              UnicodeCategory.NonSpacingMark)
+              ).Normalize(NormalizationForm.FormC);
         }
 
-        private void AttachAlbumLinks(List<BaseItem> allItems, IEnumerable<MusicAlbum> allAlbums, CancellationToken cancellationToken)
+        private IEnumerable<Guid> GetAlbumLinks(Guid albumId, IEnumerable<IHasSoundtracks> items)
         {
-            foreach (var album in allAlbums)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var tmdb = album.GetProviderId(MetadataProviders.Tmdb);
-                var tvdb = album.GetProviderId(MetadataProviders.Tvdb);
-                var gamesdb = album.GetProviderId(MetadataProviders.Gamesdb);
-
-                if (string.IsNullOrEmpty(tmdb) && string.IsNullOrEmpty(tvdb) && string.IsNullOrEmpty(gamesdb))
-                {
-                    album.SoundtrackIds = new List<Guid>();
-                    continue;
-                }
-
-                album.SoundtrackIds = allItems.
-                Where(i =>
-                {
-                    if (!string.IsNullOrEmpty(tmdb) && string.Equals(tmdb, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase) && i is Movie)
-                    {
-                        return true;
-                    }
-                    if (!string.IsNullOrEmpty(tmdb) && string.Equals(tmdb, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase) && i is Trailer)
-                    {
-                        return true;
-                    }
-                    if (!string.IsNullOrEmpty(tvdb) && string.Equals(tvdb, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase) && i is Series)
-                    {
-                        return true;
-                    }
-
-                    return !string.IsNullOrEmpty(gamesdb) && string.Equals(gamesdb, i.GetProviderId(MetadataProviders.Gamesdb), StringComparison.OrdinalIgnoreCase) && i is Game;
-                })
-                    .Select(i => i.Id)
-                    .ToList();
-            }
+            return items.Where(i => i.SoundtrackIds.Contains(albumId)).Select(i => i.Id);
         }
     }
 }

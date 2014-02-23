@@ -251,6 +251,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (user != null)
             {
                 dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, recording.GetUserDataKey()));
+
+                dto.PlayAccess = recording.GetPlayAccess(user);
             }
 
             if (!string.IsNullOrEmpty(info.ProgramId))
@@ -321,6 +323,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (user != null)
             {
                 dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, info.GetUserDataKey()));
+
+                dto.PlayAccess = info.GetPlayAccess(user);
             }
 
             var imageTag = GetImageTag(info);
@@ -394,6 +398,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (user != null)
             {
                 dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, item.GetUserDataKey()));
+
+                dto.PlayAccess = item.GetPlayAccess(user);
             }
 
             return dto;

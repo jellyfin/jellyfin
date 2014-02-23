@@ -127,11 +127,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{System.String}.</returns>
         public List<string> GetPlayableStreamFiles(string rootPath)
         {
-            if (PlayableStreamFileNames == null)
-            {
-                return null;
-            }
-
             var allFiles = Directory.EnumerateFiles(rootPath, "*", SearchOption.AllDirectories).ToList();
 
             return PlayableStreamFileNames.Select(name => allFiles.FirstOrDefault(f => string.Equals(System.IO.Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase)))

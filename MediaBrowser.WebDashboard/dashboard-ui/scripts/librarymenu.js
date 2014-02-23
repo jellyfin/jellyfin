@@ -136,7 +136,7 @@
                 html += getCollapsibleHtml('TV', [
 
                     { text: 'Suggested', href: 'tvrecommended.html' },
-                    { text: 'Next Up', href: 'tvnextup.html' },
+                    { text: 'Latest', href: 'tvlatest.html' },
                     { text: 'Upcoming', href: 'tvupcoming.html' },
                     { text: 'Shows', href: 'tvshows.html' },
                     { text: 'Episodes', href: 'episodes.html' },

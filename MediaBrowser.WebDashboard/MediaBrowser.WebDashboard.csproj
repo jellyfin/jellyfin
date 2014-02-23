@@ -424,6 +424,9 @@
     <Content Include="dashboard-ui\scripts\appsplayback.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\scripts\chromecast.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\scripts\dashboardinfo.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1255,7 +1258,7 @@
     <Content Include="dashboard-ui\scripts\search.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\tvnextup.js">
+    <Content Include="dashboard-ui\scripts\tvlatest.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\songs.html">
@@ -1437,7 +1440,7 @@
     <Content Include="dashboard-ui\tvgenres.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\tvnextup.html">
+    <Content Include="dashboard-ui\tvlatest.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\tvpeople.html">

@@ -434,15 +434,13 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var builder = new StringBuilder();
 
-            builder.Append("<script type=\"text/javascript\">if (navigator.userAgent.toLowerCase().indexOf('compatible; msie 7')!=-1){alert(\"Please ensure you're running at least IE10 and that compatibility mode is disabled.\");}");
-            builder.Append("</script>");
-
             var versionString = "?v=" + version;
 
             var files = new[]
                             {
                                 "scripts/all.js" + versionString,
-                                "thirdparty/jstree1.0/jquery.jstree.min.js"
+                                "thirdparty/jstree1.0/jquery.jstree.min.js",
+                                "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"
             };
 
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
@@ -466,8 +464,9 @@ namespace MediaBrowser.WebDashboard.Api
                                       "site.js",
                                       "librarybrowser.js",
                                       "editorsidebar.js",
-
                                       "librarymenu.js",
+                                      "chromecast.js",
+
                                       "ratingdialog.js",
                                       "aboutpage.js",
                                       "allusersettings.js",
@@ -547,7 +546,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "supporterpage.js",
                                       "episodes.js",
                                       "tvgenres.js",
-                                      "tvnextup.js",
+                                      "tvlatest.js",
                                       "tvpeople.js",
                                       "tvrecommended.js",
                                       "tvshows.js",
