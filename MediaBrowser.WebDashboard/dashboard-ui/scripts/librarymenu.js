@@ -53,9 +53,13 @@
 
         html += '</div>';
 
-        $(page).prepend(html);
+        var $page = $(page);
+
+        $page.prepend(html);
 
         $('.viewMenuBar', page).trigger('create');
+
+        $page.trigger('headercreated');
     }
 
     function insertViews(page, user, counts, liveTvInfo) {

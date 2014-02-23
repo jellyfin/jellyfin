@@ -375,6 +375,28 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private Dictionary<Guid, BaseItem> GetActualChildrenDictionary()
+        {
+            var dictionary = new Dictionary<Guid, BaseItem>();
+
+            foreach (var child in ActualChildren)
+            {
+                var id = child.Id;
+                if (dictionary.ContainsKey(id))
+                {
+                    Logger.Error( "Found folder containing items with duplicate id. Path: {0}, Child Name: {1}",
+                        Path ?? Name,
+                        child.Path ?? child.Name);
+                }
+                else
+                {
+                    dictionary[id] = child;
+                }
+            }
+
+            return dictionary;
+        }
+
         /// <summary>
         /// Validates the children internal.
         /// </summary>
@@ -413,7 +435,7 @@ namespace MediaBrowser.Controller.Entities
                 progress.Report(5);
 
                 //build a dictionary of the current children we have now by Id so we can compare quickly and easily
-                var currentChildren = ActualChildren.ToDictionary(i => i.Id);
+                var currentChildren = GetActualChildrenDictionary();
 
                 //create a list for our validated children
                 var newItems = new List<BaseItem>();

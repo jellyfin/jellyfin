@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Entities;
+using System;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -30,7 +32,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             {
                 if (EntityResolutionHelper.IsAudioFile(args.Path))
                 {
-                    return new Controller.Entities.Audio.Audio();
+                    var collectionType = args.GetCollectionType();
+
+                    if (string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase) ||
+                        string.IsNullOrEmpty(collectionType))
+                    {
+                        return new Controller.Entities.Audio.Audio();
+                    }
                 }
             }
 

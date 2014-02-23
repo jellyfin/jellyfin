@@ -345,24 +345,8 @@ namespace MediaBrowser.ServerApplication
 
             foreach (var folder in folders)
             {
-                MigrateUserFolder(folder);
+                Directory.Delete(folder.FullName, true);
             }
-        }
-
-        private void MigrateUserFolder(DirectoryInfo folder)
-        {
-            var foldersInDefault = new DirectoryInfo(ApplicationPaths.DefaultUserViewsPath).EnumerateDirectories("*", SearchOption.TopDirectoryOnly).ToList();
-
-            var foldersInUserView = folder.EnumerateDirectories("*", SearchOption.TopDirectoryOnly).ToList();
-
-            var foldersToMove = foldersInUserView.Where(i => !foldersInDefault.Any(f => string.Equals(f.Name, i.Name, StringComparison.OrdinalIgnoreCase))).ToList();
-
-            foreach (var folderToMove in foldersToMove)
-            {
-                folderToMove.MoveTo(Path.Combine(ApplicationPaths.DefaultUserViewsPath, folderToMove.Name));
-            }
-
-            Directory.Delete(folder.FullName, true);
         }
 
         /// <summary>

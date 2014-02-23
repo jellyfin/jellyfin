@@ -131,10 +131,9 @@
         this.session = e;
         if (this.session) {
             this.deviceState = DEVICE_STATE.ACTIVE;
+            this.updateMediaControlUI();
             if (this.session.media[0]) {
                 this.onMediaDiscovered('activeSession', this.session.media[0]);
-            } else {
-                this.loadMedia(this.currentMediaIndex);
             }
         }
     };
@@ -175,7 +174,6 @@
         this.session = e;
         this.deviceState = DEVICE_STATE.ACTIVE;
         this.updateMediaControlUI();
-        this.loadMedia(this.currentMediaIndex);
     };
 
     /**
@@ -184,6 +182,12 @@
     CastPlayer.prototype.onLaunchError = function () {
         console.log("launch error");
         this.deviceState = DEVICE_STATE.ERROR;
+        Dashboard.alert({
+
+            title: "Error Launching Chromecast",
+            message: "There was an error launching chromecast. Please ensure your device is connected to your wiki network."
+
+        });
     };
 
     /**
@@ -217,12 +221,16 @@
      * @param {Number} mediaIndex An index number to indicate current media content
      */
     CastPlayer.prototype.loadMedia = function (mediaIndex) {
-        //if (!this.session) {
-        //    console.log("no session");
-        //    return;
-        //}
+        
+        if (!this.session) {
+            console.log("no session");
+            return;
+        }
+        
         //console.log("loading..." + this.mediaContents[mediaIndex]['title']);
+        
         //var mediaInfo = new chrome.cast.media.MediaInfo(this.mediaContents[mediaIndex]['sources'][0]);
+        
         //mediaInfo.contentType = 'video/mp4';
         //var request = new chrome.cast.media.LoadRequest(mediaInfo);
         //request.autoplay = this.autoplay;
@@ -259,28 +267,29 @@
      * @param {Object} mediaSession A new media object.
      */
     CastPlayer.prototype.onMediaDiscovered = function (how, mediaSession) {
-        //console.log("new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
-        //this.currentMediaSession = mediaSession;
-        //if (how == 'loadMedia') {
-        //    if (this.autoplay) {
-        //        this.castPlayerState = PLAYER_STATE.PLAYING;
-        //    }
-        //    else {
-        //        this.castPlayerState = PLAYER_STATE.LOADED;
-        //    }
-        //}
+        
+        console.log("new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
+        this.currentMediaSession = mediaSession;
+        if (how == 'loadMedia') {
+            if (this.autoplay) {
+                this.castPlayerState = PLAYER_STATE.PLAYING;
+            }
+            else {
+                this.castPlayerState = PLAYER_STATE.LOADED;
+            }
+        }
 
-        //if (how == 'activeSession') {
-        //    this.castPlayerState = this.session.media[0].playerState;
-        //    this.currentMediaTime = this.session.media[0].currentTime;
-        //}
+        if (how == 'activeSession') {
+            this.castPlayerState = this.session.media[0].playerState;
+            this.currentMediaTime = this.session.media[0].currentTime;
+        }
 
-        //if (this.castPlayerState == PLAYER_STATE.PLAYING) {
-        //    // start progress timer
-        //    this.startProgressTimer(this.incrementMediaTime);
-        //}
+        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
+            // start progress timer
+            //this.startProgressTimer(this.incrementMediaTime);
+        }
 
-        //this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
+        this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
 
         //this.currentMediaDuration = this.currentMediaSession.media.duration;
         //var duration = this.currentMediaDuration;
@@ -312,6 +321,366 @@
         //// update UIs
         //this.updateMediaControlUI();
         //this.updateDisplayMessage();
+    };
+
+    /**
+     * Callback function when media load returns error 
+     */
+    CastPlayer.prototype.onLoadMediaError = function (e) {
+        console.log("media error");
+        this.castPlayerState = PLAYER_STATE.IDLE;
+        // update UIs
+        this.updateMediaControlUI();
+        this.updateDisplayMessage();
+    };
+
+    /**
+     * Callback function for media status update from receiver
+     * @param {!Boolean} e true/false
+     */
+    CastPlayer.prototype.onMediaStatusUpdate = function (e) {
+        if (e == false) {
+            this.currentMediaTime = 0;
+            this.castPlayerState = PLAYER_STATE.IDLE;
+        }
+        console.log("updating media");
+        this.updateProgressBar(e);
+        this.updateDisplayMessage();
+        this.updateMediaControlUI();
+    };
+
+    /**
+     * Helper function
+     * Increment media current position by 1 second 
+     */
+    CastPlayer.prototype.incrementMediaTime = function () {
+        if (this.castPlayerState == PLAYER_STATE.PLAYING || this.localPlayerState == PLAYER_STATE.PLAYING) {
+            if (this.currentMediaTime < this.currentMediaDuration) {
+                this.currentMediaTime += 1;
+                this.updateProgressBarByTimer();
+            }
+            else {
+                this.currentMediaTime = 0;
+                clearInterval(this.timer);
+            }
+        }
+    };
+
+    /**
+     * Play media in Cast mode 
+     */
+    CastPlayer.prototype.playMedia = function () {
+        
+        if (!this.currentMediaSession) {
+            this.playMediaLocally(0);
+            return;
+        }
+
+        switch (this.castPlayerState) {
+            case PLAYER_STATE.LOADED:
+            case PLAYER_STATE.PAUSED:
+                this.currentMediaSession.play(null,
+                  this.mediaCommandSuccessCallback.bind(this, "playing started for " + this.currentMediaSession.sessionId),
+                  this.onError.bind(this));
+                this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
+                this.castPlayerState = PLAYER_STATE.PLAYING;
+                // start progress timer
+                this.startProgressTimer(this.incrementMediaTime);
+                break;
+            case PLAYER_STATE.IDLE:
+            case PLAYER_STATE.LOADING:
+            case PLAYER_STATE.STOPPED:
+                this.loadMedia(this.currentMediaIndex);
+                this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
+                this.castPlayerState = PLAYER_STATE.PLAYING;
+                break;
+            default:
+                break;
+        }
+        this.updateMediaControlUI();
+        this.updateDisplayMessage();
+    };
+
+    /**
+     * Pause media playback in Cast mode  
+     */
+    CastPlayer.prototype.pauseMedia = function () {
+        
+        if (!this.currentMediaSession) {
+            this.pauseMediaLocally();
+            return;
+        }
+
+        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
+            this.castPlayerState = PLAYER_STATE.PAUSED;
+            this.currentMediaSession.pause(null,
+              this.mediaCommandSuccessCallback.bind(this, "paused " + this.currentMediaSession.sessionId),
+              this.onError.bind(this));
+            this.updateMediaControlUI();
+            this.updateDisplayMessage();
+            clearInterval(this.timer);
+        }
+    };
+
+    /**
+     * Pause media playback in local player 
+     */
+    CastPlayer.prototype.pauseMediaLocally = function () {
+        
+        this.localPlayer.pause();
+        this.localPlayerState = PLAYER_STATE.PAUSED;
+        this.updateMediaControlUI();
+        clearInterval(this.timer);
+    };
+
+    /**
+     * Stop meia playback in either Cast or local mode  
+     */
+    CastPlayer.prototype.stopMedia = function () {
+        
+        if (!this.currentMediaSession) {
+            this.stopMediaLocally();
+            return;
+        }
+
+        this.currentMediaSession.stop(null,
+          this.mediaCommandSuccessCallback.bind(this, "stopped " + this.currentMediaSession.sessionId),
+          this.onError.bind(this));
+        this.castPlayerState = PLAYER_STATE.STOPPED;
+        clearInterval(this.timer);
+
+        this.updateDisplayMessage();
+        this.updateMediaControlUI();
+    };
+
+    /**
+     * Stop media playback in local player
+     */
+    CastPlayer.prototype.stopMediaLocally = function () {
+
+        var vi = document.getElementById('video_image');
+        vi.style.display = 'block';
+        this.localPlayer.style.display = 'none';
+        this.localPlayer.stop();
+        this.localPlayerState = PLAYER_STATE.STOPPED;
+        this.updateMediaControlUI();
+    };
+
+    /**
+     * Set media volume in Cast mode
+     * @param {Boolean} mute A boolean  
+     */
+    CastPlayer.prototype.setReceiverVolume = function (mute) {
+        var p = document.getElementById("audio_bg_level");
+        if (event.currentTarget.id == 'audio_bg_track') {
+            var pos = 100 - parseInt(event.offsetY);
+        }
+        else {
+            var pos = parseInt(p.clientHeight) - parseInt(event.offsetY);
+        }
+        if (!this.currentMediaSession) {
+            this.localPlayer.volume = pos < 100 ? pos / 100 : 1;
+            p.style.height = pos + 'px';
+            p.style.marginTop = -pos + 'px';
+            return;
+        }
+
+        if (event.currentTarget.id == 'audio_bg_track' || event.currentTarget.id == 'audio_bg_level') {
+            // add a drag to avoid loud volume
+            if (pos < 100) {
+                var vScale = this.currentVolume * 100;
+                if (pos > vScale) {
+                    pos = vScale + (pos - vScale) / 2;
+                }
+                p.style.height = pos + 'px';
+                p.style.marginTop = -pos + 'px';
+                this.currentVolume = pos / 100;
+            }
+            else {
+                this.currentVolume = 1;
+            }
+        }
+
+        if (!mute) {
+            this.session.setReceiverVolumeLevel(this.currentVolume,
+              this.mediaCommandSuccessCallback.bind(this),
+              this.onError.bind(this));
+        }
+        else {
+            this.session.setReceiverMuted(true,
+              this.mediaCommandSuccessCallback.bind(this),
+              this.onError.bind(this));
+        }
+        this.updateMediaControlUI();
+    };
+
+    /**
+     * Mute media function in either Cast or local mode 
+     */
+    CastPlayer.prototype.muteMedia = function () {
+        if (this.audio == true) {
+            this.audio = false;
+            document.getElementById('audio_on').style.display = 'none';
+            document.getElementById('audio_off').style.display = 'block';
+            if (this.currentMediaSession) {
+                this.setReceiverVolume(true);
+            }
+            else {
+                this.localPlayer.muted = true;
+            }
+        }
+        else {
+            this.audio = true;
+            document.getElementById('audio_on').style.display = 'block';
+            document.getElementById('audio_off').style.display = 'none';
+            if (this.currentMediaSession) {
+                this.setReceiverVolume(false);
+            }
+            else {
+                this.localPlayer.muted = false;
+            }
+        }
+        this.updateMediaControlUI();
+    };
+
+
+    /**
+     * media seek function in either Cast or local mode
+     * @param {Event} e An event object from seek 
+     */
+    CastPlayer.prototype.seekMedia = function (event) {
+        var pos = parseInt(event.offsetX);
+        var pi = document.getElementById("progress_indicator");
+        var p = document.getElementById("progress");
+        if (event.currentTarget.id == 'progress_indicator') {
+            var curr = parseInt(this.currentMediaTime + this.currentMediaDuration * pos / PROGRESS_BAR_WIDTH);
+            var pp = parseInt(pi.style.marginLeft) + pos;
+            var pw = parseInt(p.style.width) + pos;
+        }
+        else {
+            var curr = parseInt(pos * this.currentMediaDuration / PROGRESS_BAR_WIDTH);
+            var pp = pos - 21 - PROGRESS_BAR_WIDTH;
+            var pw = pos;
+        }
+
+        if (this.localPlayerState == PLAYER_STATE.PLAYING || this.localPlayerState == PLAYER_STATE.PAUSED) {
+            this.localPlayer.currentTime = curr;
+            this.currentMediaTime = curr;
+            this.localPlayer.play();
+        }
+
+        if (this.localPlayerState == PLAYER_STATE.PLAYING || this.localPlayerState == PLAYER_STATE.PAUSED
+            || this.castPlayerState == PLAYER_STATE.PLAYING || this.castPlayerState == PLAYER_STATE.PAUSED) {
+            p.style.width = pw + 'px';
+            pi.style.marginLeft = pp + 'px';
+        }
+
+        if (this.castPlayerState != PLAYER_STATE.PLAYING && this.castPlayerState != PLAYER_STATE.PAUSED) {
+            return;
+        }
+
+        this.currentMediaTime = curr;
+        console.log('Seeking ' + this.currentMediaSession.sessionId + ':' +
+          this.currentMediaSession.mediaSessionId + ' to ' + pos + "%");
+        var request = new chrome.cast.media.SeekRequest();
+        request.currentTime = this.currentMediaTime;
+        this.currentMediaSession.seek(request,
+          this.onSeekSuccess.bind(this, 'media seek done'),
+          this.onError.bind(this));
+        this.castPlayerState = PLAYER_STATE.SEEKING;
+
+        this.updateDisplayMessage();
+        this.updateMediaControlUI();
+    };
+
+    /**
+     * Callback function for seek success
+     * @param {String} info A string that describe seek event
+     */
+    CastPlayer.prototype.onSeekSuccess = function (info) {
+        console.log(info);
+        this.castPlayerState = PLAYER_STATE.PLAYING;
+        this.updateDisplayMessage();
+        this.updateMediaControlUI();
+    };
+
+    /**
+     * Callback function for media command success 
+     */
+    CastPlayer.prototype.mediaCommandSuccessCallback = function (info, e) {
+        console.log(info);
+    };
+
+    /**
+     * Update progress bar when there is a media status update
+     * @param {Object} e An media status update object 
+     */
+    CastPlayer.prototype.updateProgressBar = function (e) {
+        var p = document.getElementById("progress");
+        var pi = document.getElementById("progress_indicator");
+        if (e.idleReason == 'FINISHED' && e.playerState == 'IDLE') {
+            p.style.width = '0px';
+            pi.style.marginLeft = -21 - PROGRESS_BAR_WIDTH + 'px';
+            clearInterval(this.timer);
+            this.castPlayerState = PLAYER_STATE.STOPPED;
+            this.updateDisplayMessage();
+        }
+        else {
+            p.style.width = Math.ceil(PROGRESS_BAR_WIDTH * e.currentTime / this.currentMediaSession.media.duration + 1) + 'px';
+            this.progressFlag = false;
+            setTimeout(this.setProgressFlag.bind(this), 1000); // don't update progress in 1 second
+            var pp = Math.ceil(PROGRESS_BAR_WIDTH * e.currentTime / this.currentMediaSession.media.duration);
+            pi.style.marginLeft = -21 - PROGRESS_BAR_WIDTH + pp + 'px';
+        }
+    };
+
+    /**
+     * Set progressFlag with a timeout of 1 second to avoid UI update
+     * until a media status update from receiver 
+     */
+    CastPlayer.prototype.setProgressFlag = function () {
+        this.progressFlag = true;
+    };
+
+    /**
+     * Update progress bar based on timer  
+     */
+    CastPlayer.prototype.updateProgressBarByTimer = function () {
+        var p = document.getElementById("progress");
+        if (isNaN(parseInt(p.style.width))) {
+            p.style.width = 0;
+        }
+        if (this.currentMediaDuration > 0) {
+            var pp = Math.floor(PROGRESS_BAR_WIDTH * this.currentMediaTime / this.currentMediaDuration);
+        }
+
+        if (this.progressFlag) {
+            // don't update progress if it's been updated on media status update event
+            p.style.width = pp + 'px';
+            var pi = document.getElementById("progress_indicator");
+            pi.style.marginLeft = -21 - PROGRESS_BAR_WIDTH + pp + 'px';
+        }
+
+        if (pp > PROGRESS_BAR_WIDTH) {
+            clearInterval(this.timer);
+            this.deviceState = DEVICE_STATE.IDLE;
+            this.castPlayerState = PLAYER_STATE.IDLE;
+            this.updateDisplayMessage();
+            this.updateMediaControlUI();
+        }
+    };
+
+    /**
+     * Update display message depending on cast mode by deviceState 
+     */
+    CastPlayer.prototype.updateDisplayMessage = function () {
+
+        if (this.deviceState != DEVICE_STATE.ACTIVE || this.castPlayerState == PLAYER_STATE.IDLE || this.castPlayerState == PLAYER_STATE.STOPPED) {
+
+        } else {
+        }
+
+        $('.btnCast').attr('title', this.castPlayerState + " on " + this.session.receiver.friendlyName);
     };
 
     /**
@@ -353,14 +722,23 @@
 
     window.CastPlayer = CastPlayer;
 
-    $(function () {
+    var castPlayer = new CastPlayer();
 
-        var castPlayer = new CastPlayer();
+    $(document).on('headercreated', ".libraryPage", function () {
 
-        $(document).on('pagebeforeshow', ".libraryPage", function () {
+        var page = this;
 
-            castPlayer.updateMediaControlUI();
+        castPlayer.updateMediaControlUI();
+
+        $('.btnCast', page).on('click', function () {
+
+            if (castPlayer.deviceState == DEVICE_STATE.ACTIVE) {
+                castPlayer.stopApp();
+            } else {
+                castPlayer.launchApp();
+            }
         });
+
     });
 
 })(window, window.chrome, console);
