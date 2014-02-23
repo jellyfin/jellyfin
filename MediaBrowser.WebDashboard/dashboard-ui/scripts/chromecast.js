@@ -82,7 +82,12 @@
      */
     CastPlayer.prototype.initializeCastPlayer = function () {
 
+        if (!chrome) {
+            return;
+        }
+        
         if (!chrome.cast || !chrome.cast.isAvailable) {
+            setTimeout(this.initializeCastPlayer.bind(this), 1000);
             return;
         }
 
@@ -94,6 +99,8 @@
           this.sessionListener.bind(this),
           this.receiverListener.bind(this));
 
+        console.log('chrome.cast.initialize');
+        
         chrome.cast.initialize(apiConfig, this.onInitSuccess.bind(this), this.onError.bind(this));
     };
 
@@ -102,6 +109,7 @@
      */
     CastPlayer.prototype.onInitSuccess = function () {
         console.log("init success");
+        $('.btnCast').show();
         this.updateMediaControlUI();
     };
 
@@ -110,6 +118,7 @@
      */
     CastPlayer.prototype.onError = function () {
         console.log("error");
+        $('.btnCast').hide();
     };
 
     /**
@@ -304,6 +313,36 @@
         //// update UIs
         //this.updateMediaControlUI();
         //this.updateDisplayMessage();
+    };
+
+    /**
+     * Update media control UI components based on localPlayerState or castPlayerState
+     */
+    CastPlayer.prototype.updateMediaControlUI = function() {
+        if (this.deviceState == DEVICE_STATE.ACTIVE) {
+            $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
+            var playerState = this.castPlayerState;
+        } else {
+            $('.btnCast').removeClass('btnActiveCast').addClass('btnDefaultCast');
+            var playerState = this.localPlayerState;
+        }
+
+        switch (playerState) {
+        case PLAYER_STATE.LOADED:
+        case PLAYER_STATE.PLAYING:
+            //document.getElementById("play").style.display = 'none';
+            //document.getElementById("pause").style.display = 'block';
+            break;
+        case PLAYER_STATE.PAUSED:
+        case PLAYER_STATE.IDLE:
+        case PLAYER_STATE.LOADING:
+        case PLAYER_STATE.STOPPED:
+            //document.getElementById("play").style.display = 'block';
+            //document.getElementById("pause").style.display = 'none';
+            break;
+        default:
+            break;
+        }
     };
 
     window.CastPlayer = CastPlayer;

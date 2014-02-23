@@ -24,6 +24,8 @@
 
         html += '<div class="viewMenuSecondary">';
 
+        html += '<button class="btnCast btnDefaultCast" type="button" data-role="none" style="display:none;"></button>';
+
         html += '<a class="viewMenuLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
         if (user.PrimaryImageTag) {

@@ -1,0 +1,18 @@
+﻿.btnCast {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background-color: transparent;
+    border: 0;
+    background-size: 100%;
+    vertical-align: middle;
+    margin: 0 .6em;
+}
+
+.btnDefaultCast {
+    background-image: url(images/chromecast/ic_notification_media_route.png);
+}
+
+.btnActiveCast {
+    background-image: url(images/chromecast/ic_media_route_on_holo_dark.png);
+}
