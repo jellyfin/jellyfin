@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -58,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             name = RemoveDiacritics(name);
 
-            name = " " + name.ToLower() + " ";
+            name = " " + name + " ";
 
             name = name.Replace(".", " ")
             .Replace("_", " ")
@@ -68,8 +69,8 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             .Replace(")", " ")
             .Replace(",", " ")
             .Replace("-", " ")
-            .Replace(" a ", String.Empty)
-            .Replace(" the ", String.Empty)
+            .Replace(" a ", String.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace(" the ", String.Empty, StringComparison.OrdinalIgnoreCase)
             .Replace(" ", String.Empty);
 
             return name.Trim();

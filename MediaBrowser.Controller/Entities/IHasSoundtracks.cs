@@ -13,5 +13,17 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The soundtrack ids.</value>
         List<Guid> SoundtrackIds { get; set; }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        string Name { get; }
+
+        /// <summary>
+        /// Gets the identifier.
+        /// </summary>
+        /// <value>The identifier.</value>
+        Guid Id { get; }
     }
 }

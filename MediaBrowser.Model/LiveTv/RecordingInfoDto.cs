@@ -5,6 +5,7 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using MediaBrowser.Model.Library;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -39,6 +40,12 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         public string ChannelId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the play access.
+        /// </summary>
+        /// <value>The play access.</value>
+        public PlayAccess PlayAccess { get; set; }
+        
         /// <summary>
         /// Gets or sets the channel primary image tag.
         /// </summary>

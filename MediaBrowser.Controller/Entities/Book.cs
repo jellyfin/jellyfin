@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {

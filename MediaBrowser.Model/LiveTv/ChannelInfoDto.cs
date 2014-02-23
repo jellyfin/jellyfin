@@ -5,6 +5,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Library;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -44,6 +45,12 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The number.</value>
         public string Number { get; set; }
 
+        /// <summary>
+        /// Gets or sets the play access.
+        /// </summary>
+        /// <value>The play access.</value>
+        public PlayAccess PlayAccess { get; set; }
+        
         /// <summary>
         /// Gets or sets the name of the service.
         /// </summary>
