@@ -604,7 +604,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (vobs.Count > 0)
                 {
-                    var minSizeVobs = allVobs
+                    var minSizeVobs = vobs
                         .SkipWhile(f => f.Length < minPlayableSize)
                         .ToList();
 
