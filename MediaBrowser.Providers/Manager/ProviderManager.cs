@@ -445,10 +445,14 @@ namespace MediaBrowser.Providers.Manager
             AddMetadataPlugins(summary.Plugins, dummy, options);
             AddImagePlugins(summary.Plugins, dummy, imageProviders);
 
-            summary.SupportedImageTypes = imageProviders.OfType<IRemoteImageProvider>()
+            var supportedImageTypes = imageProviders.OfType<IRemoteImageProvider>()
                 .SelectMany(i => i.GetSupportedImages(dummy))
-                .Distinct()
                 .ToList();
+
+            supportedImageTypes.AddRange(imageProviders.OfType<IDynamicImageProvider>()
+                .SelectMany(i => i.GetSupportedImages(dummy)));
+
+            summary.SupportedImageTypes = supportedImageTypes.Distinct().ToList();
 
             return summary;
         }
