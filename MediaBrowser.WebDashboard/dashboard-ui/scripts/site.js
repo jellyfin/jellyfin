@@ -192,34 +192,7 @@ var Dashboard = {
             }
         }
 
-        if (isFirstLoad) {
-            Dashboard.showFailedAssemblies(info.FailedPluginAssemblies);
-        }
-
         Dashboard.showInProgressInstallations(info.InProgressInstallations);
-    },
-
-    showFailedAssemblies: function (failedAssemblies) {
-
-        for (var i = 0, length = failedAssemblies.length; i < length; i++) {
-
-            var assembly = failedAssemblies[i];
-
-            var html = '<img src="css/images/notifications/error.png" class="notificationIcon" />';
-
-            var index = assembly.lastIndexOf('\\');
-
-            if (index != -1) {
-                assembly = assembly.substring(index + 1);
-            }
-
-            html += '<span>';
-            html += assembly + " failed to load.";
-            html += '</span>';
-
-            Dashboard.showFooterNotification({ html: html });
-
-        }
     },
 
     showInProgressInstallations: function (installations) {

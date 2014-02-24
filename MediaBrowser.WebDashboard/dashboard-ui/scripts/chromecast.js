@@ -71,6 +71,8 @@
         /* media contents from JSON */
         this.mediaContents = null;
 
+        this.hasReceivers = false;
+
         this.initializeCastPlayer();
     };
 
@@ -146,9 +148,13 @@
     CastPlayer.prototype.receiverListener = function (e) {
         if (e === 'available') {
             console.log("receiver found");
+            $('.btnCast').show();
+            this.hasReceivers = true;
         }
         else {
             console.log("receiver list empty");
+            $('.btnCast').hide();
+            this.hasReceivers = false;
         }
     };
 
@@ -185,7 +191,7 @@
         Dashboard.alert({
 
             title: "Error Launching Chromecast",
-            message: "There was an error launching chromecast. Please ensure your device is connected to your wiki network."
+            message: "There was an error launching chromecast. Please ensure your device is connected to your wifi network."
 
         });
     };
@@ -211,8 +217,8 @@
         this.updateDisplayMessage();
 
         // continue to play media locally
-        console.log("current time: " + this.currentMediaTime);
-        this.playMediaLocally(this.currentMediaTime);
+        //console.log("current time: " + this.currentMediaTime);
+        //this.playMediaLocally(this.currentMediaTime);
         this.updateMediaControlUI();
     };
 
@@ -692,7 +698,10 @@
             $('.btnCast').hide();
             return;
         }
-        $('.btnCast').show();
+        
+        if (this.hasReceivers) {
+            $('.btnCast').show();
+        }
 
         if (this.deviceState == DEVICE_STATE.ACTIVE) {
             $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');

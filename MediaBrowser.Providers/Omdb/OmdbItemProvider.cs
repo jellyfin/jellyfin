@@ -59,18 +59,17 @@ namespace MediaBrowser.Providers.Omdb
 
             var imdbId = info.GetProviderId(MetadataProviders.Imdb);
 
+            var searchResult = await GetSeriesImdbId(info, cancellationToken).ConfigureAwait(false);
+            result.Item.Name = searchResult.Item3;
+
             if (string.IsNullOrEmpty(imdbId))
             {
-                var searchResult = await GetSeriesImdbId(info, cancellationToken).ConfigureAwait(false);
-
                 imdbId = searchResult.Item1;
 
                 if (!string.IsNullOrEmpty(searchResult.Item2))
                 {
                     result.Item.SetProviderId(MetadataProviders.Tvdb, searchResult.Item2);
                 }
-
-                result.Item.Name = searchResult.Item3;
             }
             
             if (!string.IsNullOrEmpty(imdbId))
@@ -112,18 +111,17 @@ namespace MediaBrowser.Providers.Omdb
 
             var imdbId = info.GetProviderId(MetadataProviders.Imdb);
 
+            var searchResult = await GetMovieImdbId(info, cancellationToken).ConfigureAwait(false);
+            result.Item.Name = searchResult.Item3;
+
             if (string.IsNullOrEmpty(imdbId))
             {
-                var searchResult = await GetMovieImdbId(info, cancellationToken).ConfigureAwait(false);
-
                 imdbId = searchResult.Item1;
 
                 if (!string.IsNullOrEmpty(searchResult.Item2))
                 {
                     result.Item.SetProviderId(MetadataProviders.Tmdb, searchResult.Item2);
                 }
-
-                result.Item.Name = searchResult.Item3;
             }
 
             if (!string.IsNullOrEmpty(imdbId))

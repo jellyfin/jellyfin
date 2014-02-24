@@ -585,8 +585,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Try to eliminate menus and intros by skipping all files at the front of the list that are less than the minimum size
             // Once we reach a file that is at least the minimum, return all subsequent ones
-            var allVobs = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
-                .Where(file => string.Equals(Path.GetExtension(file), ".vob", StringComparison.OrdinalIgnoreCase))
+            var allVobs = new DirectoryInfo(root).EnumerateFiles("*", SearchOption.AllDirectories)
+                .Where(file => string.Equals(file.Extension, ".vob", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(i => i.FullName)
                 .ToList();
 
             // If we didn't find any satisfying the min length, just take them all
@@ -599,18 +600,22 @@ namespace MediaBrowser.Providers.MediaInfo
             if (titleNumber.HasValue)
             {
                 var prefix = string.Format("VTS_0{0}_", titleNumber.Value.ToString(_usCulture));
-                var vobs = allVobs.Where(i => Path.GetFileName(i).StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList();
+                var vobs = allVobs.Where(i => i.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList();
 
                 if (vobs.Count > 0)
                 {
-                    return vobs;
+                    var minSizeVobs = allVobs
+                        .SkipWhile(f => f.Length < minPlayableSize)
+                        .ToList();
+
+                    return minSizeVobs.Count == 0 ? vobs.Select(i => i.FullName) : minSizeVobs.Select(i => i.FullName);
                 }
 
                 _logger.Debug("Could not determine vob file list for {0} using DvdLib. Will scan using file sizes.", video.Path);
             }
 
             var files = allVobs
-                .SkipWhile(f => new FileInfo(f).Length < minPlayableSize)
+                .SkipWhile(f => f.Length < minPlayableSize)
                 .ToList();
 
             // If we didn't find any satisfying the min length, just take them all
@@ -623,7 +628,7 @@ namespace MediaBrowser.Providers.MediaInfo
             // Assuming they're named "vts_05_01", take all files whose second part matches that of the first file
             if (files.Count > 0)
             {
-                var parts = Path.GetFileNameWithoutExtension(files[0]).Split('_');
+                var parts = Path.GetFileNameWithoutExtension(files[0].FullName).Split('_');
 
                 if (parts.Length == 3)
                 {
@@ -631,7 +636,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     files = files.TakeWhile(f =>
                     {
-                        var fileParts = Path.GetFileNameWithoutExtension(f).Split('_');
+                        var fileParts = Path.GetFileNameWithoutExtension(f.FullName).Split('_');
 
                         return fileParts.Length == 3 && string.Equals(title, fileParts[1], StringComparison.OrdinalIgnoreCase);
 
@@ -646,7 +651,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            return files;
+            return files.Select(i => i.FullName);
         }
     }
 }

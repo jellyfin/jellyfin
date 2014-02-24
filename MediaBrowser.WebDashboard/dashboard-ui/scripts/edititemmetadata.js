@@ -31,6 +31,15 @@
         $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
 
             var item = response1[0];
+            
+            currentItem = item;
+
+            if (item.Type == "UserRootFolder") {
+                $('.editPageInnerContent', page).hide();
+                return;
+            } else {
+                $('.editPageInnerContent', page).show();
+            }
             var languages = response2[0];
             var countries = response3[0];
 
@@ -52,8 +61,6 @@
             $('.btnSave', page).buttonEnabled(true);
 
             $('#refreshLoading', page).hide();
-
-            currentItem = item;
 
             if (item.Type != "Channel" &&
                 item.Type != "Genre" &&

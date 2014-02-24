@@ -1,15 +1,28 @@
 ﻿var LoginPage = {
 
+    onPageInit: function () {
+
+        var page = this;
+
+        $("#popupLogin", page).popup({
+            afteropen: function (event, ui) {
+                $('#pw').focus();
+            }
+        });
+    },
+
     onPageShow: function () {
-        
+
         Dashboard.showLoadingMsg();
 
+        var page = this;
+
         var isLocalhost = window.location.toString().toLowerCase().indexOf('localhost') != -1;
-        
+
         if (isLocalhost) {
-            $('.localhostMessage', this).show();
+            $('.localhostMessage', page).show();
         } else {
-            $('.localhostMessage', this).hide();
+            $('.localhostMessage', page).hide();
         }
 
         // Show all users on localhost
@@ -29,13 +42,14 @@
 
             if (showManualForm) {
 
-                $('.visualLoginForm', '#loginPage').hide();
-                $('#manualLoginForm', '#loginPage').show();
+                $('.visualLoginForm', page).hide();
+                $('#manualLoginForm', page).show();
+                $('#txtManualName', page).focus();
 
             } else {
 
-                $('.visualLoginForm', '#loginPage').show();
-                $('#manualLoginForm', '#loginPage').hide();
+                $('.visualLoginForm', page).show();
+                $('#manualLoginForm', page).hide();
 
                 LoginPage.loadUserList(users);
             }
@@ -189,4 +203,4 @@
     }
 };
 
-$(document).on('pageshow', "#loginPage", LoginPage.onPageShow);
+$(document).on('pageshow', "#loginPage", LoginPage.onPageShow).on('pageinit', "#loginPage", LoginPage.onPageInit);

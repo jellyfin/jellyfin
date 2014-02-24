@@ -411,38 +411,7 @@
         html += '</ul>';
         html += '<div class="fieldDescription">Rank your preferred local metadata sources in order of priority. The first file found will be read.</div>';
 
-        var elem = $('.metadataReaders', page).html(html).show().trigger('create');
-
-        $(elem).on('click', '.btnLocalReaderMove', function () {
-
-            var li = $(this).parents('.localReaderOption');
-            var ul = li.parents('ul');
-
-            if ($(this).hasClass('btnLocalReaderDown')) {
-
-                var next = li.next();
-
-                li.remove().insertAfter(next);
-
-            } else {
-                
-                var prev = li.prev();
-
-                li.remove().insertBefore(prev);
-            }
-
-            $('.localReaderOption', ul).each(function () {
-
-                if ($(this).prev('.localReaderOption').length) {
-                    $('.btnLocalReaderMove', this).addClass('btnLocalReaderUp').removeClass('btnLocalReaderDown').attr('data-icon', 'arrow-u').removeClass('ui-icon-arrow-d').addClass('ui-icon-arrow-u');
-                } else {
-                    $('.btnLocalReaderMove', this).addClass('btnLocalReaderDown').removeClass('btnLocalReaderUp').attr('data-icon', 'arrow-d').removeClass('ui-icon-arrow-u').addClass('ui-icon-arrow-d');
-                }
-                
-            });
-
-            ul.listview('destroy').listview({});
-        });
+        $('.metadataReaders', page).html(html).show().trigger('create');
     }
 
     function loadPage(page) {
@@ -611,7 +580,42 @@
         return false;
     }
 
-    $(document).on('pageshow', "#metadataImagesConfigurationPage", function () {
+    $(document).on('pageinit', "#metadataImagesConfigurationPage", function () {
+
+        var page = this;
+
+        $('.metadataReaders', page).on('click', '.btnLocalReaderMove', function () {
+
+            var li = $(this).parents('.localReaderOption');
+            var ul = li.parents('ul');
+
+            if ($(this).hasClass('btnLocalReaderDown')) {
+
+                var next = li.next();
+
+                li.remove().insertAfter(next);
+
+            } else {
+
+                var prev = li.prev();
+
+                li.remove().insertBefore(prev);
+            }
+
+            $('.localReaderOption', ul).each(function () {
+
+                if ($(this).prev('.localReaderOption').length) {
+                    $('.btnLocalReaderMove', this).addClass('btnLocalReaderUp').removeClass('btnLocalReaderDown').attr('data-icon', 'arrow-u').removeClass('ui-icon-arrow-d').addClass('ui-icon-arrow-u');
+                } else {
+                    $('.btnLocalReaderMove', this).addClass('btnLocalReaderDown').removeClass('btnLocalReaderUp').attr('data-icon', 'arrow-d').removeClass('ui-icon-arrow-u').addClass('ui-icon-arrow-d');
+                }
+
+            });
+
+            ul.listview('destroy').listview({});
+        });
+        
+    }).on('pageshow', "#metadataImagesConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 

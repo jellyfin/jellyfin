@@ -11,7 +11,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
-            Limit: screenWidth >= 1440 ? 21 : 12,
+            Limit: screenWidth >= 1920 ? 21 : (screenWidth >= 1440 ? 16 : 12),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,DateCreated,UserData",
             Filters: "IsUnplayed"
@@ -57,13 +57,12 @@
 
         });
 
-
         options = {
 
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Trailer",
-            Limit: screenWidth >= 1440 ? 7 : 6,
+            Limit: screenWidth >= 1920 ? 7 : (screenWidth >= 1440 ? 8 : 6),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,DateCreated,UserData",
             Filters: "IsUnplayed"

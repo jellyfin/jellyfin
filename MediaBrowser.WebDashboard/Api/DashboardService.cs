@@ -439,8 +439,8 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "scripts/all.js" + versionString,
-                                "thirdparty/jstree1.0/jquery.jstree.min.js",
-                                "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"
+                                "thirdparty/jstree1.0/jquery.jstree.min.js"
+                                //"https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"
             };
 
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
@@ -465,7 +465,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "librarybrowser.js",
                                       "editorsidebar.js",
                                       "librarymenu.js",
-                                      "chromecast.js",
+                                      //"chromecast.js",
 
                                       "ratingdialog.js",
                                       "aboutpage.js",
