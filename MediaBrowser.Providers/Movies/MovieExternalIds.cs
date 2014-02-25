@@ -52,29 +52,6 @@ namespace MediaBrowser.Providers.Movies
         }
     }
 
-    public class RottenTomatoesExternalId : IExternalId
-    {
-        public string Name
-        {
-            get { return "Rotten Tomatoes"; }
-        }
-
-        public string Key
-        {
-            get { return MetadataProviders.RottenTomatoes.ToString(); }
-        }
-
-        public string UrlFormatString
-        {
-            get { return null; }
-        }
-
-        public bool Supports(IHasProviderIds item)
-        {
-            return item is Movie || item is Trailer || item is MusicVideo;
-        }
-    }
-
     public class MovieDbMovieCollectionExternalId : IExternalId
     {
         public string Name

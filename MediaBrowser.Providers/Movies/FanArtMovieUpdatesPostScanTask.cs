@@ -104,7 +104,7 @@ namespace MediaBrowser.Providers.Movies
                 Url = string.Format(UpdatesUrl, FanartArtistProvider.ApiKey, lastUpdateTime),
                 CancellationToken = cancellationToken,
                 EnableHttpCompression = true,
-                ResourcePool = FanartArtistProvider.FanArtResourcePool
+                ResourcePool = FanartArtistProvider.Current.FanArtResourcePool
 
             }).ConfigureAwait(false))
             {
