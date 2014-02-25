@@ -34,6 +34,12 @@ namespace MediaBrowser.Common.Net
         public string TempFilePath { get; set; }
 
         /// <summary>
+        /// Gets or sets the length of the content.
+        /// </summary>
+        /// <value>The length of the content.</value>
+        public long? ContentLength { get; set; }
+
+        /// <summary>
         /// Gets or sets the headers.
         /// </summary>
         /// <value>The headers.</value>

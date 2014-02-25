@@ -12,7 +12,7 @@ namespace MediaBrowser.Providers.Omdb
 {
     public class OmdbProvider
     {
-        internal readonly SemaphoreSlim ResourcePool = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim ResourcePool = new SemaphoreSlim(1, 1);
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");

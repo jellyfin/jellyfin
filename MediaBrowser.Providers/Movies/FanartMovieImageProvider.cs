@@ -334,7 +334,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 CancellationToken = cancellationToken,
                 Url = url,
-                ResourcePool = FanartArtistProvider.FanArtResourcePool
+                ResourcePool = FanartArtistProvider.Current.FanArtResourcePool
             });
         }
 
@@ -410,7 +410,7 @@ namespace MediaBrowser.Providers.Movies
             using (var response = await _httpClient.Get(new HttpRequestOptions
             {
                 Url = url,
-                ResourcePool = FanartArtistProvider.FanArtResourcePool,
+                ResourcePool = FanartArtistProvider.Current.FanArtResourcePool,
                 CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))

@@ -250,7 +250,16 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>SeasonInfo.</returns>
         public SeasonInfo GetLookupInfo()
         {
-            return GetItemLookupInfo<SeasonInfo>();
+            var id = GetItemLookupInfo<SeasonInfo>();
+
+            var series = Series;
+
+            if (series != null)
+            {
+                id.SeriesProviderIds = series.ProviderIds;
+            }
+
+            return id;
         }
 
         /// <summary>

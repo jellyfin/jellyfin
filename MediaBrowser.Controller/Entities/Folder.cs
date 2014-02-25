@@ -940,7 +940,7 @@ namespace MediaBrowser.Controller.Entities
             // First get using the cached Id
             if (info.ItemId != Guid.Empty)
             {
-                item = LibraryManager.GetItemById(info.ItemId) as BaseItem;
+                item = LibraryManager.GetItemById(info.ItemId);
             }
 
             // If still null, search by path
@@ -1098,7 +1098,9 @@ namespace MediaBrowser.Controller.Entities
                 return this;
             }
 
-            return RecursiveChildren.FirstOrDefault(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase));
+            return RecursiveChildren.FirstOrDefault(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) ||
+                (!i.IsFolder && !i.IsInMixedFolder && string.Equals(i.ContainingFolderPath, path, StringComparison.OrdinalIgnoreCase)) ||
+                i.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase));
         }
 
         public override bool IsPlayed(User user)

@@ -264,7 +264,7 @@ namespace MediaBrowser.Providers.TV
             {
                 CancellationToken = cancellationToken,
                 Url = url,
-                ResourcePool = FanartArtistProvider.FanArtResourcePool
+                ResourcePool = FanartArtistProvider.Current.FanArtResourcePool
             });
         }
 

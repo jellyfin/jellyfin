@@ -66,6 +66,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
     <Compile Include="AdultVideos\AdultVideoMetadataService.cs" />
     <Compile Include="AdultVideos\AdultVideoXmlProvider.cs" />
     <Compile Include="All\InternalMetadataFolderImageProvider.cs" />

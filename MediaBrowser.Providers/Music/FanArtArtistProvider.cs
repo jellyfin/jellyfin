@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Music
 {
     public class FanartArtistProvider : IRemoteImageProvider, IHasChangeMonitor, IHasOrder
     {
-        internal static readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3, 3);
+        internal readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3, 3);
         internal const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
         private const string FanArtBaseUrl = "http://api.fanart.tv/webservice/artist/{0}/{1}/xml/all/1/1";
 

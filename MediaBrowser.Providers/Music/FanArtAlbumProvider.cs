@@ -346,7 +346,7 @@ namespace MediaBrowser.Providers.Music
             {
                 CancellationToken = cancellationToken,
                 Url = url,
-                ResourcePool = FanartArtistProvider.FanArtResourcePool
+                ResourcePool = FanartArtistProvider.Current.FanArtResourcePool
             });
         }
 

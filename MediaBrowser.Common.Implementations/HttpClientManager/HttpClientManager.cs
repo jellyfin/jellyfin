@@ -285,17 +285,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     EnsureSuccessStatusCode(httpResponse);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
-                    
-                    return new HttpResponseInfo
-                    {
-                        Content = httpResponse.GetResponseStream(),
 
-                        StatusCode = httpResponse.StatusCode,
-
-                        ContentType = httpResponse.ContentType,
-
-                        Headers = httpResponse.Headers
-                    };
+                    return GetResponseInfo(httpResponse, httpResponse.GetResponseStream(), GetContentLength(httpResponse));
                 }
                 
                 using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
@@ -314,16 +305,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                         memoryStream.Position = 0;
 
-                        return new HttpResponseInfo
-                        {
-                            Content = memoryStream,
-
-                            StatusCode = httpResponse.StatusCode,
-
-                            ContentType = httpResponse.ContentType,
-
-                            Headers = httpResponse.Headers
-                        };
+                        return GetResponseInfo(httpResponse, memoryStream, memoryStream.Length);
                     }
                 }
             }
@@ -365,6 +347,38 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     options.ResourcePool.Release();
                 }
             }
+        }
+
+        private HttpResponseInfo GetResponseInfo(HttpWebResponse httpResponse, Stream content, long? contentLength)
+        {
+            return new HttpResponseInfo
+            {
+                Content = content,
+
+                StatusCode = httpResponse.StatusCode,
+
+                ContentType = httpResponse.ContentType,
+
+                Headers = httpResponse.Headers,
+
+                ContentLength = contentLength
+            };
+        }
+
+        private HttpResponseInfo GetResponseInfo(HttpWebResponse httpResponse, string tempFile, long? contentLength)
+        {
+            return new HttpResponseInfo
+            {
+                TempFilePath = tempFile,
+
+                StatusCode = httpResponse.StatusCode,
+
+                ContentType = httpResponse.ContentType,
+
+                Headers = httpResponse.Headers,
+
+                ContentLength = contentLength
+            };
         }
 
         public Task<HttpResponseInfo> Post(HttpRequestOptions options)
@@ -493,16 +507,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                     options.Progress.Report(100);
 
-                    return new HttpResponseInfo
-                    {
-                        TempFilePath = tempFile,
-
-                        StatusCode = httpResponse.StatusCode,
-
-                        ContentType = httpResponse.ContentType,
-
-                        Headers = httpResponse.Headers
-                    };
+                    return GetResponseInfo(httpResponse, tempFile, contentLength);
                 }
             }
             catch (OperationCanceledException ex)

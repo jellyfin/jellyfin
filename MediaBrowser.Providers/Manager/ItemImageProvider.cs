@@ -60,8 +60,8 @@ namespace MediaBrowser.Providers.Manager
             var providerIds = new List<Guid>();
 
             // In order to avoid duplicates, only download these if there are none already
-            var backdropLimit = item.HasImage(ImageType.Backdrop) ? 0 : savedOptions.GetLimit(ImageType.Backdrop);
-            var screenshotLimit = item.HasImage(ImageType.Screenshot) ? 0 : savedOptions.GetLimit(ImageType.Screenshot);
+            var backdropLimit = savedOptions.GetLimit(ImageType.Backdrop);
+            var screenshotLimit = savedOptions.GetLimit(ImageType.Screenshot);
 
             foreach (var provider in providers)
             {
@@ -362,9 +362,25 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
 
+                    // If there's already an image of the same size, skip it
+                    if (response.ContentLength.HasValue)
+                    {
+                        try
+                        {
+                            if (item.GetImages(imageType).Any(i => new FileInfo(i.Path).Length == response.ContentLength.Value))
+                            {
+                                response.Content.Dispose();
+                                continue;
+                            }
+                        }
+                        catch (IOException ex)
+                        {
+                            _logger.ErrorException("Error examining images", ex);
+                        }
+                    }
+
                     await _providerManager.SaveImage(item, response.Content, response.ContentType, imageType, null, cancellationToken).ConfigureAwait(false);
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
-                    break;
                 }
                 catch (HttpException ex)
                 {
