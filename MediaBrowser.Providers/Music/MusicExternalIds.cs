@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.Music
 
         public bool Supports(IHasProviderIds item)
         {
-            return item is Audio || item is MusicAlbum;
+            return item is Audio;
         }
     }
 

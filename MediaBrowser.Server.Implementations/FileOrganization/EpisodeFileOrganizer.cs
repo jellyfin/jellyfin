@@ -239,10 +239,17 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var folder = Path.GetDirectoryName(targetPath);
             var targetFileNameWithoutExtension = Path.GetFileNameWithoutExtension(targetPath);
 
-            var filesOfOtherExtensions = Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly)
-                .Where(i => EntityResolutionHelper.IsVideoFile(i) && string.Equals(Path.GetFileNameWithoutExtension(i), targetFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase));
+            try
+            {
+                var filesOfOtherExtensions = Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly)
+                    .Where(i => EntityResolutionHelper.IsVideoFile(i) && string.Equals(Path.GetFileNameWithoutExtension(i), targetFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase));
 
-            episodePaths.AddRange(filesOfOtherExtensions);
+                episodePaths.AddRange(filesOfOtherExtensions);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // No big deal. Maybe the season folder doesn't already exist.
+            }
 
             return episodePaths.Where(i => !string.Equals(i, targetPath, StringComparison.OrdinalIgnoreCase))
                 .Distinct(StringComparer.OrdinalIgnoreCase)

@@ -7,7 +7,6 @@
     var browsableImageStartIndex = 0;
     var browsableImageType = 'Primary';
     var selectedProvider;
-    var allLanguages = false;
 
     function updateTabs(page, item) {
 
@@ -57,7 +56,7 @@
         options.type = browsableImageType;
         options.startIndex = browsableImageStartIndex;
         options.limit = browsableImagePageSize;
-        options.IncludeAllLanguages = allLanguages;
+        options.IncludeAllLanguages = $('#chkAllLanguages', page).checked();
 
         var provider = selectedProvider || '';
 
@@ -124,7 +123,7 @@
 
         ApiClient.downloadRemoteImage(options).done(function () {
 
-            $('#popupDownload', page).popup("close");
+            $('.popupDownload', page).popup("close");
             reload(page);
         });
     }
@@ -526,6 +525,7 @@
         self.showDownloadMenu = function (type) {
             browsableImageStartIndex = 0;
             browsableImageType = type;
+
             $('.lnkBrowseImages').trigger('click');
         };
     }
@@ -556,6 +556,8 @@
 
             selectedProvider = null;
 
+            $('.popupDownload', page).popup('open');
+
             reloadBrowsableImages(page);
         });
 
@@ -579,7 +581,6 @@
         $('#chkAllLanguages', page).on('change', function () {
 
             browsableImageStartIndex = 0;
-            allLanguages = this.checked;
 
             reloadBrowsableImages(page);
         });

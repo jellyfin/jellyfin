@@ -683,6 +683,22 @@ namespace MediaBrowser.Controller.Providers
                         }
                         break;
                     }
+                case "MusicbrainzId":
+                    {
+                        var mbz = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(mbz))
+                        {
+                            if (item is MusicAlbum)
+                            {
+                                item.SetProviderId(MetadataProviders.MusicBrainzAlbum, mbz);
+                            }
+                            else if (item is MusicArtist)
+                            {
+                                item.SetProviderId(MetadataProviders.MusicBrainzArtist, mbz);
+                            }
+                        }
+                        break;
+                    }
                 case "MusicBrainzAlbumId":
                     {
                         var mbz = reader.ReadElementContentAsString();

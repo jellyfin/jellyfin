@@ -216,11 +216,7 @@ namespace MediaBrowser.ServerApplication
 
             var initProgress = new Progress<double>();
 
-            if (runService)
-            {
-                StartService(logManager);
-            }
-            else
+            if (!runService)
             {
                 ShowSplashScreen(_appHost.ApplicationVersion, initProgress, logManager.GetLogger("Splash"));
                 
@@ -235,18 +231,22 @@ namespace MediaBrowser.ServerApplication
             task = _appHost.RunStartupTasks();
             Task.WaitAll(task);
 
-            if (!runService)
+            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+
+            if (runService)
+            {
+                StartService(logManager);
+            }
+            else
             {
                 HideSplashScreen();
 
                 ShowTrayIcon();
+                
+                task = ApplicationTaskCompletionSource.Task;
+                Task.WaitAll(task);
             }
-
-            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
-            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
-            
-            task = ApplicationTaskCompletionSource.Task;
-            Task.WaitAll(task);
         }
 
         private static ServerNotifyIcon _serverNotifyIcon;

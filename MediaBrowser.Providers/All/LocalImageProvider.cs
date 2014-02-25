@@ -172,7 +172,7 @@ namespace MediaBrowser.Providers.All
                 AddImage(files, images, imagePrefix + "movie", ImageType.Primary);
             }
 
-            if (string.IsNullOrEmpty(item.Path))
+            if (!string.IsNullOrEmpty(item.Path))
             {
                 var name = Path.GetFileNameWithoutExtension(item.Path);
 

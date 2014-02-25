@@ -53,6 +53,10 @@ namespace MediaBrowser.Providers.Savers
                     "MusicBrainzAlbumArtistId",
                     "MusicBrainzAlbumId",
                     "MusicBrainzReleaseGroupId",
+
+                    // Old - not used anymore
+                    "MusicbrainzId",
+
                     "Overview",
                     "Persons",
                     "PlotKeywords",
