@@ -120,7 +120,7 @@
             versionHtml += ' <a style="margin-left: .25em;" href="' + serviceUrl + '" target="_blank">(Update available)</a>';
         }
         else {
-            versionHtml += '<img src="css/images/checkmarkgreen.png" style="height: 17px; margin-left: 10px; margin-right: 0; position: relative; top: 4px;" /> Up to date!';
+            versionHtml += '<img src="css/images/checkmarkgreen.png" style="height: 17px; margin-left: 10px; margin-right: 0; position: relative; top: 5px; border-radius:3px;" /> Up to date!';
         }
 
         $('#activeServiceVersion', page).html(versionHtml);

@@ -7,15 +7,11 @@
         $('#imagesByNamePath', page).html(systemInfo.ItemsByNamePath);
         $('#transcodingTemporaryPath', page).html(systemInfo.TranscodingTempPath);
 
-        var url = ApiClient.serverAddress() + "/mediabrowser";
-
-        $('#bookmarkUrl', page).html(url).attr("href", url);
-
         if (systemInfo.WanAddress) {
 
             var externalUrl = systemInfo.WanAddress + "/mediabrowser";
 
-            $('.externalUrl', page).html('External url: <a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>').show().trigger('create');
+            $('.externalUrl', page).html('Remote access: <a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>').show().trigger('create');
         } else {
             $('.externalUrl', page).hide();
         }

@@ -711,7 +711,7 @@ var Dashboard = {
         return [{
             name: "Dashboard",
             href: "dashboard.html",
-            selected: pageElem.id == "dashboardPage"
+            selected: page.hasClass("dashboardHomePage")
         }, {
             name: "Media Library",
             divider: true,

@@ -55,7 +55,9 @@ namespace MediaBrowser.Common.Implementations.IO
 
             if (string.Equals(Path.GetExtension(filename), ".mblink", StringComparison.OrdinalIgnoreCase))
             {
-                return File.ReadAllText(filename);
+                var path = File.ReadAllText(filename);
+
+                return NormalizePath(path);
             }
 
             return null;

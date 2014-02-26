@@ -4,7 +4,7 @@
     <title>Dashboard</title>
 </head>
 <body>
-    <div id="dashboardPage" data-role="page" class="page type-interior adminPage">
+    <div id="dashboardPage" data-role="page" class="page type-interior adminPage dashboardHomePage">
 
         <div data-role="content">
             <div class="content-primary">
@@ -23,7 +23,7 @@
                                     Version <span id="appVersionNumber"></span>
                                 </p>
                                 <p id="pUpToDate" style="display: none;">
-                                    <img src="css/images/checkmarkgreen.png" style="height: 20px; margin-right: 3px; position: relative; top: 4px;" />
+                                    <img src="css/images/checkmarkgreen.png" style="height: 20px; margin-right: 3px; position: relative; top: 5px; border-radius: 3px;" />
                                     Media Browser Server is up to date
                                 </p>
                                 <div id="pUpdateNow" style="display: none;">
@@ -40,6 +40,7 @@
                                 <p id="ports"></p>
                                 <div id="pPluginUpdates"></div>
 
+                                <p class="externalUrl"></p>
                                 <div style="margin-top: 1em;">
                                     <button class="btnRestartContainer hide" id="btnRestartServer" type="button" data-icon="refresh" data-mini="true" data-inline="true" onclick="DashboardPage.restart();">Restart</button>
                                     <button id="btnShutdown" type="button" data-icon="delete" data-mini="true" data-inline="true" onclick="DashboardPage.shutdown();">Shutdown</button>

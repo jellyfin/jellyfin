@@ -417,14 +417,29 @@
             $('.btnRestartContainer', page).addClass('hide');
         }
 
-        DashboardPage.renderApplicationUpdateInfo(dashboardInfo);
-        DashboardPage.renderPluginUpdateInfo(dashboardInfo);
-        DashboardPage.renderPendingInstallations(dashboardInfo.SystemInfo);
+        DashboardPage.renderUrls(page, dashboardInfo.SystemInfo);
+        DashboardPage.renderApplicationUpdateInfo(page, dashboardInfo);
+        DashboardPage.renderPluginUpdateInfo(page, dashboardInfo);
+        DashboardPage.renderPendingInstallations(page, dashboardInfo.SystemInfo);
+    },
+    
+    renderUrls: function (page, systemInfo) {
+        
+        var url = ApiClient.serverAddress() + "/mediabrowser";
+
+        $('#bookmarkUrl', page).html(url).attr("href", url);
+
+        if (systemInfo.WanAddress) {
+
+            var externalUrl = systemInfo.WanAddress + "/mediabrowser";
+
+            $('.externalUrl', page).html('Remote access: <a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>').show().trigger('create');
+        } else {
+            $('.externalUrl', page).hide();
+        }
     },
 
-    renderApplicationUpdateInfo: function (dashboardInfo) {
-
-        var page = $.mobile.activePage;
+    renderApplicationUpdateInfo: function (page, dashboardInfo) {
 
         $('#updateFail', page).hide();
 
@@ -478,9 +493,7 @@
         }
     },
 
-    renderPendingInstallations: function (systemInfo) {
-
-        var page = $.mobile.activePage;
+    renderPendingInstallations: function (page, systemInfo) {
 
         if (systemInfo.CompletedInstallations.length) {
 
@@ -504,7 +517,7 @@
         $('#pendingInstallations', page).html(html);
     },
 
-    renderPluginUpdateInfo: function (dashboardInfo) {
+    renderPluginUpdateInfo: function (page, dashboardInfo) {
 
         // Only check once every 10 mins
         if (DashboardPage.lastPluginUpdateCheck && (new Date().getTime() - DashboardPage.lastPluginUpdateCheck) < 600000) {
@@ -512,8 +525,6 @@
         }
 
         DashboardPage.lastPluginUpdateCheck = new Date().getTime();
-
-        var page = $.mobile.activePage;
 
         ApiClient.getAvailablePluginUpdates().done(function (updates) {
 
