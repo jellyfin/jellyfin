@@ -36,7 +36,22 @@ namespace MediaBrowser.Providers.TV
         {
             foreach (var seriesGroup in series)
             {
-                await Run(seriesGroup, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await Run(seriesGroup, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    _logger.Warn("Series files missing for series id {0}", seriesGroup.Key);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in missing episode provider for series id {0}", ex, seriesGroup.Key);
+                }
             }
         }
 

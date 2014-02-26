@@ -154,8 +154,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// </summary>
         private void ReloadHttpServer(IEnumerable<string> urlPrefixes, bool enableHttpLogging)
         {
-            DisposeHttpServer();
-
             _logger.Info("Loading Http Server");
 
             try
