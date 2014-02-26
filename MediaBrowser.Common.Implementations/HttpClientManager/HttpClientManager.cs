@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Specialized;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
@@ -367,7 +368,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 ContentType = httpResponse.ContentType,
 
-                Headers = httpResponse.Headers,
+                Headers = new NameValueCollection(httpResponse.Headers),
 
                 ContentLength = contentLength
             };
