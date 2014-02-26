@@ -182,6 +182,10 @@ namespace MediaBrowser.Providers.Manager
 
                 return result;
             }
+            catch (OperationCanceledException)
+            {
+                return new List<RemoteImageInfo>();
+            }
             catch (Exception ex)
             {
                 _logger.ErrorException("{0} failed in GetImageInfos for type {1}", ex, provider.GetType().Name, item.GetType().Name);

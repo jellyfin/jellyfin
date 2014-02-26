@@ -170,7 +170,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 {
                     File.Delete(file.FullName);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
                     _logger.ErrorException("Error deleting file {0}", ex, file.FullName);
                 }

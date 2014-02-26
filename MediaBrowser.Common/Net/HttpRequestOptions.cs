@@ -71,7 +71,9 @@ namespace MediaBrowser.Common.Net
         public string RequestContent { get; set; }
 
         public bool BufferContent { get; set; }
-        
+
+        public HttpRequestCachePolicy CachePolicy { get; set; }
+
         private string GetHeaderValue(string name)
         {
             string value;
@@ -89,7 +91,15 @@ namespace MediaBrowser.Common.Net
             EnableHttpCompression = true;
             BufferContent = true;
 
+            CachePolicy = HttpRequestCachePolicy.None;
+
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+    }
+
+    public enum HttpRequestCachePolicy
+    {
+        None = 1,
+        Validate = 2
     }
 }

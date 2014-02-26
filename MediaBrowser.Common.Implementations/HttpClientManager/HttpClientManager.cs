@@ -114,7 +114,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             request.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
-            request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
+
+            request.CachePolicy = options.CachePolicy == Net.HttpRequestCachePolicy.None ?
+                new RequestCachePolicy(RequestCacheLevel.BypassCache) :
+                new RequestCachePolicy(RequestCacheLevel.Revalidate);
+
             request.ConnectionGroupName = GetHostFromUrl(options.Url);
             request.KeepAlive = true;
             request.Method = method;
@@ -144,7 +148,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             request.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
-            request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
+            
+            request.CachePolicy = options.CachePolicy == Net.HttpRequestCachePolicy.None ?
+                new RequestCachePolicy(RequestCacheLevel.BypassCache) :
+                new RequestCachePolicy(RequestCacheLevel.Revalidate);
+            
             request.ConnectionGroupName = GetHostFromUrl(options.Url);
             request.KeepAlive = true;
             request.Method = method;

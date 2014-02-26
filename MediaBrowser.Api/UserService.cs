@@ -189,7 +189,7 @@ namespace MediaBrowser.Api
             {
                 throw new ArgumentNullException("xmlSerializer");
             }
-            
+
             _xmlSerializer = xmlSerializer;
             _userManager = userManager;
             _dtoService = dtoService;
@@ -305,6 +305,26 @@ namespace MediaBrowser.Api
             }
 
             var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
+
+            // Login in the old way if the header is missing
+            if (string.IsNullOrEmpty(auth.Client) ||
+                string.IsNullOrEmpty(auth.Device) ||
+                string.IsNullOrEmpty(auth.DeviceId) ||
+                string.IsNullOrEmpty(auth.Version))
+            {
+                var success = await _userManager.AuthenticateUser(user, request.Password).ConfigureAwait(false);
+
+                if (!success)
+                {
+                    // Unauthorized
+                    throw new UnauthorizedAccessException("Invalid user or password entered.");
+                }
+
+                return new AuthenticationResult
+                {
+                    User = _dtoService.GetUserDto(user)
+                };
+            }
 
             var session = await _sessionMananger.AuthenticateNewSession(user, request.Password, auth.Client, auth.Version,
                         auth.DeviceId, auth.Device, Request.RemoteIp).ConfigureAwait(false);

@@ -28,6 +28,12 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableHttpLevelLogging { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable u pn p].
+        /// </summary>
+        /// <value><c>true</c> if [enable u pn p]; otherwise, <c>false</c>.</value>
+        public bool EnableUPnP { get; set; }
+        
+        /// <summary>
         /// Gets or sets the HTTP server port number.
         /// </summary>
         /// <value>The HTTP server port number.</value>
@@ -221,6 +227,8 @@ namespace MediaBrowser.Model.Configuration
             EnableOtherVideoChapterImageExtraction = false;
             EnableAutomaticRestart = true;
             EnablePeoplePrefixSubFolders = true;
+
+            EnableUPnP = true;
 
             MinResumePct = 5;
             MaxResumePct = 90;

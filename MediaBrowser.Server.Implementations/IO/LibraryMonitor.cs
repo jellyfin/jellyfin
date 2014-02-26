@@ -39,7 +39,16 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <summary>
         /// Any file name ending in any of these will be ignored by the watchers
         /// </summary>
-        private readonly IReadOnlyList<string> _alwaysIgnoreFiles = new List<string> { "thumbs.db", "small.jpg", "albumart.jpg" };
+        private readonly IReadOnlyList<string> _alwaysIgnoreFiles = new List<string>
+        {
+            "thumbs.db", 
+            "small.jpg", 
+            "albumart.jpg",
+
+            // WMC temp recording directories that will constantly be written to
+            "TempRec",
+            "TempSBE"
+        };
 
         /// <summary>
         /// The timer lock

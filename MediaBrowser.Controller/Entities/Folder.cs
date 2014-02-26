@@ -305,12 +305,6 @@ namespace MediaBrowser.Controller.Entities
             return GetCachedChildren();
         }
 
-        /// <summary>
-        /// Gets or sets the current validation cancellation token source.
-        /// </summary>
-        /// <value>The current validation cancellation token source.</value>
-        private CancellationTokenSource CurrentValidationCancellationTokenSource { get; set; }
-
         public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken)
         {
             return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions());
@@ -331,48 +325,9 @@ namespace MediaBrowser.Controller.Entities
             return ValidateChildrenWithCancellationSupport(progress, cancellationToken, recursive, true, metadataRefreshOptions, metadataRefreshOptions.DirectoryService);
         }
 
-        private async Task ValidateChildrenWithCancellationSupport(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        private Task ValidateChildrenWithCancellationSupport(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Cancel the current validation, if any
-            if (CurrentValidationCancellationTokenSource != null)
-            {
-                CurrentValidationCancellationTokenSource.Cancel();
-            }
-
-            // Create an inner cancellation token. This can cancel all validations from this level on down,
-            // but nothing above this
-            var innerCancellationTokenSource = new CancellationTokenSource();
-
-            try
-            {
-                CurrentValidationCancellationTokenSource = innerCancellationTokenSource;
-
-                var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(innerCancellationTokenSource.Token, cancellationToken);
-
-                await ValidateChildrenInternal(progress, linkedCancellationTokenSource.Token, recursive, refreshChildMetadata, refreshOptions, directoryService).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException ex)
-            {
-                Logger.Info("ValidateChildren cancelled for " + Name);
-
-                // If the outer cancelletion token in the cause for the cancellation, throw it
-                if (cancellationToken.IsCancellationRequested && ex.CancellationToken == cancellationToken)
-                {
-                    throw;
-                }
-            }
-            finally
-            {
-                // Null out the token source             
-                if (CurrentValidationCancellationTokenSource == innerCancellationTokenSource)
-                {
-                    CurrentValidationCancellationTokenSource = null;
-                }
-
-                innerCancellationTokenSource.Dispose();
-            }
+            return ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService);
         }
 
         private Dictionary<Guid, BaseItem> GetActualChildrenDictionary()
@@ -384,7 +339,7 @@ namespace MediaBrowser.Controller.Entities
                 var id = child.Id;
                 if (dictionary.ContainsKey(id))
                 {
-                    Logger.Error( "Found folder containing items with duplicate id. Path: {0}, Child Name: {1}",
+                    Logger.Error("Found folder containing items with duplicate id. Path: {0}, Child Name: {1}",
                         Path ?? Name,
                         child.Path ?? child.Name);
                 }
