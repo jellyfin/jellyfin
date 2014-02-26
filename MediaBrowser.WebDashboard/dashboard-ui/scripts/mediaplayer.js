@@ -133,8 +133,6 @@
 
             var endTime = this.currentTime;
 
-            this.currentTime = 0;
-
             clearProgressInterval();
 
             var position = Math.floor(10000000 * endTime) + startTimeTicksOffset;
