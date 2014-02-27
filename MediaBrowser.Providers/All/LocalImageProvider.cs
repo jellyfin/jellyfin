@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -188,7 +187,7 @@ namespace MediaBrowser.Providers.All
         {
             PopulateBackdrops(images, files, imagePrefix, "backdrop", "backdrop", ImageType.Backdrop);
 
-            if (string.IsNullOrEmpty(item.Path))
+            if (!string.IsNullOrEmpty(item.Path))
             {
                 var name = Path.GetFileNameWithoutExtension(item.Path);
 
