@@ -44,10 +44,10 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var options = new HttpRequestOptions
             {
-                Url = url.ToString()
+                Url = url.ToString(),
+                UserAgent = USERAGENT
             };
 
-            options.RequestHeaders["UserAgent"] = USERAGENT;
             options.RequestHeaders["HOST"] = ip + ":" + port;
             options.RequestHeaders["CALLBACK"] = "<" + localIp + ":" + eventport + ">";
             options.RequestHeaders["NT"] = "upnp:event";
@@ -63,10 +63,10 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var options = new HttpRequestOptions
             {
-                Url = url.ToString()
+                Url = url.ToString(),
+                UserAgent = USERAGENT
             };
 
-            options.RequestHeaders["UserAgent"] = USERAGENT;
             options.RequestHeaders["HOST"] = ip + ":" + port;
             options.RequestHeaders["CALLBACK"] = "<" + localIp + ":" + eventport + ">";
             options.RequestHeaders["NT"] = "upnp:event";
@@ -82,10 +82,10 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var options = new HttpRequestOptions
             {
-                Url = url.ToString()
+                Url = url.ToString(),
+                UserAgent = USERAGENT
             };
 
-            options.RequestHeaders["UserAgent"] = USERAGENT;
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
             //request.CookieContainer = Container;
 
@@ -105,12 +105,12 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var options = new HttpRequestOptions
             {
-                Url = url.ToString()
+                Url = url.ToString(),
+                UserAgent = USERAGENT
             };
 
             options.RequestHeaders["SOAPAction"] = soapAction;
             options.RequestHeaders["Pragma"] = "no-cache";
-            options.RequestHeaders["UserAgent"] = USERAGENT;
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
 
             if (!string.IsNullOrWhiteSpace(header))

@@ -105,48 +105,12 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             return client;
         }
 
-        private WebRequest GetMonoRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
-        {
-            var request = (HttpWebRequest)WebRequest.Create(options.Url);
-
-            if (!string.IsNullOrEmpty(options.AcceptHeader))
-            {
-                request.Accept = options.AcceptHeader;
-            }
-
-            request.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
-
-            request.CachePolicy = options.CachePolicy == Net.HttpRequestCachePolicy.None ?
-                new RequestCachePolicy(RequestCacheLevel.BypassCache) :
-                new RequestCachePolicy(RequestCacheLevel.Revalidate);
-
-            request.ConnectionGroupName = GetHostFromUrl(options.Url);
-            request.KeepAlive = true;
-            request.Method = method;
-            request.Pipelined = true;
-            request.Timeout = 20000;
-
-            if (!string.IsNullOrEmpty(options.UserAgent))
-            {
-                request.UserAgent = options.UserAgent;
-            }
-
-            return request;
-        }
-
         private PropertyInfo _httpBehaviorPropertyInfo;
         private WebRequest GetRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
         {
-#if __MonoCS__
-            return GetMonoRequest(options, method, enableHttpCompression);
-#endif
+            var request = (HttpWebRequest)WebRequest.Create(options.Url);
 
-            var request = HttpWebRequest.CreateHttp(options.Url);
-
-            if (!string.IsNullOrEmpty(options.AcceptHeader))
-            {
-                request.Accept = options.AcceptHeader;
-            }
+            AddRequestHeaders(request, options);
 
             request.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
             
@@ -160,11 +124,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             request.Pipelined = true;
             request.Timeout = 20000;
 
-            if (!string.IsNullOrEmpty(options.UserAgent))
-            {
-                request.UserAgent = options.UserAgent;
-            }
-
+#if !__MonoCS__
             // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
             // May need to remove this for mono
             var sp = request.ServicePoint;
@@ -173,8 +133,28 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 _httpBehaviorPropertyInfo = sp.GetType().GetProperty("HttpBehaviour", BindingFlags.Instance | BindingFlags.NonPublic);
             }
             _httpBehaviorPropertyInfo.SetValue(sp, (byte)0, null);
+#endif
 
             return request;
+        }
+
+        private void AddRequestHeaders(HttpWebRequest request, HttpRequestOptions options)
+        {
+            foreach (var header in options.RequestHeaders.ToList())
+            {
+                if (string.Equals(header.Key, "Accept", StringComparison.OrdinalIgnoreCase))
+                {
+                    request.Accept = header.Value;
+                }
+                else if (string.Equals(header.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
+                {
+                    request.UserAgent = header.Value;
+                }
+                else
+                {
+                    request.Headers.Set(header.Key, header.Value);
+                }
+            }
         }
 
         /// <summary>
