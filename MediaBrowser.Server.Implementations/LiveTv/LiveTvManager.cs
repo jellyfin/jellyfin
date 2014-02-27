@@ -37,7 +37,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly IMediaEncoder _mediaEncoder;
         private readonly ITaskManager _taskManager;
 
         private readonly LiveTvDtoService _tvDtoService;
@@ -50,7 +49,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private List<Guid> _channelIdList = new List<Guid>();
         private Dictionary<Guid, LiveTvProgram> _programs = new Dictionary<Guid, LiveTvProgram>();
 
-        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, IMediaEncoder mediaEncoder, ITaskManager taskManager)
+        private SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
+
+        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager)
         {
             _config = config;
             _fileSystem = fileSystem;
@@ -58,7 +59,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
-            _mediaEncoder = mediaEncoder;
             _taskManager = taskManager;
             _userDataManager = userDataManager;
 
@@ -707,6 +707,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         internal async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
         {
+            await _refreshSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await RefreshChannelsInternal(progress, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _refreshSemaphore.Release();
+            }
+        }
+
+        private async Task RefreshChannelsInternal(IProgress<double> progress, CancellationToken cancellationToken)
+        {
             // Avoid implicitly captured closure
             var service = ActiveService;
 
@@ -795,19 +809,37 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 double percent = numComplete;
                 percent /= allChannelsList.Count;
 
-                progress.Report(70 * percent + 10);
+                progress.Report(80 * percent + 10);
             }
 
             _programs = programs.ToDictionary(i => i.Id);
-            progress.Report(80);
+            progress.Report(90);
 
             // Load these now which will prefetch metadata
             await GetRecordings(new RecordingQuery(), cancellationToken).ConfigureAwait(false);
-            progress.Report(85);
-
-            await DeleteOldPrograms(_programs.Keys.ToList(), progress, cancellationToken).ConfigureAwait(false);
-
             progress.Report(100);
+        }
+
+        public async Task CleanDatabase(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var service = ActiveService;
+
+            if (service == null)
+            {
+                progress.Report(100);
+                return;
+            }
+            
+            await _refreshSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await DeleteOldPrograms(_programs.Keys.ToList(), progress, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _refreshSemaphore.Release();
+            }
         }
 
         private async Task DeleteOldPrograms(List<Guid> currentIdList, IProgress<double> progress, CancellationToken cancellationToken)
@@ -829,7 +861,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 double percent = numComplete;
                 percent /= list.Count;
 
-                progress.Report(15 * percent + 85);
+                progress.Report(100 * percent);
             }
         }
 

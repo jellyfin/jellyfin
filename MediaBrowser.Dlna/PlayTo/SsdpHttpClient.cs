@@ -98,7 +98,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public Task<HttpResponseInfo> PostSoapDataAsync(Uri url, string soapAction, string postData, string header = null, int timeOut = 20000)
+        private Task<HttpResponseInfo> PostSoapDataAsync(Uri url, string soapAction, string postData, string header = null, int timeOut = 20000)
         {
             if (!soapAction.StartsWith("\""))
                 soapAction = "\"" + soapAction + "\"";
