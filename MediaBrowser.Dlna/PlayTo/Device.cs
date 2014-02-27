@@ -357,18 +357,26 @@ namespace MediaBrowser.Dlna.PlayTo
                 return;
 
             ((Timer)sender).Stop();
-            var hasTrack = await GetPositionInfo().ConfigureAwait(false);
 
-            // TODO: Why make these requests if hasTrack==false?
-            if (_count > 4)
+            try
             {
-                await GetTransportInfo().ConfigureAwait(false);
-                if (!hasTrack)
+                var hasTrack = await GetPositionInfo().ConfigureAwait(false);
+
+                // TODO: Why make these requests if hasTrack==false?
+                if (_count > 4)
                 {
-                    await GetMediaInfo().ConfigureAwait(false);
+                    await GetTransportInfo().ConfigureAwait(false);
+                    if (!hasTrack)
+                    {
+                        await GetMediaInfo().ConfigureAwait(false);
+                    }
+                    await GetVolume().ConfigureAwait(false);
+                    _count = 0;
                 }
-                await GetVolume().ConfigureAwait(false);
-                _count = 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error updating device info", ex);
             }
 
             _count++;
@@ -390,18 +398,8 @@ namespace MediaBrowser.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            XDocument result;
-
-            try
-            {
-                result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
-                   .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting volume info", ex);
-                return;
-            }
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+                .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
                 return;
@@ -431,18 +429,8 @@ namespace MediaBrowser.Dlna.PlayTo
             if (service == null)
                 return;
 
-            XDocument result;
-
-            try
-            {
-                result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
-                   .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting transport info", ex);
-                return;
-            }
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+                .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
                 return;
@@ -471,18 +459,8 @@ namespace MediaBrowser.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            XDocument result;
-
-            try
-            {
-                result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
-                   .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting media info", ex);
-                return;
-            }
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+                .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
                 return;
@@ -522,18 +500,8 @@ namespace MediaBrowser.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            XDocument result;
-
-            try
-            {
-                result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
-                   .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting position info", ex);
-                return false;
-            }
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+                .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
                 return true;

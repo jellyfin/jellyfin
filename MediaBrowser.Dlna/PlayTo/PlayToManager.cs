@@ -23,15 +23,15 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
         private readonly IHttpClient _httpClient;
-        private User _defualtUser;
         private readonly CancellationTokenSource _tokenSource;
         private ConcurrentDictionary<string, DateTime> _locations;
 
         private readonly IItemRepository _itemRepository;
         private readonly ILibraryManager _libraryManager;
         private readonly INetworkManager _networkManager;
-        
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager)
+        private readonly IUserManager _userManager;        
+
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager)
         {
             _locations = new ConcurrentDictionary<string, DateTime>();
             _tokenSource = new CancellationTokenSource();
@@ -42,11 +42,11 @@ namespace MediaBrowser.Dlna.PlayTo
             _itemRepository = itemRepository;
             _libraryManager = libraryManager;
             _networkManager = networkManager;
+            _userManager = userManager;
         }
 
-        public async void Start(User defaultUser)
+        public async void Start()
         {
-            _defualtUser = defaultUser;
             _logger.Log(LogSeverity.Info, "PlayTo-Manager starting");
 
             _locations = new ConcurrentDictionary<string, DateTime>();
@@ -216,7 +216,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 var transcodeProfiles = TranscodeSettings.GetProfileSettings(device.Properties);
 
-                var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, device.Properties.Name, device.Properties.UUID, device.Properties.DisplayName, uri.OriginalString, _defualtUser)
+                var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, device.Properties.Name, device.Properties.UUID, device.Properties.DisplayName, uri.OriginalString, null)
                     .ConfigureAwait(false);
 
                 var controller = sessionInfo.SessionController as PlayToController;
@@ -230,6 +230,23 @@ namespace MediaBrowser.Dlna.PlayTo
                 
                 _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
             }
+        }
+
+        const string DefaultUser = "Play To";
+        private async Task<User> GetPlayToUser()
+        {
+            var user = _userManager.Users.FirstOrDefault(u => string.Equals(DefaultUser, u.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (user == null)
+            {
+                user = await _userManager.CreateUser(DefaultUser);
+
+                user.Configuration.IsHidden = true;
+                user.Configuration.IsAdministrator = false;
+                user.SaveConfiguration();
+            }
+
+            return user;
         }
 
         /// <summary>
