@@ -2,7 +2,6 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
@@ -46,13 +45,6 @@ namespace MediaBrowser.Api
     public class GetMetadataPlugins : IReturn<List<MetadataPluginSummary>>
     {
 
-    }
-
-    [Route("/System/Configuration/SaveLocalMetadata", "POST")]
-    [Api(("Updates saving of local metadata and images for all types"))]
-    public class UpdateSaveLocalMetadata : IReturnVoid
-    {
-        public bool Enabled { get; set; }
     }
 
     [Route("/System/Configuration/VideoImageExtraction", "POST")]
@@ -142,57 +134,6 @@ namespace MediaBrowser.Api
             EnableImageExtractionForType(typeof(Trailer), config, request.Enabled);
 
             _configurationManager.SaveConfiguration();
-        }
-
-        public void Post(UpdateSaveLocalMetadata request)
-        {
-            var config = _configurationManager.Configuration;
-
-            if (request.Enabled)
-            {
-                config.SaveLocalMeta = true;
-
-                foreach (var options in config.MetadataOptions)
-                {
-                    options.DisabledMetadataSavers = new string[] { };
-                }
-            }
-            else
-            {
-                config.SaveLocalMeta = false;
-
-                DisableSaversForType(typeof(Game), config);
-                DisableSaversForType(typeof(GameSystem), config);
-                DisableSaversForType(typeof(Movie), config);
-                DisableSaversForType(typeof(BoxSet), config);
-                DisableSaversForType(typeof(Book), config);
-                DisableSaversForType(typeof(Series), config);
-                DisableSaversForType(typeof(Season), config);
-                DisableSaversForType(typeof(Episode), config);
-                DisableSaversForType(typeof(MusicAlbum), config);
-                DisableSaversForType(typeof(MusicArtist), config);
-                DisableSaversForType(typeof(AdultVideo), config);
-                DisableSaversForType(typeof(MusicVideo), config);
-                DisableSaversForType(typeof(Video), config);
-            }
-
-            _configurationManager.SaveConfiguration();
-        }
-        
-        private void DisableSaversForType(Type type, ServerConfiguration config)
-        {
-            var options = GetMetadataOptions(type, config);
-
-            const string mediabrowserSaverName = "Media Browser Xml";
-
-            if (!options.DisabledMetadataSavers.Contains(mediabrowserSaverName, StringComparer.OrdinalIgnoreCase))
-            {
-                var list = options.DisabledMetadataSavers.ToList();
-
-                list.Add(mediabrowserSaverName);
-
-                options.DisabledMetadataSavers = list.ToArray();
-            }
         }
 
         private void EnableImageExtractionForType(Type type, ServerConfiguration config, bool enabled)
