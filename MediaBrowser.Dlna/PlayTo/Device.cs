@@ -1,11 +1,11 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using System.Xml.Linq;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -16,7 +16,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         #region Fields & Properties
 
-        private Timer _dt;
+        private Timer _timer;
 
         public DeviceProperties Properties { get; set; }
 
@@ -29,7 +29,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        string _currentId = String.Empty;
+        private string _currentId = String.Empty;
         public string CurrentId
         {
             get
@@ -101,9 +101,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             get
             {
-                if (TransportState == "PAUSED" || TransportState == "PAUSED_PLAYBACK")
-                    return true;
-                return false;
+                return TransportState == "PAUSED" || TransportState == "PAUSED_PLAYBACK";
             }
         }
 
@@ -115,15 +113,12 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public DateTime UpdateTime
-        { get; private set; }
+        public DateTime UpdateTime { get; private set; }
 
         #endregion
 
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
-
-        #region Constructor & Initializer
 
         public Device(DeviceProperties deviceProperties, IHttpClient httpClient, ILogger logger)
         {
@@ -132,15 +127,31 @@ namespace MediaBrowser.Dlna.PlayTo
             _logger = logger;
         }
 
-        internal void Start()
+        private int GetTimerIntervalMs()
         {
-            UpdateTime = DateTime.UtcNow;
-            _dt = new Timer(1000);
-            _dt.Elapsed += dt_Elapsed;
-            _dt.Start();
+            return 10000;
         }
 
-        #endregion
+        public void Start()
+        {
+            UpdateTime = DateTime.UtcNow;
+
+            var interval = GetTimerIntervalMs();
+
+            _timer = new Timer(TimerCallback, null, interval, interval);
+        }
+
+        private void RestartTimer()
+        {
+            var interval = GetTimerIntervalMs();
+
+            _timer.Change(interval, interval);
+        }
+
+        private void StopTimer()
+        {
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+        }
 
         #region Commanding
 
@@ -172,10 +183,9 @@ namespace MediaBrowser.Dlna.PlayTo
                 return SetVolume(0);
             }
 
-            int tmp = _muteVol;
+            var tmp = _muteVol;
             _muteVol = 0;
             return SetVolume(tmp);
-
         }
 
         public async Task<bool> SetVolume(int value)
@@ -218,7 +228,8 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public async Task<bool> SetAvTransport(string url, string header, string metaData)
         {
-            _dt.Stop();
+            StopTimer();
+
             TransportState = "STOPPED";
             CurrentId = "0";
 
@@ -251,7 +262,8 @@ namespace MediaBrowser.Dlna.PlayTo
             }
 
             _count = 5;
-            _dt.Start();
+            RestartTimer();
+
             return true;
         }
 
@@ -273,9 +285,11 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return false;
 
-            var dictionary = new Dictionary<string, string>();
-            dictionary.Add("NextURI", value);
-            dictionary.Add("NextURIMetaData", CreateDidlMeta(metaData));
+            var dictionary = new Dictionary<string, string>
+            {
+                {"NextURI", value},
+                {"NextURIMetaData", CreateDidlMeta(metaData)}
+            };
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
 
@@ -351,19 +365,19 @@ namespace MediaBrowser.Dlna.PlayTo
         // TODO: What is going on here
         int _count = 5;
 
-        async void dt_Elapsed(object sender, ElapsedEventArgs e)
+        private async void TimerCallback(object sender)
         {
             if (_disposed)
                 return;
 
-            ((Timer)sender).Stop();
+            StopTimer();
 
             try
             {
                 var hasTrack = await GetPositionInfo().ConfigureAwait(false);
 
                 // TODO: Why make these requests if hasTrack==false?
-                if (_count > 4)
+                if (_count > 5)
                 {
                     await GetTransportInfo().ConfigureAwait(false);
                     if (!hasTrack)
@@ -382,7 +396,8 @@ namespace MediaBrowser.Dlna.PlayTo
             _count++;
             if (_disposed)
                 return;
-            ((Timer)sender).Start();
+
+            RestartTimer();
         }
 
         private async Task GetVolume()
@@ -722,7 +737,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (!_disposed)
             {
                 _disposed = true;
-                _dt.Stop();
+                _timer.Dispose();
             }
         }
 
