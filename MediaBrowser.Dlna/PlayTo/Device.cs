@@ -1,12 +1,11 @@
 ﻿using MediaBrowser.Common.Net;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Xml.Linq;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -122,12 +121,15 @@ namespace MediaBrowser.Dlna.PlayTo
         #endregion
 
         private readonly IHttpClient _httpClient;
-        
+        private readonly ILogger _logger;
+
         #region Constructor & Initializer
 
-        public Device(DeviceProperties deviceProperties)
+        public Device(DeviceProperties deviceProperties, IHttpClient httpClient, ILogger logger)
         {
             Properties = deviceProperties;
+            _httpClient = httpClient;
+            _logger = logger;
         }
 
         internal void Start()
@@ -182,9 +184,15 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return true;
 
-            var service = this.Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceRenderingId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceRenderingId);
 
-            var result = await SsdpHttpClient.SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, value));
+            if (service == null)
+            {
+                throw new InvalidOperationException("Unable to find service");
+            }
+
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, value))
+                .ConfigureAwait(false);
             Volume = value;
             return true;
         }
@@ -197,7 +205,14 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
 
-            var result = await SsdpHttpClient.SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, String.Format("{0:hh}:{0:mm}:{0:ss}", value), "REL_TIME"));
+            if (service == null)
+            {
+                throw new InvalidOperationException("Unable to find service");
+            }
+
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, String.Format("{0:hh}:{0:mm}:{0:ss}", value), "REL_TIME"))
+                .ConfigureAwait(false);
+
             return value;
         }
 
@@ -206,7 +221,9 @@ namespace MediaBrowser.Dlna.PlayTo
             _dt.Stop();
             TransportState = "STOPPED";
             CurrentId = "0";
-            await Task.Delay(50);
+
+            await Task.Delay(50).ConfigureAwait(false);
+
             var command = AvCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
             if (command == null)
                 return false;
@@ -218,12 +235,21 @@ namespace MediaBrowser.Dlna.PlayTo
             };
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
-            var result = await SsdpHttpClient.SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, url, dictionary), header);
+
+            if (service == null)
+            {
+                throw new InvalidOperationException("Unable to find service");
+            }
+
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, url, dictionary), header)
+                .ConfigureAwait(false);
+
             if (!IsPlaying)
             {
-                await Task.Delay(50);
-                await SetPlay();
+                await Task.Delay(50).ConfigureAwait(false);
+                await SetPlay().ConfigureAwait(false);
             }
+
             _count = 5;
             _dt.Start();
             return true;
@@ -252,8 +278,17 @@ namespace MediaBrowser.Dlna.PlayTo
             dictionary.Add("NextURIMetaData", CreateDidlMeta(metaData));
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
-            var result = await SsdpHttpClient.SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, value, dictionary), header);
-            await Task.Delay(100);
+
+            if (service == null)
+            {
+                throw new InvalidOperationException("Unable to find service");
+            }
+
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, value, dictionary), header)
+                .ConfigureAwait(false);
+
+            await Task.Delay(100).ConfigureAwait(false);
+
             return true;
         }
 
@@ -265,7 +300,14 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
 
-            var result = await SsdpHttpClient.SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1));
+            if (service == null)
+            {
+                throw new InvalidOperationException("Unable to find service");
+            }
+
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
+                .ConfigureAwait(false);
+
             _count = 5;
             return true;
         }
@@ -278,8 +320,10 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
 
-            var result = await SsdpHttpClient.SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1));
-            await Task.Delay(50);
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
+                .ConfigureAwait(false);
+
+            await Task.Delay(50).ConfigureAwait(false);
             _count = 4;
             return true;
         }
@@ -292,8 +336,10 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
 
-            var result = await SsdpHttpClient.SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 0));
-            await Task.Delay(50);
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 0))
+                .ConfigureAwait(false);
+
+            await Task.Delay(50).ConfigureAwait(false);
             TransportState = "PAUSED_PLAYBACK";
             return true;
         }
@@ -302,23 +348,26 @@ namespace MediaBrowser.Dlna.PlayTo
 
         #region Get data
 
+        // TODO: What is going on here
         int _count = 5;
+
         async void dt_Elapsed(object sender, ElapsedEventArgs e)
         {
             if (_disposed)
                 return;
 
             ((Timer)sender).Stop();
-            var hasTrack = await GetPositionInfo();
+            var hasTrack = await GetPositionInfo().ConfigureAwait(false);
+
+            // TODO: Why make these requests if hasTrack==false?
             if (_count > 4)
             {
-
-                await GetTransportInfo();
+                await GetTransportInfo().ConfigureAwait(false);
                 if (!hasTrack)
                 {
-                    await GetMediaInfo();
+                    await GetMediaInfo().ConfigureAwait(false);
                 }
-                await GetVolume();
+                await GetVolume().ConfigureAwait(false);
                 _count = 0;
             }
 
@@ -335,23 +384,41 @@ namespace MediaBrowser.Dlna.PlayTo
                 return;
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceRenderingId);
+
+            if (service == null)
+            {
+                throw new InvalidOperationException("Unable to find service");
+            }
+
+            XDocument result;
+
             try
             {
-                var result = await SsdpHttpClient.SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType));
-                if (result == null)
-                    return;
-                var volume = result.Document.Descendants(uPnpNamespaces.RenderingControl + "GetVolumeResponse").FirstOrDefault().Element("CurrentVolume").Value;
-                if (volume == null)
-                    return;
-                Volume = Int32.Parse(volume);
-
-                //Reset the Mute value if Volume is bigger than zero
-                if (Volume > 0 && _muteVol > 0)
-                {
-                    _muteVol = 0;
-                }
+                result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+                   .ConfigureAwait(false);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting volume info", ex);
+                return;
+            }
+
+            if (result == null || result.Document == null)
+                return;
+
+            var volume = result.Document.Descendants(uPnpNamespaces.RenderingControl + "GetVolumeResponse").Select(i => i.Element("CurrentVolume")).FirstOrDefault(i => i != null);
+            var volumeValue = volume == null ? null : volume.Value;
+
+            if (volumeValue == null)
+                return;
+
+            Volume = Int32.Parse(volumeValue);
+
+            //Reset the Mute value if Volume is bigger than zero
+            if (Volume > 0 && _muteVol > 0)
+            {
+                _muteVol = 0;
+            }
         }
 
         private async Task GetTransportInfo()
@@ -360,21 +427,35 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = this.Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
             if (service == null)
                 return;
 
-            var result = await SsdpHttpClient.SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType));
+            XDocument result;
+
             try
             {
-                var transportState = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetTransportInfoResponse").FirstOrDefault().Element("CurrentTransportState").Value;
-                if (transportState != null)
-                    TransportState = transportState;
+                result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+                   .ConfigureAwait(false);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting transport info", ex);
+                return;
+            }
 
-            if (result != null)
-                UpdateTime = DateTime.UtcNow;
+            if (result == null || result.Document == null)
+                return;
+
+            var transportState =
+                result.Document.Descendants(uPnpNamespaces.AvTransport + "GetTransportInfoResponse").Select(i => i.Element("CurrentTransportState")).FirstOrDefault(i => i != null);
+
+            var transportStateValue = transportState == null ? null : transportState.Value;
+
+            if (transportStateValue != null)
+                TransportState = transportStateValue;
+
+            UpdateTime = DateTime.UtcNow;
         }
 
         private async Task GetMediaInfo()
@@ -385,28 +466,47 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
 
-            var result = await SsdpHttpClient.SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType));
+            if (service == null)
+            {
+                throw new InvalidOperationException("Unable to find service");
+            }
+
+            XDocument result;
+
             try
             {
-                var track = result.Document.Descendants("CurrentURIMetaData").FirstOrDefault().Value;
-                if (String.IsNullOrEmpty(track))
-                {
-                    CurrentId = "0";
-                    return;
-                }
-                XElement uPnpResponse = XElement.Parse((String)track);
-
-                var e = uPnpResponse.Element(uPnpNamespaces.items);
-
-                if (e == null)
-                    e = uPnpResponse;
-
-                var uTrack = uParser.CreateObjectFromXML(new uParserObject { Type = e.Element(uPnpNamespaces.uClass).Value, Element = e });
-                if (uTrack != null)
-                    CurrentId = uTrack.Id;
-
+                result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+                   .ConfigureAwait(false);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting media info", ex);
+                return;
+            }
+
+            if (result == null || result.Document == null)
+                return;
+
+            var track = result.Document.Descendants("CurrentURIMetaData").Select(i => i.Value).FirstOrDefault();
+
+            if (String.IsNullOrEmpty(track))
+            {
+                CurrentId = "0";
+                return;
+            }
+
+            var uPnpResponse = XElement.Parse(track);
+
+            var e = uPnpResponse.Element(uPnpNamespaces.items) ?? uPnpResponse;
+
+            var uTrack = uParser.CreateObjectFromXML(new uParserObject
+            {
+                Type = e.GetValue(uPnpNamespaces.uClass),
+                Element = e
+            });
+
+            if (uTrack != null)
+                CurrentId = uTrack.Id;
         }
 
         private async Task<bool> GetPositionInfo()
@@ -417,78 +517,89 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
 
-            var result = await SsdpHttpClient.SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType));
-            
+            if (service == null)
+            {
+                throw new InvalidOperationException("Unable to find service");
+            }
+
+            XDocument result;
+
             try
             {
-                var duration = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").FirstOrDefault().Element("TrackDuration").Value;
-                
-                if (duration != null)
-                {
-                    Duration = TimeSpan.Parse(duration);
-                }
-
-                var position = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").FirstOrDefault().Element("RelTime").Value;
-                
-                if (position != null)
-                {
-                    Position = TimeSpan.Parse(position);
-                }
-
-                var track = result.Document.Descendants("TrackMetaData").Select(i => i.Value)
-                    .FirstOrDefault();
-
-                if (String.IsNullOrEmpty(track))
-                {
-                    //If track is null, some vendors do this, use GetMediaInfo instead                    
-                    return false;
-                }
-
-                var uPnpResponse = XElement.Parse(track);
-
-                var e = uPnpResponse.Element(uPnpNamespaces.items) ?? uPnpResponse;
-
-                var uTrack = uBaseObject.Create(e);
-
-                if (uTrack == null)
-                    return true;
-
-                CurrentId = uTrack.Id;
-
-                return true;
+                result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+                   .ConfigureAwait(false);
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting position info", ex);
+                return false;
+            }
+
+            if (result == null || result.Document == null)
+                return true;
+
+            var durationElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i != null);
+            var duration = durationElem == null ? null : durationElem.Value;
+
+            if (duration != null)
+            {
+                Duration = TimeSpan.Parse(duration);
+            }
+
+            var positionElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("RelTime")).FirstOrDefault(i => i != null);
+            var position = positionElem == null ? null : positionElem.Value;
+
+            if (position != null)
+            {
+                Position = TimeSpan.Parse(position);
+            }
+
+            var track = result.Document.Descendants("TrackMetaData").Select(i => i.Value)
+                .FirstOrDefault();
+
+            if (String.IsNullOrEmpty(track))
+            {
+                //If track is null, some vendors do this, use GetMediaInfo instead                    
+                return false;
+            }
+
+            var uPnpResponse = XElement.Parse(track);
+
+            var e = uPnpResponse.Element(uPnpNamespaces.items) ?? uPnpResponse;
+
+            var uTrack = uBaseObject.Create(e);
+
+            if (uTrack == null)
+                return true;
+
+            CurrentId = uTrack.Id;
+
+            return true;
         }
 
         #endregion
 
         #region From XML
 
-        internal async Task GetAVProtocolAsync()
+        private async Task GetAVProtocolAsync()
         {
             var avService = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
             if (avService == null)
                 return;
 
-            string url = avService.SCPDURL;
+            var url = avService.SCPDURL;
             if (!url.Contains("/"))
                 url = "/dmr/" + url;
             if (!url.StartsWith("/"))
                 url = "/" + url;
 
-            var httpClient = new SsdpHttpClient();
-            var stream = await httpClient.GetDataAsync(new Uri(Properties.BaseUrl + url));
-
-            if (stream == null)
-                return;
-
-            XDocument document = httpClient.ParseStream(stream);
-            stream.Dispose();
+            var httpClient = new SsdpHttpClient(_httpClient);
+            var document = await httpClient.GetDataAsync(new Uri(Properties.BaseUrl + url));
 
             AvCommands = TransportCommands.Create(document);
         }
 
-        internal async Task GetRenderingProtocolAsync()
+        private async Task GetRenderingProtocolAsync()
         {
             var avService = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceRenderingId);
 
@@ -500,14 +611,8 @@ namespace MediaBrowser.Dlna.PlayTo
             if (!url.StartsWith("/"))
                 url = "/" + url;
 
-            var httpClient = new SsdpHttpClient();
-            var stream = await httpClient.GetDataAsync(new Uri(Properties.BaseUrl + url));
-
-            if (stream == null)
-                return;
-
-            XDocument document = httpClient.ParseStream(stream);
-            stream.Dispose();
+            var httpClient = new SsdpHttpClient(_httpClient);
+            var document = await httpClient.GetDataAsync(new Uri(Properties.BaseUrl + url));
 
             RendererCommands = TransportCommands.Create(document);
         }
@@ -524,16 +629,11 @@ namespace MediaBrowser.Dlna.PlayTo
             set;
         }
 
-        public static async Task<Device> CreateuPnpDeviceAsync(Uri url)
+        public static async Task<Device> CreateuPnpDeviceAsync(Uri url, IHttpClient httpClient, ILogger logger)
         {
-            var httpClient = new SsdpHttpClient();
-            var stream = await httpClient.GetDataAsync(url);
+            var ssdpHttpClient = new SsdpHttpClient(httpClient);
 
-            if (stream == null)
-                return null;
-
-            var document = httpClient.ParseStream(stream);
-            stream.Dispose();
+            var document = await ssdpHttpClient.GetDataAsync(url).ConfigureAwait(false);
 
             var deviceProperties = new DeviceProperties();
 
@@ -587,14 +687,14 @@ namespace MediaBrowser.Dlna.PlayTo
                     return null;
 
                 var servicesList = services.Descendants(uPnpNamespaces.ud.GetName("service"));
-                
+
                 if (servicesList == null)
                     return null;
 
                 foreach (var element in servicesList)
                 {
                     var service = uService.Create(element);
-                    
+
                     if (service != null)
                     {
                         deviceProperties.Services.Add(service);
@@ -609,10 +709,11 @@ namespace MediaBrowser.Dlna.PlayTo
             if (isRenderer)
             {
 
-                var device = new Device(deviceProperties);
+                var device = new Device(deviceProperties, httpClient, logger);
 
-                await device.GetRenderingProtocolAsync();
-                await device.GetAVProtocolAsync();
+                await device.GetRenderingProtocolAsync().ConfigureAwait(false);
+                await device.GetAVProtocolAsync().ConfigureAwait(false);
+
                 return device;
             }
 
@@ -662,21 +763,6 @@ namespace MediaBrowser.Dlna.PlayTo
         public override string ToString()
         {
             return String.Format("{0} - {1}", Properties.Name, Properties.BaseUrl);
-        }
-
-        private XDocument ParseStream(Stream stream)
-        {
-            var reader = new StreamReader(stream, Encoding.UTF8);
-            try
-            {
-                var doc = XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
-                stream.Dispose();
-                return doc;
-            }
-            catch
-            {
-            }
-            return null;
         }
     }
 }

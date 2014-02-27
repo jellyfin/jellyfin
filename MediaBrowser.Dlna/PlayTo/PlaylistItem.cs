@@ -1,4 +1,7 @@
-﻿
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Dlna.PlayTo.Configuration;
+using System;
+
 namespace MediaBrowser.Dlna.PlayTo
 {
     public class PlaylistItem
@@ -23,73 +26,73 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public long StartPositionTicks { get; set; }
 
-        //internal static PlaylistItem GetBasicConfig(BaseItem item, TranscodeSettings[] profileTranscodings)
-        //{
+        public static PlaylistItem GetBasicConfig(BaseItem item, TranscodeSettings[] profileTranscodings)
+        {
 
-        //    var playlistItem = new PlaylistItem();
-        //    playlistItem.ItemId = item.Id.ToString();            
+            var playlistItem = new PlaylistItem();
+            playlistItem.ItemId = item.Id.ToString();
 
-        //    if (string.Equals(item.MediaType, MediaBrowser.Model.Entities.MediaType.Video, StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        playlistItem.IsVideo = true;
-        //    }
-        //    else
-        //    {
-        //        playlistItem.IsAudio = true;
-        //    }
+            if (string.Equals(item.MediaType, Model.Entities.MediaType.Video, StringComparison.OrdinalIgnoreCase))
+            {
+                playlistItem.IsVideo = true;
+            }
+            else
+            {
+                playlistItem.IsAudio = true;
+            }
 
-            
-        //    var path = item.Path.ToLower();           
 
-        //    //Check the DlnaProfile associated with the renderer
-        //    if (profileTranscodings != null)
-        //    {
-        //        foreach (TranscodeSettings transcodeSetting in profileTranscodings)
-        //        {
-        //            if (string.IsNullOrWhiteSpace(transcodeSetting.Container))
-        //                continue;
-        //            if (path.EndsWith(transcodeSetting.Container))
-        //            {
-        //                playlistItem.Transcode = true;
-        //                playlistItem.FileFormat = transcodeSetting.TargetContainer;
-        //                return playlistItem;
-        //            }
-        //        }
-        //    }
-        //    if (playlistItem.IsVideo)
-        //    {                
+            var path = item.Path.ToLower();
 
-        //        //Check to see if we support serving the format statically
-        //        foreach (string supported in PlayToConfiguration.SupportedStaticFormats)
-        //        {
-        //            if (path.EndsWith(supported))
-        //            {
-        //                playlistItem.Transcode = false;
-        //                playlistItem.FileFormat = supported;
-        //                return playlistItem;
-        //            }
-        //        }
+            //Check the DlnaProfile associated with the renderer
+            if (profileTranscodings != null)
+            {
+                foreach (TranscodeSettings transcodeSetting in profileTranscodings)
+                {
+                    if (string.IsNullOrWhiteSpace(transcodeSetting.Container))
+                        continue;
+                    if (path.EndsWith(transcodeSetting.Container))
+                    {
+                        playlistItem.Transcode = true;
+                        playlistItem.FileFormat = transcodeSetting.TargetContainer;
+                        return playlistItem;
+                    }
+                }
+            }
+            if (playlistItem.IsVideo)
+            {
 
-        //        playlistItem.Transcode = true;
-        //        playlistItem.FileFormat = "ts";
-        //    }
-        //    else
-        //    {
-        //        foreach (string supported in PlayToConfiguration.SupportedStaticFormats)
-        //        {
-        //            if (path.EndsWith(supported))
-        //            {
-        //                playlistItem.Transcode = false;
-        //                playlistItem.FileFormat = supported;
-        //                return playlistItem;
-        //            }
-        //        }
+                //Check to see if we support serving the format statically
+                foreach (string supported in PlayToConfiguration.SupportedStaticFormats)
+                {
+                    if (path.EndsWith(supported))
+                    {
+                        playlistItem.Transcode = false;
+                        playlistItem.FileFormat = supported;
+                        return playlistItem;
+                    }
+                }
 
-        //        playlistItem.Transcode = true;
-        //        playlistItem.FileFormat = "mp3";
-        //    }
+                playlistItem.Transcode = true;
+                playlistItem.FileFormat = "ts";
+            }
+            else
+            {
+                foreach (string supported in PlayToConfiguration.SupportedStaticFormats)
+                {
+                    if (path.EndsWith(supported))
+                    {
+                        playlistItem.Transcode = false;
+                        playlistItem.FileFormat = supported;
+                        return playlistItem;
+                    }
+                }
 
-        //    return playlistItem;
-        //}
+                playlistItem.Transcode = true;
+                playlistItem.FileFormat = "mp3";
+            }
+
+            return playlistItem;
+        }
     }
 }

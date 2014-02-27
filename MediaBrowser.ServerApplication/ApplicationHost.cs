@@ -27,6 +27,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Dlna.PlayTo;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
@@ -744,6 +745,9 @@ namespace MediaBrowser.ServerApplication
             // Server implementations
             list.Add(typeof(ServerApplicationPaths).Assembly);
 
+            // Dlna implementations
+            list.Add(typeof(PlayToServerEntryPoint).Assembly);
+            
             list.AddRange(Assemblies.GetAssembliesWithParts());
 
             // Include composable parts in the running assembly
