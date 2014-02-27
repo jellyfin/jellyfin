@@ -226,11 +226,11 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Saves the current configuration to the file system
         /// </summary>
-        public void SaveConfiguration(IXmlSerializer serializer)
+        public void SaveConfiguration()
         {
             var xmlPath = ConfigurationFilePath;
             Directory.CreateDirectory(System.IO.Path.GetDirectoryName(xmlPath));
-            serializer.SerializeToFile(Configuration, xmlPath);
+            XmlSerializer.SerializeToFile(Configuration, xmlPath);
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             Configuration = config;
-            SaveConfiguration(serializer);
+            SaveConfiguration();
         }
     }
 }

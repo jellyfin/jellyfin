@@ -6,7 +6,7 @@ namespace MediaBrowser.Dlna.PlayTo
 {
     public class TransportCommands
     {
-        List<StateVariable> _stateVariables = new List<StateVariable>();
+        private List<StateVariable> _stateVariables = new List<StateVariable>();
         public List<StateVariable> StateVariables
         {
             get
@@ -19,7 +19,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        List<ServiceAction> _serviceActions = new List<ServiceAction>();
+        private List<ServiceAction> _serviceActions = new List<ServiceAction>();
         public List<ServiceAction> ServiceActions
         {
             get
