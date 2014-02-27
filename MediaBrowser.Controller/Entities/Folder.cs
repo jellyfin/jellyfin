@@ -893,9 +893,14 @@ namespace MediaBrowser.Controller.Entities
             BaseItem item = null;
 
             // First get using the cached Id
-            if (info.ItemId != Guid.Empty)
+            if (info.ItemId.HasValue)
             {
-                item = LibraryManager.GetItemById(info.ItemId);
+                if (info.ItemId.Value == Guid.Empty)
+                {
+                    return null;
+                }
+
+                item = LibraryManager.GetItemById(info.ItemId.Value);
             }
 
             // If still null, search by path
@@ -908,6 +913,9 @@ namespace MediaBrowser.Controller.Entities
             if (item == null)
             {
                 Logger.Warn("Unable to find linked item at {0}", info.Path);
+
+                // Don't keep searching over and over
+                info.ItemId = Guid.Empty;
             }
             else
             {
@@ -983,6 +991,15 @@ namespace MediaBrowser.Controller.Entities
                 newShortcutLinks.AddRange(currentManualLinks);
                 LinkedChildren = newShortcutLinks;
                 return true;
+            }
+
+            foreach (var child in LinkedChildren)
+            {
+                // Reset the cached value
+                if (child.ItemId.HasValue && child.ItemId.Value == Guid.Empty)
+                {
+                    child.ItemId = null;
+                }
             }
 
             return false;
