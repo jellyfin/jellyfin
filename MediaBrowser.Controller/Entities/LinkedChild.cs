@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Entities
         /// Serves as a cache
         /// </summary>
         [IgnoreDataMember]
-        public Guid ItemId { get; set; }
+        public Guid? ItemId { get; set; }
     }
 
     public enum LinkedChildType
