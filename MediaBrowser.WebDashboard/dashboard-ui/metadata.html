@@ -22,9 +22,13 @@
                 <form id="metadataConfigurationForm">
                     <ul data-role="listview" class="ulForm">
                         <li>
+                            <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" data-mini="true" />
+                            <label for="chkEnableInternetProviders">Download metadata and images from the internet </label>
+                        </li>
+                        <li>
                             <input type="checkbox" id="chkSaveLocal" name="chkSaveLocal" data-mini="true" />
-                            <label for="chkSaveLocal">Save images within media folders </label>
-                            <div class="fieldDescription">Save downloaded images into media folders where they can be stored permanently and easily edited. Metadata savers are configured separately on a per-type basis.</div>
+                            <label for="chkSaveLocal">Save metadata and images within media folders </label>
+                            <div class="fieldDescription">Save downloaded metadata and images into media folders where they can be stored permanently and easily edited.</div>
                         </li>
                         <li>
                             <label for="selectImageSavingConvention">Image saving convention: </label>

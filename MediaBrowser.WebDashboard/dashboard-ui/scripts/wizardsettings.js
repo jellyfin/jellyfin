@@ -4,27 +4,19 @@
 
         Dashboard.showLoadingMsg();
 
-        $.ajax({
-            type: "POST",
-            url: ApiClient.getUrl("System/Configuration/SaveLocalMetadata", { Enabled: $('#chkSaveLocalMetadata', page).checked() })
-            
-        }).done(function() {
-            
+        // After saving chapter task, now save server config
+        ApiClient.getServerConfiguration().done(function (config) {
 
-            // After saving chapter task, now save server config
-            ApiClient.getServerConfiguration().done(function (config) {
+            config.PreferredMetadataLanguage = $('#selectLanguage', page).val();
+            config.MetadataCountryCode = $('#selectCountry', page).val();
+            config.SaveLocalMeta = $('#chkSaveLocalMetadata', page).checked();
 
-                config.PreferredMetadataLanguage = $('#selectLanguage', page).val();
-                config.MetadataCountryCode = $('#selectCountry', page).val();
+            ApiClient.updateServerConfiguration(config).done(function (result) {
 
-                ApiClient.updateServerConfiguration(config).done(function (result) {
+                navigateToNextPage();
 
-                    navigateToNextPage();
-
-                });
             });
         });
-        
 
     }
 

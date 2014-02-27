@@ -276,6 +276,11 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteMetadataProvider)
                 {
+                    if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                    {
+                        return false;
+                    }
+
                     if (Array.IndexOf(options.DisabledMetadataFetchers, provider.Name) != -1)
                     {
                         return false;
@@ -312,6 +317,11 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteImageProvider)
                 {
+                    if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                    {
+                        return false;
+                    }
+
                     if (Array.IndexOf(options.DisabledImageFetchers, provider.Name) != -1)
                     {
                         return false;
@@ -473,19 +483,25 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.LocalMetadataProvider
             }));
 
-            // Fetchers
-            list.AddRange(providers.Where(i => (i is IRemoteMetadataProvider)).Select(i => new MetadataPlugin
+            if (ConfigurationManager.Configuration.EnableInternetProviders)
             {
-                Name = i.Name,
-                Type = MetadataPluginType.MetadataFetcher
-            }));
-
-            // Savers
-            list.AddRange(_savers.Where(i => IsSaverEnabledForItem(i, item, ItemUpdateType.MetadataEdit, false)).OrderBy(i => i.Name).Select(i => new MetadataPlugin
+                // Fetchers
+                list.AddRange(providers.Where(i => (i is IRemoteMetadataProvider)).Select(i => new MetadataPlugin
+                {
+                    Name = i.Name,
+                    Type = MetadataPluginType.MetadataFetcher
+                }));
+            }
+            
+            if (item.IsSaveLocalMetadataEnabled())
             {
-                Name = i.Name,
-                Type = MetadataPluginType.MetadataSaver
-            }));
+                // Savers
+                list.AddRange(_savers.Where(i => IsSaverEnabledForItem(i, item, ItemUpdateType.MetadataEdit, true)).OrderBy(i => i.Name).Select(i => new MetadataPlugin
+                {
+                    Name = i.Name,
+                    Type = MetadataPluginType.MetadataSaver
+                }));
+            }
         }
 
         private void AddImagePlugins<T>(List<MetadataPlugin> list, T item, List<IImageProvider> imageProviders)
@@ -499,8 +515,18 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.LocalImageProvider
             }));
 
+            if (ConfigurationManager.Configuration.EnableInternetProviders)
+            {
+                // Fetchers
+                list.AddRange(imageProviders.Where(i => i is IRemoteImageProvider).Select(i => new MetadataPlugin
+                {
+                    Name = i.Name,
+                    Type = MetadataPluginType.ImageFetcher
+                }));
+            }
+
             // Fetchers
-            list.AddRange(imageProviders.Where(i => !(i is ILocalImageProvider)).Select(i => new MetadataPlugin
+            list.AddRange(imageProviders.Where(i => i is IDynamicImageProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.ImageFetcher
@@ -526,7 +552,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         public async Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
         {
-            foreach (var saver in _savers.Where(i => IsSaverEnabledForItem(i, item, updateType, true)))
+            foreach (var saver in _savers.Where(i => IsSaverEnabledForItem(i, item, updateType, false)))
             {
                 _logger.Debug("Saving {0} to {1}.", item.Path ?? item.Name, saver.Name);
 
@@ -579,15 +605,23 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private bool IsSaverEnabledForItem(IMetadataSaver saver, IHasMetadata item, ItemUpdateType updateType, bool enforceConfiguration)
+        private bool IsSaverEnabledForItem(IMetadataSaver saver, IHasMetadata item, ItemUpdateType updateType, bool includeDisabled)
         {
             var options = GetMetadataOptions(item);
 
             try
             {
-                if (enforceConfiguration && options.DisabledMetadataSavers.Contains(saver.Name, StringComparer.OrdinalIgnoreCase))
+                if (!includeDisabled)
                 {
-                    return false;
+                    if (!item.IsSaveLocalMetadataEnabled())
+                    {
+                        return false;
+                    }
+
+                    if (options.DisabledMetadataSavers.Contains(saver.Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
                 }
 
                 return saver.IsEnabledFor(item, updateType);
