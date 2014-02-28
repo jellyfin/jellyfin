@@ -41,8 +41,8 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Name { get; set; }
 
-        [ApiMember(Name = "Tag", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string Tag { get; set; }
+        [ApiMember(Name = "CacheTag", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string CacheTag { get; set; }
     }
 
     [Route("/Themes", "POST")]
@@ -89,7 +89,7 @@ namespace MediaBrowser.Api
 
             TimeSpan? cacheDuration = null;
 
-            if (!string.IsNullOrEmpty(request.Tag) && cacheGuid == new Guid(request.Tag))
+            if (!string.IsNullOrEmpty(request.CacheTag) && cacheGuid == new Guid(request.CacheTag))
             {
                 cacheDuration = TimeSpan.FromDays(365);
             }
