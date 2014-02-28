@@ -239,6 +239,8 @@
     <Compile Include="Sorting\IUserBaseItemComparer.cs" />
     <Compile Include="Providers\BaseItemXmlParser.cs" />
     <Compile Include="Sorting\SortExtensions.cs" />
+    <Compile Include="Themes\IAppThemeManager.cs" />
+    <Compile Include="Themes\InternalThemeImage.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

@@ -14,11 +14,12 @@ namespace MediaBrowser.Common.Implementations.Security
     {
 
         private static MBLicenseFile _licenseFile;
-        private const string MBValidateUrl = Constants.Constants.MbAdminUrl+"service/registration/validate";
+        private const string MBValidateUrl = Constants.Constants.MbAdminUrl + "service/registration/validate";
 
         private static IApplicationPaths _appPaths;
         private static INetworkManager _networkManager;
         private static ILogger _logger;
+        private static IApplicationHost _applicationHost;
 
         private static MBLicenseFile LicenseFile
         {
@@ -37,24 +38,35 @@ namespace MediaBrowser.Common.Implementations.Security
             set { LicenseFile.LegacyKey = value; LicenseFile.Save(); }
         }
 
-        public static void Init(IApplicationPaths appPaths, INetworkManager networkManager, ILogManager logManager)
+        public static void Init(IApplicationPaths appPaths, INetworkManager networkManager, ILogManager logManager, IApplicationHost appHost)
         {
             // Ugly alert (static init)
 
             _appPaths = appPaths;
             _networkManager = networkManager;
             _logger = logManager.GetLogger("SecurityManager");
+            _applicationHost = appHost;
         }
 
         public static async Task<MBRegistrationRecord> GetRegistrationStatus(IHttpClient httpClient, IJsonSerializer jsonSerializer, string feature, string mb2Equivalent = null, string version = null)
         {
             //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
-            var reg = new RegRecord {registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-30)};
+            var reg = new RegRecord { registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-30) };
 
             if (!reg.registered)
             {
                 var mac = _networkManager.GetMacAddress();
-                var data = new Dictionary<string, string> { { "feature", feature }, { "key", SupporterKey }, { "mac", mac }, { "mb2equiv", mb2Equivalent }, { "legacykey", LegacyKey }, { "ver", version }, { "platform", Environment.OSVersion.VersionString } };
+                var data = new Dictionary<string, string>
+                {
+                    { "feature", feature }, 
+                    { "key", SupporterKey }, 
+                    { "mac", mac }, 
+                    { "mb2equiv", mb2Equivalent }, 
+                    { "legacykey", LegacyKey }, 
+                    { "ver", version }, 
+                    { "platform", Environment.OSVersion.VersionString }, 
+                    { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower() }
+                };
 
                 try
                 {
@@ -79,7 +91,7 @@ namespace MediaBrowser.Common.Implementations.Security
                 }
             }
 
-            return new MBRegistrationRecord {IsRegistered = reg.registered, ExpirationDate = reg.expDate, RegChecked = true};
+            return new MBRegistrationRecord { IsRegistered = reg.registered, ExpirationDate = reg.expDate, RegChecked = true };
         }
     }
 

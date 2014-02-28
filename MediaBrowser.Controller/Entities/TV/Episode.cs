@@ -256,6 +256,7 @@ namespace MediaBrowser.Controller.Entities.TV
             if (series != null)
             {
                 id.SeriesProviderIds = series.ProviderIds;
+                id.AnimeSeriesIndex = series.AnimeSeriesIndex;
             }
 
             id.IndexNumberEnd = IndexNumberEnd;

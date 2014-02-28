@@ -248,6 +248,7 @@
     <Compile Include="Persistence\SqliteUserRepository.cs" />
     <Compile Include="Sorting\TrailerCountComparer.cs" />
     <Compile Include="Sorting\VideoBitRateComparer.cs" />
+    <Compile Include="Themes\AppThemeManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />
     <Compile Include="WebSocket\AlchemyServer.cs" />
