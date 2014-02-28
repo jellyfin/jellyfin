@@ -67,6 +67,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="AlbumsService.cs" />
+    <Compile Include="AppThemeService.cs" />
     <Compile Include="BaseApiService.cs" />
     <Compile Include="ConfigurationService.cs" />
     <Compile Include="DefaultTheme\DefaultThemeService.cs" />

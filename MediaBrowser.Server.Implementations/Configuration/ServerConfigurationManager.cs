@@ -25,6 +25,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
             : base(applicationPaths, logManager, xmlSerializer)
         {
             UpdateItemsByNamePath();
+            UpdateTranscodingTempPath();
         }
 
         /// <summary>

@@ -101,6 +101,7 @@ namespace MediaBrowser.Controller.Providers
         public Dictionary<string, string> SeriesProviderIds { get; set; }
 
         public int? IndexNumberEnd { get; set; }
+        public int? AnimeSeriesIndex { get; set; }
 
         public EpisodeInfo()
         {
@@ -117,7 +118,7 @@ namespace MediaBrowser.Controller.Providers
 
     public class SeriesInfo : ItemLookupInfo
     {
-
+        public int? AnimeSeriesIndex { get; set; }
     }
 
     public class PersonLookupInfo : ItemLookupInfo
@@ -153,6 +154,7 @@ namespace MediaBrowser.Controller.Providers
     public class SeasonInfo : ItemLookupInfo
     {
         public Dictionary<string, string> SeriesProviderIds { get; set; }
+        public int? AnimeSeriesIndex { get; set; }
 
         public SeasonInfo()
         {

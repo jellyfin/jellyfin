@@ -27,6 +27,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Controller.Themes;
 using MediaBrowser.Dlna.PlayTo;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -49,6 +50,7 @@ using MediaBrowser.Server.Implementations.MediaEncoder;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
+using MediaBrowser.Server.Implementations.Themes;
 using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.EntryPoints;
 using MediaBrowser.ServerApplication.FFMpeg;
@@ -163,7 +165,7 @@ namespace MediaBrowser.ServerApplication
         private ILocalizationManager LocalizationManager { get; set; }
 
         private IEncodingManager EncodingManager { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the user data repository.
         /// </summary>
@@ -437,6 +439,9 @@ namespace MediaBrowser.ServerApplication
             EncodingManager = new EncodingManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository,
                 MediaEncoder);
             RegisterSingleInstance(EncodingManager);
+
+            var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
+            RegisterSingleInstance<IAppThemeManager>(appThemeManager);
 
             LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager);
             RegisterSingleInstance(LiveTvManager);
@@ -747,7 +752,7 @@ namespace MediaBrowser.ServerApplication
 
             // Dlna implementations
             list.Add(typeof(PlayToServerEntryPoint).Assembly);
-            
+
             list.AddRange(Assemblies.GetAssembliesWithParts());
 
             // Include composable parts in the running assembly

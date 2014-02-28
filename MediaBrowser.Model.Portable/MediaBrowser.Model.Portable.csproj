@@ -452,6 +452,12 @@
     <Compile Include="..\MediaBrowser.Model\Tasks\TaskTriggerInfo.cs">
       <Link>Tasks\TaskTriggerInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Themes\AppTheme.cs">
+      <Link>Themes\AppTheme.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Themes\ThemeImage.cs">
+      <Link>Themes\ThemeImage.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Updates\CheckForUpdateResult.cs">
       <Link>Updates\CheckForUpdateResult.cs</Link>
     </Compile>

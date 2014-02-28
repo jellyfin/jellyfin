@@ -74,7 +74,7 @@ namespace MediaBrowser.Common.Implementations.Security
             _appHost = appHost;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
-            MBRegistration.Init(_applciationPaths, _networkManager, logManager);
+            MBRegistration.Init(_applciationPaths, _networkManager, logManager, _appHost);
         }
 
         /// <summary>

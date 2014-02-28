@@ -165,6 +165,8 @@
     <Compile Include="Session\SessionInfoDto.cs" />
     <Compile Include="Session\SystemCommand.cs" />
     <Compile Include="Session\UserDataChangeInfo.cs" />
+    <Compile Include="Themes\AppTheme.cs" />
+    <Compile Include="Themes\ThemeImage.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />
     <Compile Include="Updates\PackageTargetSystem.cs" />
     <Compile Include="Updates\InstallationInfo.cs" />

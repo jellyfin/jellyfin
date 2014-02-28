@@ -20,6 +20,8 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public int SeasonCount { get; set; }
 
+        public int? AnimeSeriesIndex { get; set; }
+
         /// <summary>
         /// Gets or sets the preferred metadata country code.
         /// </summary>
@@ -224,7 +226,11 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public SeriesInfo GetLookupInfo()
         {
-            return GetItemLookupInfo<SeriesInfo>();
+            var info = GetItemLookupInfo<SeriesInfo>();
+
+            info.AnimeSeriesIndex = AnimeSeriesIndex;
+
+            return info;
         }
 
         public override bool BeforeMetadataRefresh()
