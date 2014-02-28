@@ -238,8 +238,19 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 return hasOptions;
             }
 
-            // Otherwise wrap into an HttpResult
-            var httpResult = new HttpResult(result, contentType ?? "text/html", HttpStatusCode.NotModified);
+            IHasOptions httpResult;
+
+            var stream = result as Stream;
+
+            if (stream != null)
+            {
+                httpResult = new StreamWriter(stream, contentType, _logger);
+            }
+            else
+            {
+                // Otherwise wrap into an HttpResult
+                httpResult = new HttpResult(result, contentType ?? "text/html", HttpStatusCode.NotModified);
+            }
 
             AddResponseHeaders(httpResult, responseHeaders);
 
@@ -478,7 +489,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             if (!SupportsCompression)
             {
                 responseHeaders["Content-Length"] = originalContentLength.ToString(UsCulture);
-                
+
                 if (isHeadRequest)
                 {
                     return GetHttpResult(new byte[] { }, contentType);
@@ -495,7 +506,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 return GetHttpResult(new byte[] { }, contentType);
             }
-            
+
             return new CompressedResult(contents, requestedCompressionType, contentType);
         }
 

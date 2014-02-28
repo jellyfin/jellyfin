@@ -63,6 +63,11 @@ namespace MediaBrowser.Server.Implementations.Themes
             return Path.Combine(GetThemesPath(applicationName), name);
         }
 
+        private string GetImagesPath(string applicationName, string themeName)
+        {
+            return Path.Combine(GetThemePath(applicationName, themeName), "images");
+        }
+
         public IEnumerable<AppThemeInfo> GetThemes(string applicationName)
         {
             var path = GetThemesPath(applicationName);
@@ -97,9 +102,11 @@ namespace MediaBrowser.Server.Implementations.Themes
             var themePath = GetThemePath(applicationName, name);
             var file = Path.Combine(themePath, "theme.json");
 
+            var imagesPath = GetImagesPath(applicationName, name);
+
             var theme = _json.DeserializeFromFile<AppTheme>(file);
 
-            theme.Images = new DirectoryInfo(themePath)
+            theme.Images = new DirectoryInfo(imagesPath)
                 .EnumerateFiles("*", SearchOption.TopDirectoryOnly)
                 .Where(i => _supportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
                 .Select(GetThemeImage)
@@ -123,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.Themes
 
         public void SaveTheme(AppTheme theme)
         {
-            var themePath = GetThemePath(theme.ApplicationName, theme.Name);
+            var themePath = GetThemePath(theme.AppName, theme.Name);
             var file = Path.Combine(themePath, "theme.json");
 
             Directory.CreateDirectory(themePath);
@@ -131,7 +138,7 @@ namespace MediaBrowser.Server.Implementations.Themes
             // Clone it so that we don't serialize all the images - they're always dynamic
             var clone = new AppTheme
             {
-                ApplicationName = theme.ApplicationName,
+                AppName = theme.AppName,
                 Name = theme.Name,
                 Options = theme.Options,
                 Images = null
@@ -142,12 +149,10 @@ namespace MediaBrowser.Server.Implementations.Themes
 
         public InternalThemeImage GetImageImageInfo(string applicationName, string themeName, string imageName)
         {
-            var themePath = GetThemePath(applicationName, themeName);
+            var imagesPath = GetImagesPath(applicationName, themeName);
 
-            var fullPath = Path.Combine(themePath, imageName);
-
-            var file = new DirectoryInfo(themePath).EnumerateFiles("*", SearchOption.TopDirectoryOnly)
-                .First(i => string.Equals(i.FullName, fullPath, StringComparison.OrdinalIgnoreCase));
+            var file = new DirectoryInfo(imagesPath).EnumerateFiles("*", SearchOption.TopDirectoryOnly)
+                .First(i => string.Equals(i.Name, imageName, StringComparison.OrdinalIgnoreCase));
 
             var themeImage = GetThemeImage(file);
 
