@@ -707,10 +707,11 @@ namespace MediaBrowser.Api.Images
             var currentItem = item;
             var currentRequest = request;
 
-            var responseHeaders = new Dictionary<string, string>();
-
-            responseHeaders.Add("transferMode.dlna.org", "Interactive");
-            responseHeaders.Add("realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*");
+            var responseHeaders = new Dictionary<string, string>
+            {
+                {"transferMode.dlna.org", "Interactive"},
+                {"realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*"}
+            };
 
             return ToCachedResult(cacheGuid, originalFileImageDateModified, cacheDuration, () => new ImageWriter
             {

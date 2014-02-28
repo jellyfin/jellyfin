@@ -13,16 +13,16 @@ namespace MediaBrowser.Api
     [Api(Description = "Gets a list of available themes for an app")]
     public class GetAppThemes : IReturn<List<AppThemeInfo>>
     {
-        [ApiMember(Name = "ApplicationName", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ApplicationName { get; set; }
+        [ApiMember(Name = "App", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string App { get; set; }
     }
 
     [Route("/Themes/Info", "GET")]
     [Api(Description = "Gets an app theme")]
     public class GetAppTheme : IReturn<AppTheme>
     {
-        [ApiMember(Name = "ApplicationName", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ApplicationName { get; set; }
+        [ApiMember(Name = "App", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string App { get; set; }
 
         [ApiMember(Name = "Name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Name { get; set; }
@@ -32,11 +32,11 @@ namespace MediaBrowser.Api
     [Api(Description = "Gets an app theme")]
     public class GetAppThemeImage
     {
-        [ApiMember(Name = "ApplicationName", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ApplicationName { get; set; }
+        [ApiMember(Name = "App", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string App { get; set; }
 
-        [ApiMember(Name = "ThemeName", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ThemeName { get; set; }
+        [ApiMember(Name = "Theme", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Theme { get; set; }
 
         [ApiMember(Name = "Name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Name { get; set; }
@@ -64,14 +64,14 @@ namespace MediaBrowser.Api
 
         public object Get(GetAppThemes request)
         {
-            var result = _themeManager.GetThemes(request.ApplicationName).ToList();
+            var result = _themeManager.GetThemes(request.App).ToList();
 
             return ToOptimizedResult(result);
         }
 
         public object Get(GetAppTheme request)
         {
-            var result = _themeManager.GetTheme(request.ApplicationName, request.Name);
+            var result = _themeManager.GetTheme(request.App, request.Name);
 
             return ToOptimizedResult(result);
         }
@@ -83,7 +83,7 @@ namespace MediaBrowser.Api
 
         public object Get(GetAppThemeImage request)
         {
-            var info = _themeManager.GetImageImageInfo(request.ApplicationName, request.ThemeName, request.Name);
+            var info = _themeManager.GetImageImageInfo(request.App, request.Theme, request.Name);
 
             var cacheGuid = new Guid(info.CacheTag);
 

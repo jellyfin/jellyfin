@@ -5,7 +5,7 @@ namespace MediaBrowser.Model.Themes
 {
     public class AppTheme
     {
-        public string ApplicationName { get; set; }
+        public string AppName { get; set; }
 
         public string Name { get; set; }
 
@@ -23,7 +23,7 @@ namespace MediaBrowser.Model.Themes
 
     public class AppThemeInfo
     {
-        public string ApplicationName { get; set; }
+        public string AppName { get; set; }
         
         public string Name { get; set; }
     }
