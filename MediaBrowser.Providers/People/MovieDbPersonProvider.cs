@@ -29,12 +29,14 @@ namespace MediaBrowser.Providers.People
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
+        private readonly IHttpClient _httpClient;
 
-        public MovieDbPersonProvider(IFileSystem fileSystem, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer)
+        public MovieDbPersonProvider(IFileSystem fileSystem, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _jsonSerializer = jsonSerializer;
+            _httpClient = httpClient;
             Current = this;
         }
 
@@ -64,6 +66,8 @@ namespace MediaBrowser.Providers.People
                 {
                     Name = info.name,
 
+                    SearchProviderName = Name,
+                    
                     ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].file_path)
                 };
 
@@ -94,6 +98,8 @@ namespace MediaBrowser.Providers.People
         {
             var result = new RemoteSearchResult
             {
+                SearchProviderName = Name,
+                
                 Name = i.Name,
 
                 ImageUrl = string.IsNullOrEmpty(i.Profile_Path) ? null : (baseImageUrl + i.Profile_Path)
@@ -349,7 +355,12 @@ namespace MediaBrowser.Providers.People
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = MovieDbProvider.Current.MovieDbResourcePool
+            });
         }
     }
 }

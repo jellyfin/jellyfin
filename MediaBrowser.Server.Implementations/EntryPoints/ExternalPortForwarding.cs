@@ -42,7 +42,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         public void Run()
         {
-            NatUtility.Logger = new LogWriter(_logger);
+            //NatUtility.Logger = new LogWriter(_logger);
             
             Reload();
         }
@@ -64,17 +64,17 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         void NatUtility_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            var ex = e.ExceptionObject as Exception;
+            //var ex = e.ExceptionObject as Exception;
 
-            if (ex == null)
-            {
-                _logger.Error("Unidentified error reported by Mono.Nat");
-            }
-            else
-            {
-                // Seeing some blank exceptions coming through here
-                _logger.ErrorException("Error reported by Mono.Nat: ", ex);
-            }
+            //if (ex == null)
+            //{
+            //    _logger.Error("Unidentified error reported by Mono.Nat");
+            //}
+            //else
+            //{
+            //    // Seeing some blank exceptions coming through here
+            //    _logger.ErrorException("Error reported by Mono.Nat: ", ex);
+            //}
         }
 
         void NatUtility_DeviceFound(object sender, DeviceEventArgs e)
@@ -88,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error creating port forwarding rules", ex);
+                //_logger.ErrorException("Error creating port forwarding rules", ex);
             }
         }
 
@@ -106,7 +106,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private void CreatePortMap(INatDevice device, int port)
         {
-            _logger.Info("Creating port map on port {0}", port);
+            _logger.Debug("Creating port map on port {0}", port);
 
             device.CreatePortMap(new Mapping(Protocol.Tcp, port, port)
             {

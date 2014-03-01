@@ -33,14 +33,16 @@ namespace MediaBrowser.Providers.TV
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
+        private readonly IHttpClient _httpClient;
 
-        public MovieDbSeriesProvider(IJsonSerializer jsonSerializer, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization)
+        public MovieDbSeriesProvider(IJsonSerializer jsonSerializer, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization, IHttpClient httpClient)
         {
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _logger = logger;
             _localization = localization;
+            _httpClient = httpClient;
             Current = this;
         }
 
@@ -82,7 +84,9 @@ namespace MediaBrowser.Providers.TV
 
             if (string.IsNullOrEmpty(tmdbId))
             {
-                var searchResult = await new MovieDbSearch(_logger, _jsonSerializer).FindSeriesId(info, cancellationToken).ConfigureAwait(false);
+                var searchResults = await new MovieDbSearch(_logger, _jsonSerializer).GetSearchResults(info, cancellationToken).ConfigureAwait(false);
+
+                var searchResult = searchResults.FirstOrDefault();
 
                 if (searchResult != null)
                 {
@@ -462,7 +466,12 @@ namespace MediaBrowser.Providers.TV
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = MovieDbProvider.Current.MovieDbResourcePool
+            });
         }
     }
 }

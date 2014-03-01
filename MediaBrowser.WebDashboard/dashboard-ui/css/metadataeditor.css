@@ -84,6 +84,44 @@
     padding-right: 0!important;
 }
 
+
+.searchImage {
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-size: contain;
+    display: block;
+}
+
+.searchBackdropImageContainer {
+    width: 160px;
+}
+
+.searchDiscImageContainer {
+    width: 150px;
+}
+
+.searchPosterImageContainer {
+    width: 140px;
+}
+
+.searchBackdropImageContainer .searchImage {
+    height: 90px;
+}
+
+.searchDiscImageContainer .searchImage {
+    height: 150px;
+}
+
+.searchPosterImageContainer .searchImage {
+    height: 210px;
+}
+
+.searchImageContainer .remoteImageDetails {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 @media all and (min-width: 500px) {
 
     .availableImagesList {
@@ -134,10 +172,21 @@
     padding: 0 0 1em 0;
 }
 
+@media all and (min-width: 600px) {
+
+    .popupIdentify {
+        width: 400px;
+    }
+}
+
 @media all and (min-width: 700px) {
 
     .availableImagesList {
         width: 600px;
+    }
+
+    .popupIdentify {
+        width: 500px;
     }
 }
 
@@ -163,12 +212,20 @@
         float: right;
         width: 67.5%;
     }
+
+    .popupIdentify {
+        width: 600px;
+    }
 }
 
 @media all and (min-width: 900px) {
 
     .availableImagesList {
         width: 800px;
+    }
+
+    .popupIdentify {
+        width: 700px;
     }
 }
 
@@ -177,6 +234,10 @@
     .availableImagesList {
         width: 900px;
     }
+
+    .popupIdentify {
+        width: 800px;
+    }
 }
 
 @media all and (min-width: 1100px) {
@@ -184,12 +245,20 @@
     .availableImagesList {
         width: 1000px;
     }
+
+    .popupIdentify {
+        width: 900px;
+    }
 }
 
 @media all and (min-width: 1200px) {
 
     .availableImagesList {
         width: 1100px;
+    }
+
+    .popupIdentify {
+        width: 1000px;
     }
 }
 

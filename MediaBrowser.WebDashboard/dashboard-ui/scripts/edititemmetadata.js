@@ -31,7 +31,7 @@
         $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
 
             var item = response1[0];
-            
+
             currentItem = item;
 
             if (item.Type == "UserRootFolder") {
@@ -279,8 +279,8 @@
             $('#fldDateAdded', page).show();
             $('#fldYear', page).show();
         }
-        
-        if (item.Type == "Movie") {
+
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "AdultVideo" || item.Type == "Series" || item.Type == "Game" || item.Type == "BoxSet" || item.Type == "Person") {
             $('#btnIdentify', page).show();
         } else {
             $('#btnIdentify', page).hide();
@@ -855,9 +855,182 @@
 
             return false;
         };
+
+        self.onIdentificationFormSubmitted = function () {
+
+            var page = $(this).parents('.page');
+
+            searchForIdentificationResults(page);
+            return false;
+        };
     }
 
     window.EditItemMetadataPage = new editItemMetadataPage();
+
+    function showIdentificationForm(page) {
+
+        var item = currentItem;
+
+        $.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
+
+            var html = '';
+
+            var providerIds = item.ProviderIds || {};
+
+            for (var i = 0, length = idList.length; i < length; i++) {
+
+                var idInfo = idList[i];
+
+                var id = "txtLookup" + idInfo.Key;
+
+                html += '<div data-role="fieldcontain">';
+                html += '<label for="' + id + '">' + idInfo.Name + ' Id:</label>';
+
+                var value = providerIds[idInfo.Key] || '';
+
+                html += '<input class="txtLookupId" value="' + value + '" data-providerkey="' + idInfo.Key + '" id="' + id + '" data-mini="true" />';
+
+                html += '</div>';
+            }
+
+            $('#txtLookupName', page).val(item.Name);
+            
+            if (item.Type == "Person" || item.Type == "BoxSet") {
+
+                $('.fldLookupYear', page).hide();
+                $('#txtLookupYear', page).val('');
+            } else {
+
+                $('.fldLookupYear', page).show();
+                $('#txtLookupYear', page).val(item.ProductionYear);
+            }
+
+            $('.identifyProviderIds', page).html(html).trigger('create');
+
+            var friendlyName = item.Type == "BoxSet" ? "Collection" : item.Type;
+
+            $('.identificationHeader', page).html('Identify ' + friendlyName);
+
+            $('.popupIdentifyForm', page).show();
+            $('.identificationSearchResults', page).hide();
+            $('.btnSearchAgain', page).hide();
+
+            $('.popupIdentify', page).popup('open');
+        });
+    }
+
+    function searchForIdentificationResults(page) {
+
+        var lookupInfo = {
+            ProviderIds: {}
+        };
+
+        $('.identifyField', page).each(function () {
+
+            var value = this.value;
+
+            if (value) {
+
+                if (this.type == 'number') {
+                    value = parseInt(value);
+                }
+
+                lookupInfo[this.getAttribute('data-lookup')] = value;
+            }
+
+        });
+
+        var hasId = false;
+
+        $('.txtLookupId', page).each(function () {
+
+            var value = this.value;
+
+            if (value) {
+                hasId = true;
+            }
+            lookupInfo.ProviderIds[this.getAttribute('data-providerkey')] = value;
+
+        });
+
+        if (!hasId && !lookupInfo.Name) {
+            Dashboard.alert('Please enter a name or an external Id.');
+            return;
+        }
+
+        lookupInfo = {
+            SearchInfo: lookupInfo,
+            IncludeDisabledProviders: true
+        };
+
+        $.ajax({
+            type: "POST",
+            url: ApiClient.getUrl("Items/RemoteSearch/" + currentItem.Type),
+            data: JSON.stringify(lookupInfo),
+            contentType: "application/json"
+
+        }).done(function (results) {
+
+            showIdentificationSearchResults(page, results);
+        });
+    }
+
+    function getSearchImageDisplayUrl(url, provider) {
+        return ApiClient.getUrl("Items/RemoteSearch/Image", { imageUrl: url, ProviderName: provider });
+    }
+
+    function showIdentificationSearchResults(page, results) {
+
+        $('.popupIdentifyForm', page).hide();
+        $('.identificationSearchResults', page).show();
+        $('.btnSearchAgain', page).show();
+
+        var html = '';
+
+
+        for (var i = 0, length = results.length; i < length; i++) {
+
+            var result = results[i];
+
+            var cssClass = "searchImageContainer remoteImageContainer";
+
+            if (currentItem.Type == "Episode") {
+                cssClass += " searchBackdropImageContainer";
+            }
+            else if (currentItem.Type == "MusicAlbum" || currentItem.Type == "MusicArtist") {
+                cssClass += " searchDiscImageContainer";
+            }
+            else {
+                cssClass += " searchPosterImageContainer";
+            }
+
+            html += '<div class="' + cssClass + '">';
+
+            if (result.ImageUrl) {
+                var displayUrl = getSearchImageDisplayUrl(result.ImageUrl, result.SearchProviderName);
+
+                html += '<a href="#" class="searchImage" style="background-image:url(\'' + displayUrl + '\');">';
+            } else {
+                
+                html += '<a href="#" class="searchImage" style="background-image:url(\'css/images/items/list/remotesearch.png\');background-position: center center;">';
+            }
+            html += '</a>';
+
+            html += '<div class="remoteImageDetails">';
+            html += result.Name;
+            html += '</div>';
+
+            html += '<div class="remoteImageDetails">';
+            html += result.ProductionYear || '&nbsp;';
+            html += '</div>';
+
+            html += '<div><button class="btnSelectSearchResult" type="button" data-icon="check" data-mini="true">Select</button></div>';
+
+            html += '</div>';
+        }
+
+        $('.identificationSearchResultList', page).html(html).trigger('create');
+    }
 
     $(document).on('pageinit', "#editItemMetadataPage", function () {
 
@@ -902,6 +1075,19 @@
                 reload(page);
 
             });
+        });
+
+        $('#btnIdentify', page).on('click', function () {
+
+            showIdentificationForm(page);
+        });
+
+        $('.btnSearchAgain', page).on('click', function() {
+            
+            $('.popupIdentifyForm', page).show();
+            $('.identificationSearchResults', page).hide();
+            $('.btnSearchAgain', page).hide();
+
         });
 
         function getRandomInt(min, max) {

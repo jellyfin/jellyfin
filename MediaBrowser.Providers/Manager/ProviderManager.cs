@@ -657,6 +657,15 @@ namespace MediaBrowser.Providers.Manager
                 providers = providers.Where(i => string.Equals(i.Name, searchInfo.SearchProviderName, StringComparison.OrdinalIgnoreCase));
             }
 
+            if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataLanguage))
+            {
+                searchInfo.SearchInfo.MetadataLanguage = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+            }
+            if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataCountryCode))
+            {
+                searchInfo.SearchInfo.MetadataCountryCode = ConfigurationManager.Configuration.MetadataCountryCode;
+            }
+
             foreach (var provider in providers)
             {
                 var results = await provider.GetSearchResults(searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
@@ -665,12 +674,24 @@ namespace MediaBrowser.Providers.Manager
 
                 if (list.Count > 0)
                 {
-                    return list;
+                    return list.Take(10);
                 }
             }
 
             // Nothing found
             return new List<RemoteSearchResult>();
+        }
+
+        public Task<HttpResponseInfo> GetSearchImage(string providerName, string url, CancellationToken cancellationToken)
+        {
+            var provider = _metadataProviders.OfType<IRemoteSearchProvider>().FirstOrDefault(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
+
+            if (provider == null)
+            {
+                throw new ArgumentException("Search provider not found.");
+            }
+
+            return provider.GetImageResponse(url, cancellationToken);
         }
 
         public IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
