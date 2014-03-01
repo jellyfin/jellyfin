@@ -14,4 +14,9 @@ namespace MediaBrowser.Controller.Providers
     {
         Task<ItemUpdateType> FetchAsync(TItemType item, IDirectoryService directoryService, CancellationToken cancellationToken);
     }
+
+    public interface IPreRefreshProvider : ICustomMetadataProvider
+    {
+        
+    }
 }
