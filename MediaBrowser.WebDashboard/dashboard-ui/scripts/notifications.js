@@ -131,16 +131,16 @@
 
         html += '<div class="notificationContent">';
 
-        html += '<p class="notificationName">' + notification.Name + '</p>';
+        html += '<p style="margin: .4em 0 .25em;" class="notificationName">' + notification.Name + '</p>';
 
-        html += '<p>' + humane_date(notification.Date) + '</p>';
+        html += '<p style="margin: .25em 0;">' + humane_date(notification.Date) + '</p>';
 
         if (notification.Description) {
-            html += '<p>' + notification.Description + '</p>';
+            html += '<p style="margin: .25em 0;">' + notification.Description + '</p>';
         }
 
         if (notification.Url) {
-            html += '<p><a href="' + notification.Url + '" target="_blank">More information</a></p>';
+            html += '<p style="margin: .25em 0;"><a href="' + notification.Url + '" target="_blank">More information</a></p>';
         }
 
         html += '</div>';

@@ -229,6 +229,8 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public bool IsUnidentified { get; set; }
+
         /// <summary>
         /// Gets or sets the locked fields.
         /// </summary>

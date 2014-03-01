@@ -385,7 +385,7 @@ a.itemTag:hover {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 500px;
+    height: 550px;
     border-bottom: 1px solid #111;
     position: relative;
 }
@@ -866,6 +866,26 @@ a.itemTag:hover {
 }
 
     .unplayedIndicator div:after {
+        background-color: transparent !important;
+    }
+
+.unidentifiedIndicator {
+    display: block;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    text-align: center;
+    vertical-align: middle;
+    width: 24px;
+    height: 19px;
+    padding-top: 3px;
+    border-radius: 50%;
+    color: #fff;
+    background: rgb(204, 0, 0);
+    background: rgba(204, 0, 0, .8);
+}
+
+    .unidentifiedIndicator div:after {
         background-color: transparent !important;
     }
 

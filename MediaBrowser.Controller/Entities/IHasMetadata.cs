@@ -37,12 +37,6 @@ namespace MediaBrowser.Controller.Entities
         DateTime DateLastSaved { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is in mixed folder.
-        /// </summary>
-        /// <value><c>true</c> if this instance is in mixed folder; otherwise, <c>false</c>.</value>
-        bool IsInMixedFolder { get; }
-
-        /// <summary>
         /// Updates to repository.
         /// </summary>
         /// <param name="updateReason">The update reason.</param>
@@ -55,5 +49,11 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         bool BeforeMetadataRefresh();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is unidentified.
+        /// </summary>
+        /// <value><c>true</c> if this instance is unidentified; otherwise, <c>false</c>.</value>
+        bool IsUnidentified { get; set; }
     }
 }

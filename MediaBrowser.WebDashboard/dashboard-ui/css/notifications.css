@@ -183,18 +183,3 @@
         max-width: 350px;
     }
 }
-
-@media all and (min-width: 600px) {
-    .notificationsFlyout {
-        width: 500px;
-    }
-
-    .imgNotification, .imgNotificationInner {
-        width: 60px;
-        height: 60px;
-    }
-
-    .notificationContent p {
-        max-width: 400px;
-    }
-}

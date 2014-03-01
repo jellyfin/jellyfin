@@ -906,6 +906,10 @@
                     html += LibraryBrowser.getPlayedIndicatorHtml(item);
                 }
 
+                if (item.IsUnidentified) {
+                    html += '<div class="unidentifiedIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
+                }
+
                 if (!options.overlayText) {
 
                     if (progressHtml) {
