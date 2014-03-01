@@ -209,6 +209,8 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableRealtimeMonitor { get; set; }
         public PathSubstitution[] PathSubstitutions { get; set; }
 
+        public string ServerName { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
