@@ -6,10 +6,8 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
@@ -50,18 +48,6 @@ namespace MediaBrowser.Api.Library
         public int Index { get; set; }
     }
 
-    [Route("/Items/{Id}/ExternalIdInfos", "GET")]
-    [Api(Description = "Gets external id infos for an item")]
-    public class GetExternalIdInfos : IReturn<List<ExternalIdInfo>>
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-    }
-    
     /// <summary>
     /// Class GetCriticReviews
     /// </summary>
@@ -256,29 +242,18 @@ namespace MediaBrowser.Api.Library
         private readonly IUserDataManager _userDataManager;
 
         private readonly IDtoService _dtoService;
-        private readonly IProviderManager _providerManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IProviderManager providerManager)
+                              IDtoService dtoService, IUserDataManager userDataManager)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
-            _providerManager = providerManager;
-        }
-
-        public object Get(GetExternalIdInfos request)
-        {
-            var item = _dtoService.GetItemByDtoId(request.Id);
-
-            var infos = _providerManager.GetExternalIdInfos(item).ToList();
-
-            return ToOptimizedResult(infos);
         }
 
         public object Get(GetMediaFolders request)

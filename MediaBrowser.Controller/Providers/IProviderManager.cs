@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -126,5 +127,14 @@ namespace MediaBrowser.Controller.Providers
             CancellationToken cancellationToken)
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo;
+
+        /// <summary>
+        /// Gets the search image.
+        /// </summary>
+        /// <param name="providerName">Name of the provider.</param>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{HttpResponseInfo}.</returns>
+        Task<HttpResponseInfo> GetSearchImage(string providerName, string url, CancellationToken cancellationToken);
     }
 }

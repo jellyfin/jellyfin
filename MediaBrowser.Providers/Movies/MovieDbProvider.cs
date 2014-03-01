@@ -558,7 +558,12 @@ namespace MediaBrowser.Providers.Movies
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = MovieDbResourcePool
+            });
         }
     }
 }
