@@ -271,7 +271,6 @@
             $('#fldSortName', page).hide();
             $('#fldDateAdded', page).hide();
             $('#fldYear', page).hide();
-            $('.fldRefresh', page).hide();
         } else {
             $('#tagsCollapsible', page).show();
             $('#metadataSettingsCollapsible', page).show();
@@ -279,7 +278,12 @@
             $('#fldSortName', page).show();
             $('#fldDateAdded', page).show();
             $('#fldYear', page).show();
-            $('.fldRefresh', page).show();
+        }
+        
+        if (item.Type == "Movie") {
+            $('#btnIdentify', page).show();
+        } else {
+            $('#btnIdentify', page).hide();
         }
 
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {

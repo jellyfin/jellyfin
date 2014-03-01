@@ -130,6 +130,11 @@
             Gets the collection of headers to be added to outgoing requests.
             </summary>
         </member>
+        <member name="P:ServiceStack.ServiceClientBase.CaptureSynchronizationContext">
+            <summary>
+            Whether to execute async callbacks on the same Synchronization Context it was called from.
+            </summary>
+        </member>
         <member name="P:ServiceStack.ServiceClientBase.Credentials">
             <summary>
             Gets or sets authentication information for the request.

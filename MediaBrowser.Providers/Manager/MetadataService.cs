@@ -312,6 +312,7 @@ namespace MediaBrowser.Providers.Manager
 
                             // Only one local provider allowed per item
                             hasLocalMetadata = true;
+                            item.IsUnidentified = false;
                             break;
                         }
 
