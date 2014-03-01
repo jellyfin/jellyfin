@@ -74,6 +74,21 @@ namespace MediaBrowser.Providers.TV
                         break;
                     }
 
+                case "AnimeSeriesIndex":
+                    {
+                        var number = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(number))
+                        {
+                            int num;
+
+                            if (int.TryParse(number, out num))
+                            {
+                                item.AnimeSeriesIndex = num;
+                            }
+                        }
+                        break;
+                    }
                 case "SeriesName":
                     item.Name = reader.ReadElementContentAsString();
                     break;

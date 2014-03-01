@@ -664,6 +664,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             dto.DisplayMediaType = item.DisplayMediaType;
+            dto.IsUnidentified = item.IsUnidentified;
 
             if (fields.Contains(ItemFields.Settings))
             {
@@ -1092,6 +1093,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.DisplaySpecialsWithSeasons = series.DisplaySpecialsWithSeasons;
                 }
+
+                dto.AnimeSeriesIndex = series.AnimeSeriesIndex;
             }
 
             if (episode != null)

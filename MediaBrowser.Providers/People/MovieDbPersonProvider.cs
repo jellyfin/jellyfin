@@ -217,7 +217,7 @@ namespace MediaBrowser.Providers.People
 
         private static string GetPersonsDataPath(IApplicationPaths appPaths)
         {
-            return Path.Combine(appPaths.DataPath, "tmdb-people");
+            return Path.Combine(appPaths.CachePath, "tmdb-people");
         }
 
         #region Result Objects

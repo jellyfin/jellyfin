@@ -20,7 +20,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public void Run()
         {
-            _manager.Start();
+            //_manager.Start();
         }
 
         #region Dispose

@@ -458,7 +458,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns>System.String.</returns>
         internal static string GetArtistDataPath(IApplicationPaths appPaths)
         {
-            var dataPath = Path.Combine(appPaths.DataPath, "fanart-music");
+            var dataPath = Path.Combine(appPaths.CachePath, "fanart-music");
 
             return dataPath;
         }
