@@ -336,6 +336,42 @@ namespace MediaBrowser.ServerApplication
                 {
                     // Not there, no big deal
                 }
+
+                try
+                {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "fanart-movies"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
+
+                try
+                {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "fanart-music"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
+
+                try
+                {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "fanart-tv"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
+
+                try
+                {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-people"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
             });
         }
 
@@ -812,7 +848,8 @@ namespace MediaBrowser.ServerApplication
                 HasUpdateAvailable = _hasUpdateAvailable,
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
-                IsRunningAsService = IsRunningAsService
+                IsRunningAsService = IsRunningAsService,
+                ServerName = string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.ServerName) ? Environment.MachineName : ServerConfigurationManager.Configuration.ServerName
             };
         }
 
