@@ -380,7 +380,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>System.String.</returns>
         internal static string GetMoviesDataPath(IApplicationPaths appPaths)
         {
-            var dataPath = Path.Combine(appPaths.DataPath, "fanart-movies");
+            var dataPath = Path.Combine(appPaths.CachePath, "fanart-movies");
 
             return dataPath;
         }

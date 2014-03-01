@@ -48,6 +48,10 @@ namespace MediaBrowser.Model.Dto
         public string AwardSummary { get; set; }
 
         public float? Metascore { get; set; }
+
+        public bool IsUnidentified { get; set; }
+
+        public int? AnimeSeriesIndex { get; set; }
         
         /// <summary>
         /// Gets or sets the DVD season number.
