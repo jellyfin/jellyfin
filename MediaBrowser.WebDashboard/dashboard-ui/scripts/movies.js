@@ -176,24 +176,6 @@
             reloadItems(page);
         });
 
-
-        $('.chkVideoTypeFilter', this).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.VideoTypes || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.VideoTypes = filters;
-
-            reloadItems(page);
-        });
-
         $('#selectView', this).on('change', function () {
 
             view = this.value;
@@ -210,6 +192,23 @@
             }
 
             LibraryBrowser.saveViewSetting('movies', view);
+        });
+
+        $('.chkVideoTypeFilter', this).on('change', function () {
+
+            var filterName = this.getAttribute('data-filter');
+            var filters = query.VideoTypes || "";
+
+            filters = (',' + filters).replace(',' + filterName, '').substring(1);
+
+            if (this.checked) {
+                filters = filters ? (filters + ',' + filterName) : filterName;
+            }
+
+            query.StartIndex = 0;
+            query.VideoTypes = filters;
+
+            reloadItems(page);
         });
 
         $('#chk3D', this).on('change', function () {

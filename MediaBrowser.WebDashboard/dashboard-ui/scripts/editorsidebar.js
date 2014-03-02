@@ -106,6 +106,8 @@
                 nodes.push({ attr: { id: name, rel: 'folder', itemtype: 'livetvservice' }, data: htmlName, state: 'closed' });
             }
 
+            nodes.push({ attr: { id: 'libraryreport', rel: 'default', itemtype: 'libraryreport' }, data: 'Library List' });
+
             callback(nodes);
 
         });
@@ -140,6 +142,11 @@
         var id = node.attr("id");
 
         var itemtype = node.attr("itemtype");
+
+        if (itemtype == 'libraryreport') {
+
+            return;
+        }
 
         if (itemtype == 'livetvservice') {
 

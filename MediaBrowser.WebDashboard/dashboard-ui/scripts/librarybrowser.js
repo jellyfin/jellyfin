@@ -1760,7 +1760,8 @@
                 if (item.Status == "Continuing") {
                     miscInfo.push(item.ProductionYear + "-Present");
 
-                } else if (item.ProductionYear) {
+                }
+                else if (item.ProductionYear) {
 
                     text = item.ProductionYear;
 

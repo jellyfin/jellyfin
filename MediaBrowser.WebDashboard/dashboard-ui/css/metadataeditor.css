@@ -53,7 +53,6 @@
     background-repeat: no-repeat;
     background-size: contain;
     display: block;
-
     /* For the box shadow so that the bottom border isnt underneath the text */
     z-index: 100000;
     position: relative;
@@ -144,6 +143,24 @@
         height: 83px;
     }
 }
+
+.libraryReportIndicator {
+    position: relative;
+    display: block;
+    text-align: center;
+    vertical-align: middle;
+    width: 24px;
+    height: 19px;
+    padding-top: 3px;
+    border-radius: 50%;
+    color: #fff;
+    background: rgb(204, 0, 0);
+    background: rgba(204, 0, 0, .8);
+}
+
+    .libraryReportIndicator div:after {
+        background-color: transparent !important;
+    }
 
 .editorTile {
     display: inline-block;
