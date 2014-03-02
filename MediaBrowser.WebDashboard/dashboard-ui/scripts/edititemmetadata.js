@@ -1018,7 +1018,7 @@
                 html += '<a href="#" class="searchImage" data-index="' + i + '" style="background-image:url(\'' + displayUrl + '\');">';
             } else {
 
-                html += '<a href="#" class="searchImage" style="background-image:url(\'css/images/items/list/remotesearch.png\');background-position: center center;">';
+                html += '<a href="#" class="searchImage" data-index="' + i + '" style="background-image:url(\'css/images/items/list/remotesearch.png\');background-position: center center;">';
             }
             html += '</a>';
 

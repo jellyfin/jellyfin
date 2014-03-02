@@ -53,10 +53,6 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
-            var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-
-            var tmdbImageUrl = tmdbSettings.images.base_url + "original";
-            
             var tmdbId = searchInfo.GetProviderId(MetadataProviders.Tmdb);
 
             if (!string.IsNullOrEmpty(tmdbId))
@@ -68,6 +64,9 @@ namespace MediaBrowser.Providers.TV
                 var dataFilePath = GetDataFilePath(tmdbId, searchInfo.MetadataLanguage);
 
                 var obj = _jsonSerializer.DeserializeFromFile<RootObject>(dataFilePath);
+
+                var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
 
                 var remoteResult = new RemoteSearchResult
                 {
@@ -95,16 +94,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (searchResult != null)
                 {
-                    var remoteResult = new RemoteSearchResult
-                    {
-                        Name = searchResult.name,
-                        SearchProviderName = Name,
-                        ImageUrl = string.IsNullOrWhiteSpace(searchResult.poster_path) ? null : tmdbImageUrl + searchResult.poster_path
-                    };
-
-                    remoteResult.SetProviderId(MetadataProviders.Tmdb, searchResult.id.ToString(_usCulture));
-
-                    return new[] { remoteResult };
+                    return new[] { searchResult };
                 }
             }
 
@@ -116,16 +106,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (searchResult != null)
                 {
-                    var remoteResult = new RemoteSearchResult
-                    {
-                        Name = searchResult.name,
-                        SearchProviderName = Name,
-                        ImageUrl = string.IsNullOrWhiteSpace(searchResult.poster_path) ? null : tmdbImageUrl + searchResult.poster_path
-                    };
-
-                    remoteResult.SetProviderId(MetadataProviders.Tmdb, searchResult.id.ToString(_usCulture));
-
-                    return new[] { remoteResult };
+                    return new[] { searchResult };
                 }
             }
 
@@ -148,7 +129,7 @@ namespace MediaBrowser.Providers.TV
 
                     if (searchResult != null)
                     {
-                        tmdbId = searchResult.id.ToString(_usCulture);
+                        tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
                     }
                 }
             }
@@ -163,7 +144,7 @@ namespace MediaBrowser.Providers.TV
 
                     if (searchResult != null)
                     {
-                        tmdbId = searchResult.id.ToString(_usCulture);
+                        tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
                     }
                 }
             }
@@ -418,7 +399,7 @@ namespace MediaBrowser.Providers.TV
             return false;
         }
 
-        private async Task<MovieDbSearch.TvResult> FindByExternalId(string id, string externalSource, CancellationToken cancellationToken)
+        private async Task<RemoteSearchResult> FindByExternalId(string id, string externalSource, CancellationToken cancellationToken)
         {
             var url = string.Format("http://api.themoviedb.org/3/tv/find/{0}?api_key={1}&external_source={2}",
                 id,
@@ -441,7 +422,19 @@ namespace MediaBrowser.Providers.TV
 
                     if (tv != null)
                     {
-                        return tv;
+                        var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+                        var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+
+                        var remoteResult = new RemoteSearchResult
+                        {
+                            Name = tv.name,
+                            SearchProviderName = Name,
+                            ImageUrl = string.IsNullOrWhiteSpace(tv.poster_path) ? null : tmdbImageUrl + tv.poster_path
+                        };
+
+                        remoteResult.SetProviderId(MetadataProviders.Tmdb, tv.id.ToString(_usCulture));
+
+                        return remoteResult;
                     }
                 }
             }
