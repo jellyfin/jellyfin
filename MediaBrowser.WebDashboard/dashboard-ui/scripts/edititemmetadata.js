@@ -280,7 +280,7 @@
             $('#fldYear', page).show();
         }
 
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "AdultVideo" || item.Type == "Series" || item.Type == "Game" || item.Type == "BoxSet" || item.Type == "Person") {
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "AdultVideo" || item.Type == "Series" || item.Type == "Game" || item.Type == "BoxSet" || item.Type == "Person" || item.Type == "Book") {
             $('#btnIdentify', page).show();
         } else {
             $('#btnIdentify', page).hide();
@@ -894,7 +894,7 @@
             }
 
             $('#txtLookupName', page).val(item.Name);
-            
+
             if (item.Type == "Person" || item.Type == "BoxSet") {
 
                 $('.fldLookupYear', page).hide();
@@ -957,11 +957,17 @@
             Dashboard.alert('Please enter a name or an external Id.');
             return;
         }
+        
+        if (currentItem.GameSystem) {
+            lookupInfo.GameSystem = currentItem.GameSystem;
+        }
 
         lookupInfo = {
             SearchInfo: lookupInfo,
             IncludeDisabledProviders: true
         };
+
+        Dashboard.showLoadingMsg();
 
         $.ajax({
             type: "POST",
@@ -971,6 +977,7 @@
 
         }).done(function (results) {
 
+            Dashboard.hideLoadingMsg();
             showIdentificationSearchResults(page, results);
         });
     }
@@ -986,7 +993,6 @@
         $('.btnSearchAgain', page).show();
 
         var html = '';
-
 
         for (var i = 0, length = results.length; i < length; i++) {
 
@@ -1009,9 +1015,9 @@
             if (result.ImageUrl) {
                 var displayUrl = getSearchImageDisplayUrl(result.ImageUrl, result.SearchProviderName);
 
-                html += '<a href="#" class="searchImage" style="background-image:url(\'' + displayUrl + '\');">';
+                html += '<a href="#" class="searchImage" data-index="' + i + '" style="background-image:url(\'' + displayUrl + '\');">';
             } else {
-                
+
                 html += '<a href="#" class="searchImage" style="background-image:url(\'css/images/items/list/remotesearch.png\');background-position: center center;">';
             }
             html += '</a>';
@@ -1024,12 +1030,34 @@
             html += result.ProductionYear || '&nbsp;';
             html += '</div>';
 
-            html += '<div><button class="btnSelectSearchResult" type="button" data-icon="check" data-mini="true">Select</button></div>';
-
             html += '</div>';
         }
 
-        $('.identificationSearchResultList', page).html(html).trigger('create');
+        var elem = $('.identificationSearchResultList', page).html(html).trigger('create');
+
+        $('.searchImage', elem).on('click', function () {
+
+            Dashboard.showLoadingMsg();
+            
+            var index = parseInt(this.getAttribute('data-index'));
+
+            var currentResult = results[index];
+
+            $.ajax({
+                type: "POST",
+                url: ApiClient.getUrl("Items/RemoteSearch/Apply/" + currentItem.Id),
+                data: JSON.stringify(currentResult),
+                contentType: "application/json"
+
+            }).done(function () {
+
+                Dashboard.hideLoadingMsg();
+
+                $('.popupIdentify', page).popup('close');
+
+                reload(page);
+            });
+        });
     }
 
     $(document).on('pageinit', "#editItemMetadataPage", function () {
@@ -1082,8 +1110,8 @@
             showIdentificationForm(page);
         });
 
-        $('.btnSearchAgain', page).on('click', function() {
-            
+        $('.btnSearchAgain', page).on('click', function () {
+
             $('.popupIdentifyForm', page).show();
             $('.identificationSearchResults', page).hide();
             $('.btnSearchAgain', page).hide();

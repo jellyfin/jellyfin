@@ -53,6 +53,10 @@
     background-repeat: no-repeat;
     background-size: contain;
     display: block;
+
+    /* For the box shadow so that the bottom border isnt underneath the text */
+    z-index: 100000;
+    position: relative;
 }
 
 .remotePosterImage {
@@ -119,7 +123,6 @@
 .searchImageContainer .remoteImageDetails {
     overflow-x: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 @media all and (min-width: 500px) {
@@ -170,6 +173,12 @@
 
 .imageEditorCollapsible .ui-collapsible-content {
     padding: 0 0 1em 0;
+}
+
+.remoteImage:hover, .searchImageContainer:hover {
+    -moz-box-shadow: 0 0 12px 7px #38c;
+    -webkit-box-shadow: 0 0 12px 7px #38c;
+    box-shadow: 0 0 12px 7px #38c;
 }
 
 @media all and (min-width: 600px) {
@@ -294,9 +303,39 @@
     }
 }
 
+.popupIdentifyForm, .identificationSearchResults {
+    overflow-y: auto;
+}
+
+
+@media all and (min-height: 500px) {
+
+    .popupIdentifyForm, .identificationSearchResults {
+        height: 350px;
+    }
+}
+
+@media all and (min-height: 600px) {
+
+    .popupIdentifyForm, .identificationSearchResults {
+        height: 450px;
+    }
+}
+
+@media all and (min-height: 700px) {
+
+    .popupIdentifyForm, .identificationSearchResults {
+        height: 550px;
+    }
+}
+
 @media all and (min-height: 800px) {
 
     .availableImagesList {
+        height: 600px;
+    }
+
+    .popupIdentifyForm, .identificationSearchResults {
         height: 600px;
     }
 }
@@ -304,6 +343,10 @@
 @media all and (min-height: 900px) {
 
     .availableImagesList {
+        height: 700px;
+    }
+
+    .popupIdentifyForm, .identificationSearchResults {
         height: 700px;
     }
 }

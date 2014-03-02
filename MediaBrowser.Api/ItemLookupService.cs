@@ -5,7 +5,9 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using ServiceStack;
 using System;
@@ -81,20 +83,30 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "ProviderName", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ProviderName { get; set; }
     }
-    
+
+    [Route("/Items/RemoteSearch/Apply/{Id}", "POST")]
+    [Api(Description = "Applies search criteria to an item and refreshes metadata")]
+    public class ApplySearchCriteria : RemoteSearchResult, IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "The item id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     public class ItemLookupService : BaseApiService
     {
         private readonly IDtoService _dtoService;
         private readonly IProviderManager _providerManager;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
+        private readonly ILibraryManager _libraryManager;
 
-        public ItemLookupService(IDtoService dtoService, IProviderManager providerManager, IServerApplicationPaths appPaths, IFileSystem fileSystem)
+        public ItemLookupService(IDtoService dtoService, IProviderManager providerManager, IServerApplicationPaths appPaths, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             _dtoService = dtoService;
             _providerManager = providerManager;
             _appPaths = appPaths;
             _fileSystem = fileSystem;
+            _libraryManager = libraryManager;
         }
 
         public object Get(GetExternalIdInfos request)
@@ -160,6 +172,31 @@ namespace MediaBrowser.Api
             var result = GetRemoteImage(request).Result;
 
             return result;
+        }
+
+        public void Post(ApplySearchCriteria request)
+        {
+            var item = _libraryManager.GetItemById(new Guid(request.Id));
+
+            foreach (var key in request.ProviderIds)
+            {
+                var value = key.Value;
+
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    item.SetProviderId(key.Key, value);
+                }
+            }
+
+            var task = item.RefreshMetadata(new MetadataRefreshOptions
+            {
+                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                ImageRefreshMode = ImageRefreshMode.FullRefresh,
+                ReplaceAllMetadata = true
+
+            }, CancellationToken.None);
+
+            Task.WaitAll(task);
         }
 
         /// <summary>

@@ -144,62 +144,6 @@ namespace MediaBrowser.Providers.Movies
             return 0;
         }
 
-        private TmdbMovieSearchResult FindBestResult(List<TmdbMovieSearchResult> results, string name, int? year)
-        {
-            if (year.HasValue)
-            {
-                // Take the first result from the same year
-                var result = results.FirstOrDefault(i =>
-                {
-                    // Make sure it has a name
-                    if (!string.IsNullOrEmpty(i.title ?? i.name))
-                    {
-                        DateTime r;
-
-                        // These dates are always in this exact format
-                        if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
-                        {
-                            return r.Year == year.Value;
-                        }
-                    }
-
-                    return false;
-                });
-
-                if (result != null)
-                {
-                    return result;
-                }
-
-                // Take the first result within one year
-                result = results.FirstOrDefault(i =>
-                {
-                    // Make sure it has a name
-                    if (!string.IsNullOrEmpty(i.title ?? i.name))
-                    {
-                        DateTime r;
-
-                        // These dates are always in this exact format
-                        if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
-                        {
-                            return Math.Abs(r.Year - year.Value) <= 1;
-                        }
-                    }
-
-                    return false;
-                });
-
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            // Just take the first one
-            return results.FirstOrDefault(i => !string.IsNullOrEmpty(i.title ?? i.name));
-        }
-
-
         /// <summary>
         /// Class TmdbMovieSearchResult
         /// </summary>
