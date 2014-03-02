@@ -4,7 +4,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -130,32 +129,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            var searchResults = await new MovieDbSearch(_logger, _jsonSerializer).GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
-
-            return searchResults.Select(i =>
-            {
-                var remoteResult = new RemoteSearchResult
-                {
-                    SearchProviderName = Name,
-                    Name = i.name,
-                    ImageUrl = string.IsNullOrWhiteSpace(i.poster_path) ? null : tmdbImageUrl + i.poster_path
-                };
-
-                if (!string.IsNullOrWhiteSpace(i.release_date))
-                {
-                    DateTime r;
-
-                    // These dates are always in this exact format
-                    if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", _usCulture, DateTimeStyles.None, out r))
-                    {
-                        remoteResult.PremiereDate = r.ToUniversalTime();
-                    }
-                }
-
-                remoteResult.SetProviderId(MetadataProviders.Tmdb, i.id.ToString(_usCulture));
-
-                return remoteResult;
-            });
+            return await new MovieDbSearch(_logger, _jsonSerializer).GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
@@ -202,7 +176,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (searchResult != null)
                 {
-                    tmdbId = searchResult.id.ToString(_usCulture);
+                    tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
                 }
             }
 

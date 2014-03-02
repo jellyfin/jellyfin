@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.Movies
 
                 if (searchResult != null)
                 {
-                    tmdbId = searchResult.id.ToString(_usCulture);
+                    tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
                 }
             }
 
