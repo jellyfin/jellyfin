@@ -79,6 +79,18 @@ namespace MediaBrowser.Providers.Movies
                     ImageUrl = string.IsNullOrWhiteSpace(obj.poster_path) ? null : tmdbImageUrl + obj.poster_path
                 };
 
+                if (!string.IsNullOrWhiteSpace(obj.release_date))
+                {
+                    DateTime r;
+
+                    // These dates are always in this exact format
+                    if (DateTime.TryParse(obj.release_date, _usCulture, DateTimeStyles.None, out r))
+                    {
+                        remoteResult.PremiereDate = r.ToUniversalTime();
+                        remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
+                    }
+                }
+                
                 remoteResult.SetProviderId(MetadataProviders.Tmdb, obj.id.ToString(_usCulture));
 
                 if (!string.IsNullOrWhiteSpace(obj.imdb_id))
@@ -571,7 +583,7 @@ namespace MediaBrowser.Providers.Movies
             public string poster_path { get; set; }
             public List<ProductionCompany> production_companies { get; set; }
             public List<ProductionCountry> production_countries { get; set; }
-            public DateTime release_date { get; set; }
+            public string release_date { get; set; }
             public int revenue { get; set; }
             public int runtime { get; set; }
             public List<SpokenLanguage> spoken_languages { get; set; }

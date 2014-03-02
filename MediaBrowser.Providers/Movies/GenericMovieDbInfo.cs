@@ -176,11 +176,16 @@ namespace MediaBrowser.Providers.Movies
                                                        : null;
             }
 
-            if (movieData.release_date.Year != 1)
+            if (!string.IsNullOrWhiteSpace(movieData.release_date))
             {
-                //no specific country release info at all
-                movie.PremiereDate = movieData.release_date.ToUniversalTime();
-                movie.ProductionYear = movieData.release_date.Year;
+                DateTime r;
+
+                // These dates are always in this exact format
+                if (DateTime.TryParse(movieData.release_date, _usCulture, DateTimeStyles.None, out r))
+                {
+                    movie.PremiereDate = r.ToUniversalTime();
+                    movie.ProductionYear = movie.PremiereDate.Value.Year;
+                }
             }
 
             //studios

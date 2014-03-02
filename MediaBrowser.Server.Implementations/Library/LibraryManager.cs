@@ -922,6 +922,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
+            // Ensure the location is unavailable.
+            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
+
             return new PeopleValidator(this, _logger).ValidatePeople(cancellationToken, progress);
         }
 
@@ -933,6 +936,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress)
         {
+            // Ensure the location is unavailable.
+            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.ArtistsPath);
+            
             return new ArtistsValidator(this, _userManager, _logger).Run(progress, cancellationToken);
         }
 
@@ -944,6 +950,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task ValidateMusicGenres(CancellationToken cancellationToken, IProgress<double> progress)
         {
+            // Ensure the location is unavailable.
+            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.MusicGenrePath);
+            
             return new MusicGenresValidator(this, _userManager, _logger).Run(progress, cancellationToken);
         }
 
@@ -955,6 +964,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task ValidateGameGenres(CancellationToken cancellationToken, IProgress<double> progress)
         {
+            // Ensure the location is unavailable.
+            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.GameGenrePath);
+            
             return new GameGenresValidator(this, _userManager, _logger).Run(progress, cancellationToken);
         }
 
@@ -966,6 +978,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task ValidateStudios(CancellationToken cancellationToken, IProgress<double> progress)
         {
+            // Ensure the location is unavailable.
+            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.StudioPath);
+
             return new StudiosValidator(this, _userManager, _logger).Run(progress, cancellationToken);
         }
 
@@ -977,6 +992,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task ValidateGenres(CancellationToken cancellationToken, IProgress<double> progress)
         {
+            // Ensure the location is unavailable.
+            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.GenrePath);
+
             return new GenresValidator(this, _userManager, _logger).Run(progress, cancellationToken);
         }
 
