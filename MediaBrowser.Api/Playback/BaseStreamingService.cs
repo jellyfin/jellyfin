@@ -491,6 +491,16 @@ namespace MediaBrowser.Api.Playback
 
                 return string.Format("{4} -vf \"{0}scale=trunc({1}/2)*2:trunc({2}/2)*2{3}\"", yadifParam, widthParam, heightParam, assSubtitleParam, copyTsParam);
             }
+            
+              // If Max dimensions were supplied
+              //this makes my brain hurt. For width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
+             if (request.MaxWidth.HasValue && request.MaxHeight.HasValue)
+             {
+                 var MaxwidthParam = request.MaxWidth.Value.ToString(UsCulture);
+                 var MaxheightParam = request.MaxHeight.Value.ToString(UsCulture);
+ 
+                 return string.Format("{4} -vf \"{0}scale=trunc(min(iw\\,{1})/2)*2:trunc(min((iw/dar)\\,{2})/2)*2{3}\"", yadifParam, MaxwidthParam, MaxheightParam, assSubtitleParam, copyTsParam);
+             }
 
             var isH264Output = outputVideoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase);
 
