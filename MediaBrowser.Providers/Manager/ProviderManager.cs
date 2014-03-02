@@ -492,7 +492,7 @@ namespace MediaBrowser.Providers.Manager
                     Type = MetadataPluginType.MetadataFetcher
                 }));
             }
-            
+
             if (item.IsSaveLocalMetadataEnabled())
             {
                 // Savers
@@ -668,7 +668,7 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var provider in providers)
             {
-                var results = await provider.GetSearchResults(searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
+                var results = await GetSearchResults(provider, searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
 
                 var list = results.ToList();
 
@@ -680,6 +680,22 @@ namespace MediaBrowser.Providers.Manager
 
             // Nothing found
             return new List<RemoteSearchResult>();
+        }
+
+        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResults<TLookupType>(IRemoteSearchProvider<TLookupType> provider, TLookupType searchInfo,
+            CancellationToken cancellationToken)
+            where TLookupType : ItemLookupInfo
+        {
+            var results = await provider.GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
+
+            var list = results.ToList();
+
+            foreach (var item in list)
+            {
+                item.SearchProviderName = provider.Name;
+            }
+
+            return list;
         }
 
         public Task<HttpResponseInfo> GetSearchImage(string providerName, string url, CancellationToken cancellationToken)
