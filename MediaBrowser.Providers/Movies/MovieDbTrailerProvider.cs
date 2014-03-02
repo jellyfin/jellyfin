@@ -23,9 +23,9 @@ namespace MediaBrowser.Providers.Movies
             return MovieDbProvider.Current.GetItemMetadata<Trailer>(info, cancellationToken);
         }
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
         {
-            return new List<RemoteSearchResult>();
+            return MovieDbProvider.Current.GetMovieSearchResults(searchInfo, cancellationToken);
         }
 
         public string Name

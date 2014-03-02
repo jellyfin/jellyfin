@@ -1,6 +1,8 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -29,27 +31,31 @@ namespace MediaBrowser.Providers.Movies
             _json = json;
         }
 
-        public Task<IEnumerable<TmdbMovieSearchResult>> GetSearchResults(SeriesInfo idInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo idInfo, CancellationToken cancellationToken)
         {
             return GetSearchResults(idInfo, "tv", cancellationToken);
         }
 
-        public Task<IEnumerable<TmdbMovieSearchResult>> GetMovieSearchResults(ItemLookupInfo idInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetMovieSearchResults(ItemLookupInfo idInfo, CancellationToken cancellationToken)
         {
             return GetSearchResults(idInfo, "movie", cancellationToken);
         }
 
-        public Task<IEnumerable<TmdbMovieSearchResult>> GetSearchResults(BoxSetInfo idInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(BoxSetInfo idInfo, CancellationToken cancellationToken)
         {
             return GetSearchResults(idInfo, "collection", cancellationToken);
         }
 
-        private async Task<IEnumerable<TmdbMovieSearchResult>> GetSearchResults(ItemLookupInfo idInfo, string searchType, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ItemLookupInfo idInfo, string searchType, CancellationToken cancellationToken)
         {
             var name = idInfo.Name;
             var year = idInfo.Year;
             int? yearInName = null;
 
+            var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+
+            var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+            
             NameParser.ParseName(name, out name, out yearInName);
 
             year = year ?? yearInName;
@@ -60,14 +66,14 @@ namespace MediaBrowser.Providers.Movies
             //nope - search for it
             //var searchType = item is BoxSet ? "collection" : "movie";
 
-            var results = await GetSearchResults(name, searchType, year, language, cancellationToken).ConfigureAwait(false);
+            var results = await GetSearchResults(name, searchType, year, language, tmdbImageUrl, cancellationToken).ConfigureAwait(false);
             
             if (results.Count == 0)
             {
                 //try in english if wasn't before
                 if (!string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                 {
-                    results = await GetSearchResults(name, searchType, year, "en", cancellationToken).ConfigureAwait(false);
+                    results = await GetSearchResults(name, searchType, year, "en", tmdbImageUrl, cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -88,21 +94,29 @@ namespace MediaBrowser.Providers.Movies
                 // Search again if the new name is different
                 if (!string.Equals(name, originalName))
                 {
-                    results = await GetSearchResults(name, searchType, year, language, cancellationToken).ConfigureAwait(false);
+                    results = await GetSearchResults(name, searchType, year, language, tmdbImageUrl, cancellationToken).ConfigureAwait(false);
 
                     if (results.Count == 0 && !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                     {
                         //one more time, in english
-                        results = await GetSearchResults(name, searchType, year, "en", cancellationToken).ConfigureAwait(false);
+                        results = await GetSearchResults(name, searchType, year, "en", tmdbImageUrl, cancellationToken).ConfigureAwait(false);
 
                     }
                 }
             }
 
-            return results;
+            return results.Where(i =>
+            {
+                if (year.HasValue && i.ProductionYear.HasValue)
+                {
+                    return year.Value == i.ProductionYear.Value;
+                }
+
+                return true;
+            });
         }
 
-        private async Task<List<TmdbMovieSearchResult>> GetSearchResults(string name, string type, int? year, string language, CancellationToken cancellationToken)
+        private async Task<List<RemoteSearchResult>> GetSearchResults(string name, string type, int? year, string language, string baseImageUrl, CancellationToken cancellationToken)
         {
             var url3 = string.Format(Search3, WebUtility.UrlEncode(name), ApiKey, language, type);
 
@@ -124,6 +138,32 @@ namespace MediaBrowser.Providers.Movies
                 return resultTuples.OrderBy(i => GetSearchResultOrder(i.Item1, year))
                     .ThenBy(i => i.Item2)
                     .Select(i => i.Item1)
+                    .Select(i =>
+                    {
+                        var remoteResult = new RemoteSearchResult
+                        {
+                            SearchProviderName = MovieDbProvider.Current.Name,
+                            Name = i.title ?? i.original_title ?? i.name,
+                            ImageUrl = string.IsNullOrWhiteSpace(i.poster_path) ? null : baseImageUrl + i.poster_path
+                        };
+
+                        if (!string.IsNullOrWhiteSpace(i.release_date))
+                        {
+                            DateTime r;
+
+                            // These dates are always in this exact format
+                            if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
+                            {
+                                remoteResult.PremiereDate = r.ToUniversalTime();
+                                remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
+                            }
+                        }
+
+                        remoteResult.SetProviderId(MetadataProviders.Tmdb, i.id.ToString(EnUs));
+
+                        return remoteResult;
+
+                    })
                     .ToList();
             }
         }

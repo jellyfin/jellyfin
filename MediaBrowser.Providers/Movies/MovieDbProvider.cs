@@ -12,6 +12,7 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -35,6 +36,8 @@ namespace MediaBrowser.Providers.Movies
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
 
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        
         public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization)
         {
             _jsonSerializer = jsonSerializer;
@@ -46,9 +49,47 @@ namespace MediaBrowser.Providers.Movies
             Current = this;
         }
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
         {
-            return new List<RemoteSearchResult>();
+            return GetMovieSearchResults(searchInfo, cancellationToken);
+        }
+
+        public async Task<IEnumerable<RemoteSearchResult>> GetMovieSearchResults(ItemLookupInfo searchInfo, CancellationToken cancellationToken)
+        {
+            var tmdbSettings = await GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+
+            var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+
+            var tmdbId = searchInfo.GetProviderId(MetadataProviders.Tmdb);
+
+            if (!string.IsNullOrEmpty(tmdbId))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await EnsureMovieInfo(tmdbId, searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+
+                var dataFilePath = GetDataFilePath(tmdbId, searchInfo.MetadataLanguage);
+
+                var obj = _jsonSerializer.DeserializeFromFile<CompleteMovieData>(dataFilePath);
+
+                var remoteResult = new RemoteSearchResult
+                {
+                    Name = obj.title ?? obj.original_title ?? obj.name,
+                    SearchProviderName = Name,
+                    ImageUrl = string.IsNullOrWhiteSpace(obj.poster_path) ? null : tmdbImageUrl + obj.poster_path
+                };
+
+                remoteResult.SetProviderId(MetadataProviders.Tmdb, obj.id.ToString(_usCulture));
+
+                if (!string.IsNullOrWhiteSpace(obj.imdb_id))
+                {
+                    remoteResult.SetProviderId(MetadataProviders.Imdb, obj.imdb_id);
+                }
+
+                return new[] { remoteResult };
+            }
+
+            return await new MovieDbSearch(_logger, _jsonSerializer).GetMovieSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
         }
 
         public Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
@@ -57,7 +98,7 @@ namespace MediaBrowser.Providers.Movies
         }
 
         public Task<MetadataResult<T>> GetItemMetadata<T>(ItemLookupInfo id, CancellationToken cancellationToken)
-            where T : Video, new ()
+            where T : Video, new()
         {
             var movieDb = new GenericMovieDbInfo<T>(_logger, _jsonSerializer);
 
@@ -347,10 +388,10 @@ namespace MediaBrowser.Providers.Movies
                 var dataFilePath = GetDataFilePath(tmdbId, item.GetPreferredMetadataLanguage());
 
                 var fileInfo = new FileInfo(dataFilePath);
-                
+
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }
-            
+
             return false;
         }
 

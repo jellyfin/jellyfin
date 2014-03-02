@@ -22,7 +22,6 @@ namespace MediaBrowser.Providers.BoxSets
 {
     public class MovieDbBoxSetProvider : IRemoteMetadataProvider<BoxSet, BoxSetInfo>
     {
-        private readonly CultureInfo _enUs = new CultureInfo("en-US");
         private const string GetCollectionInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&append_to_response=images";
 
         internal static MovieDbBoxSetProvider Current;
@@ -78,25 +77,7 @@ namespace MediaBrowser.Providers.BoxSets
                 return new[] { result };
             }
 
-            var results = await new MovieDbSearch(_logger, _json).GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
-
-            return results.Select(i => GetRemoteSearchResult(i, tmdbImageUrl));
-        }
-
-        private RemoteSearchResult GetRemoteSearchResult(MovieDbSearch.TmdbMovieSearchResult tmdbResult, string baseImageUrl)
-        {
-            var result = new RemoteSearchResult
-            {
-                Name = tmdbResult.name,
-
-                SearchProviderName = Name,
-                
-                ImageUrl = string.IsNullOrEmpty(tmdbResult.poster_path) ? null : (baseImageUrl + tmdbResult.poster_path)
-            };
-
-            result.SetProviderId(MetadataProviders.Tmdb, tmdbResult.id.ToString(_usCulture));
-
-            return result;
+            return await new MovieDbSearch(_logger, _json).GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo id, CancellationToken cancellationToken)
@@ -112,7 +93,7 @@ namespace MediaBrowser.Providers.BoxSets
 
                 if (searchResult != null)
                 {
-                    tmdbId = searchResult.id.ToString(_enUs);
+                    tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
                 }
             }
 
@@ -159,7 +140,7 @@ namespace MediaBrowser.Providers.BoxSets
                 Overview = obj.overview
             };
 
-            item.SetProviderId(MetadataProviders.Tmdb, obj.id.ToString(_enUs));
+            item.SetProviderId(MetadataProviders.Tmdb, obj.id.ToString(_usCulture));
 
             return item;
         }
