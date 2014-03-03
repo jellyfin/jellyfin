@@ -970,6 +970,12 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
+            var supportsPlaceHolders = item as ISupportsPlaceHolders;
+            if (supportsPlaceHolders != null)
+            {
+                dto.IsPlaceHolder = supportsPlaceHolders.IsPlaceHolder;
+            }
+            
             // Add audio info
             var audio = item as Audio;
             if (audio != null)

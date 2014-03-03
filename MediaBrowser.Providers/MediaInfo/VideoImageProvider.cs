@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.MediaInfo
             var video = (Video)item;
 
             // No support for this
-            if (video.VideoType == VideoType.HdDvd)
+            if (video.VideoType == VideoType.HdDvd || video.IsPlaceHolder)
             {
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }

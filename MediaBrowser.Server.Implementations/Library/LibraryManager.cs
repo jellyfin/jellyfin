@@ -451,7 +451,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            if (options.DeleteFileLocation && (locationType == LocationType.FileSystem || locationType == LocationType.Offline))
+            if (options.DeleteFileLocation && locationType != LocationType.Remote && locationType != LocationType.Virtual)
             {
                 foreach (var path in item.GetDeletePaths().ToList())
                 {

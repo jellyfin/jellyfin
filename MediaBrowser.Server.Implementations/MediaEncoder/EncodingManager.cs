@@ -84,6 +84,11 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <returns><c>true</c> if [is eligible for chapter image extraction] [the specified video]; otherwise, <c>false</c>.</returns>
         private bool IsEligibleForChapterImageExtraction(Video video)
         {
+            if (video.IsPlaceHolder)
+            {
+                return false;
+            }
+
             if (video is Movie)
             {
                 if (!_config.Configuration.EnableMovieChapterImageExtraction)

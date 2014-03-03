@@ -14,7 +14,7 @@
             </div>
             <div class="editPageInnerContent">
 
-                <h1 style="margin-bottom: 0;">Library List</h1>
+                <h1 style="margin-bottom: 0;">Reports</h1>
 
                 <div style="text-align: center;">
                     <div class="viewControls">
@@ -51,6 +51,7 @@
                             <th data-priority="1">Release Date</th>
                             <th data-priority="1">Rating</th>
                             <th data-priority="1">Runtime</th>
+                            <th data-priority="1" class="thPlayers">Players</th>
                             <th data-priority="1">Codecs</th>
                             <th data-priority="1" class="thSubtitles">Subtitles</th>
                             <th data-priority="1">Features</th>
@@ -108,8 +109,14 @@
                             <strong>Management:</strong>
                         </legend>
 
+                        <input class="chkIsLocked" type="checkbox" id="chkIsLocked" data-mini="true">
+                        <label for="chkIsLocked">Locked</label>
+
                         <input class="chkMissingOverview" type="checkbox" name="chkMissingOverview" id="chkMissingOverview" data-mini="true">
                         <label for="chkMissingOverview">Missing Overview</label>
+
+                        <input class="chkIsUnidentified" type="checkbox" id="chkIsUnidentified" data-mini="true">
+                        <label for="chkIsUnidentified">Unidentified</label>
 
                         <input class="chkYearMismatch" type="checkbox" name="chkYearMismatch" id="chkYearMismatch" data-mini="true">
                         <label for="chkYearMismatch">File/Metadata Years Mismatched</label>

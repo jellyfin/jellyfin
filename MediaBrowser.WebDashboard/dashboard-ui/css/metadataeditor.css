@@ -198,6 +198,10 @@
     box-shadow: 0 0 12px 7px #38c;
 }
 
+.tblLibraryReport img {
+    height: 20px;
+}
+
 @media all and (min-width: 600px) {
 
     .popupIdentify {

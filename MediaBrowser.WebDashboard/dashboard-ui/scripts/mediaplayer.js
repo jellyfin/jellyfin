@@ -1011,7 +1011,7 @@
                 return false;
             }
 
-            if (item.LocationType == "Virtual") {
+            if (item.LocationType == "Virtual" || item.IsPlaceHolder) {
                 return false;
             }
             if (item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre") {

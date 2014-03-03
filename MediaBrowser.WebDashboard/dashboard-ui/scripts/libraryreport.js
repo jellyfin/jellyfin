@@ -6,16 +6,16 @@
         SortBy: "SeriesSortName,SortName",
         SortOrder: "Ascending",
         Recursive: true,
-        Fields: "MediaStreams,DateCreated",
+        Fields: "MediaStreams,DateCreated,Settings",
         StartIndex: 0,
         IncludeItemTypes: "Movie"
     };
-    
+
     function getCodecName(stream) {
 
         var val = stream.Codec || '';
         val = val.toUpperCase();
-        
+
         if (val == 'DCA') {
             return stream.Profile;
         }
@@ -23,7 +23,7 @@
         return val;
     }
 
-    function getTableRowsHtml(items, includeParentInfo, includeSubtitles) {
+    function getTableRowsHtml(items, includeParentInfo, includeSubtitles, includePlayers) {
 
         var html = '';
 
@@ -34,7 +34,10 @@
             html += '<tr>';
 
             html += '<td>';
-            
+
+            if (item.LockData) {
+                html += '<img src="css/images/editor/lock.png" />';
+            }
             if (item.IsUnidentified) {
                 html += '<div class="libraryReportIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
             }
@@ -46,10 +49,13 @@
                     html += '<a href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>';
                 }
                 else if (item.Album) {
-                    html += item.Album + '<br/>';
+                    html += item.Album;
                 }
                 else if (item.AlbumArtist) {
-                    html += item.AlbumArtist + '<br/>';
+                    html += item.AlbumArtist;
+                }
+                else if (item.GameSystem) {
+                    html += item.GameSystem;
                 }
                 else {
                     html += '&nbsp;';
@@ -123,15 +129,21 @@
             }
             html += '</td>';
 
+            if (includePlayers) {
+                html += '<td>';
+                html += item.Players || '&nbsp;';
+                html += '</td>';
+            }
+
             html += '<td>';
-            html += (item.MediaStreams || []).filter(function(s) {
+            html += (item.MediaStreams || []).filter(function (s) {
 
                 return s.Type != 'Subtitle';
 
             }).map(getCodecName).filter(function (s) {
                 return s;
             }).join('<br/>');
-            
+
             html += '</td>';
 
             if (includeSubtitles) {
@@ -142,7 +154,7 @@
 
                 }).map(function (s) {
 
-                    return (s.Language || 'Und') + ' - ' + s.Codec;
+                    return (s.Language || 'und') + ' - ' + s.Codec;
 
                 }).join('<br/>');
 
@@ -185,18 +197,22 @@
 
         $('.listBottomPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount)).trigger('create');
 
-        var includeParentInfo = query.IncludeItemTypes == "Audio" || query.IncludeItemTypes == "MusicAlbum" || query.IncludeItemTypes == "Episode" || query.IncludeItemTypes == "Book";
+        var includeParentInfo = query.IncludeItemTypes == "Audio" || query.IncludeItemTypes == "MusicAlbum" || query.IncludeItemTypes == "Episode" || query.IncludeItemTypes == "Book" || query.IncludeItemTypes == "Game";
         var includeSubtitles = query.IncludeItemTypes == "Movie" || query.IncludeItemTypes == "Trailer" || query.IncludeItemTypes == "Episode" || query.IncludeItemTypes == "AdultVideo" || query.IncludeItemTypes == "MusicVideo" || query.IncludeItemTypes == "Video";
+        var includePlayers = query.IncludeItemTypes == "Game";
 
         if (includeParentInfo) {
 
             var parentLabel = "Series";
-            
+
             if (query.IncludeItemTypes == "Audio") {
                 parentLabel = "Album";
             }
             else if (query.IncludeItemTypes == "MusicAlbum") {
                 parentLabel = "Artist";
+            }
+            else if (query.IncludeItemTypes == "Game") {
+                parentLabel = "Game System";
             }
 
             $('.thParent', page).html(parentLabel).show();
@@ -206,14 +222,20 @@
         }
 
         if (includeSubtitles) {
-
             $('.thSubtitles', page).show();
 
         } else {
             $('.thSubtitles', page).hide();
         }
 
-        var rowsHtml = getTableRowsHtml(result.Items, includeParentInfo, includeSubtitles);
+        if (includePlayers) {
+            $('.thPlayers', page).show();
+
+        } else {
+            $('.thPlayers', page).hide();
+        }
+
+        var rowsHtml = getTableRowsHtml(result.Items, includeParentInfo, includeSubtitles, includePlayers);
         $('.resultBody', page).html(rowsHtml).parents('.tblLibraryReport').table("refresh").trigger('create');
 
         $('.btnNextPage', page).on('click', function () {
@@ -269,6 +291,9 @@
 
         $('#chkMissingOverview', page).checked(query.HasOverview == false).checkboxradio('refresh');
         $('#chkYearMismatch', page).checked(query.IsYearMismatched == true).checkboxradio('refresh');
+
+        $('#chkIsUnidentified', page).checked(query.IsUnidentified == true).checkboxradio('refresh');
+        $('#chkIsLocked', page).checked(query.IsLocked == true).checkboxradio('refresh');
     }
 
     $(document).on('pageinit', "#libraryReportPage", function () {
@@ -409,6 +434,22 @@
 
             query.StartIndex = 0;
             query.IsYearMismatched = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkIsUnidentified', page).on('change', function () {
+
+            query.StartIndex = 0;
+            query.IsUnidentified = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkIsLocked', page).on('change', function () {
+
+            query.StartIndex = 0;
+            query.IsLocked = this.checked ? true : null;
 
             reloadItems(page);
         });

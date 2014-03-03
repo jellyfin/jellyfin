@@ -1029,6 +1029,12 @@
             html += '<div class="remoteImageDetails">';
             html += result.ProductionYear || '&nbsp;';
             html += '</div>';
+            
+            if (result.GameSystem) {
+                html += '<div class="remoteImageDetails">';
+                html += result.GameSystem;
+                html += '</div>';
+            }
 
             html += '</div>';
         }

@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Video
     /// </summary>
-    public class Video : BaseItem, IHasMediaStreams, IHasAspectRatio, IHasTags
+    public class Video : BaseItem, IHasMediaStreams, IHasAspectRatio, IHasTags, ISupportsPlaceHolders
     {
         public bool IsMultiPart { get; set; }
 
@@ -42,6 +42,8 @@ namespace MediaBrowser.Controller.Entities
         /// <value><c>true</c> if this instance has subtitles; otherwise, <c>false</c>.</value>
         public bool HasSubtitles { get; set; }
 
+        public bool IsPlaceHolder { get; set; }
+        
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>
