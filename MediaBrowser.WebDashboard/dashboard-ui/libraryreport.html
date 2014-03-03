@@ -18,6 +18,23 @@
 
                 <div style="text-align: center;">
                     <div class="viewControls">
+                        <div style="display: inline-block;">
+                            <select data-mini="true" data-inline="true" id="selectView" name="selectView">
+                                <option value="AdultVideo">Adult Videos</option>
+                                <option value="MusicAlbum">Albums</option>
+                                <option value="MusicArtist">Artists</option>
+                                <option value="Book">Books</option>
+                                <option value="BoxSet">Collections</option>
+                                <option value="Episode">Episodes</option>
+                                <option value="Game">Games</option>
+                                <option value="Video">Home Videos</option>
+                                <option value="Movie">Movies</option>
+                                <option value="MusicVideo">Music Videos</option>
+                                <option value="Trailer">Trailers</option>
+                                <option value="Series">Series</option>
+                                <option value="Audio">Songs</option>
+                            </select>
+                        </div>
                         <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
                     </div>
                     <div class="listTopPaging">
@@ -28,12 +45,14 @@
                     <thead>
                         <tr>
                             <th data-priority="1"></th>
-                            <th data-priority="1">Parent</th>
+                            <th data-priority="1" class="thParent">Parent</th>
                             <th data-priority="1">Name</th>
-                            <th data-priority="1">Type</th>
-                            <th data-priority="1">Date/Year</th>
+                            <th data-priority="1">Date Added</th>
+                            <th data-priority="1">Release Date</th>
                             <th data-priority="1">Rating</th>
                             <th data-priority="1">Runtime</th>
+                            <th data-priority="1">Codecs</th>
+                            <th data-priority="1" class="thSubtitles">Subtitles</th>
                             <th data-priority="1">Features</th>
                         </tr>
                     </thead>
@@ -57,43 +76,6 @@
                     <label for="radioAdvancedFilters">Advanced</label>
                 </fieldset>
                 <div class="basicFilters">
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            <strong>Type:</strong>
-                        </legend>
-                        <input class="chkTypeFilter" type="checkbox" id="chkMovie" data-filter="Movie" data-mini="true">
-                        <label for="chkMovie">Movie</label>
-
-                        <input class="chkTypeFilter" type="checkbox" id="chkTrailerType" data-filter="Trailer" data-mini="true">
-                        <label for="chkTrailerType">Trailer</label>
-
-                        <input class="chkTypeFilter" type="checkbox" id="chkCollection" data-filter="BoxSet" data-mini="true">
-                        <label for="chkCollection">Collection</label>
-
-                        <input class="chkTypeFilter" type="checkbox" id="chkSeries" data-filter="Series" data-mini="true">
-                        <label for="chkSeries">Series</label>
-
-                        <input class="chkTypeFilter" type="checkbox" id="chkSeason" data-filter="Season" data-mini="true">
-                        <label for="chkSeason">Season</label>
-
-                        <input class="chkTypeFilter" type="checkbox" id="chkEpisode" data-filter="Episode" data-mini="true">
-                        <label for="chkEpisode">Episode</label>
-
-                        <input class="chkTypeFilter" type="checkbox" id="chkArtist" data-filter="MusicArtist" data-mini="true">
-                        <label for="chkArtist">Artist</label>
-
-                        <input class="chkTypeFilter" type="checkbox" id="chkAlbum" data-filter="MusicAlbum" data-mini="true">
-                        <label for="chkAlbum">Album</label>
-
-                        <input class="chkTypeFilter" type="checkbox" id="chkSong" data-filter="Audio" data-mini="true">
-                        <label for="chkSong">Song</label>
-
-                        <input class="chkTypeFilter" type="checkbox" id="chkBook" data-filter="Book" data-mini="true">
-                        <label for="chkBook">Book</label>
-
-                        <input class="chkTypeFilter" type="checkbox" id="chkGame" data-filter="Game" data-mini="true">
-                        <label for="chkGame">Game</label>
-                    </fieldset>
                     <fieldset data-role="controlgroup">
                         <legend>
                             <strong>Video Type:</strong>

@@ -67,7 +67,7 @@
         return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
     }
 
-    function loadChildrenOfRootNode(callback, openItems) {
+    function loadChildrenOfRootNode(page, callback, openItems, selectedId) {
 
         var promise1 = $.getJSON(ApiClient.getUrl("Library/MediaFolders"));
 
@@ -110,6 +110,14 @@
 
             callback(nodes);
 
+            if (selectedId && nodes.filter(function (f) {
+
+                return f.attr.id == selectedId;
+
+            }).length) {
+
+                selectNode(page, selectedId);
+            }
         });
     }
 
@@ -135,7 +143,7 @@
 
         if (node == '-1') {
 
-            loadChildrenOfRootNode(callback, openItems);
+            loadChildrenOfRootNode(page, callback, openItems, selectedId);
             return;
         }
 

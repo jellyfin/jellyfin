@@ -332,7 +332,7 @@ namespace MediaBrowser.Api.UserLibrary
             var userId = user == null ? (Guid?)null : user.Id;
 
             var item = string.IsNullOrEmpty(request.ParentId) ?
-                user == null ? (BaseItem)_libraryManager.RootFolder : user.RootFolder :
+                user == null ? _libraryManager.RootFolder : user.RootFolder :
                 _dtoService.GetItemByDtoId(request.ParentId, userId);
 
             // Default list type = children

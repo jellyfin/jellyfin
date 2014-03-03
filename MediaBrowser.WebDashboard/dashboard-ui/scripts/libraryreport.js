@@ -6,28 +6,24 @@
         SortBy: "SeriesSortName,SortName",
         SortOrder: "Ascending",
         Recursive: true,
-        Fields: "",
-        StartIndex: 0
+        Fields: "MediaStreams,DateCreated",
+        StartIndex: 0,
+        IncludeItemTypes: "Movie"
     };
+    
+    function getCodecName(stream) {
 
-    function getFriendlyTypeName(type) {
+        var val = stream.Codec || '';
+        val = val.toUpperCase();
+        
+        if (val == 'DCA') {
+            return stream.Profile;
+        }
 
-        if (type == "MusicArtist") {
-            return "Artist";
-        }
-        if (type == "MusicAlbum") {
-            return "Album";
-        }
-        if (type == "Audio") {
-            return "Song";
-        }
-        if (type == "BoxSet") {
-            return "Collection";
-        }
-        return type;
+        return val;
     }
 
-    function getTableRowsHtml(items) {
+    function getTableRowsHtml(items, includeParentInfo, includeSubtitles) {
 
         var html = '';
 
@@ -44,27 +40,36 @@
             }
             html += '</td>';
 
-            html += '<td>';
-            if (item.SeriesName) {
-                html += '<a href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>';
+            if (includeParentInfo) {
+                html += '<td>';
+                if (item.SeriesName) {
+                    html += '<a href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>';
+                }
+                else if (item.Album) {
+                    html += item.Album + '<br/>';
+                }
+                else if (item.AlbumArtist) {
+                    html += item.AlbumArtist + '<br/>';
+                }
+                else {
+                    html += '&nbsp;';
+                }
+                html += '</td>';
             }
-            else if (item.Album) {
-                html += item.Album + '<br/>';
-            }
-            else if (item.AlbumArtist) {
-                html += item.AlbumArtist + '<br/>';
-            }
-            else {
-                html += '&nbsp;';
-            }
-            html += '</td>';
 
             html += '<td>';
             html += '<a href="' + LibraryBrowser.getHref(item) + '">' + LibraryBrowser.getPosterViewDisplayName(item, false, true) + '</a>';
             html += '</td>';
 
             html += '<td>';
-            html += getFriendlyTypeName(item.Type);
+            if (item.DateCreated) {
+                try {
+                    html += parseISO8601Date(item.DateCreated, { toLocal: true }).toLocaleDateString();
+                }
+                catch (e) {
+                    html += '&nbsp;';
+                }
+            }
             html += '</td>';
 
             html += '<td>';
@@ -119,6 +124,32 @@
             html += '</td>';
 
             html += '<td>';
+            html += (item.MediaStreams || []).filter(function(s) {
+
+                return s.Type != 'Subtitle';
+
+            }).map(getCodecName).filter(function (s) {
+                return s;
+            }).join('<br/>');
+            
+            html += '</td>';
+
+            if (includeSubtitles) {
+                html += '<td>';
+                html += (item.MediaStreams || []).filter(function (s) {
+
+                    return s.Type == 'Subtitle';
+
+                }).map(function (s) {
+
+                    return (s.Language || 'Und') + ' - ' + s.Codec;
+
+                }).join('<br/>');
+
+                html += '</td>';
+            }
+
+            html += '<td>';
             if (item.SpecialFeatureCount == 1) {
 
                 html += '1 Special<br/>';
@@ -154,7 +185,36 @@
 
         $('.listBottomPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount)).trigger('create');
 
-        $('.resultBody', page).html(getTableRowsHtml(result.Items)).parents('.tblLibraryReport').table("refresh").trigger('create');
+        var includeParentInfo = query.IncludeItemTypes == "Audio" || query.IncludeItemTypes == "MusicAlbum" || query.IncludeItemTypes == "Episode" || query.IncludeItemTypes == "Book";
+        var includeSubtitles = query.IncludeItemTypes == "Movie" || query.IncludeItemTypes == "Trailer" || query.IncludeItemTypes == "Episode" || query.IncludeItemTypes == "AdultVideo" || query.IncludeItemTypes == "MusicVideo" || query.IncludeItemTypes == "Video";
+
+        if (includeParentInfo) {
+
+            var parentLabel = "Series";
+            
+            if (query.IncludeItemTypes == "Audio") {
+                parentLabel = "Album";
+            }
+            else if (query.IncludeItemTypes == "MusicAlbum") {
+                parentLabel = "Artist";
+            }
+
+            $('.thParent', page).html(parentLabel).show();
+
+        } else {
+            $('.thParent', page).hide();
+        }
+
+        if (includeSubtitles) {
+
+            $('.thSubtitles', page).show();
+
+        } else {
+            $('.thSubtitles', page).hide();
+        }
+
+        var rowsHtml = getTableRowsHtml(result.Items, includeParentInfo, includeSubtitles);
+        $('.resultBody', page).html(rowsHtml).parents('.tblLibraryReport').table("refresh").trigger('create');
 
         $('.btnNextPage', page).on('click', function () {
             query.StartIndex += query.Limit;
@@ -186,14 +246,7 @@
 
     function updateFilterControls(page) {
 
-        $('.chkTypeFilter', page).each(function () {
-
-            var filters = "," + (query.IncludeItemTypes || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        }).checkboxradio('refresh');
+        $('#selectView').val(query.IncludeItemTypes).selectmenu('refresh');
 
         $('.chkVideoTypeFilter', page).each(function () {
 
@@ -255,19 +308,10 @@
             }
         });
 
-        $('.chkTypeFilter', page).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.IncludeItemTypes || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
+        $('#selectView', page).on('change', function () {
 
             query.StartIndex = 0;
-            query.IncludeItemTypes = filters;
+            query.IncludeItemTypes = this.value;
 
             reloadItems(page);
         });
