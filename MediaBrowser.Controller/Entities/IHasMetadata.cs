@@ -49,11 +49,5 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         bool BeforeMetadataRefresh();
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is unidentified.
-        /// </summary>
-        /// <value><c>true</c> if this instance is unidentified; otherwise, <c>false</c>.</value>
-        bool IsUnidentified { get; set; }
     }
 }

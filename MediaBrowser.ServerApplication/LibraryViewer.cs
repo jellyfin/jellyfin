@@ -84,7 +84,8 @@ namespace MediaBrowser.ServerApplication
         {
             treeView1.Nodes.Clear();
 
-            IEnumerable<BaseItem> children = _currentUser.Name == "Physical" ? new[] { _libraryManager.RootFolder } : _libraryManager.RootFolder.GetChildren(_currentUser, true);
+            var isPhysical = _currentUser.Name == "Physical";
+            IEnumerable<BaseItem> children = isPhysical ? new[] { _libraryManager.RootFolder } : _libraryManager.RootFolder.GetChildren(_currentUser, true);
             children = OrderByName(children, _currentUser);
 
             foreach (Folder folder in children)
@@ -94,9 +95,9 @@ namespace MediaBrowser.ServerApplication
 
                 var node = new TreeNode { Tag = currentFolder };
 
-                var subChildren = currentFolder.GetChildren(_currentUser, true);
+                var subChildren = isPhysical ? currentFolder.Children : currentFolder.GetChildren(_currentUser, true);
                 subChildren = OrderByName(subChildren, _currentUser);
-                AddChildren(node, subChildren, _currentUser);
+                AddChildren(node, subChildren, _currentUser, isPhysical);
                 node.Text = currentFolder.Name + " (" +
                             node.Nodes.Count + ")";
 
@@ -110,7 +111,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="parent">The parent.</param>
         /// <param name="children">The children.</param>
         /// <param name="user">The user.</param>
-        private void AddChildren(TreeNode parent, IEnumerable<BaseItem> children, User user)
+        private void AddChildren(TreeNode parent, IEnumerable<BaseItem> children, User user, bool isPhysical)
         {
             foreach (var item in children)
             {
@@ -120,7 +121,9 @@ namespace MediaBrowser.ServerApplication
                 {
                     var prefs = _displayPreferencesManager.GetDisplayPreferences(subFolder.DisplayPreferencesId, user.Id, "LibraryExplorer");
 
-                    AddChildren(node, OrderBy(subFolder.GetChildren(user, true), user, prefs.SortBy), user);
+                    var subChildren = isPhysical ? subFolder.Children : subFolder.GetChildren(_currentUser, true);
+
+                    AddChildren(node, OrderBy(subChildren, user, prefs.SortBy), user, isPhysical);
                     node.Text = item.Name + " (" + node.Nodes.Count + ")";
                 }
                 else
