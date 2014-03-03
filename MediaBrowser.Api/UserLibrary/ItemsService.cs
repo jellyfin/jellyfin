@@ -220,6 +220,12 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IsInBoxSet", Description = "Optional filter by items that are in boxsets, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsInBoxSet { get; set; }
+
+        [ApiMember(Name = "IsLocked", Description = "Optional filter by items that are locked.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? IsLocked { get; set; }
+
+        [ApiMember(Name = "HasSubtitles", Description = "Optional filter by items that are unidentified by internet metadata providers.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? IsUnidentified { get; set; }
     }
 
     /// <summary>
@@ -1017,6 +1023,18 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var val = request.IsPlayed.Value;
                 items = items.Where(i => i.IsPlayed(user) == val);
+            }
+
+            if (request.IsUnidentified.HasValue)
+            {
+                var val = request.IsUnidentified.Value;
+                items = items.Where(i => i.IsUnidentified == val);
+            }
+
+            if (request.IsLocked.HasValue)
+            {
+                var val = request.IsLocked.Value;
+                items = items.Where(i => i.IsLocked == val);
             }
 
             if (request.ParentIndexNumber.HasValue)

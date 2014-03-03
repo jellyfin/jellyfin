@@ -209,6 +209,12 @@ namespace MediaBrowser.Model.Dto
         public int? Players { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is place holder.
+        /// </summary>
+        /// <value><c>null</c> if [is place holder] contains no value, <c>true</c> if [is place holder]; otherwise, <c>false</c>.</value>
+        public bool? IsPlaceHolder { get; set; }
+        
+        /// <summary>
         /// Gets or sets the index number.
         /// </summary>
         /// <value>The index number.</value>

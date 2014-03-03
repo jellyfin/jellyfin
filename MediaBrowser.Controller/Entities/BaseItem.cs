@@ -229,19 +229,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [IgnoreDataMember]
-        public bool IsUnidentified
-        {
-            get
-            {
-                if (ProviderIds.Any())
-                {
-                    return false;
-                }
-
-                return false;
-            }
-        }
+        public bool IsUnidentified { get; set; }
 
         /// <summary>
         /// Gets or sets the locked fields.

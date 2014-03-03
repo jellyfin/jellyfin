@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Game : BaseItem, IHasSoundtracks, IHasTrailers, IHasThemeMedia, IHasTags, IHasScreenshots, IHasPreferredMetadataLanguage, IHasLookupInfo<GameInfo>
+    public class Game : BaseItem, IHasSoundtracks, IHasTrailers, IHasThemeMedia, IHasTags, IHasScreenshots, ISupportsPlaceHolders, IHasPreferredMetadataLanguage, IHasLookupInfo<GameInfo>
     {
         public List<Guid> SoundtrackIds { get; set; }
 
@@ -63,10 +63,10 @@ namespace MediaBrowser.Controller.Entities
         public int? PlayersSupported { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is installed on client.
+        /// Gets a value indicating whether this instance is place holder.
         /// </summary>
-        /// <value><c>true</c> if this instance is installed on client; otherwise, <c>false</c>.</value>
-        public bool IsInstalledOnClient { get; set; }
+        /// <value><c>true</c> if this instance is place holder; otherwise, <c>false</c>.</value>
+        public bool IsPlaceHolder { get; set; }
 
         /// <summary>
         /// Gets or sets the game system.

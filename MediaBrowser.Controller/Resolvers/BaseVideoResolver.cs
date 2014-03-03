@@ -35,7 +35,9 @@ namespace MediaBrowser.Controller.Resolvers
             // If the path is a file check for a matching extensions
             if (!args.IsDirectory)
             {
-                if (EntityResolutionHelper.IsVideoFile(args.Path))
+                var isPlaceHolder = EntityResolutionHelper.IsVideoPlaceHolder(args.Path);
+
+                if (EntityResolutionHelper.IsVideoFile(args.Path) || isPlaceHolder)
                 {
                     var extension = Path.GetExtension(args.Path);
 
@@ -46,7 +48,8 @@ namespace MediaBrowser.Controller.Resolvers
                     {
                         VideoType = type,
                         Path = args.Path,
-                        IsInMixedFolder = true
+                        IsInMixedFolder = true,
+                        IsPlaceHolder = isPlaceHolder
                     };
                 }
             }

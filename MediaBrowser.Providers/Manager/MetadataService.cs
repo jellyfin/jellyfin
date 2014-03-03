@@ -386,6 +386,9 @@ namespace MediaBrowser.Providers.Manager
         {
             TIdType id = null;
 
+            var unidentifiedCount = 0;
+            var identifiedCount = 0;
+
             foreach (var provider in providers)
             {
                 var providerName = provider.GetType().Name;
@@ -410,9 +413,11 @@ namespace MediaBrowser.Providers.Manager
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
 
+                        identifiedCount++;
                     }
                     else
                     {
+                        unidentifiedCount++; 
                         Logger.Debug("{0} returned no metadata for {1}", providerName, item.Path ?? item.Name);
                     }
                 }
@@ -422,10 +427,19 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
+                    unidentifiedCount++; 
                     refreshResult.Status = ProviderRefreshStatus.CompletedWithErrors;
                     refreshResult.ErrorMessage = ex.Message;
                     Logger.ErrorException("Error in {0}", ex, provider.Name);
                 }
+            }
+
+            var isUnidentified = unidentifiedCount > 0 && identifiedCount == 0;
+
+            if (item.IsUnidentified != isUnidentified)
+            {
+                item.IsUnidentified = isUnidentified;
+                refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
             }
         }
 
