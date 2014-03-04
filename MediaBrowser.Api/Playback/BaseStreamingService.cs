@@ -265,7 +265,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (cpuCount >= 4)
                 {
-                    return EncodingQuality.HighQuality;
+                    //return EncodingQuality.HighQuality;
                 }
 
                 return EncodingQuality.HighSpeed;
@@ -1417,6 +1417,9 @@ namespace MediaBrowser.Api.Playback
             }
 
             state.HasMediaStreams = mediaStreams.Count > 0;
+
+            state.SegmentLength = state.ReadInputAtNativeFramerate ? 3 : 10;
+            state.HlsListSize = state.ReadInputAtNativeFramerate ? 20 : 1440;
 
             return state;
         }
