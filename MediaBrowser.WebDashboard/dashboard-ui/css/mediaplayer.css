@@ -77,7 +77,7 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    width: 1080px;
+    width: 320px;
 }
 
 .fullscreenVideo {
@@ -284,21 +284,27 @@ input[type="range"]::-ms-fill-upper {
     padding-left: 5px;
 }
 
-@media (min-width: 50px) {
-    .itemVideo:not(.fullscreenVideo) {
-        width: 320px;
-    }
-}
-
-@media (min-width: 750px) {
+@media (min-width: 640px) {
     .itemVideo:not(.fullscreenVideo) {
         width: 480px;
     }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 800px) {
+    .itemVideo:not(.fullscreenVideo) {
+        width: 640px;
+    }
+}
+
+@media (min-width: 960px) {
     .itemVideo:not(.fullscreenVideo) {
         width: 720px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .itemVideo:not(.fullscreenVideo) {
+        width: 1080px;
     }
 }
 
