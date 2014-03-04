@@ -296,6 +296,8 @@
             var panel = getSearchPanel(page);
 
             $(panel).panel('toggle');
+
+            $('#txtSearch').focus();
         };
     }
 
