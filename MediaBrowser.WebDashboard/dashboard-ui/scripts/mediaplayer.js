@@ -24,27 +24,9 @@
         self.playlist = [];
         var currentPlaylistIndex = 0;
 
-        var channelsListPromise;
-        var channelsListPromiseTime;
-
         function updateCanClientSeek(elem) {
             var duration = elem.duration;
             canClientSeek = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
-        }
-
-        function getChannelsListPromise() {
-
-            var lastUpdateTime = channelsListPromiseTime || 0;
-
-            // Update every three minutes
-            if (!channelsListPromise || !lastUpdateTime || (new Date().getTime() - lastUpdateTime) > 10800000) {
-
-                channelsListPromise = ApiClient.getLiveTvChannels({
-                    userId: Dashboard.getCurrentUserId()
-                });
-            }
-
-            return channelsListPromise;
         }
 
         function requestFullScreen(element) {
@@ -347,16 +329,6 @@
 
                 hideFlyout($('#qualityFlyout'));
             });
-
-            $('#channelsFlyout').on('click', '.mediaFlyoutOption', function () {
-
-                if (!$(this).hasClass('selectedMediaFlyoutOption')) {
-                    var channelId = this.getAttribute('data-channelid');
-                    self.playById(channelId);
-                }
-
-                hideFlyout($('#channelsFlyout'));
-            });
         });
 
         function endsWith(text, pattern) {
@@ -470,7 +442,6 @@
             $('#audioTracksButton', nowPlayingBar).hide();
             $('#subtitleButton', nowPlayingBar).hide();
             $('#chaptersButton', nowPlayingBar).hide();
-            $('#channelsButton', nowPlayingBar).hide();
 
             $('#mediaElement', nowPlayingBar).html(html);
             var audioElement = $("audio", nowPlayingBar);
@@ -846,8 +817,6 @@
                 $('#fullscreenButton', nowPlayingBar).show();
             }
 
-            var channelsButton = $('#channelsButton', nowPlayingBar).hide();
-
             var videoElement = $("video", nowPlayingBar);
 
             var initialVolume = localStorage.getItem("volume") || 0.5;
@@ -915,15 +884,6 @@
 
             currentItem = item;
             curentDurationTicks = item.RunTimeTicks;
-
-            getChannelsListPromise().done(function (result) {
-
-                if (result.Items.length) {
-                    channelsButton.show();
-                } else {
-                    channelsButton.hide();
-                }
-            });
 
             return videoElement[0];
         };
@@ -1903,61 +1863,6 @@
 
             return html;
         }
-
-        function getChannelsFlyoutHtml(channels) {
-
-            var html = '';
-
-            for (var i = 0, length = channels.length; i < length; i++) {
-
-                var channel = channels[i];
-
-                html += '<div data-channelid="' + channel.Id + '" class="mediaFlyoutOption">';
-
-                var imgUrl;
-
-                if (channel.ImageTags.Primary) {
-
-                    imgUrl = ApiClient.getImageUrl(channel.Id, {
-                        maxwidth: 200,
-                        tag: channel.ImageTags.Primary,
-                        type: "Primary"
-                    });
-                }
-                else {
-                    imgUrl = "css/images/media/tvflyout.png";
-                }
-
-                html += '<img class="mediaFlyoutOptionImage" src="' + imgUrl + '" />';
-
-                html += '<div class="mediaFlyoutOptionContent">';
-
-                var name = channel.Number + ' ' + channel.Name;
-
-                html += '<div class="mediaFlyoutOptionName">' + name + '</div>';
-                html += '<div class="mediaFlyoutOptionSecondaryText">' + channel.CurrentProgram.Name + '</div>';
-
-                html += '</div>';
-
-                html += "</div>";
-            }
-
-            return html;
-        }
-
-        self.showChannelsFlyout = function () {
-
-            var flyout = $('#channelsFlyout');
-
-            if (!flyout.is(':visible')) {
-                getChannelsListPromise().done(function (result) {
-
-                    showFlyout(flyout, '#channelsButton');
-
-                    flyout.html(getChannelsFlyoutHtml(result.Items)).scrollTop(0);
-                });
-            }
-        };
 
         self.showAudioTracksFlyout = function () {
 
