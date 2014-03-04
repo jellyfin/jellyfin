@@ -1363,7 +1363,7 @@
 
             html += '<div class="listPaging">';
 
-            html += '<span style="margin-right: 10px;">';
+            html += '<span style="margin-right: 10px;vertical-align:middle;">';
 
             var startAtDisplay = totalRecordCount ? query.StartIndex + 1 : 0;
             html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;

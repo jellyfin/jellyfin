@@ -224,8 +224,14 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "IsLocked", Description = "Optional filter by items that are locked.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool? IsLocked { get; set; }
 
-        [ApiMember(Name = "HasSubtitles", Description = "Optional filter by items that are unidentified by internet metadata providers.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "IsUnidentified", Description = "Optional filter by items that are unidentified by internet metadata providers.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool? IsUnidentified { get; set; }
+
+        [ApiMember(Name = "IsPlaceHolder", Description = "Optional filter by items that are placeholders", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? IsPlaceHolder { get; set; }
+
+        [ApiMember(Name = "HasOfficialRating", Description = "Optional filter by items that have official ratings", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? HasOfficialRating { get; set; }
     }
 
     /// <summary>
@@ -1133,6 +1139,37 @@ namespace MediaBrowser.Api.UserLibrary
                 var filterValue = request.IsYearMismatched.Value;
 
                 items = items.Where(i => IsYearMismatched(i) == filterValue);
+            }
+
+            if (request.HasOfficialRating.HasValue)
+            {
+                var filterValue = request.HasOfficialRating.Value;
+
+                items = items.Where(i =>
+                {
+                    var hasValue = !string.IsNullOrEmpty(i.OfficialRating);
+
+                    return hasValue == filterValue;
+                });
+            }
+
+            if (request.IsPlaceHolder.HasValue)
+            {
+                var filterValue = request.IsPlaceHolder.Value;
+
+                items = items.Where(i =>
+                {
+                    var isPlaceHolder = false;
+
+                    var hasPlaceHolder = i as ISupportsPlaceHolders;
+
+                    if (hasPlaceHolder != null)
+                    {
+                        isPlaceHolder = hasPlaceHolder.IsPlaceHolder;
+                    }
+
+                    return isPlaceHolder == filterValue;
+                });
             }
 
             return items;

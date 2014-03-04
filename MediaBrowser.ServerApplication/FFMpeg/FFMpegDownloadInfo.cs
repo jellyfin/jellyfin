@@ -121,7 +121,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     {
                         return new[]
                         {
-                            "https://copy.com/IB0W4efS6t9A/ffall-2.1.1.tar.gz?download=1"
+                            "https://www.dropbox.com/s/n188rxbulqem8ry/ffmpeg-osx-20131121.gz?dl=1"
                         };
                     }
 
@@ -148,7 +148,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
                     //No Unix version available 
                     return new string[] {};
-                    #endif
+#endif
             }
             return new string[] {};
         }

@@ -162,6 +162,10 @@
         background-color: transparent !important;
     }
 
+.clearLibraryReportIndicator {
+    background-color: transparent !important;
+}
+
 .editorTile {
     display: inline-block;
     margin: 5px;
@@ -199,7 +203,8 @@
 }
 
 .tblLibraryReport img {
-    height: 20px;
+    height: 18px;
+    margin-right: 10px;
 }
 
 @media all and (min-width: 600px) {

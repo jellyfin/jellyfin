@@ -18,6 +18,7 @@
 
                 <div style="text-align: center;">
                     <div class="viewControls">
+                        <span style="margin-right: 10px; vertical-align: middle;">Report:</span>
                         <div style="display: inline-block;">
                             <select data-mini="true" data-inline="true" id="selectView" name="selectView">
                                 <option value="AdultVideo">Adult Videos</option>
@@ -31,6 +32,7 @@
                                 <option value="Movie">Movies</option>
                                 <option value="MusicVideo">Music Videos</option>
                                 <option value="Trailer">Trailers</option>
+                                <option value="Season">Seasons</option>
                                 <option value="Series">Series</option>
                                 <option value="Audio">Songs</option>
                             </select>
@@ -40,26 +42,8 @@
                     <div class="listTopPaging">
                     </div>
                 </div>
-
-                <table data-role="table" data-mode="reflow" class="tblLibraryReport detailTable stripedTable ui-responsive table-stroke" style="display: table;">
-                    <thead>
-                        <tr>
-                            <th data-priority="1"></th>
-                            <th data-priority="1" class="thParent">Parent</th>
-                            <th data-priority="1">Name</th>
-                            <th data-priority="1">Date Added</th>
-                            <th data-priority="1">Release Date</th>
-                            <th data-priority="1">Rating</th>
-                            <th data-priority="1">Runtime</th>
-                            <th data-priority="1" class="thPlayers">Players</th>
-                            <th data-priority="1">Codecs</th>
-                            <th data-priority="1" class="thSubtitles">Subtitles</th>
-                            <th data-priority="1">Features</th>
-                        </tr>
-                    </thead>
-                    <tbody class="resultBody">
-                    </tbody>
-                </table>
+                <br />
+                <div class="reportContainer"></div>
 
                 <div class="listBottomPaging">
                 </div>
@@ -99,6 +83,20 @@
 
                         <input class="chk3DFilter" type="checkbox" name="chk3D" id="chk3D" data-filter="Digital3D,Sbs3D" data-mini="true">
                         <label for="chk3D">3D</label>
+                        <input class="chkIsPlaceHolder" type="checkbox" id="chkIsPlaceHolder" data-mini="true">
+                        <label for="chkIsPlaceHolder">Stub</label>
+                    </fieldset>
+                    <br />
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>Episodes:</strong>
+                        </legend>
+                        <input type="checkbox" name="chkSpecialEpisode" id="chkSpecialEpisode" data-mini="true">
+                        <label for="chkSpecialEpisode">Season 0</label>
+
+                        <input type="checkbox" name="chkMissingEpisode" id="chkMissingEpisode" data-mini="true">
+                        <label for="chkMissingEpisode">Missing Episode</label>
+
                     </fieldset>
                 </div>
 
@@ -114,6 +112,9 @@
 
                         <input class="chkMissingOverview" type="checkbox" name="chkMissingOverview" id="chkMissingOverview" data-mini="true">
                         <label for="chkMissingOverview">Missing Overview</label>
+
+                        <input class="chkMissingRating" type="checkbox" name="chkMissingRating" id="chkMissingRating" data-mini="true">
+                        <label for="chkMissingRating">Missing Rating</label>
 
                         <input class="chkIsUnidentified" type="checkbox" id="chkIsUnidentified" data-mini="true">
                         <label for="chkIsUnidentified">Unidentified</label>
