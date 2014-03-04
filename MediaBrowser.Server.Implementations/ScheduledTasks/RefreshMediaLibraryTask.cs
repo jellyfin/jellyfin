@@ -40,7 +40,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
                 new SystemEventTrigger{ SystemEvent = SystemEvent.WakeFromSleep},
 
-                new IntervalTrigger{ Interval = TimeSpan.FromHours(4)}
+                new IntervalTrigger{ Interval = TimeSpan.FromHours(6)}
             };
         }
 

@@ -456,8 +456,6 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{Stream}.</returns>
         private async Task<Stream> GetAllJavascript()
         {
-            var assembly = GetType().Assembly;
-
             var scriptFiles = new[]
                                   {
                                       "extensions.js",
@@ -581,6 +579,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendResource(memoryStream, "thirdparty/autonumeric/autoNumeric.min.js", newLineBytes).ConfigureAwait(false);
 
+            var assembly = GetType().Assembly;
             await AppendResource(assembly, memoryStream, "MediaBrowser.WebDashboard.ApiClient.js", newLineBytes).ConfigureAwait(false);
 
             foreach (var file in scriptFiles)
