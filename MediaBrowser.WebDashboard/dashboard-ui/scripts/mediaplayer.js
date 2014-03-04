@@ -59,7 +59,6 @@
         }
 
         function enterFullScreen() {
-            console.log("enter full screen");
             $(".itemVideo").removeAttr("style").addClass("fullscreenVideo");
         }
 
