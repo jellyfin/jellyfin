@@ -11,6 +11,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
     {
         // Windows builds: http://ffmpeg.zeranoe.com/builds/
         // Linux builds: http://ffmpeg.gusari.org/static/
+        // OS X builds: http://ffmpegmac.net/
 
         public static string Version = ffmpegOsType("Version");
 
@@ -31,7 +32,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     switch (arg)
                     {
                         case "Version":
-                            return "20140105";
+                            return "20140304";
                         case "FFMpegFilename":
                             return "ffmpeg.exe";
                         case "FFProbeFilename":
@@ -68,7 +69,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             switch (arg)
                             {
                                 case "Version":
-                                    return "linux_x86_20140118";
+                                    return "20140304";
                                 case "FFMpegFilename":
                                     return "ffmpeg";
                                 case "FFProbeFilename":
@@ -84,7 +85,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             switch (arg)
                             {
                                 case "Version":
-                                    return "linux_x86_64_20140118";
+                                    return "20140304";
                                 case "FFMpegFilename":
                                     return "ffmpeg";
                                 case "FFProbeFilename":
@@ -97,7 +98,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     }
                     // Unsupported Unix platform
                     return "";
-                #endif
+#endif
             }
             return "";
         }
@@ -111,8 +112,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                 case PlatformID.Win32NT:
                     return new[]
                     {
-                        "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20140105-git-70937d9-win32-static.7z",
-                        "https://www.dropbox.com/s/oghurnp5zh292ry/ffmpeg-20140105-git-70937d9-win32-static.7z?dl=1"
+                        "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20140304-git-f34cceb-win32-static.7z",
+                        "https://www.dropbox.com/s/6brdetuzbld93jk/ffmpeg-20140304-git-f34cceb-win32-static.7z?dl=1"
                     };
            
                     #if __MonoCS__
@@ -131,8 +132,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                         {
                             return new[]
                             {
-                                "http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.2014-01-18.tar.gz",
-                                "https://www.dropbox.com/s/b7nkg71sil812hp/ffmpeg.static.32bit.2014-01-04.tar.gz?dl=1"
+                                "http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.2014-03-04.tar.gz",
+                                "https://www.dropbox.com/s/0l76mcauqqkta31/ffmpeg.static.32bit.2014-03-04.tar.gz?dl=1"
                             };
                         }
 
@@ -140,7 +141,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                         {
                             return new[]
                             {
-                                "http://ffmpeg.gusari.org/static/64bit/ffmpeg.static.64bit.2014-01-18.tar.gz"
+                                "http://ffmpeg.gusari.org/static/64bit/ffmpeg.static.64bit.2014-03-04.tar.gz",
+                                "https://www.dropbox.com/s/9wlxz440mdejuqe/ffmpeg.static.64bit.2014-03-04.tar.gz?dl=1"
                             };
                         }
 
