@@ -20,6 +20,9 @@
         var culturesPromise;
         var timeout;
         var idleState = true;
+        var mediaDomElement;
+        var isEnhanced = false;
+        var fullscreenExited;
 
         self.playlist = [];
         var currentPlaylistIndex = 0;
@@ -40,10 +43,6 @@
             }
         }
 
-        function enterFullScreen() {
-            $(".itemVideo").removeAttr("style").addClass("fullscreenVideo");
-        }
-
         function exitFullScreen() {
             if (document.exitFullscreen) {
                 document.exitFullscreen();
@@ -52,10 +51,13 @@
             } else if (document.webkitExitFullscreen) {
                 document.webkitExitFullscreen();
             }
+
+            fullscreenExited = true;
         }
 
         function isFullScreen() {
-            return document.fullscreenEnabled || document.mozFullscreenEnabled || document.webkitIsFullScreen || document.mozFullScreen ? true : false;
+            return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement ? true : false;
+            //return document.fullscreenEnabled || document.mozFullscreenEnabled || document.webkitIsFullScreen || document.mozFullScreen ? true : false;
         }
 
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function () {
@@ -67,8 +69,7 @@
                 $('.itemVideo').on('mousemove keydown scroll', idleHandler).trigger('mousemove');
             } else {
                 $(".mediaButton,.currentTime,.nowPlayingMediaInfo,.sliderContainer,.barBackground", nowPlayingBar).removeClass("highPosition");
-                $('.itemVideo').removeClass('fullscreenVideo');
-                repositionPlayer();
+                exitFullScreenToWindow();
             }
         });
 
@@ -86,8 +87,6 @@
 
                 ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
             }
-        }).on("resize", function () {
-            repositionPlayer();
         });
 
         function replaceQueryString(url, param, value) {
@@ -129,6 +128,9 @@
 
             if (currentItem.MediaType == "Video") {
                 ApiClient.stopActiveEncodings();
+                if (isEnhanced) {
+                    resetEnhancements();
+                }
             }
         }
 
@@ -1116,6 +1118,8 @@
             if (item.MediaType === "Video") {
 
                 mediaElement = playVideo(item, startPosition, user);
+
+                enhancePlayer(mediaElement);
             } else if (item.MediaType === "Audio") {
 
                 mediaElement = playAudio(item, startPosition);
@@ -1373,7 +1377,6 @@
                     document.webkitCancelFullScreen();
                 } else {
                     $('.itemVideo').removeClass('fullscreenVideo');
-                    repositionPlayer();
                 }
             } else {
                 requestFullScreen(document.body);
@@ -1573,15 +1576,6 @@
 
         self.isPlaying = function () {
             return currentMediaElement;
-        };
-
-        function repositionPlayer() {
-            var $v = $(".itemVideo");
-            // Reset top/left to handle window resizing
-            $v.css({ "top": "50%", "left": "50%" });
-            var w = $v.width();
-            var h = $v.height();
-            $v.css({ "margin-top": (h / 2) * -1, "margin-left": (w / 2) * -1 });
         };
 
         function hideFlyout(flyout) {
@@ -1945,6 +1939,81 @@
             });
 
         };
+
+        function enhancePlayer(video) {
+            var nowPlayingBar = $("#nowPlayingBar");
+            mediaDomElement = $("#mediaElement", nowPlayingBar).detach();
+
+            $(video)
+                .on("click", function () {
+                    if (this.paused) {
+                        self.unpause();
+                    } else {
+                        self.pause();
+                    }
+                })
+                .on("dblclick", function () {
+                    self.toggleFullscreen();
+                });
+
+            changeHandler("fullscreenchange");
+            changeHandler("mozfullscreenchange");
+            changeHandler("webkitfullscreenchange");
+            changeHandler("msfullscreenchange");
+
+            $(document).on("keyup.enhancePlayer", function (e) {
+                if (fullscreenExited) {
+                    fullscreenExited = false;
+                    return;
+                }
+
+                if (e.keyCode == 27) {
+                    self.stop();
+                    $(this).unbind("keyup.enhancePlayer");
+                }
+            });
+
+
+            var videoBackdrop = $("<div id='videoBackdrop'></div>");
+            var videoPlayer = $("<div id='videoPlayer'></div>")
+                .append(video)
+                .append(nowPlayingBar);
+            $("#footer").append(videoBackdrop.append(videoPlayer));
+
+            video.play();
+
+            isEnhanced = true;
+            fullscreenExited = false;
+        };
+
+        function changeHandler(event) {
+            document.addEventListener(event, function () {
+                fullscreenExited = isFullScreen() == false;
+            });
+        }
+
+        function resetEnhancements() {
+            var nowPlayingBar = $("#nowPlayingBar");
+            $("#stopButton", nowPlayingBar).before(mediaDomElement);
+            $("#footer").append(nowPlayingBar);
+            $("#videoBackdrop").remove();
+        };
+
+        function enterFullScreen() {
+            var player = $(".itemVideo");
+            if (isEnhanced) {
+                player = $("#videoPlayer")
+            }
+            player.addClass("fullscreenVideo");
+        };
+
+        function exitFullScreenToWindow() {
+            var player = $(".itemVideo");
+            if (isEnhanced) {
+                player = $("#videoPlayer")
+            }
+            player.removeClass("fullscreenVideo");
+        }
     }
 
     window.MediaPlayer = new mediaPlayer();
