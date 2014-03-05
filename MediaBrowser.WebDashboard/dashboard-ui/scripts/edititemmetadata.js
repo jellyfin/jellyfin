@@ -717,7 +717,7 @@
                 Revenue: $('#txtRevenue', form).val(),
                 CriticRating: $('#txtCriticRating', form).val(),
                 CriticRatingSummary: $('#txtCriticRatingSummary', form).val(),
-                IndexNumber: $('#txtIndexNumber', form).val(),
+                IndexNumber: $('#txtIndexNumber', form).val() || null,
                 DisplaySpecialsWithSeasons: $('#chkDisplaySpecialsInline', form).checked(),
                 AbsoluteEpisodeNumber: $('#txtAbsoluteEpisodeNumber', form).val(),
                 DvdEpisodeNumber: $('#txtDvdEpisodeNumber', form).val(),
@@ -725,7 +725,7 @@
                 AirsBeforeSeasonNumber: $('#txtAirsBeforeSeason', form).val(),
                 AirsAfterSeasonNumber: $('#txtAirsAfterSeason', form).val(),
                 AirsBeforeEpisodeNumber: $('#txtAirsBeforeEpisode', form).val(),
-                ParentIndexNumber: $('#txtParentIndexNumber', form).val(),
+                ParentIndexNumber: $('#txtParentIndexNumber', form).val() || null,
                 DisplayOrder: $('#selectDisplayOrder', form).val(),
                 Players: $('#txtPlayers', form).val(),
                 Album: $('#txtAlbum', form).val(),
@@ -812,6 +812,10 @@
             updatePromise.done(function () {
 
                 Dashboard.alert('Item saved.');
+
+                MetadataEditor.getItemPromise().done(function (i) {
+                    $(form).parents('.page').trigger('itemsaved', [i]);
+                });
 
             });
 
@@ -957,7 +961,7 @@
             Dashboard.alert('Please enter a name or an external Id.');
             return;
         }
-        
+
         if (currentItem.GameSystem) {
             lookupInfo.GameSystem = currentItem.GameSystem;
         }
@@ -1029,7 +1033,7 @@
             html += '<div class="remoteImageDetails">';
             html += result.ProductionYear || '&nbsp;';
             html += '</div>';
-            
+
             if (result.GameSystem) {
                 html += '<div class="remoteImageDetails">';
                 html += result.GameSystem;
@@ -1044,7 +1048,7 @@
         $('.searchImage', elem).on('click', function () {
 
             Dashboard.showLoadingMsg();
-            
+
             var index = parseInt(this.getAttribute('data-index'));
 
             var currentResult = results[index];

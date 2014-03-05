@@ -4,6 +4,15 @@
 
         var state = item.IsFolder ? folderState : '';
 
+        var htmlName = getNodeInnerHtml(item);
+
+        var rel = item.IsFolder ? 'folder' : 'default';
+
+        return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
+    }
+    
+    function getNodeInnerHtml(item) {
+        
         var name = item.Name;
 
         // Channel number
@@ -62,9 +71,7 @@
 
         htmlName += "</div>";
 
-        var rel = item.IsFolder ? 'folder' : 'default';
-
-        return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
+        return htmlName;
     }
 
     function loadChildrenOfRootNode(page, callback, openItems, selectedId) {
@@ -95,9 +102,7 @@
 
                 var name = service.Name;
 
-                var cssClass = "editorNode";
-
-                var htmlName = "<div class='" + cssClass + "'>";
+                var htmlName = "<div class='editorNode'>";
 
                 htmlName += name;
 
@@ -246,8 +251,32 @@
 
         });
     }
+    
+    function updateEditorNode(page, item) {
 
-    $(document).on('pagebeforeshow', ".metadataEditorPage", function () {
+        var elem = $('#' + item.Id + '>a', page)[0];
+
+        if (elem == null) {
+            return;
+        }
+
+        $('.editorNode', elem).remove();
+
+        $(elem).append(getNodeInnerHtml(item));
+        
+        if (item.IsFolder) {
+
+            var tree = jQuery.jstree._reference(".libraryTree");
+            var currentNode = tree._get_node(null, false);
+            tree.refresh(currentNode);
+        }
+    }
+
+    $(document).on('itemsaved', ".metadataEditorPage", function (e, item) {
+
+        updateEditorNode(this, item);
+
+    }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
         window.MetadataEditor = new metadataEditor();
 
