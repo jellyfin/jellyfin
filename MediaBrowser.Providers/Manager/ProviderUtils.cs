@@ -58,6 +58,11 @@ namespace MediaBrowser.Providers.Manager
                 target.OfficialRatingDescription = source.OfficialRatingDescription;
             }
 
+            if (replaceData || string.IsNullOrEmpty(target.CustomRating))
+            {
+                target.CustomRating = source.CustomRating;
+            }
+            
             if (!lockedFields.Contains(MetadataFields.Overview))
             {
                 if (replaceData || string.IsNullOrEmpty(target.Overview))

@@ -105,12 +105,15 @@ namespace MediaBrowser.Providers.TV
                 hasNewSeasons = await AddDummySeasonFolders(series, cancellationToken).ConfigureAwait(false);
             }
 
-            var seriesConfig = _config.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, typeof(Series).Name, StringComparison.OrdinalIgnoreCase));
-
-            if (seriesConfig == null || !seriesConfig.DisabledMetadataFetchers.Contains(TvdbSeriesProvider.Current.Name, StringComparer.OrdinalIgnoreCase))
+            if (_config.Configuration.EnableInternetProviders)
             {
-                hasNewEpisodes = await AddMissingEpisodes(group.ToList(), seriesDataPath, episodeLookup, cancellationToken)
-                    .ConfigureAwait(false);
+                var seriesConfig = _config.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, typeof(Series).Name, StringComparison.OrdinalIgnoreCase));
+
+                if (seriesConfig == null || !seriesConfig.DisabledMetadataFetchers.Contains(TvdbSeriesProvider.Current.Name, StringComparer.OrdinalIgnoreCase))
+                {
+                    hasNewEpisodes = await AddMissingEpisodes(group.ToList(), seriesDataPath, episodeLookup, cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
 
             if (hasNewSeasons || hasNewEpisodes || anySeasonsRemoved || anyEpisodesRemoved)

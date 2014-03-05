@@ -11,7 +11,7 @@
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="advanced.html" data-role="button">General</a>
-                    <a href="#" data-role="button" class="ui-btn-active">Http Server</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Server</a>
                     <a href="encodingsettings.html" data-role="button">Transcoding</a>
                 </div>
                 <form class="advancedServerSettingsForm">
@@ -24,6 +24,11 @@
                         <li id="fldWebSocketPortNumber" style="display: none;">
                             <label for="txtWebSocketPortNumber">Web socket port number: </label>
                             <input type="number" id="txtWebSocketPortNumber" name="txtWebSocketPortNumber" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                        </li>
+                        <li>
+                            <label for="txtDdns">External DDNS:</label>
+                            <input id="txtDdns" data-mini="true" />
+                            <div class="fieldDescription">If you have a dynamic DNS enter it here. Media Browser apps will use it when connecting remotely.</div>
                         </li>
                         <li>
                             <label for="chkEnableUpnp">Enable UPnP</label>

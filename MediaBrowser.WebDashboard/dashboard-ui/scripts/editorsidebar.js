@@ -4,6 +4,15 @@
 
         var state = item.IsFolder ? folderState : '';
 
+        var htmlName = getNodeInnerHtml(item);
+
+        var rel = item.IsFolder ? 'folder' : 'default';
+
+        return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
+    }
+    
+    function getNodeInnerHtml(item) {
+        
         var name = item.Name;
 
         // Channel number
@@ -62,12 +71,10 @@
 
         htmlName += "</div>";
 
-        var rel = item.IsFolder ? 'folder' : 'default';
-
-        return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
+        return htmlName;
     }
 
-    function loadChildrenOfRootNode(callback, openItems) {
+    function loadChildrenOfRootNode(page, callback, openItems, selectedId) {
 
         var promise1 = $.getJSON(ApiClient.getUrl("Library/MediaFolders"));
 
@@ -95,9 +102,7 @@
 
                 var name = service.Name;
 
-                var cssClass = "editorNode";
-
-                var htmlName = "<div class='" + cssClass + "'>";
+                var htmlName = "<div class='editorNode'>";
 
                 htmlName += name;
 
@@ -106,8 +111,18 @@
                 nodes.push({ attr: { id: name, rel: 'folder', itemtype: 'livetvservice' }, data: htmlName, state: 'closed' });
             }
 
+            nodes.push({ attr: { id: 'libraryreport', rel: 'default', itemtype: 'libraryreport' }, data: 'Reports' });
+
             callback(nodes);
 
+            if (selectedId && nodes.filter(function (f) {
+
+                return f.attr.id == selectedId;
+
+            }).length) {
+
+                selectNode(page, selectedId);
+            }
         });
     }
 
@@ -133,13 +148,18 @@
 
         if (node == '-1') {
 
-            loadChildrenOfRootNode(callback, openItems);
+            loadChildrenOfRootNode(page, callback, openItems, selectedId);
             return;
         }
 
         var id = node.attr("id");
 
         var itemtype = node.attr("itemtype");
+
+        if (itemtype == 'libraryreport') {
+
+            return;
+        }
 
         if (itemtype == 'livetvservice') {
 
@@ -231,8 +251,32 @@
 
         });
     }
+    
+    function updateEditorNode(page, item) {
 
-    $(document).on('pagebeforeshow', ".metadataEditorPage", function () {
+        var elem = $('#' + item.Id + '>a', page)[0];
+
+        if (elem == null) {
+            return;
+        }
+
+        $('.editorNode', elem).remove();
+
+        $(elem).append(getNodeInnerHtml(item));
+        
+        if (item.IsFolder) {
+
+            var tree = jQuery.jstree._reference(".libraryTree");
+            var currentNode = tree._get_node(null, false);
+            tree.refresh(currentNode);
+        }
+    }
+
+    $(document).on('itemsaved', ".metadataEditorPage", function (e, item) {
+
+        updateEditorNode(this, item);
+
+    }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
         window.MetadataEditor = new metadataEditor();
 

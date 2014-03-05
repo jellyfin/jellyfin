@@ -352,6 +352,26 @@ namespace MediaBrowser.Controller.Entities
             return dictionary;
         }
 
+        private bool IsValidFromResolver(BaseItem current, BaseItem newItem)
+        {
+            var currentAsPlaceHolder = current as ISupportsPlaceHolders;
+
+            if (currentAsPlaceHolder != null)
+            {
+                var newHasPlaceHolder = newItem as ISupportsPlaceHolders;
+
+                if (newHasPlaceHolder != null)
+                {
+                    if (currentAsPlaceHolder.IsPlaceHolder != newHasPlaceHolder.IsPlaceHolder)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return current.IsInMixedFolder == newItem.IsInMixedFolder;
+        }
+
         /// <summary>
         /// Validates the children internal.
         /// </summary>
@@ -401,7 +421,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     BaseItem currentChild;
 
-                    if (currentChildren.TryGetValue(child.Id, out currentChild) && child.IsInMixedFolder == currentChild.IsInMixedFolder)
+                    if (currentChildren.TryGetValue(child.Id, out currentChild) && IsValidFromResolver(currentChild, child))
                     {
                         var currentChildLocationType = currentChild.LocationType;
                         if (currentChildLocationType != LocationType.Remote &&

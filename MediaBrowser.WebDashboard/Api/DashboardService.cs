@@ -416,7 +416,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "thirdparty/jquerymobile-1.4.1/jquery.mobile-1.4.1.min.css",
+                                "thirdparty/jquerymobile-1.4.2/jquery.mobile-1.4.2.min.css",
                                 "css/all.css" + versionString
                             };
 
@@ -456,8 +456,6 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{Stream}.</returns>
         private async Task<Stream> GetAllJavascript()
         {
-            var assembly = GetType().Assembly;
-
             var scriptFiles = new[]
                                   {
                                       "extensions.js",
@@ -497,6 +495,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "itemgallery.js",
                                       "itemlistpage.js",
                                       "librarypathmapping.js",
+                                      "libraryreport.js",
                                       "librarysettings.js",
                                       "livetvchannel.js",
                                       "livetvchannels.js",
@@ -570,7 +569,7 @@ namespace MediaBrowser.WebDashboard.Api
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
             await AppendResource(memoryStream, "thirdparty/jquery-2.0.3.min.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.1/jquery.mobile-1.4.1.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.2/jquery.mobile-1.4.2.min.js", newLineBytes).ConfigureAwait(false);
 
             var versionString = string.Format("window.dashboardVersion='{0}';", _appHost.ApplicationVersion);
             var versionBytes = Encoding.UTF8.GetBytes(versionString);
@@ -580,6 +579,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendResource(memoryStream, "thirdparty/autonumeric/autoNumeric.min.js", newLineBytes).ConfigureAwait(false);
 
+            var assembly = GetType().Assembly;
             await AppendResource(assembly, memoryStream, "MediaBrowser.WebDashboard.ApiClient.js", newLineBytes).ConfigureAwait(false);
 
             foreach (var file in scriptFiles)

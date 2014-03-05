@@ -29,6 +29,256 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:ServiceStack.AppHostHttpListenerBase">
+            <summary>
+            Inherit from this class if you want to host your web services inside a 
+            Console Application, Windows Service, etc.
+            
+            Usage of HttpListener allows you to host webservices on the same port (:80) as IIS 
+            however it requires admin user privillages.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Host.HttpListener.HttpListenerBase">
+            <summary>
+            Wrapper class for the HTTPListener to allow easier access to the
+            server, for start and stop management and event routing of the actual
+            inbound requests.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.IAppHost">
+            <summary>
+            ASP.NET or HttpListener ServiceStack host
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IAppHost.Register``1(``0)">
+            <summary>
+            Register dependency in AppHost IOC on Startup
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IAppHost.RegisterAs``2">
+            <summary>
+            AutoWired Registration of an interface with a concrete type in AppHost IOC on Startup.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IAppHost.Release(System.Object)">
+            <summary>
+            Allows the clean up for executed autowired services and filters.
+            Calls directly after services and filters are executed.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IAppHost.OnEndRequest">
+            <summary>
+            Called at the end of each request. Enables Request Scope.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IAppHost.RegisterService(System.Type,System.String[])">
+            <summary>
+            Register an Adhoc web service on Startup
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IAppHost.LoadPlugin(ServiceStack.IPlugin[])">
+            <summary>
+            Apply plugins to this AppHost
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IAppHost.CreateServiceRunner``1(ServiceStack.Host.ActionContext)">
+            <summary>
+            Create a service runner for IService actions
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IAppHost.ResolveAbsoluteUrl(System.String,ServiceStack.Web.IRequest)">
+            <summary>
+            Resolve the absolute url for this request
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IAppHost.ResolveLocalizedString(System.String)">
+            <summary>
+            Resolve localized text, returns itself by default.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.Routes">
+            <summary>
+            Register user-defined custom routes.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.ContentTypes">
+            <summary>
+            Register custom ContentType serializers
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.PreRequestFilters">
+            <summary>
+            Add Request Filters, to be applied before the dto is deserialized
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.GlobalRequestFilters">
+            <summary>
+            Add Request Filters for HTTP Requests
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.GlobalResponseFilters">
+            <summary>
+            Add Response Filters for HTTP Responses
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.GlobalMessageRequestFilters">
+            <summary>
+            Add Request Filters for MQ/TCP Requests
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.GlobalMessageResponseFilters">
+            <summary>
+            Add Response Filters for MQ/TCP Responses
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.ViewEngines">
+            <summary>
+            Add alternative HTML View Engines
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.ServiceExceptionHandlers">
+            <summary>
+            Provide an exception handler for unhandled exceptions
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.UncaughtExceptionHandlers">
+            <summary>
+            Provide an exception handler for un-caught exceptions
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.RawHttpHandlers">
+            <summary>
+            Skip the ServiceStack Request Pipeline and process the returned IHttpHandler instead
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.CatchAllHandlers">
+            <summary>
+            Provide a catch-all handler that doesn't match any routes
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.CustomErrorHttpHandlers">
+            <summary>
+            Use a Custom Error Handler for handling specific error HttpStatusCodes
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.RequestBinders">
+            <summary>
+            Provide a custom model minder for a specific Request DTO
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.Config">
+            <summary>
+            The AppHost config
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.Plugins">
+            <summary>
+            List of pre-registered and user-defined plugins to be enabled in this AppHost
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.VirtualPathProvider">
+            <summary>
+            Virtual access to file resources
+            </summary>
+        </member>
+        <member name="T:Funq.IFunqlet">
+            <summary>
+            Funqlets are a set of components provided as a package 
+            to an existing container (like a module).
+            </summary>
+        </member>
+        <member name="M:Funq.IFunqlet.Configure(Funq.Container)">
+            <summary>
+            Configure the given container with the 
+            registrations provided by the funqlet.
+            </summary>
+            <param name="container">Container to register.</param>
+        </member>
+        <member name="M:ServiceStack.ServiceStackHost.OnPreExecuteServiceFilter(ServiceStack.IService,System.Object,ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
+            <summary>
+            Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceStackHost.OnPostExecuteServiceFilter(ServiceStack.IService,System.Object,ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
+            <summary>
+            Executed immediately after a service is executed. Use return to change response used.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceStackHost.OnServiceException(ServiceStack.Web.IRequest,System.Object,System.Exception)">
+            <summary>
+            Occurs when the Service throws an Exception.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceStackHost.OnUncaughtException(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.String,System.Exception)">
+            <summary>
+            Occurs when an exception is thrown whilst processing a request.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceStackHost.ApplyCustomHandlerRequestFilters(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
+            <summary>
+            Apply PreRequest Filters for participating Custom Handlers, e.g. RazorFormat, MarkdownFormat, etc
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceStackHost.ApplyPreRequestFilters(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
+            <summary>
+            Applies the raw request filters. Returns whether or not the request has been handled 
+            and no more processing should be done.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ServiceStackHost.ApplyRequestFilters(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.Object)">
+            <summary>
+            Applies the request filters. Returns whether or not the request has been handled 
+            and no more processing should be done.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ServiceStackHost.ApplyResponseFilters(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.Object)">
+            <summary>
+            Applies the response filters. Returns whether or not the request has been handled 
+            and no more processing should be done.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.ServiceStackHost.Container">
+            <summary>
+            The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Host.HttpListener.HttpListenerBase.Start(System.String,System.Threading.WaitCallback)">
+            <summary>
+            Starts the Web Service
+            </summary>
+            <param name="listeningAtUrlBase">
+            A Uri that acts as the base that the server is listening on.
+            Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
+            Note: the trailing slash is required! For more info see the
+            HttpListener.Prefixes property on MSDN.
+            </param>
+        </member>
+        <member name="M:ServiceStack.Host.HttpListener.HttpListenerBase.Stop">
+            <summary>
+            Shut down the Web Service
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Host.HttpListener.HttpListenerBase.ProcessRequestAsync(System.Net.HttpListenerContext)">
+            <summary>
+            Overridable method that can be used to implement a custom hnandler
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="M:ServiceStack.Host.HttpListener.HttpListenerBase.AddUrlReservationToAcl(System.String)">
+            <summary>
+            Reserves the specified URL for non-administrator users and accounts. 
+            http://msdn.microsoft.com/en-us/library/windows/desktop/cc307223(v=vs.85).aspx
+            </summary>
+            <returns>Reserved Url if the process completes successfully</returns>
+        </member>
+        <member name="M:ServiceStack.Auth.UserAuthRepositoryExtensions.InitSchema(ServiceStack.Auth.IAuthRepository)">
+            <summary>
+            Creates the required missing tables or DB schema 
+            </summary>
+        </member>
         <member name="T:ServiceStack.EnsureHttpsAttribute">
             <summary>
             Redirect to the https:// version of this url if not already.
@@ -103,6 +353,2177 @@
             <summary>
             A convenient base class for your injected service dependencies that reduces the boilerplate
             with managed access to ServiceStack's built-in providers
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.Internal.CallerThreadContext">
+            <summary>
+            This class stores the caller call context in order to restore
+            it when the work item is executed in the thread pool environment. 
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.CallerThreadContext.#ctor">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.CallerThreadContext.Capture(System.Boolean,System.Boolean)">
+            <summary>
+            Captures the current thread context
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.CallerThreadContext.Apply(Amib.Threading.Internal.CallerThreadContext)">
+            <summary>
+            Applies the thread context stored earlier
+            </summary>
+            <param name="callerThreadContext"></param>
+        </member>
+        <member name="T:Amib.Threading.Internal.EventWaitHandleFactory">
+            <summary>
+            EventWaitHandleFactory class.
+            This is a static class that creates AutoResetEvent and ManualResetEvent objects.
+            In WindowCE the WaitForMultipleObjects API fails to use the Handle property 
+            of XxxResetEvent. It can use only handles that were created by the CreateEvent API.
+            Consequently this class creates the needed XxxResetEvent and replaces the handle if
+            it's a WindowsCE OS.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.EventWaitHandleFactory.CreateAutoResetEvent">
+            <summary>
+            Create a new AutoResetEvent object
+            </summary>
+            <returns>Return a new AutoResetEvent object</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.EventWaitHandleFactory.CreateManualResetEvent(System.Boolean)">
+            <summary>
+            Create a new ManualResetEvent object
+            </summary>
+            <returns>Return a new ManualResetEvent object</returns>
+        </member>
+        <member name="T:Amib.Threading.WorkItemCancelException">
+            <summary>
+            Represents an exception in case IWorkItemResult.GetResult has been canceled
+            </summary>
+            <summary>
+            Represents an exception in case IWorkItemResult.GetResult has been canceled
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.WorkItemTimeoutException">
+            <summary>
+            Represents an exception in case IWorkItemResult.GetResult has been timed out
+            </summary>
+            <summary>
+            Represents an exception in case IWorkItemResult.GetResult has been timed out
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.WorkItemResultException">
+            <summary>
+            Represents an exception in case IWorkItemResult.GetResult has been timed out
+            </summary>
+            <summary>
+            Represents an exception in case IWorkItemResult.GetResult has been timed out
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.WorkItemCallback">
+            <summary>
+            A delegate that represents the method to run as the work item
+            </summary>
+            <param name="state">A state object for the method to run</param>
+        </member>
+        <member name="T:Amib.Threading.PostExecuteWorkItemCallback">
+            <summary>
+            A delegate to call after the WorkItemCallback completed
+            </summary>
+            <param name="wir">The work item result object</param>
+        </member>
+        <member name="T:Amib.Threading.PostExecuteWorkItemCallback`1">
+            <summary>
+            A delegate to call after the WorkItemCallback completed
+            </summary>
+            <param name="wir">The work item result object</param>
+        </member>
+        <member name="T:Amib.Threading.WorkItemsGroupIdleHandler">
+            <summary>
+            A delegate to call when a WorkItemsGroup becomes idle
+            </summary>
+            <param name="workItemsGroup">A reference to the WorkItemsGroup that became idle</param>
+        </member>
+        <member name="T:Amib.Threading.ThreadInitializationHandler">
+            <summary>
+            A delegate to call after a thread is created, but before 
+            it's first use.
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.ThreadTerminationHandler">
+            <summary>
+            A delegate to call when a thread is about to exit, after 
+            it is no longer belong to the pool.
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.WorkItemPriority">
+            <summary>
+            Defines the availeable priorities of a work item.
+            The higher the priority a work item has, the sooner
+            it will be executed.
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.IWorkItemsGroup">
+            <summary>
+            IWorkItemsGroup interface
+            Created by SmartThreadPool.CreateWorkItemsGroup()
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.GetStates">
+            <summary>
+            Get an array with all the state objects of the currently running items.
+            The array represents a snap shot and impact performance.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.Start">
+            <summary>
+            Starts to execute work items
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.Cancel">
+            <summary>
+            Cancel all the work items.
+            Same as Cancel(false)
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.Cancel(System.Boolean)">
+            <summary>
+            Cancel all work items using thread abortion
+            </summary>
+            <param name="abortExecution">True to stop work items by raising ThreadAbortException</param>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.WaitForIdle">
+            <summary>
+            Wait for all work item to complete.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.WaitForIdle(System.TimeSpan)">
+            <summary>
+            Wait for all work item to complete, until timeout expired
+            </summary>
+            <param name="timeout">How long to wait for the work items to complete</param>
+            <returns>Returns true if work items completed within the timeout, otherwise false.</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.WaitForIdle(System.Int32)">
+            <summary>
+            Wait for all work item to complete, until timeout expired
+            </summary>
+            <param name="millisecondsTimeout">How long to wait for the work items to complete in milliseconds</param>
+            <returns>Returns true if work items completed within the timeout, otherwise false.</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem(Amib.Threading.WorkItemCallback)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <returns>Returns a work item result</returns>        
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem(Amib.Threading.WorkItemCallback,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="workItemPriority">The priority of the work item</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="workItemPriority">The work item priority</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <param name="workItemPriority">The work item priority</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback,Amib.Threading.CallToPostExecute)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <param name="callToPostExecute">Indicates on which cases to call to the post execute callback</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback,Amib.Threading.CallToPostExecute,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <param name="callToPostExecute">Indicates on which cases to call to the post execute callback</param>
+            <param name="workItemPriority">The work item priority</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem(Amib.Threading.WorkItemInfo,Amib.Threading.WorkItemCallback)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="workItemInfo">Work item info</param>
+            <param name="callback">A callback to execute</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem(Amib.Threading.WorkItemInfo,Amib.Threading.WorkItemCallback,System.Object)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="workItemInfo">Work item information</param>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem(Amib.Threading.Action,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item.
+            </summary>
+            <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem``1(System.Action{``0},``0,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item.
+            </summary>
+            <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem``2(Amib.Threading.Action{``0,``1},``0,``1,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item.
+            </summary>
+            <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem``3(Amib.Threading.Action{``0,``1,``2},``0,``1,``2,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item.
+            </summary>
+            <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem``4(Amib.Threading.Action{``0,``1,``2,``3},``0,``1,``2,``3,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item.
+            </summary>
+            <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem``1(Amib.Threading.Func{``0},Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item.
+            </summary>
+            <returns>Returns a IWorkItemResult&lt;TResult&gt; object. 
+            its GetResult() returns a TResult object</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem``2(Amib.Threading.Func{``0,``1},``0,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item.
+            </summary>
+            <returns>Returns a IWorkItemResult&lt;TResult&gt; object. 
+            its GetResult() returns a TResult object</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem``3(Amib.Threading.Func{``0,``1,``2},``0,``1,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item.
+            </summary>
+            <returns>Returns a IWorkItemResult&lt;TResult&gt; object. 
+            its GetResult() returns a TResult object</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem``4(Amib.Threading.Func{``0,``1,``2,``3},``0,``1,``2,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item.
+            </summary>
+            <returns>Returns a IWorkItemResult&lt;TResult&gt; object. 
+            its GetResult() returns a TResult object</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemsGroup.QueueWorkItem``5(Amib.Threading.Func{``0,``1,``2,``3,``4},``0,``1,``2,``3,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item.
+            </summary>
+            <returns>Returns a IWorkItemResult&lt;TResult&gt; object. 
+            its GetResult() returns a TResult object</returns>
+        </member>
+        <member name="P:Amib.Threading.IWorkItemsGroup.Name">
+            <summary>
+            Get/Set the name of the WorkItemsGroup
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.IWorkItemsGroup.Concurrency">
+            <summary>
+            Get/Set the maximum number of workitem that execute cocurrency on the thread pool
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.IWorkItemsGroup.WaitingCallbacks">
+            <summary>
+            Get the number of work items waiting in the queue.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.IWorkItemsGroup.WIGStartInfo">
+            <summary>
+            Get the WorkItemsGroup start information
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.IWorkItemsGroup.IsIdle">
+            <summary>
+            IsIdle is true when there are no work items running or queued.
+            </summary>
+        </member>
+        <member name="E:Amib.Threading.IWorkItemsGroup.OnIdle">
+            <summary>
+            This event is fired when all work items are completed.
+            (When IsIdle changes to true)
+            This event only work on WorkItemsGroup. On SmartThreadPool
+            it throws the NotImplementedException.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.CallToPostExecute.Never">
+            <summary>
+            Never call to the PostExecute call back
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.CallToPostExecute.WhenWorkItemCanceled">
+            <summary>
+            Call to the PostExecute only when the work item is cancelled
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.CallToPostExecute.WhenWorkItemNotCanceled">
+            <summary>
+            Call to the PostExecute only when the work item is not cancelled
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.CallToPostExecute.Always">
+            <summary>
+            Always call to the PostExecute
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.IWaitableResult">
+            <summary>
+            The common interface of IWorkItemResult and IWorkItemResult&lt;T&gt;
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.IWaitableResult.GetWorkItemResult">
+            <summary>
+            This method intent is for internal use.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amib.Threading.IWaitableResult.GetWorkItemResultT``1">
+            <summary>
+            This method intent is for internal use.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Amib.Threading.IWorkItemResult">
+            <summary>
+            IWorkItemResult interface.
+            Created when a WorkItemCallback work item is queued.
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.IWorkItemResult`1">
+            <summary>
+            IWorkItemResult&lt;TResult&gt; interface.
+            Created when a Func&lt;TResult&gt; work item is queued.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.GetResult">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits.
+            </summary>
+            <returns>The result of the work item</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.GetResult(System.Int32,System.Boolean)">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits until timeout.
+            </summary>
+            <returns>The result of the work item</returns>
+            On timeout throws WorkItemTimeoutException
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.GetResult(System.TimeSpan,System.Boolean)">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits until timeout.
+            </summary>
+            <returns>The result of the work item</returns>
+            On timeout throws WorkItemTimeoutException
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.GetResult(System.Int32,System.Boolean,System.Threading.WaitHandle)">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits until timeout or until the cancelWaitHandle is signaled.
+            </summary>
+            <param name="millisecondsTimeout">Timeout in milliseconds, or -1 for infinite</param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <param name="cancelWaitHandle">A cancel wait handle to interrupt the blocking if needed</param>
+            <returns>The result of the work item</returns>
+            On timeout throws WorkItemTimeoutException
+            On cancel throws WorkItemCancelException
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.GetResult(System.TimeSpan,System.Boolean,System.Threading.WaitHandle)">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits until timeout or until the cancelWaitHandle is signaled.
+            </summary>
+            <returns>The result of the work item</returns>
+            On timeout throws WorkItemTimeoutException
+            On cancel throws WorkItemCancelException
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.GetResult(System.Exception@)">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits.
+            </summary>
+            <param name="e">Filled with the exception if one was thrown</param>
+            <returns>The result of the work item</returns>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.GetResult(System.Int32,System.Boolean,System.Exception@)">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits until timeout.
+            </summary>
+            <param name="millisecondsTimeout"></param>
+            <param name="exitContext"></param>
+            <param name="e">Filled with the exception if one was thrown</param>
+            <returns>The result of the work item</returns>
+            On timeout throws WorkItemTimeoutException
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.GetResult(System.TimeSpan,System.Boolean,System.Exception@)">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits until timeout.
+            </summary>
+            <param name="exitContext"></param>
+            <param name="e">Filled with the exception if one was thrown</param>
+            <param name="timeout"></param>
+            <returns>The result of the work item</returns>
+            On timeout throws WorkItemTimeoutException
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.GetResult(System.Int32,System.Boolean,System.Threading.WaitHandle,System.Exception@)">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits until timeout or until the cancelWaitHandle is signaled.
+            </summary>
+            <param name="millisecondsTimeout">Timeout in milliseconds, or -1 for infinite</param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <param name="cancelWaitHandle">A cancel wait handle to interrupt the blocking if needed</param>
+            <param name="e">Filled with the exception if one was thrown</param>
+            <returns>The result of the work item</returns>
+            On timeout throws WorkItemTimeoutException
+            On cancel throws WorkItemCancelException
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.GetResult(System.TimeSpan,System.Boolean,System.Threading.WaitHandle,System.Exception@)">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits until timeout or until the cancelWaitHandle is signaled.
+            </summary>
+            <returns>The result of the work item</returns>
+            <param name="cancelWaitHandle"></param>
+            <param name="e">Filled with the exception if one was thrown</param>
+            <param name="timeout"></param>
+            <param name="exitContext"></param>
+            On timeout throws WorkItemTimeoutException
+            On cancel throws WorkItemCancelException
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.Cancel">
+            <summary>
+            Same as Cancel(false).
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.IWorkItemResult`1.Cancel(System.Boolean)">
+            <summary>
+            Cancel the work item execution.
+            If the work item is in the queue then it won't execute
+            If the work item is completed, it will remain completed
+            If the work item is in progress then the user can check the SmartThreadPool.IsWorkItemCanceled
+              property to check if the work item has been cancelled. If the abortExecution is set to true then
+              the Smart Thread Pool will send an AbortException to the running thread to stop the execution 
+              of the work item. When an in progress work item is canceled its GetResult will throw WorkItemCancelException.
+            If the work item is already cancelled it will remain cancelled
+            </summary>
+            <param name="abortExecution">When true send an AbortException to the executing thread.</param>
+            <returns>Returns true if the work item was not completed, otherwise false.</returns>
+        </member>
+        <member name="P:Amib.Threading.IWorkItemResult`1.IsCompleted">
+            <summary>
+            Gets an indication whether the asynchronous operation has completed.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.IWorkItemResult`1.IsCanceled">
+            <summary>
+            Gets an indication whether the asynchronous operation has been canceled.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.IWorkItemResult`1.State">
+            <summary>
+            Gets the user-defined object that contains context data 
+            for the work item method.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.IWorkItemResult`1.WorkItemPriority">
+            <summary>
+            Get the work item's priority
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.IWorkItemResult`1.Result">
+            <summary>
+            Return the result, same as GetResult()
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.IWorkItemResult`1.Exception">
+            <summary>
+            Returns the exception if occured otherwise returns null.
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.Internal.WorkItemStateCallback">
+            <summary>
+            An internal delegate to call when the WorkItem starts or completes
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.IInternalWaitableResult.GetWorkItemResult">
+            <summary>
+            This method is intent for internal use.
+            </summary>   
+        </member>
+        <member name="T:Amib.Threading.Internal.PriorityQueue">
+            <summary>
+            PriorityQueue class
+            This class is not thread safe because we use external lock
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.PriorityQueue._queuesCount">
+            <summary>
+            The number of queues, there is one for each type of priority
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.PriorityQueue._queues">
+            <summary>
+            Work items queues. There is one for each type of priority
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.PriorityQueue._workItemsCount">
+            <summary>
+            The total number of work items within the queues 
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.PriorityQueue._version">
+            <summary>
+            Use with IEnumerable interface
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.PriorityQueue.Enqueue(Amib.Threading.Internal.IHasWorkItemPriority)">
+            <summary>
+            Enqueue a work item.
+            </summary>
+            <param name="workItem">A work item</param>
+        </member>
+        <member name="M:Amib.Threading.Internal.PriorityQueue.Dequeue">
+            <summary>
+            Dequeque a work item.
+            </summary>
+            <returns>Returns the next work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.PriorityQueue.GetNextNonEmptyQueue(System.Int32)">
+            <summary>
+            Find the next non empty queue starting at queue queueIndex+1
+            </summary>
+            <param name="queueIndex">The index-1 to start from</param>
+            <returns>
+            The index of the next non empty queue or -1 if all the queues are empty
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.PriorityQueue.Clear">
+            <summary>
+            Clear all the work items 
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.PriorityQueue.GetEnumerator">
+            <summary>
+            Returns an enumerator to iterate over the work items
+            </summary>
+            <returns>Returns an enumerator</returns>
+        </member>
+        <member name="P:Amib.Threading.Internal.PriorityQueue.Count">
+            <summary>
+            The number of work items 
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.Internal.PriorityQueue.PriorityQueueEnumerator">
+            <summary>
+            The class the implements the enumerator
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.SmartThreadPool">
+            <summary>
+            Smart thread pool class.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsGroupBase._name">
+            <summary>
+            Contains the name of this instance of SmartThreadPool.
+            Can be changed by the user.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.Cancel">
+            <summary>
+            Cancel all the work items.
+            Same as Cancel(false)
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.WaitForIdle">
+            <summary>
+            Wait for the SmartThreadPool/WorkItemsGroup to be idle
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.WaitForIdle(System.TimeSpan)">
+            <summary>
+            Wait for the SmartThreadPool/WorkItemsGroup to be idle
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.QueueWorkItem(Amib.Threading.WorkItemCallback)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.QueueWorkItem(Amib.Threading.WorkItemCallback,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="workItemPriority">The priority of the work item</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.QueueWorkItem(Amib.Threading.WorkItemInfo,Amib.Threading.WorkItemCallback)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="workItemInfo">Work item info</param>
+            <param name="callback">A callback to execute</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="workItemPriority">The work item priority</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.QueueWorkItem(Amib.Threading.WorkItemInfo,Amib.Threading.WorkItemCallback,System.Object)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="workItemInfo">Work item information</param>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <param name="workItemPriority">The work item priority</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback,Amib.Threading.CallToPostExecute)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <param name="callToPostExecute">Indicates on which cases to call to the post execute callback</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroupBase.QueueWorkItem(Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback,Amib.Threading.CallToPostExecute,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Queue a work item
+            </summary>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <param name="callToPostExecute">Indicates on which cases to call to the post execute callback</param>
+            <param name="workItemPriority">The work item priority</param>
+            <returns>Returns a work item result</returns>
+        </member>
+        <member name="P:Amib.Threading.Internal.WorkItemsGroupBase.Name">
+            <summary>
+            Get/Set the name of the SmartThreadPool/WorkItemsGroup instance
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.Internal.WorkItemsGroupBase.IsIdle">
+            <summary>
+            IsIdle is true when there are no work items running or queued.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultMinWorkerThreads">
+            <summary>
+            Default minimum number of threads the thread pool contains. (0)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultMaxWorkerThreads">
+            <summary>
+            Default maximum number of threads the thread pool contains. (25)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultIdleTimeout">
+            <summary>
+            Default idle timeout in milliseconds. (One minute)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultUseCallerCallContext">
+            <summary>
+            Indicate to copy the security context of the caller and then use it in the call. (false)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultUseCallerHttpContext">
+            <summary>
+            Indicate to copy the HTTP context of the caller and then use it in the call. (false)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultDisposeOfStateObjects">
+            <summary>
+            Indicate to dispose of the state objects if they support the IDispose interface. (false)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultCallToPostExecute">
+            <summary>
+            The default option to run the post execute (CallToPostExecute.Always)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultWorkItemPriority">
+            <summary>
+            The default work item priority (WorkItemPriority.Normal)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultStartSuspended">
+            <summary>
+            The default is to work on work items as soon as they arrive
+            and not to wait for the start. (false)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultThreadPriority">
+            <summary>
+            The default thread priority (ThreadPriority.Normal)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultThreadPoolName">
+            <summary>
+            The default thread pool name. (SmartThreadPool)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultFillStateWithArgs">
+            <summary>
+            The default fill state with params. (false)
+            It is relevant only to QueueWorkItem of Action&lt;...&gt;/Func&lt;...&gt;
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultAreThreadsBackground">
+            <summary>
+            The default thread backgroundness. (true)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultApartmentState">
+            <summary>
+            The default apartment state of a thread in the thread pool. 
+            The default is ApartmentState.Unknown which means the STP will not 
+            set the apartment of the thread. It will use the .NET default.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultPostExecuteWorkItemCallback">
+            <summary>
+            The default post execute method to run. (None)
+            When null it means not to call it.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultPerformanceCounterInstanceName">
+            <summary>
+            The default name to use for the performance counters instance. (null)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.DefaultMaxStackSize">
+            <summary>
+            The default Max Stack Size. (SmartThreadPool)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._workerThreads">
+            <summary>
+            Dictionary of all the threads in the thread pool.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._workItemsQueue">
+            <summary>
+            Queue of work items.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._workItemsProcessed">
+            <summary>
+            Count the work items handled.
+            Used by the performance counter.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._inUseWorkerThreads">
+            <summary>
+            Number of threads that currently work (not idle).
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._stpStartInfo">
+            <summary>
+            Stores a copy of the original STPStartInfo.
+            It is used to change the MinThread and MaxThreads
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._currentWorkItemsCount">
+            <summary>
+            Total number of work items that are stored in the work items queue 
+            plus the work items that the threads in the pool are working on.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._isIdleWaitHandle">
+            <summary>
+            Signaled when the thread pool is idle, i.e. no thread is busy
+            and the work items queue is empty
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._shuttingDownEvent">
+            <summary>
+            An event to signal all the threads to quit immediately.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._isSuspended">
+            <summary>
+            A flag to indicate if the Smart Thread Pool is now suspended.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._shutdown">
+            <summary>
+            A flag to indicate the threads to quit.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._threadCounter">
+            <summary>
+            Counts the threads created in the pool.
+            It is used to name the threads.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._isDisposed">
+            <summary>
+            Indicate that the SmartThreadPool has been disposed
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._workItemsGroups">
+            <summary>
+            Holds all the WorkItemsGroup instaces that have at least one 
+            work item int the SmartThreadPool
+            This variable is used in case of Shutdown
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._canceledSmartThreadPool">
+            <summary>
+            A common object for all the work items int the STP
+            so we can mark them to cancel in O(1)
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._windowsPCs">
+            <summary>
+            Windows STP performance counters
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool._localPCs">
+            <summary>
+            Local STP performance counters
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.#ctor">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.#ctor(System.Int32)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="idleTimeout">Idle timeout in milliseconds</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="idleTimeout">Idle timeout in milliseconds</param>
+            <param name="maxWorkerThreads">Upper limit of threads in the pool</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="idleTimeout">Idle timeout in milliseconds</param>
+            <param name="maxWorkerThreads">Upper limit of threads in the pool</param>
+            <param name="minWorkerThreads">Lower limit of threads in the pool</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.#ctor(Amib.Threading.STPStartInfo)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="stpStartInfo">A SmartThreadPool configuration that overrides the default behavior</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Dequeue">
+            <summary>
+            Waits on the queue for a work item, shutdown, or timeout.
+            </summary>
+            <returns>
+            Returns the WaitingCallback or null in case of timeout or shutdown.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Enqueue(Amib.Threading.Internal.WorkItem)">
+            <summary>
+            Put a new work item in the queue
+            </summary>
+            <param name="workItem">A work item to queue</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.InformCompleted">
+            <summary>
+            Inform that the current thread is about to quit or quiting.
+            The same thread may call this method more than once.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.StartThreads(System.Int32)">
+            <summary>
+            Starts new threads
+            </summary>
+            <param name="threadsCount">The number of threads to start</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.ProcessQueuedItems">
+            <summary>
+            A worker thread method that processes work items from the work items queue.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Shutdown">
+            <summary>
+            Force the SmartThreadPool to shutdown
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Shutdown(System.Boolean,System.TimeSpan)">
+            <summary>
+            Force the SmartThreadPool to shutdown with timeout
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Shutdown(System.Boolean,System.Int32)">
+            <summary>
+            Empties the queue of work items and abort the threads in the pool.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.WaitAll(Amib.Threading.IWaitableResult[])">
+            <summary>
+            Wait for all work items to complete
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <returns>
+            true when every work item in workItemResults has completed; otherwise false.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.WaitAll(Amib.Threading.IWaitableResult[],System.TimeSpan,System.Boolean)">
+            <summary>
+            Wait for all work items to complete
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <param name="timeout">The number of milliseconds to wait, or a TimeSpan that represents -1 milliseconds to wait indefinitely. </param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <returns>
+            true when every work item in workItemResults has completed; otherwise false.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.WaitAll(Amib.Threading.IWaitableResult[],System.TimeSpan,System.Boolean,System.Threading.WaitHandle)">
+            <summary>
+            Wait for all work items to complete
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <param name="timeout">The number of milliseconds to wait, or a TimeSpan that represents -1 milliseconds to wait indefinitely. </param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <param name="cancelWaitHandle">A cancel wait handle to interrupt the wait if needed</param>
+            <returns>
+            true when every work item in workItemResults has completed; otherwise false.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.WaitAll(Amib.Threading.IWaitableResult[],System.Int32,System.Boolean)">
+            <summary>
+            Wait for all work items to complete
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <param name="millisecondsTimeout">The number of milliseconds to wait, or Timeout.Infinite (-1) to wait indefinitely.</param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <returns>
+            true when every work item in workItemResults has completed; otherwise false.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.WaitAll(Amib.Threading.IWaitableResult[],System.Int32,System.Boolean,System.Threading.WaitHandle)">
+            <summary>
+            Wait for all work items to complete
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <param name="millisecondsTimeout">The number of milliseconds to wait, or Timeout.Infinite (-1) to wait indefinitely.</param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <param name="cancelWaitHandle">A cancel wait handle to interrupt the wait if needed</param>
+            <returns>
+            true when every work item in workItemResults has completed; otherwise false.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.WaitAny(Amib.Threading.IWaitableResult[])">
+            <summary>
+            Waits for any of the work items in the specified array to complete, cancel, or timeout
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <returns>
+            The array index of the work item result that satisfied the wait, or WaitTimeout if any of the work items has been canceled.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.WaitAny(Amib.Threading.IWaitableResult[],System.TimeSpan,System.Boolean)">
+            <summary>
+            Waits for any of the work items in the specified array to complete, cancel, or timeout
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <param name="timeout">The number of milliseconds to wait, or a TimeSpan that represents -1 milliseconds to wait indefinitely. </param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <returns>
+            The array index of the work item result that satisfied the wait, or WaitTimeout if no work item result satisfied the wait and a time interval equivalent to millisecondsTimeout has passed or the work item has been canceled.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.WaitAny(Amib.Threading.IWaitableResult[],System.TimeSpan,System.Boolean,System.Threading.WaitHandle)">
+            <summary>
+            Waits for any of the work items in the specified array to complete, cancel, or timeout
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <param name="timeout">The number of milliseconds to wait, or a TimeSpan that represents -1 milliseconds to wait indefinitely. </param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <param name="cancelWaitHandle">A cancel wait handle to interrupt the wait if needed</param>
+            <returns>
+            The array index of the work item result that satisfied the wait, or WaitTimeout if no work item result satisfied the wait and a time interval equivalent to millisecondsTimeout has passed or the work item has been canceled.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.WaitAny(Amib.Threading.IWaitableResult[],System.Int32,System.Boolean)">
+            <summary>
+            Waits for any of the work items in the specified array to complete, cancel, or timeout
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <param name="millisecondsTimeout">The number of milliseconds to wait, or Timeout.Infinite (-1) to wait indefinitely.</param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <returns>
+            The array index of the work item result that satisfied the wait, or WaitTimeout if no work item result satisfied the wait and a time interval equivalent to millisecondsTimeout has passed or the work item has been canceled.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.WaitAny(Amib.Threading.IWaitableResult[],System.Int32,System.Boolean,System.Threading.WaitHandle)">
+            <summary>
+            Waits for any of the work items in the specified array to complete, cancel, or timeout
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <param name="millisecondsTimeout">The number of milliseconds to wait, or Timeout.Infinite (-1) to wait indefinitely.</param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <param name="cancelWaitHandle">A cancel wait handle to interrupt the wait if needed</param>
+            <returns>
+            The array index of the work item result that satisfied the wait, or WaitTimeout if no work item result satisfied the wait and a time interval equivalent to millisecondsTimeout has passed or the work item has been canceled.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.CreateWorkItemsGroup(System.Int32)">
+            <summary>
+            Creates a new WorkItemsGroup.
+            </summary>
+            <param name="concurrency">The number of work items that can be run concurrently</param>
+            <returns>A reference to the WorkItemsGroup</returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.CreateWorkItemsGroup(System.Int32,Amib.Threading.WIGStartInfo)">
+            <summary>
+            Creates a new WorkItemsGroup.
+            </summary>
+            <param name="concurrency">The number of work items that can be run concurrently</param>
+            <param name="wigStartInfo">A WorkItemsGroup configuration that overrides the default behavior</param>
+            <returns>A reference to the WorkItemsGroup</returns>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.AbortOnWorkItemCancel">
+            <summary>
+            Checks if the work item has been cancelled, and if yes then abort the thread.
+            Can be used with Cancel and timeout
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.GetStates">
+            <summary>
+            Get an array with all the state objects of the currently running items.
+            The array represents a snap shot and impact performance.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Start">
+            <summary>
+            Start the thread pool if it was started suspended.
+            If it is already running, this method is ignored.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Cancel(System.Boolean)">
+            <summary>
+            Cancel all work items using thread abortion
+            </summary>
+            <param name="abortExecution">True to stop work items by raising ThreadAbortException</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.WaitForIdle(System.Int32)">
+            <summary>
+            Wait for the thread pool to be idle
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Join(System.Collections.Generic.IEnumerable{Amib.Threading.Action})">
+            <summary>
+            Executes all actions in parallel.
+            Returns when they all finish.
+            </summary>
+            <param name="actions">Actions to execute</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Join(Amib.Threading.Action[])">
+            <summary>
+            Executes all actions in parallel.
+            Returns when they all finish.
+            </summary>
+            <param name="actions">Actions to execute</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Choice(System.Collections.Generic.IEnumerable{Amib.Threading.Action})">
+            <summary>
+            Executes all actions in parallel
+            Returns when the first one completes
+            </summary>
+            <param name="actions">Actions to execute</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Choice(Amib.Threading.Action[])">
+            <summary>
+            Executes all actions in parallel
+            Returns when the first one completes
+            </summary>
+            <param name="actions">Actions to execute</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Pipe``1(``0,System.Collections.Generic.IEnumerable{System.Action{``0}})">
+            <summary>
+            Executes actions in sequence asynchronously.
+            Returns immediately.
+            </summary>
+            <param name="pipeState">A state context that passes </param>
+            <param name="actions">Actions to execute in the order they should run</param>
+        </member>
+        <member name="M:Amib.Threading.SmartThreadPool.Pipe``1(``0,System.Action{``0}[])">
+            <summary>
+            Executes actions in sequence asynchronously.
+            Returns immediately.
+            </summary>
+            <param name="pipeState"></param>
+            <param name="actions">Actions to execute in the order they should run</param>
+        </member>
+        <member name="E:Amib.Threading.SmartThreadPool._onThreadInitialization">
+            <summary>
+            An event to call after a thread is created, but before 
+            it's first use.
+            </summary>
+        </member>
+        <member name="E:Amib.Threading.SmartThreadPool._onThreadTermination">
+            <summary>
+            An event to call when a thread is about to exit, after 
+            it is no longer belong to the pool.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.CurrentThreadEntry">
+            <summary>
+            A reference to the current work item a thread from the thread pool 
+            is executing.
+            </summary>
+        </member>
+        <member name="E:Amib.Threading.SmartThreadPool.OnThreadInitialization">
+            <summary>
+            This event is fired when a thread is created.
+            Use it to initialize a thread before the work items use it.
+            </summary>
+        </member>
+        <member name="E:Amib.Threading.SmartThreadPool.OnThreadTermination">
+            <summary>
+            This event is fired when a thread is terminating.
+            Use it for cleanup.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.MinThreads">
+            <summary>
+            Get/Set the lower limit of threads in the pool.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.MaxThreads">
+            <summary>
+            Get/Set the upper limit of threads in the pool.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.ActiveThreads">
+            <summary>
+            Get the number of threads in the thread pool.
+            Should be between the lower and the upper limits.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.InUseThreads">
+            <summary>
+            Get the number of busy (not idle) threads in the thread pool.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.IsWorkItemCanceled">
+            <summary>
+            Returns true if the current running work item has been cancelled.
+            Must be used within the work item's callback method.
+            The work item should sample this value in order to know if it
+            needs to quit before its completion.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.STPStartInfo">
+            <summary>
+            Thread Pool start information (readonly)
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.PerformanceCountersReader">
+            <summary>
+            Return the local calculated performance counters
+            Available only if STPStartInfo.EnableLocalPerformanceCounters is true.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.Concurrency">
+            <summary>
+            Get/Set the maximum number of work items that execute cocurrency on the thread pool
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.WaitingCallbacks">
+            <summary>
+            Get the number of work items in the queue.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.WIGStartInfo">
+            <summary>
+            WorkItemsGroup start information (readonly)
+            </summary>
+        </member>
+        <member name="E:Amib.Threading.SmartThreadPool.OnIdle">
+            <summary>
+            This event is fired when all work items are completed.
+            (When IsIdle changes to true)
+            This event only work on WorkItemsGroup. On SmartThreadPool
+            it throws the NotImplementedException.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.ThreadEntry._creationTime">
+            <summary>
+            The thread creation time
+            The value is stored as UTC value.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.ThreadEntry._lastAliveTime">
+            <summary>
+            The last time this thread has been running
+            It is updated by IAmAlive() method
+            The value is stored as UTC value.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.SmartThreadPool.ThreadEntry._associatedSmartThreadPool">
+            <summary>
+            A reference from each thread in the thread pool to its SmartThreadPool
+            object container.
+            With this variable a thread can know whatever it belongs to a 
+            SmartThreadPool.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.SmartThreadPool.ThreadEntry.CurrentWorkItem">
+            <summary>
+            A reference to the current work item a thread from the thread pool 
+            is executing.
+            </summary>            
+        </member>
+        <member name="T:Amib.Threading.Internal.STPPerformanceCounter">
+            <summary>
+            Summary description for STPPerformanceCounter.
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.STPStartInfo">
+            <summary>
+            Summary description for STPStartInfo.
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.WIGStartInfo">
+            <summary>
+            Summary description for WIGStartInfo.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.WIGStartInfo.AsReadOnly">
+            <summary>
+            Get a readonly version of this WIGStartInfo
+            </summary>
+            <returns>Returns a readonly reference to this WIGStartInfoRO</returns>
+        </member>
+        <member name="P:Amib.Threading.WIGStartInfo.UseCallerCallContext">
+            <summary>
+            Get/Set if to use the caller's security context
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WIGStartInfo.UseCallerHttpContext">
+            <summary>
+            Get/Set if to use the caller's HTTP context
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WIGStartInfo.DisposeOfStateObjects">
+            <summary>
+            Get/Set if to dispose of the state object of a work item
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WIGStartInfo.CallToPostExecute">
+            <summary>
+            Get/Set the run the post execute options
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WIGStartInfo.PostExecuteWorkItemCallback">
+            <summary>
+            Get/Set the default post execute callback
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WIGStartInfo.StartSuspended">
+            <summary>
+            Get/Set if the work items execution should be suspended until the Start()
+            method is called.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WIGStartInfo.WorkItemPriority">
+            <summary>
+            Get/Set the default priority that a work item gets when it is enqueued
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WIGStartInfo.FillStateWithArgs">
+            <summary>
+            Get/Set the if QueueWorkItem of Action&lt;...&gt;/Func&lt;...&gt; fill the
+            arguments as an object array into the state of the work item.
+            The arguments can be access later by IWorkItemResult.State.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.STPStartInfo.AsReadOnly">
+            <summary>
+            Get a readonly version of this STPStartInfo.
+            </summary>
+            <returns>Returns a readonly reference to this STPStartInfo</returns>
+        </member>
+        <member name="P:Amib.Threading.STPStartInfo.IdleTimeout">
+            <summary>
+            Get/Set the idle timeout in milliseconds.
+            If a thread is idle (starved) longer than IdleTimeout then it may quit.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.STPStartInfo.MinWorkerThreads">
+            <summary>
+            Get/Set the lower limit of threads in the pool.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.STPStartInfo.MaxWorkerThreads">
+            <summary>
+            Get/Set the upper limit of threads in the pool.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.STPStartInfo.ThreadPriority">
+            <summary>
+            Get/Set the scheduling priority of the threads in the pool.
+            The Os handles the scheduling.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.STPStartInfo.ThreadPoolName">
+            <summary>
+            Get/Set the thread pool name. Threads will get names depending on this.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.STPStartInfo.PerformanceCounterInstanceName">
+            <summary>
+            Get/Set the performance counter instance name of this SmartThreadPool
+            The default is null which indicate not to use performance counters at all.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.STPStartInfo.EnableLocalPerformanceCounters">
+            <summary>
+            Enable/Disable the local performance counter.
+            This enables the user to get some performance information about the SmartThreadPool 
+            without using Windows performance counters. (Useful on WindowsCE, Silverlight, etc.)
+            The default is false.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.STPStartInfo.AreThreadsBackground">
+            <summary>
+            Get/Set backgroundness of thread in thread pool.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.STPStartInfo.ApartmentState">
+            <summary>
+            Get/Set the apartment state of threads in the thread pool
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.STPStartInfo.MaxStackSize">
+            <summary>
+            Get/Set the max stack size of threads in the thread pool
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.Internal.WorkItem">
+            <summary>
+            Holds a callback delegate and the state for that delegate.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._callback">
+            <summary>
+            Callback delegate for the callback.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._state">
+            <summary>
+            State with which to call the callback delegate.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._callerContext">
+            <summary>
+            Stores the caller's context
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._result">
+            <summary>
+            Holds the result of the mehtod
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._exception">
+            <summary>
+            Hold the exception if the method threw it
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._workItemState">
+            <summary>
+            Hold the state of the work item
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._workItemCompleted">
+            <summary>
+            A ManualResetEvent to indicate that the result is ready
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._workItemCompletedRefCount">
+            <summary>
+            A reference count to the _workItemCompleted. 
+            When it reaches to zero _workItemCompleted is Closed
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._workItemResult">
+            <summary>
+            Represents the result state of the work item
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._workItemInfo">
+            <summary>
+            Work item info
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._canceledWorkItemsGroup">
+            <summary>
+            A reference to an object that indicates whatever the 
+            WorkItemsGroup has been canceled
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._canceledSmartThreadPool">
+            <summary>
+            A reference to an object that indicates whatever the 
+            SmartThreadPool has been canceled
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._workItemsGroup">
+            <summary>
+            The work item group this work item belong to.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._executingThread">
+            <summary>
+            The thread that executes this workitem.
+            This field is available for the period when the work item is executed, before and after it is null.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._expirationTime">
+            <summary>
+            The absulote time when the work item will be timeout
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._waitingOnQueueStopwatch">
+            <summary>
+            Stores how long the work item waited on the stp queue
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem._processingStopwatch">
+            <summary>
+            Stores how much time it took the work item to execute after it went out of the queue
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.#ctor(Amib.Threading.IWorkItemsGroup,Amib.Threading.WorkItemInfo,Amib.Threading.WorkItemCallback,System.Object)">
+            <summary>
+            Initialize the callback holding object.
+            </summary>
+            <param name="workItemsGroup">The workItemGroup of the workitem</param>
+            <param name="workItemInfo">The WorkItemInfo of te workitem</param>
+            <param name="callback">Callback delegate for the callback.</param>
+            <param name="state">State with which to call the callback delegate.</param>
+            
+            We assume that the WorkItem object is created within the thread
+            that meant to run the callback
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.StartingWorkItem">
+            <summary>
+            Change the state of the work item to in progress if it wasn't canceled.
+            </summary>
+            <returns>
+            Return true on success or false in case the work item was canceled.
+            If the work item needs to run a post execute then the method will return true.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.Execute">
+            <summary>
+            Execute the work item and the post execute
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.ExecuteWorkItem">
+            <summary>
+            Execute the work item
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.PostExecute">
+            <summary>
+            Runs the post execute callback
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.SetResult(System.Object,System.Exception)">
+            <summary>
+            Set the result of the work item to return
+            </summary>
+            <param name="result">The result of the work item</param>
+            <param name="exception">The exception that was throw while the workitem executed, null
+            if there was no exception.</param>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.GetWorkItemResult">
+            <summary>
+            Returns the work item result
+            </summary>
+            <returns>The work item result</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.WaitAll(Amib.Threading.IWaitableResult[],System.Int32,System.Boolean,System.Threading.WaitHandle)">
+            <summary>
+            Wait for all work items to complete
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <param name="millisecondsTimeout">The number of milliseconds to wait, or Timeout.Infinite (-1) to wait indefinitely.</param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <param name="cancelWaitHandle">A cancel wait handle to interrupt the wait if needed</param>
+            <returns>
+            true when every work item in waitableResults has completed; otherwise false.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.WaitAny(Amib.Threading.IWaitableResult[],System.Int32,System.Boolean,System.Threading.WaitHandle)">
+            <summary>
+            Waits for any of the work items in the specified array to complete, cancel, or timeout
+            </summary>
+            <param name="waitableResults">Array of work item result objects</param>
+            <param name="millisecondsTimeout">The number of milliseconds to wait, or Timeout.Infinite (-1) to wait indefinitely.</param>
+            <param name="exitContext">
+            true to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it; otherwise, false. 
+            </param>
+            <param name="cancelWaitHandle">A cancel wait handle to interrupt the wait if needed</param>
+            <returns>
+            The array index of the work item result that satisfied the wait, or WaitTimeout if no work item result satisfied the wait and a time interval equivalent to millisecondsTimeout has passed or the work item has been canceled.
+            </returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.GetWaitHandles(Amib.Threading.IWaitableResult[],System.Threading.WaitHandle[])">
+            <summary>
+            Fill an array of wait handles with the work items wait handles.
+            </summary>
+            <param name="waitableResults">An array of work item results</param>
+            <param name="waitHandles">An array of wait handles to fill</param>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.ReleaseWaitHandles(Amib.Threading.IWaitableResult[])">
+            <summary>
+            Release the work items' wait handles
+            </summary>
+            <param name="waitableResults">An array of work item results</param>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.SetWorkItemState(Amib.Threading.Internal.WorkItem.WorkItemState)">
+            <summary>
+            Sets the work item's state
+            </summary>
+            <param name="workItemState">The state to set the work item to</param>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.SignalComplete(System.Boolean)">
+            <summary>
+            Signals that work item has been completed or canceled
+            </summary>
+            <param name="canceled">Indicates that the work item has been canceled</param>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.Cancel(System.Boolean)">
+            <summary>
+            Cancel the work item if it didn't start running yet.
+            </summary>
+            <returns>Returns true on success or false if the work item is in progress or already completed</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.GetResult(System.Int32,System.Boolean,System.Threading.WaitHandle)">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits for the result, timeout, or cancel.
+            In case of error the method throws and exception
+            </summary>
+            <returns>The result of the work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.GetResult(System.Int32,System.Boolean,System.Threading.WaitHandle,System.Exception@)">
+            <summary>
+            Get the result of the work item.
+            If the work item didn't run yet then the caller waits for the result, timeout, or cancel.
+            In case of error the e argument is filled with the exception
+            </summary>
+            <returns>The result of the work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItem.GetWaitHandle">
+            <summary>
+            A wait handle to wait for completion, cancel, or timeout 
+            </summary>
+        </member>
+        <member name="E:Amib.Threading.Internal.WorkItem._workItemStartedEvent">
+            <summary>
+            Called when the WorkItem starts
+            </summary>
+        </member>
+        <member name="E:Amib.Threading.Internal.WorkItem._workItemCompletedEvent">
+            <summary>
+            Called when the WorkItem completes
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.Internal.WorkItem.IsCompleted">
+            <summary>
+            Returns true when the work item has completed or canceled
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.Internal.WorkItem.IsCanceled">
+            <summary>
+            Returns true when the work item has canceled
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.Internal.WorkItem.WorkItemPriority">
+            <summary>
+            Returns the priority of the work item
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.Internal.WorkItem.WorkItemState">
+            <summary>
+            Indicates the state of the work item in the thread pool
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItem.WorkItemResult._workItem">
+            <summary>
+            A back reference to the work item
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.Internal.WorkItem.WorkItemResult.Result">
+            <summary>
+            Return the result, same as GetResult()
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.Internal.WorkItem.WorkItemResult.Exception">
+            <summary>
+            Returns the exception if occured otherwise returns null.
+            This value is valid only after the work item completed,
+            before that it is always null.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemFactory.CreateWorkItem(Amib.Threading.IWorkItemsGroup,Amib.Threading.WIGStartInfo,Amib.Threading.WorkItemCallback)">
+            <summary>
+            Create a new work item
+            </summary>
+            <param name="workItemsGroup">The WorkItemsGroup of this workitem</param>
+            <param name="wigStartInfo">Work item group start information</param>
+            <param name="callback">A callback to execute</param>
+            <returns>Returns a work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemFactory.CreateWorkItem(Amib.Threading.IWorkItemsGroup,Amib.Threading.WIGStartInfo,Amib.Threading.WorkItemCallback,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Create a new work item
+            </summary>
+            <param name="workItemsGroup">The WorkItemsGroup of this workitem</param>
+            <param name="wigStartInfo">Work item group start information</param>
+            <param name="callback">A callback to execute</param>
+            <param name="workItemPriority">The priority of the work item</param>
+            <returns>Returns a work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemFactory.CreateWorkItem(Amib.Threading.IWorkItemsGroup,Amib.Threading.WIGStartInfo,Amib.Threading.WorkItemInfo,Amib.Threading.WorkItemCallback)">
+            <summary>
+            Create a new work item
+            </summary>
+            <param name="workItemsGroup">The WorkItemsGroup of this workitem</param>
+            <param name="wigStartInfo">Work item group start information</param>
+            <param name="workItemInfo">Work item info</param>
+            <param name="callback">A callback to execute</param>
+            <returns>Returns a work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemFactory.CreateWorkItem(Amib.Threading.IWorkItemsGroup,Amib.Threading.WIGStartInfo,Amib.Threading.WorkItemCallback,System.Object)">
+            <summary>
+            Create a new work item
+            </summary>
+            <param name="workItemsGroup">The WorkItemsGroup of this workitem</param>
+            <param name="wigStartInfo">Work item group start information</param>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <returns>Returns a work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemFactory.CreateWorkItem(Amib.Threading.IWorkItemsGroup,Amib.Threading.WIGStartInfo,Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Create a new work item
+            </summary>
+            <param name="workItemsGroup">The work items group</param>
+            <param name="wigStartInfo">Work item group start information</param>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="workItemPriority">The work item priority</param>
+            <returns>Returns a work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemFactory.CreateWorkItem(Amib.Threading.IWorkItemsGroup,Amib.Threading.WIGStartInfo,Amib.Threading.WorkItemInfo,Amib.Threading.WorkItemCallback,System.Object)">
+            <summary>
+            Create a new work item
+            </summary>
+            <param name="workItemsGroup">The work items group</param>
+            <param name="wigStartInfo">Work item group start information</param>
+            <param name="workItemInfo">Work item information</param>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <returns>Returns a work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemFactory.CreateWorkItem(Amib.Threading.IWorkItemsGroup,Amib.Threading.WIGStartInfo,Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback)">
+            <summary>
+            Create a new work item
+            </summary>
+            <param name="workItemsGroup">The work items group</param>
+            <param name="wigStartInfo">Work item group start information</param>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <returns>Returns a work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemFactory.CreateWorkItem(Amib.Threading.IWorkItemsGroup,Amib.Threading.WIGStartInfo,Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Create a new work item
+            </summary>
+            <param name="workItemsGroup">The work items group</param>
+            <param name="wigStartInfo">Work item group start information</param>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <param name="workItemPriority">The work item priority</param>
+            <returns>Returns a work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemFactory.CreateWorkItem(Amib.Threading.IWorkItemsGroup,Amib.Threading.WIGStartInfo,Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback,Amib.Threading.CallToPostExecute)">
+            <summary>
+            Create a new work item
+            </summary>
+            <param name="workItemsGroup">The work items group</param>
+            <param name="wigStartInfo">Work item group start information</param>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <param name="callToPostExecute">Indicates on which cases to call to the post execute callback</param>
+            <returns>Returns a work item</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemFactory.CreateWorkItem(Amib.Threading.IWorkItemsGroup,Amib.Threading.WIGStartInfo,Amib.Threading.WorkItemCallback,System.Object,Amib.Threading.PostExecuteWorkItemCallback,Amib.Threading.CallToPostExecute,Amib.Threading.WorkItemPriority)">
+            <summary>
+            Create a new work item
+            </summary>
+            <param name="workItemsGroup">The work items group</param>
+            <param name="wigStartInfo">Work item group start information</param>
+            <param name="callback">A callback to execute</param>
+            <param name="state">
+            The context object of the work item. Used for passing arguments to the work item. 
+            </param>
+            <param name="postExecuteWorkItemCallback">
+            A delegate to call after the callback completion
+            </param>
+            <param name="callToPostExecute">Indicates on which cases to call to the post execute callback</param>
+            <param name="workItemPriority">The work item priority</param>
+            <returns>Returns a work item</returns>
+        </member>
+        <member name="T:Amib.Threading.WorkItemInfo">
+            <summary>
+            Summary description for WorkItemInfo.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WorkItemInfo.UseCallerCallContext">
+            <summary>
+            Get/Set if to use the caller's security context
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WorkItemInfo.UseCallerHttpContext">
+            <summary>
+            Get/Set if to use the caller's HTTP context
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WorkItemInfo.DisposeOfStateObjects">
+            <summary>
+            Get/Set if to dispose of the state object of a work item
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WorkItemInfo.CallToPostExecute">
+            <summary>
+            Get/Set the run the post execute options
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WorkItemInfo.PostExecuteWorkItemCallback">
+            <summary>
+            Get/Set the post execute callback
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WorkItemInfo.WorkItemPriority">
+            <summary>
+            Get/Set the work item's priority
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.WorkItemInfo.Timeout">
+            <summary>
+            Get/Set the work item's timout in milliseconds.
+            This is a passive timout. When the timout expires the work item won't be actively aborted!
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.Internal.WorkItemsGroup">
+            <summary>
+            Summary description for WorkItemsGroup.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsGroup._stp">
+            <summary>
+            A reference to the SmartThreadPool instance that created this 
+            WorkItemsGroup.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsGroup._isSuspended">
+            <summary>
+            A flag to indicate if the Work Items Group is now suspended.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsGroup._concurrency">
+            <summary>
+            Defines how many work items of this WorkItemsGroup can run at once.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsGroup._workItemsQueue">
+            <summary>
+            Priority queue to hold work items before they are passed 
+            to the SmartThreadPool.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsGroup._workItemsInStpQueue">
+            <summary>
+            Indicate how many work items are waiting in the SmartThreadPool
+            queue.
+            This value is used to apply the concurrency.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsGroup._workItemsExecutingInStp">
+            <summary>
+            Indicate how many work items are currently running in the SmartThreadPool.
+            This value is used with the Cancel, to calculate if we can send new 
+            work items to the STP.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsGroup._workItemsGroupStartInfo">
+            <summary>
+            WorkItemsGroup start information
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsGroup._isIdleWaitHandle">
+            <summary>
+            Signaled when all of the WorkItemsGroup's work item completed.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsGroup._canceledWorkItemsGroup">
+            <summary>
+            A common object for all the work items that this work items group
+            generate so we can mark them to cancel in O(1)
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroup.Start">
+            <summary>
+            Start the Work Items Group if it was started suspended
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsGroup.WaitForIdle(System.Int32)">
+            <summary>
+            Wait for the thread pool to be idle
+            </summary>
+        </member>
+        <member name="E:Amib.Threading.Internal.WorkItemsGroup._onIdle">
+            <summary>
+            The OnIdle event
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.Internal.WorkItemsGroup.WIGStartInfo">
+            <summary>
+            WorkItemsGroup start information
+            </summary>
+        </member>
+        <member name="T:Amib.Threading.Internal.WorkItemsQueue">
+            <summary>
+            WorkItemsQueue class.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsQueue._headWaiterEntry">
+            <summary>
+            Waiters queue (implemented as stack).
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsQueue._waitersCount">
+            <summary>
+            Waiters count
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsQueue._workItems">
+            <summary>
+            Work items queue
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsQueue._isWorkItemsQueueActive">
+            <summary>
+            Indicate that work items are allowed to be queued
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsQueue._isDisposed">
+            <summary>
+            A flag that indicates if the WorkItemsQueue has been disposed.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsQueue.EnqueueWorkItem(Amib.Threading.Internal.WorkItem)">
+            <summary>
+            Enqueue a work item to the queue.
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsQueue.DequeueWorkItem(System.Int32,System.Threading.WaitHandle)">
+            <summary>
+            Waits for a work item or exits on timeout or cancel
+            </summary>
+            <param name="millisecondsTimeout">Timeout in milliseconds</param>
+            <param name="cancelEvent">Cancel wait handle</param>
+            <returns>Returns true if the resource was granted</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsQueue.Cleanup">
+            <summary>
+            Cleanup the work items queue, hence no more work 
+            items are allowed to be queue
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsQueue.GetThreadWaiterEntry">
+            <summary>
+            Returns the WaiterEntry of the current thread
+            </summary>
+            <returns></returns>
+            In order to avoid creation and destuction of WaiterEntry
+            objects each thread has its own WaiterEntry object.
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsQueue.PushWaiter(Amib.Threading.Internal.WorkItemsQueue.WaiterEntry)">
+            <summary>
+            Push a new waiter into the waiter's stack
+            </summary>
+            <param name="newWaiterEntry">A waiter to put in the stack</param>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsQueue.PopWaiter">
+            <summary>
+            Pop a waiter from the waiter's stack
+            </summary>
+            <returns>Returns the first waiter in the stack</returns>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsQueue.RemoveWaiter(Amib.Threading.Internal.WorkItemsQueue.WaiterEntry,System.Boolean)">
+            <summary>
+            Remove a waiter from the stack
+            </summary>
+            <param name="waiterEntry">A waiter entry to remove</param>
+            <param name="popDecrement">If true the waiter count is always decremented</param>
+        </member>
+        <member name="P:Amib.Threading.Internal.WorkItemsQueue.CurrentWaiterEntry">
+            <summary>
+            Each thread in the thread pool keeps its own waiter entry.
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.Internal.WorkItemsQueue.Count">
+            <summary>
+            Returns the current number of work items in the queue
+            </summary>
+        </member>
+        <member name="P:Amib.Threading.Internal.WorkItemsQueue.WaitersCount">
+            <summary>
+            Returns the current number of waiters
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsQueue.WaiterEntry._waitHandle">
+            <summary>
+            Event to signal the waiter that it got the work item.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsQueue.WaiterEntry._isTimedout">
+            <summary>
+            Flag to know if this waiter already quited from the queue 
+            because of a timeout.
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsQueue.WaiterEntry._isSignaled">
+            <summary>
+            Flag to know if the waiter was signaled and got a work item. 
+            </summary>
+        </member>
+        <member name="F:Amib.Threading.Internal.WorkItemsQueue.WaiterEntry._workItem">
+            <summary>
+            A work item that passed directly to the waiter withou going 
+            through the queue
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsQueue.WaiterEntry.Signal(Amib.Threading.Internal.WorkItem)">
+            <summary>
+            Signal the waiter that it got a work item.
+            </summary>
+            <returns>Return true on success</returns>
+            The method fails if Timeout() preceded its call
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsQueue.WaiterEntry.Timeout">
+            <summary>
+            Mark the wait entry that it has been timed out
+            </summary>
+            <returns>Return true on success</returns>
+            The method fails if Signal() preceded its call
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsQueue.WaiterEntry.Reset">
+            <summary>
+            Reset the wait entry so it can be used again
+            </summary>
+        </member>
+        <member name="M:Amib.Threading.Internal.WorkItemsQueue.WaiterEntry.Close">
+            <summary>
+            Free resources
             </summary>
         </member>
         <member name="M:ServiceStack.HttpResult.SoftRedirect(System.String,System.Object)">
@@ -567,11 +2988,6 @@
             <summary>
             Create an app at https://dev.twitter.com/apps to get your ConsumerKey and ConsumerSecret for your app.
             The Callback URL for your app should match the CallbackUrl provided.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Auth.UserAuthExtensions.InitSchema(ServiceStack.Auth.IUserAuthRepository)">
-            <summary>
-            Creates the required missing tables or DB schema 
             </summary>
         </member>
         <member name="T:ServiceStack.Auth.YammerAuthProvider">
@@ -3119,19 +5535,6 @@
         <member name="M:Funq.IFluentInterface.Equals(System.Object)">
             <summary/>
         </member>
-        <member name="T:Funq.IFunqlet">
-            <summary>
-            Funqlets are a set of components provided as a package 
-            to an existing container (like a module).
-            </summary>
-        </member>
-        <member name="M:Funq.IFunqlet.Configure(Funq.Container)">
-            <summary>
-            Configure the given container with the 
-            registrations provided by the funqlet.
-            </summary>
-            <param name="container">Container to register.</param>
-        </member>
         <member name="T:Funq.IContainerModule">
             <summary>
             Interface used by plugins to contribute registrations 
@@ -4870,193 +7273,6 @@
             this default Request Type
             </summary>
         </member>
-        <member name="T:ServiceStack.IAppHost">
-            <summary>
-            ASP.NET or HttpListener ServiceStack host
-            </summary>
-        </member>
-        <member name="M:ServiceStack.IAppHost.Register``1(``0)">
-            <summary>
-            Register dependency in AppHost IOC on Startup
-            </summary>
-        </member>
-        <member name="M:ServiceStack.IAppHost.RegisterAs``2">
-            <summary>
-            AutoWired Registration of an interface with a concrete type in AppHost IOC on Startup.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.IAppHost.Release(System.Object)">
-            <summary>
-            Allows the clean up for executed autowired services and filters.
-            Calls directly after services and filters are executed.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.IAppHost.OnEndRequest">
-            <summary>
-            Called at the end of each request. Enables Request Scope.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.IAppHost.RegisterService(System.Type,System.String[])">
-            <summary>
-            Register an Adhoc web service on Startup
-            </summary>
-        </member>
-        <member name="M:ServiceStack.IAppHost.LoadPlugin(ServiceStack.IPlugin[])">
-            <summary>
-            Apply plugins to this AppHost
-            </summary>
-        </member>
-        <member name="M:ServiceStack.IAppHost.CreateServiceRunner``1(ServiceStack.Host.ActionContext)">
-            <summary>
-            Create a service runner for IService actions
-            </summary>
-        </member>
-        <member name="M:ServiceStack.IAppHost.ResolveAbsoluteUrl(System.String,ServiceStack.Web.IRequest)">
-            <summary>
-            Resolve the absolute url for this request
-            </summary>
-        </member>
-        <member name="M:ServiceStack.IAppHost.ResolveLocalizedString(System.String)">
-            <summary>
-            Resolve localized text, returns itself by default.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.Routes">
-            <summary>
-            Register user-defined custom routes.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.ContentTypes">
-            <summary>
-            Register custom ContentType serializers
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.PreRequestFilters">
-            <summary>
-            Add Request Filters, to be applied before the dto is deserialized
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.GlobalRequestFilters">
-            <summary>
-            Add Request Filters for HTTP Requests
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.GlobalResponseFilters">
-            <summary>
-            Add Response Filters for HTTP Responses
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.GlobalMessageRequestFilters">
-            <summary>
-            Add Request Filters for MQ/TCP Requests
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.GlobalMessageResponseFilters">
-            <summary>
-            Add Response Filters for MQ/TCP Responses
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.ViewEngines">
-            <summary>
-            Add alternative HTML View Engines
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.ServiceExceptionHandlers">
-            <summary>
-            Provide an exception handler for unhandled exceptions
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.UncaughtExceptionHandlers">
-            <summary>
-            Provide an exception handler for un-caught exceptions
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.RawHttpHandlers">
-            <summary>
-            Skip the ServiceStack Request Pipeline and process the returned IHttpHandler instead
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.CatchAllHandlers">
-            <summary>
-            Provide a catch-all handler that doesn't match any routes
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.CustomErrorHttpHandlers">
-            <summary>
-            Use a Custom Error Handler for handling specific error HttpStatusCodes
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.RequestBinders">
-            <summary>
-            Provide a custom model minder for a specific Request DTO
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.Config">
-            <summary>
-            The AppHost config
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.Plugins">
-            <summary>
-            List of pre-registered and user-defined plugins to be enabled in this AppHost
-            </summary>
-        </member>
-        <member name="P:ServiceStack.IAppHost.VirtualPathProvider">
-            <summary>
-            Virtual access to file resources
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceStackHost.OnPreExecuteServiceFilter(ServiceStack.IService,System.Object,ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
-            <summary>
-            Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceStackHost.OnPostExecuteServiceFilter(ServiceStack.IService,System.Object,ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
-            <summary>
-            Executed immediately after a service is executed. Use return to change response used.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceStackHost.OnServiceException(ServiceStack.Web.IRequest,System.Object,System.Exception)">
-            <summary>
-            Occurs when the Service throws an Exception.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceStackHost.OnUncaughtException(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.String,System.Exception)">
-            <summary>
-            Occurs when an exception is thrown whilst processing a request.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceStackHost.ApplyCustomHandlerRequestFilters(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
-            <summary>
-            Apply PreRequest Filters for participating Custom Handlers, e.g. RazorFormat, MarkdownFormat, etc
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceStackHost.ApplyPreRequestFilters(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
-            <summary>
-            Applies the raw request filters. Returns whether or not the request has been handled 
-            and no more processing should be done.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.ServiceStackHost.ApplyRequestFilters(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.Object)">
-            <summary>
-            Applies the request filters. Returns whether or not the request has been handled 
-            and no more processing should be done.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.ServiceStackHost.ApplyResponseFilters(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.Object)">
-            <summary>
-            Applies the response filters. Returns whether or not the request has been handled 
-            and no more processing should be done.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="P:ServiceStack.ServiceStackHost.Container">
-            <summary>
-            The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
-            </summary>
-        </member>
         <member name="F:ServiceStack.DtoUtils.ResponseStatusPropertyName">
             <summary>
             Naming convention for the ResponseStatus property name on the response DTO
@@ -5502,51 +7718,6 @@
             Inherit from this class if you want to host your web services inside an
             ASP.NET application.
             </summary>
-        </member>
-        <member name="T:ServiceStack.AppHostHttpListenerBase">
-            <summary>
-            Inherit from this class if you want to host your web services inside a 
-            Console Application, Windows Service, etc.
-            
-            Usage of HttpListener allows you to host webservices on the same port (:80) as IIS 
-            however it requires admin user privillages.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.Host.HttpListener.HttpListenerBase">
-            <summary>
-            Wrapper class for the HTTPListener to allow easier access to the
-            server, for start and stop management and event routing of the actual
-            inbound requests.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Host.HttpListener.HttpListenerBase.Start(System.String,System.Threading.WaitCallback)">
-            <summary>
-            Starts the Web Service
-            </summary>
-            <param name="listeningAtUrlBase">
-            A Uri that acts as the base that the server is listening on.
-            Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
-            Note: the trailing slash is required! For more info see the
-            HttpListener.Prefixes property on MSDN.
-            </param>
-        </member>
-        <member name="M:ServiceStack.Host.HttpListener.HttpListenerBase.Stop">
-            <summary>
-            Shut down the Web Service
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Host.HttpListener.HttpListenerBase.ProcessRequestAsync(System.Net.HttpListenerContext)">
-            <summary>
-            Overridable method that can be used to implement a custom hnandler
-            </summary>
-            <param name="context"></param>
-        </member>
-        <member name="M:ServiceStack.Host.HttpListener.HttpListenerBase.AddUrlReservationToAcl(System.String)">
-            <summary>
-            Reserves the specified URL for non-administrator users and accounts. 
-            http://msdn.microsoft.com/en-us/library/windows/desktop/cc307223(v=vs.85).aspx
-            </summary>
-            <returns>Reserved Url if the process completes successfully</returns>
         </member>
         <member name="M:ServiceStack.AppHostHttpListenerPoolBase.ThreadPoolManager.Dispose">
             <summary>

@@ -35,19 +35,44 @@ namespace MediaBrowser.Controller.Resolvers
             // If the path is a file check for a matching extensions
             if (!args.IsDirectory)
             {
-                if (EntityResolutionHelper.IsVideoFile(args.Path))
+                // http://wiki.xbmc.org/index.php?title=Media_stubs
+                var isPlaceHolder = EntityResolutionHelper.IsVideoPlaceHolder(args.Path);
+
+                if (EntityResolutionHelper.IsVideoFile(args.Path) || isPlaceHolder)
                 {
                     var extension = Path.GetExtension(args.Path);
 
                     var type = string.Equals(extension, ".iso", StringComparison.OrdinalIgnoreCase) || string.Equals(extension, ".img", StringComparison.OrdinalIgnoreCase) ?
                         VideoType.Iso : VideoType.VideoFile;
 
-                    return new TVideoType
+                    var video = new TVideoType
                     {
                         VideoType = type,
                         Path = args.Path,
-                        IsInMixedFolder = true
+                        IsInMixedFolder = true,
+                        IsPlaceHolder = isPlaceHolder
                     };
+
+                    if (isPlaceHolder)
+                    {
+                        if (args.Path.EndsWith("dvd.disc", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.VideoType = VideoType.Dvd;
+                        }
+                        else if (args.Path.EndsWith("hddvd.disc", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.VideoType = VideoType.HdDvd;
+                        }
+                        else if (args.Path.EndsWith("bluray.disc", StringComparison.OrdinalIgnoreCase) ||
+                            args.Path.EndsWith("brrip.disc", StringComparison.OrdinalIgnoreCase) ||
+                            args.Path.EndsWith("bd25.disc", StringComparison.OrdinalIgnoreCase) ||
+                            args.Path.EndsWith("bd50.disc", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.VideoType = VideoType.BluRay;
+                        }
+                    }
+
+                    return video;
                 }
             }
 

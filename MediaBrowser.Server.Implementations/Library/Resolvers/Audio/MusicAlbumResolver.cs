@@ -132,6 +132,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                     return true;
                 }
                 if (EntityResolutionHelper.IsVideoFile(fullName)) return false;
+                if (EntityResolutionHelper.IsVideoPlaceHolder(fullName)) return false;
             }
 
             //  or a single audio file and no video files

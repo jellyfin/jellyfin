@@ -147,6 +147,12 @@ namespace MediaBrowser.Model.System
         public bool SupportsAutoRunAtStartup { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the server.
+        /// </summary>
+        /// <value>The name of the server.</value>
+        public string ServerName { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfo" /> class.
         /// </summary>
         public SystemInfo()

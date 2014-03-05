@@ -11,14 +11,21 @@ namespace MediaBrowser.Providers.Movies
 {
     public class MovieDbTrailerProvider : IRemoteMetadataProvider<Trailer, TrailerInfo>, IHasOrder
     {
+        private readonly IHttpClient _httpClient;
+
+        public MovieDbTrailerProvider(IHttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
         public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
         {
             return MovieDbProvider.Current.GetItemMetadata<Trailer>(info, cancellationToken);
         }
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
         {
-            return new List<RemoteSearchResult>();
+            return MovieDbProvider.Current.GetMovieSearchResults(searchInfo, cancellationToken);
         }
 
         public string Name
@@ -42,7 +49,12 @@ namespace MediaBrowser.Providers.Movies
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = MovieDbProvider.Current.MovieDbResourcePool
+            });
         }
     }
 }

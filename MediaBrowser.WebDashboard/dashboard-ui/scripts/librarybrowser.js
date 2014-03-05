@@ -373,9 +373,9 @@
                 if (sortField == selectedSortField) {
 
                     if (sortDirection == "Descending") {
-                        html += '<span style="font-weight:bold;margin-left:3px;">&darr;</span>';
+                        html += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:12px;">&darr;</span>';
                     } else {
-                        html += '<span style="font-weight:bold;margin-left:3px;">&uarr;</span>';
+                        html += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:12px;">&uarr;</span>';
                     }
                 }
             }
@@ -906,6 +906,10 @@
                     html += LibraryBrowser.getPlayedIndicatorHtml(item);
                 }
 
+                if (item.IsUnidentified) {
+                    html += '<div class="unidentifiedIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
+                }
+
                 if (!options.overlayText) {
 
                     if (progressHtml) {
@@ -1359,7 +1363,7 @@
 
             html += '<div class="listPaging">';
 
-            html += '<span style="margin-right: 10px;">';
+            html += '<span style="margin-right: 10px;vertical-align:middle;">';
 
             var startAtDisplay = totalRecordCount ? query.StartIndex + 1 : 0;
             html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;
@@ -1756,7 +1760,8 @@
                 if (item.Status == "Continuing") {
                     miscInfo.push(item.ProductionYear + "-Present");
 
-                } else if (item.ProductionYear) {
+                }
+                else if (item.ProductionYear) {
 
                     text = item.ProductionYear;
 

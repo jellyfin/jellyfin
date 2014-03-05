@@ -53,6 +53,9 @@
     background-repeat: no-repeat;
     background-size: contain;
     display: block;
+    /* For the box shadow so that the bottom border isnt underneath the text */
+    z-index: 100000;
+    position: relative;
 }
 
 .remotePosterImage {
@@ -84,6 +87,43 @@
     padding-right: 0!important;
 }
 
+
+.searchImage {
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-size: contain;
+    display: block;
+}
+
+.searchBackdropImageContainer {
+    width: 160px;
+}
+
+.searchDiscImageContainer {
+    width: 150px;
+}
+
+.searchPosterImageContainer {
+    width: 140px;
+}
+
+.searchBackdropImageContainer .searchImage {
+    height: 90px;
+}
+
+.searchDiscImageContainer .searchImage {
+    height: 150px;
+}
+
+.searchPosterImageContainer .searchImage {
+    height: 210px;
+}
+
+.searchImageContainer .remoteImageDetails {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+}
+
 @media all and (min-width: 500px) {
 
     .availableImagesList {
@@ -102,6 +142,28 @@
         width: 450px;
         height: 83px;
     }
+}
+
+.libraryReportIndicator {
+    position: relative;
+    display: block;
+    text-align: center;
+    vertical-align: middle;
+    width: 24px;
+    height: 19px;
+    padding-top: 3px;
+    border-radius: 50%;
+    color: #fff;
+    background: rgb(204, 0, 0);
+    background: rgba(204, 0, 0, .8);
+}
+
+    .libraryReportIndicator div:after {
+        background-color: transparent !important;
+    }
+
+.clearLibraryReportIndicator {
+    background-color: transparent !important;
 }
 
 .editorTile {
@@ -134,10 +196,32 @@
     padding: 0 0 1em 0;
 }
 
+.remoteImage:hover, .searchImageContainer:hover {
+    -moz-box-shadow: 0 0 12px 7px #38c;
+    -webkit-box-shadow: 0 0 12px 7px #38c;
+    box-shadow: 0 0 12px 7px #38c;
+}
+
+.tblLibraryReport img {
+    height: 18px;
+    margin-right: 10px;
+}
+
+@media all and (min-width: 600px) {
+
+    .popupIdentify {
+        width: 400px;
+    }
+}
+
 @media all and (min-width: 700px) {
 
     .availableImagesList {
         width: 600px;
+    }
+
+    .popupIdentify {
+        width: 500px;
     }
 }
 
@@ -163,12 +247,20 @@
         float: right;
         width: 67.5%;
     }
+
+    .popupIdentify {
+        width: 600px;
+    }
 }
 
 @media all and (min-width: 900px) {
 
     .availableImagesList {
         width: 800px;
+    }
+
+    .popupIdentify {
+        width: 700px;
     }
 }
 
@@ -177,6 +269,10 @@
     .availableImagesList {
         width: 900px;
     }
+
+    .popupIdentify {
+        width: 800px;
+    }
 }
 
 @media all and (min-width: 1100px) {
@@ -184,12 +280,20 @@
     .availableImagesList {
         width: 1000px;
     }
+
+    .popupIdentify {
+        width: 900px;
+    }
 }
 
 @media all and (min-width: 1200px) {
 
     .availableImagesList {
         width: 1100px;
+    }
+
+    .popupIdentify {
+        width: 1000px;
     }
 }
 
@@ -225,9 +329,39 @@
     }
 }
 
+.popupIdentifyForm, .identificationSearchResults {
+    overflow-y: auto;
+}
+
+
+@media all and (min-height: 500px) {
+
+    .popupIdentifyForm, .identificationSearchResults {
+        height: 350px;
+    }
+}
+
+@media all and (min-height: 600px) {
+
+    .popupIdentifyForm, .identificationSearchResults {
+        height: 450px;
+    }
+}
+
+@media all and (min-height: 700px) {
+
+    .popupIdentifyForm, .identificationSearchResults {
+        height: 550px;
+    }
+}
+
 @media all and (min-height: 800px) {
 
     .availableImagesList {
+        height: 600px;
+    }
+
+    .popupIdentifyForm, .identificationSearchResults {
         height: 600px;
     }
 }
@@ -235,6 +369,10 @@
 @media all and (min-height: 900px) {
 
     .availableImagesList {
+        height: 700px;
+    }
+
+    .popupIdentifyForm, .identificationSearchResults {
         height: 700px;
     }
 }

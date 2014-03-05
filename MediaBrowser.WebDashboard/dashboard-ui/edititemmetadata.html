@@ -36,17 +36,18 @@
                                 </button>
                             </div>
                             <div style="vertical-align: bottom; display: inline-block;">
-                                <div class="fldRefresh" style="display: none;">
-                                    <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-inline="true">Refresh</button>
-                                </div>
+                                <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-inline="true">Refresh</button>
                             </div>
                             <div style="display: inline-block; vertical-align: top;">
-                                <div class="fldRefresh" style="display: none;">
-                                    <select data-mini="true" data-inline="true" id="selectRefreshMode">
-                                        <option value="all">Refresh All Data</option>
-                                        <option value="missing">Add Missing Data Only</option>
-                                    </select>
-                                </div>
+
+                                <select data-mini="true" data-inline="true" id="selectRefreshMode">
+                                    <option value="all">Refresh All Data</option>
+                                    <option value="missing">Add Missing Data Only</option>
+                                </select>
+
+                            </div>
+                            <div style="vertical-align: bottom; display: inline-block;">
+                                <button id="btnIdentify" type="button" data-icon="info" data-mini="true" data-inline="true">Identify</button>
                             </div>
                             <div style="vertical-align: bottom; display: inline-block;">
                                 <div id="fldDelete" style="display: none;">
@@ -381,10 +382,53 @@
             </div>
 
         </div>
+        <div data-role="popup" data-transition="slidefade" class="popupIdentify popup" data-theme="a">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px; position: relative;">
+
+                <button type="button" data-icon="search" data-mini="true" data-inline="true" data-iconpos="notext" style="position: absolute; top: 8px; left: 10px; margin: 0;" class="btnSearchAgain">Search</button>
+
+                <h3 class="identificationHeader">Identify Item
+                </h3>
+            </div>
+
+            <div data-role="content">
+
+                <form class="popupIdentifyForm" style="max-width: initial;">
+                    
+                    <p>Enter one or more search criteria.</p>
+
+                    <div>
+                        <label for="txtLookupName">Name:</label>
+                        <input type="text" id="txtLookupName" data-mini="true" class="identifyField" data-lookup="Name" />
+                    </div>
+                    <div class="fldLookupYear">
+                        <label for="txtLookupYear">Year:</label>
+                        <input type="number" id="txtLookupYear" data-mini="true" class="identifyField" data-lookup="Year" pattern="[0-9]*" min="1800" />
+                    </div>
+
+                    <div class="identifyProviderIds">
+                    </div>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="search" data-mini="true">
+                            Search
+                        </button>
+                    </p>
+                </form>
+
+                <div class="identificationSearchResults">
+
+                    <div class="identificationSearchResultList"></div>
+                </div>
+            </div>
+
+        </div>
 
         <script type="text/javascript">
             $('.editItemMetadataForm').off('submit', EditItemMetadataPage.onSubmit).on('submit', EditItemMetadataPage.onSubmit);
             $('.popupConfirmDeleteForm').off('submit', EditItemMetadataPage.onDeleteFormSubmitted).on('submit', EditItemMetadataPage.onDeleteFormSubmitted);
+            $('.popupIdentifyForm').off('submit', EditItemMetadataPage.onIdentificationFormSubmitted).on('submit', EditItemMetadataPage.onIdentificationFormSubmitted);
         </script>
 
     </div>

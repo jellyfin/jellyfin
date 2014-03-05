@@ -35,7 +35,7 @@
                     $('#editButtonContainer', page).hide();
                 }
 
-                if (MediaPlayer.canPlay(item, user) && item.LocationType !== "Offline" && item.LocationType !== "Virtual") {
+                if (MediaPlayer.canPlay(item, user)) {
 
                     var url = MediaPlayer.getPlayUrl(item);
 

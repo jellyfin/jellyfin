@@ -253,7 +253,7 @@ h1 .imageLink {
     color: #fff!important;
     text-shadow: none!important;
     font-weight: 400!important;
-    font-size: 15px;
+    font-size: 14px;
 }
 
     .sidebarLinks a:hover {
@@ -268,7 +268,7 @@ h1 .imageLink {
 
 .sidebarDivider {
     height: 1px;
-    background: #444;
+    background: #404040;
     margin: .25em 0;
 }
 

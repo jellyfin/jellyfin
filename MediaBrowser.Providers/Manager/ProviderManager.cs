@@ -492,7 +492,7 @@ namespace MediaBrowser.Providers.Manager
                     Type = MetadataPluginType.MetadataFetcher
                 }));
             }
-            
+
             if (item.IsSaveLocalMetadataEnabled())
             {
                 // Savers
@@ -657,20 +657,57 @@ namespace MediaBrowser.Providers.Manager
                 providers = providers.Where(i => string.Equals(i.Name, searchInfo.SearchProviderName, StringComparison.OrdinalIgnoreCase));
             }
 
+            if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataLanguage))
+            {
+                searchInfo.SearchInfo.MetadataLanguage = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+            }
+            if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataCountryCode))
+            {
+                searchInfo.SearchInfo.MetadataCountryCode = ConfigurationManager.Configuration.MetadataCountryCode;
+            }
+
             foreach (var provider in providers)
             {
-                var results = await provider.GetSearchResults(searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
+                var results = await GetSearchResults(provider, searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
 
                 var list = results.ToList();
 
                 if (list.Count > 0)
                 {
-                    return list;
+                    return list.Take(10);
                 }
             }
 
             // Nothing found
             return new List<RemoteSearchResult>();
+        }
+
+        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResults<TLookupType>(IRemoteSearchProvider<TLookupType> provider, TLookupType searchInfo,
+            CancellationToken cancellationToken)
+            where TLookupType : ItemLookupInfo
+        {
+            var results = await provider.GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
+
+            var list = results.ToList();
+
+            foreach (var item in list)
+            {
+                item.SearchProviderName = provider.Name;
+            }
+
+            return list;
+        }
+
+        public Task<HttpResponseInfo> GetSearchImage(string providerName, string url, CancellationToken cancellationToken)
+        {
+            var provider = _metadataProviders.OfType<IRemoteSearchProvider>().FirstOrDefault(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
+
+            if (provider == null)
+            {
+                throw new ArgumentException("Search provider not found.");
+            }
+
+            return provider.GetImageResponse(url, cancellationToken);
         }
 
         public IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
