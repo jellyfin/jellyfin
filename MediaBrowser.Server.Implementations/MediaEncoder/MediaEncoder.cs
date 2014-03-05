@@ -125,12 +125,10 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             switch (type)
             {
+                case InputType.Bluray:
                 case InputType.Dvd:
                 case InputType.File:
                     inputPath = GetConcatInputArgument(inputFiles);
-                    break;
-                case InputType.Bluray:
-                    inputPath = GetBlurayInputArgument(inputFiles[0]);
                     break;
                 case InputType.Url:
                     inputPath = GetHttpInputArgument(inputFiles);

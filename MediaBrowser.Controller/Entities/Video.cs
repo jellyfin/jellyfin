@@ -110,10 +110,13 @@ namespace MediaBrowser.Controller.Entities
                     return System.IO.Path.GetDirectoryName(Path);
                 }
 
-                if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd ||
-                    VideoType == VideoType.HdDvd)
+                if (!IsPlaceHolder)
                 {
-                    return Path;
+                    if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd ||
+                        VideoType == VideoType.HdDvd)
+                    {
+                        return Path;
+                    }
                 }
 
                 return base.ContainingFolderPath;
@@ -259,10 +262,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (!IsInMixedFolder)
             {
-                if (VideoType == VideoType.VideoFile || VideoType == VideoType.Iso)
-                {
-                    return new[] { System.IO.Path.GetDirectoryName(Path) };
-                }
+                return new[] { ContainingFolderPath };
             }
 
             return base.GetDeletePaths();
