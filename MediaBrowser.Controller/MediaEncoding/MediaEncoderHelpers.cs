@@ -34,6 +34,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 case VideoType.BluRay:
                     type = InputType.Bluray;
+                    inputPath = GetPlayableStreamFiles(inputPath[0], playableStreamFileNames).ToArray();
                     break;
                 case VideoType.Dvd:
                     type = InputType.Dvd;
@@ -46,6 +47,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         {
                             case IsoType.BluRay:
                                 type = InputType.Bluray;
+                                inputPath = GetPlayableStreamFiles(inputPath[0], playableStreamFileNames).ToArray();
                                 break;
                             case IsoType.Dvd:
                                 type = InputType.Dvd;
@@ -118,15 +120,16 @@ namespace MediaBrowser.Controller.MediaEncoding
             return type;
         }
 
-        public static Model.Entities.MediaInfo GetMediaInfo(InternalMediaInfoResult data)
+        public static MediaInfo GetMediaInfo(InternalMediaInfoResult data)
         {
             var internalStreams = data.streams ?? new MediaStreamInfo[] { };
 
-            var info = new Model.Entities.MediaInfo();
-
-            info.MediaStreams = internalStreams.Select(s => GetMediaStream(s, data.format))
-                .Where(i => i != null)
-                .ToList();
+            var info = new MediaInfo
+            {
+                MediaStreams = internalStreams.Select(s => GetMediaStream(s, data.format))
+                    .Where(i => i != null)
+                    .ToList()
+            };
 
             if (data.format != null)
             {
@@ -137,7 +140,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Converts ffprobe stream info to our MediaStream class
         /// </summary>
