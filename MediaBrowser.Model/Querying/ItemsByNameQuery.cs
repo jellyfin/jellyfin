@@ -86,6 +86,10 @@ namespace MediaBrowser.Model.Querying
         public string NameStartsWithOrGreater { get; set; }
 
         /// <summary>
+        /// Gets or sets the name starts with
+        /// </summary>
+        /// <value>The name starts with or greater.</value>
+        public string NameStartsWith { get; set; }
         /// Gets or sets the name less than.
         /// </summary>
         /// <value>The name less than.</value>
