@@ -53,9 +53,18 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var isoMount = await MountIsoIfNeeded(item, cancellationToken).ConfigureAwait(false);
 
+            BlurayDiscInfo blurayDiscInfo = null;
+
             try
             {
-                OnPreFetch(item, isoMount);
+                if (item.VideoType == VideoType.BluRay || (item.IsoType.HasValue && item.IsoType == IsoType.BluRay))
+                {
+                    var inputPath = isoMount != null ? isoMount.MountedPath : item.Path;
+
+                    blurayDiscInfo = GetBDInfo(inputPath);
+                }
+
+                OnPreFetch(item, isoMount, blurayDiscInfo);
 
                 // If we didn't find any satisfying the min length, just take them all
                 if (item.VideoType == VideoType.Dvd || (item.IsoType.HasValue && item.IsoType == IsoType.Dvd))
@@ -63,6 +72,15 @@ namespace MediaBrowser.Providers.MediaInfo
                     if (item.PlayableStreamFileNames.Count == 0)
                     {
                         _logger.Error("No playable vobs found in dvd structure, skipping ffprobe.");
+                        return ItemUpdateType.MetadataImport;
+                    }
+                }
+
+                if (item.VideoType == VideoType.BluRay || (item.IsoType.HasValue && item.IsoType == IsoType.BluRay))
+                {
+                    if (item.PlayableStreamFileNames.Count == 0)
+                    {
+                        _logger.Error("No playable vobs found in bluray structure, skipping ffprobe.");
                         return ItemUpdateType.MetadataImport;
                     }
                 }
@@ -75,7 +93,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Fetch(item, cancellationToken, result, isoMount, directoryService).ConfigureAwait(false);
+                await Fetch(item, cancellationToken, result, isoMount, blurayDiscInfo, directoryService).ConfigureAwait(false);
 
             }
             finally
@@ -128,7 +146,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return result;
         }
 
-        protected async Task Fetch(Video video, CancellationToken cancellationToken, InternalMediaInfoResult data, IIsoMount isoMount, IDirectoryService directoryService)
+        protected async Task Fetch(Video video, CancellationToken cancellationToken, InternalMediaInfoResult data, IIsoMount isoMount, BlurayDiscInfo blurayInfo, IDirectoryService directoryService)
         {
             if (data.format != null)
             {
@@ -147,8 +165,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (video.VideoType == VideoType.BluRay || (video.IsoType.HasValue && video.IsoType.Value == IsoType.BluRay))
             {
-                var inputPath = isoMount != null ? isoMount.MountedPath : video.Path;
-                FetchBdInfo(video, chapters, mediaStreams, inputPath, cancellationToken);
+                FetchBdInfo(video, chapters, mediaStreams, blurayInfo);
             }
 
             AddExternalSubtitles(video, mediaStreams, directoryService);
@@ -183,13 +200,9 @@ namespace MediaBrowser.Providers.MediaInfo
             await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
         }
 
-        private void FetchBdInfo(BaseItem item, List<ChapterInfo> chapters, List<MediaStream> mediaStreams, string inputPath, CancellationToken cancellationToken)
+        private void FetchBdInfo(BaseItem item, List<ChapterInfo> chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
         {
             var video = (Video)item;
-
-            var result = GetBDInfo(inputPath);
-
-            cancellationToken.ThrowIfCancellationRequested();
 
             int? currentHeight = null;
             int? currentWidth = null;
@@ -206,7 +219,28 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Fill video properties from the BDInfo result
-            Fetch(video, mediaStreams, result, chapters);
+            mediaStreams.Clear();
+            mediaStreams.AddRange(blurayInfo.MediaStreams);
+
+            video.MainFeaturePlaylistName = blurayInfo.PlaylistName;
+
+            if (blurayInfo.RunTimeTicks.HasValue && blurayInfo.RunTimeTicks.Value > 0)
+            {
+                video.RunTimeTicks = blurayInfo.RunTimeTicks;
+            }
+
+            video.PlayableStreamFileNames = blurayInfo.Files.ToList();
+
+            if (blurayInfo.Chapters != null)
+            {
+                chapters.Clear();
+
+                chapters.AddRange(blurayInfo.Chapters.Select(c => new ChapterInfo
+                {
+                    StartPositionTicks = TimeSpan.FromSeconds(c).Ticks
+
+                }));
+            }
 
             videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
@@ -222,35 +256,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private bool IsEmpty(int? num)
         {
             return !num.HasValue || num.Value == 0;
-        }
-
-        /// <param name="chapters">The chapters.</param>
-        private void Fetch(Video video, List<MediaStream> mediaStreams, BlurayDiscInfo stream, List<ChapterInfo> chapters)
-        {
-            // Check all input for null/empty/zero
-
-            mediaStreams.Clear();
-            mediaStreams.AddRange(stream.MediaStreams);
-
-            video.MainFeaturePlaylistName = stream.PlaylistName;
-
-            if (stream.RunTimeTicks.HasValue && stream.RunTimeTicks.Value > 0)
-            {
-                video.RunTimeTicks = stream.RunTimeTicks;
-            }
-
-            video.PlayableStreamFileNames = stream.Files.ToList();
-
-            if (stream.Chapters != null)
-            {
-                chapters.Clear();
-
-                chapters.AddRange(stream.Chapters.Select(c => new ChapterInfo
-                {
-                    StartPositionTicks = TimeSpan.FromSeconds(c).Ticks
-
-                }));
-            }
         }
 
         /// <summary>
@@ -498,7 +503,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="mount">The mount.</param>
-        private void OnPreFetch(Video item, IIsoMount mount)
+        private void OnPreFetch(Video item, IIsoMount mount, BlurayDiscInfo blurayDiscInfo)
         {
             if (item.VideoType == VideoType.Iso)
             {
@@ -508,6 +513,11 @@ namespace MediaBrowser.Providers.MediaInfo
             if (item.VideoType == VideoType.Dvd || (item.IsoType.HasValue && item.IsoType == IsoType.Dvd))
             {
                 FetchFromDvdLib(item, mount);
+            }
+
+            if (item.VideoType == VideoType.BluRay || (item.IsoType.HasValue && item.IsoType.Value == IsoType.BluRay))
+            {
+                item.PlayableStreamFileNames = blurayDiscInfo.Files.ToList();
             }
         }
 

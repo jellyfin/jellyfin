@@ -373,9 +373,9 @@
                 if (sortField == selectedSortField) {
 
                     if (sortDirection == "Descending") {
-                        html += '<span style="font-weight:bold;margin-left:3px;">&darr;</span>';
+                        html += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:12px;">&darr;</span>';
                     } else {
-                        html += '<span style="font-weight:bold;margin-left:3px;">&uarr;</span>';
+                        html += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:12px;">&uarr;</span>';
                     }
                 }
             }

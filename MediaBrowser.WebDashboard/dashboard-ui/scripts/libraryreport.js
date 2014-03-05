@@ -271,14 +271,14 @@
                         if (item.Type == "Episode") {
                             html += item.ParentIndexNumber == null ? '' : ('Season ' + item.ParentIndexNumber);
                         } else {
-                            html += '<a href="' + LibraryBrowser.getHref(item) + '">' + LibraryBrowser.getPosterViewDisplayName(item, false, false) + '</a>';
+                            html += '<a href="edititemmetadata.html?id=' + item.Id + '">' + LibraryBrowser.getPosterViewDisplayName(item, false, false) + '</a>';
                         }
                         break;
                     }
 
                 case 'Name':
                     {
-                        html += '<a href="' + LibraryBrowser.getHref(item) + '">' + LibraryBrowser.getPosterViewDisplayName(item, false, false) + '</a>';
+                        html += '<a href="edititemmetadata.html?id=' + item.Id + '">' + LibraryBrowser.getPosterViewDisplayName(item, false, false) + '</a>';
                         break;
                     }
                 case 'Rating':
@@ -353,18 +353,18 @@
                         }
 
                         if (!item.ImageTags || !item.ImageTags.Primary) {
-                            html += '<img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." />';
+                            html += '<a href="edititemimages.html?id=' + item.Id + '"><img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." /></a>';
                         }
 
                         if (!item.BackdropImageTags || !item.BackdropImageTags.length) {
                             if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "Channel") {
-                                html += '<img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." />';
+                                html += '<a href="edititemimages.html?id=' + item.Id + '"><img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." /></a>';
                             }
                         }
 
                         if (!item.ImageTags || !item.ImageTags.Logo) {
                             if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Series" || item.Type == "MusicArtist" || item.Type == "BoxSet") {
-                                html += '<img src="css/images/editor/missinglogo.png" title="Missing logo image." />';
+                                html += '<a href="edititemimages.html?id=' + item.Id + '"><img src="css/images/editor/missinglogo.png" title="Missing logo image." /></a>';
                             }
                         }
 

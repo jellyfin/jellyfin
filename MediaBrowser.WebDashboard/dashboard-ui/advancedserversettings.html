@@ -26,6 +26,11 @@
                             <input type="number" id="txtWebSocketPortNumber" name="txtWebSocketPortNumber" pattern="[0-9]*" required="required" min="1" data-mini="true" />
                         </li>
                         <li>
+                            <label for="txtDdns">External DDNS:</label>
+                            <input id="txtDdns" data-mini="true" />
+                            <div class="fieldDescription">If you have a dynamic DNS enter it here. Media Browser apps will use it when connecting remotely.</div>
+                        </li>
+                        <li>
                             <label for="chkEnableUpnp">Enable UPnP</label>
                             <input type="checkbox" id="chkEnableUpnp" data-mini="true" />
                             <div class="fieldDescription">UPnP allows automated router configuration for remote access. This may not work with some router models.</div>

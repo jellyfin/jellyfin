@@ -13,6 +13,8 @@
 
         $('#txtPortNumber', page).val(config.HttpServerPortNumber);
 
+        $('#txtDdns', page).val(config.WanDdns || '');
+
         $('#chkEnableUpnp', page).checked(config.EnableUPnP).checkboxradio('refresh');
 
         Dashboard.hideLoadingMsg();
@@ -48,6 +50,8 @@
                 config.LegacyWebSocketPortNumber = $('#txtWebSocketPortNumber', form).val();
                 config.HttpServerPortNumber = $('#txtPortNumber', form).val();
                 config.EnableUPnP = $('#chkEnableUpnp', form).checked();
+
+                config.WanDdns = $('#txtDdns', form).val();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });

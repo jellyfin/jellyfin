@@ -1005,7 +1005,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>System.String.</returns>
         internal static string GetSeriesDataPath(IApplicationPaths appPaths)
         {
-            var dataPath = Path.Combine(appPaths.DataPath, "tvdb-v3");
+            var dataPath = Path.Combine(appPaths.CachePath, "tvdb");
 
             return dataPath;
         }
