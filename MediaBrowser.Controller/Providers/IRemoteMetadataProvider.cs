@@ -18,11 +18,8 @@ namespace MediaBrowser.Controller.Providers
         Task<MetadataResult<TItemType>> GetMetadata(TLookupInfoType info, CancellationToken cancellationToken);
     }
 
-    public interface IRemoteSearchProvider<in TLookupInfoType> : IMetadataProvider
-        where TLookupInfoType : ItemLookupInfo
+    public interface IRemoteSearchProvider : IMetadataProvider
     {
-        Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TLookupInfoType searchInfo, CancellationToken cancellationToken);
-
         /// <summary>
         /// Gets the image response.
         /// </summary>
@@ -30,6 +27,12 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
         Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken);
+    }
+
+    public interface IRemoteSearchProvider<in TLookupInfoType> : IRemoteSearchProvider
+        where TLookupInfoType : ItemLookupInfo
+    {
+        Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TLookupInfoType searchInfo, CancellationToken cancellationToken);
     }
     
     public class RemoteSearchQuery<T>

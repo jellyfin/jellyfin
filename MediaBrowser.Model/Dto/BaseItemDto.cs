@@ -48,6 +48,10 @@ namespace MediaBrowser.Model.Dto
         public string AwardSummary { get; set; }
 
         public float? Metascore { get; set; }
+
+        public bool IsUnidentified { get; set; }
+
+        public int? AnimeSeriesIndex { get; set; }
         
         /// <summary>
         /// Gets or sets the DVD season number.
@@ -204,6 +208,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The players.</value>
         public int? Players { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is place holder.
+        /// </summary>
+        /// <value><c>null</c> if [is place holder] contains no value, <c>true</c> if [is place holder]; otherwise, <c>false</c>.</value>
+        public bool? IsPlaceHolder { get; set; }
+        
         /// <summary>
         /// Gets or sets the index number.
         /// </summary>

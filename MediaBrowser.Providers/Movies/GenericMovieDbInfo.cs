@@ -39,11 +39,13 @@ namespace MediaBrowser.Providers.Movies
             // Don't search for music video id's because it is very easy to misidentify. 
             if (string.IsNullOrEmpty(tmdbId) && string.IsNullOrEmpty(imdbId) && typeof(T) != typeof(MusicVideo))
             {
-                var searchResult = await new MovieDbSearch(_logger, _jsonSerializer).FindMovieId(itemId, cancellationToken).ConfigureAwait(false);
+                var searchResults = await new MovieDbSearch(_logger, _jsonSerializer).GetMovieSearchResults(itemId, cancellationToken).ConfigureAwait(false);
+
+                var searchResult = searchResults.FirstOrDefault();
 
                 if (searchResult != null)
                 {
-                    tmdbId = searchResult.id.ToString(_usCulture);
+                    tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
                 }
             }
 
@@ -174,11 +176,16 @@ namespace MediaBrowser.Providers.Movies
                                                        : null;
             }
 
-            if (movieData.release_date.Year != 1)
+            if (!string.IsNullOrWhiteSpace(movieData.release_date))
             {
-                //no specific country release info at all
-                movie.PremiereDate = movieData.release_date.ToUniversalTime();
-                movie.ProductionYear = movieData.release_date.Year;
+                DateTime r;
+
+                // These dates are always in this exact format
+                if (DateTime.TryParse(movieData.release_date, _usCulture, DateTimeStyles.None, out r))
+                {
+                    movie.PremiereDate = r.ToUniversalTime();
+                    movie.ProductionYear = movie.PremiereDate.Value.Year;
+                }
             }
 
             //studios

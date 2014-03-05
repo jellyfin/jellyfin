@@ -34,9 +34,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         {
             return new ITaskTrigger[]
                 {
-                    new DailyTrigger { TimeOfDay = TimeSpan.FromHours(2) },
-
-                    new IntervalTrigger{ Interval = TimeSpan.FromHours(24)}
+                    new DailyTrigger { TimeOfDay = TimeSpan.FromHours(3) },
                 };
         }
 

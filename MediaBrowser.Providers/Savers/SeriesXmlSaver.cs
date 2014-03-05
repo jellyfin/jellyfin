@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Globalization;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -36,6 +37,8 @@ namespace MediaBrowser.Providers.Savers
             return item is Series && updateType >= ItemUpdateType.MetadataDownload;
         }
 
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Saves the specified item.
         /// </summary>
@@ -94,6 +97,11 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<FirstAired>" + SecurityElement.Escape(series.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd")) + "</FirstAired>");
             }
 
+            if (series.AnimeSeriesIndex.HasValue)
+            {
+                builder.Append("<AnimeSeriesIndex>" + SecurityElement.Escape(series.AnimeSeriesIndex.Value.ToString(UsCulture)) + "</AnimeSeriesIndex>");
+            }
+
             XmlSaverHelpers.AddCommonNodes(series, builder);
 
             builder.Append("</Series>");
@@ -111,7 +119,8 @@ namespace MediaBrowser.Providers.Savers
                     "FirstAired",
 
                     // Don't preserve old series node
-                    "Series"
+                    "Series",
+                    "AnimeSeriesIndex"
                 });
         }
 

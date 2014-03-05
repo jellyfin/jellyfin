@@ -220,6 +220,18 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IsInBoxSet", Description = "Optional filter by items that are in boxsets, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsInBoxSet { get; set; }
+
+        [ApiMember(Name = "IsLocked", Description = "Optional filter by items that are locked.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? IsLocked { get; set; }
+
+        [ApiMember(Name = "IsUnidentified", Description = "Optional filter by items that are unidentified by internet metadata providers.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? IsUnidentified { get; set; }
+
+        [ApiMember(Name = "IsPlaceHolder", Description = "Optional filter by items that are placeholders", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? IsPlaceHolder { get; set; }
+
+        [ApiMember(Name = "HasOfficialRating", Description = "Optional filter by items that have official ratings", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? HasOfficialRating { get; set; }
     }
 
     /// <summary>
@@ -332,7 +344,7 @@ namespace MediaBrowser.Api.UserLibrary
             var userId = user == null ? (Guid?)null : user.Id;
 
             var item = string.IsNullOrEmpty(request.ParentId) ?
-                user == null ? (BaseItem)_libraryManager.RootFolder : user.RootFolder :
+                user == null ? _libraryManager.RootFolder : user.RootFolder :
                 _dtoService.GetItemByDtoId(request.ParentId, userId);
 
             // Default list type = children
@@ -1019,6 +1031,18 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(i => i.IsPlayed(user) == val);
             }
 
+            if (request.IsUnidentified.HasValue)
+            {
+                var val = request.IsUnidentified.Value;
+                items = items.Where(i => i.IsUnidentified == val);
+            }
+
+            if (request.IsLocked.HasValue)
+            {
+                var val = request.IsLocked.Value;
+                items = items.Where(i => i.IsLocked == val);
+            }
+
             if (request.ParentIndexNumber.HasValue)
             {
                 var filterValue = request.ParentIndexNumber.Value;
@@ -1115,6 +1139,37 @@ namespace MediaBrowser.Api.UserLibrary
                 var filterValue = request.IsYearMismatched.Value;
 
                 items = items.Where(i => IsYearMismatched(i) == filterValue);
+            }
+
+            if (request.HasOfficialRating.HasValue)
+            {
+                var filterValue = request.HasOfficialRating.Value;
+
+                items = items.Where(i =>
+                {
+                    var hasValue = !string.IsNullOrEmpty(i.OfficialRating);
+
+                    return hasValue == filterValue;
+                });
+            }
+
+            if (request.IsPlaceHolder.HasValue)
+            {
+                var filterValue = request.IsPlaceHolder.Value;
+
+                items = items.Where(i =>
+                {
+                    var isPlaceHolder = false;
+
+                    var hasPlaceHolder = i as ISupportsPlaceHolders;
+
+                    if (hasPlaceHolder != null)
+                    {
+                        isPlaceHolder = hasPlaceHolder.IsPlaceHolder;
+                    }
+
+                    return isPlaceHolder == filterValue;
+                });
             }
 
             return items;

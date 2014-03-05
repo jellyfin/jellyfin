@@ -185,7 +185,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return LocationType == LocationType.Virtual && PremiereDate.HasValue && PremiereDate.Value < DateTime.UtcNow;
+                return LocationType == LocationType.Virtual && !IsUnaired;
             }
         }
 

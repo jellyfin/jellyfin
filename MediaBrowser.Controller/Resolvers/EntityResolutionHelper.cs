@@ -140,6 +140,24 @@ namespace MediaBrowser.Controller.Resolvers
         }
 
         /// <summary>
+        /// Determines whether [is place holder] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is place holder] [the specified path]; otherwise, <c>false</c>.</returns>
+        /// <exception cref="System.ArgumentNullException">path</exception>
+        public static bool IsVideoPlaceHolder(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            var extension = Path.GetExtension(path);
+
+            return string.Equals(extension, ".disc", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Ensures DateCreated and DateModified have values
         /// </summary>
         /// <param name="fileSystem">The file system.</param>

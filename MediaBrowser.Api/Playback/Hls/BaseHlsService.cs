@@ -285,7 +285,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // If performSubtitleConversions is true we're actually starting ffmpeg
             var startNumberParam = performSubtitleConversions ? GetStartNumber(state).ToString(UsCulture) : "0";
             
-            var args = string.Format("{0} {1} -i {2}{3} -map_metadata -1 -threads {4} {5} {6} -sc_threshold 0 {7} -hls_time {8} -start_number {9} -hls_list_size 1440 \"{10}\"",
+            var args = string.Format("{0} {1} -i {2}{3} -map_metadata -1 -threads {4} {5} {6} -sc_threshold 0 {7} -hls_time {8} -start_number {9} -hls_list_size {10} \"{11}\"",
                 itsOffset,
                 inputModifier,
                 GetInputArgument(state),
@@ -296,6 +296,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetAudioArguments(state),
                 state.SegmentLength.ToString(UsCulture),
                 startNumberParam,
+                state.HlsListSize.ToString(UsCulture),
                 outputPath
                 ).Trim();
 
@@ -307,11 +308,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
                     var bitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? 64000;
 
-                    var lowBitrateParams = string.Format(" -threads {0} -vn -codec:a:0 libmp3lame -ac 2 -ab {1} -hls_time {2} -start_number {3} -hls_list_size 1440 \"{4}\"",
+                    var lowBitrateParams = string.Format(" -threads {0} -vn -codec:a:0 libmp3lame -ac 2 -ab {1} -hls_time {2} -start_number {3} -hls_list_size {4} \"{5}\"",
                         threads,
                         bitrate / 2,
                         state.SegmentLength.ToString(UsCulture),
                         startNumberParam,
+                        state.HlsListSize.ToString(UsCulture),
                         lowBitratePath);
 
                     args += " " + lowBitrateParams;

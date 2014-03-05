@@ -50,6 +50,12 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
+            var seriesId = searchInfo.GetProviderId(MetadataProviders.Tvdb);
+
+            if (!string.IsNullOrEmpty(seriesId))
+            {
+            }
+            
             return new List<RemoteSearchResult>();
         }
 
@@ -999,7 +1005,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>System.String.</returns>
         internal static string GetSeriesDataPath(IApplicationPaths appPaths)
         {
-            var dataPath = Path.Combine(appPaths.DataPath, "tvdb-v3");
+            var dataPath = Path.Combine(appPaths.CachePath, "tvdb");
 
             return dataPath;
         }
@@ -1092,7 +1098,12 @@ namespace MediaBrowser.Providers.TV
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = TvDbResourcePool
+            });
         }
     }
 }

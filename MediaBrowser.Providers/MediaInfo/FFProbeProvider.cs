@@ -126,6 +126,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
+            if (item.IsPlaceHolder)
+            {
+                return _cachedTask;
+            }
+
             var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager);
 
             return prober.ProbeVideo(item, directoryService, cancellationToken);
@@ -155,7 +160,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 var video = item as Video;
 
-                if (video != null)
+                if (video != null && !video.IsPlaceHolder)
                 {
                     var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager);
 

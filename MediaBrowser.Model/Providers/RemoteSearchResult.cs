@@ -31,6 +31,8 @@ namespace MediaBrowser.Model.Providers
 
         public string SearchProviderName { get; set; }
 
+        public string GameSystem { get; set; }
+        
         public RemoteSearchResult()
         {
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

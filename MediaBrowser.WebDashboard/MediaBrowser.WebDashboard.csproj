@@ -84,7 +84,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ApiClient.js" />
+    <EmbeddedResource Include="ApiClient.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <Content Include="dashboard-ui\advancedserversettings.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -196,6 +198,9 @@
     <Content Include="dashboard-ui\css\images\items\detail\tv.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\css\images\items\list\remotesearch.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\css\images\media\tvflyout.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -218,6 +223,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\librarypathmapping.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\libraryreport.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\livetvchannel.html">
@@ -487,6 +495,9 @@
     <Content Include="dashboard-ui\scripts\librarypathmapping.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\scripts\libraryreport.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\scripts\livetvchannel.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -574,613 +585,613 @@
     <Content Include="dashboard-ui\thirdparty\jquery-2.0.3.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\ajax-loader.gif">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\ajax-loader.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\action-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\action-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\action-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\action-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\alert-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\alert-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\alert-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\alert-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-d-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-d-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-d-l-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-d-l-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-d-l-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-d-l-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-d-r-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-d-r-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-d-r-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-d-r-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-d-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-d-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-l-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-l-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-l-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-l-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-r-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-r-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-r-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-r-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-u-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-u-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-u-l-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-u-l-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-u-l-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-u-l-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-u-r-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-u-r-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-u-r-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-u-r-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\arrow-u-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\arrow-u-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\audio-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\audio-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\audio-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\audio-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\back-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\back-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\back-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\back-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\bars-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\bars-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\bars-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\bars-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\bullets-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\bullets-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\bullets-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\bullets-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\calendar-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\calendar-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\calendar-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\calendar-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\camera-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\camera-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\camera-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\camera-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\carat-d-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\carat-d-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\carat-d-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\carat-d-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\carat-l-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\carat-l-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\carat-l-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\carat-l-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\carat-r-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\carat-r-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\carat-r-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\carat-r-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\carat-u-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\carat-u-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\carat-u-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\carat-u-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\check-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\check-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\check-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\check-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\clock-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\clock-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\clock-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\clock-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\cloud-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\cloud-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\cloud-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\cloud-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\comment-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\comment-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\comment-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\comment-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\delete-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\delete-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\delete-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\delete-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\edit-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\edit-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\edit-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\edit-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\eye-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\eye-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\eye-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\eye-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\forbidden-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\forbidden-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\forbidden-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\forbidden-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\forward-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\forward-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\forward-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\forward-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\gear-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\gear-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\gear-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\gear-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\grid-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\grid-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\grid-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\grid-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\heart-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\heart-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\heart-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\heart-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\home-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\home-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\home-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\home-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\info-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\info-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\info-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\info-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\location-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\location-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\location-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\location-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\lock-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\lock-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\lock-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\lock-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\mail-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\mail-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\mail-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\mail-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\minus-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\minus-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\minus-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\minus-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\navigation-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\navigation-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\navigation-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\navigation-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\phone-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\phone-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\phone-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\phone-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\plus-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\plus-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\plus-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\plus-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\power-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\power-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\power-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\power-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\recycle-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\recycle-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\recycle-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\recycle-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\refresh-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\refresh-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\refresh-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\refresh-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\search-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\search-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\search-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\search-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\shop-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\shop-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\shop-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\shop-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\star-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\star-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\star-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\star-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\tag-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\tag-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\tag-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\tag-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\user-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\user-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\user-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\user-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\video-black.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\video-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-png\video-white.png">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-png\video-white.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\action-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\action-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\action-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\action-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\alert-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\alert-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\alert-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\alert-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-d-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-d-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-d-l-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-d-l-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-d-l-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-d-l-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-d-r-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-d-r-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-d-r-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-d-r-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-d-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-d-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-l-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-l-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-l-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-l-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-r-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-r-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-r-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-r-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-u-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-u-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-u-l-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-u-l-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-u-l-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-u-l-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-u-r-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-u-r-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-u-r-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-u-r-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\arrow-u-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\arrow-u-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\audio-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\audio-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\audio-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\audio-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\back-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\back-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\back-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\back-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\bars-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\bars-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\bars-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\bars-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\bullets-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\bullets-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\bullets-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\bullets-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\calendar-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\calendar-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\calendar-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\calendar-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\camera-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\camera-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\camera-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\camera-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\carat-d-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\carat-d-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\carat-d-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\carat-d-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\carat-l-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\carat-l-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\carat-l-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\carat-l-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\carat-r-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\carat-r-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\carat-r-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\carat-r-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\carat-u-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\carat-u-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\carat-u-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\carat-u-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\check-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\check-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\check-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\check-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\clock-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\clock-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\clock-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\clock-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\cloud-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\cloud-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\cloud-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\cloud-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\comment-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\comment-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\comment-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\comment-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\delete-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\delete-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\delete-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\delete-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\edit-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\edit-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\edit-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\edit-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\eye-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\eye-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\eye-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\eye-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\forbidden-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\forbidden-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\forbidden-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\forbidden-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\forward-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\forward-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\forward-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\forward-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\gear-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\gear-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\gear-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\gear-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\grid-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\grid-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\grid-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\grid-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\heart-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\heart-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\heart-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\heart-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\home-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\home-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\home-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\home-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\info-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\info-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\info-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\info-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\location-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\location-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\location-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\location-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\lock-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\lock-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\lock-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\lock-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\mail-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\mail-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\mail-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\mail-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\minus-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\minus-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\minus-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\minus-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\navigation-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\navigation-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\navigation-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\navigation-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\phone-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\phone-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\phone-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\phone-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\plus-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\plus-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\plus-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\plus-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\power-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\power-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\power-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\power-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\recycle-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\recycle-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\recycle-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\recycle-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\refresh-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\refresh-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\refresh-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\refresh-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\search-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\search-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\search-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\search-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\shop-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\shop-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\shop-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\shop-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\star-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\star-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\star-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\star-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\tag-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\tag-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\tag-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\tag-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\user-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\user-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\user-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\user-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\video-black.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\video-black.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\images\icons-svg\video-white.svg">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\images\icons-svg\video-white.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\jquery.mobile-1.4.1.min.css">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\jquery.mobile-1.4.2.min.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.1\jquery.mobile-1.4.1.min.js">
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.2\jquery.mobile-1.4.2.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\jstree1.0\jquery.jstree.min.js">

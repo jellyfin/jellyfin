@@ -234,9 +234,12 @@ namespace MediaBrowser.Controller.Library
                 {
                     var fullName = child.FullName;
 
-                    if (EntityResolutionHelper.IsVideoFile(fullName) && GetEpisodeNumberFromFile(fullName, false).HasValue)
+                    if (EntityResolutionHelper.IsVideoFile(fullName) || EntityResolutionHelper.IsVideoPlaceHolder(fullName))
                     {
-                        return true;
+                        if (GetEpisodeNumberFromFile(fullName, false).HasValue)
+                        {
+                            return true;
+                        }
                     }
                 }
             }
