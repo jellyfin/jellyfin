@@ -110,6 +110,11 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "NameStartsWithOrGreater", Description = "Optional filter by items whose name is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameStartsWithOrGreater { get; set; }
+        [ApiMember(Name = "NameStartsWith", Description = "Optional filter by items whose name is sorted equally than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string NameStartsWith { get; set; }
+        
+        [ApiMember(Name = "NameLessThan", Description = "Optional filter by items whose name is equally or lesser than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string NameLessThan { get; set; }
 
         [ApiMember(Name = "AlbumArtistStartsWithOrGreater", Description = "Optional filter by items whose album artist is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string AlbumArtistStartsWithOrGreater { get; set; }
@@ -767,6 +772,15 @@ namespace MediaBrowser.Api.UserLibrary
             if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
             {
                 items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
+            }
+            if (!string.IsNullOrEmpty(request.NameStartsWith))
+            {
+                items = items.Where(i => string.Compare(request.NameStartsWith, i.SortName.Substring(0, 1), StringComparison.CurrentCultureIgnoreCase) == 0);
+            }
+            
+            if (!string.IsNullOrEmpty(request.NameLessThan))
+            {
+                items = items.Where(i => string.Compare(request.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
             }
 
             if (!string.IsNullOrEmpty(request.AlbumArtistStartsWithOrGreater))
