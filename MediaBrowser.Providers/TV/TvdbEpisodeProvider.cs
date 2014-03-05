@@ -45,6 +45,9 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrEmpty(seriesTvdbId))
             {
+                await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesTvdbId, searchInfo.MetadataLanguage,
+                        cancellationToken).ConfigureAwait(false);
+
                 var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesTvdbId);
 
                 try

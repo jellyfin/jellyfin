@@ -372,6 +372,15 @@ namespace MediaBrowser.ServerApplication
                 {
                     // Not there, no big deal
                 }
+
+                try
+                {
+                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tvdb-v3"), true);
+                }
+                catch (IOException)
+                {
+                    // Not there, no big deal
+                }
             });
         }
 
@@ -856,11 +865,22 @@ namespace MediaBrowser.ServerApplication
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private string GetWanAddress()
         {
-            var ip = WanAddressEntryPoint.WanAddress;
+            var ip = ServerConfigurationManager.Configuration.WanDdns;
+
+            if (string.IsNullOrWhiteSpace(ip))
+            {
+                ip = WanAddressEntryPoint.WanAddress;
+            }
 
             if (!string.IsNullOrEmpty(ip))
             {
-                return "http://" + ip + ":" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(_usCulture);
+                if (!ip.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                    !ip.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                {
+                    ip = "http://" + ip;
+                }
+
+                return ip + ":" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(_usCulture);
             }
 
             return null;
