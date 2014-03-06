@@ -183,4 +183,13 @@
         updateFilterControls(this);
     });
 
+    window.BoxSetsPage = {        
+        
+        onNewCollectionSubmit: function() {
+
+            Dashboard.alert('Coming soon');
+            return false;
+        }
+    };
+
 })(jQuery, document);

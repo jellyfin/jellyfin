@@ -66,7 +66,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="AlbumsService.cs" />
+    <Compile Include="Music\AlbumsService.cs" />
     <Compile Include="AppThemeService.cs" />
     <Compile Include="BaseApiService.cs" />
     <Compile Include="ConfigurationService.cs" />
@@ -81,7 +81,7 @@
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />
     <Compile Include="Images\ImageWriter.cs" />
-    <Compile Include="InstantMixService.cs" />
+    <Compile Include="Music\InstantMixService.cs" />
     <Compile Include="ItemLookupService.cs" />
     <Compile Include="ItemRefreshService.cs" />
     <Compile Include="ItemUpdateService.cs" />

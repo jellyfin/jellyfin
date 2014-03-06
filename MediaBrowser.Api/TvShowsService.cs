@@ -18,7 +18,7 @@ namespace MediaBrowser.Api
     /// Class GetNextUpEpisodes
     /// </summary>
     [Route("/Shows/NextUp", "GET")]
-    [Api(("Gets a list of currently installed plugins"))]
+    [Api(("Gets a list of next up episodes"))]
     public class GetNextUpEpisodes : IReturn<ItemsResult>, IHasItemFields
     {
         /// <summary>
@@ -53,6 +53,39 @@ namespace MediaBrowser.Api
         public string SeriesId { get; set; }
     }
 
+    [Route("/Shows/Upcoming", "GET")]
+    [Api(("Gets a list of upcoming episodes"))]
+    public class GetUpcomingEpisodes : IReturn<ItemsResult>, IHasItemFields
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Skips over a given number of items within the results. Use for paging.
+        /// </summary>
+        /// <value>The start index.</value>
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? StartIndex { get; set; }
+
+        /// <summary>
+        /// The maximum number of items to return
+        /// </summary>
+        /// <value>The limit.</value>
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
+
+        /// <summary>
+        /// Fields to return within the items, in addition to basic information
+        /// </summary>
+        /// <value>The fields.</value>
+        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, OverviewHtml, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Fields { get; set; }
+    }
+
     [Route("/Shows/{Id}/Similar", "GET")]
     [Api(Description = "Finds tv shows similar to a given one.")]
     public class GetSimilarShows : BaseGetSimilarItemsFromItem
@@ -85,7 +118,7 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "SeasonId", Description = "Optional. Filter by season id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string SeasonId { get; set; }
-        
+
         [ApiMember(Name = "IsMissing", Description = "Optional filter by items that are missing episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsMissing { get; set; }
 
@@ -186,6 +219,39 @@ namespace MediaBrowser.Api
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
+        public object Get(GetUpcomingEpisodes request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager)
+                .OfType<Episode>();
+
+            var itemsList = _libraryManager.Sort(items, user, new[] { "PremiereDate", "AirTime", "SortName" }, SortOrder.Ascending)
+                .Cast<Episode>()
+                .ToList();
+
+            var unairedEpisodes = itemsList.Where(i => i.IsUnaired).ToList();
+
+            var minPremiereDate = DateTime.Now.Date.AddDays(-1).ToUniversalTime();
+            var previousEpisodes = itemsList.Where(i => !i.IsUnaired && (i.PremiereDate ?? DateTime.MinValue) >= minPremiereDate).ToList();
+
+            previousEpisodes.AddRange(unairedEpisodes);
+
+            var pagedItems = ApplyPaging(previousEpisodes, request.StartIndex, request.Limit);
+
+            var fields = request.GetItemFields().ToList();
+
+            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray();
+
+            var result = new ItemsResult
+            {
+                TotalRecordCount = itemsList.Count,
+                Items = returnItems
+            };
+
+            return ToOptimizedSerializedResultUsingCache(result);
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -198,7 +264,7 @@ namespace MediaBrowser.Api
             var itemsList = GetNextUpEpisodes(request)
                 .ToList();
 
-            var pagedItems = ApplyPaging(request, itemsList);
+            var pagedItems = ApplyPaging(itemsList, request.StartIndex, request.Limit);
 
             var fields = request.GetItemFields().ToList();
 
@@ -321,21 +387,22 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Applies the paging.
         /// </summary>
-        /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The limit.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<BaseItem> ApplyPaging(GetNextUpEpisodes request, IEnumerable<BaseItem> items)
+        private IEnumerable<BaseItem> ApplyPaging(IEnumerable<BaseItem> items, int? startIndex, int? limit)
         {
             // Start at
-            if (request.StartIndex.HasValue)
+            if (startIndex.HasValue)
             {
-                items = items.Skip(request.StartIndex.Value);
+                items = items.Skip(startIndex.Value);
             }
 
             // Return limit
-            if (request.Limit.HasValue)
+            if (limit.HasValue)
             {
-                items = items.Take(request.Limit.Value);
+                items = items.Take(limit.Value);
             }
 
             return items;
@@ -409,7 +476,7 @@ namespace MediaBrowser.Api
 
             return items;
         }
-        
+
         public object Get(GetEpisodes request)
         {
             var user = _userManager.GetUserById(request.UserId);
@@ -435,7 +502,7 @@ namespace MediaBrowser.Api
                 {
                     throw new ResourceNotFoundException("No season exists with Id " + request.SeasonId);
                 }
-                
+
                 episodes = season.GetEpisodes(user);
             }
 
