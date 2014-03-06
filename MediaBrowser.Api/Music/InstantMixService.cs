@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Api
+namespace MediaBrowser.Api.Music
 {
     [Route("/Songs/{Id}/InstantMix", "GET")]
     [Api(Description = "Creates an instant playlist based on a given song")]
