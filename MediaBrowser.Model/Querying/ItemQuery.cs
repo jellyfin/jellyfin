@@ -217,13 +217,14 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The name starts with or greater.</value>
         public string NameStartsWithOrGreater { get; set; }
-                /// <summary>
+
+        /// <summary>
         /// Gets or sets the name starts with.
         /// </summary>
         /// <value>The name starts with or greater.</value>
         public string NameStartsWith { get; set; }
         
-                        /// <summary>
+        /// <summary>
         /// Gets or sets the name starts with.
         /// </summary>
         /// <value>The name lessthan.</value>
