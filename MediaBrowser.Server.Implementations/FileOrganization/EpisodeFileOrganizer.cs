@@ -171,13 +171,26 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var fileExists = File.Exists(result.TargetPath);
             var otherDuplicatePaths = GetOtherDuplicatePaths(result.TargetPath, series, seasonNumber, episodeNumber, endingEpiosdeNumber);
 
-            if (!overwriteExisting && (fileExists || otherDuplicatePaths.Count > 0))
+            if (!overwriteExisting)
             {
-                result.Status = FileSortingStatus.SkippedExisting;
-                result.StatusMessage = string.Empty;
-                result.DuplicatePaths = otherDuplicatePaths;
-                return;
+                if (fileExists || otherDuplicatePaths.Count > 0)
+                {
+                    result.Status = FileSortingStatus.SkippedExisting;
+                    result.StatusMessage = string.Empty;
+                    result.DuplicatePaths = otherDuplicatePaths;
+                    return;
+                }
+
+                if (options.CopyOriginalFile && fileExists && IsSameEpisode(sourcePath, newPath))
+                {
+                    _logger.Info("File {0} already copied to new path {1}, stopping organization", sourcePath, newPath);
+                    result.Status = FileSortingStatus.SkippedExisting;
+                    result.StatusMessage = string.Empty;
+                    return;
+                }
             }
+
+   
 
             PerformFileSorting(options, result);
 
@@ -266,7 +279,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             try
             {
-                if (copy)
+                if (copy || options.CopyOriginalFile)
                 {
                     File.Copy(result.OriginalPath, result.TargetPath, true);
                 }
@@ -293,7 +306,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 _libraryMonitor.ReportFileSystemChangeComplete(result.TargetPath, true);
             }
 
-            if (copy)
+            if (copy && !options.CopyOriginalFile)
             {
                 try
                 {
@@ -438,6 +451,28 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             return result.Replace("%e", episodeNumber.ToString(_usCulture))
                 .Replace("%0e", episodeNumber.ToString("00", _usCulture))
                 .Replace("%00e", episodeNumber.ToString("000", _usCulture));
+        }
+
+        private bool IsSameEpisode(string sourcePath, string newPath)
+        {
+
+                FileInfo sourceFileInfo = new FileInfo(sourcePath);
+                FileInfo destinationFileInfo = new FileInfo(newPath);
+
+                try
+                {
+                    if (sourceFileInfo.Length == destinationFileInfo.Length)
+                    {
+                        return true;
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+                    return false;
+                }
+
+                return false;
+
         }
     }
 }
