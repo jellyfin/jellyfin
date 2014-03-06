@@ -143,14 +143,14 @@
                     </div>
                     <br />
                     <ul data-role="listview" class="ulForm">
-                      <li>
-                        <label for="txtDeleteLeftOverFiles">Episode Copy/Move </label>
-                        <select name="copyOrMoveFile" id="copyOrMoveFile" data-mini="true">
-                          <option value="true">Copy</option>
-                          <option value="false">Move</option>
-                        </select>
-                        <div class="fieldDescription">Copy or move files from the "Watch Folder"</div>
-                      </li>
+                        <li>
+                            <label for="txtDeleteLeftOverFiles">Transfer Method</label>
+                            <select name="copyOrMoveFile" id="copyOrMoveFile" data-mini="true">
+                                <option value="true">Copy</option>
+                                <option value="false">Move</option>
+                            </select>
+                            <div class="fieldDescription">Copy or move files from the watch folder</div>
+                        </li>
                         <li>
                             <input type="checkbox" id="chkOverwriteExistingEpisodes" name="chkOverwriteExistingEpisodes" />
                             <label for="chkOverwriteExistingEpisodes">Overwrite existing episodes</label>
@@ -161,7 +161,7 @@
                             <div class="fieldDescription">Separate with ;. For example: .nfo;.txt</div>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkDeleteEmptyFolders" name="chkDeleteEmptyFolders" />
+                            <input type="checkbox" id="chkDeleteEmptyFolders" name="chkDeleteEmptyFolders" data-mini="true" />
                             <label for="chkDeleteEmptyFolders">Delete empty folders after organizing</label>
                             <div class="fieldDescription">Enable this to keep the download directory clean.</div>
                         </li>
