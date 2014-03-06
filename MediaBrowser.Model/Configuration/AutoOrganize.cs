@@ -19,6 +19,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool DeleteEmptyFolders { get; set; }
 
+        public bool CopyOriginalFile { get; set; }
+
         public TvFileOrganizationOptions()
         {
             MinFileSizeMb = 50;
@@ -31,6 +33,8 @@ namespace MediaBrowser.Model.Configuration
             MultiEpisodeNamePattern = "%sn - %sx%0e-x%0ed - %en.%ext";
             SeasonFolderPattern = "Season %s";
             SeasonZeroFolderName = "Season 0";
+
+            CopyOriginalFile = false;
         }
     }
 }
