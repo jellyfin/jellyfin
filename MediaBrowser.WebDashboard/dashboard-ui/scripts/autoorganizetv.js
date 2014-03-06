@@ -71,6 +71,9 @@
         $('#txtMultiEpisodePattern', page).val(tvOptions.MultiEpisodeNamePattern).trigger('change');
 
         $('#txtDeleteLeftOverFiles', page).val(tvOptions.LeftOverFileExtensionsToDelete.join(';'));
+
+		$('#copyOrMoveFile', page).val(tvOptions.CopyOriginalFile.toString()).selectmenu('refresh');
+
     }
     
     $(document).on('pageinit', "#libraryFileOrganizerPage", function () {
@@ -149,6 +152,8 @@
 
                 var watchLocation = $('#txtWatchFolder', form).val();
                 tvOptions.WatchLocations = watchLocation ? [watchLocation] : [];
+
+				tvOptions.CopyOriginalFile = $('#copyOrMoveFile', form).val();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });
