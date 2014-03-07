@@ -583,6 +583,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             programs = programList.OrderByDescending(i => GetRecommendationScore(i, user.Id, serviceName, genres))
+                .ThenBy(i => i.HasImage(ImageType.Primary) ? 0 : 1)
                 .ThenBy(i => i.StartDate);
 
             if (query.Limit.HasValue)

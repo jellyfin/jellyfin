@@ -63,6 +63,9 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "IncludeArtists", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool IncludeArtists { get; set; }
 
+        [ApiMember(Name = "IncludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string IncludeItemTypes { get; set; }
+        
         public GetSearchHints()
         {
             IncludeArtists = true;
@@ -130,7 +133,8 @@ namespace MediaBrowser.Api
                 IncludePeople = request.IncludePeople,
                 IncludeStudios = request.IncludeStudios,
                 StartIndex = request.StartIndex,
-                UserId = request.UserId
+                UserId = request.UserId,
+                IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',')
 
             }).ConfigureAwait(false);
 

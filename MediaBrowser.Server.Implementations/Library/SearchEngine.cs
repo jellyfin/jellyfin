@@ -37,6 +37,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var results = await GetSearchHints(inputItems, query).ConfigureAwait(false);
 
+            // Include item types
+            if (query.IncludeItemTypes.Length > 0)
+            {
+                results = results.Where(f => query.IncludeItemTypes.Contains(f.Item.GetType().Name, StringComparer.OrdinalIgnoreCase));
+            }
+
             var searchResultArray = results.ToArray();
             results = searchResultArray;
 

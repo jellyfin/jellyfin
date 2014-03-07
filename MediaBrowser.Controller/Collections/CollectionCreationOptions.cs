@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Collections
     {
         public string Name { get; set; }
 
-        public Guid ParentId { get; set; }
+        public Guid? ParentId { get; set; }
 
         public bool IsLocked { get; set; }
     }

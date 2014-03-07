@@ -9,6 +9,10 @@ namespace MediaBrowser.Controller.Entities
         public string Path { get; set; }
         public LinkedChildType Type { get; set; }
 
+        public string ItemName { get; set; }
+        public string ItemType { get; set; }
+        public int? ItemYear { get; set; }
+
         /// <summary>
         /// Serves as a cache
         /// </summary>
