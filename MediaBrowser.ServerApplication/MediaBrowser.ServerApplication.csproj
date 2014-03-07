@@ -235,6 +235,12 @@ xcopy "$(TargetDir)*.dll" "$(SolutionDir)..\Deploy\Server\System" /y
 mkdir "$(SolutionDir)..\Deploy\Server\System\dashboard-ui"
 xcopy "$(TargetDir)dashboard-ui" "$(SolutionDir)..\Deploy\Server\System\dashboard-ui" /y /s
 
+mkdir "$(SolutionDir)..\Deploy\Server\System\x86"
+xcopy "$(TargetDir)x86" "$(SolutionDir)..\Deploy\Server\System\x86" /y /s
+
+mkdir "$(SolutionDir)..\Deploy\Server\System\x64"
+xcopy "$(TargetDir)x64" "$(SolutionDir)..\Deploy\Server\System\x64" /y /s
+
 del "$(SolutionDir)..\Deploy\MBServer.zip"
 "$(SolutionDir)ThirdParty\7zip\7za" a -mx9 "$(SolutionDir)..\Deploy\MBServer.zip" "$(SolutionDir)..\Deploy\Server\*"
 )</PostBuildEvent>
