@@ -134,7 +134,7 @@ namespace MediaBrowser.Api
                 IncludeStudios = request.IncludeStudios,
                 StartIndex = request.StartIndex,
                 UserId = request.UserId,
-                IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',')
+                IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray()
 
             }).ConfigureAwait(false);
 

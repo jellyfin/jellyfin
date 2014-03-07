@@ -23,7 +23,11 @@
                     <a id="btnEditImages" href="#" data-role="button">Images</a>
                 </div>
 
-                <div style="margin-top: -20px;">
+                <p style="margin-top: -20px;">
+                    Add or remove any movies, series, albums, books or games you wish to group within this collection.
+                </p>
+
+                <div>
                     <button type="button" id="btnAddItem" data-icon="plus" data-inline="true" data-mini="true">Add</button>
                     <button type="button" id="btnRemoveItems" data-icon="delete" data-inline="true" data-mini="true" disabled="disabled">Remove</button>
                 </div>
@@ -41,7 +45,7 @@
 
             <div data-role="content">
 
-                <form class="popupIdentifyForm" style="max-width: initial;">
+                <form class="collectionItemSearchForm" style="max-width: initial;">
 
                     <div>
                         <label for="txtLookupName">Name:</label>
@@ -50,7 +54,7 @@
                             <input type="text" id="txtLookupName" data-mini="true" required="required" />
                         </div>
 
-                        <button type="submit" data-theme="b" data-icon="search" data-mini="true" data-inline="true" data-iconpos="notext">
+                        <button type="submit" data-icon="search" data-mini="true" data-inline="true" data-iconpos="notext">
                             Search
                         </button>
                     </div>
@@ -67,7 +71,7 @@
         </div>
 
         <script type="text/javascript">
-            $('.popupIdentifyForm').off('submit', EditCollectionItemsPage.onSearchFormSubmit).on('submit', EditCollectionItemsPage.onSearchFormSubmit);
+            $('.collectionItemSearchForm').off('submit', EditCollectionItemsPage.onSearchFormSubmit).on('submit', EditCollectionItemsPage.onSearchFormSubmit);
         </script>
     </div>
 </body>

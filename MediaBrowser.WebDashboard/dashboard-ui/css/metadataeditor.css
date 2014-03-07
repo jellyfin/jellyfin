@@ -329,7 +329,7 @@
     }
 }
 
-.popupIdentifyForm, .identificationSearchResults {
+.popupIdentify form, .identificationSearchResults {
     overflow-y: auto;
 }
 
@@ -341,14 +341,14 @@
 
 @media all and (min-height: 500px) {
 
-    .popupIdentifyForm, .identificationSearchResults {
+    .popupIdentify form, .identificationSearchResults {
         height: 350px;
     }
 }
 
 @media all and (min-height: 600px) {
 
-    .popupIdentifyForm, .identificationSearchResults {
+    .popupIdentify form, .identificationSearchResults {
         height: 450px;
     }
 
@@ -359,7 +359,7 @@
 
 @media all and (min-height: 700px) {
 
-    .popupIdentifyForm, .identificationSearchResults {
+    .popupIdentify form, .identificationSearchResults {
         height: 550px;
     }
 
@@ -374,7 +374,7 @@
         height: 600px;
     }
 
-    .popupIdentifyForm, .identificationSearchResults {
+    .popupIdentify form, .identificationSearchResults {
         height: 600px;
     }
 
@@ -389,7 +389,7 @@
         height: 700px;
     }
 
-    .popupIdentifyForm, .identificationSearchResults {
+    .popupIdentify form, .identificationSearchResults {
         height: 700px;
     }
 }

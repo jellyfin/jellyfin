@@ -119,14 +119,14 @@
 
             userId: Dashboard.getCurrentUserId(),
             searchTerm: searchTerm,
-            limit: 50,
+            limit: 30,
 
             includePeople: false,
             includeGenres: false,
             includeStudios: false,
             includeArtists: false,
 
-            IncludeItemTypes: "Movie,Series,Game,MusicAlbum"
+            IncludeItemTypes: "Movie,Series,Game,MusicAlbum,Book"
 
         }).done(function (result) {
 

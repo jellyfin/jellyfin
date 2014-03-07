@@ -173,10 +173,6 @@
             $('#gameSystemTabs', page).show();
         }
 
-        if (item.Type == "BoxSet") {
-            $('#boxsetTabs', page).show();
-        }
-
         if (item.Type == "Trailer") {
             $('#trailerTabs', page).show();
         }
