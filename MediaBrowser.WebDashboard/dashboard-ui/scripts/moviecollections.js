@@ -67,6 +67,16 @@
 
             LibraryBrowser.saveQueryValues('boxsets', query);
 
+            Dashboard.getCurrentUser().done(function(user) {
+                
+                if (user.Configuration.IsAdministrator) {
+                    $('#btnNewCollection', page).removeClass('hide');
+                } else {
+                    $('#btnNewCollection', page).addClass('hide');
+                }
+
+            });
+
             Dashboard.hideLoadingMsg();
         });
     }
