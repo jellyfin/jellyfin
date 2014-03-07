@@ -189,15 +189,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Refreshes metadata for each user
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
         /// <returns>Task.</returns>
-        public Task RefreshUsersMetadata(CancellationToken cancellationToken, bool force = false)
+        public Task RefreshUsersMetadata(CancellationToken cancellationToken)
         {
-            var tasks = Users.Select(user => user.RefreshMetadata(new MetadataRefreshOptions
-            {
-                ReplaceAllMetadata = force
-
-            }, cancellationToken)).ToList();
+            var tasks = Users.Select(user => user.RefreshMetadata(new MetadataRefreshOptions(), cancellationToken)).ToList();
 
             return Task.WhenAll(tasks);
         }

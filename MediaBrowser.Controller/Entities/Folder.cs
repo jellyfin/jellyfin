@@ -745,9 +745,9 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            AddChildrenToList(user, includeLinkedChildren, list, false, null);
+            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, false, null);
 
-            return list;
+            return hasLinkedChildren ? list.DistinctBy(i => i.Id).ToList() : list;
         }
 
         /// <summary>

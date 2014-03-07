@@ -148,9 +148,39 @@ namespace MediaBrowser.Server.Implementations.Collections
                 list.Add(child);
             }
 
-            foreach (var child in list)
+            var shortcutFiles = Directory
+                .EnumerateFiles(collection.Path, "*", SearchOption.TopDirectoryOnly)
+                .Where(i => _fileSystem.IsShortcut(i))
+                .ToList();
+
+            var shortcutFilesToDelete = list.Where(child => !string.IsNullOrWhiteSpace(child.Path) && child.Type == LinkedChildType.Shortcut)
+                .Select(child => shortcutFiles.FirstOrDefault(i => string.Equals(child.Path, _fileSystem.ResolveShortcut(i), StringComparison.OrdinalIgnoreCase)))
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .ToList();
+
+            foreach (var file in shortcutFilesToDelete)
             {
-                collection.LinkedChildren.Remove(child);
+                _iLibraryMonitor.ReportFileSystemChangeBeginning(file);
+            }
+
+            try
+            {
+                foreach (var file in shortcutFilesToDelete)
+                {
+                    File.Delete(file);
+                }
+                
+                foreach (var child in list)
+                {
+                    collection.LinkedChildren.Remove(child);
+                }
+            }
+            finally
+            {
+                foreach (var file in shortcutFilesToDelete)
+                {
+                    _iLibraryMonitor.ReportFileSystemChangeComplete(file, false);
+                }
             }
 
             await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
