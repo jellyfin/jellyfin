@@ -9,7 +9,6 @@
             <div class="libraryViewNav">
                 <a href="moviesrecommended.html">Suggested</a>
                 <a href="movies.html" class="ui-btn-active">Movies</a>
-                <a href="boxsets.html">Collections</a>
                 <a href="movietrailers.html">Trailers</a>
                 <a href="moviegenres.html">Genres</a>
                 <a href="moviepeople.html">People</a>
@@ -17,21 +16,12 @@
             </div>
         </div>
         <div id="boxsetTabs" class="itemTabs" style="display: none;">
-            <div class="libraryViewNav">
-                <a href="moviesrecommended.html">Suggested</a>
-                <a href="movies.html">Movies</a>
-                <a href="boxsets.html" class="ui-btn-active">Collections</a>
-                <a href="movietrailers.html">Trailers</a>
-                <a href="moviegenres.html">Genres</a>
-                <a href="moviepeople.html">People</a>
-                <a href="moviestudios.html">Studios</a>
-            </div>
+            <br />
         </div>
         <div id="trailerTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav">
                 <a href="moviesrecommended.html">Suggested</a>
                 <a href="movies.html">Movies</a>
-                <a href="boxsets.html">Collections</a>
                 <a href="movietrailers.html" class="ui-btn-active">Trailers</a>
                 <a href="moviegenres.html">Genres</a>
                 <a href="moviepeople.html">People</a>
@@ -174,7 +164,10 @@
                     </div>
                 </div>
                 <div id="childrenCollapsible" class="hide detailSection">
-                    <div class="detailSectionHeader"><span id="childrenTitle"></span></div>
+                    <div class="detailSectionHeader" style="position: relative;">
+                        <span id="childrenTitle"></span>
+                        <a id="btnEditCollectionTitles" href="#" data-role="button" data-icon="edit" data-iconpos="notext" data-inline="true" style="display: none; position: absolute; right: 0; top: 6px; margin-top: 0; margin-bottom: 0;">Edit</a>
+                    </div>
                     <div id="childrenContent" class="detailSectionContent"></div>
                 </div>
                 <div id="trailersCollapsible" class="detailSection hide">

@@ -1,5 +1,5 @@
 ﻿.posterItem {
-    margin: 8px;
+    margin: 5px;
     text-shadow: none;
     font-weight: normal!important;
     display: inline-block;
@@ -33,10 +33,6 @@
 
 .posterItemOverlayInner {
     padding: 11px 12px 10px;
-}
-
-.smallBackdropPosterItem, .smallPosterItem {
-    margin: 5px;
 }
 
 .posterItemImage {

@@ -95,6 +95,13 @@
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
+    function showNewCollectionPanel(page) {
+
+        $('#newCollectionPanel', page).panel('toggle');
+
+        $('#txtNewCollectionName', page).focus();
+    }
+
     $(document).on('pageinit', "#boxsetsPage", function () {
 
         var page = this;
@@ -164,6 +171,11 @@
             reloadItems(page);
         });
 
+        $('#btnNewCollection', page).on('click', function () {
+
+            showNewCollectionPanel(page);
+        });
+
     }).on('pagebeforeshow', "#boxsetsPage", function () {
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -183,11 +195,35 @@
         updateFilterControls(this);
     });
 
-    window.BoxSetsPage = {        
-        
-        onNewCollectionSubmit: function() {
+    window.BoxSetsPage = {
 
-            Dashboard.alert('Coming soon');
+        onNewCollectionSubmit: function () {
+
+            Dashboard.showLoadingMsg();
+
+            var page = $(this).parents('.page');
+
+            var url = ApiClient.getUrl("Collections", {
+                
+                Name: $('#txtNewCollectionName', page).val(),
+                IsLocked: !$('#chkEnableInternetMetadata', page).checked()
+
+            });
+
+            $.ajax({
+                type: "POST",
+                url: url
+
+            }).done(function () {
+
+                Dashboard.hideLoadingMsg();
+
+                $('#newCollectionPanel', page).panel('toggle');
+
+                reloadItems(page);
+
+            });
+
             return false;
         }
     };

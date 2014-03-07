@@ -66,6 +66,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Movies\CollectionService.cs" />
     <Compile Include="Music\AlbumsService.cs" />
     <Compile Include="AppThemeService.cs" />
     <Compile Include="BaseApiService.cs" />
@@ -91,7 +92,7 @@
     <Compile Include="Library\LibraryStructureService.cs" />
     <Compile Include="LiveTv\LiveTvService.cs" />
     <Compile Include="LocalizationService.cs" />
-    <Compile Include="MoviesService.cs" />
+    <Compile Include="Movies\MoviesService.cs" />
     <Compile Include="NewsService.cs" />
     <Compile Include="NotificationsService.cs" />
     <Compile Include="PackageReviewService.cs" />
@@ -118,7 +119,7 @@
     <Compile Include="SessionsService.cs" />
     <Compile Include="SimilarItemsHelper.cs" />
     <Compile Include="SystemService.cs" />
-    <Compile Include="TrailersService.cs" />
+    <Compile Include="Movies\TrailersService.cs" />
     <Compile Include="TvShowsService.cs" />
     <Compile Include="UserLibrary\ArtistsService.cs" />
     <Compile Include="UserLibrary\BaseItemsByNameService.cs" />

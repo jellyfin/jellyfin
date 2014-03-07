@@ -333,6 +333,11 @@
     overflow-y: auto;
 }
 
+.collectionItemSearchResults {
+    max-height: 65%;
+    overflow-y: auto;
+}
+
 
 @media all and (min-height: 500px) {
 
@@ -346,12 +351,20 @@
     .popupIdentifyForm, .identificationSearchResults {
         height: 450px;
     }
+
+    .collectionItemSearchResults {
+        max-height: 70%;
+    }
 }
 
 @media all and (min-height: 700px) {
 
     .popupIdentifyForm, .identificationSearchResults {
         height: 550px;
+    }
+
+    .collectionItemSearchResults {
+        max-height: 75%;
     }
 }
 
@@ -363,6 +376,10 @@
 
     .popupIdentifyForm, .identificationSearchResults {
         height: 600px;
+    }
+
+    .collectionItemSearchResults {
+        max-height: 80%;
     }
 }
 

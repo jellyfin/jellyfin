@@ -31,8 +31,16 @@
 
                 if (user.Configuration.IsAdministrator) {
                     $('#editButtonContainer', page).show();
+
                 } else {
                     $('#editButtonContainer', page).hide();
+                }
+
+                if (user.Configuration.IsAdministrator && item.Type == "BoxSet") {
+                    $('#btnEditCollectionTitles', page).show().attr('href', 'editcollectionitems.html?id=' + item.Id);
+
+                } else {
+                    $('#btnEditCollectionTitles', page).hide();
                 }
 
                 if (MediaPlayer.canPlay(item, user)) {
@@ -122,7 +130,7 @@
         if (item.Type == "Episode" || item.Type == "Series" || item.Type == "Season") {
             return "tv";
         }
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
+        if (item.Type == "Movie" || item.Type == "Trailer") {
             return "movies";
         }
         if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicVideo") {
@@ -130,6 +138,9 @@
         }
         if (item.MediaType == "Game") {
             return "games";
+        }
+        if (item.Type == "BoxSet") {
+            return "boxsets";
         }
         return "";
     }

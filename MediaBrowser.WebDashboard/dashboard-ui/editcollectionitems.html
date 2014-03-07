@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Browser</title>
+</head>
+<body>
+    <div id="editCollectionTitlesPage" data-role="page" data-theme="b" class="page libraryPage metadataEditorPage">
+        <div data-role="content editPageContent">
+            <div class="editPageSidebar">
+                <div class="libraryTree">
+                    <ul>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="editPageInnerContent">
+                <h1 class="itemName editPageName">&nbsp;</h1>
+                <br />
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" id="btnEditMetadata">Metadata</a>
+                    <a id="btnEditPeople" style="display: none;" href="#" data-role="button">People</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Titles</a>
+                    <a id="btnEditImages" href="#" data-role="button">Images</a>
+                </div>
+
+                <div style="margin-top: -20px;">
+                    <button type="button" id="btnAddItem" data-icon="plus" data-inline="true" data-mini="true">Add</button>
+                    <button type="button" id="btnRemoveItems" data-icon="delete" data-inline="true" data-mini="true" disabled="disabled">Remove</button>
+                </div>
+                <br />
+                <div class="collectionItems"></div>
+            </div>
+        </div>
+
+        <div data-role="popup" data-transition="slidefade" class="popupIdentify popup" data-theme="a">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>Add Titles
+                </h3>
+            </div>
+
+            <div data-role="content">
+
+                <form class="popupIdentifyForm" style="max-width: initial;">
+
+                    <div>
+                        <label for="txtLookupName">Name:</label>
+
+                        <div style="display: inline-block; width: 75%;">
+                            <input type="text" id="txtLookupName" data-mini="true" required="required" />
+                        </div>
+
+                        <button type="submit" data-theme="b" data-icon="search" data-mini="true" data-inline="true" data-iconpos="notext">
+                            Search
+                        </button>
+                    </div>
+
+                    <div class="collectionItemSearchResults">
+                    </div>
+
+                    <button id="btnAddItems" type="button" data-icon="plus" data-mini="true">
+                        Add
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <script type="text/javascript">
+            $('.popupIdentifyForm').off('submit', EditCollectionItemsPage.onSearchFormSubmit).on('submit', EditCollectionItemsPage.onSearchFormSubmit);
+        </script>
+    </div>
+</body>
+</html>

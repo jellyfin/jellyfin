@@ -8,6 +8,7 @@
 
         $('#btnEditMetadata', page).attr('href', 'edititemmetadata.html?' + query);
         $('#btnEditImages', page).attr('href', 'edititemimages.html?' + query);
+        $('#btnEditCollectionTitles', page).attr('href', 'editcollectionitems.html?' + query);
     }
 
     function reload(page) {

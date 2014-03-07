@@ -16,6 +16,7 @@
 
         $('#btnEditPeople', page).attr('href', 'edititempeople.html?' + query);
         $('#btnEditImages', page).attr('href', 'edititemimages.html?' + query);
+        $('#btnEditCollectionTitles', page).attr('href', 'editcollectionitems.html?' + query);
     }
 
     function reload(page) {
@@ -82,10 +83,16 @@
             setFieldVisibilities(page, item);
             fillItemInfo(page, item);
 
-            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist" || item.Type == "GameGenre" || item.Type == "Channel") {
+            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist" || item.Type == "GameGenre" || item.Type == "Channel" || item.Type == "BoxSet") {
                 $('#btnEditPeople', page).hide();
             } else {
                 $('#btnEditPeople', page).show();
+            }
+
+            if (item.Type == "BoxSet") {
+                $('#btnEditCollectionTitles', page).show();
+            } else {
+                $('#btnEditCollectionTitles', page).hide();
             }
 
             Dashboard.hideLoadingMsg();

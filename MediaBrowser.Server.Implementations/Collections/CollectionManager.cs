@@ -5,7 +5,9 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Collections
 
             var folderName = _fileSystem.GetValidFilename(name);
 
-            var parentFolder = _libraryManager.GetItemById(options.ParentId) as Folder;
+            var parentFolder = GetParentFolder(options.ParentId);
 
             if (parentFolder == null)
             {
@@ -66,14 +68,94 @@ namespace MediaBrowser.Server.Implementations.Collections
             }
         }
 
-        public Task AddToCollection(Guid collectionId, Guid itemId)
+        private Folder GetParentFolder(Guid? parentId)
         {
-            throw new NotImplementedException();
+            if (parentId.HasValue)
+            {
+                if (parentId.Value == Guid.Empty)
+                {
+                    throw new ArgumentNullException("parentId");
+                }
+
+                return _libraryManager.GetItemById(parentId.Value) as Folder;
+            }
+
+            return _libraryManager.RootFolder.Children.OfType<ManualCollectionsFolder>().FirstOrDefault() ??
+                _libraryManager.RootFolder.GetHiddenChildren().OfType<ManualCollectionsFolder>().FirstOrDefault();
         }
 
-        public Task RemoveFromCollection(Guid collectionId, Guid itemId)
+        public async Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
         {
-            throw new NotImplementedException();
+            var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
+
+            if (collection == null)
+            {
+                throw new ArgumentException("No collection exists with the supplied Id");
+            }
+
+            var list = new List<LinkedChild>();
+
+            foreach (var itemId in ids)
+            {
+                var item = _libraryManager.GetItemById(itemId);
+
+                if (item == null)
+                {
+                    throw new ArgumentException("No item exists with the supplied Id");
+                }
+
+                if (collection.LinkedChildren.Any(i => i.ItemId.HasValue && i.ItemId == itemId))
+                {
+                    throw new ArgumentException("Item already exists in collection");
+                }
+
+                list.Add(new LinkedChild
+                {
+                    ItemName = item.Name,
+                    ItemYear = item.ProductionYear,
+                    ItemType = item.GetType().Name,
+                    Type = LinkedChildType.Manual
+                });
+            }
+
+            collection.LinkedChildren.AddRange(list);
+
+            await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+            await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public async Task RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds)
+        {
+            var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
+
+            if (collection == null)
+            {
+                throw new ArgumentException("No collection exists with the supplied Id");
+            }
+
+            var list = new List<LinkedChild>();
+
+            foreach (var itemId in itemIds)
+            {
+                var child = collection.LinkedChildren.FirstOrDefault(i => i.ItemId.HasValue && i.ItemId.Value == itemId);
+
+                if (child == null)
+                {
+                    throw new ArgumentException("No collection title exists with the supplied Id");
+                }
+
+                list.Add(child);
+            }
+
+            foreach (var child in list)
+            {
+                collection.LinkedChildren.Remove(child);
+            }
+
+            await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+            await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

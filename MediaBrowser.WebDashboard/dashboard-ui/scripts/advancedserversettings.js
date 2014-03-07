@@ -14,6 +14,7 @@
         $('#txtPortNumber', page).val(config.HttpServerPortNumber);
 
         $('#txtDdns', page).val(config.WanDdns || '');
+        $('#txtServerName', page).val(config.ServerName || '');
 
         $('#chkEnableUpnp', page).checked(config.EnableUPnP).checkboxradio('refresh');
 
@@ -52,6 +53,7 @@
                 config.EnableUPnP = $('#chkEnableUpnp', form).checked();
 
                 config.WanDdns = $('#txtDdns', form).val();
+                config.ServerName = $('#txtServerName', form).val();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });
