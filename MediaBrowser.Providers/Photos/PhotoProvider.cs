@@ -25,6 +25,7 @@ namespace MediaBrowser.Providers.Photos
         public Task<ItemUpdateType> FetchAsync(Photo item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             item.SetImagePath(ImageType.Primary, item.Path);
+            item.SetImagePath(ImageType.Backdrop, item.Path);
 
             if (item.Path.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || item.Path.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
             {
