@@ -776,6 +776,10 @@ a.itemTag:hover {
         max-width: 950px;
     }
 
+    .detailPageContent {
+        max-width: 930px;
+    }
+
     .primaryDetailPageContent {
         max-width: 850px;
     }
@@ -786,9 +790,6 @@ a.itemTag:hover {
     .ehsContent {
         max-width: 1240px;
     }
-}
-
-@media all and (min-width: 1920px) {
 }
 
 .detailPageParentLink {

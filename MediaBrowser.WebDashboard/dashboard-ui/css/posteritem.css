@@ -308,14 +308,6 @@
 
 @media all and (min-width: 1920px) {
 
-    .portraitPosterItem {
-        width: 160px;
-    }
-
-        .portraitPosterItem .posterItemImage {
-            height: 240px;
-        }
-
     .squarePosterItem {
         width: 190px;
     }

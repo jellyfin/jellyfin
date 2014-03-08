@@ -287,7 +287,17 @@
             $('#fldYear', page).show();
         }
 
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "AdultVideo" || item.Type == "Series" || item.Type == "Game" || item.Type == "BoxSet" || item.Type == "Person" || item.Type == "Book") {
+        if (item.Type == "Movie" ||
+            item.Type == "Trailer" ||
+            item.Type == "AdultVideo" ||
+            item.Type == "Series" ||
+            item.Type == "Game" ||
+            item.Type == "BoxSet" ||
+            item.Type == "Person" ||
+            item.Type == "Book" ||
+            item.Type == "MusicAlbum" ||
+            item.Type == "MusicArtist") {
+            
             $('#btnIdentify', page).show();
         } else {
             $('#btnIdentify', page).hide();
