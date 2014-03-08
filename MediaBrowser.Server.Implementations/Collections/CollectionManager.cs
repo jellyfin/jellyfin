@@ -30,7 +30,10 @@ namespace MediaBrowser.Server.Implementations.Collections
         {
             var name = options.Name;
 
-            var folderName = _fileSystem.GetValidFilename(name);
+            // Need to use the [boxset] suffix
+            // If internet metadata is not found, or if xml saving is off there will be no collection.xml
+            // This could cause it to get re-resolved as a plain folder
+            var folderName = _fileSystem.GetValidFilename(name) + " [boxset]";
 
             var parentFolder = GetParentFolder(options.ParentId);
 
@@ -53,7 +56,8 @@ namespace MediaBrowser.Server.Implementations.Collections
                     Parent = parentFolder,
                     DisplayMediaType = "Collection",
                     Path = path,
-                    DontFetchMeta = options.IsLocked
+                    DontFetchMeta = options.IsLocked,
+                    ProviderIds = options.ProviderIds
                 };
 
                 await parentFolder.AddChild(collection, CancellationToken.None).ConfigureAwait(false);

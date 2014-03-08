@@ -43,12 +43,14 @@
 
             html += '<img src="' + imgUrl + '" style="max-width:120px;max-height:180px;" />';
 
-        } 
+        }
         html += '</div>';
 
         html += '<div style="text-align:center;margin-top:4px;max-width:100px;overflow:hidden;height: 32px;">' + item.Name + '</div>';
 
-        html += '<label for="chkRemove' + item.Id + '">Remove</label><input id="chkRemove' + item.Id + '" class="chkRemoveItem" type="checkbox" data-itemid="' + item.Id + '" data-mini="true" />';
+        if (item.ParentId != currentItem.Id) {
+            html += '<label for="chkRemove' + item.Id + '">Remove</label><input id="chkRemove' + item.Id + '" class="chkRemoveItem" type="checkbox" data-itemid="' + item.Id + '" data-mini="true" />';
+        }
 
         html += '</div>';
 
@@ -138,7 +140,15 @@
 
     function renderSearchResults(page, items) {
 
-        var html = items.map(getSearchResultHtml).join('');
+        var existingIds = $('.chkRemoveItem', page).get().map(function (c) {
+            return c.getAttribute('data-itemid');
+        });
+
+        var html = items.filter(function (i) {
+
+            return existingIds.indexOf(i.ItemId) == -1;
+
+        }).map(getSearchResultHtml).join('');
 
         var elem = $('.collectionItemSearchResults', page).html(html).trigger('create');
 
@@ -186,7 +196,7 @@
 
         });
     }
-    
+
     function removeItemsFromCollection(page) {
         var items = $('.chkRemoveItem:checked', page).get().map(function (c) {
 

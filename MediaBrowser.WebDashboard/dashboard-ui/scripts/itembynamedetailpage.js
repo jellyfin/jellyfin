@@ -477,10 +477,11 @@
             }
             else {
 
-                html += LibraryBrowser.getPosterDetailViewHtml({
+                html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    preferBackdrop: shape == "backdrop",
-                    shape: shape
+                    shape: "square",
+                    useAverageAspectRatio: true,
+                    showTitle: true
                 });
             }
 

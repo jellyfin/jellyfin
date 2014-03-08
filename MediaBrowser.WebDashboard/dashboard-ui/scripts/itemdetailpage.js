@@ -577,13 +577,7 @@
 
             } else {
 
-                var shape = "smallPoster";
-
-                if (item.Type == "Season") {
-                    shape = "smallBackdrop";
-                }
-
-                var html;
+                var html = '';
 
                 if (item.Type == "Series" || item.Type == "BoxSet") {
                     html = LibraryBrowser.getPosterViewHtml({
@@ -613,15 +607,7 @@
                         centerText: true
                     });
                 }
-                else {
-                    html = LibraryBrowser.getPosterDetailViewHtml({
-                        items: result.Items,
-                        useAverageAspectRatio: true,
-                        shape: shape,
-                        showParentName: false,
-                        displayAsSpecial: item.Type == "Season" && item.IndexNumber
-                    });
-                }
+
 
                 $('#childrenContent', page).html(html).createPosterItemHoverMenu();
 

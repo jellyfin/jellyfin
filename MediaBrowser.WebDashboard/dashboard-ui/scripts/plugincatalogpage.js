@@ -94,7 +94,7 @@
             }
             html += "</div>";
 
-            html += "<div class='posterItemText' style='color:#000;font-weight:400;font-size:16px;'>";
+            html += "<div class='posterItemText' style='color:#000;font-weight:400;font-size:14px;'>";
 
             var installedPlugin = plugin.isApp ? null : installedPlugins.filter(function (ip) {
                 return ip.Name == plugin.name;
@@ -108,7 +108,7 @@
             
             html += "</div>";
 
-            html += "<div class='posterItemText packageReviewText' style='color:#000;font-weight:400;font-size:15px;'>";
+            html += "<div class='posterItemText packageReviewText' style='color:#000;font-weight:400;font-size:14px;'>";
             html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : "Free";
             html += Dashboard.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
 
