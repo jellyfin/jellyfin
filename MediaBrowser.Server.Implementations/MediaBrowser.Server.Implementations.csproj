@@ -225,6 +225,7 @@
     <Compile Include="Sorting\DateCreatedComparer.cs" />
     <Compile Include="Sorting\DatePlayedComparer.cs" />
     <Compile Include="Sorting\EpisodeCountComparer.cs" />
+    <Compile Include="Sorting\GameSystemComparer.cs" />
     <Compile Include="Sorting\IsFolderComparer.cs" />
     <Compile Include="Sorting\IsUnplayedComparer.cs" />
     <Compile Include="Sorting\MetascoreComparer.cs" />
@@ -233,6 +234,7 @@
     <Compile Include="Sorting\NameComparer.cs" />
     <Compile Include="Sorting\OfficialRatingComparer.cs" />
     <Compile Include="Sorting\PlayCountComparer.cs" />
+    <Compile Include="Sorting\PlayersComparer.cs" />
     <Compile Include="Sorting\PremiereDateComparer.cs" />
     <Compile Include="Sorting\ProductionYearComparer.cs" />
     <Compile Include="Sorting\RandomComparer.cs" />
@@ -246,6 +248,7 @@
     <Compile Include="Persistence\SqliteItemRepository.cs" />
     <Compile Include="Persistence\SqliteUserDataRepository.cs" />
     <Compile Include="Persistence\SqliteUserRepository.cs" />
+    <Compile Include="Sorting\StudioComparer.cs" />
     <Compile Include="Sorting\TrailerCountComparer.cs" />
     <Compile Include="Sorting\VideoBitRateComparer.cs" />
     <Compile Include="Themes\AppThemeManager.cs" />
@@ -376,10 +379,10 @@
       <Link>swagger-ui\swagger-ui.min.js</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="x64\SQLite.Interop.dll">
+    <Content Include="x64\SQLite.Interop.dll" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="x86\SQLite.Interop.dll">
+    <Content Include="x86\SQLite.Interop.dll" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="Localization\Ratings\be.txt" />
