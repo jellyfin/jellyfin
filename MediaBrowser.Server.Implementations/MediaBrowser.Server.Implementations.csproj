@@ -65,12 +65,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.90.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
+    <Reference Include="System.Data.SQLite, Version=1.0.91.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\System.Data.SQLite.x86.1.0.90.0\lib\net45\System.Data.SQLite.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite.Linq" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
-      <HintPath>..\packages\System.Data.SQLite.x86.1.0.90.0\lib\net45\System.Data.SQLite.Linq.dll</HintPath>
+      <HintPath>..\packages\System.Data.SQLite.Core.1.0.91.3\lib\net45\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="Microsoft.CSharp" />
@@ -110,6 +107,7 @@
     </Compile>
     <Compile Include="BdInfo\BdInfoExaminer.cs" />
     <Compile Include="Collections\CollectionManager.cs" />
+    <Compile Include="Collections\CollectionsDynamicFolder.cs" />
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\PercentPlayedDrawer.cs" />
@@ -227,6 +225,7 @@
     <Compile Include="Sorting\DateCreatedComparer.cs" />
     <Compile Include="Sorting\DatePlayedComparer.cs" />
     <Compile Include="Sorting\EpisodeCountComparer.cs" />
+    <Compile Include="Sorting\GameSystemComparer.cs" />
     <Compile Include="Sorting\IsFolderComparer.cs" />
     <Compile Include="Sorting\IsUnplayedComparer.cs" />
     <Compile Include="Sorting\MetascoreComparer.cs" />
@@ -235,6 +234,7 @@
     <Compile Include="Sorting\NameComparer.cs" />
     <Compile Include="Sorting\OfficialRatingComparer.cs" />
     <Compile Include="Sorting\PlayCountComparer.cs" />
+    <Compile Include="Sorting\PlayersComparer.cs" />
     <Compile Include="Sorting\PremiereDateComparer.cs" />
     <Compile Include="Sorting\ProductionYearComparer.cs" />
     <Compile Include="Sorting\RandomComparer.cs" />
@@ -248,6 +248,7 @@
     <Compile Include="Persistence\SqliteItemRepository.cs" />
     <Compile Include="Persistence\SqliteUserDataRepository.cs" />
     <Compile Include="Persistence\SqliteUserRepository.cs" />
+    <Compile Include="Sorting\StudioComparer.cs" />
     <Compile Include="Sorting\TrailerCountComparer.cs" />
     <Compile Include="Sorting\VideoBitRateComparer.cs" />
     <Compile Include="Themes\AppThemeManager.cs" />
@@ -377,6 +378,12 @@
     <Content Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.min.js">
       <Link>swagger-ui\swagger-ui.min.js</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x64\SQLite.Interop.dll" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\SQLite.Interop.dll" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="Localization\Ratings\be.txt" />
   </ItemGroup>

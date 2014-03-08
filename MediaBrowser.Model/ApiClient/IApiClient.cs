@@ -1017,12 +1017,53 @@ namespace MediaBrowser.Model.ApiClient
         Task<QueryResult<ProgramInfoDto>> GetLiveTvProgramsAsync(ProgramQuery query, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Gets the live tv program asynchronous.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{ProgramInfoDto}.</returns>
+        Task<ProgramInfoDto> GetLiveTvProgramAsync(string id, string userId, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the recommended live tv programs asynchronous.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{ProgramInfoDto}}.</returns>
         Task<QueryResult<ProgramInfoDto>> GetRecommendedLiveTvProgramsAsync(RecommendedProgramQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates the live tv timer asynchronous.
+        /// </summary>
+        /// <param name="timer">The timer.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CreateLiveTvTimerAsync(TimerInfoDto timer, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the live tv timer asynchronous.
+        /// </summary>
+        /// <param name="timer">The timer.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateLiveTvTimerAsync(TimerInfoDto timer, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates the live tv series timer asynchronous.
+        /// </summary>
+        /// <param name="timer">The timer.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CreateLiveTvSeriesTimerAsync(SeriesTimerInfoDto timer, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the live tv series timer asynchronous.
+        /// </summary>
+        /// <param name="timer">The timer.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateLiveTvSeriesTimerAsync(SeriesTimerInfoDto timer, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the live tv timer asynchronous.
@@ -1071,5 +1112,27 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task DeleteLiveTvRecordingAsync(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the default timer information.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{SeriesTimerInfoDto}.</returns>
+        Task<SeriesTimerInfoDto> GetDefaultLiveTvTimerInfo(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the live tv guide information.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{GuideInfo}.</returns>
+        Task<GuideInfo> GetLiveTvGuideInfo(CancellationToken cancellationToken);
+        
+        /// <summary>
+        /// Gets the default timer information.
+        /// </summary>
+        /// <param name="programId">The program identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{SeriesTimerInfoDto}.</returns>
+        Task<SeriesTimerInfoDto> GetDefaultLiveTvTimerInfo(string programId, CancellationToken cancellationToken);
     }
 }

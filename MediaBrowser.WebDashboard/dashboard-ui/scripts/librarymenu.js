@@ -92,6 +92,10 @@
             html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
         }
 
+        if (counts.MovieCount || counts.SeriesCount || counts.SongCount || counts.GameCount) {
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'boxsets' ? selectedCssClass : '') + '" href="collections.html">' + (view == 'boxsets' ? selectedHtml : '') + '<span class="viewName">Collections</span></a>';
+        }
+
         $('.viewMenuRemoteControlButton', page).before(html);
     }
 
@@ -130,7 +134,7 @@
 
                     { text: 'Suggested', href: 'moviesrecommended.html' },
                     { text: 'Movies', href: 'movies.html' },
-                    { text: 'Collections', href: 'boxsets.html' },
+                    { text: 'Collections', href: 'collections.html' },
                     { text: 'Trailers', href: 'movietrailers.html' },
                     { text: 'Genres', href: 'moviegenres.html' },
                     { text: 'People', href: 'moviepeople.html' },

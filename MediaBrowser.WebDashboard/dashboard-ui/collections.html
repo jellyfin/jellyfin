@@ -4,29 +4,19 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="boxsetsPage" data-role="page" class="page libraryPage" data-theme="b" data-view="movies">
-
-        <div class="libraryViewNav">
-            <a href="moviesrecommended.html">Suggested</a>
-            <a href="movies.html">Movies</a>
-            <a href="boxsets.html" class="ui-btn-active">Collections</a>
-            <a href="movietrailers.html">Trailers</a>
-            <a href="moviegenres.html">Genres</a>
-            <a href="moviepeople.html">People</a>
-            <a href="moviestudios.html">Studios</a>
-        </div>
+    <div id="boxsetsPage" data-role="page" class="page libraryPage" data-theme="b" data-view="boxsets">
 
         <div class="alphabetPicker">
         </div>
         <div data-role="content">
             <div class="viewSettings">
                 <div class="viewControls">
-                    <button data-mini="true" data-icon="plus" data-inline="true" onclick="$('#newCollectionPanel', $(this).parents('.page')).panel( 'toggle' );">New</button>
                     <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">Sort</button>
                     <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
                 </div>
                 <div class="listTopPaging">
                 </div>
+                <button id="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" class="hide">New</button>
                 <div class="viewSummary"></div>
             </div>
             <div id="items" class="itemsContainer"></div>
@@ -40,15 +30,17 @@
                 <div>
                     <label for="txtNewCollectionName">Name:</label>
                     <input type="text" id="txtNewCollectionName" required="required" />
+                    <div class="fieldDescription">Example: Star Wars Collection</div>
                 </div>
 
+                <br />
                 <div>
                     <label for="chkEnableInternetMetadata">Search the internet for artwork and metadata</label>
                     <input type="checkbox" id="chkEnableInternetMetadata" data-mini="true" />
                 </div>
                 <br />
                 <p>
-                    <button type="submit" data-icon="plus" data-mini="true" data-theme="b">Create</button>
+                    <button id="btnSubmitNewCollection" type="submit" data-icon="plus" data-mini="true" data-theme="b">Create</button>
                 </p>
             </form>
         </div>

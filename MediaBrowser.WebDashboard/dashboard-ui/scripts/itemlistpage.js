@@ -34,14 +34,23 @@
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
             if (view == "Backdrop") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
+
+                html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
+                    shape: "smallBackdrop",
+                    useAverageAspectRatio: true,
+                    showTitle: true,
+                    centerText: true,
                     preferBackdrop: true
                 });
             }
             else if (view == "Poster") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
-                    items: result.Items
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "portrait",
+                    useAverageAspectRatio: true,
+                    showTitle: true,
+                    centerText: true
                 });
             }
 
