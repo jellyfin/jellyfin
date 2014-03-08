@@ -264,7 +264,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public IEnumerable<BaseItem> Children
         {
-            get { return ActualChildren; }
+            get { return ActualChildren.Where(i => !i.IsHidden); }
         }
 
         /// <summary>
@@ -745,9 +745,9 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            AddChildrenToList(user, includeLinkedChildren, list, false, null);
+            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, false, null);
 
-            return list;
+            return hasLinkedChildren ? list.DistinctBy(i => i.Id).ToList() : list;
         }
 
         /// <summary>
@@ -905,13 +905,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>BaseItem.</returns>
         private BaseItem GetLinkedChild(LinkedChild info)
         {
-            if (string.IsNullOrEmpty(info.Path))
-            {
-                throw new ArgumentException("Encountered linked child with empty path.");
-            }
-
-            BaseItem item = null;
-
             // First get using the cached Id
             if (info.ItemId.HasValue)
             {
@@ -920,20 +913,19 @@ namespace MediaBrowser.Controller.Entities
                     return null;
                 }
 
-                item = LibraryManager.GetItemById(info.ItemId.Value);
+                var itemById = LibraryManager.GetItemById(info.ItemId.Value);
+
+                if (itemById != null)
+                {
+                    return itemById;
+                }
             }
 
-            // If still null, search by path
-            if (item == null)
-            {
-                item = LibraryManager.RootFolder.FindByPath(info.Path);
-            }
+            var item = FindLinkedChild(info);
 
             // If still null, log
             if (item == null)
             {
-                Logger.Warn("Unable to find linked item at {0}", info.Path);
-
                 // Don't keep searching over and over
                 info.ItemId = Guid.Empty;
             }
@@ -944,6 +936,43 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return item;
+        }
+
+        private BaseItem FindLinkedChild(LinkedChild info)
+        {
+            if (!string.IsNullOrEmpty(info.Path))
+            {
+                var itemByPath = LibraryManager.RootFolder.FindByPath(info.Path);
+
+                if (itemByPath == null)
+                {
+                    Logger.Warn("Unable to find linked item at path {0}", info.Path);
+                }
+
+                return itemByPath;
+            }
+
+            if (!string.IsNullOrWhiteSpace(info.ItemName) && !string.IsNullOrWhiteSpace(info.ItemType))
+            {
+                return LibraryManager.RootFolder.RecursiveChildren.FirstOrDefault(i =>
+                {
+                    if (string.Equals(i.Name, info.ItemName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.Equals(i.GetType().Name, info.ItemType, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (info.ItemYear.HasValue)
+                            {
+                                return info.ItemYear.Value == (i.ProductionYear ?? -1);
+                            }
+                            return true;
+                        }
+                    }
+
+                    return false;
+                });
+            }
+
+            return null;
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
@@ -1105,6 +1134,11 @@ namespace MediaBrowser.Controller.Entities
         {
             return GetRecursiveChildren(user).Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual)
                 .All(i => i.IsUnplayed(user));
+        }
+
+        public IEnumerable<BaseItem> GetHiddenChildren()
+        {
+            return ActualChildren.Where(i => i.IsHidden);
         }
     }
 }

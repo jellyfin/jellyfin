@@ -480,6 +480,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "dashboardinfo.js",
                                       "dashboardpage.js",
                                       "directorybrowser.js",
+                                      "editcollectionitems.js",
                                       "edititemmetadata.js",
                                       "edititempeople.js",
                                       "edititemimages.js",

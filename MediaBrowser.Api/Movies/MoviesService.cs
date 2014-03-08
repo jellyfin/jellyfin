@@ -5,21 +5,28 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using ServiceStack;
 
-namespace MediaBrowser.Api
+namespace MediaBrowser.Api.Movies
 {
     /// <summary>
-    /// Class GetSimilarTrailers
+    /// Class GetSimilarMovies
     /// </summary>
-    [Route("/Trailers/{Id}/Similar", "GET")]
-    [Api(Description = "Finds movies and trailers similar to a given trailer.")]
-    public class GetSimilarTrailers : BaseGetSimilarItemsFromItem
+    [Route("/Movies/{Id}/Similar", "GET")]
+    [Api(Description = "Finds movies and trailers similar to a given movie.")]
+    public class GetSimilarMovies : BaseGetSimilarItemsFromItem
     {
+        [ApiMember(Name = "IncludeTrailers", Description = "Whether or not to include trailers within the results. Defaults to true.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool IncludeTrailers { get; set; }
+
+        public GetSimilarMovies()
+        {
+            IncludeTrailers = true;
+        }
     }
 
     /// <summary>
-    /// Class TrailersService
+    /// Class MoviesService
     /// </summary>
-    public class TrailersService : BaseApiService
+    public class MoviesService : BaseApiService
     {
         /// <summary>
         /// The _user manager
@@ -39,12 +46,12 @@ namespace MediaBrowser.Api
         private readonly IDtoService _dtoService;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TrailersService"/> class.
+        /// Initializes a new instance of the <see cref="MoviesService"/> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public TrailersService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
+        public MoviesService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
@@ -58,7 +65,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetSimilarTrailers request)
+        public object Get(GetSimilarMovies request)
         {
             var result = SimilarItemsHelper.GetSimilarItemsResult(_userManager,
                 _itemRepo,
@@ -66,7 +73,7 @@ namespace MediaBrowser.Api
                 _userDataRepository,
                 _dtoService,
                 Logger,
-                request, item => item is Movie || item is Trailer,
+                request, item => item is Movie || (item is Trailer && request.IncludeTrailers),
                 SimilarItemsHelper.GetSimiliarityScore);
 
             return ToOptimizedSerializedResultUsingCache(result);

@@ -86,5 +86,8 @@ namespace MediaBrowser.Model.Querying
         public const string VideoBitRate = "VideoBitRate";
         public const string AirTime = "AirTime";
         public const string Metascore = "Metascore";
+        public const string Studio = "Studio";
+        public const string Players = "Players";
+        public const string GameSystem = "GameSystem";
     }
 }

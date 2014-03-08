@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Collections
@@ -16,16 +17,16 @@ namespace MediaBrowser.Controller.Collections
         /// Adds to collection.
         /// </summary>
         /// <param name="collectionId">The collection identifier.</param>
-        /// <param name="itemId">The item identifier.</param>
+        /// <param name="itemIds">The item ids.</param>
         /// <returns>Task.</returns>
-        Task AddToCollection(Guid collectionId, Guid itemId);
+        Task AddToCollection(Guid collectionId, IEnumerable<Guid> itemIds);
 
         /// <summary>
         /// Removes from collection.
         /// </summary>
         /// <param name="collectionId">The collection identifier.</param>
-        /// <param name="itemId">The item identifier.</param>
+        /// <param name="itemIds">The item ids.</param>
         /// <returns>Task.</returns>
-        Task RemoveFromCollection(Guid collectionId, Guid itemId);
+        Task RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds);
     }
 }
