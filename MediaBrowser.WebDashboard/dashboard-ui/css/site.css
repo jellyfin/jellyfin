@@ -683,6 +683,7 @@ h1 .imageLink {
     z-index: 99997;
     color: #fff;
     border: 0 !important;
+    height: 50px;
 }
 
 .footerNotification {
