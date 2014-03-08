@@ -47,6 +47,14 @@ namespace MediaBrowser.Api
         public Guid Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the UserId.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "UserId", Description = "The controlling User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid UserId { get; set; }
+        //TODO IsRequired = false shall be changed to true once the clients has been updated and the new ApiClient is in use
+
+        /// <summary>
         /// Artist, Genre, Studio, Person, or any kind of BaseItem
         /// </summary>
         /// <value>The type of the item.</value>
@@ -89,6 +97,14 @@ namespace MediaBrowser.Api
         public Guid Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the UserId.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "UserId", Description = "The controlling User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid UserId { get; set; }
+        //TODO IsRequired = false shall be changed to true once the clients has been updated and the new ApiClient is in use
+
+        /// <summary>
         /// Artist, Genre, Studio, Person, or any kind of BaseItem
         /// </summary>
         /// <value>The type of the item.</value>
@@ -122,6 +138,14 @@ namespace MediaBrowser.Api
         public Guid Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the UserId.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "UserId", Description = "The controlling User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid UserId { get; set; }
+        //TODO IsRequired = false shall be changed to true once the clients has been updated and the new ApiClient is in use
+
+        /// <summary>
         /// Gets or sets the position to seek to
         /// </summary>
         [ApiMember(Name = "SeekPositionTicks", Description = "The position to seek to.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
@@ -147,6 +171,14 @@ namespace MediaBrowser.Api
         public Guid Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the UserId.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "UserId", Description = "The controlling User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid UserId { get; set; }
+        //TODO IsRequired = false shall be changed to true once the clients has been updated and the new ApiClient is in use
+
+        /// <summary>
         /// Gets or sets the command.
         /// </summary>
         /// <value>The play command.</value>
@@ -164,6 +196,14 @@ namespace MediaBrowser.Api
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the UserId.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "UserId", Description = "The controlling User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid UserId { get; set; }
+        //TODO IsRequired = false shall be changed to true once the clients has been updated and the new ApiClient is in use
 
         [ApiMember(Name = "Text", Description = "The message text.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Text { get; set; }
@@ -270,9 +310,10 @@ namespace MediaBrowser.Api
         }
 
         public void Post(SendPlaystateCommand request)
-        {
+        {            
             var command = new PlaystateRequest
             {
+                UserId = request.UserId,
                 Command = request.Command,
                 SeekPositionTicks = request.SeekPositionTicks
             };
@@ -290,6 +331,7 @@ namespace MediaBrowser.Api
         {
             var command = new BrowseRequest
             {
+                UserId = request.UserId,
                 Context = request.Context,
                 ItemId = request.ItemId,
                 ItemName = request.ItemName,
@@ -321,6 +363,7 @@ namespace MediaBrowser.Api
             var command = new MessageCommand
             {
                 Header = string.IsNullOrEmpty(request.Header) ? "Message from Server" : request.Header,
+                UserId = request.UserId,
                 TimeoutMs = request.TimeoutMs,
                 Text = request.Text
             };
@@ -339,7 +382,7 @@ namespace MediaBrowser.Api
             var command = new PlayRequest
             {
                 ItemIds = request.ItemIds.Split(',').ToArray(),
-
+                UserId = request.UserId,
                 PlayCommand = request.PlayCommand,
                 StartPositionTicks = request.StartPositionTicks
             };
