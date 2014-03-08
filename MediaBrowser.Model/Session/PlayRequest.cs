@@ -1,4 +1,5 @@
 ﻿
+using System;
 namespace MediaBrowser.Model.Session
 {
     /// <summary>
@@ -6,6 +7,11 @@ namespace MediaBrowser.Model.Session
     /// </summary>
     public class PlayRequest
     {
+        public PlayRequest()
+        {
+
+        }
+
         /// <summary>
         /// Gets or sets the item ids.
         /// </summary>
@@ -23,6 +29,12 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The play command.</value>
         public PlayCommand PlayCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the play command.
+        /// </summary>
+        /// <value>The play command.</value>
+        public Guid UserId { get; set; }
     }
 
     /// <summary>
