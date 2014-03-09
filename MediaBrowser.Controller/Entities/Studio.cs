@@ -1,7 +1,6 @@
-﻿using System.Runtime.Serialization;
-using MediaBrowser.Model.Dto;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -10,11 +9,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Studio : BaseItem, IItemByName
     {
-        public Studio()
-        {
-            UserItemCountList = new List<ItemByNameCounts>();
-        }
-
         /// <summary>
         /// Gets the user data key.
         /// </summary>
@@ -23,9 +17,6 @@ namespace MediaBrowser.Controller.Entities
         {
             return "Studio-" + Name;
         }
-
-        [IgnoreDataMember]
-        public List<ItemByNameCounts> UserItemCountList { get; set; }
 
         /// <summary>
         /// Returns the folder containing the item.
@@ -50,6 +41,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+        }
+
+        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
+        {
+            return inputItems.Where(i => i.Studios.Contains(Name, StringComparer.OrdinalIgnoreCase));
         }
     }
 }

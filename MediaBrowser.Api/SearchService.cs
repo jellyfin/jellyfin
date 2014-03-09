@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Drawing;
+﻿using System;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -210,7 +211,8 @@ namespace MediaBrowser.Api
 
                 result.SongCount = songs.Count;
 
-                result.Artists = _libraryManager.GetAllArtists(songs)
+                result.Artists = songs.SelectMany(i => i.AllArtists)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
                 result.AlbumArtist = songs.Select(i => i.AlbumArtist).FirstOrDefault(i => !string.IsNullOrEmpty(i));

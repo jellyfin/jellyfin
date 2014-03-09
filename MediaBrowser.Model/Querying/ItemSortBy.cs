@@ -75,13 +75,6 @@ namespace MediaBrowser.Model.Querying
         public const string IsFolder = "IsFolder";
         public const string IsUnplayed = "IsUnplayed";
         public const string IsPlayed = "IsPlayed";
-        public const string TrailerCount = "TrailerCount";
-        public const string MovieCount = "MovieCount";
-        public const string SeriesCount = "SeriesCount";
-        public const string EpisodeCount = "EpisodeCount";
-        public const string SongCount = "SongCount";
-        public const string AlbumCount = "AlbumCount";
-        public const string MusicVideoCount = "MusicVideoCount";
         public const string SeriesSortName = "SeriesSortName";
         public const string VideoBitRate = "VideoBitRate";
         public const string AirTime = "AirTime";

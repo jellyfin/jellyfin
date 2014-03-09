@@ -68,6 +68,9 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Channels\ChannelItemInfo.cs" />
+    <Compile Include="Channels\IChannel.cs" />
+    <Compile Include="Channels\IChannelManager.cs" />
     <Compile Include="Collections\CollectionCreationOptions.cs" />
     <Compile Include="Collections\ICollectionManager.cs" />
     <Compile Include="Drawing\IImageProcessor.cs" />

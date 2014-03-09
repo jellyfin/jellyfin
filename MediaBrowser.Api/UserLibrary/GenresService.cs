@@ -81,10 +81,10 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
 
-                return DtoService.GetBaseItemDto(item, fields.ToList(), user);
+                return DtoService.GetItemByNameDto(item, fields.ToList(), user);
             }
 
-            return DtoService.GetBaseItemDto(item, fields.ToList());
+            return DtoService.GetItemByNameDto(item, fields.ToList());
         }
 
         /// <summary>
@@ -111,11 +111,6 @@ namespace MediaBrowser.Api.UserLibrary
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name => LibraryManager.GetGenre(name));
-        }
-
-        protected override IEnumerable<BaseItem> GetLibraryItems(Genre item, IEnumerable<BaseItem> libraryItems)
-        {
-            return libraryItems.Where(i => !(i is Game) && !(i is IHasMusicGenres) && i.Genres.Contains(item.Name, StringComparer.OrdinalIgnoreCase));
         }
     }
 }

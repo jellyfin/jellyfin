@@ -102,7 +102,9 @@ namespace MediaBrowser.Server.Implementations.Library
             if (query.IncludeArtists)
             {
                 // Find artists
-                var artists = _libraryManager.GetAllArtists(items)
+                var artists = items.OfType<Audio>()
+                    .SelectMany(i => i.AllArtists)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
                 foreach (var item in artists)

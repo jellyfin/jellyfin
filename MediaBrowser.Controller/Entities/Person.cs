@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dto;
+using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -10,19 +10,11 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Person : BaseItem, IItemByName, IHasLookupInfo<PersonLookupInfo>
     {
-        public Person()
-        {
-            UserItemCountList = new List<ItemByNameCounts>();
-        }
-
         /// <summary>
         /// Gets or sets the place of birth.
         /// </summary>
         /// <value>The place of birth.</value>
         public string PlaceOfBirth { get; set; }
-
-        [IgnoreDataMember]
-        public List<ItemByNameCounts> UserItemCountList { get; set; }
         
         /// <summary>
         /// Gets the user data key.
@@ -61,6 +53,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+        }
+
+        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
+        {
+            return inputItems.Where(i => i.People.Any(p => string.Equals(p.Name, Name, StringComparison.OrdinalIgnoreCase)));
         }
     }
 

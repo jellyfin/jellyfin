@@ -1,8 +1,6 @@
 ﻿using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -69,10 +67,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             var numComplete = 0;
 
-            var userLibraries = _userManager.Users
-                .Select(i => new Tuple<Guid, List<IHasArtist>>(i.Id, i.RootFolder.GetRecursiveChildren(i).OfType<IHasArtist>().ToList()))
-                .ToList();
-
             var numArtists = allArtists.Count;
 
             foreach (var artist in allArtists)
@@ -91,11 +85,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                         .ToList();
                 }
 
-                foreach (var lib in userLibraries)
-                {
-                    SetItemCounts(artist, lib.Item1, lib.Item2);
-                }
-
                 numComplete++;
                 double percent = numComplete;
                 percent /= numArtists;
@@ -108,37 +97,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         }
 
         /// <summary>
-        /// Sets the item counts.
-        /// </summary>
-        /// <param name="artist">The artist.</param>
-        /// <param name="userId">The user id.</param>
-        /// <param name="allItems">All items.</param>
-        private void SetItemCounts(MusicArtist artist, Guid? userId, IEnumerable<IHasArtist> allItems)
-        {
-            var name = artist.Name;
-
-            var items = allItems
-                .Where(i => i.HasArtist(name))
-                .ToList();
-
-            var counts = new ItemByNameCounts
-            {
-                TotalCount = items.Count,
-
-                SongCount = items.OfType<Audio>().Count(),
-
-                AlbumCount = items.OfType<MusicAlbum>().Count(),
-
-                MusicVideoCount = items.OfType<MusicVideo>().Count()
-            };
-
-            if (userId.HasValue)
-            {
-                artist.SetItemByNameCounts(userId.Value, counts);
-            }
-        }
-
-        /// <summary>
         /// Gets all artists.
         /// </summary>
         /// <param name="allSongs">All songs.</param>
@@ -147,7 +105,8 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task{Artist[]}.</returns>
         private async Task<List<MusicArtist>> GetAllArtists(IEnumerable<Audio> allSongs, CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var allArtists = _libraryManager.GetAllArtists(allSongs)
+            var allArtists = allSongs.SelectMany(i => i.AllArtists)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
             var returnArtists = new List<MusicArtist>(allArtists.Count);
