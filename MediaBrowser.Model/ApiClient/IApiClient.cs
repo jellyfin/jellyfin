@@ -572,17 +572,18 @@ namespace MediaBrowser.Model.ApiClient
         /// Instructs antoher client to browse to a library item.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
+        /// <param name="userId">The controlling user id.</param>
         /// <param name="itemId">The id of the item to browse to.</param>
         /// <param name="itemName">The name of the item to browse to.</param>
         /// <param name="itemType">The type of the item to browse to.</param>
         /// <param name="context">Optional ui context (movies, music, tv, games, etc). The client is free to ignore this.</param>
         /// <returns>Task.</returns>
-        Task SendBrowseCommandAsync(string sessionId, string itemId, string itemName, string itemType, string context);
+        Task SendBrowseCommandAsync(string sessionId, string userId, string itemId, string itemName, string itemType, string context);
 
         /// <summary>
         /// Sends the playstate command async.
         /// </summary>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="sessionId">The session id.</param>        
         /// <param name="request">The request.</param>
         /// <returns>Task.</returns>
         Task SendPlaystateCommandAsync(string sessionId, PlaystateRequest request);
