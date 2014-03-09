@@ -1,20 +1,13 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Linq;
 
 namespace MediaBrowser.Controller.LiveTv
 {
     public class LiveTvChannel : BaseItem, IItemByName
     {
-        public LiveTvChannel()
-        {
-            UserItemCountList = new List<ItemByNameCounts>();
-        }
-
         /// <summary>
         /// Gets the user data key.
         /// </summary>
@@ -23,9 +16,6 @@ namespace MediaBrowser.Controller.LiveTv
         {
             return GetClientTypeName() + "-" + Name;
         }
-
-        [IgnoreDataMember]
-        public List<ItemByNameCounts> UserItemCountList { get; set; }
 
         /// <summary>
         /// Returns the folder containing the item.
@@ -118,6 +108,11 @@ namespace MediaBrowser.Controller.LiveTv
         public override string GetClientTypeName()
         {
             return "Channel";
+        }
+
+        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
+        {
+            return new List<BaseItem>();
         }
     }
 }

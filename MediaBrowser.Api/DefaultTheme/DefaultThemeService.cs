@@ -194,8 +194,10 @@ namespace MediaBrowser.Api.DefaultTheme
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
-            var artists = _libraryManager.GetAllArtists(allItems)
-            .Randomize()
+            var artists = allItems.OfType<Audio>()
+                .SelectMany(i => i.AllArtists)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Randomize()
             .Select(i =>
             {
                 try

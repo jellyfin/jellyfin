@@ -1,7 +1,6 @@
-﻿using System.Runtime.Serialization;
-using MediaBrowser.Model.Dto;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -10,14 +9,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Year : BaseItem, IItemByName
     {
-        public Year()
-        {
-            UserItemCountList = new List<ItemByNameCounts>();
-        }
-
-        [IgnoreDataMember]
-        public List<ItemByNameCounts> UserItemCountList { get; set; }
-
         /// <summary>
         /// Gets the user data key.
         /// </summary>
@@ -50,6 +41,20 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+        }
+
+        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
+        {
+            int year;
+
+            var usCulture = new CultureInfo("en-US"); 
+            
+            if (!int.TryParse(Name, NumberStyles.Integer, usCulture, out year))
+            {
+                return inputItems;
+            }
+
+            return inputItems.Where(i => i.ProductionYear.HasValue && i.ProductionYear.Value == year);
         }
     }
 }

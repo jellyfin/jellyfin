@@ -85,10 +85,10 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
 
-                return DtoService.GetBaseItemDto(item, fields.ToList(), user);
+                return DtoService.GetItemByNameDto(item, fields.ToList(), user);
             }
 
-            return DtoService.GetBaseItemDto(item, fields.ToList());
+            return DtoService.GetItemByNameDto(item, fields.ToList());
         }
 
         /// <summary>
@@ -111,7 +111,10 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
         protected override IEnumerable<MusicArtist> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
-            return LibraryManager.GetAllArtists(items)
+            return items
+                .OfType<Audio>()
+                .SelectMany(i => i.AllArtists)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name =>
                 {
                     try
@@ -125,11 +128,6 @@ namespace MediaBrowser.Api.UserLibrary
                     }
 
                 }).Where(i => i != null);
-        }
-
-        protected override IEnumerable<BaseItem> GetLibraryItems(MusicArtist item, IEnumerable<BaseItem> libraryItems)
-        {
-            return libraryItems.OfType<IHasArtist>().Where(i => i.HasArtist(item.Name)).Cast<BaseItem>();
         }
     }
 }
