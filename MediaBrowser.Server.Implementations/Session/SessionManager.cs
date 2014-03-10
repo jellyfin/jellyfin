@@ -175,19 +175,19 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public async Task ReportSessionEnded(Guid sessionId)
         {
-            var session = GetSession(sessionId);
-
-            if (session == null)
-            {
-                throw new ArgumentException("Session not found");
-            }
-
-            var key = GetSessionKey(session.Client, session.ApplicationVersion, session.DeviceId);
-
             await _sessionLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 
             try
             {
+                var session = GetSession(sessionId);
+
+                if (session == null)
+                {
+                    throw new ArgumentException("Session not found");
+                }
+
+                var key = GetSessionKey(session.Client, session.ApplicationVersion, session.DeviceId);
+
                 SessionInfo removed;
 
                 if (_activeConnections.TryRemove(key, out removed))
