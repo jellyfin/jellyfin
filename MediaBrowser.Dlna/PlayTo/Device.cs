@@ -76,8 +76,8 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 _transportState = value;
 
-                if (value == TRANSPORTSTATE.PLAYING || value == TRANSPORTSTATE.STOPPED)
-                    NotifyPlaybackChanged(value == TRANSPORTSTATE.STOPPED);
+                if (value == "PLAYING" || value == "STOPPED")
+                    NotifyPlaybackChanged(value == "STOPPED");
             }
         }
 
@@ -85,7 +85,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             get
             {
-                return TransportState == TRANSPORTSTATE.PLAYING;
+                return TransportState == "PLAYING";
             }
         }
 
@@ -93,7 +93,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             get
             {
-                return (TransportState == TRANSPORTSTATE.TRANSITIONING);
+                return (TransportState == "TRANSITIONING");
             }
         }
 
@@ -101,7 +101,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             get
             {
-                return TransportState == TRANSPORTSTATE.PAUSED || TransportState == TRANSPORTSTATE.PAUSED_PLAYBACK;
+                return TransportState == "PAUSED" || TransportState == "PAUSED_PLAYBACK";
             }
         }
 
@@ -109,7 +109,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             get
             {
-                return TransportState == TRANSPORTSTATE.STOPPED;
+                return (TransportState == "STOPPED");
             }
         }
 
@@ -127,39 +127,23 @@ namespace MediaBrowser.Dlna.PlayTo
             _logger = logger;
         }
 
-        private int GetPlaybackTimerIntervalMs()
+        private int GetTimerIntervalMs()
         {
-            return 2000;
-        }
-
-        private int GetInactiveTimerIntervalMs()
-        {
-            return 20000;
+            return 10000;
         }
 
         public void Start()
         {
             UpdateTime = DateTime.UtcNow;
 
-            var interval = GetPlaybackTimerIntervalMs();
+            var interval = GetTimerIntervalMs();
 
             _timer = new Timer(TimerCallback, null, interval, interval);
         }
 
         private void RestartTimer()
         {
-            var interval = GetPlaybackTimerIntervalMs();
-
-            _timer.Change(interval, interval);
-        }
-
-
-        /// <summary>
-        /// Restarts the timer in inactive mode.
-        /// </summary>
-        private void RestartTimerInactive()
-        {
-            var interval = GetInactiveTimerIntervalMs();
+            var interval = GetTimerIntervalMs();
 
             _timer.Change(interval, interval);
         }
@@ -246,8 +230,10 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             StopTimer();
 
-            await SetStop().ConfigureAwait(false);
+            TransportState = "STOPPED";
             CurrentId = "0";
+
+            await Task.Delay(50).ConfigureAwait(false);
 
             var command = AvCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
             if (command == null)
@@ -275,7 +261,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 await SetPlay().ConfigureAwait(false);
             }
 
-            _lapsCount = SetLapsCountToFull();
+            _count = 5;
             RestartTimer();
 
             return true;
@@ -336,7 +322,7 @@ namespace MediaBrowser.Dlna.PlayTo
             var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
 
-            _lapsCount = SetLapsCountToFull();
+            _count = 5;
             return true;
         }
 
@@ -351,7 +337,8 @@ namespace MediaBrowser.Dlna.PlayTo
             var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
 
-            await Task.Delay(50).ConfigureAwait(false);            
+            await Task.Delay(50).ConfigureAwait(false);
+            _count = 4;
             return true;
         }
 
@@ -374,14 +361,9 @@ namespace MediaBrowser.Dlna.PlayTo
         #endregion
 
         #region Get data
-        
-        private int GetLapsCount()
-        {
-            // No need to get all data every lap, just every X time. 
-            return 10;
-        }
 
-        int _lapsCount = 0;
+        // TODO: What is going on here
+        int _count = 5;
 
         private async void TimerCallback(object sender)
         {
@@ -392,41 +374,30 @@ namespace MediaBrowser.Dlna.PlayTo
 
             try
             {
-                await GetTransportInfo().ConfigureAwait(false);
+                var hasTrack = await GetPositionInfo().ConfigureAwait(false);
                 
-                //If we're not playing anything no need to get additional data
-                if (TransportState != TRANSPORTSTATE.STOPPED)
+                // TODO: Why make these requests if hasTrack==false?
+                if (_count > 5)
                 {
-                    var hasTrack = await GetPositionInfo().ConfigureAwait(false);
-
-                    // TODO: Why make these requests if hasTrack==false?
-                    // TODO ANSWER Some vendors don't include track in GetPositionInfo, use GetMediaInfo instead.
-                    if (_lapsCount > GetLapsCount())
+                    await GetTransportInfo().ConfigureAwait(false);
+                    if (!hasTrack)
                     {
-                        if (!hasTrack)
-                        {
-                            await GetMediaInfo().ConfigureAwait(false);
-                        }
-                        await GetVolume().ConfigureAwait(false);
-                        _lapsCount = 0;
+                        await GetMediaInfo().ConfigureAwait(false);
                     }
-                }               
+                    await GetVolume().ConfigureAwait(false);
+                    _count = 0;
+                }
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error updating device info", ex);
             }
 
-            _lapsCount++;
-
+            _count++;
             if (_disposed)
                 return;
 
-            //If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
-            if (TransportState != TRANSPORTSTATE.STOPPED)
-                RestartTimer();
-            else
-                RestartTimerInactive();
+            RestartTimer();
         }
 
         private async Task GetVolume()
@@ -776,15 +747,5 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             return String.Format("{0} - {1}", Properties.Name, Properties.BaseUrl);
         }
-
-        private class TRANSPORTSTATE
-        {
-            public const string STOPPED = "STOPPED";
-            public const string PLAYING = "PLAYING";
-            public const string TRANSITIONING = "TRANSITIONING";
-            public const string PAUSED_PLAYBACK = "PAUSED_PLAYBACK";
-            public const string PAUSED = "PAUSED";
-        }
-       
     }
 }
