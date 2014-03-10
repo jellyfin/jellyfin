@@ -375,7 +375,7 @@ namespace MediaBrowser.Dlna.PlayTo
             try
             {
                 var hasTrack = await GetPositionInfo().ConfigureAwait(false);
-
+                
                 // TODO: Why make these requests if hasTrack==false?
                 if (_count > 5)
                 {
