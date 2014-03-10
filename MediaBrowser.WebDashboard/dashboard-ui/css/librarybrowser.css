@@ -627,7 +627,7 @@ a.itemTag:hover {
     }
 }
 
-@media all and (max-width: 750px) {
+@media all and (max-width: 800px) {
 
     .libraryViewNav {
         display: none !important;
@@ -638,7 +638,7 @@ a.itemTag:hover {
     }
 }
 
-@media all and (min-width: 750px) {
+@media all and (min-width: 800px) {
 
     .libraryMenuButton {
         display: none;

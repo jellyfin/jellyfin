@@ -396,7 +396,7 @@
             <div data-role="content">
 
                 <form class="popupIdentifyForm" style="max-width: initial;">
-                    
+
                     <p>Enter one or more search criteria.</p>
 
                     <div>
@@ -414,6 +414,9 @@
                     <p>
                         <button type="submit" data-theme="b" data-icon="search" data-mini="true">
                             Search
+                        </button>
+                        <button type="button" data-icon="delete" data-mini="true" onclick="$(this).parents('.popup').popup('close');">
+                            Cancel
                         </button>
                     </p>
                 </form>

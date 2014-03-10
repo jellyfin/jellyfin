@@ -98,7 +98,7 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             if (dontFetchMetaChanged && item.IsFolder)
             {
@@ -107,7 +107,7 @@ namespace MediaBrowser.Api
                 foreach (var child in folder.RecursiveChildren.ToList())
                 {
                     child.DontFetchMeta = newLockData;
-                    await _libraryManager.UpdateItem(child, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                    await child.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
                 }
             }
         }
@@ -125,7 +125,7 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(UpdateArtist request)
@@ -141,7 +141,7 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(UpdateStudio request)
@@ -157,7 +157,7 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(UpdateMusicGenre request)
@@ -173,7 +173,7 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(UpdateGameGenre request)
@@ -189,7 +189,7 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(UpdateGenre request)
@@ -205,7 +205,7 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         private void UpdateItem(BaseItemDto request, BaseItem item)
