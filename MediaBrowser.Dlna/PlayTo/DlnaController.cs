@@ -17,7 +17,7 @@ using Timer = System.Timers.Timer;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
-    public class PlayToController : ISessionController
+    public class PlayToController : ISessionController, IDisposable
     {
         private Device _device;
         private BaseItem _currentItem = null;
