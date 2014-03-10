@@ -275,7 +275,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 await SetPlay().ConfigureAwait(false);
             }
 
-            _lapsCount = SetLapsCountToFull();
+            _lapsCount = GetLapsCount();
             RestartTimer();
 
             return true;
@@ -336,7 +336,7 @@ namespace MediaBrowser.Dlna.PlayTo
             var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
 
-            _lapsCount = SetLapsCountToFull();
+            _lapsCount = GetLapsCount();
             return true;
         }
 
