@@ -81,7 +81,13 @@ namespace MediaBrowser.Server.Implementations.Collections
                     throw new ArgumentNullException("parentId");
                 }
 
-                return _libraryManager.GetItemById(parentId.Value) as Folder;
+                var folder = _libraryManager.GetItemById(parentId.Value) as Folder;
+
+                // Find an actual physical folder
+                if (folder is CollectionFolder)
+                {
+                    return _libraryManager.RootFolder.Children.OfType<Folder>().First(i => folder.PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase));
+                }
             }
 
             return _libraryManager.RootFolder.Children.OfType<ManualCollectionsFolder>().FirstOrDefault() ??
