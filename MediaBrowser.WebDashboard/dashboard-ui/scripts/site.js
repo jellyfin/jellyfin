@@ -730,6 +730,10 @@ var Dashboard = {
             href: "autoorganizelog.html",
             selected: page.hasClass("organizePage")
         }, {
+            name: "DLNA",
+            href: "dlnasettings.html",
+            selected: page.hasClass("dlnaPage")
+        }, {
             name: "Live TV",
             href: "livetvstatus.html",
             selected: page.hasClass("liveTvSettingsPage")
