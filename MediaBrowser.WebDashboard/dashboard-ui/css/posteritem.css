@@ -336,3 +336,57 @@
             height: 184px;
         }
 }
+/********************/
+.ribbon-wrapper {
+    display: none;
+    width: 50px;
+    height: 50px;
+    overflow: hidden;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 999;
+}
+.ribbon {
+    font: bold 11px Sans-Serif;
+    color: #333;
+    text-align: center;
+    color: #eee;
+    text-shadow: rgba(51, 51, 51, 0.5) 0px 1px 0px;
+    -webkit-transform: rotate(-45deg);
+    -moz-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    -o-transform: rotate(-45deg);
+    position: relative;
+    padding: 2px 0;
+    right: 15px;
+    top: 5px;
+    width: 60px;
+    -webkit-box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
+}
+.ribbon-3d {
+    background-color: #3344ff;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#BFDC7A), to(#ff0033));
+    background-image: -webkit-linear-gradient(top, #3344ff, #ff0033);
+    background-image: -moz-linear-gradient(top, #3344ff, #ff0033);
+    background-image: -ms-linear-gradient(top, #3344ff, #ff0033);
+    background-image: -o-linear-gradient(top, #3344ff, #ff0033);
+}
+.ribbon-blue {
+    background-color: #1199ff;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#1199ff), to(#3333ff));
+    background-image: -webkit-linear-gradient(top, #1199ff, #3333ff);
+    background-image: -moz-linear-gradient(top, #1199ff, #3333ff);
+    background-image: -ms-linear-gradient(top, #1199ff, #3333ff);
+    background-image: -o-linear-gradient(top, #1199ff, #3333ff);
+}
+.ribbon-red {
+    background-color: #ff3333;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#ff3333), to(#992233));
+    background-image: -webkit-linear-gradient(top, #ff3333, #992233);
+    background-image: -moz-linear-gradient(top, #ff3333, #992233);
+    background-image: -ms-linear-gradient(top, #ff3333, #992233);
+    background-image: -o-linear-gradient(top, #ff3333, #992233);
+}
