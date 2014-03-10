@@ -131,6 +131,14 @@ namespace MediaBrowser.Dlna.PlayTo
 
             ((Timer)sender).Stop();
 
+
+            if (!IsSessionActive)
+            {
+                //Session is inactive, mark it for Disposal and don't start the elapsed timer.
+                await _sessionManager.ReportSessionEnded(this._session.Id);
+                return;
+            }
+
             await ReportProgress().ConfigureAwait(false);
 
             if (!_disposed && IsSessionActive)
@@ -479,3 +487,4 @@ namespace MediaBrowser.Dlna.PlayTo
         }
     }
 }
+
