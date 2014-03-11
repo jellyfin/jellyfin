@@ -993,12 +993,14 @@
                     self.setCurrentTime(self.getCurrentTicks(this), item, true);
                 }
 
-            }).on("error", function () {
+            }).on("error", function (e) {
 
                 $("html").css("cursor", "default");
+                $(".ui-loader").hide();
+                self.resetEnhancements();
 
                 var errorCode = this.error ? this.error.code : '';
-                console.log('Html5 Video error code: ' + errorCode, this.error);
+                console.log('Html5 Video error code: ' + errorCode, JSON.stringify(e));
 
                 var errorMsg = 'There was an error playing the video.';
 
