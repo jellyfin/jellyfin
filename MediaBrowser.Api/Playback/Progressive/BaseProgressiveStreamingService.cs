@@ -214,12 +214,16 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (request.Static)
             {
-                return ResultFactory.GetStaticFileResult(Request, state.MediaPath, FileShare.Read, responseHeaders, isHeadRequest);
+                var contentType = state.GetMimeType(state.MediaPath);
+
+                return ResultFactory.GetStaticFileResult(Request, state.MediaPath, contentType, FileShare.Read, responseHeaders, isHeadRequest);
             }
 
             if (outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive))
             {
-                return ResultFactory.GetStaticFileResult(Request, outputPath, FileShare.Read, responseHeaders, isHeadRequest);
+                var contentType = state.GetMimeType(outputPath);
+
+                return ResultFactory.GetStaticFileResult(Request, outputPath, contentType, FileShare.Read, responseHeaders, isHeadRequest);
             }
 
             return GetStreamResult(state, responseHeaders, isHeadRequest).Result;
@@ -287,7 +291,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             responseHeaders["Accept-Ranges"] = "none";
 
-            var contentType = MimeTypes.GetMimeType(outputPath);
+            var contentType = state.GetMimeType(outputPath);
 
             // Headers only
             if (isHeadRequest)

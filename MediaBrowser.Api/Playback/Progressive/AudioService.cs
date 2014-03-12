@@ -102,7 +102,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             const string vn = " -vn";
 
-            var threads = GetNumberOfThreads(false);
+            var threads = GetNumberOfThreads(state, false);
 
             var inputModifier = GetInputModifier(state);
 

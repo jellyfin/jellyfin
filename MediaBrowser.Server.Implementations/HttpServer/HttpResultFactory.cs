@@ -306,6 +306,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 throw new ArgumentNullException("path");
             }
 
+            return GetStaticFileResult(requestContext, path, MimeTypes.GetMimeType(path), fileShare, responseHeaders, isHeadRequest);
+        }
+
+        public object GetStaticFileResult(IRequest requestContext, string path, string contentType,
+            FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null,
+            bool isHeadRequest = false)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             if (fileShare != FileShare.Read && fileShare != FileShare.ReadWrite)
             {
                 throw new ArgumentException("FileShare must be either Read or ReadWrite");
@@ -315,7 +327,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var cacheKey = path + dateModified.Ticks;
 
-            return GetStaticResult(requestContext, cacheKey.GetMD5(), dateModified, null, MimeTypes.GetMimeType(path), () => Task.FromResult(GetFileStream(path, fileShare)), responseHeaders, isHeadRequest);
+            return GetStaticResult(requestContext, cacheKey.GetMD5(), dateModified, null, contentType, () => Task.FromResult(GetFileStream(path, fileShare)), responseHeaders, isHeadRequest);
         }
 
         /// <summary>
