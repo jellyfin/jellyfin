@@ -1,4 +1,5 @@
 ﻿
+using System;
 namespace MediaBrowser.Model.Session
 {
     /// <summary>
@@ -34,6 +35,8 @@ namespace MediaBrowser.Model.Session
 
     public class PlaystateRequest
     {
+        public Guid UserId { get; set; }
+
         public PlaystateCommand Command { get; set; }
 
         public long? SeekPositionTicks { get; set; }
