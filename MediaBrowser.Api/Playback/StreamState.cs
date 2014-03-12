@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using System.Collections.Generic;
 using System.IO;
@@ -72,5 +73,20 @@ namespace MediaBrowser.Api.Playback
         public string InputVideoCodec { get; set; }
 
         public string InputAudioCodec { get; set; }
+
+        public string GetMimeType(string outputPath)
+        {
+            if (!string.IsNullOrWhiteSpace(Request.ForcedMimeType))
+            {
+                if (VideoRequest == null)
+                {
+                    return "audio/" + Request.ForcedMimeType;
+                }
+
+                return "video/" + Request.ForcedMimeType;
+            }
+
+            return MimeTypes.GetMimeType(outputPath);
+        }
     }
 }

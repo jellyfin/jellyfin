@@ -173,14 +173,6 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             if (!overwriteExisting)
             {
-                if (fileExists || otherDuplicatePaths.Count > 0)
-                {
-                    result.Status = FileSortingStatus.SkippedExisting;
-                    result.StatusMessage = string.Empty;
-                    result.DuplicatePaths = otherDuplicatePaths;
-                    return;
-                }
-
                 if (options.CopyOriginalFile && fileExists && IsSameEpisode(sourcePath, newPath))
                 {
                     _logger.Info("File {0} already copied to new path {1}, stopping organization", sourcePath, newPath);
@@ -188,9 +180,15 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     result.StatusMessage = string.Empty;
                     return;
                 }
+                
+                if (fileExists || otherDuplicatePaths.Count > 0)
+                {
+                    result.Status = FileSortingStatus.SkippedExisting;
+                    result.StatusMessage = string.Empty;
+                    result.DuplicatePaths = otherDuplicatePaths;
+                    return;
+                }
             }
-
-   
 
             PerformFileSorting(options, result);
 

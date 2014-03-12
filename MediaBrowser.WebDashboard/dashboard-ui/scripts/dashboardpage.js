@@ -192,7 +192,7 @@
             }
             html += "<div class='posterItemText posterItemProgress' style='" + progressStyle + "'>";
 
-            html += '<progress class="itemProgressBar" min="0" max="100" value="' + DashboardPage.getPlaybackProgress(connection) + '"></progress>';
+            html += '<progress class="itemProgressBar" min="0" max="100" value="' + DashboardPage.getPlaybackProgress(connection) + '" style="opacity:.9;"></progress>';
             html += "</div>";
             html += "</div>";
 
@@ -306,7 +306,7 @@
     getSessionItemText: function (connection) {
 
         var html = '';
-
+        
         html += '<div class="posterItemText">';
         html += DashboardPage.getUsersHtml(connection);
         html += '</div>';
@@ -418,28 +418,6 @@
         }
 
         return "";
-    },
-
-    getNowPlayingText: function (connection, item) {
-
-        var html = "";
-
-        if (item) {
-
-            html += "<div><a href='itemdetails.html?id=" + item.Id + "'>" + item.Name + "</a></div>";
-
-            html += "<div>";
-
-            if (item.RunTimeTicks) {
-                html += Dashboard.getDisplayTime(connection.NowPlayingPositionTicks || 0) + " / ";
-
-                html += Dashboard.getDisplayTime(item.RunTimeTicks);
-            }
-
-            html += "</div>";
-        }
-
-        return html;
     },
 
     renderRunningTasks: function (dashboardInfo) {

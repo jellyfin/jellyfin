@@ -201,7 +201,7 @@ namespace MediaBrowser.Providers.All
             PopulateBackdrops(images, files, imagePrefix, "background", "background-", ImageType.Backdrop);
             PopulateBackdrops(images, files, imagePrefix, "art", "art-", ImageType.Backdrop);
 
-            var extraFanartFolder = files.OfType<DirectoryInfo>()
+            var extraFanartFolder = files
                 .FirstOrDefault(i => string.Equals(i.Name, "extrafanart", StringComparison.OrdinalIgnoreCase));
 
             if (extraFanartFolder != null)
