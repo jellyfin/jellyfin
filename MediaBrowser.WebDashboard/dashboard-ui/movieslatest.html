@@ -4,11 +4,11 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="moviesRecommendedPage" data-role="page" class="page libraryPage" data-theme="b" data-view="movies">
+    <div id="moviesLatestPage" data-role="page" class="page libraryPage" data-theme="b" data-view="movies">
 
         <div class="libraryViewNav">
-            <a href="#" class="ui-btn-active">Suggested</a>
-            <a href="movieslatest.html">Latest</a>
+            <a href="moviesrecommended.html">Suggested</a>
+            <a href="#" class="ui-btn-active">Latest</a>
             <a href="movies.html">Movies</a>
             <a href="collections.html">Collections</a>
             <a href="movietrailers.html">Trailers</a>
@@ -22,14 +22,16 @@
             <table class="ehsContent">
                 <tr>
                     <td>
-                        <div id="resumableSection" style="display: none;">
-                            <h1 class="listHeader">Resume</h1>
+                        <h1 class="listHeader">Latest Movies</h1>
 
-                            <div id="resumableItems">
-                            </div>
+                        <div id="recentlyAddedItems">
                         </div>
 
-                        <div class="recommendations">
+                        <div id="trailerSection" style="display: none;">
+                            <h1 class="listHeader">Latest Trailers</h1>
+
+                            <div id="trailerItems">
+                            </div>
                         </div>
                     </td>
                 </tr>

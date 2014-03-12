@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Audio",
         Recursive: true,
-        Fields: "DateCreated,AudioInfo,ParentId",
+        Fields: "AudioInfo,ParentId",
         Limit: 200,
         StartIndex: 0
     };

@@ -928,7 +928,7 @@ a.itemTag:hover {
     border: 0;
     margin: 0;
     height: 14px;
-    border: 1px solid #222;
+    border: 0 solid #222;
     border-radius: 0;
     width: 50px;
     margin-right: 5px;

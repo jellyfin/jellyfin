@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Series",
         Recursive: true,
-        Fields: "SeriesInfo,DateCreated,PrimaryImageAspectRatio",
+        Fields: "SeriesInfo,PrimaryImageAspectRatio",
         StartIndex: 0
     };
 

@@ -330,6 +330,10 @@ h1 .imageLink {
     height: 30px;
 }
 
+.activeDevicesCollapsible .ui-collapsible-content {
+    padding: .5em .5em !important;
+}
+
 @media all and (min-width: 450px) {
 
     .currentUsername {

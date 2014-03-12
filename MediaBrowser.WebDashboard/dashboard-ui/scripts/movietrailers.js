@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Trailer",
         Recursive: true,
-        Fields: "DateCreated,PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio",
         StartIndex: 0
     };
 

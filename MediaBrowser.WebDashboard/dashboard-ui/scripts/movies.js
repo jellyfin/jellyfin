@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Movie",
         Recursive: true,
-        Fields: "DateCreated,PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio",
         StartIndex: 0
     };
 

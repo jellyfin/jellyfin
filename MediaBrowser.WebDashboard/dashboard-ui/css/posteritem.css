@@ -103,7 +103,7 @@
     .posterItemTextOverlay .posterItemText {
         background-color: transparent;
         padding-left: 5px;
-        padding: 0 5px 5px;
+        padding: 0 5px 3px;
     }
 
         .posterItemTextOverlay .posterItemText:first-child {
@@ -171,7 +171,7 @@
 .posterItemProgress .itemProgressBar {
     height: 10px;
     width: 100%;
-    opacity: .6;
+    opacity: .7;
 }
 
 .miniPosterItemProgress {
@@ -183,6 +183,22 @@
         height: 8px;
         opacity: 1;
     }
+
+.sessionPosterItem .posterItemText:not(.posterItemName) {
+    color: #000;
+    text-align: left;
+}
+
+.sessionPosterItem .posterItemName {
+    color: #fff!important;
+    font-weight: normal !important;
+}
+
+.sessionPosterItem .posterItemDefaultText {
+    color: #000!important;
+    font-weight: normal !important;
+    top: 42%;
+}
 
 @media all and (max-width: 600px) {
 

@@ -307,6 +307,57 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary);
 
+            var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;
+
+            var thumbItem = item.HasImage(ImageType.Thumb) ? item : null;
+
+            if (thumbItem == null)
+            {
+                var episode = item as Episode;
+
+                if (episode != null)
+                {
+                    var series = episode.Series;
+
+                    if (series != null && series.HasImage(ImageType.Thumb))
+                    {
+                        thumbItem = series;
+                    }
+                }
+            }
+
+            if (backropItem == null)
+            {
+                var episode = item as Episode;
+
+                if (episode != null)
+                {
+                    var series = episode.Series;
+
+                    if (series != null && series.HasImage(ImageType.Backdrop))
+                    {
+                        backropItem = series;
+                    }
+                }
+            }
+
+            if (thumbItem == null)
+            {
+                thumbItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Thumb));
+            }
+
+            if (thumbItem != null)
+            {
+                info.ThumbImageTag = GetImageCacheTag(thumbItem, ImageType.Thumb);
+                info.ThumbItemId = GetDtoId(thumbItem);
+            }
+
+            if (thumbItem != null)
+            {
+                info.BackdropImageTag = GetImageCacheTag(backropItem, ImageType.Backdrop);
+                info.BackdropItemId = GetDtoId(backropItem);
+            }
+
             return info;
         }
 

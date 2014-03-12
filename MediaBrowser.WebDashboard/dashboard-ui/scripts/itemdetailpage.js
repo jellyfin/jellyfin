@@ -353,7 +353,7 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
             Ids: item.SoundtrackIds.join(","),
-            ItemFields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,AudioInfo",
+            ItemFields: "PrimaryImageAspectRatio,ItemCounts,AudioInfo",
             SortBy: "SortName"
 
         }).done(function (result) {
@@ -432,7 +432,7 @@
         var options = {
             userId: Dashboard.getCurrentUserId(),
             limit: item.Type == "MusicAlbum" ? 4 : 5,
-            fields: "PrimaryImageAspectRatio,DateCreated,UserData"
+            fields: "PrimaryImageAspectRatio,UserData"
         };
 
         if (item.Type == "Movie") {
@@ -534,7 +534,7 @@
 
     function renderChildren(page, item, user) {
 
-        var fields = "ItemCounts,DateCreated,AudioInfo,PrimaryImageAspectRatio";
+        var fields = "ItemCounts,AudioInfo,PrimaryImageAspectRatio";
 
         var query = {
             ParentId: item.Id,

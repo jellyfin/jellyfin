@@ -134,6 +134,9 @@
     <Compile Include="..\MediaBrowser.Model\Dto\ItemIndex.cs">
       <Link>Dto\ItemIndex.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\RecommendationDto.cs">
+      <Link>Dto\RecommendationDto.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\StreamOptions.cs">
       <Link>Dto\StreamOptions.cs</Link>
     </Compile>

@@ -396,7 +396,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "",
             Recursive: true,
-            Fields: "DateCreated,AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio",
+            Fields: "AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio",
             Limit: LibraryBrowser.getDefaultPageSize(),
             StartIndex: 0
         };
