@@ -56,21 +56,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 {
                     return null;
                 }
-
-                // If the parent is not a boxset, the only other allowed parent type is Folder		
-                if (!(args.Parent is BoxSet))
-                {
-                    if (args.Parent.GetType() != typeof(Folder))
-                    {
-                        return null;
-                    }
-                }
-            }
-
-            // Since the looping is expensive, this is an optimization to help us avoid it
-            if (args.Path.IndexOf("[tvdbid", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                return null;
             }
 
             var isDirectory = args.IsDirectory;

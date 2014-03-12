@@ -174,7 +174,7 @@ namespace MediaBrowser.Api.Movies
                 .OrderBy(i => Guid.NewGuid())
                 .ToList();
 
-            var similarToRecentlyPlayed = GetSimilarTo(user, allMovies, recentlyPlayedMovies.Take(10).OrderBy(i => Guid.NewGuid()), itemLimit, fields, RecommendationType.SimilarToRecentlyPlayed).GetEnumerator();
+            var similarToRecentlyPlayed = GetSimilarTo(user, allMovies, recentlyPlayedMovies.Take(7).OrderBy(i => Guid.NewGuid()), itemLimit, fields, RecommendationType.SimilarToRecentlyPlayed).GetEnumerator();
             var similarToLiked = GetSimilarTo(user, allMovies, likedMovies, itemLimit, fields, RecommendationType.SimilarToLikedItem).GetEnumerator();
 
             var hasDirectorFromRecentlyPlayed = GetWithDirector(user, allMovies, recentDirectors, itemLimit, fields, RecommendationType.HasDirectorFromRecentlyPlayed).GetEnumerator();

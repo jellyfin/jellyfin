@@ -279,8 +279,19 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <returns>System.Int32.</returns>
         /// <exception cref="System.Exception">Unrecognized MediaEncodingQuality value.</exception>
-        protected int GetNumberOfThreads(bool isWebm)
+        protected int GetNumberOfThreads(StreamState state, bool isWebm)
         {
+            // Use more when this is true. -re will keep cpu usage under control
+            if (state.ReadInputAtNativeFramerate)
+            {
+                if (isWebm)
+                {
+                    return Math.Max(Environment.ProcessorCount - 1, 1);
+                }
+
+                return 0;
+            }
+
             // Webm: http://www.webmproject.org/docs/encoder-parameters/
             // The decoder will usually automatically use an appropriate number of threads according to how many cores are available but it can only use multiple threads 
             // for the coefficient data if the encoder selected --token-parts > 0 at encode time.
@@ -1192,64 +1203,72 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 1)
                 {
+                    request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                }
+                else if (i == 2)
+                {
                     if (videoRequest != null)
                     {
                         videoRequest.VideoCodec = (VideoCodecs)Enum.Parse(typeof(VideoCodecs), val, true);
                     }
                 }
-                else if (i == 2)
+                else if (i == 3)
                 {
                     request.AudioCodec = (AudioCodecs)Enum.Parse(typeof(AudioCodecs), val, true);
                 }
-                else if (i == 3)
+                else if (i == 4)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.AudioStreamIndex = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 4)
+                else if (i == 5)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.SubtitleStreamIndex = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 5)
+                else if (i == 6)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.VideoBitRate = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 6)
+                else if (i == 7)
                 {
                     request.AudioBitRate = int.Parse(val, UsCulture);
                 }
-                else if (i == 7)
+                else if (i == 8)
                 {
                     request.AudioChannels = int.Parse(val, UsCulture);
                 }
-                else if (i == 8)
+                else if (i == 9)
                 {
                     if (videoRequest != null)
                     {
                         request.StartTimeTicks = long.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 9)
+                else if (i == 10)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.Profile = val;
                     }
                 }
-                else if (i == 10)
+                else if (i == 11)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.Level = val;
                     }
+                }
+                else if (i == 12)
+                {
+                    request.ForcedMimeType = val;
                 }
             }
         }
@@ -1334,6 +1353,7 @@ namespace MediaBrowser.Api.Playback
                     await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
                 }
 
+                state.ReadInputAtNativeFramerate = recording.RecordingInfo.Status == RecordingStatus.InProgress;
                 state.AudioSync = "1000";
                 state.DeInterlace = true;
             }
@@ -1420,8 +1440,8 @@ namespace MediaBrowser.Api.Playback
 
             state.HasMediaStreams = mediaStreams.Count > 0;
 
-            state.SegmentLength = state.ReadInputAtNativeFramerate ? 3 : 10;
-            state.HlsListSize = state.ReadInputAtNativeFramerate ? 20 : 1440;
+            state.SegmentLength = state.ReadInputAtNativeFramerate ? 5 : 10;
+            state.HlsListSize = state.ReadInputAtNativeFramerate ? 100 : 1440;
 
             return state;
         }
