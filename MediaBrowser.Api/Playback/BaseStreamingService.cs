@@ -1329,7 +1329,11 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 //state.RunTimeTicks = recording.RunTimeTicks;
-                state.ReadInputAtNativeFramerate = recording.RecordingInfo.Status == RecordingStatus.InProgress;
+                if (recording.RecordingInfo.Status == RecordingStatus.InProgress && !state.IsRemote)
+                {
+                    await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
+                }
+
                 state.AudioSync = "1000";
                 state.DeInterlace = true;
             }
@@ -1349,7 +1353,8 @@ namespace MediaBrowser.Api.Playback
                 {
                     state.MediaPath = streamInfo.Path;
                     state.IsRemote = false;
-                    state.SendInputOverStandardInput = true;
+
+                    await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
                 }
                 else if (!string.IsNullOrEmpty(streamInfo.Url))
                 {
