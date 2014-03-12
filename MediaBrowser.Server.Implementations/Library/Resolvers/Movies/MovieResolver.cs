@@ -89,34 +89,31 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             // Find movies with their own folders
             if (isDirectory)
             {
-                if (args.Path.IndexOf("[trailers]", StringComparison.OrdinalIgnoreCase) != -1 ||
-                    string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Trailer>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService);
+                    return FindMovie<Trailer>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, false);
                 }
 
-                if (args.Path.IndexOf("[musicvideos]", StringComparison.OrdinalIgnoreCase) != -1 ||
-                    string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<MusicVideo>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService);
+                    return FindMovie<MusicVideo>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, false);
                 }
 
-                if (args.Path.IndexOf("[adultvideos]", StringComparison.OrdinalIgnoreCase) != -1 ||
-                    string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<AdultVideo>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService);
+                    return FindMovie<AdultVideo>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true);
                 }
 
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService);
+                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true);
                 }
                 
                 if (string.IsNullOrEmpty(collectionType) ||
                     string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService);
+                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true);
                 }
 
                 return null;
@@ -202,8 +199,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <param name="path">The path.</param>
         /// <param name="parent">The parent.</param>
         /// <param name="fileSystemEntries">The file system entries.</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <param name="supportMultiFileItems">if set to <c>true</c> [support multi file items].</param>
         /// <returns>Movie.</returns>
-        private T FindMovie<T>(string path, Folder parent, IEnumerable<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService)
+        private T FindMovie<T>(string path, Folder parent, IEnumerable<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, bool supportMultiFileItems)
             where T : Video, new()
         {
             var movies = new List<T>();
@@ -264,7 +263,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            if (movies.Count > 1)
+            if (movies.Count > 1 && supportMultiFileItems)
             {
                 return GetMultiFileMovie(movies);
             }

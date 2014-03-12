@@ -73,7 +73,7 @@ namespace MediaBrowser.Api
 
             var item = string.IsNullOrEmpty(request.Id) ?
                 (request.UserId.HasValue ? user.RootFolder :
-                (Folder)libraryManager.RootFolder) : dtoService.GetItemByDtoId(request.Id, request.UserId);
+                libraryManager.RootFolder) : dtoService.GetItemByDtoId(request.Id, request.UserId);
 
             var fields = request.GetItemFields().ToList();
 
@@ -81,7 +81,7 @@ namespace MediaBrowser.Api
                                  ? libraryManager.RootFolder.GetRecursiveChildren(i => i.Id != item.Id)
                                  : user.RootFolder.GetRecursiveChildren(user, i => i.Id != item.Id);
 
-            var items = GetSimilaritems(item, inputItems, includeInSearch, getSimilarityScore)
+            var items = GetSimilaritems(item, inputItems.Where(includeInSearch), getSimilarityScore)
                 .ToList();
 
             IEnumerable<BaseItem> returnItems = items;
@@ -106,12 +106,12 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="inputItems">The input items.</param>
-        /// <param name="includeInSearch">The include in search.</param>
         /// <param name="getSimilarityScore">The get similarity score.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        internal static IEnumerable<BaseItem> GetSimilaritems(BaseItem item, IEnumerable<BaseItem> inputItems, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        internal static IEnumerable<BaseItem> GetSimilaritems(BaseItem item, IEnumerable<BaseItem> inputItems, Func<BaseItem, BaseItem, int> getSimilarityScore)
         {
-            inputItems = inputItems.Where(includeInSearch);
+            var itemId = item.Id;
+            inputItems = inputItems.Where(i => i.Id != itemId);
 
             return inputItems.Select(i => new Tuple<BaseItem, int>(i, getSimilarityScore(item, i)))
                 .Where(i => i.Item2 > 2)

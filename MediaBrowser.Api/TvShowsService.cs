@@ -300,11 +300,13 @@ namespace MediaBrowser.Api
 
             return FilterSeries(request, series)
                 .AsParallel()
-                .Select(i => GetNextUp(i, currentUser, request).Item1)
-                .Where(i => i != null)
+                .Select(i => GetNextUp(i, currentUser))
+                .Where(i => i.Item1 != null)
                 .OrderByDescending(i =>
                 {
-                    var seriesUserData = _userDataManager.GetUserData(user.Id, i.Series.GetUserDataKey());
+                    var episode = i.Item1;
+
+                    var seriesUserData = _userDataManager.GetUserData(user.Id, episode.Series.GetUserDataKey());
 
                     if (seriesUserData.IsFavorite)
                     {
@@ -318,7 +320,9 @@ namespace MediaBrowser.Api
 
                     return 0;
                 })
-                .ThenByDescending(i => i.PremiereDate ?? DateTime.MinValue);
+                .ThenByDescending(i =>i.Item2)
+                .ThenByDescending(i => i.Item1.PremiereDate ?? DateTime.MinValue)
+                .Select(i => i.Item1);
         }
 
         /// <summary>
@@ -326,9 +330,8 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="series">The series.</param>
         /// <param name="user">The user.</param>
-        /// <param name="request">The request.</param>
         /// <returns>Task{Episode}.</returns>
-        private Tuple<Episode, DateTime> GetNextUp(Series series, User user, GetNextUpEpisodes request)
+        private Tuple<Episode, DateTime> GetNextUp(Series series, User user)
         {
             // Get them in display order, then reverse
             var allEpisodes = series.GetSeasons(user, true, true)
