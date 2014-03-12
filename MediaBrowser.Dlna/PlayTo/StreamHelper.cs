@@ -96,9 +96,12 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <returns>The url to send to the device</returns>
         internal static string GetVideoUrl(DeviceProperties deviceProperties, PlaylistItem item, List<MediaStream> streams, string serverAddress)
         {
+            string dlnaCommand = string.Empty;
             if (!item.Transcode)
-                return string.Format("{0}/Videos/{1}/stream.{2}?Static=True", serverAddress, item.ItemId, item.FileFormat);
-
+            {
+                dlnaCommand = BuildDlnaUrl(deviceProperties.UUID, !item.Transcode, null, null, null, null, null, null, null, null, null, null, item.MimeType);
+                return string.Format("{0}/Videos/{1}/stream.{2}?{3}", serverAddress, item.ItemId, item.FileFormat, dlnaCommand);                
+            }
             var videostream = streams.Where(m => m.Type == MediaStreamType.Video).OrderBy(m => m.IsDefault).FirstOrDefault();
             var audiostream = streams.Where(m => m.Type == MediaStreamType.Audio).OrderBy(m => m.IsDefault).FirstOrDefault();
 
@@ -117,7 +120,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 audioChannels = 2;
             }
 
-            string dlnaCommand = BuildDlnaUrl(deviceProperties.UUID, videoCodec, audioCodec, null, null, videoBitrate, audioChannels, audioBitrate, item.StartPositionTicks, "baseline", "3");
+            dlnaCommand = BuildDlnaUrl(deviceProperties.UUID, !item.Transcode, videoCodec, audioCodec, null, null, videoBitrate, audioChannels, audioBitrate, item.StartPositionTicks, "baseline", "3", item.MimeType);
             return string.Format("{0}/Videos/{1}/stream.{2}?{3}", serverAddress, item.ItemId, item.FileFormat, dlnaCommand);
         }
 
@@ -162,12 +165,12 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <summary>
         /// Builds the dlna URL.
         /// </summary>
-        private static string BuildDlnaUrl(string deviceID, VideoCodecs? videoCodec, AudioCodecs? audioCodec, int? subtitleIndex, int? audiostreamIndex, int? videoBitrate, int? audiochannels, int? audioBitrate, long? startPositionTicks, string profile, string videoLevel)
+        private static string BuildDlnaUrl(string deviceID, bool isStatic, VideoCodecs? videoCodec, AudioCodecs? audioCodec, int? subtitleIndex, int? audiostreamIndex, int? videoBitrate, int? audiochannels, int? audioBitrate, long? startPositionTicks, string profile, string videoLevel, string mimeType)
         {
             var usCulture = new CultureInfo("en-US");
 
             var dlnaparam = string.Format("Params={0};", deviceID);
-
+            dlnaparam += isStatic ? "true;" : "false;";
             dlnaparam += videoCodec.HasValue ? videoCodec.Value + ";" : ";";
             dlnaparam += audioCodec.HasValue ? audioCodec.Value + ";" : ";";
             dlnaparam += audiostreamIndex.HasValue ? audiostreamIndex.Value.ToString(usCulture) + ";" : ";";
@@ -178,6 +181,7 @@ namespace MediaBrowser.Dlna.PlayTo
             dlnaparam += startPositionTicks.HasValue ? startPositionTicks.Value.ToString(usCulture) + ";" : ";";
             dlnaparam += profile + ";";
             dlnaparam += videoLevel + ";";
+            dlnaparam += mimeType + ";";
 
             return dlnaparam;
         }
