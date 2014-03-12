@@ -27,7 +27,7 @@ namespace MediaBrowser.Providers.TV
             result.Images = images;
         }
 
-        protected override FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             var metadataPath = Path.GetDirectoryName(info.Path);
             metadataPath = Path.Combine(metadataPath, "metadata");

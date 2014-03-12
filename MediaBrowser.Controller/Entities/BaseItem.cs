@@ -1184,7 +1184,7 @@ namespace MediaBrowser.Controller.Entities
             return GetImageInfo(type, imageIndex) != null;
         }
 
-        public void SetImagePath(ImageType type, int index, FileInfo file)
+        public void SetImagePath(ImageType type, int index, FileSystemInfo file)
         {
             if (type == ImageType.Chapter)
             {
@@ -1339,7 +1339,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         /// <exception cref="System.ArgumentException">Cannot call AddImages with chapter images</exception>
-        public bool AddImages(ImageType imageType, IEnumerable<FileInfo> images)
+        public bool AddImages(ImageType imageType, IEnumerable<FileSystemInfo> images)
         {
             if (imageType == ImageType.Chapter)
             {

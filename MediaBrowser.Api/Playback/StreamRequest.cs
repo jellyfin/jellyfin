@@ -66,6 +66,8 @@ namespace MediaBrowser.Api.Playback
         public bool ThrowDebugError { get; set; }
 
         public string Params { get; set; }
+
+        public string ForcedMimeType { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest

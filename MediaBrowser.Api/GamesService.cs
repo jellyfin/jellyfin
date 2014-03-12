@@ -155,7 +155,7 @@ namespace MediaBrowser.Api
 
             var games = items.OfType<Game>().ToList();
 
-            summary.ClientInstalledGameCount = games.Count(i => !i.IsPlaceHolder);
+            summary.ClientInstalledGameCount = games.Count(i => i.IsPlaceHolder);
 
             summary.GameCount = games.Count;
 
