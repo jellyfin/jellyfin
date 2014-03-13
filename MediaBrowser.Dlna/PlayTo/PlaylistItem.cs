@@ -58,6 +58,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 playlistItem.Transcode = false;
                 playlistItem.FileFormat = Path.GetExtension(path).TrimStart('.');
+                playlistItem.MimeType = directPlay.MimeType;
                 return playlistItem;
             }
 
