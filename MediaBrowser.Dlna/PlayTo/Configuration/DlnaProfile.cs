@@ -48,6 +48,6 @@
         /// <value>
         /// The transcode settings.
         /// </value>
-        public TranscodeSettings[] TranscodeSettings { get; set; }
+        public TranscodeSetting[] TranscodeSettings { get; set; }
     }
 }
