@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using MoreLinq;
 using System;
@@ -38,9 +39,10 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// Validates the people.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="options">The options.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task ValidatePeople(CancellationToken cancellationToken, MetadataRefreshOptions options, IProgress<double> progress)
         {
             var innerProgress = new ActionableProgress<double>();
 
@@ -61,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 {
                     var item = _libraryManager.GetPerson(person.Name);
 
-                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

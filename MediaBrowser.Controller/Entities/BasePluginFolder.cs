@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
-
+﻿
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
@@ -8,18 +7,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BasePluginFolder : Folder, ICollectionFolder, IByReferenceItem
     {
-        /// <summary>
-        /// Gets or sets the type of the location.
-        /// </summary>
-        /// <value>The type of the location.</value>
-        public override LocationType LocationType
-        {
-            get
-            {
-                return LocationType.Virtual;
-            }
-        }
-
         protected BasePluginFolder()
         {
             DisplayMediaType = "CollectionFolder";

@@ -1,9 +1,7 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
+﻿using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,19 +16,13 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
-        /// The _user manager
-        /// </summary>
-        private readonly IUserManager _userManager;
-
-        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
 
-        public MusicGenresValidator(ILibraryManager libraryManager, IUserManager userManager, ILogger logger)
+        public MusicGenresValidator(ILibraryManager libraryManager, ILogger logger)
         {
             _libraryManager = libraryManager;
-            _userManager = userManager;
             _logger = logger;
         }
 
@@ -42,38 +34,24 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var userLibraries = _userManager.Users
-                .Select(i => new Tuple<Guid, IList<BaseItem>>(i.Id, i.RootFolder.GetRecursiveChildren(i, m => m is IHasMusicGenres)))
+            var items = _libraryManager.RootFolder.RecursiveChildren.Where(i => (i is IHasMusicGenres))
+                .SelectMany(i => i.Genres)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var masterDictionary = new Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>>(StringComparer.OrdinalIgnoreCase);
-
             progress.Report(2);
-
             var numComplete = 0;
+            var count = items.Count;
 
-            foreach (var lib in userLibraries)
+            foreach (var name in items)
             {
-                SetItemCounts(lib.Item1, lib.Item2, masterDictionary);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                numComplete++;
-                double percent = numComplete;
-                percent /= userLibraries.Count;
-                percent *= 8;
-
-                progress.Report(percent);
-            }
-
-            progress.Report(10);
-
-            var count = masterDictionary.Count;
-            numComplete = 0;
-
-            foreach (var name in masterDictionary.Keys)
-            {
                 try
                 {
-                    await UpdateItemByNameCounts(name, cancellationToken, masterDictionary[name]).ConfigureAwait(false);
+                    var itemByName = _libraryManager.GetMusicGenre(name);
+
+                    await itemByName.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -82,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error updating counts for {0}", ex, name);
+                    _logger.ErrorException("Error refreshing {0}", ex, name);
                 }
 
                 numComplete++;
@@ -94,33 +72,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             }
 
             progress.Report(100);
-        }
-
-        private Task UpdateItemByNameCounts(string name, CancellationToken cancellationToken, Dictionary<Guid, Dictionary<CountType, int>> counts)
-        {
-            var itemByName = _libraryManager.GetMusicGenre(name);
-
-            foreach (var libraryId in counts.Keys)
-            {
-                var itemCounts = CountHelpers.GetCounts(counts[libraryId]);
-
-                itemByName.SetItemByNameCounts(libraryId, itemCounts);
-            }
-
-            return itemByName.RefreshMetadata(cancellationToken);
-        }
-
-        private void SetItemCounts(Guid userId, IEnumerable<BaseItem> allItems, Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>> masterDictionary)
-        {
-            foreach (var media in allItems)
-            {
-                var names = media
-                    .Genres
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                CountHelpers.SetItemCounts(userId, media, names, masterDictionary);
-            }
         }
     }
 }

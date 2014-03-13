@@ -22,10 +22,10 @@ namespace MediaBrowser.Providers.BoxSets
 
         protected override void Fetch(LocalMetadataResult<BoxSet> result, string path, CancellationToken cancellationToken)
         {
-            new BaseItemXmlParser<BoxSet>(_logger).Fetch(result.Item, path, cancellationToken);
+            new BoxSetXmlParser(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
-        protected override FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             return directoryService.GetFile(Path.Combine(info.Path, "collection.xml"));
         }

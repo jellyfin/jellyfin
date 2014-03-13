@@ -81,10 +81,10 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
 
-                return DtoService.GetBaseItemDto(item, fields.ToList(), user);
+                return DtoService.GetItemByNameDto(item, fields.ToList(), user);
             }
 
-            return DtoService.GetBaseItemDto(item, fields.ToList());
+            return DtoService.GetItemByNameDto(item, fields.ToList());
         }
 
         /// <summary>
@@ -113,11 +113,6 @@ namespace MediaBrowser.Api.UserLibrary
                 .SelectMany(i => i.Studios)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name => LibraryManager.GetStudio(name));
-        }
-
-        protected override IEnumerable<BaseItem> GetLibraryItems(Studio item, IEnumerable<BaseItem> libraryItems)
-        {
-            return libraryItems.Where(i => i.Studios.Contains(item.Name, StringComparer.OrdinalIgnoreCase));
         }
     }
 }

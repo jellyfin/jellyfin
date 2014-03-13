@@ -1,12 +1,10 @@
 ﻿using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,9 +15,6 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicArtist : Folder, IMetadataContainer, IItemByName, IHasMusicGenres, IHasDualAccess, IHasTags, IHasProductionLocations, IHasLookupInfo<ArtistInfo>
     {
-        [IgnoreDataMember]
-        public List<ItemByNameCounts> UserItemCountList { get; set; }
-
         public bool IsAccessedByName { get; set; }
 
         /// <summary>
@@ -65,7 +60,6 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public MusicArtist()
         {
-            UserItemCountList = new List<ItemByNameCounts>();
             Tags = new List<string>();
             ProductionLocations = new List<string>();
         }
@@ -229,6 +223,11 @@ namespace MediaBrowser.Controller.Entities.Audio
                 .ToList();
 
             return info;
+        }
+
+        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
+        {
+            return inputItems.OfType<IHasArtist>().Where(i => i.HasArtist(Name)).Cast<BaseItem>();
         }
     }
 }
