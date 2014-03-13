@@ -267,6 +267,21 @@ namespace MediaBrowser.Dlna
                         Container = "ts", 
                         Type = DlnaProfileType.Video
                     }
+                },
+
+                DirectPlayProfiles = new[]
+                {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3"}, 
+                        Type = DlnaProfileType.Audio
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi", "mp4"}, 
+                        Type = DlnaProfileType.Video
+                    }
                 }
             };
         }
