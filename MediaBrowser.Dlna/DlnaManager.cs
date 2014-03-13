@@ -130,19 +130,32 @@ namespace MediaBrowser.Dlna
                 }
             };
 
-            var profile5 = new DlnaProfile
-            {
-                Name = "Sony Bravia TV (2012)",
-                ClientType = "TV",
-                FriendlyName = @"BRAVIA KDL-\d{2}[A-Z]X\d5(\d|G).*"
-            };
+            var profile5 = GetDefaultProfile();
+            profile5.Name = "Sony Bravia TV (2012)";
+            profile5.ClientType = "TV";
+            profile5.FriendlyName = @"BRAVIA KDL-\d{2}[A-Z]X\d5(\d|G).*";
 
             //WDTV does not need any transcoding of the formats we support statically
             var profile6 = new DlnaProfile
             {
                 Name = "WDTV Live [Profile]",
                 ClientType = "DLNA",
-                ModelName = "WD TV HD Live"
+                ModelName = "WD TV HD Live",
+
+                DirectPlayProfiles = new[]
+                {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3", "flac", "m4a", "wma"}, 
+                        Type = DlnaProfileType.Audio
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi", "mp4", "mkv", "ts"}, 
+                        Type = DlnaProfileType.Video
+                    }
+                }
             };
 
             var profile7 = new DlnaProfile
@@ -168,7 +181,22 @@ namespace MediaBrowser.Dlna
 
         public DlnaProfile GetDefaultProfile()
         {
-            return new DlnaProfile();
+            return new DlnaProfile
+            {
+                TranscodingProfiles = new[]
+                {
+                    new TranscodingProfile
+                    {
+                        Container = "mp3", 
+                        Type = DlnaProfileType.Audio
+                    },
+                    new TranscodingProfile
+                    {
+                        Container = "ts", 
+                        Type = DlnaProfileType.Video
+                    }
+                }
+            };
         }
 
         public DlnaProfile GetProfile(string friendlyName, string modelName, string modelNumber)
