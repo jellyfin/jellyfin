@@ -29,7 +29,12 @@
                 FriendlyName = "^TV$",
                 ModelNumber = @"1\.0",
                 ModelName = "Samsung DTV DMR",
-                TranscodeSettings = TranscodeSettings.GetDefaultTranscodingSettings()
+                TranscodeSettings = new[]
+                {
+                    new TranscodeSettings {Container = "mkv", MimeType = "x-mkv"},
+                    new TranscodeSettings {Container = "flac", TargetContainer = "mp3"},
+                    new TranscodeSettings {Container = "m4a", TargetContainer = "mp3"}
+                }
             };
 
             var profile1 = new DlnaProfile
@@ -38,7 +43,12 @@
                 ClientType = "DLNA",
                 FriendlyName = @"(^\[TV\][A-Z]{2}\d{2}(E|F)[A-Z]?\d{3,4}.*)|^\[TV\] Samsung",
                 ModelNumber = @"(1\.0)|(AllShare1\.0)",
-                TranscodeSettings = TranscodeSettings.GetDefaultTranscodingSettings()
+                TranscodeSettings = new[]
+                {
+                    new TranscodeSettings {Container = "mkv", MimeType = "x-mkv"},
+                    new TranscodeSettings {Container = "flac", TargetContainer = "mp3"},
+                    new TranscodeSettings {Container = "m4a", TargetContainer = "mp3"}
+                }
             };
 
             var profile2 = new DlnaProfile
@@ -47,7 +57,12 @@
                 ClientType = "DLNA",
                 FriendlyName = @"(^TV-\d{2}C\d{3}.*)|(^\[TV\][A-Z]{2}\d{2}(D)[A-Z]?\d{3,4}.*)|^\[TV\] Samsung",
                 ModelNumber = @"(1\.0)|(AllShare1\.0)",
-                TranscodeSettings = TranscodeSettings.GetDefaultTranscodingSettings()
+                TranscodeSettings = new[]
+                {
+                    new TranscodeSettings {Container = "mkv", MimeType = "x-mkv"},
+                    new TranscodeSettings {Container = "flac", TargetContainer = "mp3"},
+                    new TranscodeSettings {Container = "m4a", TargetContainer = "mp3"}
+                }
             };
 
             var profile3 = new DlnaProfile

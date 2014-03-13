@@ -80,6 +80,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\DlnaOptions.cs">
+      <Link>Configuration\DlnaOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\ManualLoginCategory.cs">
       <Link>Configuration\ManualLoginCategory.cs</Link>
     </Compile>
@@ -130,6 +133,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\ItemIndex.cs">
       <Link>Dto\ItemIndex.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\RecommendationDto.cs">
+      <Link>Dto\RecommendationDto.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\StreamOptions.cs">
       <Link>Dto\StreamOptions.cs</Link>

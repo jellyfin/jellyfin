@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -82,7 +83,8 @@ namespace MediaBrowser.Providers.Savers
                     "TVRageId",
                     "VoteCount",
                     "Website",
-                    "Zap2ItId"
+                    "Zap2ItId",
+                    "CollectionItems"
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
@@ -580,6 +582,12 @@ namespace MediaBrowser.Providers.Savers
 
                 builder.Append("</Persons>");
             }
+
+            var folder = item as BoxSet;
+            if (folder != null)
+            {
+                AddCollectionItems(folder, builder);
+            }
         }
 
         public static void AddChapters(Video item, StringBuilder builder, IItemRepository repository)
@@ -630,6 +638,35 @@ namespace MediaBrowser.Providers.Savers
                         break;
                 }
             }
+        }
+
+        public static void AddCollectionItems(Folder item, StringBuilder builder)
+        {
+            var items = item.LinkedChildren
+                .Where(i => i.Type == LinkedChildType.Manual && !string.IsNullOrWhiteSpace(i.ItemName))
+                .ToList();
+
+            if (items.Count == 0)
+            {
+                return;
+            }
+
+            builder.Append("<CollectionItems>");
+            foreach (var link in items)
+            {
+                builder.Append("<CollectionItem>");
+
+                builder.Append("<Name>" + SecurityElement.Escape(link.ItemName) + "</Name>");
+                builder.Append("<Type>" + SecurityElement.Escape(link.ItemType) + "</Type>");
+
+                if (link.ItemYear.HasValue)
+                {
+                    builder.Append("<Year>" + SecurityElement.Escape(link.ItemYear.Value.ToString(UsCulture)) + "</Year>");
+                }
+
+                builder.Append("</CollectionItem>");
+            }
+            builder.Append("</CollectionItems>");
         }
     }
 }

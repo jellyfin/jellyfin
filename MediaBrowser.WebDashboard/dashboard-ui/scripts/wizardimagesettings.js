@@ -14,8 +14,9 @@
             // After saving chapter task, now save server config
             ApiClient.getServerConfiguration().done(function (config) {
 
-                config.ImageSavingConvention = $('#selectImageSavingConvention', page).val();
                 config.EnableMovieChapterImageExtraction = $('#chkMovies', page).checked();
+
+                config.EnableUPnP = $('#chkEnableUpnp', page).checked();
 
                 ApiClient.updateServerConfiguration(config).done(function (result) {
 

@@ -722,13 +722,17 @@ var Dashboard = {
             href: "metadata.html",
             selected: pageElem.id == "metadataConfigurationPage" || pageElem.id == "advancedMetadataConfigurationPage" || pageElem.id == "metadataImagesConfigurationPage"
         }, {
+            name: "Plugins",
+            href: "plugins.html",
+            selected: page.hasClass("pluginConfigurationPage")
+        }, {
             name: "Auto-Organize",
             href: "autoorganizelog.html",
             selected: page.hasClass("organizePage")
         }, {
-            name: "Plugins",
-            href: "plugins.html",
-            selected: page.hasClass("pluginConfigurationPage")
+            name: "DLNA",
+            href: "dlnasettings.html",
+            selected: page.hasClass("dlnaPage")
         }, {
             name: "Live TV",
             href: "livetvstatus.html",
@@ -1141,9 +1145,7 @@ var Dashboard = {
             return;
         }
 
-        var pageElem = page[0];
-
-        if (pageElem.hasPageTitle) {
+        if ($('.pageTitle', page).length) {
             return;
         }
 
@@ -1154,8 +1156,6 @@ var Dashboard = {
         }
 
         $(parent).prepend("<h2 class='pageTitle'>" + (document.title || "&nbsp;") + "</h2>");
-
-        pageElem.hasPageTitle = true;
     },
 
     setPageTitle: function (title) {

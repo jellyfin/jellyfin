@@ -60,6 +60,7 @@
     <Compile Include="ApiClient\ServerEventArgs.cs" />
     <Compile Include="Configuration\AutoOrganize.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
+    <Compile Include="Configuration\DlnaOptions.cs" />
     <Compile Include="Configuration\ManualLoginCategory.cs" />
     <Compile Include="Configuration\MetadataPlugin.cs" />
     <Compile Include="Configuration\MetadataOptions.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Dto\ItemByNameCounts.cs" />
     <Compile Include="Dto\ItemCounts.cs" />
     <Compile Include="Dto\ItemIndex.cs" />
+    <Compile Include="Dto\RecommendationDto.cs" />
     <Compile Include="Entities\PackageReviewInfo.cs" />
     <Compile Include="FileOrganization\FileOrganizationResult.cs" />
     <Compile Include="FileOrganization\FileOrganizationQuery.cs" />

@@ -48,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             
             var collectionType = args.GetCollectionType();
 
-            // If there's a collection type and it's not music, it can't be a series
+            // If there's a collection type and it's not music, don't allow it.
             if (!string.IsNullOrEmpty(collectionType) &&
                 !string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
             {

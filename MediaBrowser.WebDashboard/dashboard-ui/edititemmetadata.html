@@ -18,6 +18,7 @@
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">Metadata</a>
                     <a id="btnEditPeople" style="display: none;" href="#" data-role="button">People</a>
+                    <a id="btnEditCollectionTitles" style="display: none;" href="editcollectionitems.html" data-role="button">Titles</a>
                     <a href="#" data-role="button" id="btnEditImages">Images</a>
                 </div>
 
@@ -395,7 +396,7 @@
             <div data-role="content">
 
                 <form class="popupIdentifyForm" style="max-width: initial;">
-                    
+
                     <p>Enter one or more search criteria.</p>
 
                     <div>
@@ -413,6 +414,9 @@
                     <p>
                         <button type="submit" data-theme="b" data-icon="search" data-mini="true">
                             Search
+                        </button>
+                        <button type="button" data-icon="delete" data-mini="true" onclick="$(this).parents('.popup').popup('close');">
+                            Cancel
                         </button>
                     </p>
                 </form>

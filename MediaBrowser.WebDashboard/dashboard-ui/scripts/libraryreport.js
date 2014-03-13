@@ -1,9 +1,11 @@
 ﻿(function ($, document, window) {
 
+    var defaultSortBy = "SortName";
+
     // The base query options
     var query = {
 
-        SortBy: "SeriesSortName,SortName",
+        SortBy: defaultSortBy,
         SortOrder: "Ascending",
         Recursive: true,
         Fields: "MediaStreams,DateCreated,Settings,Studios",
@@ -21,21 +23,22 @@
                 {
                     return [
                         {},
-                        { name: 'Series' },
-                        { name: 'Season' },
-                        { name: 'Date Added' }
+                        { name: 'Series', sortField: 'SeriesSortName,SortName' },
+                        { name: 'Season', sortField: 'SortName' },
+                        { name: 'Date Added', sortField: 'DateCreated,SortName' }
                     ];
                 }
             case 'Series':
                 {
                     return [
                         {},
-                        { name: 'Name' },
-                        { name: 'Network' },
-                        { name: 'Date Added' },
-                        { name: 'Year' },
-                        { name: 'Rating' },
-                        { name: 'Runtime' },
+                        { name: 'Name', sortField: 'SortName' },
+                        { name: 'Network', sortField: 'Studio,SortName' },
+                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
+                        { name: 'Year', sortField: 'ProductionYear,PremiereDate,SortName' },
+                        { name: 'Parental Rating', sortField: 'OfficialRating,SortName' },
+                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' },
+                        { name: 'Runtime', sortField: 'Runtime,SortName' },
                         { name: 'Trailers' },
                         { name: 'Specials' }
                     ];
@@ -44,12 +47,13 @@
                 {
                     return [
                         {},
-                        { name: 'Name' },
-                        { name: 'Game System' },
-                        { name: 'Date Added' },
-                        { name: 'Release Date' },
-                        { name: 'Rating' },
-                        { name: 'Players' },
+                        { name: 'Name', sortField: 'SortName' },
+                        { name: 'Game System', sortField: 'GameSystem,SortName' },
+                        { name: 'Date Added', sortField: 'DateCreated,GameSystem,SortName' },
+                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,GameSystem,SortName' },
+                        { name: 'Parental Rating', sortField: 'OfficialRating,GameSystem,SortName' },
+                        { name: 'Community Rating', sortField: 'CommunityRating,GameSystem,SortName' },
+                        { name: 'Players', sortField: 'Players,GameSystem,SortName' },
                         { name: 'Trailers' }
                     ];
                 }
@@ -57,13 +61,14 @@
                 {
                     return [
                         {},
-                        { name: 'Album Artist' },
-                        { name: 'Album' },
+                        { name: 'Album Artist', sortField: 'AlbumArtist,Album,SortName' },
+                        { name: 'Album', sortField: 'Album,SortName' },
+                        { name: 'Disc' },
                         { name: 'Track' },
-                        { name: 'Name' },
-                        { name: 'Date Added' },
-                        { name: 'Release Date' },
-                        { name: 'Runtime' },
+                        { name: 'Name', sortField: 'Name' },
+                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
+                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
+                        { name: 'Runtime', sortField: 'Runtime,SortName' },
                         { name: 'Audio' },
                         { name: 'Embedded Image' }
                     ];
@@ -72,13 +77,15 @@
                 {
                     return [
                         {},
-                        { name: 'Series' },
+                        { name: 'Series', sortField: 'SeriesSortName,SortName' },
                         { name: 'Season' },
-                        { name: 'Name' },
-                        { name: 'Date Added' },
-                        { name: 'Release Date' },
-                        { name: 'Runtime' },
+                        { name: 'Name', sortField: 'SortName' },
+                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
+                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
+                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' },
+                        { name: 'Runtime', sortField: 'Runtime,SortName' },
                         { name: 'Video' },
+                        { name: 'Resolution' },
                         { name: 'Audio' },
                         { name: 'Subtitles' }
                     ];
@@ -87,10 +94,11 @@
                 {
                     return [
                         {},
-                        { name: 'Name' },
-                        { name: 'Date Added' },
-                        { name: 'Release Date' },
-                        { name: 'Rating' },
+                        { name: 'Name', sortField: 'SortName' },
+                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
+                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
+                        { name: 'Parental Rating', sortField: 'OfficialRating,SortName' },
+                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' },
                         { name: 'Trailers' }
                     ];
                 }
@@ -99,47 +107,98 @@
                     return [
                         {},
                         { name: 'Series' },
-                        { name: 'Name' },
-                        { name: 'Date Added' },
-                        { name: 'Release Date' },
-                        { name: 'Rating' }
+                        { name: 'Name', sortField: 'SortName' },
+                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
+                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
+                        { name: 'Parental Rating', sortField: 'OfficialRating,SortName' },
+                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' }
                     ];
                 }
             case 'MusicArtist':
                 {
                     return [
                         {},
-                        { name: 'Name' },
-                        { name: 'Date Added' }
+                        { name: 'Name', sortField: 'SortName' },
+                        { name: 'Date Added', sortField: 'DateCreated,SortName' }
                     ];
                 }
             case 'MusicAlbum':
                 {
                     return [
                         {},
-                        { name: 'Album Artist' },
-                        { name: 'Name' },
-                        { name: 'Date Added' },
-                        { name: 'Release Date' },
-                        { name: 'Rating' },
-                        { name: 'Runtime' }
+                        { name: 'Album Artist', sortField: 'AlbumArtist,SortName' },
+                        { name: 'Name', sortField: 'SortName' },
+                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
+                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
+                        { name: 'Parental Rating', sortField: 'OfficialRating,SortName' },
+                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' },
+                        { name: 'Runtime', sortField: 'Runtime,SortName' }
                     ];
                 }
             default:
                 {
                     return [
                         {},
-                        { name: 'Name' },
-                        { name: 'Date Added' },
-                        { name: 'Release Date' },
-                        { name: 'Rating' },
-                        { name: 'Runtime' },
+                        { name: 'Name', sortField: 'SortName' },
+                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
+                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
+                        { name: 'Parental Rating', sortField: 'OfficialRating,SortName' },
+                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' },
+                        { name: 'Runtime', sortField: 'Runtime,SortName' },
                         { name: 'Video' },
+                        { name: 'Resolution' },
                         { name: 'Audio' },
                         { name: 'Subtitles' },
                         { name: 'Trailers' },
                         { name: 'Specials' }
                     ];
+                }
+        }
+    }
+
+    function getDefaultSortOrder(reportType) {
+
+        switch (reportType) {
+
+            case 'Season':
+                {
+                    return "SeriesSortName,SortName";
+                }
+            case 'Series':
+                {
+                    return "SortName";
+                }
+            case 'Game':
+                {
+                    return "GameSystem,SortName";
+                }
+            case 'Audio':
+                {
+                    return "AlbumArtist,Album,SortName";
+                }
+            case 'Episode':
+                {
+                    return "SeriesSortName,SortName";
+                }
+            case 'BoxSet':
+                {
+                    return "SortName";
+                }
+            case 'Book':
+                {
+                    return "SortName";
+                }
+            case 'MusicArtist':
+                {
+                    return "SortName";
+                }
+            case 'MusicAlbum':
+                {
+                    return "AlbumArtist,SortName";
+                }
+            default:
+                {
+                    return "SortName";
                 }
         }
     }
@@ -150,6 +209,8 @@
 
             var html = '';
             html += '<td>';
+
+            var stream;
 
             switch (cell.type || cell.name) {
 
@@ -178,6 +239,11 @@
                         html += item.Studios.length ? item.Studios[0].Name : '&nbsp;';
                         break;
                     }
+                case 'Disc':
+                    {
+                        html += item.ParentIndexNumber == null ? '' : item.ParentIndexNumber;
+                        break;
+                    }
                 case 'Track':
                     {
                         html += item.IndexNumber == null ? '' : item.IndexNumber;
@@ -190,7 +256,7 @@
                     }
                 case 'Audio':
                     {
-                        var stream = (item.MediaStreams || []).filter(function (s) {
+                        stream = (item.MediaStreams || []).filter(function (s) {
 
                             return s.Type == 'Audio';
 
@@ -205,7 +271,7 @@
                     }
                 case 'Video':
                     {
-                        var stream = (item.MediaStreams || []).filter(function (s) {
+                        stream = (item.MediaStreams || []).filter(function (s) {
 
                             return s.Type == 'Video';
 
@@ -213,6 +279,19 @@
 
                         if (stream) {
                             html += (stream.Codec || '').toUpperCase();
+                        }
+                        break;
+                    }
+                case 'Resolution':
+                    {
+                        stream = (item.MediaStreams || []).filter(function (s) {
+
+                            return s.Type == 'Video';
+
+                        })[0];
+
+                        if (stream && stream.Width) {
+                            html += stream.Width + "*" + (stream.Height || "-");
                         }
                         break;
                     }
@@ -265,7 +344,7 @@
                         }
                         break;
                     }
-                    
+
                 case 'Season':
                     {
                         if (item.Type == "Episode") {
@@ -281,12 +360,17 @@
                         html += '<a href="edititemmetadata.html?id=' + item.Id + '">' + LibraryBrowser.getPosterViewDisplayName(item, false, false) + '</a>';
                         break;
                     }
-                case 'Rating':
+                case 'Community Rating':
+                    {
+                        html += item.CommunityRating || '&nbsp;';
+                        break;
+                    }
+                case 'Parental Rating':
                     {
                         html += item.OfficialRating || '&nbsp;';
                         break;
                     }
-                    
+
                 case 'Year':
                 case 'Release Date':
                     {
@@ -357,7 +441,7 @@
                         }
 
                         if (!item.BackdropImageTags || !item.BackdropImageTags.length) {
-                            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "Channel") {
+                            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "Channel" && item.Type !== "MusicAlbum") {
                                 html += '<a href="edititemimages.html?id=' + item.Id + '"><img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." /></a>';
                             }
                         }
@@ -378,11 +462,11 @@
         }).join('');
     }
 
-    function getReportHtml(items, reportType) {
+    function getReportHtml(items, reportType, currentSortField, currentSortDirection) {
 
         var html = '';
 
-        html += '<table data-role="table" data-mode="reflow" class="tblLibraryReport detailTable stripedTable ui-responsive table-stroke" style="display: table;">';
+        html += '<table id="tblReport" data-role="table" data-mode="reflow" class="tblLibraryReport stripedTable ui-responsive table-stroke detailTable" style="display:table;">';
 
         html += '<thead>';
         html += '<tr>';
@@ -391,7 +475,31 @@
 
         html += cells.map(function (c) {
 
-            return '<th>' + (c.name || '&nbsp;') + '</th>';
+            var cellHtml = '<th data-priority="' + (c.priority || 'persist') + '">';
+
+            if (c.sortField) {
+                cellHtml += '<a class="lnkColumnSort" href="#" data-sortfield="' + c.sortField + '" style="text-decoration:underline;">';
+            }
+
+            cellHtml += (c.name || '&nbsp;');
+
+            if (c.sortField) {
+
+                cellHtml += '</a>';
+
+                if (c.sortField == currentSortField) {
+
+                    if (currentSortDirection == "Descending") {
+                        cellHtml += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:12px;">&darr;</span>';
+                    } else {
+                        cellHtml += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:12px;">&uarr;</span>';
+                    }
+                }
+            }
+
+            cellHtml += '</th>';
+
+            return cellHtml;
 
         }).join('');
 
@@ -427,7 +535,7 @@
 
         $('.listBottomPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount)).trigger('create');
 
-        $('.reportContainer', page).html(getReportHtml(result.Items, reportType)).trigger('create');
+        $('.reportContainer', page).html(getReportHtml(result.Items, reportType, query.SortBy, query.SortOrder)).trigger('create');
 
         $('.btnNextPage', page).on('click', function () {
             query.StartIndex += query.Limit;
@@ -442,6 +550,34 @@
         $('.selectPageSize', page).on('change', function () {
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
+            reloadItems(page);
+        });
+
+        $('.lnkColumnSort', page).on('click', function () {
+
+            var order = this.getAttribute('data-sortfield');
+
+            if (query.SortBy == order) {
+
+                if (query.SortOrder == "Descending") {
+
+                    query.SortOrder = "Ascending";
+                    query.SortBy = defaultSortBy;
+
+                } else {
+
+                    query.SortOrder = "Descending";
+                    query.SortBy = order;
+                }
+
+            } else {
+
+                query.SortOrder = "Ascending";
+                query.SortBy = order;
+            }
+
+            query.StartIndex = 0;
+
             reloadItems(page);
         });
     }
@@ -535,6 +671,9 @@
 
             query.StartIndex = 0;
             query.IncludeItemTypes = this.value;
+
+            query.SortBy = getDefaultSortOrder(this.value);
+            query.SortOrder = "Ascending";
 
             reloadItems(page);
         });
@@ -709,6 +848,9 @@
             query.Limit = limit;
             query.StartIndex = 0;
         }
+
+        query.SortBy = getDefaultSortOrder($('#selectView', page).val());
+        query.SortOrder = "Ascending";
 
         reloadItems(page);
 

@@ -16,6 +16,8 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public string FileFormat { get; set; }
 
+        public string MimeType { get; set; }
+
         public int PlayState { get; set; }
 
         public string StreamUrl { get; set; }
@@ -51,10 +53,21 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     if (string.IsNullOrWhiteSpace(transcodeSetting.Container))
                         continue;
-                    if (path.EndsWith(transcodeSetting.Container))
+                    if (path.EndsWith(transcodeSetting.Container) && !string.IsNullOrWhiteSpace(transcodeSetting.TargetContainer))
                     {
                         playlistItem.Transcode = true;
                         playlistItem.FileFormat = transcodeSetting.TargetContainer;
+                        
+                        if (string.IsNullOrWhiteSpace(transcodeSetting.MimeType))
+                            playlistItem.MimeType = transcodeSetting.MimeType;
+                        
+                        return playlistItem;
+                    }
+                    if (path.EndsWith(transcodeSetting.Container) && !string.IsNullOrWhiteSpace(transcodeSetting.MimeType))
+                    {
+                        playlistItem.Transcode = false;
+                        playlistItem.FileFormat = transcodeSetting.Container;
+                        playlistItem.MimeType = transcodeSetting.MimeType;
                         return playlistItem;
                     }
                 }

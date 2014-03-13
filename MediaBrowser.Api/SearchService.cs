@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Drawing;
+﻿using System;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -63,6 +64,9 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "IncludeArtists", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool IncludeArtists { get; set; }
 
+        [ApiMember(Name = "IncludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string IncludeItemTypes { get; set; }
+        
         public GetSearchHints()
         {
             IncludeArtists = true;
@@ -130,7 +134,8 @@ namespace MediaBrowser.Api
                 IncludePeople = request.IncludePeople,
                 IncludeStudios = request.IncludeStudios,
                 StartIndex = request.StartIndex,
-                UserId = request.UserId
+                UserId = request.UserId,
+                IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray()
 
             }).ConfigureAwait(false);
 
@@ -206,7 +211,8 @@ namespace MediaBrowser.Api
 
                 result.SongCount = songs.Count;
 
-                result.Artists = _libraryManager.GetAllArtists(songs)
+                result.Artists = songs.SelectMany(i => i.AllArtists)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
                 result.AlbumArtist = songs.Select(i => i.AlbumArtist).FirstOrDefault(i => !string.IsNullOrEmpty(i));

@@ -357,7 +357,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        public IEnumerable<FileInfo> GetSubtitleFiles(Video video, IDirectoryService directoryService)
+        public IEnumerable<FileSystemInfo> GetSubtitleFiles(Video video, IDirectoryService directoryService)
         {
             var containingPath = video.ContainingFolderPath;
 

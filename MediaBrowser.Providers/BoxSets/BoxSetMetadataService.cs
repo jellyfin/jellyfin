@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -37,6 +38,15 @@ namespace MediaBrowser.Providers.BoxSets
         protected override void MergeData(BoxSet source, BoxSet target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+
+            if (mergeMetadataSettings)
+            {
+                var list = source.LinkedChildren.ToList();
+
+                list.AddRange(target.LinkedChildren.Where(i => i.Type == LinkedChildType.Shortcut));
+
+                target.LinkedChildren = list;
+            }
         }
 
         protected override ItemUpdateType BeforeSave(BoxSet item)

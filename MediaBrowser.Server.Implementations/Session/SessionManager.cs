@@ -69,6 +69,8 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private IEnumerable<ISessionControllerFactory> _sessionFactories = new List<ISessionControllerFactory>();
 
+        private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionManager" /> class.
         /// </summary>
@@ -146,7 +148,7 @@ namespace MediaBrowser.Server.Implementations.Session
             var userId = user == null ? (Guid?)null : user.Id;
             var username = user == null ? null : user.Name;
 
-            var session = GetSessionInfo(clientType, appVersion, deviceId, deviceName, remoteEndPoint, userId, username);
+            var session = await GetSessionInfo(clientType, appVersion, deviceId, deviceName, remoteEndPoint, userId, username).ConfigureAwait(false);
 
             session.LastActivityDate = activityDate;
 
@@ -169,6 +171,46 @@ namespace MediaBrowser.Server.Implementations.Session
             await _userRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
 
             return session;
+        }
+
+        public async Task ReportSessionEnded(Guid sessionId)
+        {
+            await _sessionLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+
+            try
+            {
+                var session = GetSession(sessionId);
+
+                if (session == null)
+                {
+                    throw new ArgumentException("Session not found");
+                }
+
+                var key = GetSessionKey(session.Client, session.ApplicationVersion, session.DeviceId);
+
+                SessionInfo removed;
+
+                if (_activeConnections.TryRemove(key, out removed))
+                {
+                    var disposable = removed.SessionController as IDisposable;
+
+                    if (disposable != null)
+                    {
+                        try
+                        {
+                            disposable.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error disposing session controller", ex);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _sessionLock.Release();
+            }
         }
 
         /// <summary>
@@ -207,6 +249,11 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
+        private string GetSessionKey(string clientType, string appVersion, string deviceId)
+        {
+            return clientType + deviceId + appVersion;
+        }
+
         /// <summary>
         /// Gets the connection.
         /// </summary>
@@ -218,36 +265,45 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="userId">The user identifier.</param>
         /// <param name="username">The username.</param>
         /// <returns>SessionInfo.</returns>
-        private SessionInfo GetSessionInfo(string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Guid? userId, string username)
+        private async Task<SessionInfo> GetSessionInfo(string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Guid? userId, string username)
         {
-            var key = clientType + deviceId + appVersion;
+            var key = GetSessionKey(clientType, appVersion, deviceId);
 
-            var connection = _activeConnections.GetOrAdd(key, keyName => new SessionInfo
+            await _sessionLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+
+            try
             {
-                Client = clientType,
-                DeviceId = deviceId,
-                ApplicationVersion = appVersion,
-                Id = Guid.NewGuid()
-            });
+                var connection = _activeConnections.GetOrAdd(key, keyName => new SessionInfo
+                {
+                    Client = clientType,
+                    DeviceId = deviceId,
+                    ApplicationVersion = appVersion,
+                    Id = Guid.NewGuid()
+                });
 
-            connection.DeviceName = deviceName;
-            connection.UserId = userId;
-            connection.UserName = username;
-            connection.RemoteEndPoint = remoteEndPoint;
+                connection.DeviceName = deviceName;
+                connection.UserId = userId;
+                connection.UserName = username;
+                connection.RemoteEndPoint = remoteEndPoint;
 
-            if (!userId.HasValue)
-            {
-                connection.AdditionalUsers.Clear();
+                if (!userId.HasValue)
+                {
+                    connection.AdditionalUsers.Clear();
+                }
+
+                if (connection.SessionController == null)
+                {
+                    connection.SessionController = _sessionFactories
+                        .Select(i => i.GetSessionController(connection))
+                        .FirstOrDefault(i => i != null);
+                }
+
+                return connection;
             }
-
-            if (connection.SessionController == null)
+            finally
             {
-                connection.SessionController = _sessionFactories
-                    .Select(i => i.GetSessionController(connection))
-                    .FirstOrDefault(i => i != null);
+                _sessionLock.Release();
             }
-
-            return connection;
         }
 
         private List<User> GetUsers(SessionInfo session)

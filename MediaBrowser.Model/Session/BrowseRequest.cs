@@ -23,7 +23,7 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The name of the item.</value>
         public string ItemName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the context (Movies, Music, Tv, etc)
         /// Applicable to genres, studios and persons only because the context of items and artists can be inferred.

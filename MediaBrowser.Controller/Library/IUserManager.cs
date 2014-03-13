@@ -51,9 +51,8 @@ namespace MediaBrowser.Controller.Library
         /// Refreshes metadata for each user
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
         /// <returns>Task.</returns>
-        Task RefreshUsersMetadata(CancellationToken cancellationToken, bool force = false);
+        Task RefreshUsersMetadata(CancellationToken cancellationToken);
 
         /// <summary>
         /// Renames the user.

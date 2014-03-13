@@ -18,6 +18,11 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
+                            <label for="txtServerName">Friendly server name:</label>
+                            <input id="txtServerName" data-mini="true" />
+                            <div class="fieldDescription">This name will be used to identify this server. If left blank, the computer name will be used.</div>
+                        </li>
+                        <li>
                             <label for="txtPortNumber">Http server port number: </label>
                             <input type="number" id="txtPortNumber" name="txtPortNumber" pattern="[0-9]*" required="required" min="1" data-mini="true" />
                         </li>
@@ -26,14 +31,14 @@
                             <input type="number" id="txtWebSocketPortNumber" name="txtWebSocketPortNumber" pattern="[0-9]*" required="required" min="1" data-mini="true" />
                         </li>
                         <li>
-                            <label for="txtDdns">External DDNS:</label>
-                            <input id="txtDdns" data-mini="true" />
-                            <div class="fieldDescription">If you have a dynamic DNS enter it here. Media Browser apps will use it when connecting remotely.</div>
-                        </li>
-                        <li>
                             <label for="chkEnableUpnp">Enable UPnP</label>
                             <input type="checkbox" id="chkEnableUpnp" data-mini="true" />
                             <div class="fieldDescription">UPnP allows automated router configuration for remote access. This may not work with some router models.</div>
+                        </li>
+                        <li>
+                            <label for="txtDdns">External DDNS:</label>
+                            <input id="txtDdns" data-mini="true" />
+                            <div class="fieldDescription">If you have a dynamic DNS enter it here. Media Browser apps will use it when connecting remotely.</div>
                         </li>
                     </ul>
                     <ul data-role="listview" class="ulForm">

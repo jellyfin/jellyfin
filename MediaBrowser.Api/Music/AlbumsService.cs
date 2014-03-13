@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Api
+namespace MediaBrowser.Api.Music
 {
     [Route("/Albums/{Id}/Similar", "GET")]
     [Api(Description = "Finds albums similar to a given album.")]

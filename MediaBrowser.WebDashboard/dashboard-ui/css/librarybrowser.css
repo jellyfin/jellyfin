@@ -7,12 +7,16 @@
     padding-top: 48px !important;
 }
 
+.libraryPage:not(.metadataEditorPage):not(#indexPage):not(#boxsetsPage) {
+    padding-top: 91px !important;
+}
+
 .ui-panel fieldset + fieldset {
     margin-top: 2em;
 }
 
 .headerArrowImage {
-    height: 24px;
+    height: 20px;
     margin-left: .5em;
 }
 
@@ -24,6 +28,8 @@
     z-index: 1000;
     top: 0;
     padding-left: 10px;
+    background: #181818;
+    border-bottom: 1px solid #080808;
 }
 
 .viewMenuLink {
@@ -111,29 +117,65 @@
 }
 
 .libraryViewNav {
-    text-align: center;
-    background-image: linear-gradient(#404040,#222);
-    border-bottom: 1px solid #111;
-    border-top: 1px solid #000;
-    font-family: sans-serif, Arial;
+    height: 42px;
+    overflow: hidden;
+    border-bottom: 1px solid #333;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 48px;
+    z-index: 1000;
+    background-color: #252525;
 }
 
-    .libraryViewNav .ui-btn-active {
-        border: 0!important;
-        background-color: #38c;
+.libraryViewNavInner {
+    text-align: center;
+    font-family: sans-serif, Arial;
+    font-size: 14px;
+    white-space: nowrap;
+    padding: 0 0 0;
+    overflow-x: auto;
+    height: 55px;
+    text-transform: uppercase;
+}
+
+.libraryViewNav .ui-btn-active .libraryViewNavLinkContent {
+    border-bottom-color: #38c;
+}
+
+.libraryViewNav a {
+    display: inline-block;
+    padding: 12px 0 0;
+    color: #eee!important;
+    text-decoration: none;
+    margin: 0 0;
+    position: relative;
+    font-weight: normal;
+}
+
+    .libraryViewNav a:hover {
+        color: #bbb!important;
     }
 
-    .libraryViewNav a {
-        display: inline-block;
-        padding: .6em 1em;
-        color: #eee!important;
-        text-decoration: none;
-        margin: 1px 0;
+    .libraryViewNav a:after {
+        content: "|";
+        color: #444;
+        font-size: 20px;
+        font-weight: normal !important;
+        position: absolute;
+        top: 7px;
     }
 
-        .libraryViewNav a:hover {
-            color: #bbb!important;
-        }
+    .libraryViewNav a:last-child::after {
+        content: "";
+    }
+
+.libraryViewNavLinkContent {
+    border-bottom: 6px solid transparent;
+    display: inline-block;
+    padding: 0 1em 6px;
+    margin: 0 -2px 0 -1px;
+}
 
 .ehsContent {
     max-width: 620px;
@@ -609,13 +651,6 @@ a.itemTag:hover {
         height: 7px;
     }
 
-@media all and (max-width: 550px) {
-
-    .desktopViewMenuLink {
-        display: none;
-    }
-}
-
 @media all and (min-width: 600px) {
     .inlineDetailSection:not(.hide) {
         display: inline-block;
@@ -627,21 +662,25 @@ a.itemTag:hover {
     }
 }
 
-@media all and (max-width: 750px) {
+@media all and (min-width: 800px) {
 
-    .libraryViewNav {
-        display: none !important;
-    }
-
-    .desktopHomeLink {
+    .libraryMenuButton {
         display: none;
     }
 }
 
-@media all and (min-width: 750px) {
+@media all and (max-width: 800px) {
 
-    .libraryMenuButton {
+    .desktopHomeLink {
         display: none;
+    }
+
+    .desktopViewMenuLink {
+        display: none;
+    }
+
+    .libraryViewNavInner {
+        text-align: left;
     }
 }
 
@@ -776,6 +815,10 @@ a.itemTag:hover {
         max-width: 950px;
     }
 
+    .detailPageContent {
+        max-width: 930px;
+    }
+
     .primaryDetailPageContent {
         max-width: 850px;
     }
@@ -786,9 +829,6 @@ a.itemTag:hover {
     .ehsContent {
         max-width: 1240px;
     }
-}
-
-@media all and (min-width: 1920px) {
 }
 
 .detailPageParentLink {
@@ -927,7 +967,7 @@ a.itemTag:hover {
     border: 0;
     margin: 0;
     height: 14px;
-    border: 1px solid #222;
+    border: 0 solid #222;
     border-radius: 0;
     width: 50px;
     margin-right: 5px;

@@ -56,15 +56,21 @@ namespace MediaBrowser.Api.UserLibrary
         {
             User user = null;
             BaseItem item;
+            List<BaseItem> libraryItems;
 
             if (request.UserId.HasValue)
             {
                 user = UserManager.GetUserById(request.UserId.Value);
                 item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : DtoService.GetItemByDtoId(request.ParentId, user.Id);
+
+                libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
+
             }
             else
             {
                 item = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : DtoService.GetItemByDtoId(request.ParentId);
+
+                libraryItems = LibraryManager.RootFolder.RecursiveChildren.ToList();
             }
 
             IEnumerable<BaseItem> items;
@@ -93,7 +99,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var filteredItems = FilterItems(request, extractedItems, user);
 
-            filteredItems = FilterByLibraryItems(request, filteredItems, user);
+            filteredItems = FilterByLibraryItems(request, filteredItems, user, libraryItems);
 
             filteredItems = ItemsService.ApplySortOrder(request, filteredItems, user, LibraryManager).Cast<TItemType>();
 
@@ -122,44 +128,38 @@ namespace MediaBrowser.Api.UserLibrary
 
             var fields = request.GetItemFields().ToList();
 
-            var dtos = ibnItems.Select(i => GetDto(i, user, fields));
+            var tuples = ibnItems.Select(i => new Tuple<TItemType, List<BaseItem>>(i, i.GetTaggedItems(libraryItems).ToList()));
+
+            var dtos = tuples.Select(i => GetDto(i.Item1, user, fields, i.Item2));
 
             result.Items = dtos.Where(i => i != null).ToArray();
 
             return result;
         }
 
-        private IEnumerable<TItemType> FilterByLibraryItems(GetItemsByName request, IEnumerable<TItemType> items, User user)
+        private IEnumerable<TItemType> FilterByLibraryItems(GetItemsByName request, IEnumerable<TItemType> items, User user, IEnumerable<BaseItem> libraryItems)
         {
             var filters = request.GetFilters().ToList();
 
             if (filters.Contains(ItemFilter.IsPlayed))
             {
-                var libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
-
-                items = items.Where(i => GetLibraryItems(i, libraryItems).All(l => l.IsPlayed(user)));
+                items = items.Where(i => i.GetTaggedItems(libraryItems).All(l => l.IsPlayed(user)));
             }
 
             if (filters.Contains(ItemFilter.IsUnplayed))
             {
-                var libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
-
-                items = items.Where(i => GetLibraryItems(i, libraryItems).All(l => l.IsUnplayed(user)));
+                items = items.Where(i => i.GetTaggedItems(libraryItems).All(l => l.IsUnplayed(user)));
             }
 
             if (request.IsPlayed.HasValue)
             {
                 var val = request.IsPlayed.Value;
 
-                var libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
-
-                items = items.Where(i => GetLibraryItems(i, libraryItems).All(l => l.IsPlayed(user)) == val);
+                items = items.Where(i => i.GetTaggedItems(libraryItems).All(l => l.IsPlayed(user)) == val);
             }
 
             return items;
         }
-
-        protected abstract IEnumerable<BaseItem> GetLibraryItems(TItemType item, IEnumerable<BaseItem> libraryItems);
 
         /// <summary>
         /// Filters the items.
@@ -173,6 +173,10 @@ namespace MediaBrowser.Api.UserLibrary
             if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
             {
                 items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
+            }
+            if (!string.IsNullOrEmpty(request.NameStartsWith))
+            {
+                items = items.Where(i => string.Compare(request.NameStartsWith, i.SortName.Substring(0, 1), StringComparison.CurrentCultureIgnoreCase) == 0);
             }
 
             if (!string.IsNullOrEmpty(request.NameLessThan))
@@ -288,11 +292,11 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
+        /// <param name="libraryItems">The library items.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
-        private BaseItemDto GetDto(TItemType item, User user, List<ItemFields> fields)
+        private BaseItemDto GetDto(TItemType item, User user, List<ItemFields> fields, List<BaseItem> libraryItems)
         {
-            var dto = user == null ? DtoService.GetBaseItemDto(item, fields) :
-                 DtoService.GetBaseItemDto(item, fields, user);
+            var dto = DtoService.GetItemByNameDto(item, fields, libraryItems, user);
 
             return dto;
         }
@@ -313,9 +317,12 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "NameStartsWithOrGreater", Description = "Optional filter by items whose name is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameStartsWithOrGreater { get; set; }
 
+        [ApiMember(Name = "NameStartsWith", Description = "Optional filter by items whose name is sorted equally than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string NameStartsWith { get; set; }
+
         [ApiMember(Name = "NameLessThan", Description = "Optional filter by items whose name is sorted less than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameLessThan { get; set; }
-        
+
         public GetItemsByName()
         {
             Recursive = true;

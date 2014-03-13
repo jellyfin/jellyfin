@@ -9,6 +9,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -36,6 +37,7 @@ using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
+using MediaBrowser.Server.Implementations.Collections;
 using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.Drawing;
 using MediaBrowser.Server.Implementations.Dto;
@@ -487,6 +489,9 @@ namespace MediaBrowser.ServerApplication
 
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);
+
+            var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);
+            RegisterSingleInstance<ICollectionManager>(collectionManager);
 
             LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager);
             RegisterSingleInstance(LiveTvManager);

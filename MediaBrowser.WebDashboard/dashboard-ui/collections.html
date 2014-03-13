@@ -4,17 +4,7 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="boxsetsPage" data-role="page" class="page libraryPage" data-theme="b" data-view="movies">
-
-        <div class="libraryViewNav">
-            <a href="moviesrecommended.html">Suggested</a>
-            <a href="movies.html">Movies</a>
-            <a href="boxsets.html" class="ui-btn-active">Collections</a>
-            <a href="movietrailers.html">Trailers</a>
-            <a href="moviegenres.html">Genres</a>
-            <a href="moviepeople.html">People</a>
-            <a href="moviestudios.html">Studios</a>
-        </div>
+    <div id="boxsetsPage" data-role="page" class="page libraryPage" data-theme="b" data-view="boxsets">
 
         <div class="alphabetPicker">
         </div>
@@ -26,17 +16,41 @@
                 </div>
                 <div class="listTopPaging">
                 </div>
+                <button id="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" class="hide">New</button>
                 <div class="viewSummary"></div>
             </div>
             <div id="items" class="itemsContainer"></div>
         </div>
+        <div data-role="panel" id="newCollectionPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
+            <form class="newCollectionForm">
+
+                <h3>New Collection</h3>
+
+                <br />
+                <div>
+                    <label for="txtNewCollectionName">Name:</label>
+                    <input type="text" id="txtNewCollectionName" required="required" />
+                    <div class="fieldDescription">Example: Star Wars Collection</div>
+                </div>
+
+                <br />
+                <div>
+                    <label for="chkEnableInternetMetadata">Search the internet for artwork and metadata</label>
+                    <input type="checkbox" id="chkEnableInternetMetadata" data-mini="true" />
+                </div>
+                <br />
+                <p>
+                    <button id="btnSubmitNewCollection" type="submit" data-icon="plus" data-mini="true" data-theme="b">Create</button>
+                </p>
+            </form>
+        </div>
+
         <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
 
             <form>
                 <div id="sortpanel">
                     <fieldset data-role="controlgroup">
-                        <legend>
-                            <h3>Sort By:</h3>
+                        <legend>Sort By:
                         </legend>
 
                         <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
@@ -50,8 +64,7 @@
                     </fieldset>
 
                     <fieldset data-role="controlgroup">
-                        <legend>
-                            <h3>Sort Order:</h3>
+                        <legend>Sort Order:
                         </legend>
 
                         <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
@@ -66,8 +79,7 @@
         <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
             <form>
                 <fieldset data-role="controlgroup">
-                    <legend>
-                        <h3>Filters:</h3>
+                    <legend>Filters:
                     </legend>
                     <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
                     <label for="chkIsFavorite">Favorite</label>
@@ -80,8 +92,7 @@
                 </fieldset>
 
                 <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Features:</strong>
+                    <legend>Features:
                     </legend>
 
                     <input class="chkFeatureFilter" type="checkbox" name="chkTrailer" id="chkTrailer" data-mini="true">
@@ -97,6 +108,10 @@
 
             </form>
         </div>
+
+        <script type="text/javascript">
+            $('.newCollectionForm').off('submit', BoxSetsPage.onNewCollectionSubmit).on('submit', BoxSetsPage.onNewCollectionSubmit);
+        </script>
     </div>
 </body>
 </html>

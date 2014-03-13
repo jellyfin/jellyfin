@@ -93,10 +93,10 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
 
-                return DtoService.GetBaseItemDto(item, fields.ToList(), user);
+                return DtoService.GetItemByNameDto(item, fields.ToList(), user);
             }
 
-            return DtoService.GetBaseItemDto(item, fields.ToList());
+            return DtoService.GetItemByNameDto(item, fields.ToList());
         }
 
         /// <summary>
@@ -162,11 +162,6 @@ namespace MediaBrowser.Api.UserLibrary
                 people :
 
                 people.Where(p => personTypes.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase) || personTypes.Contains(p.Role ?? string.Empty, StringComparer.OrdinalIgnoreCase));
-        }
-
-        protected override IEnumerable<BaseItem> GetLibraryItems(Person item, IEnumerable<BaseItem> libraryItems)
-        {
-            return libraryItems.Where(i => i.People.Any(p => string.Equals(p.Name, item.Name, StringComparison.OrdinalIgnoreCase)));
         }
     }
 }

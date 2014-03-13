@@ -1,6 +1,7 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Controller.Entities.Audio;
+using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -9,11 +10,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Genre : BaseItem, IItemByName
     {
-        public Genre()
-        {
-            UserItemCountList = new List<ItemByNameCounts>();
-        }
-
         /// <summary>
         /// Gets the user data key.
         /// </summary>
@@ -22,9 +18,6 @@ namespace MediaBrowser.Controller.Entities
         {
             return "Genre-" + Name;
         }
-
-        [IgnoreDataMember]
-        public List<ItemByNameCounts> UserItemCountList { get; set; }
 
         /// <summary>
         /// Returns the folder containing the item.
@@ -49,6 +42,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+        }
+
+        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
+        {
+            return inputItems.Where(i => !(i is Game) && !(i is IHasMusicGenres) && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase));
         }
     }
 }

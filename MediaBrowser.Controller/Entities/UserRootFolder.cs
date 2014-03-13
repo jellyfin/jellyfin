@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Providers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,7 +24,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var hasChanges = base.BeforeMetadataRefresh();
 
-            if (string.Equals("default", Name, System.StringComparison.OrdinalIgnoreCase))
+            if (string.Equals("default", Name, StringComparison.OrdinalIgnoreCase))
             {
                 Name = "Media Folders";
                 hasChanges = true;

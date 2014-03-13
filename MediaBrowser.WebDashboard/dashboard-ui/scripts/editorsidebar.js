@@ -46,7 +46,7 @@
         }
 
         if (!item.BackdropImageTags || !item.BackdropImageTags.length) {
-            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "Channel") {
+            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "Channel" && item.Type !== "MusicAlbum") {
                 htmlName += '<img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." />';
             }
         }
@@ -114,6 +114,13 @@
             nodes.push({ attr: { id: 'libraryreport', rel: 'default', itemtype: 'libraryreport' }, data: 'Reports' });
 
             callback(nodes);
+            
+            if (!selectedId) {
+                
+                if (window.location.toString().toLowerCase().indexOf('report.html') != -1) {
+                    selectedId = 'libraryreport';
+                }
+            }
 
             if (selectedId && nodes.filter(function (f) {
 

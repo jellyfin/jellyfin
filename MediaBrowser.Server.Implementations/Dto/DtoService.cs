@@ -121,41 +121,51 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            var itemByName = item as IItemByName;
-            if (itemByName != null)
-            {
-                AttachItemByNameCounts(dto, itemByName, user);
-            }
-
             return dto;
         }
 
-        /// <summary>
-        /// Attaches the item by name counts.
-        /// </summary>
-        /// <param name="dto">The dto.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="user">The user.</param>
-        private void AttachItemByNameCounts(BaseItemDto dto, IItemByName item, User user)
+        public BaseItemDto GetItemByNameDto<T>(T item, List<ItemFields> fields, User user = null)
+            where T : BaseItem, IItemByName
         {
-            if (user == null)
+            var libraryItems = user != null ? user.RootFolder.GetRecursiveChildren(user) : 
+                _libraryManager.RootFolder.RecursiveChildren;
+
+            return GetItemByNameDto(item, fields, item.GetTaggedItems(libraryItems).ToList(), user);
+        }
+
+        public BaseItemDto GetItemByNameDto<T>(T item, List<ItemFields> fields, List<BaseItem> taggedItems, User user = null)
+            where T : BaseItem, IItemByName
+        {
+            var dto = GetBaseItemDto(item, fields, user);
+
+            if (item is MusicArtist || item is MusicGenre)
             {
-                return;
+                dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
+                dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
+                dto.SongCount = taggedItems.Count(i => i is Audio);
+            }
+            else if (item is GameGenre)
+            {
+                dto.GameCount = taggedItems.Count(i => i is Game);
+            }
+            else
+            {
+                // This populates them all and covers Genre, Person, Studio, Year
+
+                dto.AdultVideoCount = taggedItems.Count(i => i is AdultVideo);
+                dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
+                dto.EpisodeCount = taggedItems.Count(i => i is Episode);
+                dto.GameCount = taggedItems.Count(i => i is Game);
+                dto.MovieCount = taggedItems.Count(i => i is Movie);
+                dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
+                dto.SeriesCount = taggedItems.Count(i => i is Series);
+                dto.SongCount = taggedItems.Count(i => i is Audio);
+                dto.TrailerCount = taggedItems.Count(i => i is Trailer);
             }
 
-            var counts = item.GetItemByNameCounts(user.Id) ?? new ItemByNameCounts();
+            dto.ChildCount = taggedItems.Count;
 
-            dto.ChildCount = counts.TotalCount;
-
-            dto.AdultVideoCount = counts.AdultVideoCount;
-            dto.AlbumCount = counts.AlbumCount;
-            dto.EpisodeCount = counts.EpisodeCount;
-            dto.GameCount = counts.GameCount;
-            dto.MovieCount = counts.MovieCount;
-            dto.MusicVideoCount = counts.MusicVideoCount;
-            dto.SeriesCount = counts.SeriesCount;
-            dto.SongCount = counts.SongCount;
-            dto.TrailerCount = counts.TrailerCount;
+            return dto;
         }
 
         /// <summary>
@@ -296,6 +306,57 @@ namespace MediaBrowser.Server.Implementations.Dto
             };
 
             info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary);
+
+            var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;
+
+            var thumbItem = item.HasImage(ImageType.Thumb) ? item : null;
+
+            if (thumbItem == null)
+            {
+                var episode = item as Episode;
+
+                if (episode != null)
+                {
+                    var series = episode.Series;
+
+                    if (series != null && series.HasImage(ImageType.Thumb))
+                    {
+                        thumbItem = series;
+                    }
+                }
+            }
+
+            if (backropItem == null)
+            {
+                var episode = item as Episode;
+
+                if (episode != null)
+                {
+                    var series = episode.Series;
+
+                    if (series != null && series.HasImage(ImageType.Backdrop))
+                    {
+                        backropItem = series;
+                    }
+                }
+            }
+
+            if (thumbItem == null)
+            {
+                thumbItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Thumb));
+            }
+
+            if (thumbItem != null)
+            {
+                info.ThumbImageTag = GetImageCacheTag(thumbItem, ImageType.Thumb);
+                info.ThumbItemId = GetDtoId(thumbItem);
+            }
+
+            if (thumbItem != null)
+            {
+                info.BackdropImageTag = GetImageCacheTag(backropItem, ImageType.Backdrop);
+                info.BackdropItemId = GetDtoId(backropItem);
+            }
 
             return info;
         }

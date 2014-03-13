@@ -7,20 +7,9 @@
     <div id="itemDetailPage" data-role="page" class="page libraryPage" data-theme="b">
         <div id="movieTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav">
+                <a href="movieslatest.html">Latest</a>
                 <a href="moviesrecommended.html">Suggested</a>
                 <a href="movies.html" class="ui-btn-active">Movies</a>
-                <a href="boxsets.html">Collections</a>
-                <a href="movietrailers.html">Trailers</a>
-                <a href="moviegenres.html">Genres</a>
-                <a href="moviepeople.html">People</a>
-                <a href="moviestudios.html">Studios</a>
-            </div>
-        </div>
-        <div id="boxsetTabs" class="itemTabs" style="display: none;">
-            <div class="libraryViewNav">
-                <a href="moviesrecommended.html">Suggested</a>
-                <a href="movies.html">Movies</a>
-                <a href="boxsets.html" class="ui-btn-active">Collections</a>
                 <a href="movietrailers.html">Trailers</a>
                 <a href="moviegenres.html">Genres</a>
                 <a href="moviepeople.html">People</a>
@@ -29,9 +18,9 @@
         </div>
         <div id="trailerTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav">
+                <a href="movieslatest.html">Latest</a>
                 <a href="moviesrecommended.html">Suggested</a>
                 <a href="movies.html">Movies</a>
-                <a href="boxsets.html">Collections</a>
                 <a href="movietrailers.html" class="ui-btn-active">Trailers</a>
                 <a href="moviegenres.html">Genres</a>
                 <a href="moviepeople.html">People</a>
@@ -173,8 +162,11 @@
                         <p class="itemTags"></p>
                     </div>
                 </div>
+                <div class="collectionItems"></div>
                 <div id="childrenCollapsible" class="hide detailSection">
-                    <div class="detailSectionHeader"><span id="childrenTitle"></span></div>
+                    <div class="detailSectionHeader">
+                        <span id="childrenTitle"></span>
+                    </div>
                     <div id="childrenContent" class="detailSectionContent"></div>
                 </div>
                 <div id="trailersCollapsible" class="detailSection hide">

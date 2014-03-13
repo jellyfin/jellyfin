@@ -102,7 +102,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
             }
 
-            var threads = GetNumberOfThreads(string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
+            var threads = GetNumberOfThreads(state, string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
 
             var inputModifier = GetInputModifier(state);
 

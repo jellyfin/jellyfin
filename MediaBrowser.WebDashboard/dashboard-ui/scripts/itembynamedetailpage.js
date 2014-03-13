@@ -396,7 +396,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "",
             Recursive: true,
-            Fields: "DateCreated,AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio",
+            Fields: "AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio",
             Limit: LibraryBrowser.getDefaultPageSize(),
             StartIndex: 0
         };
@@ -477,10 +477,11 @@
             }
             else {
 
-                html += LibraryBrowser.getPosterDetailViewHtml({
+                html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    preferBackdrop: shape == "backdrop",
-                    shape: shape
+                    shape: "square",
+                    useAverageAspectRatio: true,
+                    showTitle: true
                 });
             }
 

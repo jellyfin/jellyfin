@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Movies
             new MovieXmlParser(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
-        protected override FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             return MovieXmlProvider.GetXmlFileInfo(info, FileSystem);
         }
