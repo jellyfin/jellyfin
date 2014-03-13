@@ -174,7 +174,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var result = new QueryResult<ChannelInfoDto>
             {
                 Items = returnList.ToArray(),
-                TotalRecordCount = returnList.Count
+                TotalRecordCount = allChannels.Count
             };
 
             return result;
@@ -985,6 +985,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 entities = entities.Where(i => i.IsParentalAllowed(currentUser));
             }
 
+            var entityList = entities.ToList();
+            entities = entityList;
+
             if (query.StartIndex.HasValue)
             {
                 entities = entities.Skip(query.StartIndex.Value);
@@ -1006,7 +1009,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return new QueryResult<RecordingInfoDto>
             {
                 Items = returnArray,
-                TotalRecordCount = returnArray.Length
+                TotalRecordCount = entityList.Count
             };
         }
 
