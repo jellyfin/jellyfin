@@ -20,7 +20,13 @@ namespace MediaBrowser.Dlna.PlayTo.Configuration
         /// The target container.
         /// </value>
         public string TargetContainer { get; set; }
-      
+
+        /// <summary>
+        /// Gets or sets the Mimetype to enforce
+        /// </summary>
+        /// <value>
+        /// The MimeType.
+        /// </value>
         public string MimeType { get; set; }
 
         /// <summary>

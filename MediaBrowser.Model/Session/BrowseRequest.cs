@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace MediaBrowser.Model.Session
 {
     /// <summary>
@@ -11,6 +13,8 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The type of the item.</value>
         public string ItemType { get; set; }
+
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the item id.
