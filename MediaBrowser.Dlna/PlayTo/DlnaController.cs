@@ -46,13 +46,14 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, INetworkManager networkManager)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, INetworkManager networkManager, IDlnaManager dlnaManager)
         {
             _session = session;
             _itemRepository = itemRepository;
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
             _networkManager = networkManager;
+            _dlnaManager = dlnaManager;
             _logger = logger;
         }
 
