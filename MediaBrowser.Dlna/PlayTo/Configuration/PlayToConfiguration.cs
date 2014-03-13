@@ -13,12 +13,14 @@ namespace MediaBrowser.Dlna.PlayTo.Configuration
             private set;
         }
 
+        private static readonly string[] _supportedStaticFormats = { "mp3", "flac", "m4a", "wma", "avi", "mp4", "mkv", "ts" };  
+        
         [XmlIgnore]
         public string[] SupportedStaticFormats
         {
             get
             {
-                return new[] { "mp3", "flac", "m4a", "wma", "avi", "mp4", "mkv" };
+                return _supportedStaticFormats;
             }
         }
 
