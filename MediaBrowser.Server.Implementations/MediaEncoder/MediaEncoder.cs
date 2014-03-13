@@ -886,8 +886,10 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             var memoryStream = new MemoryStream();
 
+#pragma warning disable 4014
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             process.StandardOutput.BaseStream.CopyToAsync(memoryStream);
+#pragma warning restore 4014
 
             // MUST read both stdout and stderr asynchronously or a deadlock may occurr
             process.BeginErrorReadLine();

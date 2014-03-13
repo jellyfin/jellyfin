@@ -461,6 +461,13 @@
                 }
             }
 
+            var enableRibbons = false;
+            var user = Dashboard.getCurrentUser().done(function (data) {
+                if (data.Configuration) {
+                    enableRibbons = data.Configuration.DisplayMovieFormatRibbons;
+                }
+            });
+
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
@@ -663,6 +670,30 @@
                 cssClass += ' ' + options.shape + 'PosterItem';
 
                 html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
+
+                // Ribbon
+                if (item.MediaType == "Video" && enableRibbons) {
+                    // This would be much better if specified in the json payload
+                    // Another nice thing to have in the payload would be 720 vs 1080
+                    // Then, rather than "HD" it could display the specific HD format
+                    // "HD" doesn't do much good if you have the 720p and 1080p version
+                    var format = "SD";
+                    var ribbonColor = "ribbon-red";
+                    if (item.IsHD) {
+                        format = "HD";
+                        ribbonColor = "ribbon-blue";
+                    }
+                    if (item.Video3DFormat) {
+                        format = "3D";
+                        ribbonColor = "ribbon-3d";
+                    }
+   
+                    html += '<div class="ribbon-wrapper">';
+                    html += '<div class="ribbon ' + ribbonColor + '">';
+                    html += format;
+                    html += '</div>';
+                    html += '</div>';
+                }
 
                 var style = "";
 

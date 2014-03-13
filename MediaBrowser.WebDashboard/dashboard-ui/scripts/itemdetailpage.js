@@ -1101,11 +1101,11 @@
             var id = getParameterByName('v', trailer.Url);
 
             if (id) {
-                remoteTrailersHtml += '<iframe class="posterItem smallBackdropPosterItem" style="margin:0 3px;width:auto;" src="//www.youtube.com/embed/' + id + '" frameborder="0" allowfullscreen></iframe>';
+                remoteTrailersHtml += '<iframe class="posterItem smallBackdropPosterItem" style="margin:0 3px;width:auto;" src="//www.youtube.com/embed/' + id + '?wmode=opaque" frameborder="0" allowfullscreen></iframe>';
             }
         }
 
-        var elem = $('#trailersContent', page).html(remoteTrailersHtml);
+        var elem = $('#trailersContent', page).html(remoteTrailersHtml).css({ "position": "relative", "z-index": 0 });
 
         if (item.LocalTrailerCount) {
             ApiClient.getLocalTrailers(user.Id, item.Id).done(function (trailers) {

@@ -940,8 +940,10 @@ namespace MediaBrowser.Api.Playback
             // MUST read both stdout and stderr asynchronously or a deadlock may occurr
             process.BeginOutputReadLine();
 
+#pragma warning disable 4014
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             process.StandardError.BaseStream.CopyToAsync(state.LogFileStream);
+#pragma warning restore 4014
 
             // Wait for the file to exist before proceeeding
             while (!File.Exists(outputPath))

@@ -1304,17 +1304,17 @@ $(ApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
 
 
 $(function () {
+    var footerHtml = '<div id="footer" data-theme="b" class="ui-bar-b" style="display: none;">';
 
-    var footerHtml = '<div id="footer" data-theme="b" class="ui-bar-b">';
-    footerHtml += '<div id="nowPlayingBar" class="nowPlayingBar" style="display:none;">';
-    footerHtml += '<div class="barBackground ui-bar-b"></div>';
+    footerHtml += '<div id="mediaElement"></div>';
+
+    footerHtml += '<div id="nowPlayingBar" class="nowPlayingBar">';
+    footerHtml += '<div class="barBackground ui-bar-b">';
     footerHtml += '<div style="display:inline-block;width:12px;"></div>';
     footerHtml += '<a id="playlistButton" class="mediaButton playlistButton" href="playlist.html" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="Playlist">Playlist</a>';
     footerHtml += '<button id="previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
     footerHtml += '<button id="playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">Play</button>';
     footerHtml += '<button id="pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">Pause</button>';
-
-    footerHtml += '<div id="mediaElement"></div>';
 
     footerHtml += '<button id="stopButton" class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="stop" data-iconpos="notext" data-inline="true">Stop</button>';
     footerHtml += '<button id="nextTrackButton" class="mediaButton nextTrackButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">Next Track</button>';
@@ -1333,6 +1333,8 @@ $(function () {
     footerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
     footerHtml += '</div>';
 
+    footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
+
     footerHtml += '<button onclick="MediaPlayer.showQualityFlyout();" id="qualityButton" class="mediaButton qualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">Quality</button>';
     footerHtml += '<div class="mediaFlyoutContainer"><div id="qualityFlyout" style="display:none;" class="mediaPlayerFlyout"></div></div>';
 
@@ -1345,13 +1347,14 @@ $(function () {
     footerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
     footerHtml += '<div class="mediaFlyoutContainer"><div id="chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
 
-    footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
-
     footerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="sendMediaButton" class="mediaButton sendMediaButton" title="Remote" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Remote</button>';
 
     footerHtml += '</div>';
 
     footerHtml += '<div id="footerNotifications"></div>';
+
+    footerHtml += '</div>';
+
     footerHtml += '</div>';
 
     $(document.body).append(footerHtml);
@@ -1359,7 +1362,7 @@ $(function () {
     var footerElem = $('#footer', document.body);
     footerElem.trigger('create');
 
-    $(window).on("beforeunload", function () {
+    $(window).on("beforeunload popstate", function () {
 
         // Close the connection gracefully when possible
         if (ApiClient.isWebSocketOpen() && !MediaPlayer.isPlaying()) {
