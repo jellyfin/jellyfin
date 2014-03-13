@@ -4,13 +4,30 @@ namespace MediaBrowser.Dlna.PlayTo
 {
     public class DeviceInfo
     {
+        public DeviceInfo()
+        {
+            ClientType = "DLNA";
+            Name = "Generic Device";
+        }
+
         public string UUID { get; set; }
 
         public string Name { get; set; }
 
         public string ClientType { get; set; }
 
-        public string DisplayName { get; set; }
+        private string _displayName = string.Empty;
+        public string DisplayName
+        {
+            get
+            {
+                return string.IsNullOrEmpty(_displayName) ? Name : _displayName;
+            }
+            set
+            {
+                _displayName = value;
+            }
+        }
 
         public string ModelName { get; set; }
 
