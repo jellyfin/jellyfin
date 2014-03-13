@@ -244,8 +244,14 @@ namespace MediaBrowser.Dlna.PlayTo
             var profile = _dlnaManager.GetProfile(deviceProperties.DisplayName, deviceProperties.ModelName,
                 deviceProperties.ModelNumber);
 
-            deviceProperties.DisplayName = profile.Name;
-            deviceProperties.ClientType = profile.ClientType;
+            if (!string.IsNullOrWhiteSpace(profile.Name))
+            {
+                deviceProperties.DisplayName = profile.Name;
+            }
+            if (!string.IsNullOrWhiteSpace(profile.ClientType))
+            {
+                deviceProperties.ClientType = profile.ClientType;
+            }
         }
 
         /// <summary>
