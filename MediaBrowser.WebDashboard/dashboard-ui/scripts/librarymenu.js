@@ -73,7 +73,7 @@
 
         if (counts.MovieCount) {
 
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'movies' ? selectedCssClass : '') + '" href="moviesrecommended.html">' + (view == 'movies' ? selectedHtml : '') + '<span class="viewName">Movies</span></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'movies' ? selectedCssClass : '') + '" href="movieslatest.html">' + (view == 'movies' ? selectedHtml : '') + '<span class="viewName">Movies</span></a>';
         }
 
         if (counts.SeriesCount) {
@@ -90,6 +90,10 @@
 
         if (counts.GameCount) {
             html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
+        }
+
+        if (counts.BoxSetCount) {
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'boxsets' ? selectedCssClass : '') + '" href="collections.html">' + (view == 'boxsets' ? selectedHtml : '') + '<span class="viewName">Collections</span></a>';
         }
 
         $('.viewMenuRemoteControlButton', page).before(html);
@@ -122,75 +126,33 @@
 
             html += '<p class="libraryPanelHeader"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
 
-            html += '<div data-role="collapsible-set" data-inset="false" data-mini="true">';
+            html += '<ul data-role="listview">';
 
             if (counts.MovieCount) {
-
-                html += getCollapsibleHtml('Movies', [
-
-                    { text: 'Suggested', href: 'moviesrecommended.html' },
-                    { text: 'Latest', href: 'movieslatest.html' },
-                    { text: 'Movies', href: 'movies.html' },
-                    { text: 'Collections', href: 'collections.html' },
-                    { text: 'Trailers', href: 'movietrailers.html' },
-                    { text: 'Genres', href: 'moviegenres.html' },
-                    { text: 'People', href: 'moviepeople.html' },
-                    { text: 'Studios', href: 'moviestudios.html' }
-                ]);
+                html += '<li><a class="libraryPanelLink" href="movieslatest.html">Movies</a></li>';
             }
 
             if (counts.SeriesCount) {
-                html += getCollapsibleHtml('TV', [
-
-                    { text: 'Suggested', href: 'tvrecommended.html' },
-                    { text: 'Latest', href: 'tvlatest.html' },
-                    { text: 'Upcoming', href: 'tvupcoming.html' },
-                    { text: 'Shows', href: 'tvshows.html' },
-                    { text: 'Episodes', href: 'episodes.html' },
-                    { text: 'Genres', href: 'tvgenres.html' },
-                    { text: 'People', href: 'tvpeople.html' },
-                    { text: 'Networks', href: 'tvstudios.html' }
-                ]);
+                html += '<li><a class="libraryPanelLink" href="tvrecommended.html">TV</a></li>';
             }
 
             if (liveTvInfo.EnabledUsers.indexOf(Dashboard.getCurrentUserId()) != -1) {
-                html += getCollapsibleHtml('Live TV', [
-
-                    { text: 'Suggested', href: 'livetvsuggested.html' },
-                    { text: 'Guide', href: 'livetvguide.html' },
-                    { text: 'Channels', href: 'livetvchannels.html' },
-                    { text: 'Recordings', href: 'livetvrecordings.html' },
-                    { text: 'Scheduled', href: 'livetvtimers.html' },
-                    { text: 'Series', href: 'livetvseriestimers.html' }
-                ]);
+                html += '<li><a class="libraryPanelLink" href="livetvsuggested.html">Live TV</a></li>';
             }
 
             if (counts.SongCount || counts.MusicVideoCount) {
-                html += getCollapsibleHtml('Music', [
-
-                    { text: 'Suggested', href: 'musicrecommended.html' },
-                    { text: 'Songs', href: 'songs.html' },
-                    { text: 'Albums', href: 'musicalbums.html' },
-                    { text: 'Album Artists', href: 'musicalbumartists.html' },
-                    { text: 'Artists', href: 'musicartists.html' },
-                    { text: 'Music Videos', href: 'musicvideos.html' },
-                    { text: 'Genres', href: 'musicgenres.html' }
-                ]);
+                html += '<li><a class="libraryPanelLink" href="musicrecommended.html">Music</a></li>';
             }
 
             if (counts.GameCount) {
-                html += getCollapsibleHtml('Games', [
-
-                    { text: 'Suggested', href: 'gamesrecommended.html' },
-                    { text: 'Games', href: 'games.html' },
-                    { text: 'Game Systems', href: 'gamesystems.html' },
-                    { text: 'Genres', href: 'gamegenres.html' },
-                    { text: 'Studios', href: 'gamestudios.html' }
-                ]);
+                html += '<li><a class="libraryPanelLink" href="gamesrecommended.html">Games</a></li>';
             }
 
-            html += '</div>';
+            if (counts.BoxSetCount) {
+                html += '<li><a class="libraryPanelLink" href="collections.html">Collections</a></li>';
+            }
 
+            html += '</ul>';
             html += '</div>';
 
             $(page).append(html);
@@ -201,50 +163,23 @@
         return panel;
     }
 
-    function getCollapsibleHtml(title, links) {
-
-        var i, length;
-        var selectedIndex = -1;
-        var collapsed = 'true';
-
-        var currentUrl = window.location.toString().toLowerCase();
-
-        for (i = 0, length = links.length; i < length; i++) {
-
-            if (currentUrl.indexOf(links[i].href.toLowerCase()) != -1) {
-                collapsed = 'false';
-                selectedIndex = i;
-                break;
-            }
-        }
-
-        var html = '';
-
-        html += '<div data-role="collapsible" data-mini="true" data-collapsed="' + collapsed + '">';
-        html += '<h4 class="libraryPanelCollapsibleHeader">' + title + '</h4>';
-
-        html += '<ul data-role="listview" data-inset="false">';
-
-        for (i = 0, length = links.length; i < length; i++) {
-
-            var link = links[i];
-
-            var href = selectedIndex == i ? '#' : link.href;
-
-            html += '<li><a class="libraryPanelLink" href="' + href + '">' + link.text + '</a></li>';
-        }
-
-        html += '</ul>';
-        html += '</div>';
-
-        return html;
-    }
-
     window.LibraryMenu = {
         showLibraryMenu: showLibraryMenu
     };
 
-    $(document).on('pagebeforeshow', ".libraryPage", function () {
+    $(document).on('pageinit', ".libraryPage", function () {
+
+        var page = this;
+
+        $('.libraryViewNav', page).wrapInner('<div class="libraryViewNavInner"></div>');
+
+        $('.libraryViewNav a', page).each(function () {
+
+            this.innerHTML = '<span class="libraryViewNavLinkContent">' + this.innerHTML + '</span>';
+
+        });
+
+    }).on('pagebeforeshow', ".libraryPage", function () {
 
         var page = this;
 

@@ -153,7 +153,7 @@ namespace MediaBrowser.Api
 
             if (!string.IsNullOrEmpty(item1.OfficialRating) && string.Equals(item1.OfficialRating, item2.OfficialRating, StringComparison.OrdinalIgnoreCase))
             {
-                points += 1;
+                points += 10;
             }
 
             // Find common genres

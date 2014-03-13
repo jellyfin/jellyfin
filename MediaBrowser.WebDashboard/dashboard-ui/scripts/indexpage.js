@@ -174,7 +174,7 @@
             var views = [];
 
             if (counts.MovieCount || counts.TrailerCount) {
-                views.push({ id: "moviesView", name: "Movies", url: "moviesrecommended.html", img: "css/images/items/list/chapter.png", background: "#0094FF" });
+                views.push({ id: "moviesView", name: "Movies", url: "movieslatest.html", img: "css/images/items/list/chapter.png", background: "#0094FF" });
             }
 
             if (counts.EpisodeCount || counts.SeriesCount) {
