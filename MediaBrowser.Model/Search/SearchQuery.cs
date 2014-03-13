@@ -33,6 +33,8 @@ namespace MediaBrowser.Model.Search
         public bool IncludeStudios { get; set; }
         public bool IncludeArtists { get; set; }
 
+        public string[] IncludeItemTypes { get; set; }
+
         public SearchQuery()
         {
             IncludeArtists = true;
@@ -40,6 +42,8 @@ namespace MediaBrowser.Model.Search
             IncludeMedia = true;
             IncludePeople = true;
             IncludeStudios = true;
+
+            IncludeItemTypes = new string[] { };
         }
     }
 }

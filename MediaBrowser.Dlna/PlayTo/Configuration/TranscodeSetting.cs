@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Dlna.PlayTo.Configuration
 {
@@ -19,6 +20,14 @@ namespace MediaBrowser.Dlna.PlayTo.Configuration
         /// The target container.
         /// </value>
         public string TargetContainer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Mimetype to enforce
+        /// </summary>
+        /// <value>
+        /// The MimeType.
+        /// </value>
+        public string MimeType { get; set; }
 
         /// <summary>
         /// The default transcoding settings
@@ -46,19 +55,19 @@ namespace MediaBrowser.Dlna.PlayTo.Configuration
             {
                 if (!string.IsNullOrEmpty(profile.FriendlyName))
                 {
-                    if (!string.Equals(deviceProperties.Name, profile.FriendlyName, StringComparison.OrdinalIgnoreCase))
+                    if (!Regex.IsMatch(deviceProperties.Name, profile.FriendlyName))
                         continue;
                 }
 
                 if (!string.IsNullOrEmpty(profile.ModelNumber))
                 {
-                    if (!string.Equals(deviceProperties.ModelNumber, profile.ModelNumber, StringComparison.OrdinalIgnoreCase))
+                    if (!Regex.IsMatch(deviceProperties.ModelNumber, profile.ModelNumber))
                         continue;
                 }
 
                 if (!string.IsNullOrEmpty(profile.ModelName))
                 {
-                    if (!string.Equals(deviceProperties.ModelName, profile.ModelName, StringComparison.OrdinalIgnoreCase))
+                    if (!Regex.IsMatch(deviceProperties.ModelName, profile.ModelName))
                         continue;
                 }
 

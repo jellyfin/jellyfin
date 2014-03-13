@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="type">The type.</param>
         /// <param name="index">The index.</param>
         /// <param name="file">The file.</param>
-        void SetImagePath(ImageType type, int index, FileInfo file);
+        void SetImagePath(ImageType type, int index, FileSystemInfo file);
 
         /// <summary>
         /// Determines whether the specified type has image.
@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="imageType">Type of the image.</param>
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        bool AddImages(ImageType imageType, IEnumerable<FileInfo> images);
+        bool AddImages(ImageType imageType, IEnumerable<FileSystemInfo> images);
 
         /// <summary>
         /// Determines whether [is save local metadata enabled].
@@ -180,7 +180,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <param name="file">The file.</param>
-        public static void SetImagePath(this IHasImages item, ImageType imageType, FileInfo file)
+        public static void SetImagePath(this IHasImages item, ImageType imageType, FileSystemInfo file)
         {
             item.SetImagePath(imageType, 0, file);
         }

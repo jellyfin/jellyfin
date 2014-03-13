@@ -278,7 +278,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds);
 
-            var threads = GetNumberOfThreads(false);
+            var threads = GetNumberOfThreads(state, false);
 
             var inputModifier = GetInputModifier(state);
 

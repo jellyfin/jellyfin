@@ -449,7 +449,14 @@ namespace MediaBrowser.Server.Implementations.IO
             var paths = _affectedPaths.Keys.ToList();
             _affectedPaths.Clear();
 
-            await ProcessPathChanges(paths).ConfigureAwait(false);
+            try
+            {
+                await ProcessPathChanges(paths).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error processing directory changes", ex);
+            }
         }
 
         private void DisposeTimer()

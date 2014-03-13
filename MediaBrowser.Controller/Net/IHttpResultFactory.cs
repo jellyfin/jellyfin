@@ -96,6 +96,18 @@ namespace MediaBrowser.Controller.Net
         object GetStaticFileResult(IRequest requestContext, string path, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
 
         /// <summary>
+        /// Gets the static file result.
+        /// </summary>
+        /// <param name="requestContext">The request context.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="contentType">Type of the content.</param>
+        /// <param name="fileShare">The file share.</param>
+        /// <param name="responseHeaders">The response headers.</param>
+        /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
+        /// <returns>System.Object.</returns>
+        object GetStaticFileResult(IRequest requestContext, string path, string contentType, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
+        
+        /// <summary>
         /// Gets the optimized serialized result using cache.
         /// </summary>
         /// <typeparam name="T"></typeparam>

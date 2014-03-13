@@ -138,13 +138,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="id">The identifier.</param>
         /// <returns>Channel.</returns>
         LiveTvChannel GetInternalChannel(string id);
-
-        /// <summary>
-        /// Gets the internal program.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>LiveTvProgram.</returns>
-        LiveTvProgram GetInternalProgram(string id);
         
         /// <summary>
         /// Gets the recording.

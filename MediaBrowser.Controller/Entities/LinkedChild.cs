@@ -9,6 +9,10 @@ namespace MediaBrowser.Controller.Entities
         public string Path { get; set; }
         public LinkedChildType Type { get; set; }
 
+        public string ItemName { get; set; }
+        public string ItemType { get; set; }
+        public int? ItemYear { get; set; }
+
         /// <summary>
         /// Serves as a cache
         /// </summary>
@@ -18,8 +22,8 @@ namespace MediaBrowser.Controller.Entities
 
     public enum LinkedChildType
     {
-        Manual = 1,
-        Shortcut = 2
+        Manual = 0,
+        Shortcut = 1
     }
 
     public class LinkedChildComparer : IEqualityComparer<LinkedChild>
@@ -35,7 +39,7 @@ namespace MediaBrowser.Controller.Entities
 
         public int GetHashCode(LinkedChild obj)
         {
-            return (obj.Path + obj.Type.ToString()).GetHashCode();
+            return (obj.Path + obj.Type).GetHashCode();
         }
     }
 }

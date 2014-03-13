@@ -164,7 +164,10 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.GetAllArtists()
+            return libraryManager.RootFolder.RecursiveChildren
+                .OfType<Audio>()
+                .SelectMany(i => i.AllArtists)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault(i =>
                 {
                     i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));

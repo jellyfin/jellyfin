@@ -17,7 +17,7 @@ using Timer = System.Timers.Timer;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
-    public class PlayToController : ISessionController
+    public class PlayToController : ISessionController, IDisposable
     {
         private Device _device;
         private BaseItem _currentItem = null;
@@ -130,6 +130,14 @@ namespace MediaBrowser.Dlna.PlayTo
                 return;
 
             ((Timer)sender).Stop();
+
+
+            if (!IsSessionActive)
+            {
+                //Session is inactive, mark it for Disposal and don't start the elapsed timer.
+                await _sessionManager.ReportSessionEnded(this._session.Id);
+                return;
+            }
 
             await ReportProgress().ConfigureAwait(false);
 
@@ -479,3 +487,4 @@ namespace MediaBrowser.Dlna.PlayTo
         }
     }
 }
+

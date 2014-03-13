@@ -680,18 +680,34 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Post(MarkPlayedItem request)
         {
+            var result = MarkPlayed(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        private async Task<UserItemDataDto> MarkPlayed(MarkPlayedItem request)
+        {
             var user = _userManager.GetUserById(request.UserId);
 
             DateTime? datePlayed = null;
-            
+
             if (!string.IsNullOrEmpty(request.DatePlayed))
             {
                 datePlayed = DateTime.ParseExact(request.DatePlayed, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
             }
 
-            var task = UpdatePlayedStatus(user, request.Id, true, datePlayed);
+            var session = GetSession();
 
-            return ToOptimizedResult(task.Result);
+            var dto = await UpdatePlayedStatus(user, request.Id, true, datePlayed).ConfigureAwait(false);
+
+            foreach (var additionalUserInfo in session.AdditionalUsers)
+            {
+                var additionalUser = _userManager.GetUserById(new Guid(additionalUserInfo.UserId));
+
+                await UpdatePlayedStatus(additionalUser, request.Id, true, datePlayed).ConfigureAwait(false);
+            }
+
+            return dto;
         }
 
         private SessionInfo GetSession()
@@ -780,11 +796,27 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Delete(MarkUnplayedItem request)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var task = UpdatePlayedStatus(user, request.Id, false, null);
+            var task = MarkUnplayed(request);
 
             return ToOptimizedResult(task.Result);
+        }
+
+        private async Task<UserItemDataDto> MarkUnplayed(MarkUnplayedItem request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var session = GetSession();
+
+            var dto = await UpdatePlayedStatus(user, request.Id, false, null).ConfigureAwait(false);
+
+            foreach (var additionalUserInfo in session.AdditionalUsers)
+            {
+                var additionalUser = _userManager.GetUserById(new Guid(additionalUserInfo.UserId));
+
+                await UpdatePlayedStatus(additionalUser, request.Id, false, null).ConfigureAwait(false);
+            }
+
+            return dto;
         }
 
         /// <summary>

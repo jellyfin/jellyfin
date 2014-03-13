@@ -59,7 +59,7 @@ namespace MediaBrowser.Providers
             FileSystem = fileSystem;
         }
 
-        protected abstract FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService);
+        protected abstract FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService);
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {

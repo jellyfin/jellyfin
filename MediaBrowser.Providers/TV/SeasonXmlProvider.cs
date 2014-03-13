@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.TV
             new BaseItemXmlParser<Season>(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
-        protected override FileInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             return directoryService.GetFile(Path.Combine(info.Path, "season.xml"));
         }

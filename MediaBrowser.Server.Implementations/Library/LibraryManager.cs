@@ -5,6 +5,7 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -484,6 +485,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 await ItemRepository.DeleteItem(child.Id, CancellationToken.None).ConfigureAwait(false);
             }
 
+            BaseItem removed;
+            _libraryItemsCache.TryRemove(item.Id, out removed);
+
             ReportItemRemoved(item);
         }
 
@@ -922,10 +926,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            // Ensure the location is unavailable.
+            // Ensure the location is available.
             Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
 
-            return new PeopleValidator(this, _logger).ValidatePeople(cancellationToken, progress);
+            return new PeopleValidator(this, _logger).ValidatePeople(cancellationToken, new MetadataRefreshOptions(), progress);
         }
 
         /// <summary>
@@ -953,7 +957,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // Ensure the location is unavailable.
             Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.MusicGenrePath);
             
-            return new MusicGenresValidator(this, _userManager, _logger).Run(progress, cancellationToken);
+            return new MusicGenresValidator(this, _logger).Run(progress, cancellationToken);
         }
 
         /// <summary>

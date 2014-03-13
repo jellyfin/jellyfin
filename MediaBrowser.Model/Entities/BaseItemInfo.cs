@@ -47,6 +47,30 @@ namespace MediaBrowser.Model.Entities
         public Guid? PrimaryImageTag { get; set; }
 
         /// <summary>
+        /// Gets or sets the thumb image tag.
+        /// </summary>
+        /// <value>The thumb image tag.</value>
+        public Guid? ThumbImageTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thumb item identifier.
+        /// </summary>
+        /// <value>The thumb item identifier.</value>
+        public string ThumbItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thumb image tag.
+        /// </summary>
+        /// <value>The thumb image tag.</value>
+        public Guid? BackdropImageTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thumb item identifier.
+        /// </summary>
+        /// <value>The thumb item identifier.</value>
+        public string BackdropItemId { get; set; }
+        
+        /// <summary>
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>
         /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>

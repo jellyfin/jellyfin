@@ -305,19 +305,6 @@ namespace MediaBrowser.Controller.Library
         string FindCollectionType(BaseItem item);
 
         /// <summary>
-        /// Gets all artists.
-        /// </summary>
-        /// <returns>IEnumerable{System.String}.</returns>
-        IEnumerable<string> GetAllArtists();
-
-        /// <summary>
-        /// Gets all artists.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <returns>IEnumerable{System.String}.</returns>
-        IEnumerable<string> GetAllArtists(IEnumerable<BaseItem> items);
-
-        /// <summary>
         /// Normalizes the root path list.
         /// </summary>
         /// <param name="paths">The paths.</param>
