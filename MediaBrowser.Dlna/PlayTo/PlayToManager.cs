@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -7,6 +8,7 @@ using MediaBrowser.Dlna.PlayTo.Configuration;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -14,6 +16,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -29,9 +32,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IItemRepository _itemRepository;
         private readonly ILibraryManager _libraryManager;
         private readonly INetworkManager _networkManager;
-        private readonly IUserManager _userManager;        
+        private readonly IUserManager _userManager;
 
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager)
+        public PlayToManager(ILogger logger,IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager)
         {
             _locations = new ConcurrentDictionary<string, DateTime>();
             _tokenSource = new CancellationTokenSource();
@@ -43,6 +46,10 @@ namespace MediaBrowser.Dlna.PlayTo
             _libraryManager = libraryManager;
             _networkManager = networkManager;
             _userManager = userManager;
+
+            var path = Path.Combine(config.CommonApplicationPaths.ConfigurationDirectoryPath, "DlnaProfiles.xml");
+
+            PlayToConfiguration.Load(path, logger);            
         }
 
         public async void Start()
@@ -214,7 +221,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (device != null && device.RendererCommands != null && !_sessionManager.Sessions.Any(s => string.Equals(s.DeviceId, device.Properties.UUID) && s.IsActive))
             {
-                var transcodeProfiles = TranscodeSettings.GetProfileSettings(device.Properties);
+                var transcodeProfiles = TranscodeSetting.GetProfileSettings(device.Properties);
 
                 var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, device.Properties.Name, device.Properties.UUID, device.Properties.DisplayName, uri.OriginalString, null)
                     .ConfigureAwait(false);

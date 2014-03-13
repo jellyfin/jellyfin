@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
+
 namespace MediaBrowser.Dlna.PlayTo.Configuration
 {
-    public class TranscodeSettings
+    public class TranscodeSetting
     {
         /// <summary>
         /// Gets or sets the container.
@@ -32,14 +33,14 @@ namespace MediaBrowser.Dlna.PlayTo.Configuration
         /// <summary>
         /// The default transcoding settings
         /// </summary>
-        private static readonly TranscodeSettings[] DefaultTranscodingSettings =
+        private static readonly TranscodeSetting[] DefaultTranscodingSettings =
         { 
-            new TranscodeSettings { Container = "mkv", TargetContainer = "ts" }, 
-            new TranscodeSettings { Container = "flac", TargetContainer = "mp3" },
-            new TranscodeSettings { Container = "m4a", TargetContainer = "mp3" }
+            new TranscodeSetting { Container = "mkv", TargetContainer = "ts" }, 
+            new TranscodeSetting { Container = "flac", TargetContainer = "mp3" },
+            new TranscodeSetting { Container = "m4a", TargetContainer = "mp3" }
         };
 
-        public static TranscodeSettings[] GetDefaultTranscodingSettings()
+        public static TranscodeSetting[] GetDefaultTranscodingSettings()
         {
             return DefaultTranscodingSettings;
         }
@@ -49,9 +50,9 @@ namespace MediaBrowser.Dlna.PlayTo.Configuration
         /// </summary>
         /// <param name="deviceProperties">The device properties.</param>
         /// <returns>The TranscodeSettings for the device</returns>
-        public static TranscodeSettings[] GetProfileSettings(DeviceProperties deviceProperties)
+        public static TranscodeSetting[] GetProfileSettings(DeviceProperties deviceProperties)
         {
-            foreach (var profile in PlayToConfiguration.Profiles)
+            foreach (var profile in PlayToConfiguration.Instance.Profiles)
             {
                 if (!string.IsNullOrEmpty(profile.FriendlyName))
                 {

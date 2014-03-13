@@ -28,7 +28,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public long StartPositionTicks { get; set; }
 
-        public static PlaylistItem GetBasicConfig(BaseItem item, TranscodeSettings[] profileTranscodings)
+        public static PlaylistItem GetBasicConfig(BaseItem item, TranscodeSetting[] profileTranscodings)
         {
 
             var playlistItem = new PlaylistItem();
@@ -49,7 +49,7 @@ namespace MediaBrowser.Dlna.PlayTo
             //Check the DlnaProfile associated with the renderer
             if (profileTranscodings != null)
             {
-                foreach (TranscodeSettings transcodeSetting in profileTranscodings)
+                foreach (TranscodeSetting transcodeSetting in profileTranscodings)
                 {
                     if (string.IsNullOrWhiteSpace(transcodeSetting.Container))
                         continue;
@@ -76,7 +76,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
 
                 //Check to see if we support serving the format statically
-                foreach (string supported in PlayToConfiguration.SupportedStaticFormats)
+                foreach (string supported in PlayToConfiguration.Instance.SupportedStaticFormats)
                 {
                     if (path.EndsWith(supported))
                     {
@@ -91,7 +91,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
             else
             {
-                foreach (string supported in PlayToConfiguration.SupportedStaticFormats)
+                foreach (string supported in PlayToConfiguration.Instance.SupportedStaticFormats)
                 {
                     if (path.EndsWith(supported))
                     {
