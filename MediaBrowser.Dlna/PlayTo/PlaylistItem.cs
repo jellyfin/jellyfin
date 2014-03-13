@@ -81,7 +81,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var mediaContainer = Path.GetExtension(path).TrimStart('.');
 
-            if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+            if (!profile.Containers.Any(i => string.Equals(i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
