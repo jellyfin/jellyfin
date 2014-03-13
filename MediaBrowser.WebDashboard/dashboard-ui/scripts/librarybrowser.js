@@ -674,6 +674,13 @@
                 }
             }
 
+            var enableRibbons = false;
+            var user = Dashboard.getCurrentUser().done(function (data) {
+                if (data.Configuration) {
+                    enableRibbons = data.Configuration.DisplayMovieFormatRibbons;
+                }
+            });
+
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
@@ -878,7 +885,7 @@
                 html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
 
                 // Ribbon
-                if (options.context == "movies") {
+                if (item.MediaType == "Video" && enableRibbons) {
                     // This would be much better if specified in the json payload
                     // Another nice thing to have in the payload would be 720 vs 1080
                     // Then, rather than "HD" it could display the specific HD format

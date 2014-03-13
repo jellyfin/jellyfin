@@ -57,6 +57,8 @@ namespace MediaBrowser.Model.Configuration
 
         public UnratedItem[] BlockUnratedItems { get; set; }
 
+        public bool DisplayMovieFormatRibbons { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
