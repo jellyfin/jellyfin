@@ -90,7 +90,6 @@
 .itemVideo {
     z-index: 99998;
     background: #000;
-    border: 1px solid #444;
     width: 320px;
     margin: 20px;
     position: fixed;
@@ -128,7 +127,7 @@
     z-index: 99997;
     background: #1d1d1d;
     position: fixed;
-    border: 1px solid green;
+    border: 1px solid #333;
     top: 50%;
     left: 50%;
     margin-left: -170px;

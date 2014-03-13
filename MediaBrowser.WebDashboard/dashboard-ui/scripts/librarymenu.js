@@ -92,9 +92,9 @@
             html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
         }
 
-        if (counts.BoxSetCount) {
+        //if (counts.BoxSetCount) {
             html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'boxsets' ? selectedCssClass : '') + '" href="collections.html">' + (view == 'boxsets' ? selectedHtml : '') + '<span class="viewName">Collections</span></a>';
-        }
+        //}
 
         $('.viewMenuRemoteControlButton', page).before(html);
     }
@@ -148,9 +148,9 @@
                 html += '<li><a class="libraryPanelLink" href="gamesrecommended.html">Games</a></li>';
             }
 
-            if (counts.BoxSetCount) {
+            //if (counts.BoxSetCount) {
                 html += '<li><a class="libraryPanelLink" href="collections.html">Collections</a></li>';
-            }
+            //}
 
             html += '</ul>';
             html += '</div>';

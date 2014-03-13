@@ -87,7 +87,7 @@
 }
 
 .selectedViewLink {
-    color: #fff;
+    color: #fff!important;
 }
 
 .selectedViewIndicator {
@@ -675,7 +675,7 @@ a.itemTag:hover {
         display: none;
     }
 
-    .desktopViewMenuLink {
+    .desktopViewMenuLink:not(.selectedViewLink) {
         display: none;
     }
 
