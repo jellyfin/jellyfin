@@ -760,7 +760,9 @@ namespace MediaBrowser.ServerApplication
 #if DEBUG
                 return false;
 #endif
+#pragma warning disable 162
                 return NativeApp.CanSelfUpdate;
+#pragma warning restore 162
             }
         }
 

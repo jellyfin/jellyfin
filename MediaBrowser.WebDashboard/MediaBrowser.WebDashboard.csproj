@@ -201,6 +201,8 @@
     <Content Include="dashboard-ui\css\images\items\list\remotesearch.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\css\images\media\pause.png" />
+    <Content Include="dashboard-ui\css\images\media\play.png" />
     <Content Include="dashboard-ui\css\images\media\tvflyout.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -548,6 +550,9 @@
     </Content>
     <Content Include="dashboard-ui\scripts\editorsidebar.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\mediaplayer-video.js">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\scripts\movieslatest.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
