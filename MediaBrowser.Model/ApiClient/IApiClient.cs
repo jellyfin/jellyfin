@@ -244,7 +244,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetSeasonsAsync(SeasonQuery query);
-        
+
         /// <summary>
         /// Queries for items
         /// </summary>
@@ -354,7 +354,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetUpcomingEpisodesAsync(NextUpQuery query);
-        
+
         /// <summary>
         /// Gets a genre
         /// </summary>
@@ -572,18 +572,17 @@ namespace MediaBrowser.Model.ApiClient
         /// Instructs antoher client to browse to a library item.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
-        /// <param name="userId">The controlling user id.</param>
         /// <param name="itemId">The id of the item to browse to.</param>
         /// <param name="itemName">The name of the item to browse to.</param>
         /// <param name="itemType">The type of the item to browse to.</param>
         /// <param name="context">Optional ui context (movies, music, tv, games, etc). The client is free to ignore this.</param>
         /// <returns>Task.</returns>
-        Task SendBrowseCommandAsync(string sessionId, string userId, string itemId, string itemName, string itemType, string context);
+        Task SendBrowseCommandAsync(string sessionId, string itemId, string itemName, string itemType, string context);
 
         /// <summary>
         /// Sends the playstate command async.
         /// </summary>
-        /// <param name="sessionId">The session id.</param>        
+        /// <param name="sessionId">The session id.</param>
         /// <param name="request">The request.</param>
         /// <returns>Task.</returns>
         Task SendPlaystateCommandAsync(string sessionId, PlaystateRequest request);
@@ -780,7 +779,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         string GetImageUrl(ProgramInfoDto item, ImageOptions options);
-        
+
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
@@ -910,7 +909,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         string GetThumbImageUrl(BaseItemDto item, ImageOptions options);
-        
+
         /// <summary>
         /// Gets the url needed to stream an audio file
         /// </summary>
@@ -966,7 +965,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ChannelInfoDto}.</returns>
         Task<ChannelInfoDto> GetLiveTvChannelAsync(string id, string userId, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the live tv recordings asynchronous.
         /// </summary>
@@ -983,7 +982,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{RecordingInfoDto}.</returns>
         Task<RecordingInfoDto> GetLiveTvRecordingAsync(string id, string userId, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the live tv recording groups asynchronous.
         /// </summary>
@@ -1000,7 +999,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{RecordingGroupDto}.</returns>
         Task<RecordingGroupDto> GetLiveTvRecordingGroupAsync(string id, string userId, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the live tv timers asynchronous.
         /// </summary>
@@ -1065,7 +1064,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task UpdateLiveTvSeriesTimerAsync(SeriesTimerInfoDto timer, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the live tv timer asynchronous.
         /// </summary>
@@ -1073,7 +1072,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{TimerInfoDto}.</returns>
         Task<TimerInfoDto> GetLiveTvTimerAsync(string id, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the live tv series timers asynchronous.
         /// </summary>
@@ -1105,7 +1104,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task CancelLiveTvSeriesTimerAsync(string id, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Deletes the live tv recording asynchronous.
         /// </summary>
@@ -1127,7 +1126,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{GuideInfo}.</returns>
         Task<GuideInfo> GetLiveTvGuideInfo(CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the default timer information.
         /// </summary>
