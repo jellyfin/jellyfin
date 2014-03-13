@@ -305,22 +305,20 @@ namespace MediaBrowser.Providers.Manager
                             refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;
                         }
 
-                        if (!string.IsNullOrEmpty(localItem.Item.Name))
+                        if (string.IsNullOrWhiteSpace(localItem.Item.Name))
                         {
-                            MergeData(localItem.Item, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
-                            refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
-
-                            // Only one local provider allowed per item
-                            hasLocalMetadata = true;
-                            break;
+                            localItem.Item.Name = item.Name ?? Path.GetFileNameWithoutExtension(item.Path);
                         }
 
-                        Logger.Error("Invalid local metadata found for: " + item.Path);
+                        MergeData(localItem.Item, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
+                        refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
+
+                        // Only one local provider allowed per item
+                        hasLocalMetadata = true;
+                        break;
                     }
-                    else
-                    {
-                        Logger.Debug("{0} returned no metadata for {1}", providerName, item.Path ?? item.Name);
-                    }
+
+                    Logger.Debug("{0} returned no metadata for {1}", providerName, item.Path ?? item.Name);
                 }
                 catch (OperationCanceledException)
                 {

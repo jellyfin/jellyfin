@@ -27,9 +27,6 @@
 
             updateFilterControls(page);
 
-            var checkSortOption = $('.radioSortBy:checked', page);
-            $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
-
             html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "portrait",
@@ -68,19 +65,6 @@
 
     function updateFilterControls(page) {
 
-        // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', page).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-
         $('.chkStandardFilter', page).each(function () {
 
             var filters = "," + (query.Filters || "");
@@ -105,18 +89,6 @@
     $(document).on('pageinit', "#tvPeoplePage", function () {
 
         var page = this;
-
-        $('.radioSortBy', this).on('click', function () {
-            query.SortBy = this.getAttribute('data-sortby');
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-        $('.radioSortOrder', this).on('click', function () {
-            query.SortOrder = this.getAttribute('data-sortorder');
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
 
         $('.chkStandardFilter', this).on('change', function () {
 

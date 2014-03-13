@@ -37,6 +37,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var results = await GetSearchHints(inputItems, query).ConfigureAwait(false);
 
+            // Include item types
+            if (query.IncludeItemTypes.Length > 0)
+            {
+                results = results.Where(f => query.IncludeItemTypes.Contains(f.Item.GetType().Name, StringComparer.OrdinalIgnoreCase));
+            }
+
             var searchResultArray = results.ToArray();
             results = searchResultArray;
 
@@ -96,7 +102,9 @@ namespace MediaBrowser.Server.Implementations.Library
             if (query.IncludeArtists)
             {
                 // Find artists
-                var artists = _libraryManager.GetAllArtists(items)
+                var artists = items.OfType<Audio>()
+                    .SelectMany(i => i.AllArtists)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
                 foreach (var item in artists)

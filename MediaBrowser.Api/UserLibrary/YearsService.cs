@@ -7,7 +7,6 @@ using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace MediaBrowser.Api.UserLibrary
@@ -81,10 +80,10 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
 
-                return DtoService.GetBaseItemDto(item, fields.ToList(), user);
+                return DtoService.GetItemByNameDto(item, fields.ToList(), user);
             }
 
-            return DtoService.GetBaseItemDto(item, fields.ToList());
+            return DtoService.GetItemByNameDto(item, fields.ToList());
         }
 
         /// <summary>
@@ -114,20 +113,6 @@ namespace MediaBrowser.Api.UserLibrary
                 .Where(i => i > 0)
                 .Distinct()
                 .Select(year => LibraryManager.GetYear(year));
-        }
-
-        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
-        protected override IEnumerable<BaseItem> GetLibraryItems(Year item, IEnumerable<BaseItem> libraryItems)
-        {
-            int year;
-
-            if (!int.TryParse(item.Name, NumberStyles.Integer, UsCulture, out year))
-            {
-                return libraryItems;
-            }
-
-            return libraryItems.Where(i => i.ProductionYear.HasValue && i.ProductionYear.Value == year);
         }
     }
 }

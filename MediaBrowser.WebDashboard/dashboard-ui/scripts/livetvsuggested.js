@@ -8,14 +8,14 @@
 
             userId: Dashboard.getCurrentUserId(),
             IsAiring: true,
-            limit: 10
+            limit: 12
 
         }).done(function (result) {
             
             var html = LibraryBrowser.getPosterViewHtml({
 
                 items: result.Items,
-                shape: "backdrop",
+                shape: "square",
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: true,
@@ -31,14 +31,14 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 10
+            limit: 12
 
         }).done(function (result) {
 
             var html = LibraryBrowser.getPosterViewHtml({
 
                 items: result.Items,
-                shape: "backdrop",
+                shape: "square",
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: true,

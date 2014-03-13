@@ -13,16 +13,7 @@
                     <img src="css/images/mblogoicon.png" />Configure settings</h2>
 
                 <br />
-                <div style="margin: 1em 0;">
-                    <label for="selectImageSavingConvention"><b>Image saving convention:</b></label>
-                    <select name="selectImageSavingConvention" id="selectImageSavingConvention">
-                        <option value="Compatible" selected="selected">Compatible - MB3/Plex/Xbmc</option>
-                        <option value="Legacy">Standard - MB3/MB2</option>
-                    </select>
-                    <div class="fieldDescription">Media Browser recognizes images from most major media applications. Choosing your downloading convention is useful if you also use other products.</div>
-                </div>
-
-                <div style="margin: 2em 0;">
+                <div style="margin: 1em 0 2em;">
                     <label for="chkVideoImages">Enable video image extraction</label>
                     <input id="chkVideoImages" name="chkVideoImages" type="checkbox" checked="checked" />
                     <div class="fieldDescription">For videos that don't already have images, and that we're unable to find internet images for. This will add some additional time to the initial library scan but will result in a more pleasing presentation.</div>
@@ -32,6 +23,12 @@
                     <label for="chkMovies">Extract chapter image extraction for Movies</label>
                     <input id="chkMovies" name="chkMovies" type="checkbox" checked="checked" />
                     <div class="fieldDescription">Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs as a nightly scheduled task at 4am, although this is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours.</div>
+                </div>
+
+                <div style="margin: 2em 0;">
+                    <label for="chkEnableUpnp">Enable automatic port mapping</label>
+                    <input type="checkbox" id="chkEnableUpnp" checked="checked" />
+                    <div class="fieldDescription">UPnP allows automated router configuration for easy remote access. This may not work with some router models.</div>
                 </div>
 
                 <div class="wizardNavigation">

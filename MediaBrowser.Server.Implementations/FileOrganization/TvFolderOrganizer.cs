@@ -61,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     var organizer = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager,
                         _libraryMonitor, _providerManager);
 
-                    var result = await organizer.OrganizeEpisodeFile(file.FullName, options, false, cancellationToken).ConfigureAwait(false);
+                    var result = await organizer.OrganizeEpisodeFile(file.FullName, options, options.OverwriteExistingEpisodes, cancellationToken).ConfigureAwait(false);
 
                     if (result.Status == FileSortingStatus.Success)
                     {

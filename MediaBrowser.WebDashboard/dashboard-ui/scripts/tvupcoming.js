@@ -6,58 +6,29 @@
 
         var query = {
 
-            SortBy: "PremiereDate,AirTime,SortName",
-            SortOrder: "Ascending",
-            IncludeItemTypes: "Episode",
-            Limit: 30,
-            Recursive: true,
-            Fields: "SeriesInfo,UserData"
+            Limit: 32,
+            Fields: "SeriesInfo,UserData",
+            UserId: Dashboard.getCurrentUserId()
         };
 
-        var missedItemsQuery = $.extend({
+        $.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).done(function (result) {
 
-            IsUnaired: false
+            var items = result.Items;
 
-        }, query);
-        
-        var yesterday = new Date();
-
-        yesterday.setDate(yesterday.getDate() - 1);
-        yesterday.setHours(0, 0, 0, 0);
-        
-        missedItemsQuery.MinPremiereDate = yesterday.toISOString();
-
-        var unairedQuery = $.extend({
-
-            IsUnaired: true
-
-        }, query);
-
-        var promise1 = ApiClient.getItems(Dashboard.getCurrentUserId(), missedItemsQuery);
-        var promise2 = ApiClient.getItems(Dashboard.getCurrentUserId(), unairedQuery);
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            var missedItems = response1[0].Items;
-            var unairedItems = response2[0].Items;
-
-            for (var i = 0, length = unairedItems.length; i < length; i++) {
-                missedItems.push(unairedItems[i]);
-            }
-
-            if (!missedItems.length) {
+            if (!items.length) {
                 $('#upcomingItems', page).html("<p>Nothing here. Please ensure <a href='metadata.html'>downloading of internet metadata</a> is enabled.</p>").trigger('create');
                 return;
             }
 
             $('#upcomingItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: missedItems,
+                items: items,
                 showLocationTypeIndicator: false,
                 shape: "backdrop",
                 showTitle: true,
                 showPremiereDate: true,
                 showPremiereDateIndex: true,
                 preferThumb: true
+
             })).createPosterItemHoverMenu();
         });
     });

@@ -219,6 +219,18 @@ namespace MediaBrowser.Model.Querying
         public string NameStartsWithOrGreater { get; set; }
 
         /// <summary>
+        /// Gets or sets the name starts with.
+        /// </summary>
+        /// <value>The name starts with or greater.</value>
+        public string NameStartsWith { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the name starts with.
+        /// </summary>
+        /// <value>The name lessthan.</value>
+        public string NameLessThan { get; set; }
+
+        /// <summary>
         /// Gets or sets the album artist starts with or greater.
         /// </summary>
         /// <value>The album artist starts with or greater.</value>

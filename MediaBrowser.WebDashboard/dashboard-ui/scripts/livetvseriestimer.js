@@ -153,14 +153,15 @@
 
             html += '<li><a href="livetvtimer.html?id=' + timer.Id + '">';
 
-            var program = timer.ProgramInfo;
+            var program = timer.ProgramInfo || {};
             var imgUrl;
 
-            if (program.ImageTags && program.ImageTags.Primary) {
+            var programImages = program.ImageTags || {};
+            if (programImages.Primary) {
 
                 imgUrl = ApiClient.getImageUrl(program.Id, {
                     height: 160,
-                    tag: program.ImageTags.Primary,
+                    tag: programImages.Primary,
                     type: "Primary"
                 });
             } else {
@@ -234,9 +235,9 @@
             userId: Dashboard.getCurrentUserId(),
             seriesTimerId: id
 
-        }).done(function (result) {
+        }).done(function (recordingResult) {
 
-            renderRecordings(page, result);
+            renderRecordings(page, recordingResult);
 
         });
 
@@ -244,9 +245,9 @@
 
             seriesTimerId: id
 
-        }).done(function (result) {
+        }).done(function (timerResult) {
 
-            renderSchedule(page, result);
+            renderSchedule(page, timerResult);
 
         });
     }

@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Episode",
         Recursive: true,
-        Fields: "DateCreated,SeriesInfo,PrimaryImageAspectRatio",
+        Fields: "SeriesInfo,PrimaryImageAspectRatio",
         StartIndex: 0,
         IsMissing: false,
         IsVirtualUnaired: false

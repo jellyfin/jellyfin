@@ -7,9 +7,9 @@
     <div id="moviePeoplePage" data-role="page" class="page libraryPage" data-theme="b" data-view="movies">
 
         <div class="libraryViewNav">
+            <a href="movieslatest.html">Latest</a>
             <a href="moviesrecommended.html">Suggested</a>
             <a href="movies.html">Movies</a>
-            <a href="boxsets.html">Collections</a>
             <a href="movietrailers.html">Trailers</a>
             <a href="moviegenres.html">Genres</a>
             <a href="moviepeople.html" class="ui-btn-active">People</a>
@@ -21,45 +21,12 @@
         <div data-role="content">
             <div class="viewSettings">
                 <div class="viewControls">
-                    <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">Sort</button>
                     <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
                 </div>
                 <div class="listTopPaging">
                 </div>
-                <div class="viewSummary"></div>
             </div>
             <div id="items" class="itemsContainer"></div>
-        </div>
-        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
-
-            <form>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Sort By:</strong>
-                    </legend>
-
-                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                    <label for="radioSortName">Name</label>
-
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioMovieCount" value="on" checked="checked" data-sortby="MovieCount,SortName" data-mini="true">
-                    <label for="radioMovieCount">Movie count</label>
-
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioTrailerCount" value="on" checked="checked" data-sortby="TrailerCount,SortName" data-mini="true">
-                    <label for="radioTrailerCount">Trailer count</label>
-                </fieldset>
-
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Sort Order:</strong>
-                    </legend>
-
-                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
-                    <label for="radioAscending">Ascending</label>
-
-                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
-                    <label for="radioDescending">Descending</label>
-                </fieldset>
-            </form>
         </div>
         <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
             <form>

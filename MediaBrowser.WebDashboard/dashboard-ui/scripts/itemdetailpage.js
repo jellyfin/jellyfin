@@ -31,6 +31,7 @@
 
                 if (user.Configuration.IsAdministrator) {
                     $('#editButtonContainer', page).show();
+
                 } else {
                     $('#editButtonContainer', page).hide();
                 }
@@ -122,7 +123,7 @@
         if (item.Type == "Episode" || item.Type == "Series" || item.Type == "Season") {
             return "tv";
         }
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
+        if (item.Type == "Movie" || item.Type == "Trailer") {
             return "movies";
         }
         if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicVideo") {
@@ -130,6 +131,9 @@
         }
         if (item.MediaType == "Game") {
             return "games";
+        }
+        if (item.Type == "BoxSet") {
+            return "boxsets";
         }
         return "";
     }
@@ -162,10 +166,6 @@
             $('#gameSystemTabs', page).show();
         }
 
-        if (item.Type == "BoxSet") {
-            $('#boxsetTabs', page).show();
-        }
-
         if (item.Type == "Trailer") {
             $('#trailerTabs', page).show();
         }
@@ -177,8 +177,15 @@
 
     function setInitialCollapsibleState(page, item, context, user) {
 
+        $('.collectionItems', page).empty();
+
         if (item.IsFolder) {
-            $('#childrenCollapsible', page).removeClass('hide');
+
+            if (item.Type == "BoxSet") {
+                $('#childrenCollapsible', page).addClass('hide');
+            } else {
+                $('#childrenCollapsible', page).removeClass('hide');
+            }
             renderChildren(page, item, user);
         }
         else {
@@ -346,7 +353,7 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
             Ids: item.SoundtrackIds.join(","),
-            ItemFields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,AudioInfo",
+            ItemFields: "PrimaryImageAspectRatio,ItemCounts,AudioInfo",
             SortBy: "SortName"
 
         }).done(function (result) {
@@ -425,7 +432,7 @@
         var options = {
             userId: Dashboard.getCurrentUserId(),
             limit: item.Type == "MusicAlbum" ? 4 : 5,
-            fields: "PrimaryImageAspectRatio,DateCreated,UserData"
+            fields: "PrimaryImageAspectRatio,UserData"
         };
 
         if (item.Type == "Movie") {
@@ -527,7 +534,7 @@
 
     function renderChildren(page, item, user) {
 
-        var fields = "ItemCounts,DateCreated,AudioInfo,PrimaryImageAspectRatio";
+        var fields = "ItemCounts,AudioInfo,PrimaryImageAspectRatio";
 
         var query = {
             ParentId: item.Id,
@@ -570,15 +577,9 @@
 
             } else {
 
-                var shape = "smallPoster";
+                var html = '';
 
-                if (item.Type == "Season") {
-                    shape = "smallBackdrop";
-                }
-
-                var html;
-
-                if (item.Type == "Series" || item.Type == "BoxSet") {
+                if (item.Type == "Series") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "portrait",
@@ -606,18 +607,21 @@
                         centerText: true
                     });
                 }
-                else {
-                    html = LibraryBrowser.getPosterDetailViewHtml({
-                        items: result.Items,
-                        useAverageAspectRatio: true,
-                        shape: shape,
-                        showParentName: false,
-                        displayAsSpecial: item.Type == "Season" && item.IndexNumber
-                    });
-                }
 
                 $('#childrenContent', page).html(html).createPosterItemHoverMenu();
 
+                if (item.Type == "BoxSet") {
+
+                    var collectionItemTypes = [
+                        { name: 'Movies', type: 'Movie' },
+                        { name: 'Series', type: 'Series' },
+                        { name: 'Albums', type: 'MusicAlbum' },
+                        { name: 'Games', type: 'Game' },
+                        { name: 'Books', type: 'Book' }
+                    ];
+
+                    renderCollectionItems(page, collectionItemTypes, result.Items, user);
+                }
             }
         });
 
@@ -626,9 +630,6 @@
         }
         else if (item.Type == "Series") {
             $('#childrenTitle', page).html('Seasons');
-        }
-        else if (item.Type == "BoxSet") {
-            $('#childrenTitle', page).html('Titles');
         }
         else if (item.Type == "MusicAlbum") {
             $('#childrenTitle', page).html('Tracks');
@@ -640,6 +641,82 @@
             $('#childrenTitle', page).html('Items');
         }
     }
+
+    function renderCollectionItems(page, types, items, user) {
+
+        for (var i = 0, length = types.length; i < length; i++) {
+
+            var type = types[i];
+
+            var typeItems = items.filter(function (curr) {
+
+                return curr.Type == type.type;
+
+            });
+
+            if (!typeItems.length) {
+                continue;
+            }
+
+            renderCollectionItemType(page, type, typeItems, user);
+        }
+
+        var otherType = { name: 'Other Items' };
+
+        var otherTypeItems = items.filter(function (curr) {
+
+            return !types.filter(function(t) {
+
+                return t.type == curr.Type;
+
+            }).length;
+
+        });
+
+        if (otherTypeItems.length) {
+            renderCollectionItemType(page, otherType, otherTypeItems, user);
+        }
+        
+        if (!items.length) {
+            renderCollectionItemType(page, {name: 'Titles'}, items, user);
+        }
+
+        $('.collectionItems', page).trigger('create').createPosterItemHoverMenu();
+    }
+
+    function renderCollectionItemType(page, type, items, user) {
+
+        var html = '';
+
+        html += '<div class="detailSection">';
+
+        html += '<div class="detailSectionHeader" style="position: relative;">';
+        html += '<span>' + type.name + '</span>';
+
+        if (user.Configuration.IsAdministrator) {
+            html += '<a href="editcollectionitems.html?id=' + currentItem.Id + '" data-role="button" data-icon="edit" data-iconpos="notext" data-inline="true" style="position: absolute; right: 0; top: 6px; margin-top: 0; margin-bottom: 0;">Edit</a>';
+        }
+
+        html += '</div>';
+
+        html += '<div class="detailSectionContent">';
+
+        var shape = type.type == 'MusicAlbum' ? 'square' : 'portrait';
+
+        html += LibraryBrowser.getPosterViewHtml({
+            items: items,
+            shape: shape,
+            useAverageAspectRatio: true,
+            showTitle: true,
+            centerText: true
+        });
+        html += '</div>';
+
+        html += '</div>';
+
+        $('.collectionItems', page).append(html);
+    }
+
     function renderUserDataIcons(page, item) {
         $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }

@@ -105,7 +105,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
-            return !item.HasImage(ImageType.Primary) && (DateTime.UtcNow - date).TotalHours >= 3;
+            var liveTvItem = item as ILiveTvRecording;
+
+            if (liveTvItem != null)
+            {
+                return !liveTvItem.HasImage(ImageType.Primary) && (liveTvItem.RecordingInfo.HasImage ?? true) && (DateTime.UtcNow - date).TotalHours >= 6;
+            }
+            return false;
         }
     }
 }

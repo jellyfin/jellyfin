@@ -77,6 +77,13 @@ namespace MediaBrowser.Controller.Session
         Task OnPlaybackStopped(PlaybackStopInfo info);
 
         /// <summary>
+        /// Reports the session ended.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <returns>Task.</returns>
+        Task ReportSessionEnded(Guid sessionId);
+
+        /// <summary>
         /// Sends the system command.
         /// </summary>
         /// <param name="sessionId">The session id.</param>

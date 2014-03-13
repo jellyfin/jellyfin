@@ -211,7 +211,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "PlayableMediaTypes", Description = "A list of playable media types, comma delimited. Audio, Video, Book, Game, Photo.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string PlayableMediaTypes { get; set; }
     }
-    
+
     /// <summary>
     /// Class SessionsService
     /// </summary>

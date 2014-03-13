@@ -53,7 +53,7 @@
     </Compile>
     <Compile Include="PlayTo\Argument.cs" />
     <Compile Include="PlayTo\Configuration\DlnaProfile.cs" />
-    <Compile Include="PlayTo\Configuration\PluginConfiguration.cs" />
+    <Compile Include="PlayTo\Configuration\PlayToConfiguration.cs" />
     <Compile Include="PlayTo\Configuration\TranscodeSetting.cs" />
     <Compile Include="PlayTo\CurrentIdEventArgs.cs" />
     <Compile Include="PlayTo\Device.cs">

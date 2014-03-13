@@ -1,5 +1,5 @@
 ﻿.posterItem {
-    margin: 8px;
+    margin: 4px 5px;
     text-shadow: none;
     font-weight: normal!important;
     display: inline-block;
@@ -33,10 +33,6 @@
 
 .posterItemOverlayInner {
     padding: 11px 12px 10px;
-}
-
-.smallBackdropPosterItem, .smallPosterItem {
-    margin: 5px;
 }
 
 .posterItemImage {
@@ -107,7 +103,7 @@
     .posterItemTextOverlay .posterItemText {
         background-color: transparent;
         padding-left: 5px;
-        padding: 0 5px 5px;
+        padding: 0 5px 3px;
     }
 
         .posterItemTextOverlay .posterItemText:first-child {
@@ -136,11 +132,11 @@
 }
 
 .squarePosterItem {
-    width: 142px;
+    width: 148px;
 }
 
     .squarePosterItem .posterItemImage {
-        height: 142px;
+        height: 148px;
     }
 
 .storeReviewCount {
@@ -149,11 +145,11 @@
 
 
 .backdropPosterItem {
-    width: 142px;
+    width: 148px;
 }
 
     .backdropPosterItem .posterItemImage {
-        height: 79.875px;
+        height: 83.25px;
     }
 
 .smallBackdropPosterItem {
@@ -165,17 +161,17 @@
     }
 
 .portraitPosterItem {
-    width: 90px;
+    width: 96px;
 }
 
     .portraitPosterItem .posterItemImage {
-        height: 135px;
+        height: 144px;
     }
 
 .posterItemProgress .itemProgressBar {
     height: 10px;
     width: 100%;
-    opacity: .6;
+    opacity: .7;
 }
 
 .miniPosterItemProgress {
@@ -188,6 +184,21 @@
         opacity: 1;
     }
 
+.sessionPosterItem .posterItemText:not(.posterItemName) {
+    color: #000;
+    text-align: left;
+}
+
+.sessionPosterItem .posterItemName {
+    color: #fff!important;
+}
+
+.sessionPosterItem .posterItemDefaultText {
+    color: #000!important;
+    font-weight: normal !important;
+    top: 42%;
+}
+
 @media all and (max-width: 600px) {
 
     .packageReviewText {
@@ -198,19 +209,19 @@
 @media all and (min-width: 540px) {
 
     .backdropPosterItem {
-        width: 260px;
+        width: 266px;
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 146.25px;
+            height: 149.625px;
         }
 
     .smallBackdropPosterItem {
-        width: 184px;
+        width: 180px;
     }
 
         .smallBackdropPosterItem .posterItemImage {
-            height: 103.5px;
+            height: 101.25px;
         }
 }
 
@@ -218,54 +229,31 @@
 
 
     .squarePosterItem {
-        width: 164px;
+        width: 170px;
     }
 
         .squarePosterItem .posterItemImage {
-            height: 164px;
+            height: 170px;
         }
 
     .portraitPosterItem {
-        width: 122px;
+        width: 128px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 183px;
+            height: 192px;
         }
 }
 
 @media all and (min-width: 650px) {
 
     .backdropPosterItem {
-        width: 276px;
+        width: 282px;
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 155.25px;
+            height: 158.625px;
         }
-
-    .smallBackdropPosterItem {
-        width: 196px;
-    }
-
-        .smallBackdropPosterItem .posterItemImage {
-            height: 110.25px;
-        }
-}
-
-@media all and (min-width: 750px) {
-
-    .portraitPosterItem {
-        width: 112px;
-    }
-
-        .portraitPosterItem .posterItemImage {
-            height: 168px;
-        }
-}
-
-@media all and (min-width: 1000px) {
-
 
     .smallBackdropPosterItem {
         width: 202px;
@@ -276,22 +264,37 @@
         }
 }
 
-@media all and (min-width: 1200px) {
-
-    .backdropPosterItem {
-        width: 276px;
-    }
-
-        .backdropPosterItem .posterItemImage {
-            height: 155.25px;
-        }
+@media all and (min-width: 750px) {
 
     .portraitPosterItem {
-        width: 138px;
+        width: 118px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 207px;
+            height: 177px;
+        }
+}
+
+@media all and (min-width: 1000px) {
+
+
+    .smallBackdropPosterItem {
+        width: 208px;
+    }
+
+        .smallBackdropPosterItem .posterItemImage {
+            height: 117px;
+        }
+}
+
+@media all and (min-width: 1200px) {
+
+    .portraitPosterItem {
+        width: 144px;
+    }
+
+        .portraitPosterItem .posterItemImage {
+            height: 216px;
         }
 
     .storeReviewCount {
@@ -302,38 +305,30 @@
 @media all and (min-width: 1440px) {
 
     .squarePosterItem {
-        width: 174px;
+        width: 180px;
     }
 
         .squarePosterItem .posterItemImage {
-            height: 174px;
+            height: 180px;
         }
 
     .backdropPosterItem {
-        width: 292px;
+        width: 298px;
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 164.25px;
+            height: 167.625px;
         }
 }
 
 @media all and (min-width: 1920px) {
 
-    .portraitPosterItem {
-        width: 160px;
-    }
-
-        .portraitPosterItem .posterItemImage {
-            height: 240px;
-        }
-
     .squarePosterItem {
-        width: 184px;
+        width: 190px;
     }
 
         .squarePosterItem .posterItemImage {
-            height: 184px;
+            height: 190px;
         }
 }
 /********************/

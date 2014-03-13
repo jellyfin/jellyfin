@@ -212,6 +212,8 @@ namespace MediaBrowser.Model.Configuration
         public string ServerName { get; set; }
         public string WanDdns { get; set; }
 
+        public DlnaOptions DlnaOptions { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -271,6 +273,8 @@ namespace MediaBrowser.Model.Configuration
             };
 
             MetadataOptions = options.ToArray();
+
+            DlnaOptions = new DlnaOptions();
         }
     }
 

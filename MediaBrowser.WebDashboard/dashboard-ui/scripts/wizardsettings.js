@@ -11,6 +11,8 @@
             config.MetadataCountryCode = $('#selectCountry', page).val();
             config.SaveLocalMeta = $('#chkSaveLocalMetadata', page).checked();
 
+            config.EnableInternetProviders = $('#chkEnableInternetProviders', page).checked();
+
             ApiClient.updateServerConfiguration(config).done(function (result) {
 
                 navigateToNextPage();

@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "BoxSet",
         Recursive: true,
-        Fields: "DateCreated,PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio",
         StartIndex: 0
     };
 
@@ -26,19 +26,26 @@
 
             updateFilterControls(page);
 
-            var checkSortOption = $('.radioSortBy:checked', page);
-            $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
+            if (result.TotalRecordCount) {
+                
+                var checkSortOption = $('.radioSortBy:checked', page);
+                $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
-            html = LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "portrait",
-                context: 'movies',
-                useAverageAspectRatio: true,
-                showTitle: true,
-                centerText: true
-            });
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "portrait",
+                    context: 'movies',
+                    useAverageAspectRatio: true,
+                    showTitle: true,
+                    centerText: true
+                });
+                
+                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            } else {
+                
+                html += '<p>Collections allow you to enjoy personalized groupings of Movies, Series, Albums, Books and Games. Click the New button to start creating Collections.</p>';
+            }
 
             $('#items', page).html(html).trigger('create').createPosterItemHoverMenu();
 
@@ -59,6 +66,16 @@
             });
 
             LibraryBrowser.saveQueryValues('boxsets', query);
+
+            Dashboard.getCurrentUser().done(function(user) {
+                
+                if (user.Configuration.IsAdministrator) {
+                    $('#btnNewCollection', page).removeClass('hide');
+                } else {
+                    $('#btnNewCollection', page).addClass('hide');
+                }
+
+            });
 
             Dashboard.hideLoadingMsg();
         });
@@ -93,6 +110,13 @@
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
+    }
+
+    function showNewCollectionPanel(page) {
+
+        $('#newCollectionPanel', page).panel('toggle');
+
+        $('#txtNewCollectionName', page).val('').focus();
     }
 
     $(document).on('pageinit', "#boxsetsPage", function () {
@@ -164,6 +188,11 @@
             reloadItems(page);
         });
 
+        $('#btnNewCollection', page).on('click', function () {
+
+            showNewCollectionPanel(page);
+        });
+
     }).on('pagebeforeshow', "#boxsetsPage", function () {
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -182,5 +211,38 @@
 
         updateFilterControls(this);
     });
+
+    window.BoxSetsPage = {
+
+        onNewCollectionSubmit: function () {
+
+            Dashboard.showLoadingMsg();
+
+            var page = $(this).parents('.page');
+
+            var url = ApiClient.getUrl("Collections", {
+                
+                Name: $('#txtNewCollectionName', page).val(),
+                IsLocked: !$('#chkEnableInternetMetadata', page).checked()
+
+            });
+
+            $.ajax({
+                type: "POST",
+                url: url
+
+            }).done(function () {
+
+                Dashboard.hideLoadingMsg();
+
+                $('#newCollectionPanel', page).panel('toggle');
+
+                reloadItems(page);
+
+            });
+
+            return false;
+        }
+    };
 
 })(jQuery, document);
