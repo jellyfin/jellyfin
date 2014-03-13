@@ -18,7 +18,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private Timer _timer;
 
-        public DeviceProperties Properties { get; set; }
+        public DeviceInfo Properties { get; set; }
 
         private int _muteVol;
         public bool IsMuted
@@ -120,7 +120,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
 
-        public Device(DeviceProperties deviceProperties, IHttpClient httpClient, ILogger logger)
+        public Device(DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger)
         {
             Properties = deviceProperties;
             _httpClient = httpClient;
@@ -599,7 +599,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (avService == null)
                 return;
 
-            var url = avService.SCPDURL;
+            var url = avService.ScpdUrl;
             if (!url.Contains("/"))
                 url = "/dmr/" + url;
             if (!url.StartsWith("/"))
@@ -617,7 +617,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (avService == null)
                 return;
-            string url = avService.SCPDURL;
+            string url = avService.ScpdUrl;
             if (!url.Contains("/"))
                 url = "/dmr/" + url;
             if (!url.StartsWith("/"))
@@ -647,7 +647,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var document = await ssdpHttpClient.GetDataAsync(url).ConfigureAwait(false);
 
-            var deviceProperties = new DeviceProperties();
+            var deviceProperties = new DeviceInfo();
 
             var name = document.Descendants(uPnpNamespaces.ud.GetName("friendlyName")).FirstOrDefault();
             if (name != null)
@@ -705,7 +705,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 foreach (var element in servicesList)
                 {
-                    var service = uService.Create(element);
+                    var service = Create(element);
 
                     if (service != null)
                     {
@@ -733,6 +733,17 @@ namespace MediaBrowser.Dlna.PlayTo
         }
 
         #endregion
+
+        private static DeviceService Create(XElement element)
+        {
+            var type = element.GetDescendantValue(uPnpNamespaces.ud.GetName("serviceType"));
+            var id = element.GetDescendantValue(uPnpNamespaces.ud.GetName("serviceId"));
+            var scpdUrl = element.GetDescendantValue(uPnpNamespaces.ud.GetName("SCPDURL"));
+            var controlURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("controlURL"));
+            var eventSubURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("eventSubURL"));
+
+            return new DeviceService(type, id, scpdUrl, controlURL, eventSubURL);
+        }
 
         #region Events
 

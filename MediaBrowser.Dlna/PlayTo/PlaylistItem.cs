@@ -1,6 +1,9 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Dlna.PlayTo.Configuration;
+﻿using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using System;
+using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -28,84 +31,69 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public long StartPositionTicks { get; set; }
 
-        public static PlaylistItem GetBasicConfig(BaseItem item, TranscodeSetting[] profileTranscodings)
+        public static PlaylistItem Create(BaseItem item, DlnaProfile profile)
         {
+            var playlistItem = new PlaylistItem
+            {
+                ItemId = item.Id.ToString()
+            };
 
-            var playlistItem = new PlaylistItem();
-            playlistItem.ItemId = item.Id.ToString();
-
-            if (string.Equals(item.MediaType, Model.Entities.MediaType.Video, StringComparison.OrdinalIgnoreCase))
+            DlnaProfileType profileType;
+            if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
                 playlistItem.IsVideo = true;
+                profileType = DlnaProfileType.Video;
             }
             else
             {
                 playlistItem.IsAudio = true;
+                profileType = DlnaProfileType.Audio;
             }
 
+            var path = item.Path;
 
-            var path = item.Path.ToLower();
+            var directPlay = profile.DirectPlayProfiles.FirstOrDefault(i => i.Type == profileType && IsSupported(i, path));
 
-            //Check the DlnaProfile associated with the renderer
-            if (profileTranscodings != null)
+            if (directPlay != null)
             {
-                foreach (TranscodeSetting transcodeSetting in profileTranscodings)
-                {
-                    if (string.IsNullOrWhiteSpace(transcodeSetting.Container))
-                        continue;
-                    if (path.EndsWith(transcodeSetting.Container) && !string.IsNullOrWhiteSpace(transcodeSetting.TargetContainer))
-                    {
-                        playlistItem.Transcode = true;
-                        playlistItem.FileFormat = transcodeSetting.TargetContainer;
-                        
-                        if (string.IsNullOrWhiteSpace(transcodeSetting.MimeType))
-                            playlistItem.MimeType = transcodeSetting.MimeType;
-                        
-                        return playlistItem;
-                    }
-                    if (path.EndsWith(transcodeSetting.Container) && !string.IsNullOrWhiteSpace(transcodeSetting.MimeType))
-                    {
-                        playlistItem.Transcode = false;
-                        playlistItem.FileFormat = transcodeSetting.Container;
-                        playlistItem.MimeType = transcodeSetting.MimeType;
-                        return playlistItem;
-                    }
-                }
+                playlistItem.Transcode = false;
+                playlistItem.FileFormat = Path.GetExtension(path).TrimStart('.');
+                return playlistItem;
             }
-            if (playlistItem.IsVideo)
+
+            var transcodingProfile = profile.TranscodingProfiles.FirstOrDefault(i => i.Type == profileType && IsSupported(profile, i, path));
+
+            if (transcodingProfile != null)
             {
-
-                //Check to see if we support serving the format statically
-                foreach (string supported in PlayToConfiguration.Instance.SupportedStaticFormats)
-                {
-                    if (path.EndsWith(supported))
-                    {
-                        playlistItem.Transcode = false;
-                        playlistItem.FileFormat = supported;
-                        return playlistItem;
-                    }
-                }
-
                 playlistItem.Transcode = true;
-                playlistItem.FileFormat = "ts";
-            }
-            else
-            {
-                foreach (string supported in PlayToConfiguration.Instance.SupportedStaticFormats)
-                {
-                    if (path.EndsWith(supported))
-                    {
-                        playlistItem.Transcode = false;
-                        playlistItem.FileFormat = supported;
-                        return playlistItem;
-                    }
-                }
+                playlistItem.FileFormat = transcodingProfile.Container;
 
-                playlistItem.Transcode = true;
-                playlistItem.FileFormat = "mp3";
+                playlistItem.MimeType = transcodingProfile.MimeType;
             }
 
             return playlistItem;
+        }
+
+        private static bool IsSupported(DirectPlayProfile profile, string path)
+        {
+            // TODO: Support codec list as additional restriction
+
+            var mediaContainer = Path.GetExtension(path).TrimStart('.');
+
+            if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+            {
+                return false;
+            }
+
+            // Placeholder for future conditions
+
+            return true;
+        }
+
+        private static bool IsSupported(DlnaProfile profile, TranscodingProfile transcodingProfile, string path)
+        {
+            // Placeholder for future conditions
+            return true;
         }
     }
 }

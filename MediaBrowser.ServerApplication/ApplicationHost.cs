@@ -11,6 +11,7 @@ using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -29,6 +30,7 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Themes;
+using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.PlayTo;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -489,6 +491,9 @@ namespace MediaBrowser.ServerApplication
 
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);
+
+            var dlnaManager = new DlnaManager();
+            RegisterSingleInstance<IDlnaManager>(dlnaManager);
 
             var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);
             RegisterSingleInstance<ICollectionManager>(collectionManager);

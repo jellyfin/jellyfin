@@ -51,15 +51,14 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="DlnaManager.cs" />
     <Compile Include="PlayTo\Argument.cs" />
-    <Compile Include="PlayTo\Configuration\DlnaProfile.cs" />
-    <Compile Include="PlayTo\Configuration\PlayToConfiguration.cs" />
-    <Compile Include="PlayTo\Configuration\TranscodeSetting.cs" />
     <Compile Include="PlayTo\CurrentIdEventArgs.cs" />
     <Compile Include="PlayTo\Device.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="PlayTo\DeviceProperties.cs" />
+    <Compile Include="PlayTo\DeviceInfo.cs" />
+    <Compile Include="PlayTo\DeviceService.cs" />
     <Compile Include="PlayTo\DidlBuilder.cs" />
     <Compile Include="PlayTo\DlnaController.cs" />
     <Compile Include="PlayTo\DlnaControllerFactory.cs" />
@@ -81,7 +80,6 @@
     <Compile Include="PlayTo\uIcon.cs" />
     <Compile Include="PlayTo\uParser.cs" />
     <Compile Include="PlayTo\uPnpNamespaces.cs" />
-    <Compile Include="PlayTo\uService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -22,9 +22,9 @@ namespace MediaBrowser.Dlna.PlayTo
             _httpClient = httpClient;
         }
 
-        public async Task<XDocument> SendCommandAsync(string baseUrl, uService service, string command, string postData, string header = null)
+        public async Task<XDocument> SendCommandAsync(string baseUrl, DeviceService service, string command, string postData, string header = null)
         {
-            var serviceUrl = service.ControlURL;
+            var serviceUrl = service.ControlUrl;
             if (!serviceUrl.StartsWith("/"))
                 serviceUrl = "/" + serviceUrl;
 

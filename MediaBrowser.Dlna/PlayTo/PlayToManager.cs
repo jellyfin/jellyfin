@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Dlna.PlayTo.Configuration;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -16,7 +16,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -33,8 +32,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly ILibraryManager _libraryManager;
         private readonly INetworkManager _networkManager;
         private readonly IUserManager _userManager;
+        private readonly IDlnaManager _dlnaManager;
 
-        public PlayToManager(ILogger logger,IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager)
+        public PlayToManager(ILogger logger,IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager)
         {
             _locations = new ConcurrentDictionary<string, DateTime>();
             _tokenSource = new CancellationTokenSource();
@@ -46,10 +46,9 @@ namespace MediaBrowser.Dlna.PlayTo
             _libraryManager = libraryManager;
             _networkManager = networkManager;
             _userManager = userManager;
+            _dlnaManager = dlnaManager;
 
             var path = Path.Combine(config.CommonApplicationPaths.ConfigurationDirectoryPath, "DlnaProfiles.xml");
-
-            PlayToConfiguration.Load(path, logger);            
         }
 
         public async void Start()
@@ -221,7 +220,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (device != null && device.RendererCommands != null && !_sessionManager.Sessions.Any(s => string.Equals(s.DeviceId, device.Properties.UUID) && s.IsActive))
             {
-                var transcodeProfiles = TranscodeSetting.GetProfileSettings(device.Properties);
+                GetProfileSettings(device.Properties);
 
                 var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, device.Properties.Name, device.Properties.UUID, device.Properties.DisplayName, uri.OriginalString, null)
                     .ConfigureAwait(false);
@@ -233,27 +232,24 @@ namespace MediaBrowser.Dlna.PlayTo
                     sessionInfo.SessionController = controller = new PlayToController(sessionInfo, _sessionManager, _itemRepository, _libraryManager, _logger, _networkManager);
                 }
 
-                controller.Init(device, transcodeProfiles);
+                controller.Init(device);
                 
                 _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
             }
         }
 
-        const string DefaultUser = "Play To";
-        private async Task<User> GetPlayToUser()
+        /// <summary>
+        /// Gets the profile settings.
+        /// </summary>
+        /// <param name="deviceProperties">The device properties.</param>
+        /// <returns>The TranscodeSettings for the device</returns>
+        private void GetProfileSettings(DeviceInfo deviceProperties)
         {
-            var user = _userManager.Users.FirstOrDefault(u => string.Equals(DefaultUser, u.Name, StringComparison.OrdinalIgnoreCase));
+            var profile = _dlnaManager.GetProfile(deviceProperties.DisplayName, deviceProperties.ModelName,
+                deviceProperties.ModelNumber);
 
-            if (user == null)
-            {
-                user = await _userManager.CreateUser(DefaultUser);
-
-                user.Configuration.IsHidden = true;
-                user.Configuration.IsAdministrator = false;
-                user.SaveConfiguration();
-            }
-
-            return user;
+            deviceProperties.DisplayName = profile.Name;
+            deviceProperties.ClientType = profile.ClientType;
         }
 
         /// <summary>

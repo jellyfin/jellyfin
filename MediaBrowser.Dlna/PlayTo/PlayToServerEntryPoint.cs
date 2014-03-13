@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
@@ -11,7 +12,7 @@ namespace MediaBrowser.Dlna.PlayTo
 {
     public class PlayToServerEntryPoint : IServerEntryPoint
     {
-        private  PlayToManager _manager;
+        private PlayToManager _manager;
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
@@ -20,8 +21,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly ILibraryManager _libraryManager;
         private readonly INetworkManager _networkManager;
         private readonly IUserManager _userManager;
+        private readonly IDlnaManager _dlnaManager;
 
-        public PlayToServerEntryPoint(ILogManager logManager, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager)
+        public PlayToServerEntryPoint(ILogManager logManager, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager)
         {
             _config = config;
             _sessionManager = sessionManager;
@@ -30,6 +32,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _libraryManager = libraryManager;
             _networkManager = networkManager;
             _userManager = userManager;
+            _dlnaManager = dlnaManager;
             _logger = logManager.GetLogger("PlayTo");
         }
 
@@ -66,7 +69,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 try
                 {
-                    _manager = new PlayToManager(_logger, _config, _sessionManager, _httpClient, _itemRepo, _libraryManager, _networkManager, _userManager);
+                    _manager = new PlayToManager(_logger, _config, _sessionManager, _httpClient, _itemRepo, _libraryManager, _networkManager, _userManager, _dlnaManager);
                     _manager.Start();
                 }
                 catch (Exception ex)
@@ -96,13 +99,9 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        #region Dispose
-
         public void Dispose()
         {
             DisposePlayToManager();
         }
-
-        #endregion
     }
 }
