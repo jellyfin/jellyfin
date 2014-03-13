@@ -36,6 +36,7 @@ namespace MediaBrowser.Dlna.PlayTo
         public void Run()
         {
             _config.ConfigurationUpdated += ConfigurationUpdated;
+
             ReloadPlayToManager();
         }
 
@@ -65,7 +66,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 try
                 {
-                    _manager = new PlayToManager(_logger, _sessionManager, _httpClient, _itemRepo, _libraryManager, _networkManager, _userManager);
+                    _manager = new PlayToManager(_logger, _config, _sessionManager, _httpClient, _itemRepo, _libraryManager, _networkManager, _userManager);
                     _manager.Start();
                 }
                 catch (Exception ex)

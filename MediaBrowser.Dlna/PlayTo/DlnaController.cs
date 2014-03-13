@@ -21,7 +21,7 @@ namespace MediaBrowser.Dlna.PlayTo
     {
         private Device _device;
         private BaseItem _currentItem = null;
-        private TranscodeSettings[] _transcodeSettings;
+        private TranscodeSetting[] _transcodeSettings;
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
         private readonly IItemRepository _itemRepository;
@@ -56,7 +56,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _logger = logger;
         }
 
-        public void Init(Device device, TranscodeSettings[] transcodeSettings)
+        public void Init(Device device, TranscodeSetting[] transcodeSettings)
         {
             _transcodeSettings = transcodeSettings;
             _device = device;

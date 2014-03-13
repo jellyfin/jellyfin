@@ -1,26 +1,31 @@
-﻿namespace MediaBrowser.Dlna.PlayTo.Configuration
+﻿using MediaBrowser.Model.Logging;
+using System;
+using System.IO;
+using System.Xml.Serialization;
+namespace MediaBrowser.Dlna.PlayTo.Configuration
 {
     public class PlayToConfiguration
     {
-        private static readonly string[] _supportedStaticFormats = { "mp3", "flac", "m4a", "wma", "avi", "mp4", "mkv", "ts" };
-        public static string[] SupportedStaticFormats
+        [XmlIgnore]
+        public static PlayToConfiguration Instance
+        {
+            get;
+            private set;
+        }
+
+        [XmlIgnore]
+        public string[] SupportedStaticFormats
         {
             get
             {
-                return _supportedStaticFormats;
+                return new[] { "mp3", "flac", "m4a", "wma", "avi", "mp4", "mkv" };
             }
         }
 
-        private static readonly DlnaProfile[] _profiles = GetDefaultProfiles();
-        public static DlnaProfile[] Profiles
-        {
-            get
-            {
-                return _profiles;
-            }
-        }
+        public DlnaProfile[] Profiles
+        { get; set; }
 
-        private static DlnaProfile[] GetDefaultProfiles()
+        public static DlnaProfile[] GetDefaultProfiles()
         {
             var profile0 = new DlnaProfile
             {
@@ -31,9 +36,9 @@
                 ModelName = "Samsung DTV DMR",
                 TranscodeSettings = new[]
                 {
-                    new TranscodeSettings {Container = "mkv", MimeType = "x-mkv"},
-                    new TranscodeSettings {Container = "flac", TargetContainer = "mp3"},
-                    new TranscodeSettings {Container = "m4a", TargetContainer = "mp3"}
+                    new TranscodeSetting {Container = "mkv", MimeType = "x-mkv"},
+                    new TranscodeSetting {Container = "flac", TargetContainer = "mp3"},
+                    new TranscodeSetting {Container = "m4a", TargetContainer = "mp3"}
                 }
             };
 
@@ -45,9 +50,9 @@
                 ModelNumber = @"(1\.0)|(AllShare1\.0)",
                 TranscodeSettings = new[]
                 {
-                    new TranscodeSettings {Container = "mkv", MimeType = "x-mkv"},
-                    new TranscodeSettings {Container = "flac", TargetContainer = "mp3"},
-                    new TranscodeSettings {Container = "m4a", TargetContainer = "mp3"}
+                    new TranscodeSetting {Container = "mkv", MimeType = "x-mkv"},
+                    new TranscodeSetting {Container = "flac", TargetContainer = "mp3"},
+                    new TranscodeSetting {Container = "m4a", TargetContainer = "mp3"}
                 }
             };
 
@@ -59,9 +64,9 @@
                 ModelNumber = @"(1\.0)|(AllShare1\.0)",
                 TranscodeSettings = new[]
                 {
-                    new TranscodeSettings {Container = "mkv", MimeType = "x-mkv"},
-                    new TranscodeSettings {Container = "flac", TargetContainer = "mp3"},
-                    new TranscodeSettings {Container = "m4a", TargetContainer = "mp3"}
+                    new TranscodeSetting {Container = "mkv", MimeType = "x-mkv"},
+                    new TranscodeSetting {Container = "flac", TargetContainer = "mp3"},
+                    new TranscodeSetting {Container = "m4a", TargetContainer = "mp3"}
                 }
             };
 
@@ -72,9 +77,9 @@
                 ModelName = "Xbox 360",
                 TranscodeSettings = new[]
                 {
-                    new TranscodeSettings {Container = "mkv", TargetContainer = "ts"},
-                    new TranscodeSettings {Container = "flac", TargetContainer = "mp3"},
-                    new TranscodeSettings {Container = "m4a", TargetContainer = "mp3"}
+                    new TranscodeSetting {Container = "mkv", TargetContainer = "ts"},
+                    new TranscodeSetting {Container = "flac", TargetContainer = "mp3"},
+                    new TranscodeSetting {Container = "m4a", TargetContainer = "mp3"}
                 }
             };
 
@@ -86,9 +91,9 @@
                 FriendlyName = "Xbox-SystemOS",
                 TranscodeSettings = new[]
                 {
-                    new TranscodeSettings {Container = "mkv", TargetContainer = "ts"},
-                    new TranscodeSettings {Container = "flac", TargetContainer = "mp3"},
-                    new TranscodeSettings {Container = "m4a", TargetContainer = "mp3"}
+                    new TranscodeSetting {Container = "mkv", TargetContainer = "ts"},
+                    new TranscodeSetting {Container = "flac", TargetContainer = "mp3"},
+                    new TranscodeSetting {Container = "m4a", TargetContainer = "mp3"}
                 }
             };
 
@@ -97,7 +102,7 @@
                 Name = "Sony Bravia TV (2012)",
                 ClientType = "TV",
                 FriendlyName = @"BRAVIA KDL-\d{2}[A-Z]X\d5(\d|G).*",
-                TranscodeSettings = TranscodeSettings.GetDefaultTranscodingSettings()
+                TranscodeSettings = TranscodeSetting.GetDefaultTranscodingSettings()
             };
 
             //WDTV does not need any transcoding of the formats we support statically
@@ -106,7 +111,7 @@
                 Name = "WDTV Live [Profile]",
                 ClientType = "DLNA",
                 ModelName = "WD TV HD Live",
-                TranscodeSettings = new TranscodeSettings[] { }
+                TranscodeSettings = new TranscodeSetting[] { }
             };
 
             var profile7 = new DlnaProfile
@@ -115,7 +120,7 @@
                Name = "Linksys DMA2100 [Profile]",
                ClientType = "DLNA",
                ModelName = "DMA2100us",
-               TranscodeSettings = new TranscodeSettings[] { }
+               TranscodeSettings = new TranscodeSetting[] { }
            };
 
             return new[] 
@@ -130,5 +135,62 @@
                 profile7
             };
         }
+
+        public static void Load(string path, ILogger logger)
+        {
+            if (!File.Exists(path))
+            {
+               Instance = CreateNewSettingsFile(path, logger);
+
+            }
+            else
+            {
+                try
+                {
+                    XmlSerializer deserializer = new XmlSerializer(typeof(PlayToConfiguration));
+                    using (var textReader = new StreamReader(path))
+                    {
+                        var configuration = (PlayToConfiguration)deserializer.Deserialize(textReader);
+                        Instance = configuration;
+                        textReader.Close();
+                    }
+                }
+                catch (Exception e)
+                {
+                    // Something went wrong with the loading of the file
+                    // Maybe a user created a faulty config? 
+                    // Delete the file and use default settings
+                    logger.ErrorException("Error loading PlayTo configuration", e);
+                    Instance = CreateNewSettingsFile(path, logger);
+                }
+            } 
+        }
+
+        private static PlayToConfiguration CreateNewSettingsFile(string path, ILogger logger)
+        {
+            var defaultConfig = new PlayToConfiguration();
+            defaultConfig.Profiles = PlayToConfiguration.GetDefaultProfiles();
+
+            try
+            {
+                if (File.Exists(path))
+                    File.Delete(path);
+
+                XmlSerializer serializer = new XmlSerializer(typeof(PlayToConfiguration));
+
+                using (var fileStream = new StreamWriter(path))
+                {
+                    serializer.Serialize(fileStream, defaultConfig);
+                    fileStream.Close();
+                }
+            }
+            catch(Exception e)
+            {
+                //Something went wrong deleting or creating the file, Log and continue with the default profile unsaved
+                logger.ErrorException("Error creating default PlayTo configuration", e);
+            }
+            return defaultConfig;
+        }
+
     }
 }
