@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Dlna.PlayTo.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
@@ -21,13 +21,13 @@ namespace MediaBrowser.Dlna.PlayTo
     {
         private Device _device;
         private BaseItem _currentItem = null;
-        private TranscodeSetting[] _transcodeSettings;
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
         private readonly IItemRepository _itemRepository;
         private readonly ILibraryManager _libraryManager;
         private readonly INetworkManager _networkManager;
         private readonly ILogger _logger;
+        private readonly IDlnaManager _dlnaManager;
         private bool _playbackStarted = false;
 
         public bool SupportsMediaRemoteControl
@@ -56,9 +56,8 @@ namespace MediaBrowser.Dlna.PlayTo
             _logger = logger;
         }
 
-        public void Init(Device device, TranscodeSetting[] transcodeSettings)
+        public void Init(Device device)
         {
-            _transcodeSettings = transcodeSettings;
             _device = device;
             _device.PlaybackChanged += Device_PlaybackChanged;
             _device.CurrentIdChanged += Device_CurrentIdChanged;
@@ -384,7 +383,9 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var streams = _itemRepository.GetMediaStreams(new MediaStreamQuery { ItemId = item.Id }).ToList();
 
-            var playlistItem = PlaylistItem.GetBasicConfig(item, _transcodeSettings);
+            var deviceInfo = _device.Properties;
+
+            var playlistItem = PlaylistItem.Create(item, _dlnaManager.GetProfile(deviceInfo.Name, deviceInfo.ModelName, deviceInfo.ModelNumber));
             playlistItem.StartPositionTicks = startPostionTicks;
 
             if (playlistItem.IsAudio)

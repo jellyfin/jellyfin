@@ -94,7 +94,7 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <param name="streams">The streams.</param>
         /// <param name="serverAddress">The server address.</param>
         /// <returns>The url to send to the device</returns>
-        internal static string GetVideoUrl(DeviceProperties deviceProperties, PlaylistItem item, List<MediaStream> streams, string serverAddress)
+        internal static string GetVideoUrl(DeviceInfo deviceProperties, PlaylistItem item, List<MediaStream> streams, string serverAddress)
         {
             string dlnaCommand = string.Empty;
             if (!item.Transcode)
