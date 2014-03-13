@@ -77,8 +77,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private static bool IsSupported(DirectPlayProfile profile, string path)
         {
-            // TODO: Support codec list as additional restriction
-
             var mediaContainer = Path.GetExtension(path).TrimStart('.');
 
             if (!profile.Containers.Any(i => string.Equals(i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
@@ -87,6 +85,8 @@ namespace MediaBrowser.Dlna.PlayTo
             }
 
             // Placeholder for future conditions
+
+            // TODO: Support codec list as additional restriction
 
             return true;
         }

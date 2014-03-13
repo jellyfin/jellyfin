@@ -8,9 +8,11 @@ namespace MediaBrowser.Dlna
     {
         public IEnumerable<DlnaProfile> GetProfiles()
         {
-            var profile0 = new DlnaProfile
+            var list = new List<DlnaProfile>();
+
+            list.Add(new DlnaProfile
             {
-                Name = "Samsung TV (B Series) [Profile]",
+                Name = "Samsung TV (B Series)",
                 ClientType = "DLNA",
                 FriendlyName = "^TV$",
                 ModelNumber = @"1\.0",
@@ -32,13 +34,19 @@ namespace MediaBrowser.Dlna
                         Containers = new[]{"mkv"}, 
                         MimeType = "x-mkv", 
                         Type = DlnaProfileType.Video
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi"}, 
+                        MimeType = "x-msvideo", 
+                        Type = DlnaProfileType.Video
                     }
                 }
-            };
+            });
 
-            var profile1 = new DlnaProfile
+            list.Add(new DlnaProfile
             {
-                Name = "Samsung TV (E/F-series) [Profile]",
+                Name = "Samsung TV (E/F-series)",
                 ClientType = "DLNA",
                 FriendlyName = @"(^\[TV\][A-Z]{2}\d{2}(E|F)[A-Z]?\d{3,4}.*)|^\[TV\] Samsung",
                 ModelNumber = @"(1\.0)|(AllShare1\.0)",
@@ -59,13 +67,19 @@ namespace MediaBrowser.Dlna
                         Containers = new[]{"mkv"}, 
                         MimeType = "x-mkv", 
                         Type = DlnaProfileType.Video
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi"}, 
+                        MimeType = "x-msvideo", 
+                        Type = DlnaProfileType.Video
                     }
                 }
-            };
+            });
 
-            var profile2 = new DlnaProfile
+            list.Add(new DlnaProfile
             {
-                Name = "Samsung TV (C/D-series) [Profile]",
+                Name = "Samsung TV (C/D-series)",
                 ClientType = "DLNA",
                 FriendlyName = @"(^TV-\d{2}C\d{3}.*)|(^\[TV\][A-Z]{2}\d{2}(D)[A-Z]?\d{3,4}.*)|^\[TV\] Samsung",
                 ModelNumber = @"(1\.0)|(AllShare1\.0)",
@@ -85,13 +99,19 @@ namespace MediaBrowser.Dlna
                         Containers = new[]{"mkv"}, 
                         MimeType = "x-mkv", 
                         Type = DlnaProfileType.Video
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi"}, 
+                        MimeType = "x-msvideo", 
+                        Type = DlnaProfileType.Video
                     }
                 }
-            };
+            });
 
-            var profile3 = new DlnaProfile
+            list.Add(new DlnaProfile
             {
-                Name = "Xbox 360 [Profile]",
+                Name = "Xbox 360",
                 ClientType = "DLNA",
                 ModelName = "Xbox 360",
                 TranscodingProfiles = new[]
@@ -106,12 +126,22 @@ namespace MediaBrowser.Dlna
                         Container = "ts", 
                         Type = DlnaProfileType.Video
                     }
-                }
-            };
+                },
 
-            var profile4 = new DlnaProfile
+                DirectPlayProfiles = new[]
+                {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi"}, 
+                        MimeType = "x-msvideo", 
+                        Type = DlnaProfileType.Video
+                    }
+                }
+            });
+
+            list.Add(new DlnaProfile
             {
-                Name = "Xbox One [Profile]",
+                Name = "Xbox One",
                 ModelName = "Xbox One",
                 ClientType = "DLNA",
                 FriendlyName = "Xbox-SystemOS",
@@ -127,18 +157,55 @@ namespace MediaBrowser.Dlna
                         Container = "ts", 
                         Type = DlnaProfileType.Video
                     }
-                }
-            };
+                },
 
-            var profile5 = GetDefaultProfile();
-            profile5.Name = "Sony Bravia TV (2012)";
-            profile5.ClientType = "TV";
-            profile5.FriendlyName = @"BRAVIA KDL-\d{2}[A-Z]X\d5(\d|G).*";
+                DirectPlayProfiles = new[]
+                {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi"}, 
+                        MimeType = "x-msvideo", 
+                        Type = DlnaProfileType.Video
+                    }
+                }
+            });
+
+            list.Add(new DlnaProfile
+            {
+                //Linksys DMA2100us does not need any transcoding of the formats we support statically
+                Name = "Sony Bravia TV (2012)",
+                ClientType = "DLNA",
+                FriendlyName = @"BRAVIA KDL-\d{2}[A-Z]X\d5(\d|G).*",
+
+                TranscodingProfiles = new[]
+                {
+                    new TranscodingProfile
+                    {
+                        Container = "mp3", 
+                        Type = DlnaProfileType.Audio
+                    },
+                    new TranscodingProfile
+                    {
+                        Container = "ts", 
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                DirectPlayProfiles = new[]
+                {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi"}, 
+                        Type = DlnaProfileType.Video,
+                        MimeType = "avi"
+                    }
+                }
+            });
 
             //WDTV does not need any transcoding of the formats we support statically
-            var profile6 = new DlnaProfile
+            list.Add(new DlnaProfile
             {
-                Name = "WDTV Live [Profile]",
+                Name = "WDTV Live",
                 ClientType = "DLNA",
                 ModelName = "WD TV HD Live",
 
@@ -156,27 +223,32 @@ namespace MediaBrowser.Dlna
                         Type = DlnaProfileType.Video
                     }
                 }
-            };
+            });
 
-            var profile7 = new DlnaProfile
+            list.Add(new DlnaProfile
             {
                 //Linksys DMA2100us does not need any transcoding of the formats we support statically
-                Name = "Linksys DMA2100 [Profile]",
+                Name = "Linksys DMA2100",
                 ClientType = "DLNA",
-                ModelName = "DMA2100us"
-            };
+                ModelName = "DMA2100us",
 
-            return new[] 
-            {
-                profile0,
-                profile1,
-                profile2,
-                profile3,
-                profile4,
-                profile5,
-                profile6,
-                profile7
-            };
+                DirectPlayProfiles = new[]
+                {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3", "flac", "m4a", "wma"}, 
+                        Type = DlnaProfileType.Audio
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi", "mp4", "mkv", "ts"}, 
+                        Type = DlnaProfileType.Video
+                    }
+                }
+            });
+
+            return list;
         }
 
         public DlnaProfile GetDefaultProfile()
