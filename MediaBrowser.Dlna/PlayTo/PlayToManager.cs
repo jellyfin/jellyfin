@@ -1,14 +1,12 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -47,8 +45,6 @@ namespace MediaBrowser.Dlna.PlayTo
             _networkManager = networkManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
-
-            var path = Path.Combine(config.CommonApplicationPaths.ConfigurationDirectoryPath, "DlnaProfiles.xml");
         }
 
         public async void Start()
