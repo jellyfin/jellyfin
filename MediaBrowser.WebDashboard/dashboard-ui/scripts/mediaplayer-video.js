@@ -278,6 +278,8 @@
 
                     videoPlayer.fadeIn();
 
+                    checkAspectRatio();
+
                 });
 
             $(".mediaFlyoutContainer").on("click", "a", function (e) {
@@ -321,6 +323,21 @@
 
             fullscreenExited = false;
         };
+
+        function checkAspectRatio() {
+            // Resize player window if 4:3 aspect ratio
+            var footer = $("#footer");
+
+            var videoElement = $("video", footer);
+
+            var w = $(videoElement).width();
+
+            var h = $(videoElement).height();
+
+            if (w / h < 1.7) {
+                $("#videoPlayer", footer).addClass("aspect43");
+            }
+        }
 
         function changeHandler(event) {
 
