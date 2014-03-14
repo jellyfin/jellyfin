@@ -46,7 +46,7 @@
             var mediaElement = $("#mediaElement", videoBackdrop);
             var nowPlayingBar = $("#nowPlayingBar", videoBackdrop);
             mediaElement.html(""); // remove play/pause
-            footer.append(mediaElement).append(nowPlayingBar).hide();
+            footer.hide().append(mediaElement).append(nowPlayingBar);
             videoBackdrop.remove();
         };
 
