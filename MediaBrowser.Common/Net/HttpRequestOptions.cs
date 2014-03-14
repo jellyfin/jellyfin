@@ -72,6 +72,8 @@ namespace MediaBrowser.Common.Net
 
         public bool BufferContent { get; set; }
 
+        public bool LogRequest { get; set; }
+        
         public HttpRequestCachePolicy CachePolicy { get; set; }
 
         private string GetHeaderValue(string name)
@@ -94,6 +96,8 @@ namespace MediaBrowser.Common.Net
             CachePolicy = HttpRequestCachePolicy.None;
 
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            LogRequest = true;
         }
     }
 

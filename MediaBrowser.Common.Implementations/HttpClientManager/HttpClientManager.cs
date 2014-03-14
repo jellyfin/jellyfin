@@ -259,7 +259,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
             }
 
-            _logger.Info("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
+            if (options.LogRequest)
+            {
+                _logger.Info("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
+            }
 
             try
             {
@@ -456,7 +459,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             options.Progress.Report(0);
 
-            _logger.Info("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
+            if (options.LogRequest)
+            {
+                _logger.Info("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
+            }
 
             try
             {
