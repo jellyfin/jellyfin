@@ -7,6 +7,7 @@ using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -31,7 +32,84 @@ namespace MediaBrowser.Providers.Music
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
         {
+            var releaseId = searchInfo.GetReleaseId();
+
+            string url = null;
+
+            if (!string.IsNullOrEmpty(releaseId))
+            {
+                url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=reid:{0}", releaseId);
+            }
+            else
+            {
+                var artistMusicBrainzId = searchInfo.GetMusicBrainzArtistId();
+
+                if (!string.IsNullOrWhiteSpace(artistMusicBrainzId))
+                {
+                    url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND arid:{1}",
+                        WebUtility.UrlEncode(searchInfo.Name),
+                        artistMusicBrainzId);
+                }
+                else
+                {
+                    url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
+                       WebUtility.UrlEncode(searchInfo.Name),
+                       WebUtility.UrlEncode(searchInfo.GetAlbumArtist()));
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                var doc = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+
+                return GetResultsFromResponse(doc);
+            }
+
             return new List<RemoteSearchResult>();
+        }
+
+        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(XmlDocument doc)
+        {
+            var ns = new XmlNamespaceManager(doc.NameTable);
+            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
+
+            var list = new List<RemoteSearchResult>();
+
+            var nodes = doc.SelectNodes("//mb:release-list/mb:release", ns);
+
+            if (nodes != null)
+            {
+                foreach (var node in nodes.Cast<XmlNode>())
+                {
+                    if (node.Attributes != null)
+                    {
+                        string name = null;
+
+                        string mbzId = node.Attributes["id"].Value;
+
+                        var nameNode = node.SelectSingleNode("//mb:title", ns);
+
+                        if (nameNode != null)
+                        {
+                            name = nameNode.InnerText;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(mbzId) && !string.IsNullOrWhiteSpace(name))
+                        {
+                            var result = new RemoteSearchResult
+                            {
+                                Name = name
+                            };
+
+                            result.SetProviderId(MetadataProviders.MusicBrainzAlbum, mbzId);
+
+                            list.Add(result);
+                        }
+                    }
+                }
+            }
+
+            return list;
         }
 
         public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo id, CancellationToken cancellationToken)
@@ -146,7 +224,7 @@ namespace MediaBrowser.Providers.Music
             {
                 result.ReleaseGroupId = releaseGroupIdNode.Value;
             }
-            
+
             return result;
         }
 

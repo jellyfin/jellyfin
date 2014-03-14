@@ -19,70 +19,120 @@ namespace MediaBrowser.Providers.Music
     {
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
         {
+            var musicBrainzId = searchInfo.GetMusicBrainzArtistId();
+
+            if (!string.IsNullOrWhiteSpace(musicBrainzId))
+            {
+                var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=arid:{0}", musicBrainzId);
+
+                var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken)
+                            .ConfigureAwait(false);
+
+                return GetResultsFromResponse(doc);
+            }
+            else
+            {
+                // They seem to throw bad request failures on any term with a slash
+                var nameToSearch = searchInfo.Name.Replace('/', ' ');
+
+                var url = String.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
+
+                var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+
+                var results = GetResultsFromResponse(doc).ToList();
+
+                if (results.Count > 0)
+                {
+                    return results;
+                }
+
+                if (HasDiacritics(searchInfo.Name))
+                {
+                    // Try again using the search with accent characters url
+                    url = String.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
+
+                    doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+
+                    return GetResultsFromResponse(doc);
+                }
+            }
+
             return new List<RemoteSearchResult>();
+        }
+
+        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(XmlDocument doc)
+        {
+            var ns = new XmlNamespaceManager(doc.NameTable);
+            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
+
+            var list = new List<RemoteSearchResult>();
+
+            var nodes = doc.SelectNodes("//mb:artist-list/mb:artist", ns);
+
+            if (nodes != null)
+            {
+                foreach (var node in nodes.Cast<XmlNode>())
+                {
+                    if (node.Attributes != null)
+                    {
+                        string name = null;
+
+                        string mbzId = node.Attributes["id"].Value;
+
+                        var nameNode = node.SelectSingleNode("//mb:name", ns);
+
+                        if (nameNode != null)
+                        {
+                            name = nameNode.InnerText;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(mbzId) && !string.IsNullOrWhiteSpace(name))
+                        {
+                            var result = new RemoteSearchResult
+                            {
+                                Name = name
+                            };
+
+                            result.SetProviderId(MetadataProviders.MusicBrainzArtist, mbzId);
+
+                            list.Add(result);
+                        }
+                    }
+                }
+            }
+
+            return list;
         }
 
         public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo id, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<MusicArtist>();
+            var result = new MetadataResult<MusicArtist>
+            {
+                Item = new MusicArtist()
+            };
 
-            var musicBrainzId = id.GetMusicBrainzArtistId() ?? await FindId(id, cancellationToken).ConfigureAwait(false);
+            var musicBrainzId = id.GetMusicBrainzArtistId();
+
+            if (string.IsNullOrWhiteSpace(musicBrainzId))
+            {
+                var searchResults = await GetSearchResults(id, cancellationToken).ConfigureAwait(false);
+
+                var singleResult = searchResults.FirstOrDefault();
+
+                if (singleResult != null)
+                {
+                    musicBrainzId = singleResult.GetProviderId(MetadataProviders.MusicBrainzArtist);
+                    result.Item.Name = singleResult.Name;
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                result.Item = new MusicArtist();
                 result.HasMetadata = true;
-
                 result.Item.SetProviderId(MetadataProviders.MusicBrainzArtist, musicBrainzId);
             }
 
             return result;
-        }
-        
-        /// <summary>
-        /// Finds the id from music brainz.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task<string> FindId(ItemLookupInfo item, CancellationToken cancellationToken)
-        {
-            // They seem to throw bad request failures on any term with a slash
-            var nameToSearch = item.Name.Replace('/', ' ');
-
-            var url = String.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
-
-            var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-
-            var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-            var node = doc.SelectSingleNode("//mb:artist-list/mb:artist/@id", ns);
-
-            if (node != null && node.Value != null)
-            {
-                return node.Value;
-            }
-
-            if (HasDiacritics(item.Name))
-            {
-                // Try again using the search with accent characters url
-                url = String.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
-
-                doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-
-                ns = new XmlNamespaceManager(doc.NameTable);
-                ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-                node = doc.SelectSingleNode("//mb:artist-list/mb:artist/@id", ns);
-
-                if (node != null && node.Value != null)
-                {
-                    return node.Value;
-                }
-            }
-
-            return null;
         }
 
         /// <summary>

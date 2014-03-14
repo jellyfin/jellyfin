@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -64,6 +65,18 @@ namespace MediaBrowser.Api
     [Route("/Items/RemoteSearch/BoxSet", "POST")]
     [Api(Description = "Gets external id infos for an item")]
     public class GetBoxSetRemoteSearchResults : RemoteSearchQuery<BoxSetInfo>, IReturn<List<RemoteSearchResult>>
+    {
+    }
+
+    [Route("/Items/RemoteSearch/MusicArtist", "POST")]
+    [Api(Description = "Gets external id infos for an item")]
+    public class GetMusicArtistRemoteSearchResults : RemoteSearchQuery<ArtistInfo>, IReturn<List<RemoteSearchResult>>
+    {
+    }
+
+    [Route("/Items/RemoteSearch/MusicAlbum", "POST")]
+    [Api(Description = "Gets external id infos for an item")]
+    public class GetMusicAlbumRemoteSearchResults : RemoteSearchQuery<AlbumInfo>, IReturn<List<RemoteSearchResult>>
     {
     }
 
@@ -163,6 +176,20 @@ namespace MediaBrowser.Api
         public object Post(GetTrailerRemoteSearchResults request)
         {
             var result = _providerManager.GetRemoteSearchResults<Trailer, TrailerInfo>(request, CancellationToken.None).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Post(GetMusicAlbumRemoteSearchResults request)
+        {
+            var result = _providerManager.GetRemoteSearchResults<MusicAlbum, AlbumInfo>(request, CancellationToken.None).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Post(GetMusicArtistRemoteSearchResults request)
+        {
+            var result = _providerManager.GetRemoteSearchResults<MusicArtist, ArtistInfo>(request, CancellationToken.None).Result;
 
             return ToOptimizedResult(result);
         }
