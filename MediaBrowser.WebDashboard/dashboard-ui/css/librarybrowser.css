@@ -655,6 +655,10 @@ a.itemTag:hover {
     display: inline-block;
 }
 
+.viewMenuRemoteControlButton {
+    margin-left: .5em;
+}
+
 @media all and (min-width: 600px) {
     .inlineDetailSection:not(.hide) {
         display: inline-block;
@@ -685,6 +689,10 @@ a.itemTag:hover {
 
     .libraryViewNavInner {
         text-align: left;
+    }
+
+    .selectedViewIndicator {
+        display: none;
     }
 }
 

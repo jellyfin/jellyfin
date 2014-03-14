@@ -928,7 +928,7 @@
 
             $('.identifyProviderIds', page).html(html).trigger('create');
 
-            var friendlyName = item.Type == "BoxSet" ? "Collection" : item.Type;
+            var friendlyName = item.Type == "BoxSet" ? "Collection" : item.Type == "MusicArtist" ? "Artist" : item.Type == "MusicAlbum" ? "Album" : item.Type;
 
             $('.identificationHeader', page).html('Identify ' + friendlyName);
 
