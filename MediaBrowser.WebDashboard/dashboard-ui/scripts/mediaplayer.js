@@ -8,18 +8,18 @@
         var currentMediaElement;
         var currentProgressInterval;
         var positionSlider;
-        self.isPositionSliderActive;
         var currentTimeElement;
         var currentItem;
-        self.volumeSlider;
         var muteButton;
         var unmuteButton;
-        self.startTimeTicksOffset;
         var curentDurationTicks;
         var canClientSeek;
-
-        self.playlist = [];
         var currentPlaylistIndex = 0;
+
+        self.isPositionSliderActive;
+        self.volumeSlider;
+        self.startTimeTicksOffset;
+        self.playlist = [];
 
         self.updateCanClientSeek = function (elem) {
             var duration = elem.duration;
@@ -81,6 +81,10 @@
 
             if (currentItem.MediaType == "Video") {
                 ApiClient.stopActiveEncodings();
+                if (self.isFullScreen()) {
+                    self.exitFullScreen();
+                }
+                self.resetEnhancements();
             }
         }
 
@@ -1128,11 +1132,11 @@
             var footer = $('#footer');
             footer.hide();
 
-            if (elem.mediaType == "Video") {
-                self.resetEnhancements();
+            if (currentItem.MediaType == "Video") {
                 if (self.isFullScreen()) {
                     self.exitFullScreen();
                 }
+                self.resetEnhancements();
             }
         };
 
