@@ -135,6 +135,10 @@
     margin-top: -115px;
 }
 
+#videoPlayer.aspect43 {
+    margin-top: -163px;
+}
+
 #videoPlayer.fullscreenVideo,
 .fullscreenVideo .itemVideo {
     position: fixed !important;
@@ -402,6 +406,16 @@ ss}
         margin-left: -250px;
         margin-top: -160px;
     }
+
+    .aspect43 .itemVideo:not(.fullscreenVideo) {
+        width: 440px;
+        margin-left: -220px;
+    }
+
+    #videoPlayer.aspect43 {
+        margin-left: -230px;
+        margin-top: -208px;
+    }
 }
 
 @media (min-width: 800px) and (min-height: 450px) {
@@ -414,6 +428,16 @@ ss}
     #videoPlayer {
         margin-left: -330px;
         margin-top: -205px;
+    }
+
+    .aspect43 .itemVideo:not(.fullscreenVideo) {
+        width: 560px;
+        margin-left: -280px;
+    }
+
+    #videoPlayer.aspect43 {
+        margin-left: -290px;
+        margin-top: -253px;
     }
 }
 
@@ -428,6 +452,16 @@ ss}
         margin-left: -370px;
         margin-top: -228px;
     }
+
+    .aspect43 .itemVideo:not(.fullscreenVideo) {
+        width: 640px;
+        margin-left: -320px;
+    }
+
+    #videoPlayer.aspect43 {
+        margin-left: -330px;
+        margin-top: -283px;
+    }
 }
 
 @media (min-width: 1200px) and (min-height: 720px) {
@@ -440,6 +474,16 @@ ss}
     #videoPlayer {
         margin-left: -550px;
         margin-top: -329px;
+    }
+
+    .aspect43 .itemVideo:not(.fullscreenVideo) {
+        width: 900px;
+        margin-left: -450px;
+    }
+
+    #videoPlayer.aspect43 {
+        margin-left: -460px;
+        margin-top: -380px;
     }
 }
 
@@ -457,6 +501,16 @@ ss}
 
     .positionSliderContainer {
         width: 300px;
+    }
+
+    .aspect43 .itemVideo:not(.fullscreenVideo) {
+        width: 900px;
+        margin-left: -450px;
+    }
+
+    #videoPlayer.aspect43 {
+        margin-left: -460px;
+        margin-top: -380px;
     }
 }
 
