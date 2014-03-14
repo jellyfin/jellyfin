@@ -19,10 +19,10 @@
         </div>
         <div data-role="content">
             <div class="viewSettings">
-                <div class="viewControls">
-                    <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
-                </div>
                 <div class="listTopPaging">
+                </div>
+                <div class="viewControls" data-role="controlgroup" data-type="horizontal">
+                    <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="Filter" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
                 </div>
             </div>
             <div id="items" class="itemsContainer"></div>

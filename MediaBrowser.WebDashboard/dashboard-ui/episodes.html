@@ -21,11 +21,11 @@
         </div>
         <div data-role="content">
             <div class="viewSettings">
-                <div class="viewControls">
-                    <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">Sort</button>
-                    <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
-                </div>
                 <div class="listTopPaging">
+                </div>
+                <div class="viewControls" data-role="controlgroup" data-type="horizontal">
+                    <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="Sort" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">Sort</button>
+                    <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="Filter" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
                 </div>
                 <div class="viewSummary"></div>
             </div>

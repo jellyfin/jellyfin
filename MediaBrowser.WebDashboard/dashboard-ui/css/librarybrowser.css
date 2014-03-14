@@ -7,9 +7,9 @@
     padding-top: 48px !important;
 }
 
-.libraryPage:not(.metadataEditorPage):not(#indexPage):not(#boxsetsPage) {
-    padding-top: 91px !important;
-}
+    .libraryPage:not(.metadataEditorPage):not(#indexPage):not(#boxsetsPage):not(#itemListPage) {
+        padding-top: 91px !important;
+    }
 
 .ui-panel fieldset + fieldset {
     margin-top: 2em;
@@ -651,6 +651,10 @@ a.itemTag:hover {
         height: 7px;
     }
 
+.viewControls, .listTopPaging {
+    display: inline-block;
+}
+
 @media all and (min-width: 600px) {
     .inlineDetailSection:not(.hide) {
         display: inline-block;
@@ -736,6 +740,7 @@ a.itemTag:hover {
         }
 }
 
+
 @media all and (min-width: 750px) {
 
     .viewMenuLink {
@@ -761,16 +766,6 @@ a.itemTag:hover {
     .itemBackdrop {
         background-size: 100% auto;
     }
-}
-
-@media all and (min-width: 650px) {
-    .viewControls, .listTopPaging {
-        display: inline-block;
-    }
-
-        .viewControls + .listTopPaging {
-            margin-left: 1em;
-        }
 }
 
 @media all and (min-width: 750px) {
