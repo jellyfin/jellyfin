@@ -57,7 +57,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (directPlay != null)
             {
                 playlistItem.Transcode = false;
-                playlistItem.FileFormat = Path.GetExtension(path).TrimStart('.');
+                playlistItem.FileFormat = Path.GetExtension(path);
                 playlistItem.MimeType = directPlay.MimeType;
                 return playlistItem;
             }
@@ -67,7 +67,8 @@ namespace MediaBrowser.Dlna.PlayTo
             if (transcodingProfile != null)
             {
                 playlistItem.Transcode = true;
-                playlistItem.FileFormat = transcodingProfile.Container;
+                //Just to make sure we have a "." for the url, remove it in case a user adds it or not
+                playlistItem.FileFormat = "." + transcodingProfile.Container.TrimStart('.');
 
                 playlistItem.MimeType = transcodingProfile.MimeType;
             }
@@ -77,9 +78,9 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private static bool IsSupported(DirectPlayProfile profile, string path)
         {
-            var mediaContainer = Path.GetExtension(path).TrimStart('.');
+            var mediaContainer = Path.GetExtension(path);
 
-            if (!profile.Containers.Any(i => string.Equals(i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+            if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }

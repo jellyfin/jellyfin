@@ -24,11 +24,21 @@ namespace MediaBrowser.Dlna
                     {
                         Container = "mp3", 
                         Type = DlnaProfileType.Audio
+                    },
+                     new TranscodingProfile
+                    {
+                        Container = "ts", 
+                        Type = DlnaProfileType.Video
                     }
                 },
 
                 DirectPlayProfiles = new[]
                 {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3"}, 
+                        Type = DlnaProfileType.Audio
+                    },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mkv"}, 
@@ -39,6 +49,11 @@ namespace MediaBrowser.Dlna
                     {
                         Containers = new[]{"avi"}, 
                         MimeType = "x-msvideo", 
+                        Type = DlnaProfileType.Video
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp4"},                       
                         Type = DlnaProfileType.Video
                     }
                 }
@@ -57,11 +72,21 @@ namespace MediaBrowser.Dlna
                     {
                         Container = "mp3", 
                         Type = DlnaProfileType.Audio
+                    },
+                    new TranscodingProfile
+                    {
+                        Container = "ts", 
+                        Type = DlnaProfileType.Video
                     }
                 },
 
                 DirectPlayProfiles = new[]
                 {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3"}, 
+                        Type = DlnaProfileType.Audio
+                    },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mkv"}, 
@@ -72,6 +97,11 @@ namespace MediaBrowser.Dlna
                     {
                         Containers = new[]{"avi"}, 
                         MimeType = "x-msvideo", 
+                        Type = DlnaProfileType.Video
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp4"},                       
                         Type = DlnaProfileType.Video
                     }
                 }
@@ -89,11 +119,21 @@ namespace MediaBrowser.Dlna
                     {
                         Container = "mp3", 
                         Type = DlnaProfileType.Audio
+                    },
+                     new TranscodingProfile
+                    {
+                        Container = "ts", 
+                        Type = DlnaProfileType.Video
                     }
                 },
 
                 DirectPlayProfiles = new[]
                 {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3"}, 
+                        Type = DlnaProfileType.Audio
+                    },                  
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mkv"}, 
@@ -104,6 +144,11 @@ namespace MediaBrowser.Dlna
                     {
                         Containers = new[]{"avi"}, 
                         MimeType = "x-msvideo", 
+                        Type = DlnaProfileType.Video
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp4"},                       
                         Type = DlnaProfileType.Video
                     }
                 }
@@ -130,6 +175,11 @@ namespace MediaBrowser.Dlna
 
                 DirectPlayProfiles = new[]
                 {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3"}, 
+                        Type = DlnaProfileType.Audio
+                    },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
@@ -163,6 +213,11 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
+                        Containers = new[]{"mp3"}, 
+                        Type = DlnaProfileType.Audio
+                    },
+                    new DirectPlayProfile
+                    {
                         Containers = new[]{"avi"}, 
                         MimeType = "x-msvideo", 
                         Type = DlnaProfileType.Video
@@ -172,8 +227,7 @@ namespace MediaBrowser.Dlna
 
             list.Add(new DlnaProfile
             {
-                //Linksys DMA2100us does not need any transcoding of the formats we support statically
-                Name = "Sony Bravia TV (2012)",
+                Name = "Sony Bravia (2012)",
                 ClientType = "DLNA",
                 FriendlyName = @"BRAVIA KDL-\d{2}[A-Z]X\d5(\d|G).*",
 
@@ -193,6 +247,11 @@ namespace MediaBrowser.Dlna
 
                 DirectPlayProfiles = new[]
                 {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3"}, 
+                        Type = DlnaProfileType.Audio
+                    },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
@@ -273,7 +332,7 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3", "wma", "m4a"}, 
+                        Containers = new[]{"mp3", "wma"}, 
                         Type = DlnaProfileType.Audio
                     },
 

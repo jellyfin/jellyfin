@@ -77,7 +77,7 @@ namespace MediaBrowser.Dlna.PlayTo
         internal static string GetAudioUrl(PlaylistItem item, string serverAddress)
         {
             if (!item.Transcode)
-                return string.Format("{0}/audio/{1}/stream.{2}?Static=True", serverAddress, item.ItemId, item.FileFormat);
+                return string.Format("{0}/audio/{1}/stream{2}?Static=True", serverAddress, item.ItemId, item.FileFormat);
 
             return string.Format("{0}/audio/{1}/stream.mp3?AudioCodec=Mp3", serverAddress, item.ItemId);
         }
@@ -100,7 +100,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (!item.Transcode)
             {
                 dlnaCommand = BuildDlnaUrl(deviceProperties.UUID, !item.Transcode, null, null, null, null, null, null, null, null, null, null, item.MimeType);
-                return string.Format("{0}/Videos/{1}/stream.{2}?{3}", serverAddress, item.ItemId, item.FileFormat, dlnaCommand);                
+                return string.Format("{0}/Videos/{1}/stream{2}?{3}", serverAddress, item.ItemId, item.FileFormat, dlnaCommand);
             }
             var videostream = streams.Where(m => m.Type == MediaStreamType.Video).OrderBy(m => m.IsDefault).FirstOrDefault();
             var audiostream = streams.Where(m => m.Type == MediaStreamType.Audio).OrderBy(m => m.IsDefault).FirstOrDefault();
@@ -121,7 +121,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
 
             dlnaCommand = BuildDlnaUrl(deviceProperties.UUID, !item.Transcode, videoCodec, audioCodec, null, null, videoBitrate, audioChannels, audioBitrate, item.StartPositionTicks, "baseline", "3", item.MimeType);
-            return string.Format("{0}/Videos/{1}/stream.{2}?{3}", serverAddress, item.ItemId, item.FileFormat, dlnaCommand);
+            return string.Format("{0}/Videos/{1}/stream{2}?{3}", serverAddress, item.ItemId, item.FileFormat, dlnaCommand);
         }
 
         /// <summary>

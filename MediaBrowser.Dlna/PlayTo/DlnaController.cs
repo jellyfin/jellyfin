@@ -446,6 +446,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 return true;
             }
             nextTrack.PlayState = 1;
+            _logger.Debug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", _device.Properties.Name, nextTrack.StreamUrl, nextTrack.DlnaHeaders);
             await _device.SetAvTransport(nextTrack.StreamUrl, nextTrack.DlnaHeaders, nextTrack.Didl);
             if (nextTrack.StartPositionTicks > 0 && !nextTrack.Transcode)
                 await _device.Seek(TimeSpan.FromTicks(nextTrack.StartPositionTicks));
@@ -489,4 +490,3 @@ namespace MediaBrowser.Dlna.PlayTo
         }
     }
 }
-
