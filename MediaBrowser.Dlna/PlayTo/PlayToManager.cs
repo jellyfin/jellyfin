@@ -31,8 +31,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly INetworkManager _networkManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
+        private readonly IServerConfigurationManager _config;
 
-        public PlayToManager(ILogger logger,IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager)
+        public PlayToManager(ILogger logger, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager)
         {
             _locations = new ConcurrentDictionary<string, DateTime>();
             _tokenSource = new CancellationTokenSource();
@@ -45,6 +46,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _networkManager = networkManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
+            _config = config;
         }
 
         public async void Start()
@@ -212,7 +214,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (!IsUriValid(uri))
                 return;
 
-            var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _logger).ConfigureAwait(false);
+            var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
 
             if (device != null && device.RendererCommands != null && !_sessionManager.Sessions.Any(s => string.Equals(s.DeviceId, device.Properties.UUID) && s.IsActive))
             {
@@ -229,7 +231,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 }
 
                 controller.Init(device);
-                
+
                 _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
             }
         }

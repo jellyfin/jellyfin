@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using System;
 using System.IO;
 using System.Net;
@@ -16,10 +17,12 @@ namespace MediaBrowser.Dlna.PlayTo
         private static readonly CookieContainer Container = new CookieContainer();
 
         private readonly IHttpClient _httpClient;
+        private readonly IServerConfigurationManager _config;
 
-        public SsdpHttpClient(IHttpClient httpClient)
+        public SsdpHttpClient(IHttpClient httpClient, IServerConfigurationManager config)
         {
             _httpClient = httpClient;
+            _config = config;
         }
 
         public async Task<XDocument> SendCommandAsync(string baseUrl, DeviceService service, string command, string postData, string header = null)
@@ -45,7 +48,8 @@ namespace MediaBrowser.Dlna.PlayTo
             var options = new HttpRequestOptions
             {
                 Url = url.ToString(),
-                UserAgent = USERAGENT
+                UserAgent = USERAGENT,
+                LogRequest = _config.Configuration.DlnaOptions.EnablePlayToDebugLogging
             };
 
             options.RequestHeaders["HOST"] = ip + ":" + port;
@@ -83,7 +87,8 @@ namespace MediaBrowser.Dlna.PlayTo
             var options = new HttpRequestOptions
             {
                 Url = url.ToString(),
-                UserAgent = USERAGENT
+                UserAgent = USERAGENT,
+                LogRequest = _config.Configuration.DlnaOptions.EnablePlayToDebugLogging
             };
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
@@ -106,7 +111,8 @@ namespace MediaBrowser.Dlna.PlayTo
             var options = new HttpRequestOptions
             {
                 Url = url.ToString(),
-                UserAgent = USERAGENT
+                UserAgent = USERAGENT,
+                LogRequest = _config.Configuration.DlnaOptions.EnablePlayToDebugLogging
             };
 
             options.RequestHeaders["SOAPAction"] = soapAction;
