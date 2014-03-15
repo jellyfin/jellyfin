@@ -364,7 +364,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 0))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
 
             await Task.Delay(50).ConfigureAwait(false);
