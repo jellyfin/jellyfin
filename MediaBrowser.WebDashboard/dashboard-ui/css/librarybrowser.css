@@ -1049,7 +1049,7 @@ a.itemTag:hover {
 .alphabetPicker {
     position: fixed;
     right: 2px;
-    bottom: 30px;
+    bottom: 10px;
     width: 27px;
     z-index: 1000;
     text-align: center;

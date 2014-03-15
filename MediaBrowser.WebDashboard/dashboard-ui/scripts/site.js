@@ -96,7 +96,7 @@ var Dashboard = {
         var userId;
 
         if (autoLoginUserId && autoLoginUserId != storedUserId) {
-            
+
             localStorage.setItem("userId", autoLoginUserId);
             ApiClient.currentUserId(autoLoginUserId);
         }

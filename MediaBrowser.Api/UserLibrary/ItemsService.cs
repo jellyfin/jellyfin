@@ -318,7 +318,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             items = items.AsEnumerable();
 
-            if (request.CollapseBoxSetItems)
+            if (request.CollapseBoxSetItems && AllowBoxSetCollapsing(request))
             {
                 items = CollapseItemsWithinBoxSets(items, user);
             }

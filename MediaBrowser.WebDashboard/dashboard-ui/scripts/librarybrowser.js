@@ -662,7 +662,7 @@
 
                 cssClass += ' ' + options.shape + 'PosterItem';
 
-                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
+                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-locationtype="' + item.LocationType + '" data-mediatype="' + (item.MediaType || '') + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
 
                 // Ribbon
                 if (item.MediaType == "Video" && item.Video3DFormat) {
@@ -680,7 +680,7 @@
                         format = "3D";
                         ribbonColor = "ribbon-3d";
                     }
-   
+
                     html += '<div class="ribbon-wrapper">';
                     html += '<div class="ribbon ' + ribbonColor + '">';
                     html += format;
@@ -2100,9 +2100,41 @@
         return false;
     }
 
+    function onMenuCommand(command, elem) {
+
+        var id = elem.getAttribute('data-itemid');
+    }
+
+    function getMenuOptions(elem) {
+
+        var items = [];
+
+        var id = elem.getAttribute('data-itemid');
+        var mediatype = elem.getAttribute('data-mediatype');
+
+        items.push({ type: 'header', text: 'Edit' });
+
+        items.push({ type: 'link', text: 'Details', url: 'edititemmetadata.html?id=' + id });
+
+        items.push({ type: 'link', text: 'Images', url: 'edititemimages.html?id=' + id });
+
+        if (mediatype == 'Video' && elem.getAttribute('data-locationtype') == 'FileSystem') {
+
+            items.push({ type: 'divider' });
+            items.push({ type: 'header', text: 'Manage' });
+            items.push({ type: 'command', text: 'Alternate Editions', name: 'AlternateEditions' });
+        }
+
+        return items;
+    }
+
     $.fn.createPosterItemHoverMenu = function () {
 
         function onShowTimerExpired(elem) {
+
+            if ($(elem).hasClass('hasContextMenu')) {
+                return;
+            }
 
             var innerElem = $('.posterItemOverlayTarget', elem);
             var id = elem.getAttribute('data-itemid');
@@ -2152,7 +2184,23 @@
             return this;
         }
 
-        return this.on('mouseenter', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverIn).on('mouseleave', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverOut);
+        var sequence = this;
+
+        Dashboard.getCurrentUser().done(function (user) {
+
+            if (user.Configuration.IsAdministrator) {
+
+                sequence.createContextMenu({
+                    getOptions: getMenuOptions,
+                    command: onMenuCommand,
+                    selector: '.posterItem'
+                });
+            }
+
+        });
+
+        return this.on('mouseenter', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverIn)
+            .on('mouseleave', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverOut);
     };
 
 })(jQuery, document, window);
