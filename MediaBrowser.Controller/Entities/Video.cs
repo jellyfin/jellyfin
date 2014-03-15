@@ -19,15 +19,63 @@ namespace MediaBrowser.Controller.Entities
     public class Video : BaseItem, IHasMediaStreams, IHasAspectRatio, IHasTags, ISupportsPlaceHolders
     {
         public bool IsMultiPart { get; set; }
+        public bool HasLocalAlternateVersions { get; set; }
 
         public List<Guid> AdditionalPartIds { get; set; }
+        public List<Guid> AlternateVersionIds { get; set; }
 
         public Video()
         {
             PlayableStreamFileNames = new List<string>();
             AdditionalPartIds = new List<Guid>();
+            AlternateVersionIds = new List<Guid>();
             Tags = new List<string>();
             SubtitleFiles = new List<string>();
+            LinkedAlternateVersions = new List<LinkedChild>();
+        }
+
+        [IgnoreDataMember]
+        public bool HasAlternateVersions
+        {
+            get
+            {
+                return HasLocalAlternateVersions || LinkedAlternateVersions.Count > 0;
+            }
+        }
+
+        public List<LinkedChild> LinkedAlternateVersions { get; set; }
+
+        /// <summary>
+        /// Gets the linked children.
+        /// </summary>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        public IEnumerable<BaseItem> GetAlternateVersions()
+        {
+            var filesWithinSameDirectory = AlternateVersionIds
+                .Select(i => LibraryManager.GetItemById(i))
+                .Where(i => i != null)
+                .OfType<Video>();
+
+            var linkedVersions = LinkedAlternateVersions
+                .Select(GetLinkedChild)
+                .Where(i => i != null)
+                .OfType<Video>();
+
+            return filesWithinSameDirectory.Concat(linkedVersions)
+                .OrderBy(i => i.SortName);
+        }
+
+        /// <summary>
+        /// Gets the additional parts.
+        /// </summary>
+        /// <returns>IEnumerable{Video}.</returns>
+        public IEnumerable<Video> GetAdditionalParts()
+        {
+            return AdditionalPartIds
+                .Select(i => LibraryManager.GetItemById(i))
+                .Where(i => i != null)
+                .OfType<Video>()
+                .OrderBy(i => i.SortName);
         }
 
         /// <summary>
@@ -43,13 +91,13 @@ namespace MediaBrowser.Controller.Entities
         public bool HasSubtitles { get; set; }
 
         public bool IsPlaceHolder { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
         public List<string> Tags { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the video bit rate.
         /// </summary>
@@ -167,20 +215,51 @@ namespace MediaBrowser.Controller.Entities
         {
             var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
-            // Must have a parent to have additional parts
+            // Must have a parent to have additional parts or alternate versions
             // In other words, it must be part of the Parent/Child tree
             // The additional parts won't have additional parts themselves
-            if (IsMultiPart && LocationType == LocationType.FileSystem && Parent != null)
+            if (LocationType == LocationType.FileSystem && Parent != null)
             {
-                var additionalPartsChanged = await RefreshAdditionalParts(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
-
-                if (additionalPartsChanged)
+                if (IsMultiPart)
                 {
-                    hasChanges = true;
+                    var additionalPartsChanged = await RefreshAdditionalParts(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+
+                    if (additionalPartsChanged)
+                    {
+                        hasChanges = true;
+                    }
+                }
+                else
+                {
+                    RefreshLinkedAlternateVersions();
+
+                    if (HasLocalAlternateVersions)
+                    {
+                        var additionalPartsChanged = await RefreshAlternateVersionsWithinSameDirectory(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+
+                        if (additionalPartsChanged)
+                        {
+                            hasChanges = true;
+                        }
+                    }
                 }
             }
 
             return hasChanges;
+        }
+
+        private bool RefreshLinkedAlternateVersions()
+        {
+            foreach (var child in LinkedAlternateVersions)
+            {
+                // Reset the cached value
+                if (child.ItemId.HasValue && child.ItemId.Value == Guid.Empty)
+                {
+                    child.ItemId = null;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -223,7 +302,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                     {
-                        return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsVideoFile(i.FullName) && EntityResolutionHelper.IsMultiPartFile(i.Name);
+                        return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsMultiPartFolder(i.FullName) && EntityResolutionHelper.IsMultiPartFile(i.Name);
                     }
 
                     return false;
@@ -251,6 +330,72 @@ namespace MediaBrowser.Controller.Entities
                 {
                     video = dbItem;
                 }
+
+                return video;
+
+                // Sort them so that the list can be easily compared for changes
+            }).OrderBy(i => i.Path).ToList();
+        }
+
+        private async Task<bool> RefreshAlternateVersionsWithinSameDirectory(MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        {
+            var newItems = LoadAlternateVersionsWithinSameDirectory(fileSystemChildren, options.DirectoryService).ToList();
+
+            var newItemIds = newItems.Select(i => i.Id).ToList();
+
+            var itemsChanged = !AlternateVersionIds.SequenceEqual(newItemIds);
+
+            var tasks = newItems.Select(i => i.RefreshMetadata(options, cancellationToken));
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            AlternateVersionIds = newItemIds;
+
+            return itemsChanged;
+        }
+
+        /// <summary>
+        /// Loads the additional parts.
+        /// </summary>
+        /// <returns>IEnumerable{Video}.</returns>
+        private IEnumerable<Video> LoadAlternateVersionsWithinSameDirectory(IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        {
+            IEnumerable<FileSystemInfo> files;
+
+            var path = Path;
+            var currentFilename = System.IO.Path.GetFileNameWithoutExtension(path) ?? string.Empty;
+
+            // Only support this for video files. For folder rips, they'll have to use the linking feature
+            if (VideoType == VideoType.VideoFile || VideoType == VideoType.Iso)
+            {
+                files = fileSystemChildren.Where(i =>
+                {
+                    if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                    {
+                        return false;
+                    }
+
+                    return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) &&
+                           EntityResolutionHelper.IsVideoFile(i.FullName) &&
+                           i.Name.StartsWith(currentFilename, StringComparison.OrdinalIgnoreCase);
+                });
+            }
+            else
+            {
+                files = new List<FileSystemInfo>();
+            }
+
+            return LibraryManager.ResolvePaths<Video>(files, directoryService, null).Select(video =>
+            {
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                var dbItem = LibraryManager.GetItemById(video.Id) as Video;
+
+                if (dbItem != null)
+                {
+                    video = dbItem;
+                }
+
+                video.ImageInfos = ImageInfos;
 
                 return video;
 

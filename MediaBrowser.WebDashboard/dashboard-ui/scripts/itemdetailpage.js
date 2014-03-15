@@ -227,6 +227,13 @@
             renderAdditionalParts(page, item, user);
         }
 
+        if (!item.HasAlternateVersions) {
+            $('#alternateVersionsCollapsible', page).addClass('hide');
+        } else {
+            $('#alternateVersionsCollapsible', page).removeClass('hide');
+            renderAlternateVersions(page, item, user);
+        }
+
         $('#themeSongsCollapsible', page).hide();
         $('#themeVideosCollapsible', page).hide();
 
@@ -665,7 +672,7 @@
 
         var otherTypeItems = items.filter(function (curr) {
 
-            return !types.filter(function(t) {
+            return !types.filter(function (t) {
 
                 return t.type == curr.Type;
 
@@ -676,9 +683,9 @@
         if (otherTypeItems.length) {
             renderCollectionItemType(page, otherType, otherTypeItems, user);
         }
-        
+
         if (!items.length) {
-            renderCollectionItemType(page, {name: 'Titles'}, items, user);
+            renderCollectionItemType(page, { name: 'Titles' }, items, user);
         }
 
         $('.collectionItems', page).trigger('create').createPosterItemHoverMenu();
@@ -882,6 +889,37 @@
                 $('#additionalPartsContent', page).html(getVideosHtml(result.Items, user)).trigger('create');
             } else {
                 $('#additionalPartsCollapsible', page).hide();
+            }
+        });
+    }
+
+    function renderAlternateVersions(page, item, user) {
+
+        var url = ApiClient.getUrl("Videos/" + item.Id + "/AlternateVersions", {
+            userId: user.Id
+        });
+
+        $.getJSON(url).done(function (result) {
+
+            if (result.Items.length) {
+
+                $('#alternateVersionsCollapsible', page).show();
+
+                $('#additionalPartsCollapsible', page).show();
+
+                var html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "portrait",
+                    context: 'movies',
+                    useAverageAspectRatio: true,
+                    showTitle: true,
+                    centerText: true,
+                    formatIndicators: true
+                });
+
+                $('#alternateVersionsContent', page).html(html).trigger('create').createPosterItemHoverMenu();
+            } else {
+                $('#alternateVersionsCollapsible', page).hide();
             }
         });
     }

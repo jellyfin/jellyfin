@@ -354,17 +354,42 @@ namespace MediaBrowser.Controller.Entities
 
         private bool IsValidFromResolver(BaseItem current, BaseItem newItem)
         {
-            var currentAsPlaceHolder = current as ISupportsPlaceHolders;
+            var currentAsVideo = current as Video;
 
-            if (currentAsPlaceHolder != null)
+            if (currentAsVideo != null)
             {
-                var newHasPlaceHolder = newItem as ISupportsPlaceHolders;
+                var newAsVideo = newItem as Video;
 
-                if (newHasPlaceHolder != null)
+                if (newAsVideo != null)
                 {
-                    if (currentAsPlaceHolder.IsPlaceHolder != newHasPlaceHolder.IsPlaceHolder)
+                    if (currentAsVideo.IsPlaceHolder != newAsVideo.IsPlaceHolder)
                     {
                         return false;
+                    }
+                    if (currentAsVideo.IsMultiPart != newAsVideo.IsMultiPart)
+                    {
+                        return false;
+                    }
+                    if (currentAsVideo.HasLocalAlternateVersions != newAsVideo.HasLocalAlternateVersions)
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                var currentAsPlaceHolder = current as ISupportsPlaceHolders;
+
+                if (currentAsPlaceHolder != null)
+                {
+                    var newHasPlaceHolder = newItem as ISupportsPlaceHolders;
+
+                    if (newHasPlaceHolder != null)
+                    {
+                        if (currentAsPlaceHolder.IsPlaceHolder != newHasPlaceHolder.IsPlaceHolder)
+                        {
+                            return false;
+                        }
                     }
                 }
             }
@@ -896,83 +921,6 @@ namespace MediaBrowser.Controller.Entities
             return LinkedChildren
                 .Select(GetLinkedChild)
                 .Where(i => i != null);
-        }
-
-        /// <summary>
-        /// Gets the linked child.
-        /// </summary>
-        /// <param name="info">The info.</param>
-        /// <returns>BaseItem.</returns>
-        private BaseItem GetLinkedChild(LinkedChild info)
-        {
-            // First get using the cached Id
-            if (info.ItemId.HasValue)
-            {
-                if (info.ItemId.Value == Guid.Empty)
-                {
-                    return null;
-                }
-
-                var itemById = LibraryManager.GetItemById(info.ItemId.Value);
-
-                if (itemById != null)
-                {
-                    return itemById;
-                }
-            }
-
-            var item = FindLinkedChild(info);
-
-            // If still null, log
-            if (item == null)
-            {
-                // Don't keep searching over and over
-                info.ItemId = Guid.Empty;
-            }
-            else
-            {
-                // Cache the id for next time
-                info.ItemId = item.Id;
-            }
-
-            return item;
-        }
-
-        private BaseItem FindLinkedChild(LinkedChild info)
-        {
-            if (!string.IsNullOrEmpty(info.Path))
-            {
-                var itemByPath = LibraryManager.RootFolder.FindByPath(info.Path);
-
-                if (itemByPath == null)
-                {
-                    Logger.Warn("Unable to find linked item at path {0}", info.Path);
-                }
-
-                return itemByPath;
-            }
-
-            if (!string.IsNullOrWhiteSpace(info.ItemName) && !string.IsNullOrWhiteSpace(info.ItemType))
-            {
-                return LibraryManager.RootFolder.RecursiveChildren.FirstOrDefault(i =>
-                {
-                    if (string.Equals(i.Name, info.ItemName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (string.Equals(i.GetType().Name, info.ItemType, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (info.ItemYear.HasValue)
-                            {
-                                return info.ItemYear.Value == (i.ProductionYear ?? -1);
-                            }
-                            return true;
-                        }
-                    }
-
-                    return false;
-                });
-            }
-
-            return null;
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)

@@ -955,6 +955,83 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Gets the linked child.
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <returns>BaseItem.</returns>
+        protected BaseItem GetLinkedChild(LinkedChild info)
+        {
+            // First get using the cached Id
+            if (info.ItemId.HasValue)
+            {
+                if (info.ItemId.Value == Guid.Empty)
+                {
+                    return null;
+                }
+
+                var itemById = LibraryManager.GetItemById(info.ItemId.Value);
+
+                if (itemById != null)
+                {
+                    return itemById;
+                }
+            }
+
+            var item = FindLinkedChild(info);
+
+            // If still null, log
+            if (item == null)
+            {
+                // Don't keep searching over and over
+                info.ItemId = Guid.Empty;
+            }
+            else
+            {
+                // Cache the id for next time
+                info.ItemId = item.Id;
+            }
+
+            return item;
+        }
+
+        private BaseItem FindLinkedChild(LinkedChild info)
+        {
+            if (!string.IsNullOrEmpty(info.Path))
+            {
+                var itemByPath = LibraryManager.RootFolder.FindByPath(info.Path);
+
+                if (itemByPath == null)
+                {
+                    Logger.Warn("Unable to find linked item at path {0}", info.Path);
+                }
+
+                return itemByPath;
+            }
+
+            if (!string.IsNullOrWhiteSpace(info.ItemName) && !string.IsNullOrWhiteSpace(info.ItemType))
+            {
+                return LibraryManager.RootFolder.RecursiveChildren.FirstOrDefault(i =>
+                {
+                    if (string.Equals(i.Name, info.ItemName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.Equals(i.GetType().Name, info.ItemType, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (info.ItemYear.HasValue)
+                            {
+                                return info.ItemYear.Value == (i.ProductionYear ?? -1);
+                            }
+                            return true;
+                        }
+                    }
+
+                    return false;
+                });
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Adds a person to the item
         /// </summary>
         /// <param name="person">The person.</param>

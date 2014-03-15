@@ -494,6 +494,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The part count.</value>
         public int? PartCount { get; set; }
+        public bool? HasAlternateVersions { get; set; }
 
         /// <summary>
         /// Determines whether the specified type is type.

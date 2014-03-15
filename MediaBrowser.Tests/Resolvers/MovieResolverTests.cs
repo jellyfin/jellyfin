@@ -9,6 +9,10 @@ namespace MediaBrowser.Tests.Resolvers
         [TestMethod]
         public void TestMultiPartFiles()
         {
+            Assert.IsFalse(EntityResolutionHelper.IsMultiPartFile(@"Braveheart.mkv"));
+            Assert.IsFalse(EntityResolutionHelper.IsMultiPartFile(@"Braveheart - 480p.mkv"));
+            Assert.IsFalse(EntityResolutionHelper.IsMultiPartFile(@"Braveheart - 720p.mkv"));
+    
             Assert.IsFalse(EntityResolutionHelper.IsMultiPartFile(@"blah blah.mkv"));
 
             Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - cd1.mkv"));
@@ -33,25 +37,25 @@ namespace MediaBrowser.Tests.Resolvers
         [TestMethod]
         public void TestMultiPartFolders()
         {
-            Assert.IsFalse(EntityResolutionHelper.IsMultiPartFile(@"blah blah"));
+            Assert.IsFalse(EntityResolutionHelper.IsMultiPartFolder(@"blah blah"));
 
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - cd1"));
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - disc1"));
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - disk1"));
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - pt1"));
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - part1"));
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - dvd1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - cd1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - disc1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - disk1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - pt1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - part1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - dvd1"));
 
             // Add a space
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - cd 1"));
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - disc 1"));
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - disk 1"));
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - pt 1"));
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - part 1"));
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - dvd 1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - cd 1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - disc 1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - disk 1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - pt 1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - part 1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - dvd 1"));
 
             // Not case sensitive
-            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFile(@"blah blah - Disc1"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - Disc1"));
         }
     }
 }

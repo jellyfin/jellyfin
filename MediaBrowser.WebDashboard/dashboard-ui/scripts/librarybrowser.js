@@ -665,7 +665,7 @@
                 html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-locationtype="' + item.LocationType + '" data-mediatype="' + (item.MediaType || '') + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
 
                 // Ribbon
-                if (item.MediaType == "Video" && item.Video3DFormat) {
+                if (item.MediaType == "Video" && options.formatIndicators) {
                     // This would be much better if specified in the json payload
                     // Another nice thing to have in the payload would be 720 vs 1080
                     // Then, rather than "HD" it could display the specific HD format
@@ -2186,18 +2186,18 @@
 
         var sequence = this;
 
-        Dashboard.getCurrentUser().done(function (user) {
+        //Dashboard.getCurrentUser().done(function (user) {
 
-            if (user.Configuration.IsAdministrator) {
+        //    if (user.Configuration.IsAdministrator) {
 
-                sequence.createContextMenu({
-                    getOptions: getMenuOptions,
-                    command: onMenuCommand,
-                    selector: '.posterItem'
-                });
-            }
+        //        sequence.createContextMenu({
+        //            getOptions: getMenuOptions,
+        //            command: onMenuCommand,
+        //            selector: '.posterItem'
+        //        });
+        //    }
 
-        });
+        //});
 
         return this.on('mouseenter', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverIn)
             .on('mouseleave', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverOut);

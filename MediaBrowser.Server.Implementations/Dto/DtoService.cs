@@ -1082,6 +1082,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.IsHD = video.IsHD;
 
                 dto.PartCount = video.AdditionalPartIds.Count + 1;
+                dto.HasAlternateVersions = video.HasAlternateVersions;
 
                 if (fields.Contains(ItemFields.Chapters))
                 {
