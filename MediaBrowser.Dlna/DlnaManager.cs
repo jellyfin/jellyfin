@@ -40,7 +40,7 @@ namespace MediaBrowser.Dlna
                     new TranscodingProfile
                     {
                         Container = "mp3", 
-                        Type = DlnaProfileType.Audio
+                        Type = DlnaProfileType.Audio,                        
                     },
                      new TranscodingProfile
                     {
@@ -54,7 +54,7 @@ namespace MediaBrowser.Dlna
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mp3"}, 
-                        Type = DlnaProfileType.Audio
+                        Type = DlnaProfileType.Audio,
                     },
                     new DirectPlayProfile
                     {
@@ -74,13 +74,15 @@ namespace MediaBrowser.Dlna
                         Type = DlnaProfileType.Video
                     }
                 }
+                
+
             });
 
             list.Add(new DeviceProfile
             {
                 Name = "Samsung TV (E/F-series)",
                 ClientType = "DLNA",
-                FriendlyName = @"(^\[TV\][A-Z]{2}\d{2}(E|F)[A-Z]?\d{3,4}.*)|^\[TV\] Samsung",
+                FriendlyName = @"(^\[TV\][A-Z]{2}\d{2}(E|F)[A-Z]?\d{3,4}.*)|^\[TV\] Samsung|(^\[TV\]Samsung [A-Z]{2}\d{2}(E|F)[A-Z]?\d{3,4}.*)",
                 ModelNumber = @"(1\.0)|(AllShare1\.0)",
 
                 TranscodingProfiles = new[]
