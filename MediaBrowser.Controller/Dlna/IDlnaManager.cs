@@ -22,7 +22,8 @@ namespace MediaBrowser.Controller.Dlna
         /// <param name="friendlyName">Name of the friendly.</param>
         /// <param name="modelName">Name of the model.</param>
         /// <param name="modelNumber">The model number.</param>
-        /// <returns>DlnaProfile.</returns>
-        DeviceProfile GetProfile(string friendlyName, string modelName, string modelNumber);
+        /// <param name="manufacturer">The manufacturer.</param>
+        /// <returns>DlnaProfile.</</returns>
+        DeviceProfile GetProfile(string friendlyName, string modelName, string modelNumber, string manufacturer);
     }
 }
