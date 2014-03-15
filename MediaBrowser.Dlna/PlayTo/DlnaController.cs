@@ -386,7 +386,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var deviceInfo = _device.Properties;
 
-            var playlistItem = PlaylistItem.Create(item, _dlnaManager.GetProfile(deviceInfo.Name, deviceInfo.ModelName, deviceInfo.ModelNumber));
+            var playlistItem = PlaylistItem.Create(item, _dlnaManager.GetProfile(deviceInfo.Name, deviceInfo.ModelName, deviceInfo.ModelNumber, deviceInfo.Manufacturer));
             playlistItem.StartPositionTicks = startPostionTicks;
 
             if (playlistItem.IsAudio)
@@ -485,7 +485,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 _updateTimer.Stop();
                 _disposed = true;
                 _device.Dispose();
-                _logger.Log(LogSeverity.Debug, "PlayTo - Controller disposed");
+                _logger.Log(LogSeverity.Debug, "Controller disposed");
             }
         }
     }

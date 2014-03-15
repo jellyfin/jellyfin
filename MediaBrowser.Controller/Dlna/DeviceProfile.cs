@@ -34,6 +34,14 @@ namespace MediaBrowser.Controller.Dlna
         public string ModelName { get; set; }
 
         /// <summary>
+        /// Gets or sets the manufacturer.
+        /// </summary>
+        /// <value>
+        /// The manufacturer.
+        /// </value>
+        public string Manufacturer { get; set; }
+
+        /// <summary>
         /// Gets or sets the transcoding profiles.
         /// </summary>
         /// <value>The transcoding profiles.</value>
