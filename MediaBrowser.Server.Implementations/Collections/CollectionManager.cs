@@ -126,6 +126,18 @@ namespace MediaBrowser.Server.Implementations.Collections
                     ItemType = item.GetType().Name,
                     Type = LinkedChildType.Manual
                 });
+
+                var supportsGrouping = item as ISupportsBoxSetGrouping;
+
+                if (supportsGrouping != null)
+                {
+                    var boxsetIdList = supportsGrouping.BoxSetIdList.ToList();
+                    if (!boxsetIdList.Contains(collectionId))
+                    {
+                        boxsetIdList.Add(collectionId);
+                    }
+                    supportsGrouping.BoxSetIdList = boxsetIdList;
+                }
             }
 
             collection.LinkedChildren.AddRange(list);
@@ -156,6 +168,16 @@ namespace MediaBrowser.Server.Implementations.Collections
                 }
 
                 list.Add(child);
+
+                var childItem = _libraryManager.GetItemById(itemId);
+                var supportsGrouping = childItem as ISupportsBoxSetGrouping;
+
+                if (supportsGrouping != null)
+                {
+                    var boxsetIdList = supportsGrouping.BoxSetIdList.ToList();
+                    boxsetIdList.Remove(collectionId);
+                    supportsGrouping.BoxSetIdList = boxsetIdList;
+                }
             }
 
             var shortcutFiles = Directory

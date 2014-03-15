@@ -75,7 +75,7 @@
     <Compile Include="Collections\ICollectionManager.cs" />
     <Compile Include="Dlna\DirectPlayProfile.cs" />
     <Compile Include="Dlna\IDlnaManager.cs" />
-    <Compile Include="Dlna\DlnaProfile.cs" />
+    <Compile Include="Dlna\DeviceProfile.cs" />
     <Compile Include="Dlna\TranscodingProfile.cs" />
     <Compile Include="Drawing\IImageProcessor.cs" />
     <Compile Include="Drawing\ImageFormat.cs" />
@@ -114,6 +114,7 @@
     <Compile Include="Entities\ILibraryItem.cs" />
     <Compile Include="Entities\ImageSourceInfo.cs" />
     <Compile Include="Entities\IMetadataContainer.cs" />
+    <Compile Include="Entities\ISupportsBoxSetGrouping.cs" />
     <Compile Include="Entities\ISupportsPlaceHolders.cs" />
     <Compile Include="Entities\ItemImageInfo.cs" />
     <Compile Include="Entities\LinkedChild.cs" />
