@@ -43,8 +43,10 @@
         self.resetEnhancements = function () {
             var footer = $("#footer");
             var videoBackdrop = $("#videoBackdrop", footer);
+            var mediaElement = $("#mediaElement", videoBackdrop);
             var nowPlayingBar = $("#nowPlayingBar", videoBackdrop);
-            footer.append(nowPlayingBar);
+            mediaElement.html(""); // remove play/pause
+            footer.hide().append(mediaElement).append(nowPlayingBar);
             videoBackdrop.remove();
         };
 
@@ -56,6 +58,8 @@
             } else if (document.webkitExitFullscreen) {
                 document.webkitExitFullscreen();
             }
+
+            $('#videoPlayer').removeClass('fullscreenVideo');
 
             fullscreenExited = true;
         }
@@ -274,6 +278,8 @@
 
                     videoPlayer.fadeIn();
 
+                    checkAspectRatio();
+
                 });
 
             $(".mediaFlyoutContainer").on("click", "a", function (e) {
@@ -317,6 +323,21 @@
 
             fullscreenExited = false;
         };
+
+        function checkAspectRatio() {
+            // Resize player window if 4:3 aspect ratio
+            var footer = $("#footer");
+
+            var videoElement = $("video", footer);
+
+            var w = $(videoElement).width();
+
+            var h = $(videoElement).height();
+
+            if (w / h < 1.7) {
+                $("#videoPlayer", footer).addClass("aspect43");
+            }
+        }
 
         function changeHandler(event) {
 

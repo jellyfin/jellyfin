@@ -8,18 +8,18 @@
         var currentMediaElement;
         var currentProgressInterval;
         var positionSlider;
-        self.isPositionSliderActive;
         var currentTimeElement;
         var currentItem;
-        self.volumeSlider;
         var muteButton;
         var unmuteButton;
-        self.startTimeTicksOffset;
         var curentDurationTicks;
         var canClientSeek;
-
-        self.playlist = [];
         var currentPlaylistIndex = 0;
+
+        self.isPositionSliderActive;
+        self.volumeSlider;
+        self.startTimeTicksOffset;
+        self.playlist = [];
 
         self.updateCanClientSeek = function (elem) {
             var duration = elem.duration;
@@ -81,6 +81,10 @@
 
             if (currentItem.MediaType == "Video") {
                 ApiClient.stopActiveEncodings();
+                if (self.isFullScreen()) {
+                    self.exitFullScreen();
+                }
+                self.resetEnhancements();
             }
         }
 
@@ -734,8 +738,12 @@
 
             var nowPlayingText = (name ? name + "\n" : "") + (seriesName || "---");
             if (item.SeriesName || item.Album || item.CurrentProgram) {
-                nowPlayingText = (seriesName ? seriesName + "\n" : "") + "\n" + (name || "---");
+                nowPlayingText = (seriesName ? seriesName : "") + "\n" + (name || "---");
             }
+
+            console.log("name", name);
+            console.log("seriesName", seriesName);
+            console.log("nowPlayingText", nowPlayingText);
 
             // Fix for apostrophes and quotes
             var htmlTitle = trimTitle(nowPlayingText).replace(/'/g, '&apos;').replace(/"/g, '&quot;');
@@ -1128,11 +1136,11 @@
             var footer = $('#footer');
             footer.hide();
 
-            if (elem.mediaType == "Video") {
-                self.resetEnhancements();
+            if (currentItem.MediaType == "Video") {
                 if (self.isFullScreen()) {
                     self.exitFullScreen();
                 }
+                self.resetEnhancements();
             }
         };
 
