@@ -14,9 +14,12 @@ namespace MediaBrowser.Controller.Collections
 
         public Dictionary<string, string> ProviderIds { get; set; }
 
+        public List<Guid> ItemIdList { get; set; }
+
         public CollectionCreationOptions()
         {
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            ItemIdList = new List<Guid>();
         }
     }
 }
