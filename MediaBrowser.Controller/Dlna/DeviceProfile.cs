@@ -1,7 +1,7 @@
 ﻿
 namespace MediaBrowser.Controller.Dlna
 {
-    public class DlnaProfile
+    public class DeviceProfile
     {
         /// <summary>
         /// Gets or sets the name.
@@ -45,7 +45,7 @@ namespace MediaBrowser.Controller.Dlna
         /// <value>The direct play profiles.</value>
         public DirectPlayProfile[] DirectPlayProfiles { get; set; }
 
-        public DlnaProfile()
+        public DeviceProfile()
         {
             DirectPlayProfiles = new DirectPlayProfile[] { };
             TranscodingProfiles = new TranscodingProfile[] { };

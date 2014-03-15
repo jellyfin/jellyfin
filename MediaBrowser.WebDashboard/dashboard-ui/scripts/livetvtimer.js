@@ -62,7 +62,7 @@
         $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired).checkboxradio('refresh');
         $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired).checkboxradio('refresh');
 
-        $('.status', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
+        $('.timerStatus', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
 
         Dashboard.hideLoadingMsg();
     }

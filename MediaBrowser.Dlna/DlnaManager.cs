@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Model.Serialization;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -6,11 +9,23 @@ namespace MediaBrowser.Dlna
 {
     public class DlnaManager : IDlnaManager
     {
-        public IEnumerable<DlnaProfile> GetProfiles()
-        {
-            var list = new List<DlnaProfile>();
+        private IApplicationPaths _appPaths;
+        private readonly IXmlSerializer _xmlSerializer;
+        private readonly IFileSystem _fileSystem;
 
-            list.Add(new DlnaProfile
+        public DlnaManager(IXmlSerializer xmlSerializer, IFileSystem fileSystem)
+        {
+            _xmlSerializer = xmlSerializer;
+            _fileSystem = fileSystem;
+
+            //GetProfiles();
+        }
+
+        public IEnumerable<DeviceProfile> GetProfiles()
+        {
+            var list = new List<DeviceProfile>();
+
+            list.Add(new DeviceProfile
             {
                 Name = "Samsung TV (B Series)",
                 ClientType = "DLNA",
@@ -59,7 +74,7 @@ namespace MediaBrowser.Dlna
                 }
             });
 
-            list.Add(new DlnaProfile
+            list.Add(new DeviceProfile
             {
                 Name = "Samsung TV (E/F-series)",
                 ClientType = "DLNA",
@@ -107,7 +122,7 @@ namespace MediaBrowser.Dlna
                 }
             });
 
-            list.Add(new DlnaProfile
+            list.Add(new DeviceProfile
             {
                 Name = "Samsung TV (C/D-series)",
                 ClientType = "DLNA",
@@ -154,7 +169,7 @@ namespace MediaBrowser.Dlna
                 }
             });
 
-            list.Add(new DlnaProfile
+            list.Add(new DeviceProfile
             {
                 Name = "Xbox 360",
                 ClientType = "DLNA",
@@ -189,7 +204,7 @@ namespace MediaBrowser.Dlna
                 }
             });
 
-            list.Add(new DlnaProfile
+            list.Add(new DeviceProfile
             {
                 Name = "Xbox One",
                 ModelName = "Xbox One",
@@ -225,7 +240,7 @@ namespace MediaBrowser.Dlna
                 }
             });
 
-            list.Add(new DlnaProfile
+            list.Add(new DeviceProfile
             {
                 Name = "Sony Bravia (2012)",
                 ClientType = "DLNA",
@@ -262,7 +277,7 @@ namespace MediaBrowser.Dlna
             });
 
             //WDTV does not need any transcoding of the formats we support statically
-            list.Add(new DlnaProfile
+            list.Add(new DeviceProfile
             {
                 Name = "WDTV Live",
                 ClientType = "DLNA",
@@ -284,7 +299,7 @@ namespace MediaBrowser.Dlna
                 }
             });
 
-            list.Add(new DlnaProfile
+            list.Add(new DeviceProfile
             {
                 //Linksys DMA2100us does not need any transcoding of the formats we support statically
                 Name = "Linksys DMA2100",
@@ -307,12 +322,17 @@ namespace MediaBrowser.Dlna
                 }
             });
 
+            foreach (var item in list)
+            {
+                //_xmlSerializer.SerializeToFile(item, "d:\\" + _fileSystem.GetValidFilename(item.Name));
+            }
+
             return list;
         }
 
-        public DlnaProfile GetDefaultProfile()
+        public DeviceProfile GetDefaultProfile()
         {
-            return new DlnaProfile
+            return new DeviceProfile
             {
                 TranscodingProfiles = new[]
                 {
@@ -345,7 +365,7 @@ namespace MediaBrowser.Dlna
             };
         }
 
-        public DlnaProfile GetProfile(string friendlyName, string modelName, string modelNumber)
+        public DeviceProfile GetProfile(string friendlyName, string modelName, string modelNumber)
         {
             foreach (var profile in GetProfiles())
             {

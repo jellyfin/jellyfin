@@ -202,6 +202,15 @@
                 });
             });
         }
+    }).on('pageshow', ".libraryPage", function () {
+
+        var page = this;
+
+        var elem = $('.libraryViewNavInner .ui-btn-active:visible', page);
+
+        if (elem.length) {
+            elem[0].scrollIntoView();
+        }
     });
 
 })(window, document, jQuery);
