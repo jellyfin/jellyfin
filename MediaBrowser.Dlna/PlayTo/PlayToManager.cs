@@ -243,8 +243,7 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <returns>The TranscodeSettings for the device</returns>
         private void GetProfileSettings(DeviceInfo deviceProperties)
         {
-            var profile = _dlnaManager.GetProfile(deviceProperties.DisplayName, deviceProperties.ModelName,
-                deviceProperties.ModelNumber);
+            var profile = _dlnaManager.GetProfile(deviceProperties.Name, deviceProperties.ModelName, deviceProperties.ModelNumber, deviceProperties.Manufacturer);
 
             if (!string.IsNullOrWhiteSpace(profile.Name))
             {

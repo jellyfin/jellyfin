@@ -25,6 +25,8 @@ namespace MediaBrowser.Dlna
         {
             var list = new List<DeviceProfile>();
 
+            #region Samsung
+
             list.Add(new DeviceProfile
             {
                 Name = "Samsung TV (B Series)",
@@ -169,6 +171,10 @@ namespace MediaBrowser.Dlna
                 }
             });
 
+            #endregion
+
+            #region Xbox
+
             list.Add(new DeviceProfile
             {
                 Name = "Xbox 360",
@@ -198,7 +204,7 @@ namespace MediaBrowser.Dlna
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
-                        MimeType = "x-msvideo", 
+                        MimeType = "avi", 
                         Type = DlnaProfileType.Video
                     }
                 }
@@ -240,6 +246,10 @@ namespace MediaBrowser.Dlna
                 }
             });
 
+            #endregion
+
+            #region Sony
+
             list.Add(new DeviceProfile
             {
                 Name = "Sony Bravia (2012)",
@@ -272,6 +282,173 @@ namespace MediaBrowser.Dlna
                         Containers = new[]{"avi"}, 
                         Type = DlnaProfileType.Video,
                         MimeType = "avi"
+                    }
+                }
+            });
+
+            list.Add(new DeviceProfile
+            {
+                Name = "Sony Bravia (2013)",
+                ClientType = "DLNA",
+                FriendlyName = @"BRAVIA (KDL-\d{2}W[689]\d{2}A.*)|(KD-\d{2}X9\d{3}A.*)",
+
+                TranscodingProfiles = new[]
+                {
+                    new TranscodingProfile
+                    {
+                        Container = "mp3", 
+                        Type = DlnaProfileType.Audio
+                    },
+                    new TranscodingProfile
+                    {
+                        Container = "ts", 
+                        Type = DlnaProfileType.Video,
+                        MimeType = "mpeg"
+                    }
+                },
+
+                DirectPlayProfiles = new[]
+                {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3"}, 
+                        Type = DlnaProfileType.Audio
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"wma"}, 
+                        Type = DlnaProfileType.Audio,
+                        MimeType = "x-ms-wma"
+                    },                    
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi"}, 
+                        Type = DlnaProfileType.Video,
+                        MimeType = "avi"
+                    },
+                     new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp4"}, 
+                        Type = DlnaProfileType.Video,
+                        MimeType = "mp4"
+                    }
+                }
+            });
+
+            #endregion
+
+            #region Panasonic
+
+            list.Add(new DeviceProfile
+            {
+                //Panasonic Viera (2011|2012) Without AVI Support
+                Name = "Panasonic Viera E/S/ST/VT (2011)",
+                ClientType = "DLNA",
+                FriendlyName = @"(VIERA (E|S)T?(3|5)0?.*)|(VIERA VT30.*)", 
+                Manufacturer = "Panasonic",
+
+                TranscodingProfiles = new[]
+                {
+                    new TranscodingProfile
+                    {
+                        Container = "mp3", 
+                        Type = DlnaProfileType.Audio
+                    },
+                    new TranscodingProfile
+                    {
+                        Container = "ts", 
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                DirectPlayProfiles = new[]
+                {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3"}, 
+                        Type = DlnaProfileType.Audio
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mkv"}, 
+                        Type = DlnaProfileType.Video                        
+                    }
+                }
+            });
+
+            list.Add(new DeviceProfile
+            {
+                //Panasonic Viera (2011|2012) With AVI Support
+                Name = "Panasonic Viera G/GT/DT/UT/VT (2011/2012)",
+                ClientType = "DLNA",
+                FriendlyName = @"(VIERA (G|D|U)T?(3|5)0?.*)|(VIERA VT50.*)",
+                Manufacturer = "Panasonic",
+
+                TranscodingProfiles = new[]
+                {
+                    new TranscodingProfile
+                    {
+                        Container = "mp3", 
+                        Type = DlnaProfileType.Audio
+                    },
+                    new TranscodingProfile
+                    {
+                        Container = "ts", 
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                DirectPlayProfiles = new[]
+                {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3"}, 
+                        Type = DlnaProfileType.Audio
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mkv"}, 
+                        Type = DlnaProfileType.Video                        
+                    },
+                     new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi"}, 
+                        Type = DlnaProfileType.Video                        ,
+                        MimeType="divx"
+                    }
+                }
+            });
+
+            #endregion
+
+            //WDTV does not need any transcoding of the formats we support statically
+            list.Add(new DeviceProfile
+            {
+                Name = "Philips (2010-)",
+                FriendlyName = ".*PHILIPS.*",
+                ClientType = "DLNA",
+                ModelName = "WD TV HD Live",
+
+                DirectPlayProfiles = new[]
+                {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3", "wma"}, 
+                        Type = DlnaProfileType.Audio
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"avi"}, 
+                        Type = DlnaProfileType.Video,
+                        MimeType = "avi"
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mkv"}, 
+                        Type = DlnaProfileType.Video,
+                        MimeType = "x-matroska"
                     }
                 }
             });
@@ -322,6 +499,23 @@ namespace MediaBrowser.Dlna
                 }
             });
 
+            list.Add(new DeviceProfile
+            {                
+                Name = "Denon AVR",
+                FriendlyName = @"Denon:\[AVR:.*",
+                Manufacturer = "Denon",
+                ClientType = "DLNA",                
+
+                DirectPlayProfiles = new[]
+                {
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3", "flac", "m4a", "wma"}, 
+                        Type = DlnaProfileType.Audio
+                    },                   
+                }
+            });
+
             foreach (var item in list)
             {
                 //_xmlSerializer.SerializeToFile(item, "d:\\" + _fileSystem.GetValidFilename(item.Name));
@@ -365,7 +559,7 @@ namespace MediaBrowser.Dlna
             };
         }
 
-        public DeviceProfile GetProfile(string friendlyName, string modelName, string modelNumber)
+        public DeviceProfile GetProfile(string friendlyName, string modelName, string modelNumber, string manufacturer)
         {
             foreach (var profile in GetProfiles())
             {
@@ -384,6 +578,12 @@ namespace MediaBrowser.Dlna
                 if (!string.IsNullOrEmpty(profile.ModelName))
                 {
                     if (!Regex.IsMatch(modelName, profile.ModelName))
+                        continue;
+                }
+
+                if (!string.IsNullOrEmpty(profile.Manufacturer))
+                {
+                    if (!Regex.IsMatch(manufacturer, profile.Manufacturer))
                         continue;
                 }
 
