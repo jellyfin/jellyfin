@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Entities.Movies;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace MediaBrowser.Controller.Collections
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task.</returns>
-        Task CreateCollection(CollectionCreationOptions options);
+        Task<BoxSet> CreateCollection(CollectionCreationOptions options);
 
         /// <summary>
         /// Adds to collection.

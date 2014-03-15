@@ -26,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.Collections
             _iLibraryMonitor = iLibraryMonitor;
         }
 
-        public async Task CreateCollection(CollectionCreationOptions options)
+        public async Task<BoxSet> CreateCollection(CollectionCreationOptions options)
         {
             var name = options.Name;
 
@@ -64,6 +64,13 @@ namespace MediaBrowser.Server.Implementations.Collections
 
                 await collection.RefreshMetadata(new MetadataRefreshOptions(), CancellationToken.None)
                     .ConfigureAwait(false);
+
+                if (options.ItemIdList.Count > 0)
+                {
+                    await AddToCollection(collection.Id, options.ItemIdList);
+                }
+
+                return collection;
             }
             finally
             {
