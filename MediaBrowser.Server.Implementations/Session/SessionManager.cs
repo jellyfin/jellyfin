@@ -622,42 +622,27 @@ namespace MediaBrowser.Server.Implementations.Session
             return session;
         }
 
-        /// <summary>
-        /// Sends the system command.
-        /// </summary>
-        /// <param name="sessionId">The session id.</param>
-        /// <param name="command">The command.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendSystemCommand(Guid sessionId, SystemCommand command, CancellationToken cancellationToken)
+        public Task SendSystemCommand(Guid controllingSessionId, Guid sessionId, SystemCommand command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
+            var controllingSession = GetSession(controllingSessionId);
+            AssertCanControl(session, controllingSession);
+            
             return session.SessionController.SendSystemCommand(command, cancellationToken);
         }
 
-        /// <summary>
-        /// Sends the message command.
-        /// </summary>
-        /// <param name="sessionId">The session id.</param>
-        /// <param name="command">The command.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendMessageCommand(Guid sessionId, MessageCommand command, CancellationToken cancellationToken)
+        public Task SendMessageCommand(Guid controllingSessionId, Guid sessionId, MessageCommand command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
+            var controllingSession = GetSession(controllingSessionId);
+            AssertCanControl(session, controllingSession);
+            
             return session.SessionController.SendMessageCommand(command, cancellationToken);
         }
 
-        /// <summary>
-        /// Sends the play command.
-        /// </summary>
-        /// <param name="sessionId">The session id.</param>
-        /// <param name="command">The command.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendPlayCommand(Guid sessionId, PlayRequest command, CancellationToken cancellationToken)
+        public Task SendPlayCommand(Guid controllingSessionId, Guid sessionId, PlayRequest command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
@@ -690,36 +675,27 @@ namespace MediaBrowser.Server.Implementations.Session
                 }
             }
 
-            if (session.UserId.HasValue)
+            var controllingSession = GetSession(controllingSessionId);
+            AssertCanControl(session, controllingSession);
+            if (controllingSession.UserId.HasValue)
             {
-                command.ControllingUserId = session.UserId.Value.ToString("N");
+                command.ControllingUserId = controllingSession.UserId.Value.ToString("N");
             }
 
             return session.SessionController.SendPlayCommand(command, cancellationToken);
         }
 
-        /// <summary>
-        /// Sends the browse command.
-        /// </summary>
-        /// <param name="sessionId">The session id.</param>
-        /// <param name="command">The command.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendBrowseCommand(Guid sessionId, BrowseRequest command, CancellationToken cancellationToken)
+        public Task SendBrowseCommand(Guid controllingSessionId, Guid sessionId, BrowseRequest command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
+            var controllingSession = GetSession(controllingSessionId);
+            AssertCanControl(session, controllingSession);
+            
             return session.SessionController.SendBrowseCommand(command, cancellationToken);
         }
 
-        /// <summary>
-        /// Sends the playstate command.
-        /// </summary>
-        /// <param name="sessionId">The session id.</param>
-        /// <param name="command">The command.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendPlaystateCommand(Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken)
+        public Task SendPlaystateCommand(Guid controllingSessionId, Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
@@ -728,12 +704,26 @@ namespace MediaBrowser.Server.Implementations.Session
                 throw new ArgumentException(string.Format("Session {0} is unable to seek.", session.Id));
             }
 
-            if (session.UserId.HasValue)
+            var controllingSession = GetSession(controllingSessionId);
+            AssertCanControl(session, controllingSession);
+            if (controllingSession.UserId.HasValue)
             {
-                command.ControllingUserId = session.UserId.Value.ToString("N");
+                command.ControllingUserId = controllingSession.UserId.Value.ToString("N");
             }
 
             return session.SessionController.SendPlaystateCommand(command, cancellationToken);
+        }
+
+        private void AssertCanControl(SessionInfo session, SessionInfo controllingSession)
+        {
+            if (session == null)
+            {
+                throw new ArgumentNullException("session");
+            }
+            if (controllingSession == null)
+            {
+                throw new ArgumentNullException("controllingSession");
+            }
         }
 
         /// <summary>

@@ -86,47 +86,52 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Sends the system command.
         /// </summary>
+        /// <param name="controllingSessionId">The controlling session identifier.</param>
         /// <param name="sessionId">The session id.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSystemCommand(Guid sessionId, SystemCommand command, CancellationToken cancellationToken);
+        Task SendSystemCommand(Guid controllingSessionId, Guid sessionId, SystemCommand command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message command.
         /// </summary>
+        /// <param name="controllingSessionId">The controlling session identifier.</param>
         /// <param name="sessionId">The session id.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageCommand(Guid sessionId, MessageCommand command, CancellationToken cancellationToken);
+        Task SendMessageCommand(Guid controllingSessionId, Guid sessionId, MessageCommand command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the play command.
         /// </summary>
+        /// <param name="controllingSessionId">The controlling session identifier.</param>
         /// <param name="sessionId">The session id.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendPlayCommand(Guid sessionId, PlayRequest command, CancellationToken cancellationToken);
+        Task SendPlayCommand(Guid controllingSessionId, Guid sessionId, PlayRequest command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the browse command.
         /// </summary>
+        /// <param name="controllingSessionId">The controlling session identifier.</param>
         /// <param name="sessionId">The session id.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendBrowseCommand(Guid sessionId, BrowseRequest command, CancellationToken cancellationToken);
+        Task SendBrowseCommand(Guid controllingSessionId, Guid sessionId, BrowseRequest command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the playstate command.
         /// </summary>
+        /// <param name="controllingSessionId">The controlling session identifier.</param>
         /// <param name="sessionId">The session id.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendPlaystateCommand(Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken);
+        Task SendPlaystateCommand(Guid controllingSessionId, Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the restart required message.
