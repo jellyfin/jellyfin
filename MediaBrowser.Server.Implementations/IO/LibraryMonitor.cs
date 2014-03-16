@@ -267,7 +267,7 @@ namespace MediaBrowser.Server.Implementations.IO
                     }
                     else
                     {
-                        Logger.Info("Unable to add directory watcher for {0}. It already exists in the dictionary." + path);
+                        Logger.Info("Unable to add directory watcher for {0}. It already exists in the dictionary.", path);
                         newWatcher.Dispose();
                     }
 
