@@ -28,6 +28,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly INetworkManager _networkManager;
         private readonly ILogger _logger;
         private readonly IDlnaManager _dlnaManager;
+        private readonly IUserManager _userManager;
         private bool _playbackStarted = false;
 
         public bool SupportsMediaRemoteControl
@@ -46,7 +47,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, INetworkManager networkManager, IDlnaManager dlnaManager)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, INetworkManager networkManager, IDlnaManager dlnaManager, IUserManager userManager)
         {
             _session = session;
             _itemRepository = itemRepository;
@@ -54,6 +55,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _libraryManager = libraryManager;
             _networkManager = networkManager;
             _dlnaManager = dlnaManager;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -194,7 +196,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         #region SendCommands
 
-        public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
+        public async Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
             _logger.Debug("{0} - Received PlayRequest: {1}", this._session.DeviceName, command.PlayCommand);
 
@@ -227,16 +229,25 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command.PlayCommand == PlayCommand.PlayLast)
             {
                 AddItemsToPlaylist(playlist);
-                return Task.FromResult(true);
             }
             if (command.PlayCommand == PlayCommand.PlayNext)
             {
                 AddItemsToPlaylist(playlist);
-                return Task.FromResult(true);
             }
 
             _logger.Debug("{0} - Playing {1} items", _session.DeviceName, playlist.Count);
-            return PlayItems(playlist);
+
+            if (!string.IsNullOrWhiteSpace(command.ControllingUserId))
+            {
+                var userId = new Guid(command.ControllingUserId);
+
+                var user = _userManager.GetUserById(userId);
+
+                await _sessionManager.LogSessionActivity(_session.Client, _session.ApplicationVersion, _session.DeviceId,
+                        _session.DeviceName, _session.RemoteEndPoint, user).ConfigureAwait(false);
+            }
+
+            await PlayItems(playlist).ConfigureAwait(false);
         }
 
         public Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken)

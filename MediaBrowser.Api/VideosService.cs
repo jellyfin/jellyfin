@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Querying;
@@ -37,14 +40,44 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
-    
+
+    [Route("/Videos/{Id}/AlternateVersions", "POST")]
+    [Api(Description = "Assigns videos as alternates of antoher.")]
+    public class PostAlternateVersions : IReturnVoid
+    {
+        [ApiMember(Name = "AlternateVersionIds", Description = "Item id, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string AlternateVersionIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Videos/{Id}/AlternateVersions", "DELETE")]
+    [Api(Description = "Assigns videos as alternates of antoher.")]
+    public class DeleteAlternateVersions : IReturnVoid
+    {
+        [ApiMember(Name = "AlternateVersionIds", Description = "Item id, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string AlternateVersionIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     public class VideosService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
 
-        public VideosService( ILibraryManager libraryManager, IUserManager userManager, IDtoService dtoService)
+        public VideosService(ILibraryManager libraryManager, IUserManager userManager, IDtoService dtoService)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -114,6 +147,62 @@ namespace MediaBrowser.Api
             };
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        public void Post(PostAlternateVersions request)
+        {
+            var task = AddAlternateVersions(request);
+
+            Task.WaitAll(task);
+        }
+
+        public void Delete(DeleteAlternateVersions request)
+        {
+            var task = RemoveAlternateVersions(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task AddAlternateVersions(PostAlternateVersions request)
+        {
+            var video = (Video)_dtoService.GetItemByDtoId(request.Id);
+
+            var list = new List<LinkedChild>();
+            var currentAlternateVersions = video.GetAlternateVersions().ToList();
+
+            foreach (var itemId in request.AlternateVersionIds.Split(',').Select(i => new Guid(i)))
+            {
+                var item = _libraryManager.GetItemById(itemId) as Video;
+
+                if (item == null)
+                {
+                    throw new ArgumentException("No item exists with the supplied Id");
+                }
+
+                if (currentAlternateVersions.Any(i => i.Id == itemId))
+                {
+                    throw new ArgumentException("Item already exists.");
+                }
+
+                list.Add(new LinkedChild
+                {
+                    Path = item.Path,
+                    Type = LinkedChildType.Manual
+                });
+
+                item.PrimaryVersionId = video.Id;
+            }
+
+            video.LinkedAlternateVersions.AddRange(list);
+
+            await video.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+            await video.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private async Task RemoveAlternateVersions(DeleteAlternateVersions request)
+        {
+            var video = (Video)_dtoService.GetItemByDtoId(request.Id);
         }
     }
 }

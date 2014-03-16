@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Persistence;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
@@ -20,26 +21,27 @@ namespace MediaBrowser.Controller.Entities
     {
         public bool IsMultiPart { get; set; }
         public bool HasLocalAlternateVersions { get; set; }
+        public Guid? PrimaryVersionId { get; set; }
 
         public List<Guid> AdditionalPartIds { get; set; }
-        public List<Guid> AlternateVersionIds { get; set; }
+        public List<Guid> LocalAlternateVersionIds { get; set; }
 
         public Video()
         {
             PlayableStreamFileNames = new List<string>();
             AdditionalPartIds = new List<Guid>();
-            AlternateVersionIds = new List<Guid>();
+            LocalAlternateVersionIds = new List<Guid>();
             Tags = new List<string>();
             SubtitleFiles = new List<string>();
             LinkedAlternateVersions = new List<LinkedChild>();
         }
 
         [IgnoreDataMember]
-        public bool HasAlternateVersions
+        public int AlternateVersionCount
         {
             get
             {
-                return HasLocalAlternateVersions || LinkedAlternateVersions.Count > 0;
+                return LinkedAlternateVersions.Count + LocalAlternateVersionIds.Count;
             }
         }
 
@@ -51,7 +53,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         public IEnumerable<BaseItem> GetAlternateVersions()
         {
-            var filesWithinSameDirectory = AlternateVersionIds
+            var filesWithinSameDirectory = LocalAlternateVersionIds
                 .Select(i => LibraryManager.GetItemById(i))
                 .Where(i => i != null)
                 .OfType<Video>();
@@ -233,14 +235,11 @@ namespace MediaBrowser.Controller.Entities
                 {
                     RefreshLinkedAlternateVersions();
 
-                    if (HasLocalAlternateVersions)
-                    {
-                        var additionalPartsChanged = await RefreshAlternateVersionsWithinSameDirectory(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+                    var additionalPartsChanged = await RefreshAlternateVersionsWithinSameDirectory(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
-                        if (additionalPartsChanged)
-                        {
-                            hasChanges = true;
-                        }
+                    if (additionalPartsChanged)
+                    {
+                        hasChanges = true;
                     }
                 }
             }
@@ -339,19 +338,70 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshAlternateVersionsWithinSameDirectory(MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newItems = LoadAlternateVersionsWithinSameDirectory(fileSystemChildren, options.DirectoryService).ToList();
+            var newItems = HasLocalAlternateVersions ?
+                LoadAlternateVersionsWithinSameDirectory(fileSystemChildren, options.DirectoryService).ToList() :
+                new List<Video>();
 
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
-            var itemsChanged = !AlternateVersionIds.SequenceEqual(newItemIds);
+            var itemsChanged = !LocalAlternateVersionIds.SequenceEqual(newItemIds);
 
-            var tasks = newItems.Select(i => i.RefreshMetadata(options, cancellationToken));
+            var tasks = newItems.Select(i => RefreshAlternateVersion(options, i, cancellationToken));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            AlternateVersionIds = newItemIds;
+            LocalAlternateVersionIds = newItemIds;
 
             return itemsChanged;
+        }
+
+        private Task RefreshAlternateVersion(MetadataRefreshOptions options, Video video, CancellationToken cancellationToken)
+        {
+            var currentImagePath = video.GetImagePath(ImageType.Primary);
+            var ownerImagePath = this.GetImagePath(ImageType.Primary);
+
+            var newOptions = new MetadataRefreshOptions
+            {
+                DirectoryService = options.DirectoryService,
+                ImageRefreshMode = options.ImageRefreshMode,
+                MetadataRefreshMode = options.MetadataRefreshMode,
+                ReplaceAllMetadata = options.ReplaceAllMetadata
+            };
+
+            if (!string.Equals(currentImagePath, ownerImagePath, StringComparison.OrdinalIgnoreCase))
+            {
+                newOptions.ForceSave = true;
+
+                if (string.IsNullOrWhiteSpace(ownerImagePath))
+                {
+                    video.ImageInfos.Clear();
+                }
+                else
+                {
+                    video.SetImagePath(ImageType.Primary, ownerImagePath);
+                }
+            }
+
+            return video.RefreshMetadata(newOptions, cancellationToken);
+        }
+
+        public override async Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
+        {
+            await base.UpdateToRepository(updateReason, cancellationToken).ConfigureAwait(false);
+
+            foreach (var item in LocalAlternateVersionIds.Select(i => LibraryManager.GetItemById(i)))
+            {
+                item.ImageInfos = ImageInfos;
+                item.Overview = Overview;
+                item.ProductionYear = ProductionYear;
+                item.PremiereDate = PremiereDate;
+                item.CommunityRating = CommunityRating;
+                item.OfficialRating = OfficialRating;
+                item.Genres = Genres;
+                item.ProviderIds = ProviderIds;
+
+                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -395,7 +445,7 @@ namespace MediaBrowser.Controller.Entities
                     video = dbItem;
                 }
 
-                video.ImageInfos = ImageInfos;
+                video.PrimaryVersionId = Id;
 
                 return video;
 

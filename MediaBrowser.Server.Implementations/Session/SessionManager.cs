@@ -690,6 +690,11 @@ namespace MediaBrowser.Server.Implementations.Session
                 }
             }
 
+            if (session.UserId.HasValue)
+            {
+                command.ControllingUserId = session.UserId.Value.ToString("N");
+            }
+
             return session.SessionController.SendPlayCommand(command, cancellationToken);
         }
 
@@ -721,6 +726,11 @@ namespace MediaBrowser.Server.Implementations.Session
             if (command.Command == PlaystateCommand.Seek && !session.CanSeek)
             {
                 throw new ArgumentException(string.Format("Session {0} is unable to seek.", session.Id));
+            }
+
+            if (session.UserId.HasValue)
+            {
+                command.ControllingUserId = session.UserId.Value.ToString("N");
             }
 
             return session.SessionController.SendPlaystateCommand(command, cancellationToken);
