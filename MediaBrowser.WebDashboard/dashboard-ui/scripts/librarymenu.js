@@ -210,6 +210,9 @@
 
         if (elem.length) {
             elem[0].scrollIntoView();
+
+            // Scroll back up so in case vertical scroll was messed with
+            $(document).scrollTop(0);
         }
     });
 

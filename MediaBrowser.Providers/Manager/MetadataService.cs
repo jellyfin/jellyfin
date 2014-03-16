@@ -56,11 +56,16 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Gets the last result.
         /// </summary>
-        /// <param name="itemId">The item identifier.</param>
+        /// <param name="item">The item.</param>
         /// <returns>ProviderResult.</returns>
-        protected MetadataStatus GetLastResult(Guid itemId)
+        protected MetadataStatus GetLastResult(IHasMetadata item)
         {
-            return ProviderRepo.GetMetadataStatus(itemId) ?? new MetadataStatus { ItemId = itemId };
+            if (item.DateLastSaved == default(DateTime))
+            {
+                return new MetadataStatus { ItemId = item.Id };
+            }
+
+            return ProviderRepo.GetMetadataStatus(item.Id) ?? new MetadataStatus { ItemId = item.Id };
         }
 
         public async Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
@@ -74,7 +79,7 @@ namespace MediaBrowser.Providers.Manager
             var config = ProviderManager.GetMetadataOptions(item);
 
             var updateType = ItemUpdateType.None;
-            var refreshResult = GetLastResult(item.Id);
+            var refreshResult = GetLastResult(item);
             refreshResult.LastErrorMessage = string.Empty;
             refreshResult.LastStatus = ProviderRefreshStatus.Success;
 
