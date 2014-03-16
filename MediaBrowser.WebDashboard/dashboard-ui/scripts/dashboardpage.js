@@ -372,16 +372,21 @@
 
             html += '<p>';
 
-            html += task.Name;
+            html += task.Name+"<br/>";
 
             if (task.State == "Running") {
                 var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
-                html += '<span style="color:#267F00;margin-right:5px;font-weight:bold;"> - ' + progress + '%</span>';
+
+                html += '<progress max="100" value="' + progress + '" title="' + progress + '%">';
+                html += '' + progress + '%';
+                html += '</progress>';
+
+                html += "<span style='color:#009F00;margin-left:5px;margin-right:5px;'>" + progress + "%</span>";
 
                 html += '<button type="button" data-icon="stop" data-iconpos="notext" data-inline="true" data-mini="true" onclick="DashboardPage.stopTask(\'' + task.Id + '\');">Stop</button>';
             }
             else if (task.State == "Cancelling") {
-                html += '<span style="color:#cc0000;"> - Stopping</span>';
+                html += '<span style="color:#cc0000;">Stopping</span>';
             }
 
             html += '</p>';

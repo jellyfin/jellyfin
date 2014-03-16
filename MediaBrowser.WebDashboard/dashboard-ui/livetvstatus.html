@@ -24,6 +24,14 @@
                             <p>Version: <span id="activeServiceVersion"></span></p>
                         </div>
                         <br />
+
+                        <div class="readOnlyContent refreshGuidePanel hide">
+                            <button type="button" class="btnRefreshGuide" data-icon="refresh" data-mini="true">Refresh Guide Data</button>
+                            <progress max="100" min="0" style="width: 100%;" class="refreshGuideProgress"></progress>
+                            <div style="margin-top: 5px;">Last Result: <span class="lastRefreshGuideResult"></span></div>
+                        </div>
+
+                        <br />
                         <h2>Tuners</h2>
 
                         <table data-role="table" data-mode="reflow" class="tblTuners stripedTable ui-responsive table-stroke">
