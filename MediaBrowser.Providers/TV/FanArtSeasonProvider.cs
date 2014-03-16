@@ -20,14 +20,14 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class FanartSeasonProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
+    public class FanArtSeasonProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
 
-        public FanartSeasonProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public FanArtSeasonProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _config = config;
             _httpClient = httpClient;

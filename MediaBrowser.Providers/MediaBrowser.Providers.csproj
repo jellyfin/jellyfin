@@ -187,7 +187,7 @@
     <Compile Include="TV\EpisodeXmlProvider.cs" />
     <Compile Include="TV\EpisodeXmlParser.cs" />
     <Compile Include="TV\FanArtTvUpdatesPostScanTask.cs" />
-    <Compile Include="TV\FanartSeasonProvider.cs" />
+    <Compile Include="TV\FanArtSeasonProvider.cs" />
     <Compile Include="TV\FanartSeriesProvider.cs" />
     <Compile Include="TV\MissingEpisodeProvider.cs" />
     <Compile Include="TV\MovieDbSeriesImageProvider.cs" />

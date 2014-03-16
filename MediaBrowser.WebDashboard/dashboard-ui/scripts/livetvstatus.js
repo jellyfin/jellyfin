@@ -179,7 +179,14 @@
         $('.btnRefreshGuide', page).buttonEnabled(task.State == 'Idle').attr('data-taskid', task.Id);
 
         var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
-        $('.refreshGuideProgress', page).val(progress);
+        var progressElem = $('.refreshGuideProgress', page).val(progress);
+        
+        if (task.State == 'Running') {
+            progressElem.show();
+        } else {
+            progressElem.hide();
+        }
+        
         var lastResult = task.LastExecutionResult ? task.LastExecutionResult.Status : '';
         
         if (lastResult == "Failed") {
