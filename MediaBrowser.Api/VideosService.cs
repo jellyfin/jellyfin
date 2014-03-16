@@ -69,6 +69,9 @@ namespace MediaBrowser.Api
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+
+        [ApiMember(Name = "IsAlternateEncoding", Description = "Filter by versions that are considered alternate encodings of the original.", IsRequired = true, DataType = "bool", ParameterType = "path", Verb = "GET")]
+        public bool? IsAlternateEncoding { get; set; }
     }
 
     public class VideosService : BaseApiService
