@@ -662,7 +662,7 @@
 
                 cssClass += ' ' + options.shape + 'PosterItem';
 
-                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-locationtype="' + item.LocationType + '" data-mediatype="' + (item.MediaType || '') + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
+                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-primaryversionid="' + (item.PrimaryVersionId || '') + '" data-locationtype="' + item.LocationType + '" data-mediatype="' + (item.MediaType || '') + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
 
                 // Ribbon
                 if (item.MediaType == "Video" && options.formatIndicators) {
@@ -717,6 +717,9 @@
                     html += LibraryBrowser.getPlayedIndicatorHtml(item);
                 }
 
+                if (item.AlternateVersionCount) {
+                    html += '<div class="alternateVersionIndicator">' + (item.AlternateVersionCount + 1) + '</div>';
+                }
                 if (item.IsUnidentified) {
                     html += '<div class="unidentifiedIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
                 }
@@ -2118,17 +2121,19 @@
 
         items.push({ type: 'link', text: 'Images', url: 'edititemimages.html?id=' + id });
 
-        if (mediatype == 'Video' && elem.getAttribute('data-locationtype') == 'FileSystem') {
+        //if (mediatype == 'Video' && elem.getAttribute('data-locationtype') == 'FileSystem' && !elem.getAttribute('data-primaryversionid')) {
 
-            items.push({ type: 'divider' });
-            items.push({ type: 'header', text: 'Manage' });
-            items.push({ type: 'command', text: 'Alternate Editions', name: 'AlternateEditions' });
-        }
+        //    items.push({ type: 'divider' });
+        //    items.push({ type: 'header', text: 'Manage' });
+        //    items.push({ type: 'command', text: 'Alternate Versions', name: 'AlternateVersions' });
+        //}
 
         return items;
     }
 
-    $.fn.createPosterItemHoverMenu = function () {
+    $.fn.createPosterItemMenus = function (options) {
+
+        options = options || {};
 
         function onShowTimerExpired(elem) {
 
@@ -2186,18 +2191,20 @@
 
         var sequence = this;
 
-        //Dashboard.getCurrentUser().done(function (user) {
+        if (options.contextMenu !== false) {
+            Dashboard.getCurrentUser().done(function (user) {
 
-        //    if (user.Configuration.IsAdministrator) {
+                if (user.Configuration.IsAdministrator) {
 
-        //        sequence.createContextMenu({
-        //            getOptions: getMenuOptions,
-        //            command: onMenuCommand,
-        //            selector: '.posterItem'
-        //        });
-        //    }
+                    sequence.createContextMenu({
+                        getOptions: getMenuOptions,
+                        command: onMenuCommand,
+                        selector: '.posterItem'
+                    });
+                }
 
-        //});
+            });
+        }
 
         return this.on('mouseenter', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverIn)
             .on('mouseleave', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverOut);

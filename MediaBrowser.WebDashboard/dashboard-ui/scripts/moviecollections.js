@@ -47,7 +47,7 @@
                 html += '<p>Collections allow you to enjoy personalized groupings of Movies, Series, Albums, Books and Games. Click the New button to start creating Collections.</p>';
             }
 
-            $('#items', page).html(html).trigger('create').createPosterItemHoverMenu();
+            $('#items', page).html(html).trigger('create').createPosterItemMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

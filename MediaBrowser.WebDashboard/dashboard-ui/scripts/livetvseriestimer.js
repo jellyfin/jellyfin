@@ -127,7 +127,7 @@
             overlayText: true,
             coverImage: true
 
-        })).createPosterItemHoverMenu();
+        })).createPosterItemMenus();
     }
     
     function renderSchedule(page, result) {

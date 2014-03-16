@@ -410,7 +410,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             if (!string.IsNullOrWhiteSpace(filenamePrefix))
             {
-                if (sortedMovies.All(i => Path.GetFileNameWithoutExtension(i.Path).StartsWith(filenamePrefix, StringComparison.OrdinalIgnoreCase)))
+                if (sortedMovies.Skip(1).All(i => Path.GetFileNameWithoutExtension(i.Path).StartsWith(filenamePrefix + " - ", StringComparison.OrdinalIgnoreCase)))
                 {
                     firstMovie.HasLocalAlternateVersions = true;
 

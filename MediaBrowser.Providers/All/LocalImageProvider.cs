@@ -94,14 +94,13 @@ namespace MediaBrowser.Providers.All
         public List<LocalImageInfo> GetImages(IHasImages item, IEnumerable<string> paths, IDirectoryService directoryService)
         {
             var files = paths.SelectMany(directoryService.GetFiles)
-               .Where(i =>
-               {
-                   var ext = i.Extension;
+                .Where(i =>
+                {
+                    var ext = i.Extension;
 
-                   return !string.IsNullOrEmpty(ext) &&
-                       BaseItem.SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
-               })
-               .Cast<FileSystemInfo>()
+                    return !string.IsNullOrEmpty(ext) &&
+                           BaseItem.SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+                })
                .ToList();
 
             var list = new List<LocalImageInfo>();

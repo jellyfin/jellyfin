@@ -227,7 +227,7 @@
             renderAdditionalParts(page, item, user);
         }
 
-        if (!item.HasAlternateVersions) {
+        if (!item.AlternateVersionCount) {
             $('#alternateVersionsCollapsible', page).addClass('hide');
         } else {
             $('#alternateVersionsCollapsible', page).removeClass('hide');
@@ -483,7 +483,7 @@
                 borderless: item.Type == "Game"
             });
 
-            $('#similarContent', page).html(html).createPosterItemHoverMenu();
+            $('#similarContent', page).html(html).createPosterItemMenus();
         });
     }
 
@@ -615,7 +615,7 @@
                     });
                 }
 
-                $('#childrenContent', page).html(html).createPosterItemHoverMenu();
+                $('#childrenContent', page).html(html).createPosterItemMenus();
 
                 if (item.Type == "BoxSet") {
 
@@ -688,7 +688,7 @@
             renderCollectionItemType(page, { name: 'Titles' }, items, user);
         }
 
-        $('.collectionItems', page).trigger('create').createPosterItemHoverMenu();
+        $('.collectionItems', page).trigger('create').createPosterItemMenus();
     }
 
     function renderCollectionItemType(page, type, items, user) {
@@ -905,8 +905,6 @@
 
                 $('#alternateVersionsCollapsible', page).show();
 
-                $('#additionalPartsCollapsible', page).show();
-
                 var html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
@@ -917,7 +915,7 @@
                     formatIndicators: true
                 });
 
-                $('#alternateVersionsContent', page).html(html).trigger('create').createPosterItemHoverMenu();
+                $('#alternateVersionsContent', page).html(html).trigger('create').createPosterItemMenus();
             } else {
                 $('#alternateVersionsCollapsible', page).hide();
             }

@@ -227,7 +227,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 if (controller == null)
                 {
-                    sessionInfo.SessionController = controller = new PlayToController(sessionInfo, _sessionManager, _itemRepository, _libraryManager, _logger, _networkManager, _dlnaManager);
+                    sessionInfo.SessionController = controller = new PlayToController(sessionInfo, _sessionManager, _itemRepository, _libraryManager, _logger, _networkManager, _dlnaManager, _userManager);
                 }
 
                 controller.Init(device);

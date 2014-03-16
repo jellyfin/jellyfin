@@ -58,7 +58,7 @@
             overlayText: true,
             coverImage: true
 
-        })).createPosterItemHoverMenu();
+        })).createPosterItemMenus();
     }
 
     function reload(page) {

@@ -29,7 +29,7 @@
                 showPremiereDateIndex: true,
                 preferThumb: true
 
-            })).createPosterItemHoverMenu();
+            })).createPosterItemMenus();
         });
     });
 

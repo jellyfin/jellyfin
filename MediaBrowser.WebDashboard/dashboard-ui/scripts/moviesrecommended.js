@@ -68,7 +68,7 @@
                 overlayText: true,
                 showTitle: true
                 
-            })).createPosterItemHoverMenu();
+            })).createPosterItemMenus();
 
         });
 
@@ -90,7 +90,7 @@
 
             var html = recommendations.map(getRecommendationHtml).join('');
 
-            $('.recommendations', page).html(html).createPosterItemHoverMenu();
+            $('.recommendations', page).html(html).createPosterItemMenus();
         });
     });
 

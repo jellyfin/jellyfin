@@ -111,6 +111,7 @@ namespace MediaBrowser.Server.Implementations.Collections
             }
 
             var list = new List<LinkedChild>();
+            var currentLinkedChildren = collection.GetLinkedChildren().ToList();
 
             foreach (var itemId in ids)
             {
@@ -121,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.Collections
                     throw new ArgumentException("No item exists with the supplied Id");
                 }
 
-                if (collection.LinkedChildren.Any(i => i.ItemId.HasValue && i.ItemId == itemId))
+                if (currentLinkedChildren.Any(i => i.Id == itemId))
                 {
                     throw new ArgumentException("Item already exists in collection");
                 }

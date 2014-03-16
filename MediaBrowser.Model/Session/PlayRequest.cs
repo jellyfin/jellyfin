@@ -23,6 +23,12 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The play command.</value>
         public PlayCommand PlayCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the controlling user identifier.
+        /// </summary>
+        /// <value>The controlling user identifier.</value>
+        public string ControllingUserId { get; set; }
     }
 
     /// <summary>

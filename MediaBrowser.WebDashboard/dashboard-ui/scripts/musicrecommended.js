@@ -25,7 +25,7 @@
                 shape: "square",
                 showTitle: true,
                 showParentTitle: true
-            })).createPosterItemHoverMenu();
+            })).createPosterItemMenus();
 
         });
 
@@ -48,7 +48,7 @@
                 shape: "square",
                 showTitle: true,
                 showParentTitle: true
-            })).createPosterItemHoverMenu();
+            })).createPosterItemMenus();
 
         });
 
@@ -78,7 +78,7 @@
                 shape: "square",
                 showTitle: true,
                 showParentTitle: true
-            })).createPosterItemHoverMenu();
+            })).createPosterItemMenus();
 
         });
 
@@ -108,7 +108,7 @@
                 shape: "square",
                 showTitle: true,
                 showParentTitle: true
-            })).createPosterItemHoverMenu();
+            })).createPosterItemMenus();
 
         });
 
