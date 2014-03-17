@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
@@ -32,8 +33,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
         private readonly IServerConfigurationManager _config;
+        private readonly IServerApplicationHost _appHost;
 
-        public PlayToManager(ILogger logger, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager)
+        public PlayToManager(ILogger logger, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost)
         {
             _locations = new ConcurrentDictionary<string, DateTime>();
             _tokenSource = new CancellationTokenSource();
@@ -46,6 +48,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _networkManager = networkManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
+            _appHost = appHost;
             _config = config;
         }
 
@@ -227,7 +230,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 if (controller == null)
                 {
-                    sessionInfo.SessionController = controller = new PlayToController(sessionInfo, _sessionManager, _itemRepository, _libraryManager, _logger, _networkManager, _dlnaManager, _userManager);
+                    sessionInfo.SessionController = controller = new PlayToController(sessionInfo, _sessionManager, _itemRepository, _libraryManager, _logger, _networkManager, _dlnaManager, _userManager, _appHost);
                 }
 
                 controller.Init(device);
