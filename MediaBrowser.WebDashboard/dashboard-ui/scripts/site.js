@@ -292,7 +292,7 @@ var Dashboard = {
 
         options.id = options.id || "notification" + new Date().getTime() + parseInt(Math.random());
 
-        var footer = $("#footer").show();
+        var footer = $("#footer").css("height", "50px");
 
         var parentElem = $('#footerNotifications', footer);
 
@@ -309,7 +309,16 @@ var Dashboard = {
         }
 
         if (options.forceShow) {
-            elem.show();
+            elem.slideDown(400);
+        }
+
+        var videoBackdrop = $("#videoBackdrop");
+
+        var isPlaying = false;
+
+        if (videoBackdrop.is(":visible")) {
+            videoBackdrop.css("bottom", "48px");
+            isPlaying = true;
         }
 
         elem.html(options.html).trigger("create");
@@ -329,9 +338,13 @@ var Dashboard = {
 
         footer.on("notification.remove notification.hide", function (e) {
             setTimeout(function () { // give the DOM time to catch up
-                console.log("html", parentElem.html() == "", this);
                 if (parentElem.html() == "") {
-                    footer.slideUp();
+                    if (!isPlaying) {
+                        footer.slideUp();
+                    } else {
+                        footer.css({ height: "0" });
+                        videoBackdrop.animate({ bottom: "0" }, 400);
+                    }
                 }
             }, 50);
         });

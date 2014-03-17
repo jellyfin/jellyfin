@@ -234,6 +234,8 @@
 
             $("#videoBackdrop", footer).show();
 
+            footer.css("height", "0");
+
             var videoPlayer = $("#videoPlayer", footer)
                 //.hide()
                 .append(nowPlayingBar);
