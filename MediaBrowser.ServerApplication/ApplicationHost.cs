@@ -861,7 +861,7 @@ namespace MediaBrowser.ServerApplication
                 ItemsByNamePath = ApplicationPaths.ItemsByNamePath,
                 CachePath = ApplicationPaths.CachePath,
                 MacAddress = GetMacAddress(),
-                HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber,
+                HttpServerPortNumber = HttpServerPort,
                 OperatingSystem = Environment.OSVersion.ToString(),
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
@@ -872,6 +872,11 @@ namespace MediaBrowser.ServerApplication
                 IsRunningAsService = IsRunningAsService,
                 ServerName = string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.ServerName) ? Environment.MachineName : ServerConfigurationManager.Configuration.ServerName
             };
+        }
+
+        public int HttpServerPort
+        {
+            get { return ServerConfigurationManager.Configuration.HttpServerPortNumber; }
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");

@@ -25,5 +25,11 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value><c>true</c> if [supports automatic run at startup]; otherwise, <c>false</c>.</value>
         bool SupportsAutoRunAtStartup { get; }
+
+        /// <summary>
+        /// Gets the HTTP server port.
+        /// </summary>
+        /// <value>The HTTP server port.</value>
+        int HttpServerPort { get; }
     }
 }
