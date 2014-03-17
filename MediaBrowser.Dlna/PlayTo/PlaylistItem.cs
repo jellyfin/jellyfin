@@ -31,7 +31,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public long StartPositionTicks { get; set; }
 
-        public static PlaylistItem Create(BaseItem item, DlnaProfile profile)
+        public static PlaylistItem Create(BaseItem item, DeviceProfile profile)
         {
             var playlistItem = new PlaylistItem
             {
@@ -92,7 +92,7 @@ namespace MediaBrowser.Dlna.PlayTo
             return true;
         }
 
-        private static bool IsSupported(DlnaProfile profile, TranscodingProfile transcodingProfile, string path)
+        private static bool IsSupported(DeviceProfile profile, TranscodingProfile transcodingProfile, string path)
         {
             // Placeholder for future conditions
             return true;

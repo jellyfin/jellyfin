@@ -71,7 +71,21 @@ namespace MediaBrowser.Controller.Resolvers
                 throw new ArgumentNullException("path");
             }
 
-            return MultiFileRegex.Match(path).Success || MultiFolderRegex.Match(path).Success;
+            path = Path.GetFileName(path);
+
+            return MultiFileRegex.Match(path).Success;
+        }
+
+        public static bool IsMultiPartFolder(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            path = Path.GetFileName(path);
+
+            return MultiFolderRegex.Match(path).Success;
         }
 
         /// <summary>

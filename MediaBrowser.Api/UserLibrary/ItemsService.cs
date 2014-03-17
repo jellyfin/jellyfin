@@ -238,6 +238,9 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "HasOfficialRating", Description = "Optional filter by items that have official ratings", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool? HasOfficialRating { get; set; }
+
+        [ApiMember(Name = "CollapseBoxSetItems", Description = "Whether or not to hide items behind their boxsets.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool CollapseBoxSetItems { get; set; }
     }
 
     /// <summary>
@@ -314,6 +317,11 @@ namespace MediaBrowser.Api.UserLibrary
             items = FilterVirtualEpisodes(request, items, user);
 
             items = items.AsEnumerable();
+
+            if (request.CollapseBoxSetItems && AllowBoxSetCollapsing(request))
+            {
+                items = CollapseItemsWithinBoxSets(items, user);
+            }
 
             items = ApplySortOrder(request, items, user, _libraryManager);
 
@@ -1216,6 +1224,41 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return false;
+        }
+
+        private IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user)
+        {
+            var itemsToCollapse = new List<ISupportsBoxSetGrouping>();
+            var boxsets = new List<BaseItem>();
+
+            var list = items.ToList();
+
+            foreach (var item in list.OfType<ISupportsBoxSetGrouping>())
+            {
+                var currentBoxSets = item.BoxSetIdList
+                    .Select(i => _libraryManager.GetItemById(i))
+                    .Where(i => i != null && i.IsVisible(user))
+                    .ToList();
+
+                if (currentBoxSets.Count > 0)
+                {
+                    itemsToCollapse.Add(item);
+                    boxsets.AddRange(currentBoxSets);
+                }
+            }
+
+            return list.Except(itemsToCollapse.Cast<BaseItem>()).Concat(boxsets).Distinct();
+        }
+
+        private bool AllowBoxSetCollapsing(GetItems request)
+        {
+            // Only allow when using default sort order
+            if (!string.IsNullOrEmpty(request.SortBy) && !string.Equals(request.SortBy, "SortName", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         internal static IEnumerable<BaseItem> FilterForAdjacency(IEnumerable<BaseItem> items, string adjacentToId)

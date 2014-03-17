@@ -277,7 +277,7 @@ namespace MediaBrowser.Api
                 SeekPositionTicks = request.SeekPositionTicks
             };
 
-            var task = _sessionManager.SendPlaystateCommand(request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendPlaystateCommand(GetSession().Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -296,7 +296,7 @@ namespace MediaBrowser.Api
                 ItemType = request.ItemType
             };
 
-            var task = _sessionManager.SendBrowseCommand(request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendBrowseCommand(GetSession().Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -307,7 +307,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(SendSystemCommand request)
         {
-            var task = _sessionManager.SendSystemCommand(request.Id, request.Command, CancellationToken.None);
+            var task = _sessionManager.SendSystemCommand(GetSession().Id, request.Id, request.Command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -325,7 +325,7 @@ namespace MediaBrowser.Api
                 Text = request.Text
             };
 
-            var task = _sessionManager.SendMessageCommand(request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendMessageCommand(GetSession().Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -344,7 +344,7 @@ namespace MediaBrowser.Api
                 StartPositionTicks = request.StartPositionTicks
             };
 
-            var task = _sessionManager.SendPlayCommand(request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendPlayCommand(GetSession().Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -366,6 +366,15 @@ namespace MediaBrowser.Api
             session.PlayableMediaTypes = request.PlayableMediaTypes
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                 .ToList();
+        }
+
+        private SessionInfo GetSession()
+        {
+            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
+
+            return _sessionManager.Sessions.First(i => string.Equals(i.DeviceId, auth.DeviceId) &&
+                string.Equals(i.Client, auth.Client) &&
+                string.Equals(i.ApplicationVersion, auth.Version));
         }
     }
 }

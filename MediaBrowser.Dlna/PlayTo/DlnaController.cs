@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -13,7 +14,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using Timer = System.Timers.Timer;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -28,7 +28,11 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly INetworkManager _networkManager;
         private readonly ILogger _logger;
         private readonly IDlnaManager _dlnaManager;
+        private readonly IUserManager _userManager;
+        private readonly IServerApplicationHost _appHost;
         private bool _playbackStarted = false;
+
+        private int UpdateTimerIntervalMs = 1000;
 
         public bool SupportsMediaRemoteControl
         {
@@ -46,7 +50,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, INetworkManager networkManager, IDlnaManager dlnaManager)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, INetworkManager networkManager, IDlnaManager dlnaManager, IUserManager userManager, IServerApplicationHost appHost)
         {
             _session = session;
             _itemRepository = itemRepository;
@@ -54,6 +58,8 @@ namespace MediaBrowser.Dlna.PlayTo
             _libraryManager = libraryManager;
             _networkManager = networkManager;
             _dlnaManager = dlnaManager;
+            _userManager = userManager;
+            _appHost = appHost;
             _logger = logger;
         }
 
@@ -64,14 +70,12 @@ namespace MediaBrowser.Dlna.PlayTo
             _device.CurrentIdChanged += Device_CurrentIdChanged;
             _device.Start();
 
-            _updateTimer = new Timer(1000);
-            _updateTimer.Elapsed += updateTimer_Elapsed;
-            _updateTimer.Start();
+            _updateTimer = new System.Threading.Timer(updateTimer_Elapsed, null, UpdateTimerIntervalMs, UpdateTimerIntervalMs);
         }
 
         #region Device EventHandlers & Update Timer
 
-        Timer _updateTimer;
+        System.Threading.Timer _updateTimer;
 
         async void Device_PlaybackChanged(object sender, TransportStateEventArgs e)
         {
@@ -122,27 +126,23 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <summary>
         /// Handles the Elapsed event of the updateTimer control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ElapsedEventArgs"/> instance containing the event data.</param>
-        async void updateTimer_Elapsed(object sender, ElapsedEventArgs e)
+        /// <param name="state">The state.</param>
+        private async void updateTimer_Elapsed(object state)
         {
             if (_disposed)
                 return;
 
-            ((Timer)sender).Stop();
-
-
-            if (!IsSessionActive)
+            if (IsSessionActive)
             {
-                //Session is inactive, mark it for Disposal and don't start the elapsed timer.
-                await _sessionManager.ReportSessionEnded(this._session.Id);
-                return;
+                await ReportProgress().ConfigureAwait(false);
             }
+            else
+            {
+                _updateTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            await ReportProgress().ConfigureAwait(false);
-
-            if (!_disposed && IsSessionActive)
-                ((Timer)sender).Start();
+                //Session is inactive, mark it for Disposal and don't start the elapsed timer.
+                await _sessionManager.ReportSessionEnded(_session.Id);
+            }
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         #region SendCommands
 
-        public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
+        public async Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
             _logger.Debug("{0} - Received PlayRequest: {1}", this._session.DeviceName, command.PlayCommand);
 
@@ -227,16 +227,25 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command.PlayCommand == PlayCommand.PlayLast)
             {
                 AddItemsToPlaylist(playlist);
-                return Task.FromResult(true);
             }
             if (command.PlayCommand == PlayCommand.PlayNext)
             {
                 AddItemsToPlaylist(playlist);
-                return Task.FromResult(true);
             }
 
             _logger.Debug("{0} - Playing {1} items", _session.DeviceName, playlist.Count);
-            return PlayItems(playlist);
+
+            if (!string.IsNullOrWhiteSpace(command.ControllingUserId))
+            {
+                var userId = new Guid(command.ControllingUserId);
+
+                var user = _userManager.GetUserById(userId);
+
+                await _sessionManager.LogSessionActivity(_session.Client, _session.ApplicationVersion, _session.DeviceId,
+                        _session.DeviceName, _session.RemoteEndPoint, user).ConfigureAwait(false);
+            }
+
+            await PlayItems(playlist).ConfigureAwait(false);
         }
 
         public Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken)
@@ -376,7 +385,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 "http",
                 _networkManager.GetLocalIpAddresses().FirstOrDefault() ?? "localhost",
-                "8096"
+                _appHost.HttpServerPort
                 );
         }
 
@@ -386,7 +395,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var deviceInfo = _device.Properties;
 
-            var playlistItem = PlaylistItem.Create(item, _dlnaManager.GetProfile(deviceInfo.Name, deviceInfo.ModelName, deviceInfo.ModelNumber));
+            var playlistItem = PlaylistItem.Create(item, _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()));
             playlistItem.StartPositionTicks = startPostionTicks;
 
             if (playlistItem.IsAudio)
@@ -482,10 +491,10 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             if (!_disposed)
             {
-                _updateTimer.Stop();
                 _disposed = true;
+                _updateTimer.Dispose();
                 _device.Dispose();
-                _logger.Log(LogSeverity.Debug, "PlayTo - Controller disposed");
+                _logger.Log(LogSeverity.Debug, "Controller disposed");
             }
         }
     }

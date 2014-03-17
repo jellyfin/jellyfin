@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
@@ -20,11 +21,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
     {
         private readonly IServerApplicationPaths _applicationPaths;
         private readonly ILibraryManager _libraryManager;
+        private readonly ILogger _logger;
 
-        public MovieResolver(IServerApplicationPaths appPaths, ILibraryManager libraryManager)
+        public MovieResolver(IServerApplicationPaths appPaths, ILibraryManager libraryManager, ILogger logger)
         {
             _applicationPaths = appPaths;
             _libraryManager = libraryManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -76,29 +79,29 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             {
                 if (string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Trailer>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, false);
+                    return FindMovie<Trailer>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, false, false);
                 }
 
                 if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<MusicVideo>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, false);
+                    return FindMovie<MusicVideo>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, false, false);
                 }
 
                 if (string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<AdultVideo>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true);
+                    return FindMovie<AdultVideo>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true, false);
                 }
 
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true);
+                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true, false);
                 }
-                
+
                 if (string.IsNullOrEmpty(collectionType) ||
                     string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true);
+                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true, true);
                 }
 
                 return null;
@@ -187,7 +190,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <param name="directoryService">The directory service.</param>
         /// <param name="supportMultiFileItems">if set to <c>true</c> [support multi file items].</param>
         /// <returns>Movie.</returns>
-        private T FindMovie<T>(string path, Folder parent, IEnumerable<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, bool supportMultiFileItems)
+        private T FindMovie<T>(string path, Folder parent, IEnumerable<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, bool supportMultiFileItems, bool supportsAlternateVersions)
             where T : Video, new()
         {
             var movies = new List<T>();
@@ -218,7 +221,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         };
                     }
 
-                    if (EntityResolutionHelper.IsMultiPartFile(filename))
+                    if (EntityResolutionHelper.IsMultiPartFolder(filename))
                     {
                         multiDiscFolders.Add(child);
                     }
@@ -248,9 +251,27 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            if (movies.Count > 1 && supportMultiFileItems)
+            if (movies.Count > 1)
             {
-                return GetMultiFileMovie(movies);
+                if (supportMultiFileItems)
+                {
+                    var result = GetMultiFileMovie(movies);
+
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+                if (supportsAlternateVersions)
+                {
+                    var result = GetMovieWithAlternateVersions(movies);
+
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+                return null;
             }
 
             if (movies.Count == 1)
@@ -356,12 +377,47 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             var firstMovie = sortedMovies[0];
 
             // They must all be part of the sequence if we're going to consider it a multi-part movie
-            // Only support up to 8 (matches Plex), to help avoid incorrect detection
-            if (sortedMovies.All(i => EntityResolutionHelper.IsMultiPartFile(i.Path)) && sortedMovies.Count <= 8)
+            if (sortedMovies.All(i => EntityResolutionHelper.IsMultiPartFile(i.Path)))
             {
-                firstMovie.IsMultiPart = true;
+                // Only support up to 8 (matches Plex), to help avoid incorrect detection
+                if (sortedMovies.Count <= 8)
+                {
+                    firstMovie.IsMultiPart = true;
 
-                return firstMovie;
+                    _logger.Info("Multi-part video found: " + firstMovie.Path);
+
+                    return firstMovie;
+                }
+            }
+
+            return null;
+        }
+
+        private T GetMovieWithAlternateVersions<T>(IEnumerable<T> movies)
+               where T : Video, new()
+        {
+            var sortedMovies = movies.OrderBy(i => i.Path.Length).ToList();
+
+            // Cap this at five to help avoid incorrect matching
+            if (sortedMovies.Count > 5)
+            {
+                return null;
+            }
+
+            var firstMovie = sortedMovies[0];
+
+            var filenamePrefix = Path.GetFileNameWithoutExtension(firstMovie.Path);
+
+            if (!string.IsNullOrWhiteSpace(filenamePrefix))
+            {
+                if (sortedMovies.Skip(1).All(i => Path.GetFileNameWithoutExtension(i.Path).StartsWith(filenamePrefix + " - ", StringComparison.OrdinalIgnoreCase)))
+                {
+                    firstMovie.HasLocalAlternateVersions = true;
+
+                    _logger.Info("Multi-version video found: " + firstMovie.Path);
+
+                    return firstMovie;
+                }
             }
 
             return null;

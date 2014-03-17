@@ -26,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.Collections
             _iLibraryMonitor = iLibraryMonitor;
         }
 
-        public async Task CreateCollection(CollectionCreationOptions options)
+        public async Task<BoxSet> CreateCollection(CollectionCreationOptions options)
         {
             var name = options.Name;
 
@@ -64,6 +64,13 @@ namespace MediaBrowser.Server.Implementations.Collections
 
                 await collection.RefreshMetadata(new MetadataRefreshOptions(), CancellationToken.None)
                     .ConfigureAwait(false);
+
+                if (options.ItemIdList.Count > 0)
+                {
+                    await AddToCollection(collection.Id, options.ItemIdList);
+                }
+
+                return collection;
             }
             finally
             {
@@ -104,6 +111,7 @@ namespace MediaBrowser.Server.Implementations.Collections
             }
 
             var list = new List<LinkedChild>();
+            var currentLinkedChildren = collection.GetLinkedChildren().ToList();
 
             foreach (var itemId in ids)
             {
@@ -114,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.Collections
                     throw new ArgumentException("No item exists with the supplied Id");
                 }
 
-                if (collection.LinkedChildren.Any(i => i.ItemId.HasValue && i.ItemId == itemId))
+                if (currentLinkedChildren.Any(i => i.Id == itemId))
                 {
                     throw new ArgumentException("Item already exists in collection");
                 }
@@ -126,6 +134,18 @@ namespace MediaBrowser.Server.Implementations.Collections
                     ItemType = item.GetType().Name,
                     Type = LinkedChildType.Manual
                 });
+
+                var supportsGrouping = item as ISupportsBoxSetGrouping;
+
+                if (supportsGrouping != null)
+                {
+                    var boxsetIdList = supportsGrouping.BoxSetIdList.ToList();
+                    if (!boxsetIdList.Contains(collectionId))
+                    {
+                        boxsetIdList.Add(collectionId);
+                    }
+                    supportsGrouping.BoxSetIdList = boxsetIdList;
+                }
             }
 
             collection.LinkedChildren.AddRange(list);
@@ -156,6 +176,16 @@ namespace MediaBrowser.Server.Implementations.Collections
                 }
 
                 list.Add(child);
+
+                var childItem = _libraryManager.GetItemById(itemId);
+                var supportsGrouping = childItem as ISupportsBoxSetGrouping;
+
+                if (supportsGrouping != null)
+                {
+                    var boxsetIdList = supportsGrouping.BoxSetIdList.ToList();
+                    boxsetIdList.Remove(collectionId);
+                    supportsGrouping.BoxSetIdList = boxsetIdList;
+                }
             }
 
             var shortcutFiles = Directory

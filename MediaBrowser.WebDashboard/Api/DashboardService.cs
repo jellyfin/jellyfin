@@ -461,9 +461,11 @@ namespace MediaBrowser.WebDashboard.Api
                                       "extensions.js",
                                       "site.js",
                                       "librarybrowser.js",
+                                      "librarylist.js",
                                       "editorsidebar.js",
                                       "librarymenu.js",
                                       //"chromecast.js",
+                                      "contextmenu.js",
 
                                       "ratingdialog.js",
                                       "aboutpage.js",
@@ -584,7 +586,7 @@ namespace MediaBrowser.WebDashboard.Api
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/autonumeric/autoNumeric.min.js", newLineBytes).ConfigureAwait(false);
-
+            
             var assembly = GetType().Assembly;
             await AppendResource(assembly, memoryStream, "MediaBrowser.WebDashboard.ApiClient.js", newLineBytes).ConfigureAwait(false);
 
@@ -607,6 +609,7 @@ namespace MediaBrowser.WebDashboard.Api
                                   {
                                       "site.css",
                                       "chromecast.css",
+                                      "contextmenu.css",
                                       "mediaplayer.css",
                                       "librarybrowser.css",
                                       "detailtable.css",
@@ -630,7 +633,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 await AppendResource(memoryStream, "css/" + file, newLineBytes).ConfigureAwait(false);
             }
-
+            
             memoryStream.Position = 0;
             return memoryStream;
         }
