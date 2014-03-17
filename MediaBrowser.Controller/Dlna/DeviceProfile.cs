@@ -16,32 +16,6 @@ namespace MediaBrowser.Controller.Dlna
         public string ClientType { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the friendly.
-        /// </summary>
-        /// <value>The name of the friendly.</value>
-        public string FriendlyName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the model number.
-        /// </summary>
-        /// <value>The model number.</value>
-        public string ModelNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the model.
-        /// </summary>
-        /// <value>The name of the model.</value>
-        public string ModelName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the manufacturer.
-        /// </summary>
-        /// <value>
-        /// The manufacturer.
-        /// </value>
-        public string Manufacturer { get; set; }
-
-        /// <summary>
         /// Gets or sets the transcoding profiles.
         /// </summary>
         /// <value>The transcoding profiles.</value>
@@ -52,6 +26,12 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <value>The direct play profiles.</value>
         public DirectPlayProfile[] DirectPlayProfiles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identification.
+        /// </summary>
+        /// <value>The identification.</value>
+        public DeviceIdentification Identification { get; set; }
 
         public DeviceProfile()
         {

@@ -19,11 +19,8 @@ namespace MediaBrowser.Controller.Dlna
         /// <summary>
         /// Gets the profile.
         /// </summary>
-        /// <param name="friendlyName">Name of the friendly.</param>
-        /// <param name="modelName">Name of the model.</param>
-        /// <param name="modelNumber">The model number.</param>
-        /// <param name="manufacturer">The manufacturer.</param>
-        /// <returns>DlnaProfile.</</returns>
-        DeviceProfile GetProfile(string friendlyName, string modelName, string modelNumber, string manufacturer);
+        /// <param name="deviceInfo">The device information.</param>
+        /// <returns>DeviceProfile.</returns>
+        DeviceProfile GetProfile(DeviceIdentification deviceInfo);
     }
 }

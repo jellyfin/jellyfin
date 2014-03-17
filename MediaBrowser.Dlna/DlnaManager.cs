@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Serialization;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Dlna
@@ -31,9 +32,13 @@ namespace MediaBrowser.Dlna
             {
                 Name = "Samsung TV (B Series)",
                 ClientType = "DLNA",
-                FriendlyName = "^TV$",
-                ModelNumber = @"1\.0",
-                ModelName = "Samsung DTV DMR",
+
+                Identification = new DeviceIdentification
+                {
+                    FriendlyName = "^TV$",
+                    ModelNumber = @"1\.0",
+                    ModelName = "Samsung DTV DMR"
+                },
 
                 TranscodingProfiles = new[]
                 {
@@ -82,8 +87,12 @@ namespace MediaBrowser.Dlna
             {
                 Name = "Samsung TV (E/F-series)",
                 ClientType = "DLNA",
-                FriendlyName = @"(^\[TV\][A-Z]{2}\d{2}(E|F)[A-Z]?\d{3,4}.*)|^\[TV\] Samsung|(^\[TV\]Samsung [A-Z]{2}\d{2}(E|F)[A-Z]?\d{3,4}.*)",
-                ModelNumber = @"(1\.0)|(AllShare1\.0)",
+
+                Identification = new DeviceIdentification
+                {
+                    FriendlyName = @"(^\[TV\][A-Z]{2}\d{2}(E|F)[A-Z]?\d{3,4}.*)|^\[TV\] Samsung|(^\[TV\]Samsung [A-Z]{2}\d{2}(E|F)[A-Z]?\d{3,4}.*)",
+                    ModelNumber = @"(1\.0)|(AllShare1\.0)"
+                },
 
                 TranscodingProfiles = new[]
                 {
@@ -130,8 +139,13 @@ namespace MediaBrowser.Dlna
             {
                 Name = "Samsung TV (C/D-series)",
                 ClientType = "DLNA",
-                FriendlyName = @"(^TV-\d{2}C\d{3}.*)|(^\[TV\][A-Z]{2}\d{2}(D)[A-Z]?\d{3,4}.*)|^\[TV\] Samsung",
-                ModelNumber = @"(1\.0)|(AllShare1\.0)",
+
+                Identification = new DeviceIdentification
+                {
+                    FriendlyName = @"(^TV-\d{2}C\d{3}.*)|(^\[TV\][A-Z]{2}\d{2}(D)[A-Z]?\d{3,4}.*)|^\[TV\] Samsung",
+                    ModelNumber = @"(1\.0)|(AllShare1\.0)"
+                },
+
                 TranscodingProfiles = new[]
                 {
                     new TranscodingProfile
@@ -181,7 +195,12 @@ namespace MediaBrowser.Dlna
             {
                 Name = "Xbox 360",
                 ClientType = "DLNA",
-                ModelName = "Xbox 360",
+
+                Identification = new DeviceIdentification
+                {
+                    ModelName = "Xbox 360"
+                },
+
                 TranscodingProfiles = new[]
                 {
                     new TranscodingProfile
@@ -215,9 +234,14 @@ namespace MediaBrowser.Dlna
             list.Add(new DeviceProfile
             {
                 Name = "Xbox One",
-                ModelName = "Xbox One",
                 ClientType = "DLNA",
-                FriendlyName = "Xbox-SystemOS",
+
+                Identification = new DeviceIdentification
+                {
+                    ModelName = "Xbox One",
+                    FriendlyName = "Xbox-SystemOS"
+                },
+
                 TranscodingProfiles = new[]
                 {
                     new TranscodingProfile
@@ -256,7 +280,11 @@ namespace MediaBrowser.Dlna
             {
                 Name = "Sony Bravia (2012)",
                 ClientType = "DLNA",
-                FriendlyName = @"BRAVIA KDL-\d{2}[A-Z]X\d5(\d|G).*",
+
+                Identification = new DeviceIdentification
+                {
+                    FriendlyName = @"BRAVIA KDL-\d{2}[A-Z]X\d5(\d|G).*"
+                },
 
                 TranscodingProfiles = new[]
                 {
@@ -292,7 +320,11 @@ namespace MediaBrowser.Dlna
             {
                 Name = "Sony Bravia (2013)",
                 ClientType = "DLNA",
-                FriendlyName = @"BRAVIA (KDL-\d{2}W[689]\d{2}A.*)|(KD-\d{2}X9\d{3}A.*)",
+
+                Identification = new DeviceIdentification
+                {
+                    FriendlyName = @"BRAVIA (KDL-\d{2}W[689]\d{2}A.*)|(KD-\d{2}X9\d{3}A.*)"
+                },
 
                 TranscodingProfiles = new[]
                 {
@@ -346,8 +378,12 @@ namespace MediaBrowser.Dlna
                 //Panasonic Viera (2011|2012) Without AVI Support
                 Name = "Panasonic Viera E/S/ST/VT (2011)",
                 ClientType = "DLNA",
-                FriendlyName = @"(VIERA (E|S)T?(3|5)0?.*)|(VIERA VT30.*)", 
-                Manufacturer = "Panasonic",
+
+                Identification = new DeviceIdentification
+                {
+                    FriendlyName = @"(VIERA (E|S)T?(3|5)0?.*)|(VIERA VT30.*)",
+                    Manufacturer = "Panasonic"
+                },
 
                 TranscodingProfiles = new[]
                 {
@@ -383,8 +419,12 @@ namespace MediaBrowser.Dlna
                 //Panasonic Viera (2011|2012) With AVI Support
                 Name = "Panasonic Viera G/GT/DT/UT/VT (2011/2012)",
                 ClientType = "DLNA",
-                FriendlyName = @"(VIERA (G|D|U)T?(3|5)0?.*)|(VIERA VT50.*)",
-                Manufacturer = "Panasonic",
+
+                Identification = new DeviceIdentification
+                {
+                    FriendlyName = @"(VIERA (G|D|U)T?(3|5)0?.*)|(VIERA VT50.*)",
+                    Manufacturer = "Panasonic"
+                },
 
                 TranscodingProfiles = new[]
                 {
@@ -427,9 +467,13 @@ namespace MediaBrowser.Dlna
             list.Add(new DeviceProfile
             {
                 Name = "Philips (2010-)",
-                FriendlyName = ".*PHILIPS.*",
                 ClientType = "DLNA",
-                ModelName = "WD TV HD Live",
+
+                Identification = new DeviceIdentification
+                {
+                    FriendlyName = ".*PHILIPS.*",
+                    ModelName = "WD TV HD Live"
+                },
 
                 DirectPlayProfiles = new[]
                 {
@@ -460,7 +504,11 @@ namespace MediaBrowser.Dlna
             {
                 Name = "WDTV Live",
                 ClientType = "DLNA",
-                ModelName = "WD TV HD Live",
+
+                Identification = new DeviceIdentification
+                {
+                    ModelName = "WD TV HD Live"
+                },
 
                 DirectPlayProfiles = new[]
                 {
@@ -483,7 +531,11 @@ namespace MediaBrowser.Dlna
                 //Linksys DMA2100us does not need any transcoding of the formats we support statically
                 Name = "Linksys DMA2100",
                 ClientType = "DLNA",
-                ModelName = "DMA2100us",
+
+                Identification = new DeviceIdentification
+                {
+                    ModelName = "DMA2100us"
+                },
 
                 DirectPlayProfiles = new[]
                 {
@@ -504,9 +556,13 @@ namespace MediaBrowser.Dlna
             list.Add(new DeviceProfile
             {                
                 Name = "Denon AVR",
-                FriendlyName = @"Denon:\[AVR:.*",
-                Manufacturer = "Denon",
-                ClientType = "DLNA",                
+                ClientType = "DLNA",       
+         
+                Identification = new DeviceIdentification
+                {
+                    FriendlyName = @"Denon:\[AVR:.*",
+                    Manufacturer = "Denon"
+                },
 
                 DirectPlayProfiles = new[]
                 {
@@ -561,38 +617,51 @@ namespace MediaBrowser.Dlna
             };
         }
 
-        public DeviceProfile GetProfile(string friendlyName, string modelName, string modelNumber, string manufacturer)
+        public DeviceProfile GetProfile(DeviceIdentification deviceInfo)
         {
-            foreach (var profile in GetProfiles())
+            return GetProfiles().FirstOrDefault(i => IsMatch(deviceInfo, i.Identification)) ?? 
+                GetDefaultProfile();
+        }
+
+        private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
+        {
+            if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
             {
-                if (!string.IsNullOrEmpty(profile.FriendlyName))
-                {
-                    if (!Regex.IsMatch(friendlyName, profile.FriendlyName))
-                        continue;
-                }
-
-                if (!string.IsNullOrEmpty(profile.ModelNumber))
-                {
-                    if (!Regex.IsMatch(modelNumber, profile.ModelNumber))
-                        continue;
-                }
-
-                if (!string.IsNullOrEmpty(profile.ModelName))
-                {
-                    if (!Regex.IsMatch(modelName, profile.ModelName))
-                        continue;
-                }
-
-                if (!string.IsNullOrEmpty(profile.Manufacturer))
-                {
-                    if (!Regex.IsMatch(manufacturer, profile.Manufacturer))
-                        continue;
-                }
-
-                return profile;
-
+                if (!Regex.IsMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
+                    return false;
             }
-            return GetDefaultProfile();
+
+            if (!string.IsNullOrEmpty(profileInfo.ModelNumber))
+            {
+                if (!Regex.IsMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
+                    return false;
+            }
+
+            if (!string.IsNullOrEmpty(profileInfo.ModelName))
+            {
+                if (!Regex.IsMatch(deviceInfo.ModelName, profileInfo.ModelName))
+                    return false;
+            }
+
+            if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
+            {
+                if (!Regex.IsMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
+                    return false;
+            }
+
+            if (!string.IsNullOrEmpty(profileInfo.ManufacturerUrl))
+            {
+                if (!Regex.IsMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
+                    return false;
+            }
+
+            if (!string.IsNullOrEmpty(profileInfo.SerialNumber))
+            {
+                if (!Regex.IsMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
+                    return false;
+            }
+
+            return true;
         }
     }
 }
