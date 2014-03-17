@@ -327,3 +327,110 @@
 };
 
 $(document).on('pageshow', ".mediaLibraryPage", MediaLibraryPage.onPageShow);
+
+(function ($, document, window) {
+
+    function pollTasks(page) {
+
+        ApiClient.getScheduledTasks().done(function (tasks) {
+
+            updateTasks(page, tasks);
+        });
+
+    }
+
+    function updateTasks(page, tasks) {
+
+        $('.refreshLibraryPanel', page).removeClass('hide');
+
+        var task = tasks.filter(function (t) {
+
+            return t.Name == 'Scan media library';
+
+        })[0];
+
+        $('.btnRefresh', page).buttonEnabled(task.State == 'Idle').attr('data-taskid', task.Id);
+
+        var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
+        var progressElem = $('.refreshProgress', page).val(progress);
+
+        if (task.State == 'Running') {
+            progressElem.show();
+        } else {
+            progressElem.hide();
+        }
+
+        var lastResult = task.LastExecutionResult ? task.LastExecutionResult.Status : '';
+
+        if (lastResult == "Failed") {
+            $('.lastRefreshResult', page).html('<span style="color:#FF0000;">(failed)</span>');
+        }
+        else if (lastResult == "Cancelled") {
+            $('.lastRefreshResult', page).html('<span style="color:#0026FF;">(cancelled)</span>');
+        }
+        else if (lastResult == "Aborted") {
+            $('.lastRefreshResult', page).html('<span style="color:#FF0000;">(Aborted by server shutdown)</span>');
+        } else {
+            $('.lastRefreshResult', page).html(lastResult);
+        }
+    }
+
+    function onWebSocketMessage(e, msg) {
+
+        if (msg.MessageType == "ScheduledTasksInfo") {
+
+            var tasks = msg.Data;
+
+            var page = $.mobile.activePage;
+
+            updateTasks(page, tasks);
+        }
+    }
+
+    $(document).on('pageinit', "#mediaLibraryPage", function () {
+
+        var page = this;
+
+        $('.btnRefresh', page).on('click', function () {
+
+            var button = this;
+            var id = button.getAttribute('data-taskid');
+
+            ApiClient.startScheduledTask(id).done(function () {
+
+                pollTasks(page);
+            });
+
+        });
+
+    }).on('pageshow', "#mediaLibraryPage", function () {
+
+        var page = this;
+
+        $('.refreshLibraryPanel', page).addClass('hide');
+
+        pollTasks(page);
+
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1500,1500");
+        }
+
+        $(ApiClient).on("websocketmessage", onWebSocketMessage).on('websocketopen', function () {
+
+            if (ApiClient.isWebSocketOpen()) {
+                ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1500,1500");
+            }
+        });
+
+    }).on('pagehide', "#mediaLibraryPage", function () {
+
+        var page = this;
+
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
+        }
+
+        $(ApiClient).off("websocketmessage", onWebSocketMessage);
+    });
+
+})(jQuery, document, window);

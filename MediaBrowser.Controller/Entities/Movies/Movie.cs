@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -22,6 +22,12 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
+
+        /// <summary>
+        /// This is just a cache to enable quick access by Id
+        /// </summary>
+        [IgnoreDataMember]
+        public List<Guid> BoxSetIdList { get; set; }
 
         /// <summary>
         /// Gets or sets the preferred metadata country code.
@@ -39,6 +45,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             LocalTrailerIds = new List<Guid>();
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
+            BoxSetIdList = new List<Guid>();
             Taglines = new List<string>();
             Keywords = new List<string>();
         }

@@ -212,6 +212,10 @@
     margin: .5em 0 .25em;
 }
 
+.viewControls + .listTopPaging {
+    margin-left: .5em!important;
+}
+
 .labelPageSize {
     margin-left: 1em!important;
     display: inline !important;
@@ -912,6 +916,22 @@ a.itemTag:hover {
         background-color: transparent !important;
     }
 
+.alternateVersionIndicator {
+    display: block;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    text-align: center;
+    vertical-align: middle;
+    width: 22px;
+    height: 19px;
+    padding-top: 3px;
+    border-radius: 50%;
+    color: #fff;
+    background: rgb(51, 136, 204);
+    background: rgba(51, 136, 204, .9);
+}
+
 .unidentifiedIndicator {
     display: block;
     position: absolute;
@@ -1049,7 +1069,7 @@ a.itemTag:hover {
 .alphabetPicker {
     position: fixed;
     right: 2px;
-    bottom: 30px;
+    bottom: 10px;
     width: 27px;
     z-index: 1000;
     text-align: center;

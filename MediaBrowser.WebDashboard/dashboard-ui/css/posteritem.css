@@ -304,31 +304,12 @@
 
 @media all and (min-width: 1440px) {
 
-    .squarePosterItem {
-        width: 180px;
-    }
-
-        .squarePosterItem .posterItemImage {
-            height: 180px;
-        }
-
     .backdropPosterItem {
         width: 298px;
     }
 
         .backdropPosterItem .posterItemImage {
             height: 167.625px;
-        }
-}
-
-@media all and (min-width: 1920px) {
-
-    .squarePosterItem {
-        width: 190px;
-    }
-
-        .squarePosterItem .posterItemImage {
-            height: 190px;
         }
 }
 /********************/
@@ -341,6 +322,7 @@
     left: 0px;
     z-index: 999;
 }
+
 .ribbon {
     font: bold 11px Sans-Serif;
     color: #333;
@@ -360,6 +342,7 @@
     -moz-box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
     box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
 }
+
 .ribbon-3d {
     background-color: #3344ff;
     background-image: -webkit-gradient(linear, left top, left bottom, from(#BFDC7A), to(#ff0033));
@@ -368,6 +351,7 @@
     background-image: -ms-linear-gradient(top, #3344ff, #ff0033);
     background-image: -o-linear-gradient(top, #3344ff, #ff0033);
 }
+
 .ribbon-blue {
     background-color: #1199ff;
     background-image: -webkit-gradient(linear, left top, left bottom, from(#1199ff), to(#3333ff));
@@ -376,6 +360,7 @@
     background-image: -ms-linear-gradient(top, #1199ff, #3333ff);
     background-image: -o-linear-gradient(top, #1199ff, #3333ff);
 }
+
 .ribbon-red {
     background-color: #ff3333;
     background-image: -webkit-gradient(linear, left top, left bottom, from(#ff3333), to(#992233));

@@ -64,7 +64,7 @@
             ApiClient.sendWebSocketMessage("Context", vals.join('|'));
         }
 
-        $('.status', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
+        $('.recordingStatus', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
 
         Dashboard.getCurrentUser().done(function (user) {
 

@@ -165,6 +165,7 @@
     <Compile Include="Library\UserManager.cs" />
     <Compile Include="Library\Validators\ArtistsPostScanTask.cs" />
     <Compile Include="Library\Validators\ArtistsValidator.cs" />
+    <Compile Include="Library\Validators\BoxSetPostScanTask.cs" />
     <Compile Include="Library\Validators\CountHelpers.cs" />
     <Compile Include="Library\Validators\GameGenresPostScanTask.cs" />
     <Compile Include="Library\Validators\GameGenresValidator.cs" />

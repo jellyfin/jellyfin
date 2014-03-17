@@ -12,7 +12,8 @@
         StartIndex: 0,
         IncludeItemTypes: "Movie",
         IsMissing: false,
-        IsVirtualUnaired: false
+        IsVirtualUnaired: false,
+        Limit: 300
     };
 
     function getHeaderCells(reportType) {
@@ -529,11 +530,11 @@
         // Scroll back up so they can see the results from the beginning
         $(document).scrollTop(0);
 
-        $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+        $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, [], false)).trigger('create');
 
         updateFilterControls(page);
 
-        $('.listBottomPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount)).trigger('create');
+        $('.listBottomPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, [], false)).trigger('create');
 
         $('.reportContainer', page).html(getReportHtml(result.Items, reportType, query.SortBy, query.SortOrder)).trigger('create');
 
@@ -544,12 +545,6 @@
 
         $('.btnPreviousPage', page).on('click', function () {
             query.StartIndex -= query.Limit;
-            reloadItems(page);
-        });
-
-        $('.selectPageSize', page).on('change', function () {
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
             reloadItems(page);
         });
 
@@ -841,13 +836,6 @@
     }).on('pagebeforeshow', "#libraryReportPage", function () {
 
         var page = this;
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
 
         query.SortBy = getDefaultSortOrder($('#selectView', page).val());
         query.SortOrder = "Ascending";

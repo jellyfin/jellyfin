@@ -5,5 +5,10 @@ namespace MediaBrowser.Model.Configuration
     {
         public bool EnablePlayTo { get; set; }
         public bool EnablePlayToDebugLogging { get; set; }
+
+        public DlnaOptions()
+        {
+            EnablePlayTo = true;
+        }
     }
 }

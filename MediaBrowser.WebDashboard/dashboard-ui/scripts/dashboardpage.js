@@ -135,9 +135,9 @@
 
         var html = '';
 
-        var container = $('.connections', page);
+        var table = $('.tblConnections', page);
 
-        $('.sessionPosterItem', container).addClass('deadSession');
+        $('.trSession', table).addClass('deadSession');
 
         var deviceId = ApiClient.deviceId();
 
@@ -145,181 +145,103 @@
 
             var connection = dashboardInfo.ActiveConnections[i];
 
-            var itemId = 'session' + connection.Id;
+            var rowId = 'trSession' + connection.Id;
 
-            var elem = $('#' + itemId, page);
+            var elem = $('#' + rowId, page);
 
             if (elem.length) {
                 DashboardPage.updateSession(elem, connection);
                 continue;
             }
 
-            html += '<div class="sessionPosterItem posterItem squarePosterItem" id="' + itemId + '" style="vertical-align:top;margin-bottom:2em;">';
+            html += '<tr class="trSession" id="' + rowId + '">';
+
+            html += '<td class="clientType" style="text-align:center;">';
+            html += DashboardPage.getClientType(connection);
+            html += '</td>';
+
+            html += '<td>';
+
+            html += '<div>';
+            if (deviceId == connection.DeviceId) {
+                html += connection.Client;
+            } else {
+                html += '<a href="#" onclick="RemoteControl.showMenu({sessionId:\'' + connection.Id + '\'});">' + connection.Client + '</a>';
+            }
+            html += '</div>';
+
+            html += '<div>' + connection.ApplicationVersion + '</div>';
+            html += '<div>' + connection.DeviceName + '</div>';
+
+            html += '<div class="username">';
+            html += DashboardPage.getUsersHtml(connection);
+            html += '</div>';
+
+            html += '</td>';
 
             var nowPlayingItem = connection.NowPlayingItem;
-            var imageUrl = DashboardPage.getNowPlayingImage(nowPlayingItem);
 
-            var style = "";
+            html += '<td>';
 
-            if (imageUrl) {
-                style += 'background-image:url(\'' + imageUrl + '\');';
-            }
-
-            var onclick = connection.DeviceId == deviceId ? '' : ' onclick="RemoteControl.showMenu({sessionId:\'' + connection.Id + '\'});"';
-
-            html += '<a' + onclick + ' data-imageurl="' + imageUrl + '" href="#" class="posterItemImage coveredPosterItemImage" style="' + style + 'background-color:#f2f2f2;display:block;">';
-
-            var defaultTextStyle = '';
-
-            if (nowPlayingItem) {
-                defaultTextStyle = "display:none;";
-            }
-            html += '<div class="posterItemDefaultText" style="' + defaultTextStyle + '">Nothing currently playing</div>';
-
-            html += '<div class="posterItemTextOverlay">';
-
-            var itemNameStyle='';
-
-            if (!nowPlayingItem) {
-                itemNameStyle = "display:none;";
-            }
-            html += '<div class="posterItemText posterItemName" style="' + itemNameStyle + '">' + (nowPlayingItem ? nowPlayingItem.Name : '') + '</div>';
-
-            var progressStyle='';
-
-            if (!nowPlayingItem) {
-                progressStyle = "display:none;";
-            }
-            html += "<div class='posterItemText posterItemProgress' style='" + progressStyle + "'>";
-
-            html += '<progress class="itemProgressBar" min="0" max="100" value="' + DashboardPage.getPlaybackProgress(connection) + '" style="opacity:.9;"></progress>';
-            html += "</div>";
-            html += "</div>";
-
-            html += '<img src="' + DashboardPage.getClientImage(connection) + '" style="top:10px;left:10px;height:24px;position:absolute;opacity: .95;" />';
-
-            html += '</a>';
-
-            html += '<div class="sessionItemText">' + DashboardPage.getSessionItemText(connection) + '</div>';
-
-            //html += '<td class="clientType" style="text-align:center;">';
-            //html += DashboardPage.getClientType(connection);
-            //html += '</td>';
-
-            //html += '<td>';
-
-            //html += '<div>';
-
-            //if (deviceId == connection.DeviceId) {
-            //    html += connection.Client;
-            //} else {
-            //    html += '<a href="#" onclick="RemoteControl.showMenu({sessionId:\'' + connection.Id + '\'});">' + connection.Client + '</a>';
-            //}
-            //html += '</div>';
-
-            //html += '</td>';
-
-            //html += '<td class="nowPlayingImage">';
-            //html += DashboardPage.getNowPlayingImage(nowPlayingItem);
-            //html += '</td>';
-
-            //html += '<td class="nowPlayingText">';
-            //html += DashboardPage.getNowPlayingText(connection, nowPlayingItem);
-            //html += '</td>';
-
+            html += '<div class="nowPlayingImage">';
+            html += DashboardPage.getNowPlayingImage(nowPlayingItem);
             html += '</div>';
+
+            html += '<div class="clientNowPlayingText">';
+            html += DashboardPage.getNowPlayingText(connection, nowPlayingItem);
+            html += '</div>';
+
+            html += '</td>';
+
+
+            html += '</tr>';
+
         }
 
-        container.append(html).trigger('create');
+        table.append(html).trigger('create');
 
-        $('.deadSession', container).remove();
-    },
-
-    getPlaybackProgress: function (session) {
-
-        if (session.NowPlayingItem) {
-            if (session.NowPlayingItem.RunTimeTicks) {
-
-                var pct = (session.NowPlayingPositionTicks || 0) / session.NowPlayingItem.RunTimeTicks;
-
-                return pct * 100;
-            }
-        }
-
-        return 0;
+        $('.deadSession', table).remove();
     },
 
     getUsersHtml: function (session) {
 
-        var html = '<div>';
+        var html = '';
 
         if (session.UserId) {
-            html += session.UserName;
+            html += '<div>' + session.UserName + '</div>';
         }
 
         html += session.AdditionalUsers.map(function (currentSession) {
 
-            return ', ' + currentSession.UserName;
+            return '<div>' + currentSession.UserName + '</div>';
         });
-
-        html += '</div>';
 
         return html;
     },
 
-    updateSession: function (elem, session) {
+    updateSession: function (row, session) {
 
-        elem.removeClass('deadSession');
+        row.removeClass('deadSession');
 
-        $('.sessionItemText', elem).html(DashboardPage.getSessionItemText(session));
+        $('.username', row).html(DashboardPage.getUsersHtml(session));
 
         var nowPlayingItem = session.NowPlayingItem;
 
-        if (nowPlayingItem) {
-            $('.posterItemDefaultText', elem).hide();
-            $('.posterItemProgress', elem).show();
-            $('.posterItemName', elem).show().html(nowPlayingItem.Name);
+        $('.clientNowPlayingText', row).html(DashboardPage.getNowPlayingText(session, nowPlayingItem)).trigger('create');
 
-            $('progress', elem).val(DashboardPage.getPlaybackProgress(session));
-        } else {
-            $('.posterItemDefaultText', elem).show();
-            $('.posterItemProgress', elem).hide();
-            $('.posterItemName', elem).hide().html('');
-        }
+        var imageRow = $('.nowPlayingImage', row);
 
-        var imageUrl = DashboardPage.getNowPlayingImage(nowPlayingItem);
+        var image = $('img', imageRow)[0];
 
-        var image = $('.posterItemImage', elem)[0];
+        var nowPlayingItemId = nowPlayingItem ? nowPlayingItem.Id : null;
+        var nowPlayingItemImageTag = nowPlayingItem ? nowPlayingItem.PrimaryImageTag : null;
 
-        if (imageUrl && imageUrl != image.getAttribute('data-imageurl')) {
-
-            image.style.backgroundImage = 'url(\'' + imageUrl + '\')';
-            image.setAttribute('data-imageurl', imageUrl);
-
-        } else if (!imageUrl && image.getAttribute('data-imageurl')) {
-
-            image.style.backgroundImage = null;
-            image.setAttribute('data-imageurl', '');
+        if (!image || image.getAttribute('data-itemid') != nowPlayingItemId || image.getAttribute('data-tag') != nowPlayingItemImageTag) {
+            imageRow.html(DashboardPage.getNowPlayingImage(nowPlayingItem));
         }
     },
 
-    getSessionItemText: function (connection) {
-
-        var html = '';
-        
-        html += '<div class="posterItemText">';
-        html += DashboardPage.getUsersHtml(connection);
-        html += '</div>';
-
-        //html += '<div class="posterItemText">' + connection.Client + '</div>';
-        //html += '<div class="posterItemText">' + connection.ApplicationVersion + '</div>';
-
-        html += '<div class="posterItemText">' + connection.DeviceName + '</div>';
-
-        return html;
-    },
-
-    getClientImage: function (connection) {
+    getClientType: function (connection) {
 
         var clientLowered = connection.Client.toLowerCase();
 
@@ -345,79 +267,89 @@
                 imgUrl = 'css/images/clients/html5.png';
             }
 
-            return imgUrl;
+            return "<img src='" + imgUrl + "' alt='Dashboard' />";
         }
         if (clientLowered == "mb-classic") {
 
-            return "css/images/clients/mbc.png";
+            return "<img src='css/images/clients/mbc.png' alt='Media Browser Classic' />";
         }
         if (clientLowered == "media browser theater") {
 
-            return "css/images/clients/mb.png";
+            return "<img src='css/images/clients/mb.png' alt='Media Browser Theater' />";
         }
         if (clientLowered == "android") {
 
-            return "css/images/clients/android.png";
+            return "<img src='css/images/clients/android.png' alt='Android' />";
         }
         if (clientLowered == "roku") {
 
-            return "css/images/clients/roku.jpg";
+            return "<img src='css/images/clients/roku.jpg' alt='Roku' />";
         }
         if (clientLowered == "ios") {
 
-            return "css/images/clients/ios.png";
+            return "<img src='css/images/clients/ios.png' alt='iOS' />";
         }
         if (clientLowered == "windows rt") {
 
-            return "css/images/clients/windowsrt.png";
+            return "<img src='css/images/clients/windowsrt.png' alt='Windows RT' />";
         }
         if (clientLowered == "windows phone") {
 
-            return "css/images/clients/windowsphone.png";
+            return "<img src='css/images/clients/windowsphone.png' alt='Windows Phone' />";
         }
         if (clientLowered == "dlna") {
 
-            return "css/images/clients/dlna.png";
+            return "<img src='css/images/clients/dlna.png' alt='Dlna' />";
         }
         if (clientLowered == "mbkinect") {
 
-            return "css/images/clients/mbkinect.png";
+            return "<img src='css/images/clients/mbkinect.png' alt='MB Kinect' />";
         }
         if (clientLowered == "xbmc") {
 
-            return "css/images/clients/xbmc.png";
+            return "<img src='css/images/clients/xbmc.png' alt='Xbmc' />";
         }
 
-        return "css/images/clients/mb.png";
+        return connection.Client;
     },
 
     getNowPlayingImage: function (item) {
 
-        if (item && item.ThumbItemId) {
-            return ApiClient.getImageUrl(item.ThumbItemId, {
-                type: "Thumb",
-                height: 300,
-                tag: item.ThumbImageTag
-            });
-        }
-
-        if (item && item.BackdropItemId) {
-            return ApiClient.getImageUrl(item.BackdropItemId, {
-                type: "Backdrop",
-                height: 300,
-                tag: item.BackdropImageTag
-            });
-        }
-
         if (item && item.PrimaryImageTag) {
-            return ApiClient.getImageUrl(item.Id, {
+            var url = ApiClient.getImageUrl(item.Id, {
                 type: "Primary",
-                height: 300,
+                height: 100,
                 tag: item.PrimaryImageTag
             });
+
+            url += "&xxx=" + new Date().getTime();
+
+            return "<img data-itemid='" + item.Id + "' data-tag='" + item.PrimaryImageTag + "' class='clientNowPlayingImage' src='" + url + "' alt='" + item.Name + "' title='" + item.Name + "' />";
         }
 
         return "";
+    },
+
+    getNowPlayingText: function (connection, item) {
+
+        var html = "";
+
+        if (item) {
+
+            html += "<div><a href='itemdetails.html?id=" + item.Id + "'>" + item.Name + "</a></div>";
+
+            html += "<div>";
+
+            if (item.RunTimeTicks) {
+                html += Dashboard.getDisplayTime(connection.NowPlayingPositionTicks || 0) + " / ";
+
+                html += Dashboard.getDisplayTime(item.RunTimeTicks);
+            }
+
+            html += "</div>";
+        }
+
+        return html;
     },
 
     renderRunningTasks: function (dashboardInfo) {
@@ -440,16 +372,21 @@
 
             html += '<p>';
 
-            html += task.Name;
+            html += task.Name+"<br/>";
 
             if (task.State == "Running") {
                 var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
-                html += '<span style="color:#267F00;margin-right:5px;font-weight:bold;"> - ' + progress + '%</span>';
+
+                html += '<progress max="100" value="' + progress + '" title="' + progress + '%">';
+                html += '' + progress + '%';
+                html += '</progress>';
+
+                html += "<span style='color:#009F00;margin-left:5px;margin-right:5px;'>" + progress + "%</span>";
 
                 html += '<button type="button" data-icon="stop" data-iconpos="notext" data-inline="true" data-mini="true" onclick="DashboardPage.stopTask(\'' + task.Id + '\');">Stop</button>';
             }
             else if (task.State == "Cancelling") {
-                html += '<span style="color:#cc0000;"> - Stopping</span>';
+                html += '<span style="color:#cc0000;">Stopping</span>';
             }
 
             html += '</p>';

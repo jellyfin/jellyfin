@@ -202,6 +202,18 @@
                 });
             });
         }
+    }).on('pageshow', ".libraryPage", function () {
+
+        var page = this;
+
+        var elem = $('.libraryViewNavInner .ui-btn-active:visible', page);
+
+        if (elem.length) {
+            elem[0].scrollIntoView();
+
+            // Scroll back up so in case vertical scroll was messed with
+            $(document).scrollTop(0);
+        }
     });
 
 })(window, document, jQuery);

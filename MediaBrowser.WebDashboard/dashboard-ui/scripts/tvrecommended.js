@@ -32,7 +32,7 @@
                 showParentTitle: true,
                 overlayText: true
 
-            })).createPosterItemHoverMenu();
+            })).createPosterItemMenus();
 
         });
     }
@@ -65,7 +65,7 @@
                     showParentTitle: true,
                     overlayText: true
 
-                })).createPosterItemHoverMenu();
+                })).createPosterItemMenus();
 
             } else {
 

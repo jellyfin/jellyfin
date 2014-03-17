@@ -10,7 +10,8 @@
         IncludeItemTypes: "Movie",
         Recursive: true,
         Fields: "PrimaryImageAspectRatio",
-        StartIndex: 0
+        StartIndex: 0,
+        CollapseBoxSetItems: true
     };
 
     function reloadItems(page) {
@@ -66,7 +67,7 @@
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-            $('#items', page).html(html).trigger('create').createPosterItemHoverMenu();
+            $('#items', page).html(html).trigger('create').createPosterItemMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

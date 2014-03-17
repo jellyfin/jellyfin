@@ -28,7 +28,7 @@
                 showParentTitle: true,
                 overlayText: true
 
-            })).createPosterItemHoverMenu();
+            })).createPosterItemMenus();
 
         });
 

@@ -24,7 +24,7 @@
         self.initVideoPlayer = function () {
             video = playVideo(item, startPosition, user);
             enhancePlayer();
-            return video
+            return video;
         };
 
         self.toggleFullscreen = function () {
@@ -63,7 +63,7 @@
             }
         };
 
-        self.exitFullScreen = function () {
+        self.exitFullScreen = function() {
             if (document.exitFullscreen) {
                 document.exitFullscreen();
             } else if (document.mozExitFullScreen) {
@@ -75,11 +75,11 @@
             $('#videoPlayer').removeClass('fullscreenVideo');
 
             fullscreenExited = true;
-        }
+        };
 
-        self.isFullScreen = function () {
+        self.isFullScreen = function() {
             return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement ? true : false;
-        }
+        };
 
         self.showSubtitleMenu = function () {
 
@@ -358,7 +358,7 @@
 
         function enterFullScreen() {
 
-            var player = $("#videoPlayer")
+            var player = $("#videoPlayer");
 
             player.addClass("fullscreenVideo");
 
@@ -366,7 +366,7 @@
 
         function exitFullScreenToWindow() {
 
-            var player = $("#videoPlayer")
+            var player = $("#videoPlayer");
 
             player.removeClass("fullscreenVideo");
 

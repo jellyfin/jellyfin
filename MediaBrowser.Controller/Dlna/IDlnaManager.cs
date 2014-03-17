@@ -8,21 +8,19 @@ namespace MediaBrowser.Controller.Dlna
         /// Gets the dlna profiles.
         /// </summary>
         /// <returns>IEnumerable{DlnaProfile}.</returns>
-        IEnumerable<DlnaProfile> GetProfiles();
+        IEnumerable<DeviceProfile> GetProfiles();
 
         /// <summary>
         /// Gets the default profile.
         /// </summary>
         /// <returns>DlnaProfile.</returns>
-        DlnaProfile GetDefaultProfile();
+        DeviceProfile GetDefaultProfile();
 
         /// <summary>
         /// Gets the profile.
         /// </summary>
-        /// <param name="friendlyName">Name of the friendly.</param>
-        /// <param name="modelName">Name of the model.</param>
-        /// <param name="modelNumber">The model number.</param>
-        /// <returns>DlnaProfile.</returns>
-        DlnaProfile GetProfile(string friendlyName, string modelName, string modelNumber);
+        /// <param name="deviceInfo">The device information.</param>
+        /// <returns>DeviceProfile.</returns>
+        DeviceProfile GetProfile(DeviceIdentification deviceInfo);
     }
 }

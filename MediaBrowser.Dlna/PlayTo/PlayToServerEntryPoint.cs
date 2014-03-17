@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
@@ -22,8 +23,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly INetworkManager _networkManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
+        private readonly IServerApplicationHost _appHost;
 
-        public PlayToServerEntryPoint(ILogManager logManager, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager)
+        public PlayToServerEntryPoint(ILogManager logManager, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost)
         {
             _config = config;
             _sessionManager = sessionManager;
@@ -33,6 +35,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _networkManager = networkManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
+            _appHost = appHost;
             _logger = logManager.GetLogger("PlayTo");
         }
 
@@ -69,7 +72,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 try
                 {
-                    _manager = new PlayToManager(_logger, _config, _sessionManager, _httpClient, _itemRepo, _libraryManager, _networkManager, _userManager, _dlnaManager);
+                    _manager = new PlayToManager(_logger, _config, _sessionManager, _httpClient, _itemRepo, _libraryManager, _networkManager, _userManager, _dlnaManager, _appHost);
                     _manager.Start();
                 }
                 catch (Exception ex)

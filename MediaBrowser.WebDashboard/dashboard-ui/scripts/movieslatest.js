@@ -23,7 +23,7 @@
                 items: result.Items,
                 useAverageAspectRatio: true
 
-            })).createPosterItemHoverMenu();
+            })).createPosterItemMenus();
         });
 
 
@@ -50,7 +50,7 @@
                 items: result.Items,
                 useAverageAspectRatio: true
 
-            })).createPosterItemHoverMenu();
+            })).createPosterItemMenus();
 
         });
 
