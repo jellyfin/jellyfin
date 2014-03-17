@@ -254,8 +254,20 @@ input[type="range"]::-ms-fill-upper {
     display: none; /* display and visibility only */
 }
 
+@media all and (max-width: 1200px) {
+    .volumeSliderContainer, .sendMediaButton {
+        display: none!important;
+    }
+}
+
+@media all and (max-width: 960px) {
+    .volumeSliderContainer, .audioTracksButton, .chaptersButton, .sendMediaButton {
+        display: none!important;
+    }
+}
+
 @media all and (max-width: 800px) {
-    .volumeButton, .volumeSliderContainer, .muteButton, .unmuteButton, .nowPlayingMediaInfo {
+    .volumeButton, .volumeSliderContainer, .muteButton, .unmuteButton, .nowPlayingMediaInfo, .sendMediaButton {
         display: none!important;
     }
 }
@@ -264,10 +276,8 @@ input[type="range"]::-ms-fill-upper {
     .positionSliderContainer {
         width: 80px;
     }
-}
 
-@media all and (max-width: 600px) {
-    .chaptersButton, .audioTracksButton, .sendMediaButton {
+    .chaptersButton, .audioTracksButton, .qualityButton, .subtitleButton {
         display: none!important;
     }
 

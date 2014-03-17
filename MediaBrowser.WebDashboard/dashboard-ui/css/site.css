@@ -692,7 +692,7 @@ h1 .imageLink {
 
 .footerNotification {
     text-shadow: none;
-    padding: .75em 1em;
+    padding: 0 1em .75em;
     margin: 0;
     font-weight: normal;
     border-top: 1px solid #555;
