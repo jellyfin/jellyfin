@@ -463,40 +463,35 @@ var Dashboard = {
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            var html = '<div data-role="popup" data-transition="slidefade" id="userFlyout" style="max-width:400px;margin-top:30px;margin-right:20px;" data-theme="a">';
+            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-theme="b">';
 
-            html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>';
+            html += '<h3>';
 
-            html += '<div class="ui-bar-b" style="text-align:center;">';
-            html += '<h3 style="margin: .5em 0;">' + user.Name + '</h3>';
-            html += '</div>';
+            if (user.PrimaryImageTag) {
+                var imageUrl = ApiClient.getUserImageUrl(user.Id, {
 
-            html += '<div style="padding: 1em;">';
+                    width: 60,
+                    tag: user.PrimaryImageTag,
+                    type: "Primary"
 
-            html += '<p style="text-align:center;">';
+                });
 
-            var imageUrl = user.PrimaryImageTag ? ApiClient.getUserImageUrl(user.Id, {
+                html += '<img style="max-width:28px;vertical-align:middle;margin-right:5px;" src="' + imageUrl + '" />';
+            }
 
-                height: 400,
-                tag: user.PrimaryImageTag,
-                type: "Primary"
+            html += user.Name;
+            html += '</h3>';
 
-            }) : "css/images/userflyoutdefault.png";
-
-            html += '<img style="max-height:125px;max-width:200px;" src="' + imageUrl + '" />';
-            html += '</p>';
-
-            html += '<p><a data-mini="true" data-role="button" href="useredit.html?userId=' + user.Id + '" data-icon="user">View Profile</button></a>';
+            html += '<p><a data-mini="true" data-role="button" href="useredit.html?userId=' + user.Id + '" data-icon="user">Preferences</button></a>';
             html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">Sign Out</button></p>';
-            html += '</div>';
 
             html += '</div>';
 
             $(document.body).append(html);
 
-            $('#userFlyout').popup({ positionTo: context }).trigger('create').popup("open").on("popupafterclose", function () {
+            $('#userFlyout').panel({}).trigger('create').panel("open").on("panelafterclose", function () {
 
-                $(this).off("popupafterclose").remove();
+                $(this).off("panelafterclose").remove();
             });
         });
     },
