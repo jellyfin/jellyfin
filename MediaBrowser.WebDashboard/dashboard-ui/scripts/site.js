@@ -463,7 +463,7 @@ var Dashboard = {
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-theme="b">';
+            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-theme="a">';
 
             html += '<h3>';
 

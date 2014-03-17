@@ -212,6 +212,10 @@
     margin: .5em 0 .25em;
 }
 
+.viewControls + .listTopPaging {
+    margin-left: .5em!important;
+}
+
 .labelPageSize {
     margin-left: 1em!important;
     display: inline !important;

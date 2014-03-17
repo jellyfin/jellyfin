@@ -73,6 +73,7 @@
     <Compile Include="Channels\IChannelManager.cs" />
     <Compile Include="Collections\CollectionCreationOptions.cs" />
     <Compile Include="Collections\ICollectionManager.cs" />
+    <Compile Include="Dlna\DeviceIdentification.cs" />
     <Compile Include="Dlna\DirectPlayProfile.cs" />
     <Compile Include="Dlna\IDlnaManager.cs" />
     <Compile Include="Dlna\DeviceProfile.cs" />

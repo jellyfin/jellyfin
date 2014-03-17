@@ -9,7 +9,8 @@
         Recursive: true,
         Fields: "DateCreated",
         PersonTypes: "",
-        StartIndex: 0
+        StartIndex: 0,
+        Limit: 100
     };
 
     function reloadItems(page) {
@@ -23,7 +24,7 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, [], false)).trigger('create');
 
             updateFilterControls(page);
 
@@ -37,7 +38,7 @@
                 coverImage: true
             });
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, [], false);
 
             $('#items', page).html(html).trigger('create');
 
@@ -48,12 +49,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -139,14 +134,6 @@
         });
 
     }).on('pagebeforeshow', "#tvPeoplePage", function () {
-
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
 
         LibraryBrowser.loadSavedQueryValues('tvpeople', query);
 

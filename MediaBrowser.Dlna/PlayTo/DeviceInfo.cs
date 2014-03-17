@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using MediaBrowser.Controller.Dlna;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -61,6 +62,18 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 return _services;
             }
+        }
+
+        public DeviceIdentification ToDeviceIdentification()
+        {
+            return new DeviceIdentification
+            {
+                Manufacturer = Manufacturer,
+                ModelName = ModelName,
+                ModelNumber = ModelNumber,
+                FriendlyName = Name,
+                ManufacturerUrl = ManufacturerUrl
+            };
         }
     }
 }
