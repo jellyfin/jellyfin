@@ -113,7 +113,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "NameStartsWith", Description = "Optional filter by items whose name is sorted equally than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameStartsWith { get; set; }
-        
+
         [ApiMember(Name = "NameLessThan", Description = "Optional filter by items whose name is equally or lesser than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameLessThan { get; set; }
 
@@ -240,7 +240,7 @@ namespace MediaBrowser.Api.UserLibrary
         public bool? HasOfficialRating { get; set; }
 
         [ApiMember(Name = "CollapseBoxSetItems", Description = "Whether or not to hide items behind their boxsets.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool CollapseBoxSetItems { get; set; }
+        public bool? CollapseBoxSetItems { get; set; }
     }
 
     /// <summary>
@@ -318,7 +318,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             items = items.AsEnumerable();
 
-            if (request.CollapseBoxSetItems && AllowBoxSetCollapsing(request))
+            if (CollapseBoxSetItems(request))
             {
                 items = CollapseItemsWithinBoxSets(items, user);
             }
@@ -344,6 +344,22 @@ namespace MediaBrowser.Api.UserLibrary
                 TotalRecordCount = itemsArray.Count,
                 Items = returnItems
             };
+        }
+
+        private bool CollapseBoxSetItems(GetItems request)
+        {
+            var param = request.CollapseBoxSetItems;
+
+            if (!param.HasValue)
+            {
+                if (!string.IsNullOrWhiteSpace(request.IncludeItemTypes) &&
+                    request.IncludeItemTypes.Split(',').Contains("Movie", StringComparer.OrdinalIgnoreCase))
+                {
+                    param = true;
+                }
+            }
+
+            return param.HasValue && param.Value && AllowBoxSetCollapsing(request);
         }
 
         /// <summary>
@@ -786,7 +802,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = items.Where(i => string.Compare(request.NameStartsWith, i.SortName.Substring(0, 1), StringComparison.CurrentCultureIgnoreCase) == 0);
             }
-            
+
             if (!string.IsNullOrEmpty(request.NameLessThan))
             {
                 items = items.Where(i => string.Compare(request.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);

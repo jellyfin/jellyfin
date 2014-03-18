@@ -92,8 +92,12 @@
             html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
         }
 
+        if (counts.ChannelCount) {
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'channels' ? selectedCssClass : '') + '" href="channels.html">' + (view == 'channels' ? selectedHtml : '') + '<span class="viewName">Channels</span></a>';
+        }
+
         //if (counts.BoxSetCount) {
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'boxsets' ? selectedCssClass : '') + '" href="collections.html">' + (view == 'boxsets' ? selectedHtml : '') + '<span class="viewName">Collections</span></a>';
+        html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'boxsets' ? selectedCssClass : '') + '" href="collections.html">' + (view == 'boxsets' ? selectedHtml : '') + '<span class="viewName">Collections</span></a>';
         //}
 
         $('.viewMenuRemoteControlButton', page).before(html);
@@ -144,12 +148,16 @@
                 html += '<li><a class="libraryPanelLink" href="musicrecommended.html">Music</a></li>';
             }
 
+            if (counts.ChannelCount) {
+                html += '<li><a class="libraryPanelLink" href="channels.html">Channels</a></li>';
+            }
+
             if (counts.GameCount) {
                 html += '<li><a class="libraryPanelLink" href="gamesrecommended.html">Games</a></li>';
             }
 
             //if (counts.BoxSetCount) {
-                html += '<li><a class="libraryPanelLink" href="collections.html">Collections</a></li>';
+            html += '<li><a class="libraryPanelLink" href="collections.html">Collections</a></li>';
             //}
 
             html += '</ul>';

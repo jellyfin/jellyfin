@@ -32,6 +32,14 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 contentFeatures = "DLNA.ORG_PN=WMABASE";
             }
+            else if (string.Equals(item.FileFormat, "wmw", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=WMVMED_BASE";
+            }
+            else if (string.Equals(item.FileFormat, "asf", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=WMVMED_BASE";
+            }
             else if (string.Equals(item.FileFormat, "avi", StringComparison.OrdinalIgnoreCase))
             {
                 contentFeatures = "DLNA.ORG_PN=AVI";

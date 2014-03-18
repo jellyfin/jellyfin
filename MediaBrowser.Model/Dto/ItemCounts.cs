@@ -68,7 +68,8 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The unique types.</value>
         public List<string> UniqueTypes { get; set; }
-        
+        public int ChannelCount { get; set; }
+     
         public ItemCounts()
         {
             UniqueTypes = new List<string>();

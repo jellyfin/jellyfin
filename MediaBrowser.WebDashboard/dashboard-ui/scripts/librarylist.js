@@ -260,11 +260,11 @@
 
                 if (user.Configuration.IsAdministrator) {
 
-                    sequence.createContextMenu({
-                        getOptions: getContextMenuOptions,
-                        command: onMenuCommand,
-                        selector: '.posterItem'
-                    });
+                    //sequence.createContextMenu({
+                    //    getOptions: getContextMenuOptions,
+                    //    command: onMenuCommand,
+                    //    selector: '.posterItem'
+                    //});
                 }
 
             });
