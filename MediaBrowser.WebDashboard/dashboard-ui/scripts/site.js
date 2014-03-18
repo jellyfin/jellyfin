@@ -292,7 +292,7 @@ var Dashboard = {
 
         options.id = options.id || "notification" + new Date().getTime() + parseInt(Math.random());
 
-        var footer = $("#footer");
+        var footer = $("#footer").css("top", "initial").show();
 
         var parentElem = $('#footerNotifications', footer);
 
@@ -312,22 +312,6 @@ var Dashboard = {
             elem.slideDown(400);
         }
 
-        var videoBackdrop = $("#videoBackdrop");
-
-        var isPlaying = false;
-
-        if (videoBackdrop.is(":visible")) {
-
-            videoBackdrop.css("bottom", "48px");
-
-            isPlaying = true;
-
-        } else {
-
-            footer.show();
-
-        }
-
         elem.html(options.html).trigger("create");
 
         if (options.timeout) {
@@ -344,16 +328,15 @@ var Dashboard = {
         }
 
         footer.on("notification.remove notification.hide", function (e) {
+
             setTimeout(function () { // give the DOM time to catch up
-                if (parentElem.html() == "") {
-                    if (!isPlaying) {
-                        footer.slideUp();
-                    } else {
-                        footer.css({ height: "0" });
-                        videoBackdrop.animate({ bottom: "0" }, 400);
-                    }
+
+                if (!parentElem.html()) {
+                    footer.slideUp();
                 }
+
             }, 50);
+
         });
     },
 

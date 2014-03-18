@@ -234,7 +234,7 @@
 
             $("#videoBackdrop", footer).show();
 
-            footer.css("height", "0");
+            footer.css("top", "101%");
 
             var videoPlayer = $("#videoPlayer", footer)
                 //.hide()
