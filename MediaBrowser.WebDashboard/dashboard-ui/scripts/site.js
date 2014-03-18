@@ -292,7 +292,7 @@ var Dashboard = {
 
         options.id = options.id || "notification" + new Date().getTime() + parseInt(Math.random());
 
-        var footer = $("#footer").css("height", "50px");
+        var footer = $("#footer");
 
         var parentElem = $('#footerNotifications', footer);
 
@@ -317,8 +317,21 @@ var Dashboard = {
         var isPlaying = false;
 
         if (videoBackdrop.is(":visible")) {
+
+            footer.css("height", "50px");
+
             videoBackdrop.css("bottom", "48px");
+
             isPlaying = true;
+
+        } else {
+
+            if (!footer.is(":visible")) {
+
+                footer.show();
+
+            }
+
         }
 
         elem.html(options.html).trigger("create");
