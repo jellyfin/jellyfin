@@ -56,7 +56,7 @@
 
             $("#videoBackdrop", footer).hide();
 
-            if ($("#footerNotifications", footer).html() == "") { // only hide footer if no notifications
+            if (!$("#footerNotifications", footer).html()) { // only hide footer if no notifications
 
                 footer.hide();
 
@@ -1036,7 +1036,7 @@
 
                 var errorMsg = 'There was an error playing the video.';
 
-                if (item.Type == "Channel") {
+                if (item.Type == "TvChannel") {
                     errorMsg += " Please ensure there is an open tuner availalble.";
                 }
 
