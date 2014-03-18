@@ -41,13 +41,26 @@
         };
 
         self.resetEnhancements = function () {
+
             var footer = $("#footer");
-            var videoBackdrop = $("#videoBackdrop", footer);
-            var mediaElement = $("#mediaElement", videoBackdrop);
-            var nowPlayingBar = $("#nowPlayingBar", videoBackdrop);
+
+            var mediaPlayer = $("#mediaPlayer", footer);
+
+            var mediaElement = $("#mediaElement", mediaPlayer);
+
+            var nowPlayingBar = $("#nowPlayingBar", mediaPlayer);
+
             mediaElement.html(""); // remove play/pause
-            footer.hide().append(mediaElement).append(nowPlayingBar);
-            videoBackdrop.remove();
+
+            mediaPlayer.hide().append(nowPlayingBar); // put elements back where they belong
+
+            $("#videoBackdrop", footer).hide();
+
+            if ($("#footerNotifications", footer).html() == "") { // only hide footer if no notifications
+
+                footer.hide();
+
+            }
         };
 
         self.exitFullScreen = function() {
@@ -216,16 +229,16 @@
 
             var play = $("<div id='play' class='status'></div>");
             var pause = $("<div id='pause' class='status'></div>");
+
             mediaElement.append(play).append(pause);
 
-            var videoBackdrop = $("<div id='videoBackdrop'></div>");
-            var videoPlayer = $("<div id='videoPlayer'></div>")
-                .append(mediaElement)
-                .append(nowPlayingBar);
+            $("#videoBackdrop", footer).show();
 
-            videoPlayer.hide();
-            videoBackdrop.append(videoPlayer);
-            footer.append(videoBackdrop);
+            footer.css("height", "0");
+
+            var videoPlayer = $("#videoPlayer", footer)
+                //.hide()
+                .append(nowPlayingBar);
 
             // Stop playback on browser back button nav
             $(window).on("popstate", function () {
@@ -270,13 +283,13 @@
                     $("html").css("cursor", "progress");
 
                 })
-                .on("playing", function (e) {
+                .on("canplay", function () {
 
                     $(".ui-loader").hide();
 
                     $("html").css("cursor", "default");
 
-                    videoPlayer.fadeIn();
+                    //videoPlayer.fadeIn();
 
                     checkAspectRatio();
 
@@ -318,8 +331,6 @@
                     $(this).unbind("keyup.enhancePlayer");
                 }
             });
-
-            video.play();
 
             fullscreenExited = false;
         };
@@ -885,9 +896,9 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresControls) {
-                html += '<video class="itemVideo" autoplay controls preload="none">';
+                html += '<video class="itemVideo" id="itemVideo" autoplay controls preload="none">';
             } else {
-                html += '<video class="itemVideo" autoplay preload="none">';
+                html += '<video class="itemVideo" id="itemVideo" autoplay preload="none">';
             }
 
             if (!isStatic) {

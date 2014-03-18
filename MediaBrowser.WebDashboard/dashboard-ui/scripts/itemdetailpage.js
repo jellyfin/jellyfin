@@ -29,6 +29,8 @@
                 renderDetails(page, item, context);
                 LibraryBrowser.renderDetailPageBackdrop(page, item);
 
+                $("#remoteButtonContainer", page).show();
+
                 if (user.Configuration.IsAdministrator) {
                     $('#editButtonContainer', page).show();
 

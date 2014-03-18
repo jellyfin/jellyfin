@@ -231,8 +231,6 @@
 
             self.volumeSlider = $('.volumeSlider').on('slidestop', function () {
 
-                console.log("slidestop");
-
                 var vol = this.value;
 
                 self.updateVolumeButtons(vol);
@@ -658,6 +656,8 @@
 
             var mediaElement;
 
+            $("#mediaPlayer").show();
+
             if (item.MediaType === "Video") {
 
                 videoPlayer(self, item, startPosition, user);
@@ -740,10 +740,6 @@
             if (item.SeriesName || item.Album || item.CurrentProgram) {
                 nowPlayingText = (seriesName ? seriesName : "") + "\n" + (name || "---");
             }
-
-            console.log("name", name);
-            console.log("seriesName", seriesName);
-            console.log("nowPlayingText", nowPlayingText);
 
             // Fix for apostrophes and quotes
             var htmlTitle = trimTitle(nowPlayingText).replace(/'/g, '&apos;').replace(/"/g, '&quot;');
@@ -1125,22 +1121,24 @@
 
             elem.pause();
 
-            $(elem).off('ended.playnext').on('ended', function () {
+            $(elem).off("ended.playnext").on("ended", function () {
 
                 $(this).remove();
                 elem.src = "";
                 currentMediaElement = null;
 
-            }).trigger('ended');
+            }).trigger("ended");
 
-            var footer = $('#footer');
-            footer.hide();
+            $("#mediaPlayer").hide();
 
             if (currentItem.MediaType == "Video") {
                 if (self.isFullScreen()) {
                     self.exitFullScreen();
                 }
                 self.resetEnhancements();
+            } else {
+                var footer = $("#footer");
+                footer.hide();
             }
         };
 

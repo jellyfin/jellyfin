@@ -292,7 +292,9 @@ var Dashboard = {
 
         options.id = options.id || "notification" + new Date().getTime() + parseInt(Math.random());
 
-        var parentElem = $('#footerNotifications');
+        var footer = $("#footer").css("height", "50px");
+
+        var parentElem = $('#footerNotifications', footer);
 
         var elem = $('#' + options.id, parentElem);
 
@@ -300,30 +302,52 @@ var Dashboard = {
             elem = $('<p id="' + options.id + '" class="footerNotification"></p>').appendTo(parentElem);
         }
 
-        var onclick = removeOnHide ? "$(\"#" + options.id + "\").remove();" : "$(\"#" + options.id + "\").hide();";
+        var onclick = removeOnHide ? "$(\"#" + options.id + "\").trigger(\"notification.remove\").remove();" : "$(\"#" + options.id + "\").trigger(\"notification.hide\").hide();";
 
         if (options.allowHide !== false) {
             options.html += "<span style='margin-left: 1em;'><button type='button' onclick='" + onclick + "' data-icon='delete' data-iconpos='notext' data-mini='true' data-inline='true' data-theme='b'>Hide</button></span>";
         }
 
         if (options.forceShow) {
-            elem.show();
+            elem.slideDown(400);
         }
 
-        elem.html(options.html).trigger('create');
+        var videoBackdrop = $("#videoBackdrop");
+
+        var isPlaying = false;
+
+        if (videoBackdrop.is(":visible")) {
+            videoBackdrop.css("bottom", "48px");
+            isPlaying = true;
+        }
+
+        elem.html(options.html).trigger("create");
 
         if (options.timeout) {
 
             setTimeout(function () {
 
                 if (removeOnHide) {
-                    elem.remove();
+                    elem.trigger("notification.remove").remove();
                 } else {
-                    elem.hide();
+                    elem.trigger("notification.hide").hide();
                 }
 
             }, options.timeout);
         }
+
+        footer.on("notification.remove notification.hide", function (e) {
+            setTimeout(function () { // give the DOM time to catch up
+                if (parentElem.html() == "") {
+                    if (!isPlaying) {
+                        footer.slideUp();
+                    } else {
+                        footer.css({ height: "0" });
+                        videoBackdrop.animate({ bottom: "0" }, 400);
+                    }
+                }
+            }, 50);
+        });
     },
 
     getConfigurationPageUrl: function (name) {
@@ -1301,10 +1325,20 @@ $(ApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
 $(function () {
     var footerHtml = '<div id="footer" data-theme="b" class="ui-bar-b" style="display: none;">';
 
+    footerHtml += '<div id="mediaPlayer" style="display: none;">';
+
+    footerHtml += '<div id="videoBackdrop" style="display: none;">';
+
+    footerHtml += '<div id="videoPlayer">';
     footerHtml += '<div id="mediaElement"></div>';
+    footerHtml += '</div>';
+
+    footerHtml += '</div>';
 
     footerHtml += '<div id="nowPlayingBar" class="nowPlayingBar">';
+
     footerHtml += '<div class="barBackground ui-bar-b">';
+
     footerHtml += '<div style="display:inline-block;width:12px;"></div>';
     footerHtml += '<a id="playlistButton" class="mediaButton playlistButton" href="playlist.html" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="Playlist">Playlist</a>';
     footerHtml += '<button id="previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
@@ -1346,9 +1380,11 @@ $(function () {
 
     footerHtml += '</div>';
 
-    footerHtml += '<div id="footerNotifications"></div>';
+    footerHtml += '</div>';
 
     footerHtml += '</div>';
+
+    footerHtml += '<div id="footerNotifications"></div>';
 
     footerHtml += '</div>';
 
