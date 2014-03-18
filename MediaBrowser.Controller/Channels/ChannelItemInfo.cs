@@ -34,7 +34,10 @@ namespace MediaBrowser.Controller.Channels
         public ChannelMediaContentType ContentType { get; set; }
 
         public Dictionary<string, string> ProviderIds { get; set; }
-        
+
+        public DateTime? PremiereDate { get; set; }
+        public int? ProductionYear { get; set; }
+
         public ChannelItemInfo()
         {
             Genres = new List<string>();

@@ -1,4 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,19 +47,24 @@ namespace MediaBrowser.Controller.Channels
         /// <summary>
         /// Gets the channel items.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{ChannelItem}}.</returns>
-        Task<IEnumerable<ChannelItemInfo>> GetChannelItems(User user, CancellationToken cancellationToken);
+        Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the channel items.
+        /// Gets the channel image.
         /// </summary>
-        /// <param name="categoryId">The category identifier.</param>
-        /// <param name="user">The user.</param>
+        /// <param name="type">The type.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{ChannelItem}}.</returns>
-        Task<IEnumerable<ChannelItemInfo>> GetChannelItems(string categoryId, User user, CancellationToken cancellationToken);
+        /// <returns>Task{DynamicImageInfo}.</returns>
+        Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the supported channel images.
+        /// </summary>
+        /// <returns>IEnumerable{ImageType}.</returns>
+        IEnumerable<ImageType> GetSupportedChannelImages();
     }
 
     public class ChannelCapabilities
@@ -67,5 +75,19 @@ namespace MediaBrowser.Controller.Channels
     public class ChannelSearchInfo
     {
         public string SearchTerm { get; set; }
+    }
+
+    public class InternalChannelItemQuery
+    {
+        public string CategoryId { get; set; }
+
+        public User User { get; set; }
+    }
+
+    public class ChannelItemResult
+    {
+        public List<ChannelItemInfo> Items { get; set; }
+
+        public TimeSpan CacheLength { get; set; }
     }
 }

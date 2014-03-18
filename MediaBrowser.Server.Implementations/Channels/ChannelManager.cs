@@ -202,16 +202,19 @@ namespace MediaBrowser.Server.Implementations.Channels
             return await GetReturnItems(items, user, query.StartIndex, query.Limit, cancellationToken).ConfigureAwait(false);
         }
 
-        private Task<IEnumerable<ChannelItemInfo>> GetChannelItems(IChannel channel, User user, string categoryId, CancellationToken cancellationToken)
+        private async Task<IEnumerable<ChannelItemInfo>> GetChannelItems(IChannel channel, User user, string categoryId, CancellationToken cancellationToken)
         {
             // TODO: Put some caching in here
 
-            if (string.IsNullOrWhiteSpace(categoryId))
+            var query = new InternalChannelItemQuery
             {
-                return channel.GetChannelItems(user, cancellationToken);
-            }
+                 User = user,
+                 CategoryId = categoryId
+            };
 
-            return channel.GetChannelItems(categoryId, user, cancellationToken);
+            var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
+
+            return result.Items;
         }
 
         private async Task<QueryResult<BaseItemDto>> GetReturnItems(IEnumerable<ChannelItemInfo> items, User user, int? startIndex, int? limit, CancellationToken cancellationToken)
@@ -246,10 +249,36 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info)
         {
-            return null;
+            BaseItem item;
+
+            if (info.Type == ChannelItemType.Category)
+            {
+                item = new ChannelCategoryItem();
+            }
+            else if (info.MediaType == ChannelMediaType.Audio)
+            {
+                item = new ChannelAudioItem();
+            }
+            else
+            {
+                item = new ChannelVideoItem();
+            }
+
+            item.Name = info.Name;
+            item.Genres = info.Genres;
+            item.CommunityRating = info.CommunityRating;
+            item.OfficialRating = info.OfficialRating;
+            item.Overview = info.Overview;
+            item.People = info.People;
+            item.PremiereDate = info.PremiereDate;
+            item.ProductionYear = info.ProductionYear;
+            item.RunTimeTicks = info.RunTimeTicks;
+            item.ProviderIds = info.ProviderIds;
+
+            return item;
         }
 
-        private IChannel GetChannelProvider(Channel channel)
+        internal IChannel GetChannelProvider(Channel channel)
         {
             return _channels.First(i => string.Equals(i.Name, channel.OriginalChannelName, StringComparison.OrdinalIgnoreCase));
         }
