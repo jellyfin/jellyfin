@@ -368,6 +368,9 @@
             if (item.Type == "TvChannel") {
                 return "livetvchannel.html?id=" + id;
             }
+            if (item.Type == "Channel") {
+                return "channelitems.html?id=" + id;
+            }
             if (item.Type == "Program") {
                 return "livetvprogram.html?id=" + id;
             }
@@ -728,7 +731,7 @@
                     var chkItemSelectId = 'chkItemSelect' + i;
 
                     // Render this pre-enhanced to save on jquery mobile dom manipulation
-                    html += '<div class="itemSelectionPanel" onclick="return false;"><div class="ui-checkbox ui-mini"><label class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off" for="' + chkItemSelectId + '">Select</label><input data-mini="true" id="' + chkItemSelectId + '" type="checkbox" class="chkItemSelect" data-enhanced="true" /></div></div>';
+                    html += '<div class="itemSelectionPanel" onclick="return false;"><div class="ui-checkbox"><label class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off" for="' + chkItemSelectId + '">Select</label><input id="' + chkItemSelectId + '" type="checkbox" class="chkItemSelect" data-enhanced="true" /></div></div>';
 
                 }
 

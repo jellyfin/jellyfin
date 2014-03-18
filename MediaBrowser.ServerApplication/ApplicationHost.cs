@@ -171,6 +171,7 @@ namespace MediaBrowser.ServerApplication
         private ILocalizationManager LocalizationManager { get; set; }
 
         private IEncodingManager EncodingManager { get; set; }
+        private IChannelManager ChannelManager { get; set; }
 
         /// <summary>
         /// Gets or sets the user data repository.
@@ -491,8 +492,8 @@ namespace MediaBrowser.ServerApplication
                 MediaEncoder);
             RegisterSingleInstance(EncodingManager);
 
-            var channelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager);
-            RegisterSingleInstance<IChannelManager>(channelManager);
+            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager);
+            RegisterSingleInstance(ChannelManager);
 
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);
@@ -684,6 +685,8 @@ namespace MediaBrowser.ServerApplication
             LiveTvManager.AddParts(GetExports<ILiveTvService>());
 
             SessionManager.AddParts(GetExports<ISessionControllerFactory>());
+
+            ChannelManager.AddParts(GetExports<IChannel>());
         }
 
         /// <summary>

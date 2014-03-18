@@ -13,7 +13,8 @@
         IncludeItemTypes: "Movie",
         IsMissing: false,
         IsVirtualUnaired: false,
-        Limit: 300
+        Limit: 300,
+        CollapseBoxSetItems: false
     };
 
     function getHeaderCells(reportType) {

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -6,6 +7,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -242,18 +244,20 @@ namespace MediaBrowser.Api.Library
         private readonly IUserDataManager _userDataManager;
 
         private readonly IDtoService _dtoService;
+        private readonly IChannelManager _channelManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager)
+                              IDtoService dtoService, IUserDataManager userDataManager, IChannelManager channelManager)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
+            _channelManager = channelManager;
         }
 
         public object Get(GetMediaFolders request)
@@ -417,6 +421,21 @@ namespace MediaBrowser.Api.Library
             var songs = filteredItems.OfType<Audio>().ToList();
             var series = filteredItems.OfType<Series>().ToList();
 
+            var channelCount = 0;
+
+            try
+            {
+                channelCount = _channelManager.GetChannels(new ChannelQuery
+                {
+                    UserId = request.UserId.HasValue ? request.UserId.Value.ToString("N") : null
+
+                }, CancellationToken.None).Result.TotalRecordCount;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error getting channels", ex);
+            }
+
             var counts = new ItemCounts
             {
                 AlbumCount = albums.Count,
@@ -432,7 +451,9 @@ namespace MediaBrowser.Api.Library
                 BoxSetCount = boxsets.Count,
                 BookCount = books.Count,
 
-                UniqueTypes = items.Select(i => i.GetClientTypeName()).Distinct().ToList()
+                UniqueTypes = items.Select(i => i.GetClientTypeName()).Distinct().ToList(),
+
+                ChannelCount = channelCount
             };
 
             return ToOptimizedSerializedResultUsingCache(counts);
