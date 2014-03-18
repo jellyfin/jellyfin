@@ -9,6 +9,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -39,6 +40,7 @@ using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
+using MediaBrowser.Server.Implementations.Channels;
 using MediaBrowser.Server.Implementations.Collections;
 using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.Drawing;
@@ -488,6 +490,9 @@ namespace MediaBrowser.ServerApplication
             EncodingManager = new EncodingManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository,
                 MediaEncoder);
             RegisterSingleInstance(EncodingManager);
+
+            var channelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager);
+            RegisterSingleInstance<IChannelManager>(channelManager);
 
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);

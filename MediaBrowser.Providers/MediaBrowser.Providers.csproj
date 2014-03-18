@@ -78,10 +78,13 @@
     <Compile Include="BoxSets\BoxSetXmlParser.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetImageProvider.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetProvider.cs" />
+    <Compile Include="Channels\ChannelMetadataService.cs" />
     <Compile Include="Folders\CollectionFolderImageProvider.cs" />
     <Compile Include="Folders\FolderMetadataService.cs" />
     <Compile Include="Folders\ImagesByNameImageProvider.cs" />
+    <Compile Include="GameGenres\AudioChannelItemMetadataService.cs" />
     <Compile Include="GameGenres\GameGenreMetadataService.cs" />
+    <Compile Include="GameGenres\VideoChannelItemMetadataService.cs" />
     <Compile Include="Games\GameMetadataService.cs" />
     <Compile Include="Games\GameSystemMetadataService.cs" />
     <Compile Include="Games\GameSystemXmlParser.cs" />

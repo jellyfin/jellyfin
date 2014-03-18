@@ -66,6 +66,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="ChannelService.cs" />
     <Compile Include="Movies\CollectionService.cs" />
     <Compile Include="Music\AlbumsService.cs" />
     <Compile Include="AppThemeService.cs" />

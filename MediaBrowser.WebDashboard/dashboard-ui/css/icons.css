@@ -1,12 +1,4 @@
-﻿.ui-icon-remote:after {
-    background-image: url("images/icons/remote.png");
-}
-/* Fallback */
-.ui-nosvg .ui-icon-remote:after {
-    background-image: url("images/icons/remote.png");
-}
-
-.ui-icon-play:after {
+﻿.ui-icon-play:after {
     background-image: url("images/icons/play.png");
 }
 /* Fallback */
@@ -92,13 +84,6 @@
 /* Fallback */
 .ui-nosvg .ui-icon-subtitles:after {
     background-image: url("images/icons/subtitles.png");
-}
-.ui-icon-tv:after {
-    background-image: url("images/icons/tv.png");
-}
-/* Fallback */
-.ui-nosvg .ui-icon-tv:after {
-    background-image: url("images/icons/tv.png");
 }
 .ui-icon-wireless:after {
     background-image: url("images/icons/wireless.png");

@@ -1,9 +1,11 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Channels
 {
-    public class ChannelItemInfo
+    public class ChannelItemInfo : IHasProviderIds
     {
         public string Name { get; set; }
 
@@ -23,18 +25,21 @@ namespace MediaBrowser.Controller.Channels
 
         public long? RunTimeTicks { get; set; }
 
-        public bool IsInfinite { get; set; }
+        public bool IsInfiniteStream { get; set; }
         
         public string ImageUrl { get; set; }
 
         public ChannelMediaType MediaType { get; set; }
 
         public ChannelMediaContentType ContentType { get; set; }
+
+        public Dictionary<string, string> ProviderIds { get; set; }
         
         public ChannelItemInfo()
         {
             Genres = new List<string>();
             People = new List<PersonInfo>();
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 
