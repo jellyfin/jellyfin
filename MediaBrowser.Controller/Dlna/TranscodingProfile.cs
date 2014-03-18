@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace MediaBrowser.Controller.Dlna
 {
     public class TranscodingProfile
@@ -9,8 +10,28 @@ namespace MediaBrowser.Controller.Dlna
 
         public string MimeType { get; set; }
 
+        public string OrgPn { get; set; }
+
         public string VideoCodec { get; set; }
 
         public string AudioCodec { get; set; }
+
+        public List<TranscodingSetting> Settings { get; set; }
+
+        public TranscodingProfile()
+        {
+            Settings = new List<TranscodingSetting>();
+        }
+    }
+
+    public class TranscodingSetting
+    {
+        public TranscodingSettingType Name { get; set; }
+        public string Value { get; set; }
+    }
+
+    public enum TranscodingSettingType
+    {
+        Profile
     }
 }

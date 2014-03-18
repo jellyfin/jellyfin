@@ -53,6 +53,7 @@ namespace MediaBrowser.Controller.Dlna
             }
         }
 
+        public string OrgPn { get; set; }
         public string MimeType { get; set; }
         public DlnaProfileType Type { get; set; }
 
