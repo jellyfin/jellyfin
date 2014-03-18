@@ -25,6 +25,21 @@ namespace MediaBrowser.Controller.Dlna
         /// <value>The name of the model.</value>
         public string ModelName { get; set; }
         /// <summary>
+        /// Gets or sets the model description.
+        /// </summary>
+        /// <value>The model description.</value>
+        public string ModelDescription { get; set; }
+        /// <summary>
+        /// Gets or sets the device description.
+        /// </summary>
+        /// <value>The device description.</value>
+        public string DeviceDescription { get; set; }
+        /// <summary>
+        /// Gets or sets the model URL.
+        /// </summary>
+        /// <value>The model URL.</value>
+        public string ModelUrl { get; set; }
+        /// <summary>
         /// Gets or sets the manufacturer.
         /// </summary>
         /// <value>

@@ -306,7 +306,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task<LiveTvChannel> GetChannel(ChannelInfo channelInfo, string serviceName, CancellationToken cancellationToken)
         {
-            var path = Path.Combine(_config.ApplicationPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(channelInfo.Name));
+            var path = Path.Combine(_config.ApplicationPaths.ItemsByNamePath, "tvchannels", _fileSystem.GetValidFilename(channelInfo.Name));
 
             var fileInfo = new DirectoryInfo(path);
 
