@@ -12,8 +12,8 @@ namespace MediaBrowser.Dlna.PlayTo
 {
     public class Device : IDisposable
     {
-        const string ServiceAvtransportId = "urn:upnp-org:serviceId:AVTransport";
-        const string ServiceRenderingId = "urn:upnp-org:serviceId:RenderingControl";
+        const string ServiceAvtransportType = "urn:schemas-upnp-org:service:AVTransport:1";
+        const string ServiceRenderingType = "urn:schemas-upnp-org:service:RenderingControl:1";
 
         #region Fields & Properties
 
@@ -213,7 +213,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return true;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceRenderingId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceRenderingType);
 
             if (service == null)
             {
@@ -232,7 +232,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return value;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
             if (service == null)
             {
@@ -262,7 +262,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 {"CurrentURIMetaData", CreateDidlMeta(metaData)}
             };
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
             if (service == null)
             {
@@ -307,7 +307,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 {"NextURIMetaData", CreateDidlMeta(metaData)}
             };
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
             if (service == null)
             {
@@ -328,7 +328,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return false;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
             if (service == null)
             {
@@ -348,7 +348,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return false;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
             var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
@@ -362,7 +362,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return false;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
             var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
@@ -436,7 +436,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceRenderingId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceRenderingType);
 
             if (service == null)
             {
@@ -470,7 +470,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
             if (service == null)
                 return;
 
@@ -497,7 +497,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
             if (service == null)
             {
@@ -538,7 +538,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return true;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
+            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
             if (service == null)
             {
@@ -596,7 +596,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private async Task GetAVProtocolAsync()
         {
-            var avService = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceAvtransportId);
+            var avService = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
             if (avService == null)
                 return;
 
@@ -614,7 +614,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private async Task GetRenderingProtocolAsync()
         {
-            var avService = Properties.Services.FirstOrDefault(s => s.ServiceId == ServiceRenderingId);
+            var avService = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceRenderingType);
 
             if (avService == null)
                 return;
@@ -711,7 +711,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     if (service != null)
                     {
                         deviceProperties.Services.Add(service);
-                        if (service.ServiceId == ServiceAvtransportId)
+                        if (service.ServiceType == ServiceAvtransportType)
                         {
                             isRenderer = true;
                         }
