@@ -168,7 +168,7 @@
         var id = elem.getAttribute('data-itemid');
     }
 
-    function getMenuOptions(elem) {
+    function getContextMenuOptions(elem) {
 
         var items = [];
 
@@ -198,6 +198,10 @@
         function onShowTimerExpired(elem) {
 
             if ($(elem).hasClass('hasContextMenu')) {
+                return;
+            }
+
+            if ($('.itemSelectionPanel', elem).length) {
                 return;
             }
 
@@ -257,7 +261,7 @@
                 if (user.Configuration.IsAdministrator) {
 
                     sequence.createContextMenu({
-                        getOptions: getMenuOptions,
+                        getOptions: getContextMenuOptions,
                         command: onMenuCommand,
                         selector: '.posterItem'
                     });
@@ -269,5 +273,80 @@
         return this.on('mouseenter', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverIn)
             .on('mouseleave', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverOut);
     };
+
+    function toggleSelections(page) {
+
+        Dashboard.showLoadingMsg();
+
+        var selectionCommands = $('.selectionCommands', page);
+
+        if (selectionCommands.is(':visible')) {
+
+            selectionCommands.hide();
+            $('.itemSelectionPanel', page).hide();
+
+        } else {
+
+            selectionCommands.show();
+
+            $('.itemSelectionPanel', page).show();
+        }
+
+        Dashboard.hideLoadingMsg();
+    }
+
+    function hideSelections(page) {
+
+        $('.selectionCommands', page).hide();
+
+        $('.itemSelectionPanel', page).hide();
+    }
+    
+    function getSelectedItems(page) {
+        
+        var selection = $('.chkItemSelect:checked', page);
+
+        return selection.parents('.posterItem')
+            .map(function() {
+
+                return this.getAttribute('data-itemid');
+
+            }).get();
+    }
+    
+    function combineVersions(page) {
+
+        var selection = getSelectedItems(page);
+        
+        if (selection.length < 2) {
+            
+            Dashboard.alert({
+                message: "Please select two or more items to combine.",
+                title: "Error"
+            });
+
+            return;
+        }
+
+        hideSelections();
+    }
+
+    $(document).on('pageinit', ".libraryPage", function () {
+
+        var page = this;
+
+        $('.btnToggleSelections', page).on('click', function () {
+            toggleSelections(page);
+        });
+
+        $('.itemsContainer', page).on('listrender', function () {
+            hideSelections(page);
+        });
+        
+        $('.btnMergeVersions', page).on('click', function () {
+            combineVersions(page);
+        });
+
+    });
 
 })(jQuery, document, window);

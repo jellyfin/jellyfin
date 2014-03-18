@@ -26,8 +26,6 @@ namespace MediaBrowser.Dlna
         {
             var list = new List<DeviceProfile>();
 
-            #region Samsung
-
             list.Add(new DeviceProfile
             {
                 Name = "Samsung TV (B Series)",
@@ -79,8 +77,6 @@ namespace MediaBrowser.Dlna
                         Type = DlnaProfileType.Video
                     }
                 }
-                
-
             });
 
             list.Add(new DeviceProfile
@@ -187,10 +183,6 @@ namespace MediaBrowser.Dlna
                 }
             });
 
-            #endregion
-
-            #region Xbox
-
             list.Add(new DeviceProfile
             {
                 Name = "Xbox 360",
@@ -271,10 +263,6 @@ namespace MediaBrowser.Dlna
                     }
                 }
             });
-
-            #endregion
-
-            #region Sony
 
             list.Add(new DeviceProfile
             {
@@ -369,10 +357,6 @@ namespace MediaBrowser.Dlna
                 }
             });
 
-            #endregion
-
-            #region Panasonic
-
             list.Add(new DeviceProfile
             {
                 //Panasonic Viera (2011|2012) Without AVI Support
@@ -460,8 +444,6 @@ namespace MediaBrowser.Dlna
                     }
                 }
             });
-
-            #endregion
 
             //WDTV does not need any transcoding of the formats we support statically
             list.Add(new DeviceProfile
@@ -625,37 +607,55 @@ namespace MediaBrowser.Dlna
 
         private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
         {
-            if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
+            if (!string.IsNullOrWhiteSpace(profileInfo.DeviceDescription))
+            {
+                if (!Regex.IsMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
+                    return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(profileInfo.FriendlyName))
             {
                 if (!Regex.IsMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
                     return false;
             }
 
-            if (!string.IsNullOrEmpty(profileInfo.ModelNumber))
-            {
-                if (!Regex.IsMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
-                    return false;
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.ModelName))
-            {
-                if (!Regex.IsMatch(deviceInfo.ModelName, profileInfo.ModelName))
-                    return false;
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
+            if (!string.IsNullOrWhiteSpace(profileInfo.Manufacturer))
             {
                 if (!Regex.IsMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
                     return false;
             }
 
-            if (!string.IsNullOrEmpty(profileInfo.ManufacturerUrl))
+            if (!string.IsNullOrWhiteSpace(profileInfo.ManufacturerUrl))
             {
                 if (!Regex.IsMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
                     return false;
             }
 
-            if (!string.IsNullOrEmpty(profileInfo.SerialNumber))
+            if (!string.IsNullOrWhiteSpace(profileInfo.ModelDescription))
+            {
+                if (!Regex.IsMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
+                    return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(profileInfo.ModelName))
+            {
+                if (!Regex.IsMatch(deviceInfo.ModelName, profileInfo.ModelName))
+                    return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(profileInfo.ModelNumber))
+            {
+                if (!Regex.IsMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
+                    return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(profileInfo.ModelUrl))
+            {
+                if (!Regex.IsMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
+                    return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(profileInfo.SerialNumber))
             {
                 if (!Regex.IsMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
                     return false;

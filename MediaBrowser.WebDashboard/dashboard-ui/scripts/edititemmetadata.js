@@ -63,7 +63,7 @@
 
             $('#refreshLoading', page).hide();
 
-            if (item.Type != "Channel" &&
+            if (item.Type != "TvChannel" &&
                 item.Type != "Genre" &&
                 item.Type != "Studio" &&
                 item.Type != "MusicGenre" &&
@@ -83,7 +83,7 @@
             setFieldVisibilities(page, item);
             fillItemInfo(page, item);
 
-            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist" || item.Type == "GameGenre" || item.Type == "Channel" || item.Type == "BoxSet") {
+            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist" || item.Type == "GameGenre" || item.Type == "TvChannel" || item.Type == "BoxSet") {
                 $('#btnEditPeople', page).hide();
             } else {
                 $('#btnEditPeople', page).show();
@@ -218,7 +218,7 @@
             $('#fldAirTime', page).hide();
         }
 
-        if (item.MediaType == "Video" && item.Type != "Channel") {
+        if (item.MediaType == "Video" && item.Type != "TvChannel") {
             $('#fld3dFormat', page).show();
         } else {
             $('#fld3dFormat', page).hide();
@@ -250,13 +250,13 @@
             $('#collapsibleSpecialEpisodeInfo', page).hide();
         }
 
-        if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "GameGenre" || item.Type == "MusicGenre" || item.Type == "Channel") {
+        if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "GameGenre" || item.Type == "MusicGenre" || item.Type == "TvChannel") {
             $('#fldCommunityRating', page).hide();
             $('#fldCommunityVoteCount', page).hide();
             $('#genresCollapsible', page).hide();
             $('#studiosCollapsible', page).hide();
 
-            if (item.Type == "Channel") {
+            if (item.Type == "TvChannel") {
                 $('#fldOfficialRating', page).show();
             } else {
                 $('#fldOfficialRating', page).hide();
@@ -271,7 +271,7 @@
             $('#fldCustomRating', page).show();
         }
 
-        if (item.Type == "Channel") {
+        if (item.Type == "TvChannel") {
             $('#tagsCollapsible', page).hide();
             $('#metadataSettingsCollapsible', page).hide();
             $('#fldPremiereDate', page).hide();
@@ -309,7 +309,7 @@
             $('#keywordsCollapsible', page).hide();
         }
 
-        if (item.MediaType == "Video" && item.Type != "Channel") {
+        if (item.MediaType == "Video" && item.Type != "TvChannel") {
             $('#fldSourceType', page).show();
         } else {
             $('#fldSourceType', page).hide();
@@ -327,7 +327,7 @@
             $('#fldPlaceOfBirth', page).hide();
         }
 
-        if (item.MediaType == "Video" && item.Type != "Channel") {
+        if (item.MediaType == "Video" && item.Type != "TvChannel") {
             $('#fldOriginalAspectRatio', page).show();
         } else {
             $('#fldOriginalAspectRatio', page).hide();

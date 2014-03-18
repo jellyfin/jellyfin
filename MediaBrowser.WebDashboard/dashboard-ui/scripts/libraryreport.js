@@ -442,7 +442,7 @@
                         }
 
                         if (!item.BackdropImageTags || !item.BackdropImageTags.length) {
-                            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "Channel" && item.Type !== "MusicAlbum") {
+                            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "TvChannel" && item.Type !== "MusicAlbum") {
                                 html += '<a href="edititemimages.html?id=' + item.Id + '"><img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." /></a>';
                             }
                         }

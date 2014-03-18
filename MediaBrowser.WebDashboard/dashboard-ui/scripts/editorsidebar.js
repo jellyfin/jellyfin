@@ -46,7 +46,7 @@
         }
 
         if (!item.BackdropImageTags || !item.BackdropImageTags.length) {
-            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "Channel" && item.Type !== "MusicAlbum") {
+            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "TvChannel" && item.Type !== "MusicAlbum") {
                 htmlName += '<img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." />';
             }
         }
@@ -381,7 +381,7 @@
             name = getParameterByName('channelid', url);
 
             if (name) {
-                self.currentItemType = "Channel";
+                self.currentItemType = "TvChannel";
                 self.currentItemId = name;
                 return;
             }
@@ -400,7 +400,7 @@
             var currentItemName = self.currentItemName;
             var currentItemId = self.currentItemId;
 
-            if (currentItemType == "Channel") {
+            if (currentItemType == "TvChannel") {
                 return ApiClient.getLiveTvChannel(currentItemId);
             }
 

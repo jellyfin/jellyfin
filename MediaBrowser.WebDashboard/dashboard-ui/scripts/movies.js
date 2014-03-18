@@ -37,7 +37,8 @@
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
-                    context: 'movies'
+                    context: 'movies',
+                    selectionPanel: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -48,7 +49,8 @@
                     context: 'movies',
                     useAverageAspectRatio: true,
                     showTitle: true,
-                    centerText: true
+                    centerText: true,
+                    selectionPanel: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -60,14 +62,15 @@
                     useAverageAspectRatio: true,
                     showTitle: true,
                     timeline: true,
-                    centerText: true
+                    centerText: true,
+                    selectionPanel: true
                 });
                 $('.itemsContainer', page).addClass('timelineItemsContainer');
             }
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-            $('#items', page).html(html).trigger('create').createPosterItemMenus();
+            $('#items', page).html(html).trigger('create').createPosterItemMenus().trigger('listrender');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

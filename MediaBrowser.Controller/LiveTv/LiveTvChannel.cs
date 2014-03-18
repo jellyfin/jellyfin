@@ -107,7 +107,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         public override string GetClientTypeName()
         {
-            return "Channel";
+            return "TvChannel";
         }
 
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)

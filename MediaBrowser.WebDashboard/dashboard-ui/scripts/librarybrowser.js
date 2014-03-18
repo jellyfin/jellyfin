@@ -365,7 +365,7 @@
             // Handle search hints
             var id = item.Id || item.ItemId;
 
-            if (item.Type == "Channel") {
+            if (item.Type == "TvChannel") {
                 return "livetvchannel.html?id=" + id;
             }
             if (item.Type == "Program") {
@@ -620,7 +620,7 @@
                     background = defaultBackground;
 
                 }
-                else if (item.Type == "Recording" || item.Type == "Program" || item.Type == "Channel") {
+                else if (item.Type == "Recording" || item.Type == "Program" || item.Type == "TvChannel") {
 
                     if (item.Name && options.showTitle) {
                         imgUrl = 'css/images/items/list/collection.png';
@@ -722,6 +722,14 @@
                 }
                 if (item.IsUnidentified) {
                     html += '<div class="unidentifiedIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
+                }
+
+                if (options.selectionPanel) {
+                    var chkItemSelectId = 'chkItemSelect' + i;
+
+                    // Render this pre-enhanced to save on jquery mobile dom manipulation
+                    html += '<div class="itemSelectionPanel" onclick="return false;"><div class="ui-checkbox ui-mini"><label class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off" for="' + chkItemSelectId + '">Select</label><input data-mini="true" id="' + chkItemSelectId + '" type="checkbox" class="chkItemSelect" data-enhanced="true" /></div></div>';
+
                 }
 
                 if (!options.overlayText) {
@@ -898,7 +906,7 @@
 
             var name = item.EpisodeTitle || item.Name;
 
-            if (item.Type == "Channel") {
+            if (item.Type == "TvChannel") {
                 return item.Number + ' ' + name;
             }
             if (displayAsSpecial && item.Type == "Episode" && item.ParentIndexNumber == 0) {
@@ -954,7 +962,7 @@
 
         getPlayedIndicatorHtml: function (item) {
 
-            if (item.Type == "Channel") {
+            if (item.Type == "TvChannel") {
                 return '';
             }
             if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet" || item.MediaType == "Video" || item.MediaType == "Game" || item.MediaType == "Book") {
@@ -1294,7 +1302,7 @@
             var itemId = item.Id;
             var type = item.Type;
 
-            if ((item.MediaType || item.IsFolder) && item.Type != "Channel" && item.Type != "MusicArtist") {
+            if ((item.MediaType || item.IsFolder) && item.Type != "TvChannel" && item.Type != "MusicArtist") {
                 if (userData.Played) {
                     html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/checkedon.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 } else {
@@ -1485,7 +1493,7 @@
             else if (item.Type == "Genre" || item.Type == "Studio") {
                 url = "css/images/items/detail/video.png";
             }
-            else if (item.Type == "Channel") {
+            else if (item.Type == "TvChannel") {
                 url = "css/images/items/detail/tv.png";
             }
             else {

@@ -318,19 +318,13 @@ var Dashboard = {
 
         if (videoBackdrop.is(":visible")) {
 
-            footer.css("height", "50px");
-
             videoBackdrop.css("bottom", "48px");
 
             isPlaying = true;
 
         } else {
 
-            if (!footer.is(":visible")) {
-
-                footer.show();
-
-            }
+            footer.show();
 
         }
 

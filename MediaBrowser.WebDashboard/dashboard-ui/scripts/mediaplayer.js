@@ -704,7 +704,7 @@
                 });
 
             }
-            else if (item.Type == "Channel" || item.Type == "Recording") {
+            else if (item.Type == "TvChannel" || item.Type == "Recording") {
                 url = "css/images/items/detail/tv.png";
             }
             else if (item.MediaType == "Audio") {

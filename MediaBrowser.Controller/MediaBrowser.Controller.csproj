@@ -71,6 +71,10 @@
     <Compile Include="Channels\ChannelItemInfo.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelManager.cs" />
+    <Compile Include="Channels\IChannelItem.cs" />
+    <Compile Include="Channels\ChannelAudioItem.cs" />
+    <Compile Include="Channels\ChannelVideoItem.cs" />
+    <Compile Include="Channels\Channel.cs" />
     <Compile Include="Collections\CollectionCreationOptions.cs" />
     <Compile Include="Collections\ICollectionManager.cs" />
     <Compile Include="Dlna\DeviceIdentification.cs" />

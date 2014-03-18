@@ -1106,6 +1106,27 @@ a.itemTag:hover {
     text-overflow: ellipsis;
 }
 
+.selectionCommands {
+    margin: 1em 0;
+}
+
+.itemSelectionPanel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 55px;
+    background-color: rgba(0, 0, 0, .85);
+    z-index: 1000;
+    text-align: center;
+    padding: 1em;
+}
+
+.selectionCommandsControlGroup {
+    display: inline-block;
+    margin-left: .5em;
+}
+
 @media all and (min-height: 500px) {
 
     .alphabetPicker {

@@ -61,6 +61,9 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\ServerEventArgs.cs">
       <Link>ApiClient\ServerEventArgs.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Channels\ChannelQuery.cs">
+      <Link>Channels\ChannelQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\AutoOrganize.cs">
       <Link>Configuration\AutoOrganize.cs</Link>
     </Compile>
