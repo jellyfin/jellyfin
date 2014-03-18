@@ -264,6 +264,8 @@ namespace MediaBrowser.Model.Querying
 
         public bool? IsInBoxSet { get; set; }
 
+        public bool? CollapseBoxSetItems { get; set; }
+
         public bool? IsPlayed { get; set; }
         
         /// <summary>

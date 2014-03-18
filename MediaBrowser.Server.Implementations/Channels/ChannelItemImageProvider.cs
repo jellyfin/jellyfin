@@ -68,11 +68,6 @@ namespace MediaBrowser.Server.Implementations.Channels
             return item is IChannelItem;
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
-
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
             var channelItem = item as IChannelItem;
