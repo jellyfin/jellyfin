@@ -24,7 +24,7 @@
         self.updateCanClientSeek = function (elem) {
             var duration = elem.duration;
             canClientSeek = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
-        }
+        };
 
         $(window).on("beforeunload popstate", function () {
 
@@ -59,11 +59,11 @@
                 muteButton.hide();
                 unmuteButton.show();
             }
-        }
+        };
 
         self.getCurrentTicks = function (mediaElement) {
             return Math.floor(10000000 * (mediaElement || currentMediaElement).currentTime) + self.startTimeTicksOffset;
-        }
+        };
 
         self.onPlaybackStopped = function () {
 
@@ -86,14 +86,14 @@
                 }
                 self.resetEnhancements();
             }
-        }
+        };
 
         self.playNextAfterEnded = function () {
 
             $(this).off('ended.playnext');
 
             self.nextTrack();
-        }
+        };
 
         self.startProgressInterval = function (itemId) {
 
@@ -144,7 +144,7 @@
             }
 
             return '.mp4';
-        }
+        };
 
         self.changeStream = function (ticks, params) {
 
@@ -209,7 +209,7 @@
 
                 });
             }
-        }
+        };
 
         function onPositionSliderChange() {
 
@@ -275,7 +275,7 @@
             }
 
             currentTimeElement.html(timeText);
-        }
+        };
 
         function playAudio(item, startPositionTicks) {
 
@@ -757,7 +757,7 @@
             if (trimmed) {
                 trimmed += "...";
             } else {
-                trimmed = "---"
+                trimmed = "---";
             }
             return trimmed;
         }
