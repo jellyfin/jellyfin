@@ -57,10 +57,26 @@
                     $('#playExternalButtonContainer', page).hide();
                 }
 
-                if (item.LocalTrailerCount && item.LocationType !== "Offline" && item.PlayAccess == 'Full') {
+                if (item.LocalTrailerCount && item.PlayAccess == 'Full') {
                     $('#trailerButtonContainer', page).show();
                 } else {
                     $('#trailerButtonContainer', page).hide();
+                }
+
+                if (!item.LocalTrailerCount && item.RemoteTrailers.length && item.PlayAccess == 'Full') {
+                    $('#externalTrailerButtonContainer', page).show();
+
+                    $('#btnPlayExternalTrailer', page).attr('href', item.RemoteTrailers[0].Url);
+
+                } else {
+                    $('#externalTrailerButtonContainer', page).hide();
+                    $('#btnPlayExternalTrailer', page).attr('href', '#');
+                }
+
+                if (user.Configuration.IsAdministrator) {
+                    $('.btnSplitVersions', page).show();
+                } else {
+                    $('.btnSplitVersions', page).hide();
                 }
             });
 
@@ -203,12 +219,7 @@
             $('#scenesCollapsible', page).show();
             renderScenes(page, item, user, 4);
         }
-        if (item.LocalTrailerCount || !item.RemoteTrailers.length || item.Type == "Trailer") {
-            $('#trailersCollapsible', page).addClass('hide');
-        } else {
-            $('#trailersCollapsible', page).removeClass('hide');
-            renderTrailers(page, item, user);
-        }
+
         if (!item.SpecialFeatureCount || item.SpecialFeatureCount == 0 || item.Type == "Series") {
             $('#specialsCollapsible', page).addClass('hide');
         } else {
@@ -745,7 +756,7 @@
 
         ApiClient.getCriticReviews(item.Id, options).done(function (result) {
 
-            if (result.TotalRecordCount || item.CriticRatingSummary) {
+            if (result.TotalRecordCount || item.CriticRatingSummary || item.AwardSummary) {
                 $('#criticReviewsCollapsible', page).show();
                 renderCriticReviewsContent(page, result, limit);
             } else {
@@ -897,7 +908,7 @@
 
     function renderAlternateVersions(page, item, user) {
 
-        var url = ApiClient.getUrl("Videos/" + item.Id + "/AlternateVersions", {
+        var url = ApiClient.getUrl("Videos/" + item.Id + "/Versions", {
             userId: user.Id
         });
 
@@ -920,7 +931,8 @@
                     centerText: true,
                     formatIndicators: true,
                     linkItem: false,
-                    showProgress: false
+                    showProgress: false,
+                    showUnplayedIndicator: false
                 });
 
                 $('#alternateVersionsContent', page).html(html).trigger('create');
@@ -1021,7 +1033,7 @@
             }
 
             if (stream.Width || stream.Height) {
-                attributes.push('<span class="mediaInfoAttribute" id="mediaWidthHeight" data-width="' + stream.Width + '" data-height="' + stream.Height + '">' + stream.Width + 'x' + stream.Height + '</span>');
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Width + 'x' + stream.Height + '</span>');
             }
 
             if (stream.AspectRatio && stream.Codec != "mjpeg") {
@@ -1128,38 +1140,6 @@
         });
     }
 
-    function renderTrailers(page, item, user) {
-
-        if (item.Type == "Trailer") {
-            $('#trailerSectionHeader', page).html('More trailers');
-        } else {
-            $('#trailerSectionHeader', page).html('Trailers');
-        }
-
-        var remoteTrailersHtml = '';
-
-        for (var i = 0, length = item.RemoteTrailers.length; i < length; i++) {
-
-            var trailer = item.RemoteTrailers[i];
-
-            var id = getParameterByName('v', trailer.Url);
-
-            if (id) {
-                remoteTrailersHtml += '<iframe class="posterItem smallBackdropPosterItem" style="margin:0 3px;width:auto;" src="//www.youtube.com/embed/' + id + '?wmode=opaque" frameborder="0" allowfullscreen></iframe>';
-            }
-        }
-
-        var elem = $('#trailersContent', page).html(remoteTrailersHtml).css({ "position": "relative", "z-index": 0 });
-
-        if (item.LocalTrailerCount) {
-            ApiClient.getLocalTrailers(user.Id, item.Id).done(function (trailers) {
-
-                elem.prepend(getVideosHtml(trailers, user));
-
-            });
-        }
-    }
-
     function renderCast(page, item, context, limit) {
 
         var html = '';
@@ -1232,6 +1212,39 @@
         MediaPlayer.play([currentItem], startPosition);
     }
 
+    function splitVersions(page) {
+
+        var id = getParameterByName('id');
+
+        Dashboard.confirm("Are you sure you wish to split the versions apart into separate items?", "Split Versions Apart", function (confirmResult) {
+
+            if (confirmResult) {
+
+                Dashboard.showLoadingMsg();
+
+                $.ajax({
+                    type: "DELETE",
+                    url: ApiClient.getUrl("Videos/" + id + "/AlternateVersions")
+
+                }).done(function () {
+
+                    Dashboard.hideLoadingMsg();
+
+                    reload(page);
+                });
+            }
+        });
+    }
+
+    function playTrailer(page) {
+
+        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).done(function (trailers) {
+
+            MediaPlayer.play(trailers);
+
+        });
+    }
+
     $(document).on('pageinit', "#itemDetailPage", function () {
 
         var page = this;
@@ -1249,12 +1262,7 @@
         });
 
         $('#btnPlayTrailer', page).on('click', function () {
-
-            ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).done(function (trailers) {
-
-                MediaPlayer.play(trailers);
-
-            });
+            playTrailer(page);
         });
 
         $('#btnPlayExternal', page).on('click', function () {
@@ -1273,6 +1281,11 @@
 
                 themeVideos: $('#themeVideosCollapsible:visible', page).length > 0
             });
+        });
+
+        $('.btnSplitVersions', page).on('click', function () {
+
+            splitVersions(page);
         });
 
     }).on('pageshow', "#itemDetailPage", function () {

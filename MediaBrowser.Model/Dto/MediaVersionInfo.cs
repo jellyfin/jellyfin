@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Dto
 {
-    public class AlternateVersionInfo
+    public class MediaVersionInfo
     {
         public string Id { get; set; }
 

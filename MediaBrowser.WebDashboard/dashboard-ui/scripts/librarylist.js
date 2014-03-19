@@ -365,7 +365,7 @@
 
         var msg = "The following titles will be grouped into one item:<br/><br/>" + names;
 
-        msg += "<br/><br/>Media Browser clients will choose the optimal version to play based on device and network conditions. Are you sure you wish to continue?";
+        msg += "<br/><br/>Media Browser clients will automatically choose the optimal version to play based on device and network performance. Are you sure you wish to continue?";
 
         Dashboard.confirm(msg, "Group Versions", function (confirmResult) {
 
@@ -395,10 +395,6 @@
 
         $('.btnToggleSelections', page).on('click', function () {
             toggleSelections(page);
-        });
-
-        $('.itemsContainer', page).on('listrender', function () {
-            hideSelections(page);
         });
 
         $('.btnMergeVersions', page).on('click', function () {

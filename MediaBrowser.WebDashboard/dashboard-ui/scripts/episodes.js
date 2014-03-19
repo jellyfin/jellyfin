@@ -34,7 +34,8 @@
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: true
+                overlayText: true,
+                selectionPanel: true
             });
 
             $('.itemsContainer', page).removeClass('timelineItemsContainer');
@@ -258,6 +259,12 @@
             query.NameStartsWithOrGreater = '';
 
             reloadItems(page);
+        });
+
+        $('.itemsContainer', page).on('needsrefresh', function () {
+
+            reloadItems(page);
+
         });
 
     }).on('pagebeforeshow', "#episodesPage", function () {

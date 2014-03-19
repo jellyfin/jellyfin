@@ -76,7 +76,7 @@
     <Compile Include="Dto\ItemCounts.cs" />
     <Compile Include="Dto\ItemIndex.cs" />
     <Compile Include="Dto\RecommendationDto.cs" />
-    <Compile Include="Dto\AlternateVersionInfo.cs" />
+    <Compile Include="Dto\MediaVersionInfo.cs" />
     <Compile Include="Entities\PackageReviewInfo.cs" />
     <Compile Include="FileOrganization\FileOrganizationResult.cs" />
     <Compile Include="FileOrganization\FileOrganizationQuery.cs" />
