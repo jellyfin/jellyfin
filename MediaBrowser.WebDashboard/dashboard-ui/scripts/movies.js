@@ -345,6 +345,12 @@
             reloadItems(page);
         });
 
+        $('.itemsContainer', page).on('needsrefresh', function() {
+
+            reloadItems(page);
+
+        });
+
     }).on('pagebeforeshow', "#moviesPage", function () {
 
         var page = this;

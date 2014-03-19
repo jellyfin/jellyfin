@@ -1084,11 +1084,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.PartCount = video.AdditionalPartIds.Count + 1;
                 dto.AlternateVersionCount = video.AlternateVersionCount;
 
-                if (video.PrimaryVersionId.HasValue)
-                {
-                    dto.PrimaryVersionId = video.PrimaryVersionId.Value.ToString("N");
-                }
-
                 if (fields.Contains(ItemFields.Chapters))
                 {
                     dto.Chapters = _itemRepo.GetChapters(video.Id).Select(c => GetChapterInfoDto(c, item)).ToList();

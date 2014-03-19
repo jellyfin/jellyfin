@@ -166,6 +166,27 @@
     function onMenuCommand(command, elem) {
 
         var id = elem.getAttribute('data-itemid');
+        var page = $(elem).parents('.page');
+
+        if (command == 'SplitVersions') {
+            splitVersions(id, page);
+        }
+    }
+
+    function splitVersions(id, page) {
+
+        Dashboard.showLoadingMsg();
+
+        $.ajax({
+            type: "DELETE",
+            url: ApiClient.getUrl("Videos/" + id + "/AlternateVersions")
+
+        }).done(function () {
+
+            Dashboard.hideLoadingMsg();
+
+            $('.itemsContainer', page).trigger('needsrefresh');
+        });
     }
 
     function getContextMenuOptions(elem) {
@@ -173,7 +194,6 @@
         var items = [];
 
         var id = elem.getAttribute('data-itemid');
-        var mediatype = elem.getAttribute('data-mediatype');
 
         items.push({ type: 'header', text: 'Edit' });
 
@@ -181,12 +201,12 @@
 
         items.push({ type: 'link', text: 'Images', url: 'edititemimages.html?id=' + id });
 
-        //if (mediatype == 'Video' && elem.getAttribute('data-locationtype') == 'FileSystem' && !elem.getAttribute('data-primaryversionid')) {
+        if (elem.getAttribute('data-alternateversioncount') != '0') {
 
-        //    items.push({ type: 'divider' });
-        //    items.push({ type: 'header', text: 'Manage' });
-        //    items.push({ type: 'command', text: 'Alternate Versions', name: 'AlternateVersions' });
-        //}
+            items.push({ type: 'divider' });
+            items.push({ type: 'header', text: 'Manage' });
+            items.push({ type: 'command', text: 'Split Versions', name: 'SplitVersions' });
+        }
 
         return items;
     }
@@ -260,11 +280,11 @@
 
                 if (user.Configuration.IsAdministrator) {
 
-                    //sequence.createContextMenu({
-                    //    getOptions: getContextMenuOptions,
-                    //    command: onMenuCommand,
-                    //    selector: '.posterItem'
-                    //});
+                    sequence.createContextMenu({
+                        getOptions: getContextMenuOptions,
+                        command: onMenuCommand,
+                        selector: '.posterItem'
+                    });
                 }
 
             });
@@ -290,6 +310,8 @@
             selectionCommands.show();
 
             $('.itemSelectionPanel', page).show();
+
+            $('.chkItemSelect:checked', page).checked(false).checkboxradio('refresh');
         }
 
         Dashboard.hideLoadingMsg();
@@ -301,25 +323,25 @@
 
         $('.itemSelectionPanel', page).hide();
     }
-    
+
     function getSelectedItems(page) {
-        
+
         var selection = $('.chkItemSelect:checked', page);
 
         return selection.parents('.posterItem')
-            .map(function() {
+            .map(function () {
 
                 return this.getAttribute('data-itemid');
 
             }).get();
     }
-    
+
     function combineVersions(page) {
 
         var selection = getSelectedItems(page);
-        
+
         if (selection.length < 2) {
-            
+
             Dashboard.alert({
                 message: "Please select two or more items to combine.",
                 title: "Error"
@@ -328,7 +350,36 @@
             return;
         }
 
-        hideSelections();
+        var names = $('.chkItemSelect:checked', page).parents('.posterItem').get().reverse().map(function (e) {
+
+            return $('.posterItemText', e).html();
+
+        }).join('<br/>');
+
+        var msg = "The following titles will be grouped into one item:<br/><br/>" + names;
+
+        msg += "<br/><br/>Media Browser clients will choose the optimal version to play based on device and network conditions. Are you sure you wish to continue?";
+
+        Dashboard.confirm(msg, "Group Versions", function (confirmResult) {
+
+            if (confirmResult) {
+
+                Dashboard.showLoadingMsg();
+
+                $.ajax({
+                    type: "POST",
+                    url: ApiClient.getUrl("Videos/MergeVersions", { Ids: selection.join(',') })
+
+                }).done(function () {
+
+                    Dashboard.hideLoadingMsg();
+
+                    hideSelections();
+
+                    $('.itemsContainer', page).trigger('needsrefresh');
+                });
+            }
+        });
     }
 
     $(document).on('pageinit', ".libraryPage", function () {
@@ -342,7 +393,7 @@
         $('.itemsContainer', page).on('listrender', function () {
             hideSelections(page);
         });
-        
+
         $('.btnMergeVersions', page).on('click', function () {
             combineVersions(page);
         });

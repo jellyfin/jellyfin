@@ -665,7 +665,7 @@
 
                 cssClass += ' ' + options.shape + 'PosterItem';
 
-                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-primaryversionid="' + (item.PrimaryVersionId || '') + '" data-locationtype="' + item.LocationType + '" data-mediatype="' + (item.MediaType || '') + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
+                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-alternateversioncount="' + (item.AlternateVersionCount || '0') + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
 
                 // Ribbon
                 if (item.MediaType == "Video" && options.formatIndicators) {
