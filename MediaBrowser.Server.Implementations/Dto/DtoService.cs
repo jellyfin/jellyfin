@@ -651,7 +651,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="chapterInfo">The chapter info.</param>
         /// <param name="item">The item.</param>
         /// <returns>ChapterInfoDto.</returns>
-        private ChapterInfoDto GetChapterInfoDto(ChapterInfo chapterInfo, BaseItem item)
+        public ChapterInfoDto GetChapterInfoDto(ChapterInfo chapterInfo, BaseItem item)
         {
             var dto = new ChapterInfoDto
             {

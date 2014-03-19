@@ -175,18 +175,25 @@
 
     function splitVersions(id, page) {
 
-        Dashboard.showLoadingMsg();
+        Dashboard.confirm("Are you sure you wish to split the versions apart into separate items?", "Split Versions Apart", function (confirmResult) {
 
-        $.ajax({
-            type: "DELETE",
-            url: ApiClient.getUrl("Videos/" + id + "/AlternateVersions")
+            if (confirmResult) {
 
-        }).done(function () {
+                Dashboard.showLoadingMsg();
 
-            Dashboard.hideLoadingMsg();
+                $.ajax({
+                    type: "DELETE",
+                    url: ApiClient.getUrl("Videos/" + id + "/AlternateVersions")
 
-            $('.itemsContainer', page).trigger('needsrefresh');
+                }).done(function () {
+
+                    Dashboard.hideLoadingMsg();
+
+                    $('.itemsContainer', page).trigger('needsrefresh');
+                });
+            }
         });
+
     }
 
     function getContextMenuOptions(elem) {
@@ -205,7 +212,7 @@
 
             items.push({ type: 'divider' });
             items.push({ type: 'header', text: 'Manage' });
-            items.push({ type: 'command', text: 'Split Versions', name: 'SplitVersions' });
+            items.push({ type: 'command', text: 'Split Versions Apart', name: 'SplitVersions' });
         }
 
         return items;
@@ -221,7 +228,7 @@
                 return;
             }
 
-            if ($('.itemSelectionPanel', elem).length) {
+            if ($('.itemSelectionPanel:visible', elem).length) {
                 return;
             }
 

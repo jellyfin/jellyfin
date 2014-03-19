@@ -26,6 +26,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 
 namespace MediaBrowser.Server.Implementations.Library
@@ -540,6 +541,29 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
+        public IEnumerable<BaseItem> ReplaceVideosWithPrimaryVersions(IEnumerable<BaseItem> items)
+        {
+            return items.Select(i =>
+            {
+                var video = i as Video;
+
+                if (video != null)
+                {
+                    if (video.PrimaryVersionId.HasValue)
+                    {
+                        var primary = GetItemById(video.PrimaryVersionId.Value) as Video;
+
+                        if (primary != null)
+                        {
+                            return primary;
+                        }
+                    }
+                }
+
+                return i;
+
+            }).DistinctBy(i => i.Id);
+        }
 
         /// <summary>
         /// Ensure supplied item has only one instance throughout

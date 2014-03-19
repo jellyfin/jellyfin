@@ -901,23 +901,29 @@
             userId: user.Id
         });
 
-        $.getJSON(url).done(function (result) {
+        $.getJSON(url).done(function (items) {
 
-            if (result.Items.length) {
+            if (items.length) {
 
                 $('#alternateVersionsCollapsible', page).show();
 
                 var html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
+                    items: items.map(function (i) {
+                        var extended = $.extend({}, item, i);
+                        extended.Id = item.Id;
+                        return extended;
+                    }),
                     shape: "portrait",
                     context: 'movies',
                     useAverageAspectRatio: true,
                     showTitle: true,
                     centerText: true,
-                    formatIndicators: true
+                    formatIndicators: true,
+                    linkItem: false,
+                    showProgress: false
                 });
 
-                $('#alternateVersionsContent', page).html(html).trigger('create').createPosterItemMenus();
+                $('#alternateVersionsContent', page).html(html).trigger('create');
             } else {
                 $('#alternateVersionsCollapsible', page).hide();
             }

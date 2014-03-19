@@ -28,9 +28,6 @@
 
             updateFilterControls();
 
-            var checkSortOption = $('.radioSortBy:checked', page);
-            $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
-
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true,

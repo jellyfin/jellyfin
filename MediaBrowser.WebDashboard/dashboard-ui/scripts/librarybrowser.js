@@ -665,7 +665,9 @@
 
                 cssClass += ' ' + options.shape + 'PosterItem';
 
-                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-alternateversioncount="' + (item.AlternateVersionCount || '0') + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
+                var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
+
+                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-alternateversioncount="' + (item.AlternateVersionCount || '0') + '" href="' + href + '">';
 
                 // Ribbon
                 if (item.MediaType == "Video" && options.formatIndicators) {
@@ -706,7 +708,7 @@
                     imageCssClass += " coveredPosterItemImage";
                 }
 
-                var progressHtml = LibraryBrowser.getItemProgressBarHtml(item);
+                var progressHtml = options.showProgress === false ? '' : LibraryBrowser.getItemProgressBarHtml(item);
 
                 html += '<div class="' + imageCssClass + '" style="' + style + '">';
 
@@ -731,7 +733,7 @@
                     var chkItemSelectId = 'chkItemSelect' + i;
 
                     // Render this pre-enhanced to save on jquery mobile dom manipulation
-                    html += '<div class="itemSelectionPanel" onclick="return false;"><div class="ui-checkbox"><label class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off" for="' + chkItemSelectId + '">Select</label><input id="' + chkItemSelectId + '" type="checkbox" class="chkItemSelect" data-enhanced="true" /></div></div>';
+                    html += '<div class="itemSelectionPanel" onclick="return false;"><div class="ui-checkbox ui-mini"><label class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off" for="' + chkItemSelectId + '">Select</label><input id="' + chkItemSelectId + '" type="checkbox" class="chkItemSelect" data-enhanced="true" /></div></div>';
 
                 }
 
@@ -1156,21 +1158,6 @@
             } else {
                 $(linksElem).hide();
             }
-        },
-
-        getViewSummaryHtml: function (query, checkedSortOption) {
-
-            var html = '';
-
-            if (query.SortBy) {
-
-                var id = checkedSortOption[0].id;
-                var sortBy = checkedSortOption.siblings('label[for=' + id + ']').text();
-
-                html += 'Sorted by ' + sortBy.trim().toLowerCase() + ', ' + (query.SortOrder || 'ascending').toLowerCase();
-            }
-
-            return html;
         },
 
         getPagingHtml: function (query, totalRecordCount, updatePageSizeSetting, pageSizes, showLimit) {
