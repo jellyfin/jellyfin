@@ -94,6 +94,9 @@
     <Compile Include="..\MediaBrowser.Model\Drawing\ImageOutputFormat.cs">
       <Link>Drawing\ImageOutputFormat.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\AlternateVersionInfo.cs">
+      <Link>Dto\AlternateVersionInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\BaseItemDto.cs">
       <Link>Dto\BaseItemDto.cs</Link>
     </Compile>
