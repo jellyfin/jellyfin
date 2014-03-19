@@ -1015,7 +1015,7 @@
             }
 
             if (stream.Width || stream.Height) {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Width + 'x' + stream.Height + '</span>');
+                attributes.push('<span class="mediaInfoAttribute" id="mediaWidthHeight" data-width="' + stream.Width + '" data-height="' + stream.Height + '">' + stream.Width + 'x' + stream.Height + '</span>');
             }
 
             if (stream.AspectRatio && stream.Codec != "mjpeg") {

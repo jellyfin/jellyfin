@@ -79,6 +79,8 @@
 
             ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
 
+            $("#mediaPlayer").hide();
+
             if (currentItem.MediaType == "Video") {
                 ApiClient.stopActiveEncodings();
                 if (self.isFullScreen()) {
@@ -356,6 +358,8 @@
             $('#audioTracksButton', nowPlayingBar).hide();
             $('#subtitleButton', nowPlayingBar).hide();
             $('#chaptersButton', nowPlayingBar).hide();
+
+            $("#mediaPlayer", nowPlayingBar).show();
 
             var mediaElement = $('#mediaElement', footer).html(html);
             var audioElement = $("audio", mediaElement);

@@ -683,6 +683,7 @@ h1 .imageLink {
     z-index: 99997;
     color: #fff;
     border: 0 !important;
+    max-height: 220px;
 }
 
 .footerNotification {
@@ -697,6 +698,10 @@ h1 .imageLink {
     height: 24px;
     margin-right: 1em;
     vertical-align: middle;
+}
+
+#dashboardVersionWarning {
+    line-height: 50px;
 }
 
 /*
