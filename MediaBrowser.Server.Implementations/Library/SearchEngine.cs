@@ -35,6 +35,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var inputItems = user.RootFolder.GetRecursiveChildren(user, null).Where(i => !(i is ICollectionFolder));
 
+            inputItems = _libraryManager.ReplaceVideosWithPrimaryVersions(inputItems);
+
             var results = await GetSearchHints(inputItems, query).ConfigureAwait(false);
 
             // Include item types

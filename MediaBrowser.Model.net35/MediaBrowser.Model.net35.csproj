@@ -94,9 +94,6 @@
     <Compile Include="..\MediaBrowser.Model\Drawing\ImageOutputFormat.cs">
       <Link>Drawing\ImageOutputFormat.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dto\AlternateVersionInfo.cs">
-      <Link>Dto\AlternateVersionInfo.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\BaseItemDto.cs">
       <Link>Dto\BaseItemDto.cs</Link>
     </Compile>
@@ -126,6 +123,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\ItemIndex.cs">
       <Link>Dto\ItemIndex.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\MediaVersionInfo.cs">
+      <Link>Dto\MediaVersionInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\RecommendationDto.cs">
       <Link>Dto\RecommendationDto.cs</Link>

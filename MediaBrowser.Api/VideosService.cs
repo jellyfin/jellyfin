@@ -31,9 +31,9 @@ namespace MediaBrowser.Api
         public string Id { get; set; }
     }
 
-    [Route("/Videos/{Id}/AlternateVersions", "GET")]
-    [Api(Description = "Gets alternate versions of a video.")]
-    public class GetAlternateVersions : IReturn<List<AlternateVersionInfo>>
+    [Route("/Videos/{Id}/Versions", "GET")]
+    [Api(Description = "Gets all versions of a video.")]
+    public class GetMediaVersions : IReturn<List<MediaVersionInfo>>
     {
         /// <summary>
         /// Gets or sets the id.
@@ -113,32 +113,54 @@ namespace MediaBrowser.Api
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetAlternateVersions request)
+        public object Get(GetMediaVersions request)
         {
             var item = _libraryManager.GetItemById(new Guid(request.Id));
 
             var video = (Video)item;
 
-            var items = video.GetAlternateVersions();
+            var result = video.GetAlternateVersions().Select(GetVersionInfo).ToList();
 
-            var result = items.Select(i => new AlternateVersionInfo
+            result.Add(GetVersionInfo(video));
+
+            result = result.OrderBy(i =>
+            {
+                if (video.VideoType == VideoType.VideoFile)
+                {
+                    return 0;
+                }
+
+                return 1;
+
+            }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
+            .ThenByDescending(i =>
+            {
+                var stream = i.MediaStreams.FirstOrDefault(m => m.Type == MediaStreamType.Video);
+
+                return stream == null || stream.Width == null ? 0 : stream.Width.Value;
+            })
+            .ToList();
+
+            return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        private MediaVersionInfo GetVersionInfo(Video i)
+        {
+            return new MediaVersionInfo
             {
                 Chapters = _itemRepo.GetChapters(i.Id).Select(c => _dtoService.GetChapterInfoDto(c, i)).ToList(),
 
                 Id = i.Id.ToString("N"),
                 IsoType = i.IsoType,
                 LocationType = i.LocationType,
-                MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
+                MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery {ItemId = i.Id}).ToList(),
                 Name = GetAlternateVersionName(i),
                 Path = GetMappedPath(i),
                 RunTimeTicks = i.RunTimeTicks,
                 Video3DFormat = i.Video3DFormat,
                 VideoType = i.VideoType,
                 IsHD = i.IsHD
-
-            }).ToList();
-
-            return ToOptimizedSerializedResultUsingCache(result);
+            };
         }
 
         private string GetMappedPath(Video video)
