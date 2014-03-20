@@ -29,9 +29,6 @@
 
             updateFilterControls(page);
 
-            var checkSortOption = $('.radioSortBy:checked', page);
-            $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
-
             if (view == "Thumb") {
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
@@ -70,7 +67,7 @@
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-            $('#items', page).html(html).trigger('create').createPosterItemMenus().trigger('listrender');
+            $('#items', page).html(html).trigger('create').createPosterItemMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -343,6 +340,12 @@
             query.IsYearMismatched = this.checked ? true : null;
 
             reloadItems(page);
+        });
+
+        $('.itemsContainer', page).on('needsrefresh', function() {
+
+            reloadItems(page);
+
         });
 
     }).on('pagebeforeshow', "#moviesPage", function () {

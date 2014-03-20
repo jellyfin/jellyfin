@@ -102,11 +102,11 @@
             hours = 0;
         }
 
-        hours = hours.toFixed(0);
+        hours = Math.floor(hours);
 
         ticks -= (hours * 36000000000);
 
-        var minutes = (ticks / 600000000).toFixed(0);
+        var minutes = Math.floor((ticks / 600000000));
 
         var suffix = "am";
 

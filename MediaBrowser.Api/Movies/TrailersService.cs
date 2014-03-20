@@ -66,7 +66,10 @@ namespace MediaBrowser.Api.Movies
                 _userDataRepository,
                 _dtoService,
                 Logger,
-                request, item => item is Movie || item is Trailer,
+
+                // Strip out secondary versions
+                request, item => (item is Movie || item is Trailer) && !((Video)item).PrimaryVersionId.HasValue,
+
                 SimilarItemsHelper.GetSimiliarityScore);
 
             return ToOptimizedSerializedResultUsingCache(result);

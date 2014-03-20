@@ -47,9 +47,6 @@
 
             updateFilterControls(page);
             
-            var checkSortOption = $('.radioSortBy:checked', page);
-            $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
-
             html += LibraryBrowser.getSongTableHtml(result.Items, {
                 showAlbum: true,
                 showArtist: true,

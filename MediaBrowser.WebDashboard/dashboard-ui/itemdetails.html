@@ -131,6 +131,9 @@
             <span id="trailerButtonContainer" style="display: none;">
                 <button id="btnPlayTrailer" type="button" data-icon="video" data-inline="true" data-mini="true">Trailer</button>
             </span>
+            <span id="externalTrailerButtonContainer" style="display: none;">
+                <a id="btnPlayExternalTrailer" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">Trailer</a>
+            </span>
             <span id="playExternalButtonContainer" style="display: none;">
                 <a id="btnPlayExternal" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">Play</a>
             </span>
@@ -156,7 +159,6 @@
                         <p id="itemPremiereDate"></p>
                         <p id="itemBudget"></p>
                         <p id="itemRevenue"></p>
-                        <p id="awardSummary"></p>
                         <p class="itemStudios"></p>
                         <p class="itemExternalLinks"></p>
                         <p class="itemTags"></p>
@@ -169,15 +171,10 @@
                     </div>
                     <div id="childrenContent" class="detailSectionContent"></div>
                 </div>
-                <div id="trailersCollapsible" class="detailSection hide">
-                    <div id="trailerSectionHeader" class="detailSectionHeader">
-                        Trailers
-                    </div>
-                    <div id="trailersContent" class="detailSectionContent"></div>
-                </div>
                 <div id="alternateVersionsCollapsible" class="detailSection hide">
-                    <div class="detailSectionHeader">
-                        Alternate Versions
+                    <div class="detailSectionHeader" style="position: relative;">
+                        Media Versions
+                        <button type="button" class="btnSplitVersions" style="position: absolute; right: 0; top: 6px; margin-top: 0; margin-bottom: 0; display: none;" data-mini="true" data-inline="true" data-icon="delete" data-iconpos="notext" title="Split Versions Apart">Split Versions Apart</button>
                     </div>
                     <div id="alternateVersionsContent" class="detailSectionContent"></div>
                 </div>
@@ -219,10 +216,10 @@
                 </div>
                 <div id="criticReviewsCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
-                        Movie Reviews From Rotten Tomatoes®
+                        Awards and Reviews
                     </div>
-
-                    <div style="padding: 0 1em;">
+                    <div style="padding: 0 .5em;">
+                        <p id="awardSummary"></p>
                         <div id="criticRatingSummary" class="criticReview criticRatingSummary" style="display: none;">
                             <p style="margin: 0 0 .5em -40px; font-weight: bold;">TOMATOMETER®</p>
                             <div class="reviewScore">
@@ -231,7 +228,6 @@
                             <div class="criticRatingScore"></div>
                             <div class="criticRatingSummaryText"></div>
                         </div>
-                        <p>Top Critic Reviews</p>
                         <div id="criticReviewsContent" class="detailSectionContent"></div>
                     </div>
                 </div>

@@ -36,10 +36,6 @@
     font-size: 90%;
 }
 
-.viewSummary {
-    padding: .5em 0;
-}
-
 .viewMenuLink {
     text-decoration: none;
     color: #ccc!important;
@@ -432,7 +428,6 @@ a.itemTag:hover {
     background-position: center 15%;
     background-repeat: no-repeat;
     height: 550px;
-    border-bottom: 1px solid #111;
     position: relative;
 }
 
@@ -770,6 +765,10 @@ a.itemTag:hover {
 
     .lnkSibling:not(.hide) {
         display: block;
+    }
+
+    .itemBackdrop {
+        border-bottom: 1px solid #111;
     }
 }
 
@@ -1121,6 +1120,12 @@ a.itemTag:hover {
     text-align: center;
     padding: 1em;
 }
+
+    .itemSelectionPanel .ui-checkbox {
+        max-width: 90px;
+        margin-left: auto;
+        margin-right: auto;
+    }
 
 .selectionCommandsControlGroup {
     display: inline-block;

@@ -324,6 +324,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="options">The options.</param>
         /// <returns>Task.</returns>
         Task DeleteItem(BaseItem item, DeleteOptions options);
+
+        /// <summary>
+        /// Replaces the videos with primary versions.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        IEnumerable<BaseItem> ReplaceVideosWithPrimaryVersions(IEnumerable<BaseItem> items);
     }
 
     public static class LibraryManagerExtensions

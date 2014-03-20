@@ -8,10 +8,13 @@ namespace MediaBrowser.Controller.Channels
 
         ChannelItemType ChannelItemType { get; set; }
 
+        string OriginalImageUrl { get; set; }
+    }
+
+    public interface IChannelMediaItem : IChannelItem
+    {
         bool IsInfiniteStream { get; set; }
 
         ChannelMediaContentType ContentType { get; set; }
-
-        string OriginalImageUrl { get; set; }
     }
 }

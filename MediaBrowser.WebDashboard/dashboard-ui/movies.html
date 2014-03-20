@@ -32,21 +32,20 @@
                 <div class="viewControls" data-role="controlgroup" data-type="horizontal">
                     <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="Sort" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">Sort</button>
                     <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="Filter" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
-<!--                    <button data-mini="true" data-icon="check" data-inline="true" data-iconpos="notext" title="Select" class="btnToggleSelections">Select</button>-->
+                    <button data-mini="true" data-icon="check" data-inline="true" data-iconpos="notext" title="Select" class="btnToggleSelections">Select</button>
                 </div>
                 <div class="listTopPaging">
                 </div>
-                <div class="viewSummary"></div>
 
                 <div class="selectionCommands" style="display: none;">
                     <div data-role="controlgroup" data-type="horizontal" class="selectionCommandsControlGroup">
-                        <button class="btnMergeVersions" data-mini="true" data-icon="recycle" data-inline="true" title="Combine Versions">Combine</button>
+                        <button class="btnMergeVersions" data-mini="true" data-icon="recycle" data-inline="true" title="Combine Versions">Group Versions</button>
                     </div>
                 </div>
             </div>
             <div id="items" class="itemsContainer"></div>
         </div>
-        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
+        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-position-fixed="true">
 
             <form>
                 <fieldset data-role="controlgroup">
@@ -107,7 +106,7 @@
                 </fieldset>
             </form>
         </div>
-        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
+        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-position-fixed="true">
             <form>
 
                 <fieldset data-role="controlgroup" data-type="horizontal" style="margin-bottom: 1em;">
