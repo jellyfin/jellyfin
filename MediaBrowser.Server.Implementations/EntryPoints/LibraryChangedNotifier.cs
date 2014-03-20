@@ -283,6 +283,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 return new[] { user.RootFolder as T };
             }
 
+            // Need to find what user collection folder this belongs to
+            if (item.Parent is AggregateFolder)
+            {
+                if (item.LocationType == LocationType.FileSystem)
+                {
+                    return collections.Where(i => i.PhysicalLocations.Contains(item.Path)).Cast<T>();
+                }
+            }
+
             // Return it only if it's in the user's library
             if (includeIfNotFound || allRecursiveChildren.ContainsKey(item.Id))
             {
