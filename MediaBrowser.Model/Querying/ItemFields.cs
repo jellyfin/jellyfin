@@ -77,6 +77,11 @@ namespace MediaBrowser.Model.Querying
         Keywords,
 
         /// <summary>
+        /// The media versions
+        /// </summary>
+        MediaVersions,
+
+        /// <summary>
         /// The metadata settings
         /// </summary>
         Settings,

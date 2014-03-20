@@ -350,7 +350,7 @@
         if (selection.length < 2) {
 
             Dashboard.alert({
-                message: "Please select two or more items to combine.",
+                message: "Please select two or more items to group together.",
                 title: "Error"
             });
 

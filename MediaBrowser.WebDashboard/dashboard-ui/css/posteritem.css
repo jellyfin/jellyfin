@@ -14,13 +14,6 @@
     transition: all 500ms ease;
 }
 
-/*.posterItemOverlayTarget {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    z-index: 999;
-}*/
-
 .posterItemOverlayTarget {
     position: absolute;
     right: 0;
@@ -203,6 +196,14 @@
 
     .packageReviewText {
         display: none;
+    }
+}
+
+@media all and (max-width: 1200px) {
+
+    .portraitPosterItem .posterItemOverlayInner {
+        padding-left: 7px;
+        padding-right: 7px;
     }
 }
 

@@ -112,71 +112,81 @@
                         </td>
                     </tr>
                 </table>
+                <div class="detailButtonsContainer">
+                    <span id="missingIndicator" style="margin-left: .5em; display: none;">
+                        <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">MISSING</span>
+                    </span>
+                    <span id="offlineIndicator" style="margin-left: .5em; display: none;">
+                        <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">OFFLINE</span>
+                    </span>
+                    <span id="playButtonContainer" style="display: none;">
+                        <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">Play</button>
+                    </span>
+                    <span id="trailerButtonContainer" style="display: none;">
+                        <button id="btnPlayTrailer" type="button" data-icon="video" data-inline="true" data-mini="true">Trailer</button>
+                    </span>
+                    <span id="externalTrailerButtonContainer" style="display: none;">
+                        <a id="btnPlayExternalTrailer" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">Trailer</a>
+                    </span>
+                    <span id="playExternalButtonContainer" style="display: none;">
+                        <a id="btnPlayExternal" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">Play</a>
+                    </span>
+                    <span id="remoteButtonContainer" style="display: none;">
+                        <button id="btnRemote" type="button" data-icon="wireless" data-inline="true" data-mini="true">Remote</button>
+                    </span>
+                    <span id="editButtonContainer" style="display: none;">
+                        <a id="btnEdit" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">Edit</a>
+                    </span>
+                </div>
             </div>
             <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide" data-role="button" title="Previous" data-icon="carat-l" data-mini="true" data-inline="true" data-iconpos="notext">Previous</a>
             <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide" data-role="button" title="Next" data-icon="carat-r" data-mini="true" data-inline="true" data-iconpos="notext">Next</a>
             <p class="itemGenres mobileGenres"></p>
             <p class="itemOverview mobileOverview"></p>
         </div>
-        <div class="detailButtonsContainer">
-            <span id="missingIndicator" style="margin-left: .5em; display: none;">
-                <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">MISSING</span>
-            </span>
-            <span id="offlineIndicator" style="margin-left: .5em; display: none;">
-                <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">OFFLINE</span>
-            </span>
-            <span id="playButtonContainer" style="display: none;">
-                <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">Play</button>
-            </span>
-            <span id="trailerButtonContainer" style="display: none;">
-                <button id="btnPlayTrailer" type="button" data-icon="video" data-inline="true" data-mini="true">Trailer</button>
-            </span>
-            <span id="externalTrailerButtonContainer" style="display: none;">
-                <a id="btnPlayExternalTrailer" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">Trailer</a>
-            </span>
-            <span id="playExternalButtonContainer" style="display: none;">
-                <a id="btnPlayExternal" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">Play</a>
-            </span>
-            <span id="remoteButtonContainer" style="display: none;">
-                <button id="btnRemote" type="button" data-icon="wireless" data-inline="true" data-mini="true">Remote</button>
-            </span>
-            <span id="editButtonContainer" style="display: none;">
-                <a id="btnEdit" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">Edit</a>
-            </span>
-        </div>
         <div data-role="content">
             <div class="detailPageContent">
 
                 <div id="detailsSection" class="detailSection hide">
-                    <div class="detailSectionHeader" style="margin-top: 0;">
-                        Details
-                    </div>
-                    <div class="detailSectionContent" style="padding: 0 1em;">
 
-                        <div id="mediaInfoContent"></div>
-                        <p id="players"></p>
-                        <p id="seriesAirTime"></p>
-                        <p id="itemPremiereDate"></p>
-                        <p id="itemBudget"></p>
-                        <p id="itemRevenue"></p>
-                        <p class="itemStudios"></p>
-                        <p class="itemExternalLinks"></p>
-                        <p class="itemTags"></p>
+                    <br />
+                    <div class="tabButtons"></div>
+
+                    <div class="detailSectionContent" style="padding: 0 .7em;">
+
+                        <div class="detailTab tabDetails">
+                            <p id="players"></p>
+                            <p id="seriesAirTime"></p>
+                            <p id="itemPremiereDate"></p>
+                            <p id="itemBudget"></p>
+                            <p id="itemRevenue"></p>
+                            <p class="itemExternalLinks"></p>
+                        </div>
+                        <div class="detailTab tabMediaInfo">
+                            <div id="mediaInfoContent"></div>
+
+                            <div id="alternateVersionsCollapsible" class="detailSection hide">
+                                <div class="detailSectionHeader" style="position: relative;">
+                                    Media Versions
+                                    <button type="button" class="btnSplitVersions" style="position: absolute; right: 0; top: 6px; margin-top: 0; margin-bottom: 0; display: none;" data-mini="true" data-inline="true" data-icon="delete" data-iconpos="notext" title="Split Versions Apart">Split Versions Apart</button>
+                                </div>
+                                <div id="alternateVersionsContent" class="detailSectionContent"></div>
+                            </div>
+                        </div>
+                        <div class="detailTab tabTags">
+                            <p class="itemStudios"></p>
+                            <p class="itemKeywords"></p>
+                            <p class="itemTags"></p>
+                        </div>
                     </div>
                 </div>
+
                 <div class="collectionItems"></div>
                 <div id="childrenCollapsible" class="hide detailSection">
                     <div class="detailSectionHeader">
                         <span id="childrenTitle"></span>
                     </div>
                     <div id="childrenContent" class="detailSectionContent"></div>
-                </div>
-                <div id="alternateVersionsCollapsible" class="detailSection hide">
-                    <div class="detailSectionHeader" style="position: relative;">
-                        Media Versions
-                        <button type="button" class="btnSplitVersions" style="position: absolute; right: 0; top: 6px; margin-top: 0; margin-bottom: 0; display: none;" data-mini="true" data-inline="true" data-icon="delete" data-iconpos="notext" title="Split Versions Apart">Split Versions Apart</button>
-                    </div>
-                    <div id="alternateVersionsContent" class="detailSectionContent"></div>
                 </div>
                 <div id="additionalPartsCollapsible" class="detailSection hide">
                     <div class="detailSectionHeader">

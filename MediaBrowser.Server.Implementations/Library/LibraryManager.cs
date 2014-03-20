@@ -133,15 +133,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The _library items cache
         /// </summary>
-        private ConcurrentDictionary<Guid, BaseItem> _libraryItemsCache;
-        /// <summary>
-        /// The _library items cache sync lock
-        /// </summary>
-        private object _libraryItemsCacheSyncLock = new object();
-        /// <summary>
-        /// The _library items cache initialized
-        /// </summary>
-        private bool _libraryItemsCacheInitialized;
+        private readonly ConcurrentDictionary<Guid, BaseItem> _libraryItemsCache;
         /// <summary>
         /// Gets the library items cache.
         /// </summary>
@@ -150,7 +142,6 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _libraryItemsCache, ref _libraryItemsCacheInitialized, ref _libraryItemsCacheSyncLock, CreateLibraryItemsCache);
                 return _libraryItemsCache;
             }
         }
@@ -176,6 +167,7 @@ namespace MediaBrowser.Server.Implementations.Library
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
             ByReferenceItems = new ConcurrentDictionary<Guid, BaseItem>();
+            _libraryItemsCache = new ConcurrentDictionary<Guid, BaseItem>();
 
             ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
@@ -359,48 +351,6 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Creates the library items cache.
-        /// </summary>
-        /// <returns>ConcurrentDictionary{GuidBaseItem}.</returns>
-        private ConcurrentDictionary<Guid, BaseItem> CreateLibraryItemsCache()
-        {
-            var items = RootFolder.GetRecursiveChildren();
-
-            items.Add(RootFolder);
-
-            // Need to use Distinct because there could be multiple instances with the same id
-            // due to sharing the default library
-            var userRootFolders = _userManager.Users.Select(i => i.RootFolder)
-                .Distinct()
-                .ToList();
-
-            foreach (var folder in userRootFolders)
-            {
-                items.Add(folder);
-            }
-
-            // Get all user collection folders
-            // Skip BasePluginFolders because we already got them from RootFolder.RecursiveChildren
-            var userFolders = userRootFolders.SelectMany(i => i.Children)
-                            .Where(i => !(i is BasePluginFolder))
-                            .ToList();
-
-            foreach (var folder in userFolders)
-            {
-                items.Add(folder);
-            }
-
-            var dictionary = new ConcurrentDictionary<Guid, BaseItem>();
-
-            foreach (var item in items)
-            {
-                dictionary[item.Id] = item;
-            }
-
-            return dictionary;
-        }
-
-        /// <summary>
         /// Updates the item in library cache.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -411,6 +361,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public void RegisterItem(BaseItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
             RegisterItem(item.Id, item);
         }
 
@@ -529,13 +483,6 @@ namespace MediaBrowser.Server.Implementations.Library
             if (item != null)
             {
                 ResolverHelper.SetInitialItemValues(item, args, _fileSystem);
-
-                // Now handle the issue with posibly having the same item referenced from multiple physical
-                // places within the library.  Be sure we always end up with just one instance.
-                if (item is IByReferenceItem)
-                {
-                    item = GetOrAddByReferenceItem(item);
-                }
             }
 
             return item;
@@ -720,7 +667,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             Directory.CreateDirectory(rootFolderPath);
 
-            var rootFolder = RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
+            var rootFolder = GetItemById(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
 
             // Add in the plug-in folders
             foreach (var child in PluginFolderCreators)
@@ -747,7 +694,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 Directory.CreateDirectory(userRootPath);
 
-                _userRootFolder = RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ??
+                _userRootFolder = GetItemById(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ??
                                   (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath));
             }
 
@@ -919,7 +866,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 isNew = true;
             }
 
-            var item = isNew ? null : RetrieveItem(id) as T;
+            var item = isNew ? null : GetItemById(id) as T;
 
             if (item == null)
             {
@@ -1228,7 +1175,14 @@ namespace MediaBrowser.Server.Implementations.Library
                 return item;
             }
 
-            return RetrieveItem(id);
+            item = RetrieveItem(id);
+
+            if (item != null)
+            {
+                RegisterItem(item);
+            }
+
+            return item;
         }
 
         /// <summary>
