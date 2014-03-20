@@ -130,7 +130,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         private List<LinkedChild> _linkedChildren;
-
         /// <summary>
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
@@ -145,21 +144,9 @@ namespace MediaBrowser.Controller.Entities
         }
         private List<LinkedChild> GetLinkedChildrenInternal()
         {
-            Dictionary<string, string> locationsDicionary;
-
-            try
-            {
-                locationsDicionary = PhysicalLocations.Distinct(StringComparer.OrdinalIgnoreCase).ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<LinkedChild>();
-            }
-
             return LibraryManager.RootFolder.Children
                 .OfType<Folder>()
-                .Where(i => i.Path != null && locationsDicionary.ContainsKey(i.Path))
+                .Where(i => i.Path != null && PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase))
                 .SelectMany(c => c.LinkedChildren)
                 .ToList();
         }
@@ -177,22 +164,10 @@ namespace MediaBrowser.Controller.Entities
 
         private IEnumerable<BaseItem> GetActualChildren()
         {
-            Dictionary<string, string> locationsDicionary;
-
-            try
-            {
-                locationsDicionary = PhysicalLocations.Distinct(StringComparer.OrdinalIgnoreCase).ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new BaseItem[] { };
-            }
-
             return
                 LibraryManager.RootFolder.Children
                 .OfType<Folder>()
-                .Where(i => i.Path != null && locationsDicionary.ContainsKey(i.Path))
+                .Where(i => i.Path != null && PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase))
                 .SelectMany(c => c.Children)
                 .ToList();
         }

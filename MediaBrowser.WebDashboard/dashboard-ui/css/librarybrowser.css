@@ -489,7 +489,6 @@ a.itemTag:hover {
     box-shadow: 0px 0 20px #000;
     border: solid 1px #222;
     margin-top: -20px;
-    margin-bottom: 5px;
 }
 
 .noBackdrop .itemDetailImage {
@@ -585,6 +584,14 @@ a.itemTag:hover {
     overflow: hidden;
 }
 
+.lblDetailTab {
+    font-size: 16px!important;
+    font-weight: 400!important;
+    font-family: 'Open Sans';
+    padding: .5em 1.2em;
+    border-color: #1f1f1f !important;
+}
+
 .editMetadataForm {
     max-width: 100%;
 }
@@ -638,7 +645,7 @@ a.itemTag:hover {
 
 .detailImageProgressContainer {
     position: absolute;
-    bottom: 7px;
+    bottom: 3px;
     right: 0;
     left: 0;
     text-align: center;
@@ -767,7 +774,7 @@ a.itemTag:hover {
         display: block;
     }
 
-    .itemBackdrop {
+    .itemBackdrop:not(.noBackdrop) {
         border-bottom: 1px solid #111;
     }
 }
@@ -852,12 +859,15 @@ a.itemTag:hover {
 }
 
 .mediaInfoStream {
-    margin: 1em 0;
+    margin: 1em 2em 1em 0;
+    display: inline-block;
     color: #bbb;
+    vertical-align: top;
 }
 
 .mediaInfoStreamType {
-    margin-right: 1em;
+    display: block;
+    font-size: 16px;
     color: #fff;
 }
 
@@ -866,8 +876,8 @@ a.itemTag:hover {
 }
 
 .mediaInfoLabel {
-    color: #bbb;
-    margin-right: 3px;
+    color: #aaa;
+    margin-right: 1em;
 }
 
 .posterRibbon {
@@ -1068,7 +1078,7 @@ a.itemTag:hover {
 .alphabetPicker {
     position: fixed;
     right: 2px;
-    bottom: 10px;
+    bottom: 5px;
     width: 27px;
     z-index: 1000;
     text-align: center;

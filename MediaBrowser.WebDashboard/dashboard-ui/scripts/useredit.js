@@ -138,7 +138,7 @@
             var deferred = $.Deferred();
 
             deferred.resolveWith(null, [{
-                Configuration: {}
+                Configuration: { IsAdministrator: true }
             }]);
 
             promise1 = deferred.promise();

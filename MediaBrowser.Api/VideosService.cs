@@ -158,8 +158,7 @@ namespace MediaBrowser.Api
                 Path = GetMappedPath(i),
                 RunTimeTicks = i.RunTimeTicks,
                 Video3DFormat = i.Video3DFormat,
-                VideoType = i.VideoType,
-                IsHD = i.IsHD
+                VideoType = i.VideoType
             };
         }
 
@@ -234,7 +233,12 @@ namespace MediaBrowser.Api
                 {
                     if (stream.Width.HasValue)
                     {
-                        if (stream.Width.Value >= 1900)
+                        if (stream.Width.Value >= 3800)
+                        {
+                            name = name + " " + "4K";
+                            name = name.Trim();
+                        }
+                        else if (stream.Width.Value >= 1900)
                         {
                             name = name + " " + "1080P";
                             name = name.Trim();

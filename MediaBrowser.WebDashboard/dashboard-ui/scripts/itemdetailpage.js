@@ -312,6 +312,7 @@
         }
 
         renderTags(page, item);
+        renderKeywords(page, item);
 
         renderSeriesAirTime(page, item, context);
 
@@ -327,15 +328,67 @@
             $('#artist', page).hide();
         }
 
-        var detailsSection = $('#detailsSection', page);
-        var elem = $('.detailSectionContent', detailsSection)[0];
+        renderTabButtons(page, item);
+    }
+
+    function renderTabButtons(page, item) {
+
+        var tabsHtml = '';
+
+        var elem = $('.tabDetails', page)[0];
         var text = elem.textContent || elem.innerText;
 
-        if (!text.trim()) {
-            detailsSection.addClass('hide');
-        } else {
-            detailsSection.removeClass('hide');
+        if (text.trim()) {
+            tabsHtml += '<input type="radio" name="radioDetailTab" class="radioDetailTab" id="radioDetails" value="tabDetails">';
+            tabsHtml += '<label for="radioDetails" class="lblDetailTab">Details</label>';
         }
+        
+        if (item.MediaType == "Audio" || item.MediaType == "Video") {
+            tabsHtml += '<input type="radio" name="radioDetailTab" class="radioDetailTab" id="radioMediaInfo" value="tabMediaInfo">';
+            tabsHtml += '<label for="radioMediaInfo" class="lblDetailTab">Media Info</label>';
+        }
+
+        elem = $('.tabTags', page)[0];
+        text = elem.textContent || elem.innerText;
+
+        if (text.trim()) {
+            tabsHtml += '<input type="radio" name="radioDetailTab" class="radioDetailTab" id="radioTags" value="tabTags">';
+            tabsHtml += '<label for="radioTags" class="lblDetailTab">Tags</label>';
+        }
+
+        if (tabsHtml) {
+
+            tabsHtml = '<div data-role="controlgroup" data-type="horizontal" data-mini="true" class="detailTabs">' + tabsHtml;
+            tabsHtml += '</div>';
+
+            $('.tabButtons', page).html(tabsHtml).trigger('create');
+
+            $('#detailsSection', page).removeClass('hide');
+
+
+            var elems = $('.radioDetailTab', page).on('change', function () {
+
+                $('.detailTab', page).hide();
+                $('.' + this.value, page).show();
+            });
+
+            elems[0].click();
+            $(elems[0]).trigger('change');
+
+        } else {
+            $('#detailsSection', page).addClass('hide');
+
+            $('.tabButtons', page).empty();
+        }
+
+        //var elem = $('.detailSectionContent', detailsSection)[0];
+        //var text = elem.textContent || elem.innerText;
+
+        //if (!text.trim()) {
+        //    detailsSection.addClass('hide');
+        //} else {
+        //    detailsSection.removeClass('hide');
+        //}
     }
 
     function getArtistLinksHtml(artists) {
@@ -451,7 +504,7 @@
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: item.Type == "MusicAlbum" ? 4 : 5,
+            limit: item.Type == "MusicAlbum" ? 4 : 6,
             fields: "PrimaryImageAspectRatio,UserData"
         };
 
@@ -538,7 +591,7 @@
         if (item.Tags && item.Tags.length) {
 
             var html = '';
-
+            html += '<p>Tags</p>';
             for (var i = 0, length = item.Tags.length; i < length; i++) {
 
                 html += '<div class="itemTag">' + item.Tags[i] + '</div>';
@@ -549,6 +602,25 @@
 
         } else {
             $('.itemTags', page).hide();
+        }
+    }
+
+    function renderKeywords(page, item) {
+
+        if (item.Keywords && item.Keywords.length) {
+
+            var html = '';
+            html += '<p>Plot Keywords</p>';
+            for (var i = 0, length = item.Keywords.length; i < length; i++) {
+
+                html += '<div class="itemTag">' + item.Keywords[i] + '</div>';
+
+            }
+
+            $('.itemKeywords', page).show().html(html);
+
+        } else {
+            $('.itemKeywords', page).hide();
         }
     }
 
@@ -1016,52 +1088,69 @@
 
             html += '<div class="mediaInfoStream">';
 
-            html += '<span class="mediaInfoStreamType">' + type + ':</span>';
+            html += '<span class="mediaInfoStreamType">' + type + '</span>';
 
             var attributes = [];
 
             if (stream.Language && stream.Type != "Video") {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Language + '</span>');
+                attributes.push('<span class="mediaInfoLabel">Language</span><span class="mediaInfoAttribute">' + stream.Language + '</span>');
             }
 
             if (stream.Codec && stream.Codec != "dca") {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Codec.toUpperCase() + '</span>');
+                attributes.push('<span class="mediaInfoLabel">Codec</span><span class="mediaInfoAttribute">' + stream.Codec.toUpperCase() + '</span>');
             }
 
             if (stream.Profile && stream.Codec == "dca") {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Profile.toUpperCase() + '</span>');
+                attributes.push('<span class="mediaInfoLabel">Codec</span><span class="mediaInfoAttribute">' + stream.Profile.toUpperCase() + '</span>');
+            }
+            else if (stream.Profile) {
+                attributes.push('<span class="mediaInfoLabel">Profile</span><span class="mediaInfoAttribute">' + stream.Profile + '</span>');
+            }
+
+            if (stream.Level) {
+                attributes.push('<span class="mediaInfoLabel">Level</span><span class="mediaInfoAttribute">' + stream.Level + '</span>');
             }
 
             if (stream.Width || stream.Height) {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Width + 'x' + stream.Height + '</span>');
+                attributes.push('<span class="mediaInfoLabel">Resolution</span><span class="mediaInfoAttribute">' + stream.Width + 'x' + stream.Height + '</span>');
             }
 
             if (stream.AspectRatio && stream.Codec != "mjpeg") {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.AspectRatio + '</span>');
+                attributes.push('<span class="mediaInfoLabel">Aspect Ratio</span><span class="mediaInfoAttribute">' + stream.AspectRatio + '</span>');
+            }
+
+            if (type == "Video") {
+                attributes.push('<span class="mediaInfoLabel">Interlaced</span><span class="mediaInfoAttribute">' + (stream.IsInterlaced ? 'Yes' : 'No') + '</span>');
+            }
+
+            if (stream.AverageFrameRate || stream.RealFrameRate) {
+                attributes.push('<span class="mediaInfoLabel">Framerate</span><span class="mediaInfoAttribute">' + (stream.AverageFrameRate || stream.RealFrameRate) + '</span>');
             }
 
             if (stream.ChannelLayout) {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.ChannelLayout + '</span>');
+                attributes.push('<span class="mediaInfoLabel">Layout</span><span class="mediaInfoAttribute">' + stream.ChannelLayout + '</span>');
             }
             else if (stream.Channels) {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Channels + ' ch</span>');
+                attributes.push('<span class="mediaInfoLabel">Channels</span><span class="mediaInfoAttribute">' + stream.Channels + ' ch</span>');
             }
 
             if (stream.BitRate && stream.Codec != "mjpeg") {
-                attributes.push('<span class="mediaInfoAttribute">' + (parseInt(stream.BitRate / 1000)) + ' kbps</span>');
+                attributes.push('<span class="mediaInfoLabel">Bitrate</span><span class="mediaInfoAttribute">' + (parseInt(stream.BitRate / 1000)) + ' kbps</span>');
             }
 
-            if (stream.IsDefault && stream.Type != "Video") {
-                attributes.push('<span class="mediaInfoAttribute">Default</span>');
-            }
-            if (stream.IsForced) {
-                attributes.push('<span class="mediaInfoAttribute">Forced</span>');
-            }
-            if (stream.IsExternal) {
-                attributes.push('<span class="mediaInfoAttribute">External</span>');
+            if (stream.SampleRate) {
+                attributes.push('<span class="mediaInfoLabel">Sample Rate</span><span class="mediaInfoAttribute">' + stream.SampleRate + ' khz</span>');
             }
 
-            html += attributes.join('&nbsp;&#149;&nbsp;');
+            if (stream.Type != "Video") {
+                attributes.push('<span class="mediaInfoLabel">Default</span><span class="mediaInfoAttribute">' + (stream.IsDefault ? 'Yes' : 'No') + '</span>');
+            }
+            if (stream.Type == "Subtitle") {
+                attributes.push('<span class="mediaInfoLabel">Forced</span><span class="mediaInfoAttribute">' + (stream.IsForced ? 'Yes' : 'No') + '</span>');
+                attributes.push('<span class="mediaInfoLabel">External</span><span class="mediaInfoAttribute">' + (stream.IsExternal ? 'Yes' : 'No') + '</span>');
+            }
+
+            html += attributes.join('<br/>');
 
             html += '</div>';
         }
@@ -1201,7 +1290,7 @@
         }
 
         if (limit && casts.length > limit) {
-            html += '<p style="margin: .5em 0 0;padding-left: .5em;"><button class="morePeople" data-inline="true" data-mini="true">More ...</button></p>';
+            html += '<p style="margin: 0;padding-left: .5em;"><button class="morePeople" data-inline="true" data-mini="true">More ...</button></p>';
         }
 
         $('#castContent', page).html(html).trigger('create');
