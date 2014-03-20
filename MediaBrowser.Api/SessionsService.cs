@@ -131,7 +131,7 @@ namespace MediaBrowser.Api
         /// Gets or sets the play command.
         /// </summary>
         /// <value>The play command.</value>
-        [ApiMember(Name = "Command", Description = "The command to send - stop, pause, unpause, nexttrack, previoustrack, seek.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        [ApiMember(Name = "Command", Description = "The command to send - stop, pause, unpause, nexttrack, previoustrack, seek, fullscreen.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public PlaystateCommand Command { get; set; }
     }
 

@@ -925,6 +925,9 @@ var Dashboard = {
             else if (msg.Data.Command === 'PreviousTrack') {
                 MediaPlayer.previousTrack();
             }
+            else if (msg.Data.Command === 'Fullscreen') {
+                MediaPlayer.remoteFullscreen();
+            }
         }
         else if (msg.MessageType === "SystemCommand") {
 
