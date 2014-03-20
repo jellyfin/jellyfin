@@ -392,12 +392,16 @@ namespace MediaBrowser.Api.UserLibrary
                 items = user == null ?
                     ((Folder)item).RecursiveChildren :
                     ((Folder)item).GetRecursiveChildren(user);
+
+                items = _libraryManager.ReplaceVideosWithPrimaryVersions(items);
             }
             else
             {
                 items = user == null ?
                   ((Folder)item).Children :
                   ((Folder)item).GetChildren(user, true);
+
+                items = _libraryManager.ReplaceVideosWithPrimaryVersions(items);
             }
 
             if (request.IncludeIndexContainers)

@@ -119,11 +119,9 @@ namespace MediaBrowser.ServerApplication
                 var subFolder = item as Folder;
                 if (subFolder != null)
                 {
-                    var prefs = _displayPreferencesManager.GetDisplayPreferences(subFolder.DisplayPreferencesId, user.Id, "LibraryExplorer");
-
                     var subChildren = isPhysical ? subFolder.Children : subFolder.GetChildren(_currentUser, true);
 
-                    AddChildren(node, OrderBy(subChildren, user, prefs.SortBy), user, isPhysical);
+                    AddChildren(node, OrderBy(subChildren, user, ItemSortBy.SortName), user, isPhysical);
                     node.Text = item.Name + " (" + node.Nodes.Count + ")";
                 }
                 else

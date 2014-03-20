@@ -532,6 +532,8 @@ namespace MediaBrowser.Api
 
             var fields = request.GetItemFields().ToList();
 
+            episodes = _libraryManager.ReplaceVideosWithPrimaryVersions(episodes).Cast<Episode>();
+
             var returnItems = episodes.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToArray();
 

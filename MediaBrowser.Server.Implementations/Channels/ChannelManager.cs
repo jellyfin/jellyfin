@@ -208,8 +208,8 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var query = new InternalChannelItemQuery
             {
-                 User = user,
-                 CategoryId = categoryId
+                User = user,
+                CategoryId = categoryId
             };
 
             var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
@@ -236,7 +236,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             var tasks = items.Select(GetChannelItemEntity);
 
             var returnItems = await Task.WhenAll(tasks).ConfigureAwait(false);
-
+            returnItems = new BaseItem[] {};
             var returnItemArray = returnItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToArray();
 
@@ -251,19 +251,25 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             BaseItem item;
 
+            Guid id;
+
             if (info.Type == ChannelItemType.Category)
             {
+                id = info.Id.GetMBId(typeof(ChannelCategoryItem));
                 item = new ChannelCategoryItem();
             }
             else if (info.MediaType == ChannelMediaType.Audio)
             {
+                id = info.Id.GetMBId(typeof(ChannelCategoryItem));
                 item = new ChannelAudioItem();
             }
             else
             {
+                id = info.Id.GetMBId(typeof(ChannelVideoItem));
                 item = new ChannelVideoItem();
             }
 
+            item.Id = id;
             item.Name = info.Name;
             item.Genres = info.Genres;
             item.CommunityRating = info.CommunityRating;

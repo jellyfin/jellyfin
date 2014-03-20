@@ -2,7 +2,7 @@
 
 namespace MediaBrowser.Controller.Channels
 {
-    public class ChannelVideoItem : Video, IChannelItem
+    public class ChannelVideoItem : Video, IChannelMediaItem
     {
         public string ExternalId { get; set; }
 

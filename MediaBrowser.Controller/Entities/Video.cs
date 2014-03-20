@@ -51,19 +51,25 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the linked children.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        public IEnumerable<BaseItem> GetAlternateVersions()
+        public IEnumerable<Video> GetAlternateVersions()
         {
             var filesWithinSameDirectory = LocalAlternateVersionIds
                 .Select(i => LibraryManager.GetItemById(i))
                 .Where(i => i != null)
                 .OfType<Video>();
 
+            return filesWithinSameDirectory.Concat(GetLinkedAlternateVersions())
+                .OrderBy(i => i.SortName);
+        }
+
+        public IEnumerable<Video> GetLinkedAlternateVersions()
+        {
             var linkedVersions = LinkedAlternateVersions
                 .Select(GetLinkedChild)
                 .Where(i => i != null)
                 .OfType<Video>();
 
-            return filesWithinSameDirectory.Concat(linkedVersions)
+            return linkedVersions
                 .OrderBy(i => i.SortName);
         }
 
