@@ -24,7 +24,5 @@ namespace MediaBrowser.Model.Dto
         public List<MediaStream> MediaStreams { get; set; }
 
         public List<ChapterInfoDto> Chapters { get; set; }
-
-        public bool? IsHD { get; set; }
     }
 }

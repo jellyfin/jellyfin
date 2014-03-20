@@ -1088,6 +1088,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.Chapters = _itemRepo.GetChapters(video.Id).Select(c => GetChapterInfoDto(c, item)).ToList();
                 }
+
+                if (fields.Contains(ItemFields.MediaVersions))
+                {
+                    //dto.MediaVersions = GetMediaVersions(video);
+                }
             }
 
             if (fields.Contains(ItemFields.MediaStreams))
@@ -1221,6 +1226,163 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 SetBookProperties(dto, book);
             }
+        }
+
+        private List<MediaVersionInfo> GetMediaVersions(Video video)
+        {
+            var result = video.GetAlternateVersions().Select(GetVersionInfo).ToList();
+
+            result.Add(GetVersionInfo(video));
+
+            return result.OrderBy(i =>
+            {
+                if (video.VideoType == VideoType.VideoFile)
+                {
+                    return 0;
+                }
+
+                return 1;
+
+            }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
+            .ThenByDescending(i =>
+            {
+                var stream = i.MediaStreams.FirstOrDefault(m => m.Type == MediaStreamType.Video);
+
+                return stream == null || stream.Width == null ? 0 : stream.Width.Value;
+            })
+            .ToList();
+        }
+
+        private MediaVersionInfo GetVersionInfo(Video i)
+        {
+            return new MediaVersionInfo
+            {
+                Chapters = _itemRepo.GetChapters(i.Id).Select(c => GetChapterInfoDto(c, i)).ToList(),
+
+                Id = i.Id.ToString("N"),
+                IsoType = i.IsoType,
+                LocationType = i.LocationType,
+                MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
+                Name = GetAlternateVersionName(i),
+                Path = GetMappedPath(i),
+                RunTimeTicks = i.RunTimeTicks,
+                Video3DFormat = i.Video3DFormat,
+                VideoType = i.VideoType
+            };
+        }
+
+        private string GetMappedPath(Video video)
+        {
+            var path = video.Path;
+
+            var locationType = video.LocationType;
+
+            if (locationType != LocationType.FileSystem && locationType != LocationType.Offline)
+            {
+                return path;
+            }
+
+            foreach (var map in _config.Configuration.PathSubstitutions)
+            {
+                path = _fileSystem.SubstitutePath(path, map.From, map.To);
+            }
+
+            return path;
+        }
+
+        private string GetAlternateVersionName(Video video)
+        {
+            var name = "";
+
+            var stream = video.GetDefaultVideoStream();
+
+            if (video.Video3DFormat.HasValue)
+            {
+                name = "3D " + name;
+                name = name.Trim();
+            }
+
+            if (video.VideoType == VideoType.BluRay)
+            {
+                name = name + " " + "Bluray";
+                name = name.Trim();
+            }
+            else if (video.VideoType == VideoType.Dvd)
+            {
+                name = name + " " + "DVD";
+                name = name.Trim();
+            }
+            else if (video.VideoType == VideoType.HdDvd)
+            {
+                name = name + " " + "HD-DVD";
+                name = name.Trim();
+            }
+            else if (video.VideoType == VideoType.Iso)
+            {
+                if (video.IsoType.HasValue)
+                {
+                    if (video.IsoType.Value == IsoType.BluRay)
+                    {
+                        name = name + " " + "Bluray";
+                    }
+                    else if (video.IsoType.Value == IsoType.Dvd)
+                    {
+                        name = name + " " + "DVD";
+                    }
+                }
+                else
+                {
+                    name = name + " " + "ISO";
+                }
+                name = name.Trim();
+            }
+            else if (video.VideoType == VideoType.VideoFile)
+            {
+                if (stream != null)
+                {
+                    if (stream.Width.HasValue)
+                    {
+                        if (stream.Width.Value >= 3800)
+                        {
+                            name = name + " " + "4K";
+                            name = name.Trim();
+                        }
+                        else if (stream.Width.Value >= 1900)
+                        {
+                            name = name + " " + "1080P";
+                            name = name.Trim();
+                        }
+                        else if (stream.Width.Value >= 1270)
+                        {
+                            name = name + " " + "720P";
+                            name = name.Trim();
+                        }
+                        else if (stream.Width.Value >= 700)
+                        {
+                            name = name + " " + "480p";
+                            name = name.Trim();
+                        }
+                        else
+                        {
+                            name = name + " " + "SD";
+                            name = name.Trim();
+                        }
+                    }
+                }
+            }
+
+            if (stream != null && !string.IsNullOrWhiteSpace(stream.Codec))
+            {
+                name = name + " " + stream.Codec.ToUpper();
+                name = name.Trim();
+            }
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return video.Name;
+            }
+
+            return name;
         }
 
         private string GetMappedPath(string path)
