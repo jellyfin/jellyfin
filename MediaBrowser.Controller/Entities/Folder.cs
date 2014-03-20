@@ -446,24 +446,31 @@ namespace MediaBrowser.Controller.Entities
                 {
                     BaseItem currentChild;
 
-                    if (currentChildren.TryGetValue(child.Id, out currentChild) && IsValidFromResolver(currentChild, child))
+                    if (currentChildren.TryGetValue(child.Id, out currentChild))
                     {
-                        var currentChildLocationType = currentChild.LocationType;
-                        if (currentChildLocationType != LocationType.Remote &&
-                            currentChildLocationType != LocationType.Virtual)
+                        if (IsValidFromResolver(currentChild, child))
                         {
-                            currentChild.DateModified = child.DateModified;
-                        }
+                            var currentChildLocationType = currentChild.LocationType;
+                            if (currentChildLocationType != LocationType.Remote &&
+                                currentChildLocationType != LocationType.Virtual)
+                            {
+                                currentChild.DateModified = child.DateModified;
+                            }
 
-                        currentChild.IsOffline = false;
+                            currentChild.IsOffline = false;
+                            validChildren.Add(currentChild);
+                        }
+                        else
+                        {
+                            validChildren.Add(child);
+                        }
                     }
                     else
                     {
-                        //brand new item - needs to be added
+                        // Brand new item - needs to be added
                         newItems.Add(child);
+                        validChildren.Add(child);
                     }
-
-                    validChildren.Add(currentChild);
                 }
 
                 // If any items were added or removed....
@@ -736,7 +743,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>BaseItem.</returns>
         private BaseItem RetrieveChild(Guid child)
         {
-            var item = LibraryManager.RetrieveItem(child);
+            var item = LibraryManager.GetItemById(child);
 
             if (item != null)
             {

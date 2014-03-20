@@ -89,6 +89,12 @@ namespace MediaBrowser.Model.Dto
         public ExternalUrl[] ExternalUrls { get; set; }
 
         /// <summary>
+        /// Gets or sets the media versions.
+        /// </summary>
+        /// <value>The media versions.</value>
+        public List<MediaVersionInfo> MediaVersions { get; set; }
+        
+        /// <summary>
         /// Gets or sets the critic rating.
         /// </summary>
         /// <value>The critic rating.</value>
