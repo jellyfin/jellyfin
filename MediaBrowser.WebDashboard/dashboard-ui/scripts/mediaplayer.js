@@ -7,15 +7,15 @@
         var testableVideoElement = document.createElement('video');
         var currentMediaElement;
         var currentProgressInterval;
-        var positionSlider;
-        var currentTimeElement;
         var currentItem;
-        var muteButton;
-        var unmuteButton;
         var curentDurationTicks;
         var canClientSeek;
         var currentPlaylistIndex = 0;
 
+        self.currentTimeElement;
+        self.unmuteButton;
+        self.muteButton;
+        self.positionSlider;
         self.isPositionSliderActive;
         self.volumeSlider;
         self.startTimeTicksOffset;
@@ -26,38 +26,14 @@
             canClientSeek = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
         };
 
-        $(window).on("beforeunload popstate", function () {
-
-            var item = currentItem;
-            var media = currentMediaElement;
-
-            // Try to report playback stopped before the browser closes
-            if (item && media && currentProgressInterval) {
-
-                var endTime = currentMediaElement.currentTime;
-
-                var position = Math.floor(10000000 * endTime) + self.startTimeTicksOffset;
-
-                ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
-            }
-        });
-
-        function replaceQueryString(url, param, value) {
-            var re = new RegExp("([?|&])" + param + "=.*?(&|$)", "i");
-            if (url.match(re))
-                return url.replace(re, '$1' + param + "=" + value + '$2');
-            else
-                return url + '&' + param + "=" + value;
-        }
-
         self.updateVolumeButtons = function (vol) {
 
             if (vol) {
-                muteButton.show();
-                unmuteButton.hide();
+                self.muteButton.show();
+                self.unmuteButton.hide();
             } else {
-                muteButton.hide();
-                unmuteButton.show();
+                self.muteButton.hide();
+                self.unmuteButton.show();
             }
         };
 
@@ -69,7 +45,7 @@
 
             $(this).off('ended.playbackstopped');
 
-            currentTimeElement.empty();
+            self.currentTimeElement.empty();
 
             var endTime = this.currentTime;
 
@@ -78,8 +54,6 @@
             var position = Math.floor(10000000 * endTime) + self.startTimeTicksOffset;
 
             ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
-
-            $("#mediaPlayer").hide();
 
             if (currentItem.MediaType == "Video") {
                 ApiClient.stopActiveEncodings();
@@ -110,25 +84,7 @@
                 }
 
             }, intervalTime);
-        }
-
-        function sendProgressUpdate(itemId) {
-
-            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, self.getCurrentTicks(), currentMediaElement.paused, currentMediaElement.volume == 0);
-        }
-
-        function clearProgressInterval() {
-
-            if (currentProgressInterval) {
-                clearTimeout(currentProgressInterval);
-                currentProgressInterval = null;
-            }
-        }
-
-        function canPlayWebm() {
-
-            return testableVideoElement.canPlayType('video/webm').replace(/no/, '');
-        }
+        };
 
         self.getTranscodingExtension = function () {
 
@@ -213,48 +169,6 @@
             }
         };
 
-        function onPositionSliderChange() {
-
-            self.isPositionSliderActive = false;
-
-            var newPercent = parseInt(this.value);
-
-            var newPositionTicks = (newPercent / 100) * currentItem.RunTimeTicks;
-
-            self.changeStream(Math.floor(newPositionTicks));
-        }
-
-        $(function () {
-
-            muteButton = $('#muteButton');
-            unmuteButton = $('#unmuteButton');
-
-            currentTimeElement = $('.currentTime');
-
-            self.volumeSlider = $('.volumeSlider').on('slidestop', function () {
-
-                var vol = this.value;
-
-                self.updateVolumeButtons(vol);
-                currentMediaElement.volume = vol;
-            });
-
-            positionSlider = $(".positionSlider").on('slidestart', function () {
-
-                self.isPositionSliderActive = true;
-
-            }).on('slidestop', onPositionSliderChange);
-        });
-
-        function endsWith(text, pattern) {
-
-            text = text.toLowerCase();
-            pattern = pattern.toLowerCase();
-
-            var d = text.length - pattern.length;
-            return d >= 0 && text.lastIndexOf(pattern) === d;
-        }
-
         self.setCurrentTime = function (ticks, item, updateSlider) {
 
             // Convert to ticks
@@ -270,155 +184,14 @@
                     var percent = ticks / curentDurationTicks;
                     percent *= 100;
 
-                    positionSlider.val(percent).slider('enable').slider('refresh');
+                    self.positionSlider.val(percent).slider('enable').slider('refresh');
                 }
             } else {
-                positionSlider.slider('disable').slider('refresh');
+                self.positionSlider.slider('disable').slider('refresh');
             }
 
-            currentTimeElement.html(timeText);
+            self.currentTimeElement.html(timeText);
         };
-
-        function playAudio(item, startPositionTicks) {
-
-            startPositionTicks = startPositionTicks || 0;
-
-            var baseParams = {
-                audioChannels: 2,
-                audioBitrate: 128000,
-                StartTimeTicks: startPositionTicks
-            };
-
-            var mp3Url = ApiClient.getUrl('Audio/' + item.Id + '/stream.mp3', $.extend({}, baseParams, {
-                audioCodec: 'mp3'
-            }));
-
-            var aacUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.aac', $.extend({}, baseParams, {
-                audioCodec: 'aac'
-            }));
-
-            var webmUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
-                audioCodec: 'Vorbis'
-            }));
-
-            var mediaStreams = item.MediaStreams || [];
-
-            var isStatic = false;
-            var seekParam = isStatic && startPositionTicks ? '#t=' + (startPositionTicks / 10000000) : '';
-
-            for (var i = 0, length = mediaStreams.length; i < length; i++) {
-
-                var stream = mediaStreams[i];
-
-                if (stream.Type == "Audio") {
-
-                    // Stream statically when possible
-                    if (endsWith(item.Path, ".aac") && stream.BitRate <= 256000) {
-                        aacUrl += "&static=true" + seekParam;
-                        isStatic = true;
-                    }
-                    else if (endsWith(item.Path, ".mp3") && stream.BitRate <= 256000) {
-                        mp3Url += "&static=true" + seekParam;
-                        isStatic = true;
-                    }
-                    break;
-                }
-            }
-
-            self.startTimeTicksOffset = isStatic ? 0 : startPositionTicks;
-
-            var html = '';
-
-            var requiresControls = $.browser.android || ($.browser.webkit && !$.browser.chrome);
-
-            // Can't autoplay in these browsers so we need to use the full controls
-            if (requiresControls) {
-                html += '<audio preload="auto" autoplay controls>';
-            } else {
-                html += '<audio preload="auto" style="display:none;" autoplay>';
-            }
-            html += '<source type="audio/mpeg" src="' + mp3Url + '" />';
-            html += '<source type="audio/aac" src="' + aacUrl + '" />';
-            html += '<source type="audio/webm" src="' + webmUrl + '" />';
-            html += '</audio';
-
-            var footer = $("#footer").show();
-            var nowPlayingBar = $('#nowPlayingBar');
-            //show stop button
-            $('#stopButton', nowPlayingBar).show();
-            $('#playButton', nowPlayingBar).hide();
-            $('#pauseButton', nowPlayingBar).show();
-            $('#fullscreenButton', nowPlayingBar).hide();
-
-            $('#previousTrackButton', nowPlayingBar).show();
-            $('#nextTrackButton', nowPlayingBar).show();
-            $('#playlistButton', nowPlayingBar).show();
-
-            $('#qualityButton', nowPlayingBar).hide();
-            $('#audioTracksButton', nowPlayingBar).hide();
-            $('#subtitleButton', nowPlayingBar).hide();
-            $('#chaptersButton', nowPlayingBar).hide();
-
-            $("#mediaPlayer", nowPlayingBar).show();
-
-            var mediaElement = $('#mediaElement', footer).html(html);
-            var audioElement = $("audio", mediaElement);
-
-            var initialVolume = localStorage.getItem("volume") || 0.5;
-
-            audioElement.each(function () {
-                this.volume = initialVolume;
-            });
-
-            self.volumeSlider.val(initialVolume).slider('refresh');
-            self.updateVolumeButtons(initialVolume);
-
-            audioElement.on("volumechange", function () {
-
-                var vol = this.volume;
-
-                localStorage.setItem("volume", vol);
-
-                self.updateVolumeButtons(vol);
-
-            }).on("play.once", function () {
-
-                if (!requiresControls) {
-                    audioElement.hide();
-                }
-
-                self.updateCanClientSeek(this);
-
-                audioElement.off("play.once");
-
-                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, true, item.MediaType);
-
-                self.startProgressInterval(item.Id);
-
-            }).on("pause", function () {
-
-                $('#playButton', nowPlayingBar).show();
-                $('#pauseButton', nowPlayingBar).hide();
-
-            }).on("playing", function () {
-
-                $('#playButton', nowPlayingBar).hide();
-                $('#pauseButton', nowPlayingBar).show();
-
-            }).on("timeupdate", function () {
-
-                if (!self.isPositionSliderActive) {
-
-                    self.setCurrentTime(self.getCurrentTicks(this), item, true);
-                }
-
-            }).on("ended.playbackstopped", self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded);
-
-            currentItem = item;
-            curentDurationTicks = item.RunTimeTicks;
-
-            return audioElement[0];
-        }
 
         self.canPlayVideoDirect = function (item, videoStream, audioStream, subtitleStream, maxWidth, bitrate) {
 
@@ -462,30 +235,7 @@
             }
 
             return extension.toLowerCase() == 'mp4';
-        }
-
-        function canPlayAudioStreamDirect(audioStream) {
-
-            var audioCodec = (audioStream.Codec || '').toLowerCase().replace('-', '');
-
-            if (audioCodec.indexOf('aac') == -1 &&
-                audioCodec.indexOf('mp3') == -1 &&
-                audioCodec.indexOf('mpeg') == -1) {
-
-                return false;
-            }
-
-            if (audioStream.Channels == null) {
-                return false;
-            }
-
-            // IE won't play at all if more than two channels
-            if (audioStream.Channels > 2 && $.browser.msie) {
-                return false;
-            }
-
-            return true;
-        }
+        };
 
         self.getFinalVideoParams = function (item, maxWidth, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension) {
 
@@ -660,7 +410,7 @@
 
             var mediaElement;
 
-            $("#mediaPlayer").show();
+            var mediaControls = $('#nowPlayingBar');
 
             if (item.MediaType === "Video") {
 
@@ -668,10 +418,13 @@
                 mediaElement = self.initVideoPlayer();
                 currentItem = item;
                 curentDurationTicks = item.RunTimeTicks;
+                mediaControls = $("#videoControls");
 
             } else if (item.MediaType === "Audio") {
 
                 mediaElement = playAudio(item, startPosition);
+                mediaControls.show();
+
             } else {
                 throw new Error("Unrecognized media type");
             }
@@ -751,31 +504,8 @@
                 "' title='" + htmlTitle + "' src='" + url + "' style='height:40px;display:inline-block;' /></a></div>";
             html += "<div class='nowPlayingText' title='" + htmlTitle + "'>" + titleHtml(nowPlayingText) + "</div>";
 
-            var nowPlayingBar = $('#nowPlayingBar');
-            $('.nowPlayingMediaInfo', nowPlayingBar).html(html);
+            $('.nowPlayingMediaInfo', mediaControls).html(html);
         };
-
-        function trunc(string, len) {
-            if (string.length > 0 && string.length < len) return string;
-            var trimmed = $.trim(string).substring(0, len).split(" ").slice(0, -1).join(" ");
-            if (trimmed) {
-                trimmed += "...";
-            } else {
-                trimmed = "---";
-            }
-            return trimmed;
-        }
-
-        function trimTitle(title) {
-            return title.replace("\n---", "");
-        }
-
-        function titleHtml(title) {
-            var titles = title.split("\n");
-            return (trunc(titles[0], 30) + "<br />" + trunc(titles[1], 30)).replace("---", "&nbsp;");
-        }
-
-        var getItemFields = "MediaStreams,Chapters,Path";
 
         self.getItemsForPlayback = function (query) {
 
@@ -1133,16 +863,13 @@
 
             }).trigger("ended");
 
-            $("#mediaPlayer").hide();
-
             if (currentItem.MediaType == "Video") {
                 if (self.isFullScreen()) {
                     self.exitFullScreen();
                 }
                 self.resetEnhancements();
             } else {
-                var footer = $("#footer");
-                footer.hide();
+                $('#nowPlayingBar').hide();
             }
         };
 
@@ -1157,6 +884,286 @@
             });
 
         };
+
+        self.bindPositionSlider = function () {
+            self.positionSlider.on('slidestart', function (e) {
+
+                self.isPositionSliderActive = true;
+
+            }).on('slidestop', onPositionSliderChange);
+        };
+
+        self.bindVolumeSlider = function () {
+            self.volumeSlider.on('slidestop', function () {
+
+                console.log("slideStop");
+
+                var vol = this.value;
+
+                self.updateVolumeButtons(vol);
+                currentMediaElement.volume = vol;
+            });
+        };
+
+        $(window).on("beforeunload popstate", function () {
+
+            var item = currentItem;
+            var media = currentMediaElement;
+
+            // Try to report playback stopped before the browser closes
+            if (item && media && currentProgressInterval) {
+
+                var endTime = currentMediaElement.currentTime;
+
+                var position = Math.floor(10000000 * endTime) + self.startTimeTicksOffset;
+
+                ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
+            }
+        });
+
+        $(function () {
+            initPlayer();
+        });
+
+        function initPlayer() {
+            self.muteButton = $('.muteButton');
+            self.unmuteButton = $('.unmuteButton');
+            self.currentTimeElement = $('.currentTime');
+            self.volumeSlider = $('.volumeSlider');
+            self.positionSlider = $(".positionSlider");
+
+            self.bindVolumeSlider();
+            self.bindPositionSlider();
+        };
+
+        function replaceQueryString(url, param, value) {
+            var re = new RegExp("([?|&])" + param + "=.*?(&|$)", "i");
+            if (url.match(re))
+                return url.replace(re, '$1' + param + "=" + value + '$2');
+            else
+                return url + '&' + param + "=" + value;
+        };
+
+        function sendProgressUpdate(itemId) {
+
+            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, self.getCurrentTicks(), currentMediaElement.paused, currentMediaElement.volume == 0);
+        };
+
+        function clearProgressInterval() {
+
+            if (currentProgressInterval) {
+                clearTimeout(currentProgressInterval);
+                currentProgressInterval = null;
+            }
+        };
+
+        function canPlayWebm() {
+
+            return testableVideoElement.canPlayType('video/webm').replace(/no/, '');
+        };
+
+        function onPositionSliderChange() {
+
+            self.isPositionSliderActive = false;
+
+            var newPercent = parseInt(this.value);
+
+            var newPositionTicks = (newPercent / 100) * currentItem.RunTimeTicks;
+
+            self.changeStream(Math.floor(newPositionTicks));
+        };
+
+        function endsWith(text, pattern) {
+
+            text = text.toLowerCase();
+            pattern = pattern.toLowerCase();
+
+            var d = text.length - pattern.length;
+            return d >= 0 && text.lastIndexOf(pattern) === d;
+        };
+
+        function playAudio(item, startPositionTicks) {
+
+            startPositionTicks = startPositionTicks || 0;
+
+            var baseParams = {
+                audioChannels: 2,
+                audioBitrate: 128000,
+                StartTimeTicks: startPositionTicks
+            };
+
+            var mp3Url = ApiClient.getUrl('Audio/' + item.Id + '/stream.mp3', $.extend({}, baseParams, {
+                audioCodec: 'mp3'
+            }));
+
+            var aacUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.aac', $.extend({}, baseParams, {
+                audioCodec: 'aac'
+            }));
+
+            var webmUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
+                audioCodec: 'Vorbis'
+            }));
+
+            var mediaStreams = item.MediaStreams || [];
+
+            var isStatic = false;
+            var seekParam = isStatic && startPositionTicks ? '#t=' + (startPositionTicks / 10000000) : '';
+
+            for (var i = 0, length = mediaStreams.length; i < length; i++) {
+
+                var stream = mediaStreams[i];
+
+                if (stream.Type == "Audio") {
+
+                    // Stream statically when possible
+                    if (endsWith(item.Path, ".aac") && stream.BitRate <= 256000) {
+                        aacUrl += "&static=true" + seekParam;
+                        isStatic = true;
+                    }
+                    else if (endsWith(item.Path, ".mp3") && stream.BitRate <= 256000) {
+                        mp3Url += "&static=true" + seekParam;
+                        isStatic = true;
+                    }
+                    break;
+                }
+            }
+
+            self.startTimeTicksOffset = isStatic ? 0 : startPositionTicks;
+
+            var html = '';
+
+            var requiresControls = $.browser.android || ($.browser.webkit && !$.browser.chrome);
+
+            // Can't autoplay in these browsers so we need to use the full controls
+            if (requiresControls) {
+                html += '<audio preload="auto" autoplay controls>';
+            } else {
+                html += '<audio preload="auto" style="display:none;" autoplay>';
+            }
+            html += '<source type="audio/mpeg" src="' + mp3Url + '" />';
+            html += '<source type="audio/aac" src="' + aacUrl + '" />';
+            html += '<source type="audio/webm" src="' + webmUrl + '" />';
+            html += '</audio>';
+
+            var nowPlayingBar = $('#nowPlayingBar').show();
+            //show stop button
+            $('#stopButton', nowPlayingBar).show();
+            $('#playButton', nowPlayingBar).hide();
+            $('#pauseButton', nowPlayingBar).show();
+            $('#fullscreenButton', nowPlayingBar).hide();
+
+            $('#previousTrackButton', nowPlayingBar).show();
+            $('#nextTrackButton', nowPlayingBar).show();
+            $('#playlistButton', nowPlayingBar).show();
+
+            $('#qualityButton', nowPlayingBar).hide();
+            $('#audioTracksButton', nowPlayingBar).hide();
+            $('#subtitleButton', nowPlayingBar).hide();
+            $('#chaptersButton', nowPlayingBar).hide();
+
+            $('#mediaElement', nowPlayingBar).html(html);
+            var audioElement = $("audio", mediaElement);
+
+            var initialVolume = localStorage.getItem("volume") || 0.5;
+
+            audioElement.each(function () {
+                this.volume = initialVolume;
+            });
+
+            self.volumeSlider.val(initialVolume).slider('refresh');
+            self.updateVolumeButtons(initialVolume);
+
+            audioElement.on("volumechange", function () {
+
+                var vol = this.volume;
+
+                localStorage.setItem("volume", vol);
+
+                self.updateVolumeButtons(vol);
+
+            }).on("play.once", function () {
+
+                if (!requiresControls) {
+                    audioElement.hide();
+                }
+
+                self.updateCanClientSeek(this);
+
+                audioElement.off("play.once");
+
+                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, true, item.MediaType);
+
+                self.startProgressInterval(item.Id);
+
+            }).on("pause", function () {
+
+                $('#playButton', nowPlayingBar).show();
+                $('#pauseButton', nowPlayingBar).hide();
+
+            }).on("playing", function () {
+
+                $('#playButton', nowPlayingBar).hide();
+                $('#pauseButton', nowPlayingBar).show();
+
+            }).on("timeupdate", function () {
+
+                if (!self.isPositionSliderActive) {
+
+                    self.setCurrentTime(self.getCurrentTicks(this), item, true);
+                }
+
+            }).on("ended.playbackstopped", self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded);
+
+            currentItem = item;
+            curentDurationTicks = item.RunTimeTicks;
+
+            return audioElement[0];
+        };
+
+        function canPlayAudioStreamDirect(audioStream) {
+
+            var audioCodec = (audioStream.Codec || '').toLowerCase().replace('-', '');
+
+            if (audioCodec.indexOf('aac') == -1 &&
+                audioCodec.indexOf('mp3') == -1 &&
+                audioCodec.indexOf('mpeg') == -1) {
+
+                return false;
+            }
+
+            if (audioStream.Channels == null) {
+                return false;
+            }
+
+            // IE won't play at all if more than two channels
+            if (audioStream.Channels > 2 && $.browser.msie) {
+                return false;
+            }
+
+            return true;
+        };
+
+        function trunc(string, len) {
+            if (string.length > 0 && string.length < len) return string;
+            var trimmed = $.trim(string).substring(0, len).split(" ").slice(0, -1).join(" ");
+            if (trimmed) {
+                trimmed += "...";
+            } else {
+                trimmed = "---"
+            }
+            return trimmed;
+        };
+
+        function trimTitle(title) {
+            return title.replace("\n---", "");
+        };
+
+        function titleHtml(title) {
+            var titles = title.split("\n");
+            return (trunc(titles[0], 30) + "<br />" + trunc(titles[1], 30)).replace("---", "&nbsp;");
+        };
+
+        var getItemFields = "MediaStreams,Chapters,Path";
     }
 
     window.MediaPlayer = new mediaPlayer();
