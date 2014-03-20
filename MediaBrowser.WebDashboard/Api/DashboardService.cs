@@ -613,6 +613,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "chromecast.css",
                                       "contextmenu.css",
                                       "mediaplayer.css",
+                                      "mediaplayer-video.css",
                                       "librarybrowser.css",
                                       "detailtable.css",
                                       "posteritem.css",

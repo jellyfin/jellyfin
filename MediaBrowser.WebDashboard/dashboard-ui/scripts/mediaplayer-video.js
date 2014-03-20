@@ -18,12 +18,12 @@
         var timeout;
         var video;
         var culturesPromise;
+        var initialVolume;
         var fullscreenExited = false;
         var idleState = true;
 
         self.initVideoPlayer = function () {
             video = playVideo(item, startPosition, user);
-            enhancePlayer();
             return video;
         };
 
@@ -41,33 +41,10 @@
         };
 
         self.resetEnhancements = function () {
-
-            var footer = $("#footer");
-
-            var mediaPlayer = $("#mediaPlayer", footer);
-
-            var mediaElement = $("#mediaElement", mediaPlayer);
-
-            var nowPlayingBar = $("#nowPlayingBar", mediaPlayer);
-
-            footer.css("top", null);
-
-            mediaElement.html(""); // remove play/pause
-
-            mediaPlayer.hide().append(nowPlayingBar); // put elements back where they belong
-
-            $("#videoBackdrop", footer).hide();
-
-            if (!$("#footerNotifications", footer).html()) { // only hide footer if no notifications
-
-                footer.hide();
-
-            }
-
+            $("#mediaPlayer").hide();
+            $("video").remove();
             $("html").css("cursor", "default");
-
             $(".ui-loader").hide();
-
         };
 
         self.exitFullScreen = function() {
@@ -90,7 +67,7 @@
 
         self.showSubtitleMenu = function () {
 
-            var flyout = $('#subtitleFlyout');
+            var flyout = $('#video-subtitleFlyout');
 
             if (!flyout.is(':visible')) {
 
@@ -101,39 +78,39 @@
                 culturesPromise.done(function (cultures) {
                     $("html").css("cursor", "default");
                     flyout.html(getSubtitleTracksHtml(currentItem, cultures)).trigger('create').scrollTop(0);
-                    toggleFlyout(flyout, '#subtitleButton');
+                    toggleFlyout(flyout, '#video-subtitleButton');
                 });
 
             } else {
-                toggleFlyout(flyout, '#subtitleButton');
+                toggleFlyout(flyout, '#video-subtitleButton');
             }
         };
 
         self.showQualityFlyout = function () {
 
-            var flyout = $('#qualityFlyout');
+            var flyout = $('#video-qualityFlyout');
 
             if (!flyout.is(':visible')) {
                 flyout.html(getQualityFlyoutHtml(currentItem)).scrollTop(0);
             }
 
-            toggleFlyout(flyout, '#qualityButton');
+            toggleFlyout(flyout, '#video-qualityButton');
         };
 
         self.showChaptersFlyout = function () {
 
-            var flyout = $('#chaptersFlyout');
+            var flyout = $('#video-chaptersFlyout');
 
             if (!flyout.is(':visible')) {
                 flyout.html(getChaptersFlyoutHtml(currentItem)).scrollTop(0);
             }
 
-            toggleFlyout(flyout, '#chaptersButton');
+            toggleFlyout(flyout, '#video-chaptersButton');
         };
 
         self.showAudioTracksFlyout = function () {
 
-            var flyout = $('#audioTracksFlyout');
+            var flyout = $('#video-audioTracksFlyout');
 
             if (!flyout.is(':visible')) {
 
@@ -144,15 +121,15 @@
                 culturesPromise.done(function (cultures) {
                     $("html").css("cursor", "default");
                     flyout.html(getAudioTracksHtml(currentItem, cultures)).trigger('create').scrollTop(0);
-                    toggleFlyout(flyout, '#audioTracksButton');
+                    toggleFlyout(flyout, '#video-audioTracksButton');
                 });
             } else {
-                toggleFlyout(flyout, '#audioTracksButton');
+                toggleFlyout(flyout, '#video-audioTracksButton');
             }
         };
 
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function () {
-            var nowPlayingBar = $('#nowPlayingBar');
+            var videoControls = $('#videoControls');
 
             $('.itemVideo').off('mousemove keydown scroll', idleHandler);
 
@@ -161,22 +138,22 @@
                 idleState = true;
                 $('.itemVideo').on('mousemove keydown scroll', idleHandler).trigger('mousemove');
             } else {
-                nowPlayingBar.removeClass("highPosition");
+                videoControls.removeClass("active inactive");
                 exitFullScreenToWindow();
             }
         });
 
         $(function () {
-            $('#chaptersFlyout').on('click', '.mediaFlyoutOption', function () {
+            $('#video-chaptersFlyout').on('click', '.mediaFlyoutOption', function () {
 
                 var ticks = parseInt(this.getAttribute('data-positionticks'));
 
                 self.changeStream(ticks);
 
-                hideFlyout($('#chaptersFlyout'));
+                hideFlyout($('#video-chaptersFlyout'));
             });
 
-            $('#audioTracksFlyout').on('click', '.mediaFlyoutOption', function () {
+            $('#video-audioTracksFlyout').on('click', '.mediaFlyoutOption', function () {
 
                 if (!$(this).hasClass('selectedMediaFlyoutOption')) {
                     var index = parseInt(this.getAttribute('data-index'));
@@ -184,10 +161,10 @@
                     self.changeStream(self.getCurrentTicks(), { AudioStreamIndex: index });
                 }
 
-                hideFlyout($('#audioTracksFlyout'));
+                hideFlyout($('#video-audioTracksFlyout'));
             });
 
-            $('#subtitleFlyout').on('click', '.mediaFlyoutOption', function () {
+            $('#video-subtitleFlyout').on('click', '.mediaFlyoutOption', function () {
 
                 if (!$(this).hasClass('selectedMediaFlyoutOption')) {
                     var index = parseInt(this.getAttribute('data-index'));
@@ -195,10 +172,10 @@
                     self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: index });
                 }
 
-                hideFlyout($('#subtitleFlyout'));
+                hideFlyout($('#video-subtitleFlyout'));
             });
 
-            $('#qualityFlyout').on('click', '.mediaFlyoutOption', function () {
+            $('#video-qualityFlyout').on('click', '.mediaFlyoutOption', function () {
 
                 if (!$(this).hasClass('selectedMediaFlyoutOption')) {
 
@@ -214,10 +191,10 @@
                     });
                 }
 
-                hideFlyout($('#qualityFlyout'));
+                hideFlyout($('#video-qualityFlyout'));
             });
 
-            $("#footer").on("mousemove", "#videoPlayer.fullscreenVideo #itemVideo", function () {
+            $("body").on("mousemove", "#videoPlayer.fullscreenVideo #itemVideo", function () {
 
                 idleHandler(this);
 
@@ -226,7 +203,7 @@
 
         function idleHandler() {
             var video = $(".itemVideo");
-            var nowPlayingBar = $("#nowPlayingBar");
+            var videoControls = $("#videoControls");
 
             if (timeout) {
                 window.clearTimeout(timeout);
@@ -234,7 +211,7 @@
 
             if (idleState == true) {
                 video.removeClass("cursor-inactive").addClass("cursor-active");
-                nowPlayingBar.removeClass("inactive").addClass("active");
+                videoControls.removeClass("inactive").addClass("active");
             }
 
             idleState = false;
@@ -242,9 +219,9 @@
             timeout = window.setTimeout(function () {
                 idleState = true;
                 video.removeClass("cursor-active").addClass("cursor-inactive");
-                nowPlayingBar.removeClass("active").addClass("inactive");
+                videoControls.removeClass("active").addClass("inactive");
             }, 4000);
-        }
+        };
 
         function requestFullScreen(element) {
             // Supports most browsers and their versions.
@@ -255,118 +232,6 @@
             } else {
                 enterFullScreen();
             }
-        }
-
-        function enhancePlayer() {
-            // Show loading animation
-            $(".ui-loader").show();
-            $("html").css("cursor", "wait");
-
-            var footer = $("#footer");
-            var nowPlayingBar = $("#nowPlayingBar", footer);
-            var mediaElement = $("#mediaElement", footer);
-
-            var play = $("<div id='play' class='status'></div>");
-            var pause = $("<div id='pause' class='status'></div>");
-
-            mediaElement.append(play).append(pause);
-
-            $("#videoBackdrop", footer).show();
-
-            footer.css("top", "101%");
-
-            var videoPlayer = $("#videoPlayer", footer)
-                .append(nowPlayingBar);
-
-            // Stop playback on browser back button nav
-            $(window).on("popstate", function () {
-
-                self.stop();
-
-                return;
-
-            });
-
-            $(video)
-                .on("click", function (e) {
-
-                    if (this.paused) {
-
-                        self.unpause();
-
-                    } else {
-
-                        self.pause();
-
-                    }
-
-                })
-                .on("dblclick", function () {
-
-                    self.toggleFullscreen();
-
-                })
-                .on("seeking", function (e) {
-
-                    $("html").css("cursor", "wait");
-
-                })
-                .on("seeked", function (e) {
-
-                    $("html").css("cursor", "default");
-
-                })
-                .on("loadstart", function () {
-
-                    $("html").css("cursor", "progress");
-
-                })
-                .on("canplay", function () {
-
-                    $(".ui-loader").hide();
-
-                    $("html").css("cursor", "default");
-
-                });
-
-            $(".mediaFlyoutContainer").on("click", "a", function (e) {
-
-                if (confirm("This option will close the video player. Proceed?")) {
-
-                    self.stop();
-
-                } else {
-
-                    e.preventDefault();
-
-                }
-
-            });
-
-            changeHandler("fullscreenchange");
-            changeHandler("mozfullscreenchange");
-            changeHandler("webkitfullscreenchange");
-            changeHandler("msfullscreenchange");
-
-            $(document).on("keyup.enhancePlayer", function (e) {
-                if (fullscreenExited) {
-
-                    videoPlayer.removeClass("fullscreenVideo");
-
-                    fullscreenExited = false;
-
-                    return;
-                }
-
-                if (e.keyCode == 27) {
-
-                    self.stop();
-
-                    $(this).unbind("keyup.enhancePlayer");
-                }
-            });
-
-            fullscreenExited = false;
         };
 
         function changeHandler(event) {
@@ -375,7 +240,7 @@
                 fullscreenExited = self.isFullScreen() == false;
             });
 
-        }
+        };
 
         function enterFullScreen() {
 
@@ -391,7 +256,7 @@
 
             player.removeClass("fullscreenVideo");
 
-        }
+        };
 
         function toggleFlyout(flyout, button) {
 
@@ -421,14 +286,14 @@
 
                 hideFlyout(flyout);
             }
-        }
+        };
 
         function hideFlyout(flyout) {
 
             flyout.slideUp().empty();
 
             $(document.body).off("mousedown.hidesearchhints");
-        }
+        };
 
         function getChaptersFlyoutHtml(item) {
 
@@ -487,7 +352,7 @@
             }
 
             return html;
-        }
+        };
 
         function getAudioTracksHtml(item, cultures) {
 
@@ -570,7 +435,7 @@
             html += '<div style="padding: 5px;"><a data-role="button" data-icon="gear" href="usersettings.html?userid=' + Dashboard.getCurrentUserId() + '" data-mini="true" data-theme="a">Preferences</a></div>';
 
             return html;
-        }
+        };
 
         function getSubtitleTracksHtml(item, cultures) {
 
@@ -657,7 +522,7 @@
             html += '<div style="padding: 5px;"><a data-role="button" data-icon="gear" href="usersettings.html?userid=' + Dashboard.getCurrentUserId() + '" data-mini="true" data-theme="a">Preferences</a></div>';
 
             return html;
-        }
+        };
 
         function getQualityFlyoutHtml(item) {
 
@@ -698,7 +563,7 @@
             }
 
             return html;
-        }
+        };
 
         function getInitialSubtitleStreamIndex(mediaStreams, user) {
 
@@ -737,7 +602,7 @@
             }
 
             return null;
-        }
+        };
 
         function getInitialAudioStreamIndex(mediaStreams, user) {
 
@@ -760,7 +625,7 @@
 
             // Just use the first audio stream
             return audioStreams.length ? audioStreams[0].Index : null;
-        }
+        };
 
         function getVideoQualityOptions(item) {
 
@@ -836,7 +701,7 @@
             options[selectedIndex].selected = true;
 
             return options;
-        }
+        };
 
         function playVideo(item, startPosition, user) {
 
@@ -909,6 +774,13 @@
 
             })) + seekParam;
 
+            //======================================================================================>
+
+            // Show loading animation
+            $(".ui-loader").show();
+            $("html").css("cursor", "wait");
+
+            // Create video player
             var html = '';
 
             var requiresControls = $.browser.msie || $.browser.android || ($.browser.webkit && !$.browser.chrome);
@@ -937,52 +809,54 @@
                 html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
             }
 
-            html += '</video';
+            html += '</video>';
 
-            var footer = $("#footer").show();
-            var nowPlayingBar = $('#nowPlayingBar');
+            var mediaPlayer = $("#mediaPlayer").show();
+            var videoPlayer = $("#videoPlayer", mediaPlayer);
+            var videoControls = $('#videoControls', mediaPlayer);
+
             //show stop button
-            $('#stopButton', nowPlayingBar).show();
-            $('#playButton', nowPlayingBar).hide();
-            $('#pauseButton', nowPlayingBar).show();
-            $('#playlistButton', nowPlayingBar).hide();
-            $('#previousTrackButton', nowPlayingBar).hide();
-            $('#nextTrackButton', nowPlayingBar).hide();
-            var mediaElement = $('#mediaElement', footer).html(html);
+            $('#video-stopButton', videoControls).show();
+            $('#video-playButton', videoControls).hide();
+            $('#video-pauseButton', videoControls).show();
+            $('#video-playlistButton', videoControls).hide();
+            $('#video-previousTrackButton', videoControls).hide();
+            $('#video-nextTrackButton', videoControls).hide();
+            var videoElement = $('#videoElement', mediaPlayer).prepend(html);
 
-            $('#qualityButton', nowPlayingBar).show();
+            $('#video-qualityButton', videoControls).show();
 
             if (mediaStreams.filter(function (i) {
                 return i.Type == "Audio";
             }).length) {
-                $('#audioTracksButton', nowPlayingBar).show();
+                $('#video-audioTracksButton', videoControls).show();
             } else {
-                $('#audioTracksButton', nowPlayingBar).hide();
+                $('#video-audioTracksButton', videoControls).hide();
             }
 
             if (mediaStreams.filter(function (i) {
                 return i.Type == "Subtitle";
             }).length) {
-                $('#subtitleButton', nowPlayingBar).show();
+                $('#video-subtitleButton', videoControls).show();
             } else {
-                $('#subtitleButton', nowPlayingBar).hide();
+                $('#video-subtitleButton', videoControls).hide();
             }
 
             if (item.Chapters && item.Chapters.length) {
-                $('#chaptersButton', nowPlayingBar).show();
+                $('#video-chaptersButton', videoControls).show();
             } else {
-                $('#chaptersButton', nowPlayingBar).hide();
+                $('#video-chaptersButton', videoControls).hide();
             }
 
             if (requiresControls) {
-                $('#fullscreenButton', nowPlayingBar).hide();
+                $('#video-fullscreenButton', videoControls).hide();
             } else {
-                $('#fullscreenButton', nowPlayingBar).show();
+                $('#video-fullscreenButton', videoControls).show();
             }
 
-            var videoElement = $("video", mediaElement);
+            var videoElement = $("video", videoElement);
 
-            var initialVolume = localStorage.getItem("volume") || 0.5;
+            initialVolume = localStorage.getItem("volume") || 0.5;
 
             videoElement.each(function () {
                 this.volume = initialVolume;
@@ -1021,20 +895,20 @@
 
             }).on("pause", function (e) {
 
-                $('#playButton', nowPlayingBar).show();
-                $('#pauseButton', nowPlayingBar).hide();
-                $("#pause", mediaElement).show().addClass("fadeOut");
+                $('#video-playButton', videoControls).show();
+                $('#video-pauseButton', videoControls).hide();
+                $("#pause", videoElement).show().addClass("fadeOut");
                 setTimeout(function () {
-                    $("#pause", mediaElement).hide().removeClass("fadeOut");
+                    $("#pause", videoElement).hide().removeClass("fadeOut");
                 }, 300);
 
             }).on("playing", function (e) {
 
-                $('#playButton', nowPlayingBar).hide();
-                $('#pauseButton', nowPlayingBar).show();
-                $("#play", mediaElement).show().addClass("fadeOut");
+                $('#video-playButton', videoControls).hide();
+                $('#video-pauseButton', videoControls).show();
+                $("#play", videoElement).show().addClass("fadeOut");
                 setTimeout(function () {
-                    $("#play", mediaElement).hide().removeClass("fadeOut");
+                    $("#play", videoElement).hide().removeClass("fadeOut");
                 }, 300);
 
             }).on("timeupdate", function () {
@@ -1044,14 +918,14 @@
                     self.setCurrentTime(self.getCurrentTicks(this), item, true);
                 }
 
-            }).on("error", function (e) {
+            }).on("error", function () {
 
                 $("html").css("cursor", "default");
                 $(".ui-loader").hide();
                 self.resetEnhancements();
 
                 var errorCode = this.error ? this.error.code : '';
-                console.log('Html5 Video error code: ' + errorCode, JSON.stringify(e));
+                console.log('Html5 Video error code: ' + errorCode);
 
                 var errorMsg = 'There was an error playing the video.';
 
@@ -1064,8 +938,73 @@
                     message: errorMsg
                 });
 
+            }).on("click", function (e) {
+
+                if (this.paused) {
+                    self.unpause();
+                } else {
+                    self.pause();
+                }
+
+            }).on("dblclick", function () {
+
+                self.toggleFullscreen();
+
+            }).on("seeking", function (e) {
+
+                $("html").css("cursor", "wait");
+
+            }).on("seeked", function (e) {
+
+                $("html").css("cursor", "default");
+
+            }).on("loadstart", function () {
+
+                $("html").css("cursor", "progress");
+
+            }).on("canplay", function () {
+
+                $(".ui-loader").hide();
+                $("html").css("cursor", "default");
+
             }).on("ended.playbackstopped", self.onPlaybackStopped)
                 .on('ended.playnext', self.playNextAfterEnded);
+
+            // Stop playback on browser back button nav
+            $(window).on("popstate", function () {
+                self.stop();
+                return;
+            });
+
+            $(".mediaFlyoutContainer").on("click", "a", function (e) {
+                if (confirm("This option will close the video player. Proceed?")) {
+                    self.stop();
+                } else {
+                    e.preventDefault();
+                }
+            });
+
+            changeHandler("fullscreenchange");
+            changeHandler("mozfullscreenchange");
+            changeHandler("webkitfullscreenchange");
+            changeHandler("msfullscreenchange");
+
+            $(document).on("keyup.enhancePlayer", function (e) {
+                if (fullscreenExited) {
+                    videoPlayer.removeClass("fullscreenVideo");
+                    fullscreenExited = false;
+                    return;
+                }
+
+                if (e.keyCode == 27) {
+                    self.stop();
+                    $(this).unbind("keyup.enhancePlayer");
+                }
+            });
+
+            mediaPlayer.trigger("create");
+
+            fullscreenExited = false;
 
             currentItem = item;
 
