@@ -1058,11 +1058,11 @@
                 if (stream.Type == "Audio") {
 
                     // Stream statically when possible
-                    if (endsWith(item.Path, ".aac") && stream.BitRate <= 256000) {
+                    if (endsWith(mediaVersion.Path, ".aac") && stream.BitRate <= 256000) {
                         aacUrl += "&static=true" + seekParam;
                         isStatic = true;
                     }
-                    else if (endsWith(item.Path, ".mp3") && stream.BitRate <= 256000) {
+                    else if (endsWith(mediaVersion.Path, ".mp3") && stream.BitRate <= 256000) {
                         mp3Url += "&static=true" + seekParam;
                         isStatic = true;
                     }
@@ -1202,7 +1202,7 @@
             return (trunc(titles[0], 30) + "<br />" + trunc(titles[1], 30)).replace("---", "&nbsp;");
         };
 
-        var getItemFields = "MediaStreams,Chapters,Path";
+        var getItemFields = "MediaVersions";
     }
 
     window.MediaPlayer = new mediaPlayer();
