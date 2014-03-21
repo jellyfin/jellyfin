@@ -938,8 +938,6 @@
         self.bindVolumeSlider = function () {
             self.volumeSlider.on('slidestop', function () {
 
-                console.log("slideStop");
-
                 var vol = this.value;
 
                 self.updateVolumeButtons(vol);

@@ -21,27 +21,52 @@
         var initialVolume;
         var fullscreenExited = false;
         var idleState = true;
+        var remoteFullscreen = false;
 
         self.initVideoPlayer = function () {
             video = playVideo(item, mediaVersion, startPosition, user);
             return video;
         };
 
+        self.remoteFullscreen = function () {
+
+            var videoControls = $("#videoControls");
+            
+            if (remoteFullscreen) {
+                exitFullScreenToWindow();
+                videoControls.removeClass("inactive");
+            } else {
+                enterFullScreen();
+                videoControls.addClass("inactive");
+            }
+
+            remoteFullscreen = !remoteFullscreen;
+        };
+
         self.toggleFullscreen = function () {
             if (self.isFullScreen()) {
-                if (document.cancelFullScreen) { document.cancelFullScreen(); }
-                else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+                if (document.cancelFullScreen) {
+                    document.cancelFullScreen();
+                }
+                else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                }
+                else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
                 else if (document.webkitCancelFullScreen) {
                     document.webkitCancelFullScreen();
                 }
                 $('#videoPlayer').removeClass('fullscreenVideo');
             } else {
-                requestFullScreen(document.body);
+                requestFullScreen(document.documentElement);
             }
         };
 
         self.resetEnhancements = function () {
             $("#mediaPlayer").hide();
+            $('#videoPlayer').removeClass('fullscreenVideo');
+            $("#videoControls").removeClass("inactive")
             $("video").remove();
             $("html").css("cursor", "default");
             $(".ui-loader").hide();
@@ -114,7 +139,8 @@
             }
         };
 
-        $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function () {
+        $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function (e) {
+
             var videoControls = $('#videoControls');
 
             $('.itemVideo').off('mousemove keydown scroll', idleHandler);
@@ -210,14 +236,16 @@
         };
 
         function requestFullScreen(element) {
+
             // Supports most browsers and their versions.
-            var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullScreen;
+            var requestMethod = element.requestFullscreen || element.webkitRequestFullscreen || element.webkitRequestFullScreen || element.mozRequestFullScreen;
 
             if (requestMethod) { // Native full screen.
                 requestMethod.call(element);
             } else {
                 enterFullScreen();
             }
+
         };
 
         function changeHandler(event) {
@@ -234,6 +262,8 @@
 
             player.addClass("fullscreenVideo");
 
+            remoteFullscreen = true;
+
         };
 
         function exitFullScreenToWindow() {
@@ -241,6 +271,8 @@
             var player = $("#videoPlayer");
 
             player.removeClass("fullscreenVideo");
+
+            remoteFullscreen = false;
 
         };
 

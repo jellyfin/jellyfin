@@ -1117,66 +1117,66 @@
 
             html += '<div class="mediaInfoStream">';
 
-            html += '<span class="mediaInfoStreamType">' + type + '</span>';
+            html += '<div class="mediaInfoStreamType">' + type + '</div>';
 
             var attributes = [];
 
             if (stream.Language && stream.Type != "Video") {
-                attributes.push('<span class="mediaInfoLabel">Language</span><span class="mediaInfoAttribute">' + stream.Language + '</span>');
+                attributes.push(createAttribute("Language", stream.Language));
             }
 
             if (stream.Codec && stream.Codec != "dca") {
-                attributes.push('<span class="mediaInfoLabel">Codec</span><span class="mediaInfoAttribute">' + stream.Codec.toUpperCase() + '</span>');
+                attributes.push(createAttribute("Codec", stream.Codec.toUpperCase()));
             }
 
             if (stream.Profile && stream.Codec == "dca") {
-                attributes.push('<span class="mediaInfoLabel">Codec</span><span class="mediaInfoAttribute">' + stream.Profile.toUpperCase() + '</span>');
+                attributes.push(createAttribute("Codec", stream.Profile.toUpperCase()));
             }
             else if (stream.Profile) {
-                attributes.push('<span class="mediaInfoLabel">Profile</span><span class="mediaInfoAttribute">' + stream.Profile + '</span>');
+                attributes.push(createAttribute("Profile", stream.Profile));
             }
 
             if (stream.Level) {
-                attributes.push('<span class="mediaInfoLabel">Level</span><span class="mediaInfoAttribute">' + stream.Level + '</span>');
+                attributes.push(createAttribute("Level", stream.Level));
             }
 
             if (stream.Width || stream.Height) {
-                attributes.push('<span class="mediaInfoLabel">Resolution</span><span class="mediaInfoAttribute">' + stream.Width + 'x' + stream.Height + '</span>');
+                attributes.push(createAttribute("Resolution", stream.Width + 'x' + stream.Height));
             }
 
             if (stream.AspectRatio && stream.Codec != "mjpeg") {
-                attributes.push('<span class="mediaInfoLabel">Aspect Ratio</span><span class="mediaInfoAttribute">' + stream.AspectRatio + '</span>');
+                attributes.push(createAttribute("Aspect Ratio", stream.AspectRatio));
             }
 
             if (type == "Video") {
-                attributes.push('<span class="mediaInfoLabel">Interlaced</span><span class="mediaInfoAttribute">' + (stream.IsInterlaced ? 'Yes' : 'No') + '</span>');
+                attributes.push(createAttribute("Interlaced", (stream.IsInterlaced ? 'Yes' : 'No')));
             }
 
             if (stream.AverageFrameRate || stream.RealFrameRate) {
-                attributes.push('<span class="mediaInfoLabel">Framerate</span><span class="mediaInfoAttribute">' + (stream.AverageFrameRate || stream.RealFrameRate) + '</span>');
+                attributes.push(createAttribute("Framerate", (stream.AverageFrameRate || stream.RealFrameRate)));
             }
 
             if (stream.ChannelLayout) {
-                attributes.push('<span class="mediaInfoLabel">Layout</span><span class="mediaInfoAttribute">' + stream.ChannelLayout + '</span>');
+                attributes.push(createAttribute("Layout", stream.ChannelLayout));
             }
             else if (stream.Channels) {
-                attributes.push('<span class="mediaInfoLabel">Channels</span><span class="mediaInfoAttribute">' + stream.Channels + ' ch</span>');
+                attributes.push(createAttribute("Channels",  stream.Channels + ' ch'));
             }
 
             if (stream.BitRate && stream.Codec != "mjpeg") {
-                attributes.push('<span class="mediaInfoLabel">Bitrate</span><span class="mediaInfoAttribute">' + (parseInt(stream.BitRate / 1000)) + ' kbps</span>');
+                attributes.push(createAttribute("Bitrate", (parseInt(stream.BitRate / 1000)) + ' kbps'));
             }
 
             if (stream.SampleRate) {
-                attributes.push('<span class="mediaInfoLabel">Sample Rate</span><span class="mediaInfoAttribute">' + stream.SampleRate + ' khz</span>');
+                attributes.push(createAttribute("Sample Rate", stream.SampleRate + ' khz'));
             }
 
             if (stream.Type != "Video") {
-                attributes.push('<span class="mediaInfoLabel">Default</span><span class="mediaInfoAttribute">' + (stream.IsDefault ? 'Yes' : 'No') + '</span>');
+                attributes.push(createAttribute("Default", (stream.IsDefault ? 'Yes' : 'No')));
             }
             if (stream.Type == "Subtitle") {
-                attributes.push('<span class="mediaInfoLabel">Forced</span><span class="mediaInfoAttribute">' + (stream.IsForced ? 'Yes' : 'No') + '</span>');
-                attributes.push('<span class="mediaInfoLabel">External</span><span class="mediaInfoAttribute">' + (stream.IsExternal ? 'Yes' : 'No') + '</span>');
+                attributes.push(createAttribute("Forced", (stream.IsForced ? 'Yes' : 'No')));
+                attributes.push(createAttribute("External", (stream.IsExternal ? 'Yes' : 'No')));
             }
 
             html += attributes.join('<br/>');
@@ -1189,6 +1189,10 @@
         }
         
         return html;
+    }
+
+    function createAttribute(label, value) {
+        return '<span class="mediaInfoLabel">' + label + '</span><span class="mediaInfoAttribute">' + value + '</span>'
     }
 
     function getVideosHtml(items, user, limit, moreButtonClass) {
