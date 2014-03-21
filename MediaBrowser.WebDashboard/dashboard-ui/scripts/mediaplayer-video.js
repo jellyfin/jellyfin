@@ -619,14 +619,14 @@
             // Just use the first audio stream
             return audioStreams.length ? audioStreams[0].Index : null;
         };
-
+        
         function getVideoQualityOptions(mediaStreams) {
 
             var videoStream = mediaStreams.filter(function (stream) {
                 return stream.Type == "Video";
             })[0];
 
-            var bitrateSetting = parseInt(localStorage.getItem('preferredVideoBitrate') || '') || 1500000;
+            var bitrateSetting = self.getBitrateSetting();
 
             var maxAllowedWidth = Math.max(screen.height, screen.width);
 

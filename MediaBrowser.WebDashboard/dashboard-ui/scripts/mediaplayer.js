@@ -399,12 +399,37 @@
             self.playlist = items;
             currentPlaylistIndex = 0;
         };
-        
-        function getOptimalMediaVersion(versions) {
 
-            // TODO: Implement
+        self.getBitrateSetting = function() {
+            return parseInt(localStorage.getItem('preferredVideoBitrate') || '') || 1500000;
+        };
 
-            return versions[0];
+        function getOptimalMediaVersion(mediaType, versions) {
+
+            var optimalVersion;
+
+            if (mediaType == 'Video') {
+
+                var bitrateSetting = self.getBitrateSetting();
+
+                var maxAllowedWidth = Math.max(screen.height, screen.width);
+
+                optimalVersion = versions.filter(function (v) {
+
+                    var videoStream = v.MediaStreams.filter(function (s) {
+                        return s.Type == 'Video';
+                    })[0];
+
+                    var audioStream = v.MediaStreams.filter(function (s) {
+                        return s.Type == 'Audio';
+                    })[0];
+
+                    return self.canPlayVideoDirect(v, videoStream, audioStream, null, maxAllowedWidth, bitrateSetting);
+
+                })[0];
+            }
+
+            return optimalVersion || versions[0];
         }
 
         self.playInternal = function (item, startPosition, user) {
@@ -424,7 +449,7 @@
             if (item.MediaType === "Video") {
 
                 currentItem = item;
-                currentMediaVersion = getOptimalMediaVersion(item.MediaVersions);
+                currentMediaVersion = getOptimalMediaVersion(item.MediaType, item.MediaVersions);
 
                 videoPlayer(self, item, currentMediaVersion, startPosition, user);
                 mediaElement = self.initVideoPlayer();
@@ -435,7 +460,7 @@
             } else if (item.MediaType === "Audio") {
 
                 currentItem = item;
-                currentMediaVersion = getOptimalMediaVersion(item.MediaVersions);
+                currentMediaVersion = getOptimalMediaVersion(item.MediaType, item.MediaVersions);
 
                 mediaElement = playAudio(item, currentMediaVersion, startPosition);
                 mediaControls.show();
@@ -1031,11 +1056,11 @@
                 if (stream.Type == "Audio") {
 
                     // Stream statically when possible
-                    if (endsWith(item.Path, ".aac") && stream.BitRate <= 256000) {
+                    if (endsWith(mediaVersion.Path, ".aac") && stream.BitRate <= 256000) {
                         aacUrl += "&static=true" + seekParam;
                         isStatic = true;
                     }
-                    else if (endsWith(item.Path, ".mp3") && stream.BitRate <= 256000) {
+                    else if (endsWith(mediaVersion.Path, ".mp3") && stream.BitRate <= 256000) {
                         mp3Url += "&static=true" + seekParam;
                         isStatic = true;
                     }
@@ -1175,7 +1200,7 @@
             return (trunc(titles[0], 30) + "<br />" + trunc(titles[1], 30)).replace("---", "&nbsp;");
         };
 
-        var getItemFields = "MediaStreams,Chapters,Path";
+        var getItemFields = "MediaVersions";
     }
 
     window.MediaPlayer = new mediaPlayer();

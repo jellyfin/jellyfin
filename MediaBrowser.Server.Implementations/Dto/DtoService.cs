@@ -725,7 +725,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.DateCreated = item.DateCreated;
             }
 
-            dto.DisplayMediaType = item.DisplayMediaType;
+            if (fields.Contains(ItemFields.DisplayMediaType))
+            {
+                dto.DisplayMediaType = item.DisplayMediaType;
+            }
+
             dto.IsUnidentified = item.IsUnidentified;
 
             if (fields.Contains(ItemFields.Settings))
@@ -1351,7 +1355,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var name = "";
 
-            var stream = video.GetDefaultVideoStream();
+            var videoStream = video.GetDefaultVideoStream();
 
             if (video.Video3DFormat.HasValue)
             {
@@ -1393,44 +1397,42 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
                 name = name.Trim();
             }
-            else if (video.VideoType == VideoType.VideoFile)
+
+            if (videoStream != null)
             {
-                if (stream != null)
+                if (videoStream.Width.HasValue)
                 {
-                    if (stream.Width.HasValue)
+                    if (videoStream.Width.Value >= 3800)
                     {
-                        if (stream.Width.Value >= 3800)
-                        {
-                            name = name + " " + "4K";
-                            name = name.Trim();
-                        }
-                        else if (stream.Width.Value >= 1900)
-                        {
-                            name = name + " " + "1080P";
-                            name = name.Trim();
-                        }
-                        else if (stream.Width.Value >= 1270)
-                        {
-                            name = name + " " + "720P";
-                            name = name.Trim();
-                        }
-                        else if (stream.Width.Value >= 700)
-                        {
-                            name = name + " " + "480p";
-                            name = name.Trim();
-                        }
-                        else
-                        {
-                            name = name + " " + "SD";
-                            name = name.Trim();
-                        }
+                        name = name + " " + "4K";
+                        name = name.Trim();
+                    }
+                    else if (videoStream.Width.Value >= 1900)
+                    {
+                        name = name + " " + "1080P";
+                        name = name.Trim();
+                    }
+                    else if (videoStream.Width.Value >= 1270)
+                    {
+                        name = name + " " + "720P";
+                        name = name.Trim();
+                    }
+                    else if (videoStream.Width.Value >= 700)
+                    {
+                        name = name + " " + "480p";
+                        name = name.Trim();
+                    }
+                    else
+                    {
+                        name = name + " " + "SD";
+                        name = name.Trim();
                     }
                 }
             }
 
-            if (stream != null && !string.IsNullOrWhiteSpace(stream.Codec))
+            if (videoStream != null && !string.IsNullOrWhiteSpace(videoStream.Codec))
             {
-                name = name + " " + stream.Codec.ToUpper();
+                name = name + " " + videoStream.Codec.ToUpper();
                 name = name.Trim();
             }
 
