@@ -29,7 +29,11 @@ namespace MediaBrowser.Model.Session
         /// <summary>
         /// The seek
         /// </summary>
-        Seek
+        Seek,
+        /// <summary>
+        /// The fullscreen
+        /// </summary>
+        Fullscreen
     }
 
     public class PlaystateRequest
