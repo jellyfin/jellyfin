@@ -162,8 +162,6 @@ var Dashboard = {
 
     updateSystemInfo: function (info) {
 
-        var isFirstLoad = !Dashboard.lastSystemInfo;
-
         Dashboard.lastSystemInfo = info;
         Dashboard.ensureWebSocket(info);
 
