@@ -665,33 +665,11 @@
 
                 cssClass += ' ' + options.shape + 'PosterItem';
 
+                var mediaVersionCount = item.MediaVersionCount || 1;
+
                 var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
 
-                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-alternateversioncount="' + (item.AlternateVersionCount || '0') + '" href="' + href + '">';
-
-                // Ribbon
-                if (item.MediaType == "Video" && options.formatIndicators) {
-                    // This would be much better if specified in the json payload
-                    // Another nice thing to have in the payload would be 720 vs 1080
-                    // Then, rather than "HD" it could display the specific HD format
-                    // "HD" doesn't do much good if you have the 720p and 1080p version
-                    var format = "SD";
-                    var ribbonColor = "ribbon-red";
-                    if (item.IsHD) {
-                        format = "HD";
-                        ribbonColor = "ribbon-blue";
-                    }
-                    if (item.Video3DFormat) {
-                        format = "3D";
-                        ribbonColor = "ribbon-3d";
-                    }
-
-                    html += '<div class="ribbon-wrapper">';
-                    html += '<div class="ribbon ' + ribbonColor + '">';
-                    html += format;
-                    html += '</div>';
-                    html += '</div>';
-                }
+                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-mediaversioncount="' + mediaVersionCount + '" href="' + href + '">';
 
                 var style = "";
 
@@ -722,8 +700,8 @@
                     html += LibraryBrowser.getPlayedIndicatorHtml(item);
                 }
 
-                if (item.AlternateVersionCount) {
-                    html += '<div class="alternateVersionIndicator">' + (item.AlternateVersionCount + 1) + '</div>';
+                if (mediaVersionCount > 1) {
+                    html += '<div class="mediaVersionIndicator">' + mediaVersionCount + '</div>';
                 }
                 if (item.IsUnidentified) {
                     html += '<div class="unidentifiedIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';

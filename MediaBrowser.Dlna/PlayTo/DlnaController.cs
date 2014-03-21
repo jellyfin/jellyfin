@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -32,7 +31,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IServerApplicationHost _appHost;
         private bool _playbackStarted = false;
 
-        private int UpdateTimerIntervalMs = 1000;
+        private const int UpdateTimerIntervalMs = 1000;
 
         public bool SupportsMediaRemoteControl
         {

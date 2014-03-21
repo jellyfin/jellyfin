@@ -1,5 +1,5 @@
 ﻿(function () {
-    videoPlayer = function(mediaPlayer, item, startPosition, user) {
+    videoPlayer = function (mediaPlayer, item, mediaVersion, startPosition, user) {
         if (mediaPlayer == null) {
             throw new Error("mediaPlayer cannot be null");
         }
@@ -15,16 +15,16 @@
         var self = mediaPlayer;
 
         var currentItem;
+        var currentMediaVersion;
         var timeout;
         var video;
-        var culturesPromise;
         var initialVolume;
         var fullscreenExited = false;
         var idleState = true;
         var remoteFullscreen = false;
 
         self.initVideoPlayer = function () {
-            video = playVideo(item, startPosition, user);
+            video = playVideo(item, mediaVersion, startPosition, user);
             return video;
         };
 
@@ -72,7 +72,7 @@
             $(".ui-loader").hide();
         };
 
-        self.exitFullScreen = function() {
+        self.exitFullScreen = function () {
             if (document.exitFullscreen) {
                 document.exitFullscreen();
             } else if (document.mozExitFullScreen) {
@@ -86,7 +86,7 @@
             fullscreenExited = true;
         };
 
-        self.isFullScreen = function() {
+        self.isFullScreen = function () {
             return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement ? true : false;
         };
 
@@ -96,15 +96,8 @@
 
             if (!flyout.is(':visible')) {
 
-                culturesPromise = culturesPromise || ApiClient.getCultures();
-
-                $("html").css("cursor", "progress");
-
-                culturesPromise.done(function (cultures) {
-                    $("html").css("cursor", "default");
-                    flyout.html(getSubtitleTracksHtml(currentItem, cultures)).trigger('create').scrollTop(0);
-                    toggleFlyout(flyout, '#video-subtitleButton');
-                });
+                flyout.html(getSubtitleTracksHtml()).trigger('create').scrollTop(0);
+                toggleFlyout(flyout, '#video-subtitleButton');
 
             } else {
                 toggleFlyout(flyout, '#video-subtitleButton');
@@ -116,7 +109,7 @@
             var flyout = $('#video-qualityFlyout');
 
             if (!flyout.is(':visible')) {
-                flyout.html(getQualityFlyoutHtml(currentItem)).scrollTop(0);
+                flyout.html(getQualityFlyoutHtml()).scrollTop(0);
             }
 
             toggleFlyout(flyout, '#video-qualityButton');
@@ -127,7 +120,7 @@
             var flyout = $('#video-chaptersFlyout');
 
             if (!flyout.is(':visible')) {
-                flyout.html(getChaptersFlyoutHtml(currentItem)).scrollTop(0);
+                flyout.html(getChaptersFlyoutHtml()).scrollTop(0);
             }
 
             toggleFlyout(flyout, '#video-chaptersButton');
@@ -139,15 +132,8 @@
 
             if (!flyout.is(':visible')) {
 
-                culturesPromise = culturesPromise || ApiClient.getCultures();
-
-                $("html").css("cursor", "progress");
-
-                culturesPromise.done(function (cultures) {
-                    $("html").css("cursor", "default");
-                    flyout.html(getAudioTracksHtml(currentItem, cultures)).trigger('create').scrollTop(0);
-                    toggleFlyout(flyout, '#video-audioTracksButton');
-                });
+                flyout.html(getAudioTracksHtml()).trigger('create').scrollTop(0);
+                toggleFlyout(flyout, '#video-audioTracksButton');
             } else {
                 toggleFlyout(flyout, '#video-audioTracksButton');
             }
@@ -327,13 +313,13 @@
             $(document.body).off("mousedown.hidesearchhints");
         };
 
-        function getChaptersFlyoutHtml(item) {
+        function getChaptersFlyoutHtml() {
 
             var html = '';
 
             var currentTicks = self.getCurrentTicks();
 
-            var chapters = item.Chapters || [];
+            var chapters = currentMediaVersion.Chapters || [];
 
             for (var i = 0, length = chapters.length; i < length; i++) {
 
@@ -358,7 +344,7 @@
 
                 if (chapter.ImageTag) {
 
-                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                    imgUrl = ApiClient.getImageUrl(currentMediaVersion.ItemId, {
                         maxwidth: 200,
                         tag: chapter.ImageTag,
                         type: "Chapter",
@@ -386,10 +372,10 @@
             return html;
         };
 
-        function getAudioTracksHtml(item, cultures) {
-
-            var streams = item.MediaStreams.filter(function (i) {
-                return i.Type == "Audio";
+        function getAudioTracksHtml() {
+            
+            var streams = currentMediaVersion.MediaStreams.filter(function (currentStream) {
+                return currentStream.Type == "Audio";
             });
 
             var currentIndex = getParameterByName('AudioStreamIndex', video.currentSrc);
@@ -410,20 +396,7 @@
 
                 html += '<div class="mediaFlyoutOptionContent">';
 
-                var language = null;
-
-                if (stream.Language && stream.Language != "und") {
-
-                    var culture = cultures.filter(function (current) {
-                        return current.ThreeLetterISOLanguageName.toLowerCase() == stream.Language.toLowerCase();
-                    });
-
-                    if (culture.length) {
-                        language = culture[0].DisplayName;
-                    }
-                }
-
-                html += '<div class="mediaFlyoutOptionName">' + (language || stream.Language || 'Unknown language') + '</div>';
+                html += '<div class="mediaFlyoutOptionName">' + (stream.Language || 'Unknown language') + '</div>';
 
                 var options = [];
 
@@ -469,10 +442,10 @@
             return html;
         };
 
-        function getSubtitleTracksHtml(item, cultures) {
+        function getSubtitleTracksHtml() {
 
-            var streams = item.MediaStreams.filter(function (i) {
-                return i.Type == "Subtitle";
+            var streams = currentMediaVersion.MediaStreams.filter(function (currentStream) {
+                return currentStream.Type == "Subtitle";
             });
 
             var currentIndex = getParameterByName('SubtitleStreamIndex', video.currentSrc) || -1;
@@ -502,25 +475,13 @@
 
                 html += '<div class="mediaFlyoutOptionContent">';
 
-                var language = null;
                 var options = [];
 
                 if (stream.Language == "Off") {
-                    language = "Off";
                     options.push('&nbsp;');
                 }
-                else if (stream.Language && stream.Language != "und") {
 
-                    var culture = cultures.filter(function (current) {
-                        return current.ThreeLetterISOLanguageName.toLowerCase() == stream.Language.toLowerCase();
-                    });
-
-                    if (culture.length) {
-                        language = culture[0].DisplayName;
-                    }
-                }
-
-                html += '<div class="mediaFlyoutOptionName">' + (language || 'Unknown language') + '</div>';
+                html += '<div class="mediaFlyoutOptionName">' + (stream.Language || 'Unknown language') + '</div>';
 
                 if (stream.Codec) {
                     options.push(stream.Codec);
@@ -556,7 +517,7 @@
             return html;
         };
 
-        function getQualityFlyoutHtml(item) {
+        function getQualityFlyoutHtml() {
 
             var html = '';
 
@@ -567,7 +528,7 @@
 
             var currentAudioStreamIndex = getParameterByName('AudioStreamIndex', video.currentSrc);
 
-            var options = getVideoQualityOptions(item, currentAudioStreamIndex, transcodingExtension);
+            var options = getVideoQualityOptions(currentMediaVersion.MediaStreams, currentAudioStreamIndex, transcodingExtension);
 
             if (isStatic) {
                 options[0].name = "Direct";
@@ -659,9 +620,9 @@
             return audioStreams.length ? audioStreams[0].Index : null;
         };
 
-        function getVideoQualityOptions(item) {
+        function getVideoQualityOptions(mediaStreams) {
 
-            var videoStream = (item.MediaStreams || []).filter(function (stream) {
+            var videoStream = mediaStreams.filter(function (stream) {
                 return stream.Type == "Video";
             })[0];
 
@@ -735,9 +696,9 @@
             return options;
         };
 
-        function playVideo(item, startPosition, user) {
+        function playVideo(item, mediaVersion, startPosition, user) {
 
-            var mediaStreams = item.MediaStreams || [];
+            var mediaStreams = mediaVersion.MediaStreams || [];
 
             var baseParams = {
                 audioChannels: 2,
@@ -748,20 +709,20 @@
                 Static: false
             };
 
-            var mp4Quality = getVideoQualityOptions(item).filter(function (opt) {
+            var mp4Quality = getVideoQualityOptions(mediaStreams).filter(function (opt) {
                 return opt.selected;
             })[0];
-            mp4Quality = $.extend(mp4Quality, self.getFinalVideoParams(item, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
+            mp4Quality = $.extend(mp4Quality, self.getFinalVideoParams(mediaVersion, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
 
-            var webmQuality = getVideoQualityOptions(item).filter(function (opt) {
+            var webmQuality = getVideoQualityOptions(mediaStreams).filter(function (opt) {
                 return opt.selected;
             })[0];
-            webmQuality = $.extend(webmQuality, self.getFinalVideoParams(item, webmQuality.maxWidth, webmQuality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.webm'));
+            webmQuality = $.extend(webmQuality, self.getFinalVideoParams(mediaVersion, webmQuality.maxWidth, webmQuality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.webm'));
 
-            var m3U8Quality = getVideoQualityOptions(item).filter(function (opt) {
+            var m3U8Quality = getVideoQualityOptions(mediaStreams).filter(function (opt) {
                 return opt.selected;
             })[0];
-            m3U8Quality = $.extend(m3U8Quality, self.getFinalVideoParams(item, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
+            m3U8Quality = $.extend(m3U8Quality, self.getFinalVideoParams(mediaVersion, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
 
             // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
             var prioritizeWebmOverH264 = $.browser.chrome || $.browser.msie;
@@ -772,7 +733,7 @@
 
             var seekParam = isStatic && startPosition ? '#t=' + (startPosition / 10000000) : '';
 
-            var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
+            var mp4VideoUrl = ApiClient.getUrl('Videos/' + mediaVersion.ItemId + '/stream.mp4', $.extend({}, baseParams, {
                 profile: 'baseline',
                 level: 3,
                 Static: isStatic,
@@ -784,7 +745,7 @@
 
             })) + seekParam;
 
-            var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
+            var webmVideoUrl = ApiClient.getUrl('Videos/' + mediaVersion.ItemId + '/stream.webm', $.extend({}, baseParams, {
 
                 VideoCodec: 'vpx',
                 AudioCodec: 'Vorbis',
@@ -794,7 +755,7 @@
 
             })) + seekParam;
 
-            var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
+            var hlsVideoUrl = ApiClient.getUrl('Videos/' + mediaVersion.ItemId + '/stream.m3u8', $.extend({}, baseParams, {
                 profile: 'baseline',
                 level: 3,
                 timeStampOffsetMs: 0,
@@ -874,7 +835,7 @@
                 $('#video-subtitleButton', videoControls).hide();
             }
 
-            if (item.Chapters && item.Chapters.length) {
+            if (mediaVersion.Chapters && mediaVersion.Chapters.length) {
                 $('#video-chaptersButton', videoControls).show();
             } else {
                 $('#video-chaptersButton', videoControls).hide();
@@ -921,9 +882,9 @@
 
                 videoElement.off("playing.once");
 
-                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, true, item.MediaType);
+                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), mediaVersion.ItemId, true, item.MediaType);
 
-                self.startProgressInterval(item.Id);
+                self.startProgressInterval(mediaVersion.ItemId);
 
             }).on("pause", function (e) {
 
@@ -1039,6 +1000,7 @@
             fullscreenExited = false;
 
             currentItem = item;
+            currentMediaVersion = mediaVersion;
 
             return videoElement[0];
         };

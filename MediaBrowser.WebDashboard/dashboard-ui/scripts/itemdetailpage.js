@@ -73,10 +73,10 @@
                     $('#btnPlayExternalTrailer', page).attr('href', '#');
                 }
 
-                if (user.Configuration.IsAdministrator) {
-                    $('.btnSplitVersions', page).show();
+                if (user.Configuration.IsAdministrator && item.MediaVersions && item.MediaVersions.length > 1) {
+                    $('.splitVersionContainer', page).show();
                 } else {
-                    $('.btnSplitVersions', page).hide();
+                    $('.splitVersionContainer', page).hide();
                 }
             });
 
@@ -210,10 +210,17 @@
             $('#childrenCollapsible', page).addClass('hide');
         }
 
-        if (item.MediaStreams && item.MediaStreams.length) {
-            renderMediaInfo(page, item);
+        if (item.MediaVersions && item.MediaVersions.length) {
+            renderMediaVersions(page, item);
         }
-        if (!item.Chapters || !item.Chapters.length) {
+
+        var primaryVersion = (item.MediaVersions || []).filter(function (v) {
+            return v.IsPrimaryVersion;
+
+        })[0];
+        var chapters = primaryVersion ? (primaryVersion.Chapters || []) : [];
+
+        if (!chapters.length) {
             $('#scenesCollapsible', page).hide();
         } else {
             $('#scenesCollapsible', page).show();
@@ -342,7 +349,7 @@
             tabsHtml += '<input type="radio" name="radioDetailTab" class="radioDetailTab" id="radioDetails" value="tabDetails">';
             tabsHtml += '<label for="radioDetails" class="lblDetailTab">Details</label>';
         }
-        
+
         if (item.MediaType == "Audio" || item.MediaType == "Video") {
             tabsHtml += '<input type="radio" name="radioDetailTab" class="radioDetailTab" id="radioMediaInfo" value="tabMediaInfo">';
             tabsHtml += '<label for="radioMediaInfo" class="lblDetailTab">Media Info</label>';
@@ -1001,7 +1008,6 @@
                     useAverageAspectRatio: true,
                     showTitle: true,
                     centerText: true,
-                    formatIndicators: true,
                     linkItem: false,
                     showProgress: false,
                     showUnplayedIndicator: false
@@ -1017,7 +1023,11 @@
     function renderScenes(page, item, user, limit) {
         var html = '';
 
-        var chapters = item.Chapters || [];
+        var primaryVersion = (item.MediaVersions || []).filter(function (v) {
+            return v.IsPrimaryVersion;
+
+        })[0];
+        var chapters = primaryVersion ? (primaryVersion.Chapters || []) : [];
 
         for (var i = 0, length = chapters.length; i < length; i++) {
 
@@ -1067,13 +1077,32 @@
         $('#scenesContent', page).html(html).trigger('create');
     }
 
-    function renderMediaInfo(page, item) {
+    function renderMediaVersions(page, item) {
+
+        var html = item.MediaVersions.map(function (v) {
+
+            return getMediaVersionHtml(item, v);
+
+        }).join('<div style="border-top:1px solid #444;margin: 1em 0;"></div>');
+
+        if (item.MediaVersions.length > 1) {
+            html = '<br/>' + html;
+        }
+
+        $('#mediaInfoContent', page).html(html).trigger('create');
+    }
+
+    function getMediaVersionHtml(item, version) {
 
         var html = '';
 
-        for (var i = 0, length = item.MediaStreams.length; i < length; i++) {
+        if (version.Name && item.MediaVersions.length > 1) {
+            html += '<span class="mediaInfoAttribute">' + version.Name + '</span><br/>';
+        }
 
-            var stream = item.MediaStreams[i];
+        for (var i = 0, length = version.MediaStreams.length; i < length; i++) {
+
+            var stream = version.MediaStreams[i];
 
             if (stream.Type == "Data") {
                 continue;
@@ -1155,7 +1184,11 @@
             html += '</div>';
         }
 
-        $('#mediaInfoContent', page).html(html).trigger('create');
+        if (version.Path) {
+            html += '<br/><span class="mediaInfoLabel">Path</span><span class="mediaInfoAttribute">' + version.Path + '</span>';
+        }
+        
+        return html;
     }
 
     function createAttribute(label, value) {

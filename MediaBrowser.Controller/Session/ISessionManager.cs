@@ -180,5 +180,12 @@ namespace MediaBrowser.Controller.Session
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>Task{SessionInfo}.</returns>
         Task<SessionInfo> AuthenticateNewSession(User user, string password, string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint);
+
+        /// <summary>
+        /// Reports the capabilities.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="capabilities">The capabilities.</param>
+        void ReportCapabilities(Guid sessionId, SessionCapabilities capabilities);
     }
 }

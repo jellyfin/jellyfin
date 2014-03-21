@@ -434,6 +434,9 @@
     <Compile Include="..\MediaBrowser.Model\Session\PlaystateCommand.cs">
       <Link>Session\PlaystateCommand.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Session\SessionCapabilities.cs">
+      <Link>Session\SessionCapabilities.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\SessionInfoDto.cs">
       <Link>Session\SessionInfoDto.cs</Link>
     </Compile>

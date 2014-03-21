@@ -32,12 +32,4 @@ namespace MediaBrowser.Model.Session
         /// <value>The context.</value>
         public string Context { get; set; }
     }
-
-    public class ItemContext
-    {
-        public const string Music = "Music";
-        public const string Movies = "Movies";
-        public const string TvShows = "TvShows";
-        public const string Games = "Games";
-    }
 }

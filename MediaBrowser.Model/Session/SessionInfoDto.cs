@@ -136,6 +136,12 @@ namespace MediaBrowser.Model.Session
         public string DeviceId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [supports fullscreen toggle].
+        /// </summary>
+        /// <value><c>true</c> if [supports fullscreen toggle]; otherwise, <c>false</c>.</value>
+        public bool SupportsFullscreenToggle { get; set; }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether [supports remote control].
         /// </summary>
         /// <value><c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>

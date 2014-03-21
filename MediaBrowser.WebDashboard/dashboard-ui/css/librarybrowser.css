@@ -859,7 +859,7 @@ a.itemTag:hover {
 }
 
 .mediaInfoStream {
-    margin: 1em 2em 1em 0;
+    margin: 1em 3em 1em 0;
     display: inline-block;
     color: #bbb;
     vertical-align: top;
@@ -867,6 +867,7 @@ a.itemTag:hover {
 
 .mediaInfoStreamType {
     font-size: 16px;
+    display: block;
     color: #fff;
 }
 
@@ -928,7 +929,7 @@ a.itemTag:hover {
         background-color: transparent !important;
     }
 
-.alternateVersionIndicator {
+.mediaVersionIndicator {
     display: block;
     position: absolute;
     top: 5px;

@@ -299,18 +299,6 @@
                         resumeButtonContainer.show();
                     }
                 }
-                else if (value == "PlayFromChapter" && item.Chapters && item.Chapters.length) {
-
-                    playFromMenu.show();
-                    playButtonContainer.show();
-
-                    if (!playFromRendered) {
-                        playFromRendered = true;
-                        renderPlayFromOptions(playFromMenu, item);
-                    }
-
-                    popup.popup("reposition", { tolerance: 0 });
-                }
                 else if (value == "Trailer") {
 
                     trailersElem.show();
@@ -384,65 +372,6 @@
         });
     }
 
-    function renderPlayFromOptions(elem, item) {
-
-        var html = '';
-
-        html += '<h4 style="margin: 1em 0 .5em;">Play from scene</h4>';
-
-        html += '<div class="playMenuOptions">';
-        html += '<table class="tblRemoteControl tblRemoteControlNoHeader">';
-
-        html += '<tbody>';
-
-        for (var i = 0, length = item.Chapters.length; i < length; i++) {
-
-            var chapter = item.Chapters[i];
-
-            html += '<tr class="trSelectPlayTime" data-ticks="' + chapter.StartPositionTicks + '">';
-
-            var name = chapter.Name || ("Chapter " + (i + 1));
-
-            html += '<td class="tdSelectPlayTime"></td>';
-
-            html += '<td class="tdRemoteControlImage">';
-
-            var imgUrl;
-
-            if (chapter.ImageTag) {
-
-                imgUrl = ApiClient.getImageUrl(item.Id, {
-                    maxheight: 80,
-                    tag: chapter.ImageTag,
-                    type: "Chapter",
-                    index: i
-                });
-
-            } else {
-                imgUrl = "css/images/media/chapterflyout.png";
-            }
-
-            html += '<img src="' + imgUrl + '" />';
-
-            html += '</td>';
-
-            html += '<td>' + name + '<br/>' + Dashboard.getDisplayTime(chapter.StartPositionTicks) + '</td>';
-
-            html += '</tr>';
-        }
-
-        html += '</tbody>';
-
-        html += '</table>';
-        html += '</div>';
-
-        elem.html(html);
-
-        $('.tdSelectPlayTime', elem).html('<input type="radio" class="chkSelectPlayTime" name="chkSelectPlayTime" />');
-
-        $('.chkSelectPlayTime:first', elem).checked(true);
-    }
-
     function renderSessionsInPlayMenu(sessions, options, elem, popup) {
 
         if (!sessions.length) {
@@ -475,10 +404,6 @@
     }
 
         html += '<option value="Play" selected>' + playLabel + '</label>';
-
-        if (item.Chapters && item.Chapters.length) {
-            html += '<option value="PlayFromChapter">Play from scene</label>';
-        }
 
         if (item.LocalTrailerCount) {
             html += '<option value="Trailer">Play trailer</label>';
