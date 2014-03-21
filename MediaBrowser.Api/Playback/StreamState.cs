@@ -64,6 +64,9 @@ namespace MediaBrowser.Api.Playback
         public string AudioSync = "1";
         public string VideoSync = "vfr";
 
+        public string InputAudioSync { get; set; }
+        public string InputVideoSync { get; set; }
+ 
         public bool DeInterlace { get; set; }
 
         public bool ReadInputAtNativeFramerate { get; set; }
