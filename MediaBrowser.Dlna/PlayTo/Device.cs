@@ -30,15 +30,6 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        private bool _fullscreen;
-        public bool IsFullscreen
-        {
-            get
-            {
-                return _fullscreen;
-            }
-        }
-
         private string _currentId = String.Empty;
         public string CurrentId
         {
@@ -214,26 +205,6 @@ namespace MediaBrowser.Dlna.PlayTo
             var tmp = _muteVol;
             _muteVol = 0;
             return SetVolume(tmp);
-        }
-
-        public async Task<bool> ToggleFullscreen()
-        {
-            var command = RendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "Fullscreen");
-            if (command == null)
-                return true;
-
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceRenderingType);
-
-            if (service == null) {
-                throw new InvalidOperationException("Unable to find service");
-            }
-
-            _fullscreen = !_fullscreen;
-
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, _fullscreen))
-                .ConfigureAwait(false);
-
-            return true;
         }
 
         public async Task<bool> SetVolume(int value)

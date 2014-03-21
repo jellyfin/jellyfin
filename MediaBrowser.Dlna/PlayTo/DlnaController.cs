@@ -283,9 +283,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 case PlaystateCommand.PreviousTrack:
                     _currentItem = null;
                     return SetPrevious();
-
-                case PlaystateCommand.Fullscreen:
-                    return _device.ToggleFullscreen();
             }
 
             return Task.FromResult(true);
