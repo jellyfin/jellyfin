@@ -866,18 +866,21 @@ a.itemTag:hover {
 }
 
 .mediaInfoStreamType {
-    display: block;
     font-size: 16px;
     color: #fff;
 }
 
 .mediaInfoAttribute {
     color: #fff;
+    display: inline-block;
+    width: 110px;
 }
 
 .mediaInfoLabel {
     color: #aaa;
     margin-right: 1em;
+    display: inline-block;
+    width: 90px;
 }
 
 .posterRibbon {
