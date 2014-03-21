@@ -1358,6 +1358,8 @@ namespace MediaBrowser.Api.Playback
                 state.ReadInputAtNativeFramerate = recording.RecordingInfo.Status == RecordingStatus.InProgress;
                 state.AudioSync = "1000";
                 state.DeInterlace = true;
+                state.InputVideoSync = "-1";
+                state.InputAudioSync = "1";
             }
             else if (item is LiveTvChannel)
             {
@@ -1387,6 +1389,8 @@ namespace MediaBrowser.Api.Playback
                 state.ReadInputAtNativeFramerate = true;
                 state.AudioSync = "1000";
                 state.DeInterlace = true;
+                state.InputVideoSync = "-1";
+                state.InputAudioSync = "1";
             }
             else
             {
