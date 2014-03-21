@@ -396,7 +396,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         private T GetMovieWithAlternateVersions<T>(IEnumerable<T> movies)
                where T : Video, new()
         {
-            var sortedMovies = movies.OrderBy(i => i.Path.Length).ToList();
+            var sortedMovies = movies.OrderBy(i => i.Path).ToList();
 
             // Cap this at five to help avoid incorrect matching
             if (sortedMovies.Count > 5)
@@ -406,11 +406,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             var firstMovie = sortedMovies[0];
 
-            var filenamePrefix = Path.GetFileNameWithoutExtension(firstMovie.Path);
+            var filenamePrefix = Path.GetFileName(Path.GetDirectoryName(firstMovie.Path));
 
             if (!string.IsNullOrWhiteSpace(filenamePrefix))
             {
-                if (sortedMovies.Skip(1).All(i => Path.GetFileNameWithoutExtension(i.Path).StartsWith(filenamePrefix + " - ", StringComparison.OrdinalIgnoreCase)))
+                if (sortedMovies.All(i => Path.GetFileNameWithoutExtension(i.Path).StartsWith(filenamePrefix + " - ", StringComparison.OrdinalIgnoreCase)))
                 {
                     firstMovie.HasLocalAlternateVersions = true;
 
