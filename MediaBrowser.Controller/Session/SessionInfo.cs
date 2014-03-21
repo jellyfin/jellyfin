@@ -156,6 +156,12 @@ namespace MediaBrowser.Controller.Session
         public ISessionController SessionController { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [supports fullscreen toggle].
+        /// </summary>
+        /// <value><c>true</c> if [supports fullscreen toggle]; otherwise, <c>false</c>.</value>
+        public bool SupportsFullscreenToggle { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is active.
         /// </summary>
         /// <value><c>true</c> if this instance is active; otherwise, <c>false</c>.</value>

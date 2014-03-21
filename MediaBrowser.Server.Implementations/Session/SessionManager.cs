@@ -887,5 +887,18 @@ namespace MediaBrowser.Server.Implementations.Session
 
             return await LogSessionActivity(clientType, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// Reports the capabilities.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="capabilities">The capabilities.</param>
+        public void ReportCapabilities(Guid sessionId, SessionCapabilities capabilities)
+        {
+            var session = GetSession(sessionId);
+
+            session.PlayableMediaTypes = capabilities.PlayableMediaTypes.ToList();
+            session.SupportsFullscreenToggle = capabilities.SupportsFullscreenToggle;
+        }
     }
 }

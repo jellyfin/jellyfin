@@ -4,12 +4,9 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,18 +20,6 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? UserId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
-    [Route("/Videos/{Id}/Versions", "GET")]
-    [Api(Description = "Gets all versions of a video.")]
-    public class GetMediaVersions : IReturn<List<MediaVersionInfo>>
-    {
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -111,169 +96,6 @@ namespace MediaBrowser.Api
             };
 
             return ToOptimizedSerializedResultUsingCache(result);
-        }
-
-        public object Get(GetMediaVersions request)
-        {
-            var item = _libraryManager.GetItemById(new Guid(request.Id));
-
-            var video = (Video)item;
-
-            var result = video.GetAlternateVersions().Select(GetVersionInfo).ToList();
-
-            result.Add(GetVersionInfo(video));
-
-            result = result.OrderBy(i =>
-            {
-                if (video.VideoType == VideoType.VideoFile)
-                {
-                    return 0;
-                }
-
-                return 1;
-
-            }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
-            .ThenByDescending(i =>
-            {
-                var stream = i.MediaStreams.FirstOrDefault(m => m.Type == MediaStreamType.Video);
-
-                return stream == null || stream.Width == null ? 0 : stream.Width.Value;
-            })
-            .ToList();
-
-            return ToOptimizedSerializedResultUsingCache(result);
-        }
-
-        private MediaVersionInfo GetVersionInfo(Video i)
-        {
-            return new MediaVersionInfo
-            {
-                Chapters = _itemRepo.GetChapters(i.Id).Select(c => _dtoService.GetChapterInfoDto(c, i)).ToList(),
-
-                Id = i.Id.ToString("N"),
-                IsoType = i.IsoType,
-                LocationType = i.LocationType,
-                MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery {ItemId = i.Id}).ToList(),
-                Name = GetAlternateVersionName(i),
-                Path = GetMappedPath(i),
-                RunTimeTicks = i.RunTimeTicks,
-                Video3DFormat = i.Video3DFormat,
-                VideoType = i.VideoType
-            };
-        }
-
-        private string GetMappedPath(Video video)
-        {
-            var path = video.Path;
-
-            var locationType = video.LocationType;
-
-            if (locationType != LocationType.FileSystem && locationType != LocationType.Offline)
-            {
-                return path;
-            }
-
-            foreach (var map in _config.Configuration.PathSubstitutions)
-            {
-                path = _fileSystem.SubstitutePath(path, map.From, map.To);
-            }
-
-            return path;
-        }
-
-        private string GetAlternateVersionName(Video video)
-        {
-            var name = "";
-
-            var stream = video.GetDefaultVideoStream();
-
-            if (video.Video3DFormat.HasValue)
-            {
-                name = "3D " + name;
-                name = name.Trim();
-            }
-
-            if (video.VideoType == VideoType.BluRay)
-            {
-                name = name + " " + "Bluray";
-                name = name.Trim();
-            }
-            else if (video.VideoType == VideoType.Dvd)
-            {
-                name = name + " " + "DVD";
-                name = name.Trim();
-            }
-            else if (video.VideoType == VideoType.HdDvd)
-            {
-                name = name + " " + "HD-DVD";
-                name = name.Trim();
-            }
-            else if (video.VideoType == VideoType.Iso)
-            {
-                if (video.IsoType.HasValue)
-                {
-                    if (video.IsoType.Value == IsoType.BluRay)
-                    {
-                        name = name + " " + "Bluray";
-                    }
-                    else if (video.IsoType.Value == IsoType.Dvd)
-                    {
-                        name = name + " " + "DVD";
-                    }
-                }
-                else
-                {
-                    name = name + " " + "ISO";
-                }
-                name = name.Trim();
-            }
-            else if (video.VideoType == VideoType.VideoFile)
-            {
-                if (stream != null)
-                {
-                    if (stream.Width.HasValue)
-                    {
-                        if (stream.Width.Value >= 3800)
-                        {
-                            name = name + " " + "4K";
-                            name = name.Trim();
-                        }
-                        else if (stream.Width.Value >= 1900)
-                        {
-                            name = name + " " + "1080P";
-                            name = name.Trim();
-                        }
-                        else if (stream.Width.Value >= 1270)
-                        {
-                            name = name + " " + "720P";
-                            name = name.Trim();
-                        }
-                        else if (stream.Width.Value >= 700)
-                        {
-                            name = name + " " + "480p";
-                            name = name.Trim();
-                        }
-                        else
-                        {
-                            name = name + " " + "SD";
-                            name = name.Trim();
-                        }
-                    }
-                }
-            }
-
-            if (stream != null && !string.IsNullOrWhiteSpace(stream.Codec))
-            {
-                name = name + " " + stream.Codec.ToUpper();
-                name = name.Trim();
-            }
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return video.Name;
-            }
-
-            return name;
         }
 
         public void Delete(DeleteAlternateVersions request)

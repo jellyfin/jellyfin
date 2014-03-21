@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Movies
 {
-    [Route("/Collections", "POST")]
-    [Api(Description = "Creates a new collection")]
+    [Route("/Collections", "POST", Summary = "Creates a new collection")]
     public class CreateCollection : IReturnVoid
     {
         [ApiMember(Name = "IsLocked", Description = "Whether or not to lock the new collection.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
@@ -20,8 +19,7 @@ namespace MediaBrowser.Api.Movies
         public Guid? ParentId { get; set; }
     }
 
-    [Route("/Collections/{Id}/Items", "POST")]
-    [Api(Description = "Adds items to a collection")]
+    [Route("/Collections/{Id}/Items", "POST", Summary = "Adds items to a collection")]
     public class AddToCollection : IReturnVoid
     {
         [ApiMember(Name = "Ids", Description = "Item id, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
@@ -31,8 +29,7 @@ namespace MediaBrowser.Api.Movies
         public Guid Id { get; set; }
     }
 
-    [Route("/Collections/{Id}/Items", "DELETE")]
-    [Api(Description = "Removes items from a collection")]
+    [Route("/Collections/{Id}/Items", "DELETE", Summary = "Removes items from a collection")]
     public class RemoveFromCollection : IReturnVoid
     {
         [ApiMember(Name = "Ids", Description = "Item id, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
