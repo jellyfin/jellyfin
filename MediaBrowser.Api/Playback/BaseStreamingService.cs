@@ -1503,6 +1503,16 @@ namespace MediaBrowser.Api.Playback
                 inputModifier += " -acodec " + state.InputAudioCodec;
             }
 
+            if (!string.IsNullOrEmpty(state.InputAudioSync))
+            {
+                inputModifier += " -async " + state.InputAudioSync;
+            }
+
+            if (!string.IsNullOrEmpty(state.InputVideoSync))
+            {
+                inputModifier += " -vsync " + state.InputVideoSync;
+            }
+
             if (state.ReadInputAtNativeFramerate)
             {
                 inputModifier += " -re";
