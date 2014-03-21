@@ -418,12 +418,13 @@ namespace MediaBrowser.Controller.Entities
         {
             IEnumerable<FileSystemInfo> files;
 
-            var path = Path;
-            var currentFilename = System.IO.Path.GetFileNameWithoutExtension(path) ?? string.Empty;
-
             // Only support this for video files. For folder rips, they'll have to use the linking feature
             if (VideoType == VideoType.VideoFile || VideoType == VideoType.Iso)
             {
+                var path = Path;
+
+                var filenamePrefix = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path));
+
                 files = fileSystemChildren.Where(i =>
                 {
                     if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
@@ -433,7 +434,7 @@ namespace MediaBrowser.Controller.Entities
 
                     return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) &&
                            EntityResolutionHelper.IsVideoFile(i.FullName) &&
-                           i.Name.StartsWith(currentFilename, StringComparison.OrdinalIgnoreCase);
+                           i.Name.StartsWith(filenamePrefix + " - ", StringComparison.OrdinalIgnoreCase);
                 });
             }
             else
