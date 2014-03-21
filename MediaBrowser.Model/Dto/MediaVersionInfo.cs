@@ -5,7 +5,7 @@ namespace MediaBrowser.Model.Dto
 {
     public class MediaVersionInfo
     {
-        public string Id { get; set; }
+        public string ItemId { get; set; }
 
         public string Path { get; set; }
 
@@ -24,5 +24,7 @@ namespace MediaBrowser.Model.Dto
         public List<MediaStream> MediaStreams { get; set; }
 
         public List<ChapterInfoDto> Chapters { get; set; }
+
+        public bool IsPrimaryVersion { get; set; }
     }
 }
