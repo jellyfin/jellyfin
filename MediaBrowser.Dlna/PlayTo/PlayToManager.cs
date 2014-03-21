@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -15,6 +16,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -225,6 +227,12 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, device.Properties.Name, device.Properties.UUID, device.Properties.DisplayName, uri.OriginalString, null)
                     .ConfigureAwait(false);
+
+                _sessionManager.ReportCapabilities(sessionInfo.Id, new SessionCapabilities
+                {
+                    PlayableMediaTypes = new[] { MediaType.Audio, MediaType.Video, MediaType.Photo },
+                    SupportsFullscreenToggle = false
+                });
 
                 var controller = sessionInfo.SessionController as PlayToController;
 

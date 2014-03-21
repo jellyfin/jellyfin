@@ -8,12 +8,12 @@
         SortBy: defaultSortBy,
         SortOrder: "Ascending",
         Recursive: true,
-        Fields: "MediaStreams,DateCreated,Settings,Studios",
+        Fields: "MediaVersions,DateCreated,Settings,Studios",
         StartIndex: 0,
         IncludeItemTypes: "Movie",
         IsMissing: false,
         IsVirtualUnaired: false,
-        Limit: 300,
+        Limit: 200,
         CollapseBoxSetItems: false
     };
 
@@ -214,6 +214,12 @@
 
             var stream;
 
+            var primaryVersion = (item.MediaVersions || []).filter(function(v) {
+                return v.IsPrimaryVersion;
+            })[0] || {};
+
+            var mediaStreams = primaryVersion.MediaStreams || [];
+
             switch (cell.type || cell.name) {
 
                 case 'Album Artist':
@@ -258,7 +264,7 @@
                     }
                 case 'Audio':
                     {
-                        stream = (item.MediaStreams || []).filter(function (s) {
+                        stream = mediaStreams.filter(function (s) {
 
                             return s.Type == 'Audio';
 
@@ -273,7 +279,7 @@
                     }
                 case 'Video':
                     {
-                        stream = (item.MediaStreams || []).filter(function (s) {
+                        stream = mediaStreams.filter(function (s) {
 
                             return s.Type == 'Video';
 
@@ -286,7 +292,7 @@
                     }
                 case 'Resolution':
                     {
-                        stream = (item.MediaStreams || []).filter(function (s) {
+                        stream = mediaStreams.filter(function (s) {
 
                             return s.Type == 'Video';
 
@@ -299,7 +305,7 @@
                     }
                 case 'Embedded Image':
                     {
-                        if ((item.MediaStreams || []).filter(function (s) {
+                        if (mediaStreams.filter(function (s) {
 
                             return s.Type == 'Video';
 
@@ -310,7 +316,7 @@
                     }
                 case 'Subtitles':
                     {
-                        var hasSubtitles = (item.MediaStreams || []).filter(function (s) {
+                        var hasSubtitles = mediaStreams.filter(function (s) {
 
                             return s.Type == 'Subtitle';
 

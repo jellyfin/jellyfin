@@ -208,7 +208,9 @@
 
         items.push({ type: 'link', text: 'Images', url: 'edititemimages.html?id=' + id });
 
-        if (elem.getAttribute('data-alternateversioncount') != '0') {
+        var versionCount = parseInt(elem.getAttribute('data-mediaversioncount') || '0');
+        
+        if (versionCount > 1) {
 
             items.push({ type: 'divider' });
             items.push({ type: 'header', text: 'Manage' });

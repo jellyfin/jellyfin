@@ -90,7 +90,9 @@ namespace MediaBrowser.Controller.Entities
 
             if (!string.IsNullOrWhiteSpace(key))
             {
-                return key + "-trailer";
+                key = key + "-trailer";
+
+                return key;
             }
 
             return base.GetUserDataKey();

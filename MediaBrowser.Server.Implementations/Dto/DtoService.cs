@@ -266,7 +266,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                 QueueableMediaTypes = session.QueueableMediaTypes,
                 PlayableMediaTypes = session.PlayableMediaTypes,
                 RemoteEndPoint = session.RemoteEndPoint,
-                AdditionalUsers = session.AdditionalUsers
+                AdditionalUsers = session.AdditionalUsers,
+                SupportsFullscreenToggle = session.SupportsFullscreenToggle
             };
 
             if (session.NowPlayingItem != null)
@@ -1052,6 +1053,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                     dto.AlbumPrimaryImageTag = GetImageCacheTag(albumParent, ImageType.Primary);
                 }
+
+                dto.MediaVersions = GetMediaVersions(audio);
+                dto.MediaVersionCount = 1;
             }
 
             var album = item as MusicAlbum;
@@ -1082,16 +1086,31 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.IsHD = video.IsHD;
 
                 dto.PartCount = video.AdditionalPartIds.Count + 1;
-                dto.AlternateVersionCount = video.AlternateVersionCount;
-
-                if (fields.Contains(ItemFields.Chapters))
-                {
-                    dto.Chapters = _itemRepo.GetChapters(video.Id).Select(c => GetChapterInfoDto(c, item)).ToList();
-                }
+                dto.MediaVersionCount = video.AlternateVersionCount + 1;
 
                 if (fields.Contains(ItemFields.MediaVersions))
                 {
-                    //dto.MediaVersions = GetMediaVersions(video);
+                    dto.MediaVersions = GetMediaVersions(video);
+                }
+
+                if (fields.Contains(ItemFields.Chapters))
+                {
+                    List<ChapterInfoDto> chapters;
+
+                    if (dto.MediaVersions != null && dto.MediaVersions.Count > 0)
+                    {
+                        chapters = dto.MediaVersions.Where(i => i.IsPrimaryVersion)
+                            .SelectMany(i => i.Chapters)
+                            .ToList();
+                    }
+                    else
+                    {
+                        chapters = _itemRepo.GetChapters(video.Id)
+                            .Select(c => GetChapterInfoDto(c, item))
+                            .ToList();
+                    }
+
+                    dto.Chapters = chapters;
                 }
             }
 
@@ -1102,11 +1121,24 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (iHasMediaStreams != null)
                 {
-                    dto.MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
-                    {
-                        ItemId = item.Id
+                    List<MediaStream> mediaStreams;
 
-                    }).ToList();
+                    if (dto.MediaVersions != null && dto.MediaVersions.Count > 0)
+                    {
+                        mediaStreams = dto.MediaVersions.Where(i => i.IsPrimaryVersion)
+                            .SelectMany(i => i.MediaStreams)
+                            .ToList();
+                    }
+                    else
+                    {
+                        mediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
+                        {
+                            ItemId = item.Id
+
+                        }).ToList();
+                    }
+
+                    dto.MediaStreams = mediaStreams;
                 }
             }
 
@@ -1228,15 +1260,15 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private List<MediaVersionInfo> GetMediaVersions(Video video)
+        private List<MediaVersionInfo> GetMediaVersions(Video item)
         {
-            var result = video.GetAlternateVersions().Select(GetVersionInfo).ToList();
+            var result = item.GetAlternateVersions().Select(i => GetVersionInfo(i, false)).ToList();
 
-            result.Add(GetVersionInfo(video));
+            result.Add(GetVersionInfo(item, true));
 
             return result.OrderBy(i =>
             {
-                if (video.VideoType == VideoType.VideoFile)
+                if (item.VideoType == VideoType.VideoFile)
                 {
                     return 0;
                 }
@@ -1250,16 +1282,26 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 return stream == null || stream.Width == null ? 0 : stream.Width.Value;
             })
+            .ThenBy(i => i.IsPrimaryVersion ? 0 : 1)
             .ToList();
         }
 
-        private MediaVersionInfo GetVersionInfo(Video i)
+        private List<MediaVersionInfo> GetMediaVersions(Audio item)
+        {
+            var result = new List<MediaVersionInfo>();
+
+            result.Add(GetVersionInfo(item, true));
+
+            return result;
+        }
+
+        private MediaVersionInfo GetVersionInfo(Video i, bool isPrimary)
         {
             return new MediaVersionInfo
             {
                 Chapters = _itemRepo.GetChapters(i.Id).Select(c => GetChapterInfoDto(c, i)).ToList(),
 
-                Id = i.Id.ToString("N"),
+                ItemId = i.Id.ToString("N"),
                 IsoType = i.IsoType,
                 LocationType = i.LocationType,
                 MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
@@ -1267,15 +1309,30 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Path = GetMappedPath(i),
                 RunTimeTicks = i.RunTimeTicks,
                 Video3DFormat = i.Video3DFormat,
-                VideoType = i.VideoType
+                VideoType = i.VideoType,
+                IsPrimaryVersion = isPrimary
             };
         }
 
-        private string GetMappedPath(Video video)
+        private MediaVersionInfo GetVersionInfo(Audio i, bool isPrimary)
         {
-            var path = video.Path;
+            return new MediaVersionInfo
+            {
+                ItemId = i.Id.ToString("N"),
+                LocationType = i.LocationType,
+                MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
+                Name = i.Name,
+                Path = GetMappedPath(i),
+                RunTimeTicks = i.RunTimeTicks,
+                IsPrimaryVersion = isPrimary
+            };
+        }
 
-            var locationType = video.LocationType;
+        private string GetMappedPath(IHasMetadata item)
+        {
+            var path = item.Path;
+
+            var locationType = item.LocationType;
 
             if (locationType != LocationType.FileSystem && locationType != LocationType.Offline)
             {

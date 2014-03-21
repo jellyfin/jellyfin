@@ -8,6 +8,7 @@
         var currentMediaElement;
         var currentProgressInterval;
         var currentItem;
+        var currentMediaVersion;
         var curentDurationTicks;
         var canClientSeek;
         var currentPlaylistIndex = 0;
@@ -53,7 +54,7 @@
 
             var position = Math.floor(10000000 * endTime) + self.startTimeTicksOffset;
 
-            ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
+            ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentMediaVersion.ItemId, position);
 
             if (currentItem.MediaType == "Video") {
                 ApiClient.stopActiveEncodings();
@@ -135,7 +136,7 @@
 
                 var transcodingExtension = self.getTranscodingExtension();
 
-                var finalParams = self.getFinalVideoParams(currentItem, maxWidth, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension);
+                var finalParams = self.getFinalVideoParams(currentMediaVersion, maxWidth, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension);
                 currentSrc = replaceQueryString(currentSrc, 'MaxWidth', finalParams.maxWidth);
                 currentSrc = replaceQueryString(currentSrc, 'VideoBitrate', finalParams.videoBitrate);
                 currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
@@ -155,8 +156,8 @@
 
                     $(this).off('play.onceafterseek').on('ended.playbackstopped', self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded);
 
-                    self.startProgressInterval(currentItem.Id);
-                    sendProgressUpdate(currentItem.Id);
+                    self.startProgressInterval(currentMediaVersion.ItemId);
+                    sendProgressUpdate(currentMediaVersion.ItemId);
 
                 });
 
@@ -193,9 +194,9 @@
             self.currentTimeElement.html(timeText);
         };
 
-        self.canPlayVideoDirect = function (item, videoStream, audioStream, subtitleStream, maxWidth, bitrate) {
+        self.canPlayVideoDirect = function (mediaVersion, videoStream, audioStream, subtitleStream, maxWidth, bitrate) {
 
-            if (item.VideoType != "VideoFile" || item.LocationType != "FileSystem") {
+            if (mediaVersion.VideoType != "VideoFile" || mediaVersion.LocationType != "FileSystem") {
                 console.log('Transcoding because the content is not a video file');
                 return false;
             }
@@ -228,7 +229,7 @@
                 return false;
             }
 
-            var extension = item.Path.substring(item.Path.lastIndexOf('.') + 1).toLowerCase();
+            var extension = mediaVersion.Path.substring(mediaVersion.Path.lastIndexOf('.') + 1).toLowerCase();
 
             if (extension == 'm4v') {
                 return $.browser.chrome;
@@ -237,28 +238,29 @@
             return extension.toLowerCase() == 'mp4';
         };
 
-        self.getFinalVideoParams = function (item, maxWidth, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension) {
+        self.getFinalVideoParams = function (mediaVersion, maxWidth, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension) {
 
-            var videoStream = (item.MediaStreams || []).filter(function (stream) {
+            var mediaStreams = mediaVersion.MediaStreams;
+
+            var videoStream = mediaStreams.filter(function (stream) {
                 return stream.Type === "Video";
             })[0];
 
-            var audioStream = (item.MediaStreams || []).filter(function (stream) {
+            var audioStream = mediaStreams.filter(function (stream) {
                 return stream.Index === audioStreamIndex;
             })[0];
 
-            var subtitleStream = (item.MediaStreams || []).filter(function (stream) {
+            var subtitleStream = mediaStreams.filter(function (stream) {
                 return stream.Index === subtitleStreamIndex;
             })[0];
 
-            var canPlayDirect = self.canPlayVideoDirect(item, videoStream, audioStream, subtitleStream, maxWidth, bitrate);
+            var canPlayDirect = self.canPlayVideoDirect(mediaVersion, videoStream, audioStream, subtitleStream, maxWidth, bitrate);
 
             var audioBitrate = bitrate >= 700000 ? 128000 : 64000;
 
             var videoBitrate = bitrate - audioBitrate;
 
             return {
-
                 isStatic: canPlayDirect,
                 maxWidth: maxWidth,
                 audioCodec: transcodingExtension == '.webm' ? 'vorbis' : 'aac',
@@ -266,7 +268,7 @@
                 audioBitrate: audioBitrate,
                 videoBitrate: videoBitrate
             };
-        }
+        };
 
         self.canPlay = function (item, user) {
 
@@ -397,6 +399,13 @@
             self.playlist = items;
             currentPlaylistIndex = 0;
         };
+        
+        function getOptimalMediaVersion(versions) {
+
+            // TODO: Implement
+
+            return versions[0];
+        }
 
         self.playInternal = function (item, startPosition, user) {
 
@@ -414,16 +423,24 @@
 
             if (item.MediaType === "Video") {
 
-                videoPlayer(self, item, startPosition, user);
-                mediaElement = self.initVideoPlayer();
                 currentItem = item;
-                curentDurationTicks = item.RunTimeTicks;
+                currentMediaVersion = getOptimalMediaVersion(item.MediaVersions);
+
+                videoPlayer(self, item, currentMediaVersion, startPosition, user);
+                mediaElement = self.initVideoPlayer();
+                curentDurationTicks = currentMediaVersion.RunTimeTicks;
+
                 mediaControls = $("#videoControls");
 
             } else if (item.MediaType === "Audio") {
 
-                mediaElement = playAudio(item, startPosition);
+                currentItem = item;
+                currentMediaVersion = getOptimalMediaVersion(item.MediaVersions);
+
+                mediaElement = playAudio(item, currentMediaVersion, startPosition);
                 mediaControls.show();
+
+                curentDurationTicks = currentMediaVersion.RunTimeTicks;
 
             } else {
                 throw new Error("Unrecognized media type");
@@ -917,7 +934,7 @@
 
                 var position = Math.floor(10000000 * endTime) + self.startTimeTicksOffset;
 
-                ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
+                ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentMediaVersion.ItemId, position);
             }
         });
 
@@ -968,7 +985,7 @@
 
             var newPercent = parseInt(this.value);
 
-            var newPositionTicks = (newPercent / 100) * currentItem.RunTimeTicks;
+            var newPositionTicks = (newPercent / 100) * currentMediaVersion.RunTimeTicks;
 
             self.changeStream(Math.floor(newPositionTicks));
         };
@@ -982,7 +999,7 @@
             return d >= 0 && text.lastIndexOf(pattern) === d;
         };
 
-        function playAudio(item, startPositionTicks) {
+        function playAudio(item, mediaVersion, startPositionTicks) {
 
             startPositionTicks = startPositionTicks || 0;
 
@@ -992,19 +1009,19 @@
                 StartTimeTicks: startPositionTicks
             };
 
-            var mp3Url = ApiClient.getUrl('Audio/' + item.Id + '/stream.mp3', $.extend({}, baseParams, {
+            var mp3Url = ApiClient.getUrl('Audio/' + mediaVersion.ItemId + '/stream.mp3', $.extend({}, baseParams, {
                 audioCodec: 'mp3'
             }));
 
-            var aacUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.aac', $.extend({}, baseParams, {
+            var aacUrl = ApiClient.getUrl('Audio/' + mediaVersion.ItemId + '/stream.aac', $.extend({}, baseParams, {
                 audioCodec: 'aac'
             }));
 
-            var webmUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
+            var webmUrl = ApiClient.getUrl('Audio/' + mediaVersion.ItemId + '/stream.webm', $.extend({}, baseParams, {
                 audioCodec: 'Vorbis'
             }));
 
-            var mediaStreams = item.MediaStreams || [];
+            var mediaStreams = mediaVersion.MediaStreams;
 
             var isStatic = false;
             var seekParam = isStatic && startPositionTicks ? '#t=' + (startPositionTicks / 10000000) : '';
@@ -1091,9 +1108,9 @@
 
                 audioElement.off("play.once");
 
-                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, true, item.MediaType);
+                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), mediaVersion.ItemId, true, item.MediaType);
 
-                self.startProgressInterval(item.Id);
+                self.startProgressInterval(mediaVersion.ItemId);
 
             }).on("pause", function () {
 
@@ -1113,9 +1130,6 @@
                 }
 
             }).on("ended.playbackstopped", self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded);
-
-            currentItem = item;
-            curentDurationTicks = item.RunTimeTicks;
 
             return audioElement[0];
         };
