@@ -589,7 +589,7 @@
 
         html += '<div class="nowPlaying" style="display:none;">';
 
-        html += getPlaybackHtml();
+        html += getPlaybackHtml(sessions.currentSession);
 
         html += '</div>';
 
@@ -776,7 +776,7 @@
         });
     }
 
-    function getPlaybackHtml() {
+    function getPlaybackHtml(session) {
 
         var html = '';
 
@@ -804,7 +804,11 @@
         html += '<button class="btnVolumeDown" type="button" data-icon="volume-down" data-inline="true" data-iconpos="notext">Decrease volume</button>';
         html += '<button class="btnVolumeUp" type="button" data-icon="volume-up" data-inline="true" data-iconpos="notext">Increase volume</button>';
         html += '<button class="btnToggleMute" type="button" data-icon="volume-off" data-inline="true" data-iconpos="notext">Toggle mute</button>';
-        html += '<button class="btnFullscreen" type="button" data-icon="action" data-inline="true" data-iconpos="notext">Toggle fullscreen</button>';
+
+        if (session && session.SupportsFullscreenToggle) {
+            html += '<button class="btnFullscreen" type="button" data-icon="action" data-inline="true" data-iconpos="notext">Toggle fullscreen</button>';
+        }
+
         html += '</div>';
 
 
