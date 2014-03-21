@@ -1358,6 +1358,8 @@ namespace MediaBrowser.Api.Playback
                 state.ReadInputAtNativeFramerate = recording.RecordingInfo.Status == RecordingStatus.InProgress;
                 state.AudioSync = "1000";
                 state.DeInterlace = true;
+                state.InputVideoSync = "-1";
+                state.InputAudioSync = "1";
             }
             else if (item is LiveTvChannel)
             {
@@ -1387,6 +1389,8 @@ namespace MediaBrowser.Api.Playback
                 state.ReadInputAtNativeFramerate = true;
                 state.AudioSync = "1000";
                 state.DeInterlace = true;
+                state.InputVideoSync = "-1";
+                state.InputAudioSync = "1";
             }
             else
             {
@@ -1501,6 +1505,16 @@ namespace MediaBrowser.Api.Playback
             if (!string.IsNullOrEmpty(state.InputAudioCodec))
             {
                 inputModifier += " -acodec " + state.InputAudioCodec;
+            }
+
+            if (!string.IsNullOrEmpty(state.InputAudioSync))
+            {
+                inputModifier += " -async " + state.InputAudioSync;
+            }
+
+            if (!string.IsNullOrEmpty(state.InputVideoSync))
+            {
+                inputModifier += " -vsync " + state.InputVideoSync;
             }
 
             if (state.ReadInputAtNativeFramerate)
