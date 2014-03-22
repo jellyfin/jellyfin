@@ -8,7 +8,7 @@
         SortBy: defaultSortBy,
         SortOrder: "Ascending",
         Recursive: true,
-        Fields: "MediaVersions,DateCreated,Settings,Studios",
+        Fields: "MediaSources,DateCreated,Settings,Studios",
         StartIndex: 0,
         IncludeItemTypes: "Movie",
         IsMissing: false,
@@ -207,7 +207,7 @@
 
     function getItemCellsHtml(item, headercells) {
 
-        var primaryVersion = (item.MediaVersions || []).filter(function (v) {
+        var primaryVersion = (item.MediaSources || []).filter(function (v) {
             return v.IsPrimaryVersion;
         })[0] || {};
 

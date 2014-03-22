@@ -190,7 +190,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <param name="directoryService">The directory service.</param>
         /// <param name="supportMultiFileItems">if set to <c>true</c> [support multi file items].</param>
         /// <returns>Movie.</returns>
-        private T FindMovie<T>(string path, Folder parent, IEnumerable<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, bool supportMultiFileItems, bool supportsAlternateVersions)
+        private T FindMovie<T>(string path, Folder parent, IEnumerable<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, bool supportMultiFileItems, bool supportsMultipleSources)
             where T : Video, new()
         {
             var movies = new List<T>();
@@ -262,9 +262,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         return result;
                     }
                 }
-                if (supportsAlternateVersions)
+                if (supportsMultipleSources)
                 {
-                    var result = GetMovieWithAlternateVersions(movies);
+                    var result = GetMovieWithMultipleSources(movies);
 
                     if (result != null)
                     {
@@ -393,7 +393,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             return null;
         }
 
-        private T GetMovieWithAlternateVersions<T>(IEnumerable<T> movies)
+        private T GetMovieWithMultipleSources<T>(IEnumerable<T> movies)
                where T : Video, new()
         {
             var sortedMovies = movies.OrderBy(i => i.Path).ToList();

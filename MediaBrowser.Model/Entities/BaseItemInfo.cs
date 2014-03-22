@@ -74,7 +74,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the media version identifier.
         /// </summary>
         /// <value>The media version identifier.</value>
-        public string MediaVersionId { get; set; }
+        public string MediaSourceId { get; set; }
         
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.

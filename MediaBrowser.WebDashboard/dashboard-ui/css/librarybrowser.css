@@ -926,7 +926,7 @@ a.itemTag:hover {
         background-color: transparent !important;
     }
 
-.mediaVersionIndicator {
+.mediaSourceIndicator {
     display: block;
     position: absolute;
     top: 5px;

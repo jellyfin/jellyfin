@@ -1,5 +1,5 @@
 ﻿(function () {
-    videoPlayer = function (mediaPlayer, item, mediaVersion, startPosition, user) {
+    videoPlayer = function (mediaPlayer, item, mediaSource, startPosition, user) {
         if (mediaPlayer == null) {
             throw new Error("mediaPlayer cannot be null");
         }
@@ -15,7 +15,7 @@
         var self = mediaPlayer;
 
         var currentItem;
-        var currentMediaVersion;
+        var currentMediaSource;
         var timeout;
         var video;
         var initialVolume;
@@ -24,7 +24,7 @@
         var remoteFullscreen = false;
 
         self.initVideoPlayer = function () {
-            video = playVideo(item, mediaVersion, startPosition, user);
+            video = playVideo(item, mediaSource, startPosition, user);
             return video;
         };
 
@@ -374,7 +374,7 @@
 
         function getAudioTracksHtml() {
             
-            var streams = currentMediaVersion.MediaStreams.filter(function (currentStream) {
+            var streams = currentMediaSource.MediaStreams.filter(function (currentStream) {
                 return currentStream.Type == "Audio";
             });
 
@@ -444,7 +444,7 @@
 
         function getSubtitleTracksHtml() {
 
-            var streams = currentMediaVersion.MediaStreams.filter(function (currentStream) {
+            var streams = currentMediaSource.MediaStreams.filter(function (currentStream) {
                 return currentStream.Type == "Subtitle";
             });
 
@@ -528,7 +528,7 @@
 
             var currentAudioStreamIndex = getParameterByName('AudioStreamIndex', video.currentSrc);
 
-            var options = getVideoQualityOptions(currentMediaVersion.MediaStreams, currentAudioStreamIndex, transcodingExtension);
+            var options = getVideoQualityOptions(currentMediaSource.MediaStreams, currentAudioStreamIndex, transcodingExtension);
 
             if (isStatic) {
                 options[0].name = "Direct";
@@ -696,9 +696,9 @@
             return options;
         };
 
-        function playVideo(item, mediaVersion, startPosition, user) {
+        function playVideo(item, mediaSource, startPosition, user) {
 
-            var mediaStreams = mediaVersion.MediaStreams || [];
+            var mediaStreams = mediaSource.MediaStreams || [];
 
             var baseParams = {
                 audioChannels: 2,
@@ -707,23 +707,23 @@
                 AudioStreamIndex: getInitialAudioStreamIndex(mediaStreams, user),
                 deviceId: ApiClient.deviceId(),
                 Static: false,
-                mediaVersionId: mediaVersion.Id
+                mediaSourceId: mediaSource.Id
             };
 
             var mp4Quality = getVideoQualityOptions(mediaStreams).filter(function (opt) {
                 return opt.selected;
             })[0];
-            mp4Quality = $.extend(mp4Quality, self.getFinalVideoParams(mediaVersion, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
+            mp4Quality = $.extend(mp4Quality, self.getFinalVideoParams(mediaSource, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
 
             var webmQuality = getVideoQualityOptions(mediaStreams).filter(function (opt) {
                 return opt.selected;
             })[0];
-            webmQuality = $.extend(webmQuality, self.getFinalVideoParams(mediaVersion, webmQuality.maxWidth, webmQuality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.webm'));
+            webmQuality = $.extend(webmQuality, self.getFinalVideoParams(mediaSource, webmQuality.maxWidth, webmQuality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.webm'));
 
             var m3U8Quality = getVideoQualityOptions(mediaStreams).filter(function (opt) {
                 return opt.selected;
             })[0];
-            m3U8Quality = $.extend(m3U8Quality, self.getFinalVideoParams(mediaVersion, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
+            m3U8Quality = $.extend(m3U8Quality, self.getFinalVideoParams(mediaSource, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
 
             // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
             var prioritizeWebmOverH264 = $.browser.chrome || $.browser.msie;
@@ -883,9 +883,9 @@
 
                 videoElement.off("playing.once");
 
-                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, mediaVersion.Id, true, item.MediaType);
+                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, mediaSource.Id, true, item.MediaType);
 
-                self.startProgressInterval(item.Id, mediaVersion.Id);
+                self.startProgressInterval(item.Id, mediaSource.Id);
 
             }).on("pause", function (e) {
 
@@ -1001,7 +1001,7 @@
             fullscreenExited = false;
 
             currentItem = item;
-            currentMediaVersion = mediaVersion;
+            currentMediaSource = mediaSource;
 
             return videoElement[0];
         };

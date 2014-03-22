@@ -3791,7 +3791,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackStart = function (userId, itemId, mediaVersionId, canSeek, queueableMediaTypes) {
+        self.reportPlaybackStart = function (userId, itemId, mediaSourceId, canSeek, queueableMediaTypes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3810,8 +3810,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
                 var msg = [itemId, canSeek, queueableMediaTypes];
                 
-                if (mediaVersionId) {
-                    msg.push(mediaVersionId);
+                if (mediaSourceId) {
+                    msg.push(mediaSourceId);
                 }
 
                 self.sendWebSocketMessage("PlaybackStart", msg.join('|'));
@@ -3825,8 +3825,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 QueueableMediaTypes: queueableMediaTypes
             };
 
-            if (mediaVersionId) {
-                params.mediaVersionId = mediaVersionId;
+            if (mediaSourceId) {
+                params.mediaSourceId = mediaSourceId;
             }
 
             var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId, params);
@@ -3842,7 +3842,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackProgress = function (userId, itemId, mediaVersionId, positionTicks, isPaused, isMuted) {
+        self.reportPlaybackProgress = function (userId, itemId, mediaSourceId, positionTicks, isPaused, isMuted) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3861,7 +3861,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 msgData += "|" + (positionTicks == null ? "" : positionTicks);
                 msgData += "|" + (isPaused == null ? "" : isPaused);
                 msgData += "|" + (isMuted == null ? "" : isMuted);
-                msgData += "|" + (mediaVersionId == null ? "" : mediaVersionId);
+                msgData += "|" + (mediaSourceId == null ? "" : mediaSourceId);
 
                 self.sendWebSocketMessage("PlaybackProgress", msgData);
 
@@ -3878,8 +3878,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 params.positionTicks = positionTicks;
             }
 
-            if (mediaVersionId) {
-                params.mediaVersionId = mediaVersionId;
+            if (mediaSourceId) {
+                params.mediaSourceId = mediaSourceId;
             }
 
             var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId + "/Progress", params);
@@ -3895,7 +3895,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackStopped = function (userId, itemId, mediaVersionId, positionTicks) {
+        self.reportPlaybackStopped = function (userId, itemId, mediaSourceId, positionTicks) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3911,7 +3911,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
                 var msg = itemId;
                 msg += "|" + (positionTicks == null ? "" : positionTicks);
-                msg += "|" + (mediaVersionId == null ? "" : mediaVersionId);
+                msg += "|" + (mediaSourceId == null ? "" : mediaSourceId);
 
                 self.sendWebSocketMessage("PlaybackStopped", msg);
 
@@ -3925,8 +3925,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 params.positionTicks = positionTicks;
             }
 
-            if (mediaVersionId) {
-                params.mediaVersionId = mediaVersionId;
+            if (mediaSourceId) {
+                params.mediaSourceId = mediaSourceId;
             }
 
             var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId, params);

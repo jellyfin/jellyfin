@@ -241,8 +241,8 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
 
-        [ApiMember(Name = "MediaVersionId", Description = "The id of the MediaVersion", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string MediaVersionId { get; set; }
+        [ApiMember(Name = "MediaSourceId", Description = "The id of the MediaSource", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MediaSourceId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="UpdateUserItemRating" /> is likes.
@@ -280,8 +280,8 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
 
-        [ApiMember(Name = "MediaVersionId", Description = "The id of the MediaVersion", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string MediaVersionId { get; set; }
+        [ApiMember(Name = "MediaSourceId", Description = "The id of the MediaSource", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MediaSourceId { get; set; }
         
         /// <summary>
         /// Gets or sets the position ticks.
@@ -318,8 +318,8 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public string Id { get; set; }
 
-        [ApiMember(Name = "MediaVersionId", Description = "The id of the MediaVersion", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
-        public string MediaVersionId { get; set; }
+        [ApiMember(Name = "MediaSourceId", Description = "The id of the MediaSource", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string MediaSourceId { get; set; }
         
         /// <summary>
         /// Gets or sets the position ticks.
@@ -746,7 +746,7 @@ namespace MediaBrowser.Api.UserLibrary
                 Item = item,
                 SessionId = GetSession().Id,
                 QueueableMediaTypes = queueableMediaTypes.Split(',').ToList(),
-                MediaVersionId = request.MediaVersionId
+                MediaSourceId = request.MediaSourceId
             };
 
             _sessionManager.OnPlaybackStart(info);
@@ -769,7 +769,7 @@ namespace MediaBrowser.Api.UserLibrary
                 IsMuted = request.IsMuted,
                 IsPaused = request.IsPaused,
                 SessionId = GetSession().Id,
-                MediaVersionId = request.MediaVersionId
+                MediaSourceId = request.MediaSourceId
             };
 
             var task = _sessionManager.OnPlaybackProgress(info);
@@ -794,7 +794,7 @@ namespace MediaBrowser.Api.UserLibrary
                 Item = item,
                 PositionTicks = request.PositionTicks,
                 SessionId = session.Id,
-                MediaVersionId = request.MediaVersionId
+                MediaSourceId = request.MediaSourceId
             };
 
             var task = _sessionManager.OnPlaybackStopped(info);

@@ -73,7 +73,7 @@
                     $('#btnPlayExternalTrailer', page).attr('href', '#');
                 }
 
-                if (user.Configuration.IsAdministrator && item.MediaVersions && item.MediaVersions.length > 1) {
+                if (user.Configuration.IsAdministrator && item.MediaSources && item.MediaSources.length > 1) {
                     $('.splitVersionContainer', page).show();
                 } else {
                     $('.splitVersionContainer', page).hide();
@@ -210,8 +210,8 @@
             $('#childrenCollapsible', page).addClass('hide');
         }
 
-        if (item.MediaVersions && item.MediaVersions.length) {
-            renderMediaVersions(page, item);
+        if (item.MediaSources && item.MediaSources.length) {
+            renderMediaSources(page, item);
         }
 
         var chapters = item.Chapters || [];
@@ -241,13 +241,6 @@
         } else {
             $('#additionalPartsCollapsible', page).removeClass('hide');
             renderAdditionalParts(page, item, user);
-        }
-
-        if (!item.AlternateVersionCount) {
-            $('#alternateVersionsCollapsible', page).addClass('hide');
-        } else {
-            $('#alternateVersionsCollapsible', page).removeClass('hide');
-            renderAlternateVersions(page, item, user);
         }
 
         $('#themeSongsCollapsible', page).hide();
@@ -346,7 +339,7 @@
             tabsHtml += '<label for="radioDetails" class="lblDetailTab">Details</label>';
         }
 
-        if (item.MediaVersions && item.MediaVersions.length) {
+        if (item.MediaSources && item.MediaSources.length) {
             tabsHtml += '<input type="radio" name="radioDetailTab" class="radioDetailTab" id="radioMediaInfo" value="tabMediaInfo">';
             tabsHtml += '<label for="radioMediaInfo" class="lblDetailTab">Media Info</label>';
         }
@@ -981,41 +974,6 @@
         });
     }
 
-    function renderAlternateVersions(page, item, user) {
-
-        var url = ApiClient.getUrl("Videos/" + item.Id + "/Versions", {
-            userId: user.Id
-        });
-
-        $.getJSON(url).done(function (items) {
-
-            if (items.length) {
-
-                $('#alternateVersionsCollapsible', page).show();
-
-                var html = LibraryBrowser.getPosterViewHtml({
-                    items: items.map(function (i) {
-                        var extended = $.extend({}, item, i);
-                        extended.Id = item.Id;
-                        return extended;
-                    }),
-                    shape: "portrait",
-                    context: 'movies',
-                    useAverageAspectRatio: true,
-                    showTitle: true,
-                    centerText: true,
-                    linkItem: false,
-                    showProgress: false,
-                    showUnplayedIndicator: false
-                });
-
-                $('#alternateVersionsContent', page).html(html).trigger('create');
-            } else {
-                $('#alternateVersionsCollapsible', page).hide();
-            }
-        });
-    }
-
     function renderScenes(page, item, user, limit) {
         var html = '';
 
@@ -1069,26 +1027,26 @@
         $('#scenesContent', page).html(html).trigger('create');
     }
 
-    function renderMediaVersions(page, item) {
+    function renderMediaSources(page, item) {
 
-        var html = item.MediaVersions.map(function (v) {
+        var html = item.MediaSources.map(function (v) {
 
-            return getMediaVersionHtml(item, v);
+            return getMediaSourceHtml(item, v);
 
         }).join('<div style="border-top:1px solid #444;margin: 1em 0;"></div>');
 
-        if (item.MediaVersions.length > 1) {
+        if (item.MediaSources.length > 1) {
             html = '<br/>' + html;
         }
 
         $('#mediaInfoContent', page).html(html).trigger('create');
     }
 
-    function getMediaVersionHtml(item, version) {
+    function getMediaSourceHtml(item, version) {
 
         var html = '';
 
-        if (version.Name && item.MediaVersions.length > 1) {
+        if (version.Name && item.MediaSources.length > 1) {
             html += '<span class="mediaInfoAttribute">' + version.Name + '</span><br/>';
         }
 
@@ -1334,7 +1292,7 @@
 
         var id = getParameterByName('id');
 
-        Dashboard.confirm("Are you sure you wish to split the versions apart into separate items?", "Split Versions Apart", function (confirmResult) {
+        Dashboard.confirm("Are you sure you wish to split the media sources into separate items?", "Split Media Apart", function (confirmResult) {
 
             if (confirmResult) {
 
@@ -1342,7 +1300,7 @@
 
                 $.ajax({
                     type: "DELETE",
-                    url: ApiClient.getUrl("Videos/" + id + "/AlternateVersions")
+                    url: ApiClient.getUrl("Videos/" + id + "/AlternateSources")
 
                 }).done(function () {
 

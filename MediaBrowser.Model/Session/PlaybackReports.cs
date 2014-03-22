@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Session
 
         public string ItemId { get; set; }
 
-        public string MediaVersionId { get; set; }
+        public string MediaSourceId { get; set; }
 
         public bool IsSeekable { get; set; }
 
@@ -31,7 +31,7 @@ namespace MediaBrowser.Model.Session
 
         public string ItemId { get; set; }
 
-        public string MediaVersionId { get; set; }
+        public string MediaSourceId { get; set; }
 
         public long? PositionTicks { get; set; }
 
@@ -49,7 +49,7 @@ namespace MediaBrowser.Model.Session
 
         public string ItemId { get; set; }
 
-        public string MediaVersionId { get; set; }
+        public string MediaSourceId { get; set; }
 
         public long? PositionTicks { get; set; }
     }

@@ -218,26 +218,26 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="session">The session.</param>
         /// <param name="item">The item.</param>
-        /// <param name="mediaVersionId">The media version identifier.</param>
+        /// <param name="mediaSourceId">The media version identifier.</param>
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <param name="isMuted">if set to <c>true</c> [is muted].</param>
         /// <param name="currentPositionTicks">The current position ticks.</param>
-        private void UpdateNowPlayingItem(SessionInfo session, BaseItem item, string mediaVersionId, bool isPaused, bool isMuted, long? currentPositionTicks = null)
+        private void UpdateNowPlayingItem(SessionInfo session, BaseItem item, string mediaSourceId, bool isPaused, bool isMuted, long? currentPositionTicks = null)
         {
             session.IsMuted = isMuted;
             session.IsPaused = isPaused;
             session.NowPlayingPositionTicks = currentPositionTicks;
             session.NowPlayingItem = item;
             session.LastActivityDate = DateTime.UtcNow;
-            session.NowPlayingMediaVersionId = mediaVersionId;
+            session.NowPlayingMediaSourceId = mediaSourceId;
 
-            if (string.IsNullOrWhiteSpace(mediaVersionId))
+            if (string.IsNullOrWhiteSpace(mediaSourceId))
             {
                 session.NowPlayingRunTimeTicks = item.RunTimeTicks;
             }
             else
             {
-                var version = _libraryManager.GetItemById(new Guid(mediaVersionId));
+                var version = _libraryManager.GetItemById(new Guid(mediaSourceId));
 
                 session.NowPlayingRunTimeTicks = version.RunTimeTicks;
             }
@@ -261,7 +261,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 session.NowPlayingPositionTicks = null;
                 session.IsPaused = false;
                 session.NowPlayingRunTimeTicks = null;
-                session.NowPlayingMediaVersionId = null;
+                session.NowPlayingMediaSourceId = null;
             }
         }
 
@@ -368,9 +368,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var item = info.Item;
 
-            var mediaVersionId = GetMediaVersionId(item, info.MediaVersionId);
+            var mediaSourceId = GetMediaSourceId(item, info.MediaSourceId);
 
-            UpdateNowPlayingItem(session, item, mediaVersionId, false, false);
+            UpdateNowPlayingItem(session, item, mediaSourceId, false, false);
 
             session.CanSeek = info.CanSeek;
             session.QueueableMediaTypes = info.QueueableMediaTypes;
@@ -390,7 +390,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 Item = item,
                 Users = users,
-                MediaVersionId = info.MediaVersionId
+                MediaSourceId = info.MediaSourceId
 
             }, _logger);
         }
@@ -438,9 +438,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var session = Sessions.First(i => i.Id.Equals(info.SessionId));
 
-            var mediaVersionId = GetMediaVersionId(info.Item, info.MediaVersionId);
+            var mediaSourceId = GetMediaSourceId(info.Item, info.MediaSourceId);
 
-            UpdateNowPlayingItem(session, info.Item, mediaVersionId, info.IsPaused, info.IsMuted, info.PositionTicks);
+            UpdateNowPlayingItem(session, info.Item, mediaSourceId, info.IsPaused, info.IsMuted, info.PositionTicks);
 
             var key = info.Item.GetUserDataKey();
 
@@ -456,7 +456,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 Item = info.Item,
                 Users = users,
                 PlaybackPositionTicks = info.PositionTicks,
-                MediaVersionId = mediaVersionId
+                MediaSourceId = mediaSourceId
 
             }, _logger);
         }
@@ -516,7 +516,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 playedToCompletion = await OnPlaybackStopped(user.Id, key, info.Item, info.PositionTicks).ConfigureAwait(false);
             }
 
-            var mediaVersionId = GetMediaVersionId(info.Item, info.MediaVersionId);
+            var mediaSourceId = GetMediaSourceId(info.Item, info.MediaSourceId);
 
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackStopEventArgs
             {
@@ -524,22 +524,22 @@ namespace MediaBrowser.Server.Implementations.Session
                 Users = users,
                 PlaybackPositionTicks = info.PositionTicks,
                 PlayedToCompletion = playedToCompletion,
-                MediaVersionId = mediaVersionId
+                MediaSourceId = mediaSourceId
 
             }, _logger);
         }
 
-        private string GetMediaVersionId(BaseItem item, string reportedMediaVersionId)
+        private string GetMediaSourceId(BaseItem item, string reportedMediaSourceId)
         {
-            if (string.IsNullOrWhiteSpace(reportedMediaVersionId))
+            if (string.IsNullOrWhiteSpace(reportedMediaSourceId))
             {
                 if (item is Video || item is Audio)
                 {
-                    reportedMediaVersionId = item.Id.ToString("N");
+                    reportedMediaSourceId = item.Id.ToString("N");
                 }
             }
 
-            return reportedMediaVersionId;
+            return reportedMediaSourceId;
         }
 
         private async Task<bool> OnPlaybackStopped(Guid userId, string userDataKey, BaseItem item, long? positionTicks)
