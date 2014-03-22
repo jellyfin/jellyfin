@@ -219,6 +219,15 @@ namespace MediaBrowser.Dlna.PlayTo
             return true;
         }
 
+        /// <summary>
+        /// Determines whether [is condition satisfied] [the specified condition].
+        /// </summary>
+        /// <param name="condition">The condition.</param>
+        /// <param name="mediaPath">The media path.</param>
+        /// <param name="videoStream">The video stream.</param>
+        /// <param name="audioStream">The audio stream.</param>
+        /// <returns><c>true</c> if [is condition satisfied] [the specified condition]; otherwise, <c>false</c>.</returns>
+        /// <exception cref="System.InvalidOperationException">Unexpected ProfileConditionType</exception>
         private bool IsConditionSatisfied(ProfileCondition condition, string mediaPath, MediaStream videoStream, MediaStream audioStream)
         {
             var actualValue = GetConditionValue(condition, mediaPath, videoStream, audioStream);
@@ -226,7 +235,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (actualValue.HasValue)
             {
                 long expected;
-                if (long.TryParse("", NumberStyles.Any, _usCulture, out expected))
+                if (long.TryParse(condition.Value, NumberStyles.Any, _usCulture, out expected))
                 {
                     switch (condition.Condition)
                     {
@@ -247,6 +256,15 @@ namespace MediaBrowser.Dlna.PlayTo
             return false;
         }
 
+        /// <summary>
+        /// Gets the condition value.
+        /// </summary>
+        /// <param name="condition">The condition.</param>
+        /// <param name="mediaPath">The media path.</param>
+        /// <param name="videoStream">The video stream.</param>
+        /// <param name="audioStream">The audio stream.</param>
+        /// <returns>System.Nullable{System.Int64}.</returns>
+        /// <exception cref="System.InvalidOperationException">Unexpected Property</exception>
         private long? GetConditionValue(ProfileCondition condition, string mediaPath, MediaStream videoStream, MediaStream audioStream)
         {
             switch (condition.Property)
@@ -270,6 +288,11 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
+        /// <summary>
+        /// Converts to long.
+        /// </summary>
+        /// <param name="val">The value.</param>
+        /// <returns>System.Nullable{System.Int64}.</returns>
         private long? ConvertToLong(float? val)
         {
             return val.HasValue ? Convert.ToInt64(val.Value) : (long?)null;
