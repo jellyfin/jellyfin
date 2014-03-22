@@ -14,8 +14,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetYears
     /// </summary>
-    [Route("/Years", "GET")]
-    [Api(Description = "Gets all years from a given item, folder, or the entire library")]
+    [Route("/Years", "GET", Summary = "Gets all years from a given item, folder, or the entire library")]
     public class GetYears : GetItemsByName
     {
     }
@@ -23,8 +22,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetYear
     /// </summary>
-    [Route("/Years/{Year}", "GET")]
-    [Api(Description = "Gets a year")]
+    [Route("/Years/{Year}", "GET", Summary = "Gets a year")]
     public class GetYear : IReturn<BaseItemDto>
     {
         /// <summary>

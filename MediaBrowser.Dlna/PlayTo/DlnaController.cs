@@ -69,12 +69,12 @@ namespace MediaBrowser.Dlna.PlayTo
             _device.CurrentIdChanged += Device_CurrentIdChanged;
             _device.Start();
 
-            _updateTimer = new System.Threading.Timer(updateTimer_Elapsed, null, UpdateTimerIntervalMs, UpdateTimerIntervalMs);
+            _updateTimer = new Timer(updateTimer_Elapsed, null, UpdateTimerIntervalMs, UpdateTimerIntervalMs);
         }
 
         #region Device EventHandlers & Update Timer
 
-        System.Threading.Timer _updateTimer;
+        Timer _updateTimer;
 
         async void Device_PlaybackChanged(object sender, TransportStateEventArgs e)
         {
@@ -88,7 +88,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 _playbackStarted = false;
 
-                await _sessionManager.OnPlaybackStopped(new PlaybackStopInfo
+                await _sessionManager.OnPlaybackStopped(new Controller.Session.PlaybackStopInfo
                 {
                     Item = _currentItem,
                     SessionId = _session.Id,
@@ -164,7 +164,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 var playlistItem = Playlist.FirstOrDefault(p => p.PlayState == 1);
                 if (playlistItem != null && playlistItem.Transcode)
                 {
-                    await _sessionManager.OnPlaybackProgress(new PlaybackProgressInfo
+                    await _sessionManager.OnPlaybackProgress(new Controller.Session.PlaybackProgressInfo
                     {
                         Item = _currentItem,
                         SessionId = _session.Id,
@@ -176,7 +176,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 }
                 else if (_currentItem != null)
                 {
-                    await _sessionManager.OnPlaybackProgress(new PlaybackProgressInfo
+                    await _sessionManager.OnPlaybackProgress(new Controller.Session.PlaybackProgressInfo
                     {
                         Item = _currentItem,
                         SessionId = _session.Id,

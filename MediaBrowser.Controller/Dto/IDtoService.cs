@@ -29,13 +29,6 @@ namespace MediaBrowser.Controller.Dto
         SessionInfoDto GetSessionInfoDto(SessionInfo session);
 
         /// <summary>
-        /// Gets the base item info.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>BaseItemInfo.</returns>
-        BaseItemInfo GetBaseItemInfo(BaseItem item);
-
-        /// <summary>
         /// Gets the dto id.
         /// </summary>
         /// <param name="item">The item.</param>

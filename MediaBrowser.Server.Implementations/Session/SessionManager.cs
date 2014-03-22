@@ -218,15 +218,29 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="session">The session.</param>
         /// <param name="item">The item.</param>
+        /// <param name="mediaVersionId">The media version identifier.</param>
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
+        /// <param name="isMuted">if set to <c>true</c> [is muted].</param>
         /// <param name="currentPositionTicks">The current position ticks.</param>
-        private void UpdateNowPlayingItem(SessionInfo session, BaseItem item, bool isPaused, bool isMuted, long? currentPositionTicks = null)
+        private void UpdateNowPlayingItem(SessionInfo session, BaseItem item, string mediaVersionId, bool isPaused, bool isMuted, long? currentPositionTicks = null)
         {
             session.IsMuted = isMuted;
             session.IsPaused = isPaused;
             session.NowPlayingPositionTicks = currentPositionTicks;
             session.NowPlayingItem = item;
             session.LastActivityDate = DateTime.UtcNow;
+            session.NowPlayingMediaVersionId = mediaVersionId;
+
+            if (string.IsNullOrWhiteSpace(mediaVersionId))
+            {
+                session.NowPlayingRunTimeTicks = item.RunTimeTicks;
+            }
+            else
+            {
+                var version = _libraryManager.GetItemById(new Guid(mediaVersionId));
+
+                session.NowPlayingRunTimeTicks = version.RunTimeTicks;
+            }
         }
 
         /// <summary>
@@ -246,6 +260,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 session.NowPlayingItem = null;
                 session.NowPlayingPositionTicks = null;
                 session.IsPaused = false;
+                session.NowPlayingRunTimeTicks = null;
+                session.NowPlayingMediaVersionId = null;
             }
         }
 
@@ -352,7 +368,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var item = info.Item;
 
-            UpdateNowPlayingItem(session, item, false, false);
+            var mediaVersionId = GetMediaVersionId(item, info.MediaVersionId);
+
+            UpdateNowPlayingItem(session, item, mediaVersionId, false, false);
 
             session.CanSeek = info.CanSeek;
             session.QueueableMediaTypes = info.QueueableMediaTypes;
@@ -371,7 +389,8 @@ namespace MediaBrowser.Server.Implementations.Session
             EventHelper.QueueEventIfNotNull(PlaybackStart, this, new PlaybackProgressEventArgs
             {
                 Item = item,
-                Users = users
+                Users = users,
+                MediaVersionId = info.MediaVersionId
 
             }, _logger);
         }
@@ -405,7 +424,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         /// <exception cref="System.ArgumentOutOfRangeException">positionTicks</exception>
-        public async Task OnPlaybackProgress(PlaybackProgressInfo info)
+        public async Task OnPlaybackProgress(Controller.Session.PlaybackProgressInfo info)
         {
             if (info == null)
             {
@@ -419,7 +438,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var session = Sessions.First(i => i.Id.Equals(info.SessionId));
 
-            UpdateNowPlayingItem(session, info.Item, info.IsPaused, info.IsMuted, info.PositionTicks);
+            var mediaVersionId = GetMediaVersionId(info.Item, info.MediaVersionId);
+
+            UpdateNowPlayingItem(session, info.Item, mediaVersionId, info.IsPaused, info.IsMuted, info.PositionTicks);
 
             var key = info.Item.GetUserDataKey();
 
@@ -434,7 +455,8 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 Item = info.Item,
                 Users = users,
-                PlaybackPositionTicks = info.PositionTicks
+                PlaybackPositionTicks = info.PositionTicks,
+                MediaVersionId = mediaVersionId
 
             }, _logger);
         }
@@ -458,7 +480,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">info</exception>
         /// <exception cref="System.ArgumentOutOfRangeException">positionTicks</exception>
-        public async Task OnPlaybackStopped(PlaybackStopInfo info)
+        public async Task OnPlaybackStopped(Controller.Session.PlaybackStopInfo info)
         {
             if (info == null)
             {
@@ -494,14 +516,30 @@ namespace MediaBrowser.Server.Implementations.Session
                 playedToCompletion = await OnPlaybackStopped(user.Id, key, info.Item, info.PositionTicks).ConfigureAwait(false);
             }
 
+            var mediaVersionId = GetMediaVersionId(info.Item, info.MediaVersionId);
+
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackStopEventArgs
             {
                 Item = info.Item,
                 Users = users,
                 PlaybackPositionTicks = info.PositionTicks,
-                PlayedToCompletion = playedToCompletion
+                PlayedToCompletion = playedToCompletion,
+                MediaVersionId = mediaVersionId
 
             }, _logger);
+        }
+
+        private string GetMediaVersionId(BaseItem item, string reportedMediaVersionId)
+        {
+            if (string.IsNullOrWhiteSpace(reportedMediaVersionId))
+            {
+                if (item is Video || item is Audio)
+                {
+                    reportedMediaVersionId = item.Id.ToString("N");
+                }
+            }
+
+            return reportedMediaVersionId;
         }
 
         private async Task<bool> OnPlaybackStopped(Guid userId, string userDataKey, BaseItem item, long? positionTicks)
@@ -899,6 +937,8 @@ namespace MediaBrowser.Server.Implementations.Session
 
             session.PlayableMediaTypes = capabilities.PlayableMediaTypes.ToList();
             session.SupportsFullscreenToggle = capabilities.SupportsFullscreenToggle;
+            session.SupportsOsdToggle = capabilities.SupportsOsdToggle;
+            session.SupportsNavigationControl = capabilities.SupportsNavigationControl;
         }
     }
 }

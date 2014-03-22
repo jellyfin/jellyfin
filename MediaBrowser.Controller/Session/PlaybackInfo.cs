@@ -34,5 +34,11 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The session id.</value>
         public Guid SessionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media version identifier.
+        /// </summary>
+        /// <value>The media version identifier.</value>
+        public string MediaVersionId { get; set; }
     }
 }

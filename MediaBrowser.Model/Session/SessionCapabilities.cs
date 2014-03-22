@@ -7,6 +7,10 @@ namespace MediaBrowser.Model.Session
 
         public bool SupportsFullscreenToggle { get; set; }
 
+        public bool SupportsOsdToggle { get; set; }
+
+        public bool SupportsNavigationControl { get; set; }
+        
         public SessionCapabilities()
         {
             PlayableMediaTypes = new string[] {};

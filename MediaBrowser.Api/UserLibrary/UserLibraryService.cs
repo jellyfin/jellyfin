@@ -241,6 +241,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
 
+        [ApiMember(Name = "MediaVersionId", Description = "The id of the MediaVersion", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MediaVersionId { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="UpdateUserItemRating" /> is likes.
         /// </summary>
@@ -277,6 +280,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
 
+        [ApiMember(Name = "MediaVersionId", Description = "The id of the MediaVersion", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MediaVersionId { get; set; }
+        
         /// <summary>
         /// Gets or sets the position ticks.
         /// </summary>
@@ -312,6 +318,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public string Id { get; set; }
 
+        [ApiMember(Name = "MediaVersionId", Description = "The id of the MediaVersion", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string MediaVersionId { get; set; }
+        
         /// <summary>
         /// Gets or sets the position ticks.
         /// </summary>
@@ -736,7 +745,8 @@ namespace MediaBrowser.Api.UserLibrary
                 CanSeek = request.CanSeek,
                 Item = item,
                 SessionId = GetSession().Id,
-                QueueableMediaTypes = queueableMediaTypes.Split(',').ToList()
+                QueueableMediaTypes = queueableMediaTypes.Split(',').ToList(),
+                MediaVersionId = request.MediaVersionId
             };
 
             _sessionManager.OnPlaybackStart(info);
@@ -758,7 +768,8 @@ namespace MediaBrowser.Api.UserLibrary
                 PositionTicks = request.PositionTicks,
                 IsMuted = request.IsMuted,
                 IsPaused = request.IsPaused,
-                SessionId = GetSession().Id
+                SessionId = GetSession().Id,
+                MediaVersionId = request.MediaVersionId
             };
 
             var task = _sessionManager.OnPlaybackProgress(info);
@@ -782,7 +793,8 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 Item = item,
                 PositionTicks = request.PositionTicks,
-                SessionId = session.Id
+                SessionId = session.Id,
+                MediaVersionId = request.MediaVersionId
             };
 
             var task = _sessionManager.OnPlaybackStopped(info);

@@ -223,6 +223,11 @@ namespace MediaBrowser.Server.Implementations.Session
                     QueueableMediaTypes = queueableMediaTypes.Split(',').ToList()
                 };
 
+                if (vals.Length > 3)
+                {
+                    info.MediaVersionId = vals[3];
+                }
+
                 _sessionManager.OnPlaybackStart(info);
             }
         }
@@ -265,6 +270,11 @@ namespace MediaBrowser.Server.Implementations.Session
                     SessionId = session.Id
                 };
 
+                if (vals.Length > 4)
+                {
+                    info.MediaVersionId = vals[4];
+                }
+
                 _sessionManager.OnPlaybackProgress(info);
             }
         }
@@ -303,6 +313,11 @@ namespace MediaBrowser.Server.Implementations.Session
                     PositionTicks = positionTicks,
                     SessionId = session.Id
                 };
+
+                if (vals.Length > 2)
+                {
+                    info.MediaVersionId = vals[2];
+                }
 
                 _sessionManager.OnPlaybackStopped(info);
             }
