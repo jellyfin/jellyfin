@@ -67,6 +67,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             .Replace("!", " ")
             .Replace("(", " ")
             .Replace(")", " ")
+            .Replace(":", " ")
             .Replace(",", " ")
             .Replace("-", " ")
             .Replace(" a ", String.Empty, StringComparison.OrdinalIgnoreCase)
