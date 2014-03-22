@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Dlna
 {
@@ -6,12 +7,16 @@ namespace MediaBrowser.Controller.Dlna
     {
         public CodecType Type { get; set; }
         public List<ProfileCondition> Conditions { get; set; }
-        public string[] Codecs { get; set; }
+        public string Codec { get; set; }
 
         public CodecProfile()
         {
             Conditions = new List<ProfileCondition>();
-            Codecs = new string[] { };
+        }
+
+        public List<string> GetCodecs()
+        {
+            return (Codec ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
         }
     }
 

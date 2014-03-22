@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Dlna
 {
     public class DirectPlayProfile
     {
         public string[] Containers { get; set; }
-        public string[] AudioCodecs { get; set; }
-        public string[] VideoCodecs { get; set; }
+        public string AudioCodec { get; set; }
+        public string VideoCodec { get; set; }
 
         public DlnaProfileType Type { get; set; }
 
@@ -16,9 +17,17 @@ namespace MediaBrowser.Controller.Dlna
         {
             Conditions = new List<ProfileCondition>();
 
-            AudioCodecs = new string[] { };
-            VideoCodecs = new string[] { };
             Containers = new string[] { };
+        }
+
+        public List<string> GetAudioCodecs()
+        {
+            return (AudioCodec ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+        }
+
+        public List<string> GetVideoCodecs()
+        {
+            return (VideoCodec ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
         }
     }
 
