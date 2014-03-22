@@ -56,12 +56,14 @@ namespace MediaBrowser.Controller.Dlna
         public string ProtocolInfo { get; set; }
 
         public MediaProfile[] MediaProfiles { get; set; }
+        public CodecProfile[] CodecProfiles { get; set; }
 
         public DeviceProfile()
         {
             DirectPlayProfiles = new DirectPlayProfile[] { };
             TranscodingProfiles = new TranscodingProfile[] { };
             MediaProfiles = new MediaProfile[] { };
+            CodecProfiles = new CodecProfile[] { };
         }
     }
 }
