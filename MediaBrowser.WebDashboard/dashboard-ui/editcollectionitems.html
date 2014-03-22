@@ -72,10 +72,8 @@
 
         <script type="text/javascript">
             $('.collectionItemSearchForm').off('submit', EditCollectionItemsPage.onSearchFormSubmit).on('submit', EditCollectionItemsPage.onSearchFormSubmit);
-            $(document).on("pageinit", function () {
-                $(".popupIdentify").on("popupafteropen", function (e) {
-                    $("#txtLookupName").focus().select();
-                });
+            $("body").on("popupafteropen", ".popupIdentify", function (e) {
+                $("#txtLookupName").focus().select();
             });
         </script>
     </div>
