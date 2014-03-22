@@ -319,7 +319,7 @@
 
             var currentTicks = self.getCurrentTicks();
 
-            var chapters = currentMediaVersion.Chapters || [];
+            var chapters = currentItem.Chapters || [];
 
             for (var i = 0, length = chapters.length; i < length; i++) {
 
@@ -344,7 +344,7 @@
 
                 if (chapter.ImageTag) {
 
-                    imgUrl = ApiClient.getImageUrl(currentMediaVersion.ItemId, {
+                    imgUrl = ApiClient.getImageUrl(currentItem.Id, {
                         maxwidth: 200,
                         tag: chapter.ImageTag,
                         type: "Chapter",
@@ -706,7 +706,8 @@
                 SubtitleStreamIndex: getInitialSubtitleStreamIndex(mediaStreams, user),
                 AudioStreamIndex: getInitialAudioStreamIndex(mediaStreams, user),
                 deviceId: ApiClient.deviceId(),
-                Static: false
+                Static: false,
+                mediaVersionId: mediaVersion.Id
             };
 
             var mp4Quality = getVideoQualityOptions(mediaStreams).filter(function (opt) {
@@ -733,7 +734,7 @@
 
             var seekParam = isStatic && startPosition ? '#t=' + (startPosition / 10000000) : '';
 
-            var mp4VideoUrl = ApiClient.getUrl('Videos/' + mediaVersion.ItemId + '/stream.mp4', $.extend({}, baseParams, {
+            var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
                 profile: 'baseline',
                 level: 3,
                 Static: isStatic,
@@ -745,7 +746,7 @@
 
             })) + seekParam;
 
-            var webmVideoUrl = ApiClient.getUrl('Videos/' + mediaVersion.ItemId + '/stream.webm', $.extend({}, baseParams, {
+            var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
 
                 VideoCodec: 'vpx',
                 AudioCodec: 'Vorbis',
@@ -755,7 +756,7 @@
 
             })) + seekParam;
 
-            var hlsVideoUrl = ApiClient.getUrl('Videos/' + mediaVersion.ItemId + '/stream.m3u8', $.extend({}, baseParams, {
+            var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
                 profile: 'baseline',
                 level: 3,
                 timeStampOffsetMs: 0,
@@ -835,7 +836,7 @@
                 $('#video-subtitleButton', videoControls).hide();
             }
 
-            if (mediaVersion.Chapters && mediaVersion.Chapters.length) {
+            if (item.Chapters && item.Chapters.length) {
                 $('#video-chaptersButton', videoControls).show();
             } else {
                 $('#video-chaptersButton', videoControls).hide();
@@ -882,9 +883,9 @@
 
                 videoElement.off("playing.once");
 
-                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), mediaVersion.ItemId, true, item.MediaType);
+                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, mediaVersion.Id, true, item.MediaType);
 
-                self.startProgressInterval(mediaVersion.ItemId);
+                self.startProgressInterval(item.Id, mediaVersion.Id);
 
             }).on("pause", function (e) {
 

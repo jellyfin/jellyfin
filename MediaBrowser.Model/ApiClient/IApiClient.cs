@@ -538,35 +538,26 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Reports to the server that the user has begun playing an item
         /// </summary>
-        /// <param name="itemId">The item id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <param name="isSeekable">if set to <c>true</c> [is seekable].</param>
-        /// <param name="queueableMediaTypes">The list of media types that the client is capable of queuing onto the playlist. See MediaType class.</param>
+        /// <param name="info">The information.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="ArgumentNullException">itemId</exception>
-        Task ReportPlaybackStartAsync(string itemId, string userId, bool isSeekable, List<string> queueableMediaTypes);
+        Task ReportPlaybackStartAsync(PlaybackStartInfo info);
 
         /// <summary>
         /// Reports playback progress to the server
         /// </summary>
-        /// <param name="itemId">The item id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
-        /// <param name="isMuted">if set to <c>true</c> [is muted].</param>
+        /// <param name="info">The information.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="ArgumentNullException">itemId</exception>
-        Task ReportPlaybackProgressAsync(string itemId, string userId, long? positionTicks, bool isPaused, bool isMuted);
+        Task ReportPlaybackProgressAsync(PlaybackProgressInfo info);
 
         /// <summary>
         /// Reports to the server that the user has stopped playing an item
         /// </summary>
-        /// <param name="itemId">The item id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <param name="positionTicks">The position ticks.</param>
+        /// <param name="info">The information.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="ArgumentNullException">itemId</exception>
-        Task ReportPlaybackStoppedAsync(string itemId, string userId, long? positionTicks);
+        Task ReportPlaybackStoppedAsync(PlaybackStopInfo info);
 
         /// <summary>
         /// Instructs antoher client to browse to a library item.

@@ -54,7 +54,7 @@
 
             var position = Math.floor(10000000 * endTime) + self.startTimeTicksOffset;
 
-            ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentMediaVersion.ItemId, position);
+            ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, currentMediaVersion.Id, position);
 
             if (currentItem.MediaType == "Video") {
                 ApiClient.stopActiveEncodings();
@@ -72,7 +72,7 @@
             self.nextTrack();
         };
 
-        self.startProgressInterval = function (itemId) {
+        self.startProgressInterval = function (itemId, mediaVersionId) {
 
             clearProgressInterval();
 
@@ -81,7 +81,7 @@
             currentProgressInterval = setInterval(function () {
 
                 if (currentMediaElement) {
-                    sendProgressUpdate(itemId);
+                    sendProgressUpdate(itemId, mediaVersionId);
                 }
 
             }, intervalTime);
@@ -156,8 +156,8 @@
 
                     $(this).off('play.onceafterseek').on('ended.playbackstopped', self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded);
 
-                    self.startProgressInterval(currentMediaVersion.ItemId);
-                    sendProgressUpdate(currentMediaVersion.ItemId);
+                    self.startProgressInterval(currentItem.Id, currentMediaVersion.Id);
+                    sendProgressUpdate(currentItem.Id, currentMediaVersion.Id);
 
                 });
 
@@ -957,7 +957,7 @@
 
                 var position = Math.floor(10000000 * endTime) + self.startTimeTicksOffset;
 
-                ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentMediaVersion.ItemId, position);
+                ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, currentMediaVersion.Id, position);
             }
         });
 
@@ -984,9 +984,9 @@
                 return url + '&' + param + "=" + value;
         };
 
-        function sendProgressUpdate(itemId) {
+        function sendProgressUpdate(itemId, mediaVersionId) {
 
-            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, self.getCurrentTicks(), currentMediaElement.paused, currentMediaElement.volume == 0);
+            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, mediaVersionId, self.getCurrentTicks(), currentMediaElement.paused, currentMediaElement.volume == 0);
         };
 
         function clearProgressInterval() {
@@ -1029,18 +1029,19 @@
             var baseParams = {
                 audioChannels: 2,
                 audioBitrate: 128000,
-                StartTimeTicks: startPositionTicks
+                StartTimeTicks: startPositionTicks,
+                mediaVersionId: mediaVersion.Id
             };
 
-            var mp3Url = ApiClient.getUrl('Audio/' + mediaVersion.ItemId + '/stream.mp3', $.extend({}, baseParams, {
+            var mp3Url = ApiClient.getUrl('Audio/' + item.Id + '/stream.mp3', $.extend({}, baseParams, {
                 audioCodec: 'mp3'
             }));
 
-            var aacUrl = ApiClient.getUrl('Audio/' + mediaVersion.ItemId + '/stream.aac', $.extend({}, baseParams, {
+            var aacUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.aac', $.extend({}, baseParams, {
                 audioCodec: 'aac'
             }));
 
-            var webmUrl = ApiClient.getUrl('Audio/' + mediaVersion.ItemId + '/stream.webm', $.extend({}, baseParams, {
+            var webmUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
                 audioCodec: 'Vorbis'
             }));
 
@@ -1131,9 +1132,9 @@
 
                 audioElement.off("play.once");
 
-                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), mediaVersion.ItemId, true, item.MediaType);
+                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, mediaVersion.Id, true, item.MediaType);
 
-                self.startProgressInterval(mediaVersion.ItemId);
+                self.startProgressInterval(item.Id, mediaVersion.Id);
 
             }).on("pause", function () {
 
@@ -1200,7 +1201,7 @@
             return (trunc(titles[0], 30) + "<br />" + trunc(titles[1], 30)).replace("---", "&nbsp;");
         };
 
-        var getItemFields = "MediaVersions";
+        var getItemFields = "MediaVersions,Chapters";
     }
 
     window.MediaPlayer = new mediaPlayer();

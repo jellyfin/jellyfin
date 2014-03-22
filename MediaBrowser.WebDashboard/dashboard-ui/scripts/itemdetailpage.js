@@ -214,11 +214,7 @@
             renderMediaVersions(page, item);
         }
 
-        var primaryVersion = (item.MediaVersions || []).filter(function (v) {
-            return v.IsPrimaryVersion;
-
-        })[0];
-        var chapters = primaryVersion ? (primaryVersion.Chapters || []) : [];
+        var chapters = item.Chapters || [];
 
         if (!chapters.length) {
             $('#scenesCollapsible', page).hide();
@@ -350,7 +346,7 @@
             tabsHtml += '<label for="radioDetails" class="lblDetailTab">Details</label>';
         }
 
-        if (item.MediaType == "Audio" || item.MediaType == "Video") {
+        if (item.MediaVersions && item.MediaVersions.length) {
             tabsHtml += '<input type="radio" name="radioDetailTab" class="radioDetailTab" id="radioMediaInfo" value="tabMediaInfo">';
             tabsHtml += '<label for="radioMediaInfo" class="lblDetailTab">Media Info</label>';
         }
@@ -1023,11 +1019,7 @@
     function renderScenes(page, item, user, limit) {
         var html = '';
 
-        var primaryVersion = (item.MediaVersions || []).filter(function (v) {
-            return v.IsPrimaryVersion;
-
-        })[0];
-        var chapters = primaryVersion ? (primaryVersion.Chapters || []) : [];
+        var chapters = item.Chapters || [];
 
         for (var i = 0, length = chapters.length; i < length; i++) {
 

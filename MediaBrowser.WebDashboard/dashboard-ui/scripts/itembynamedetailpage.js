@@ -398,7 +398,8 @@
             Recursive: true,
             Fields: "AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio",
             Limit: LibraryBrowser.getDefaultPageSize(),
-            StartIndex: 0
+            StartIndex: 0,
+            CollapseBoxSetItems: false
         };
 
         query = $.extend(query, options || {});

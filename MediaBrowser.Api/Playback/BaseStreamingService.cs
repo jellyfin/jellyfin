@@ -1308,7 +1308,9 @@ namespace MediaBrowser.Api.Playback
                 RequestedUrl = url
             };
 
-            var item = DtoService.GetItemByDtoId(request.Id);
+            var item = string.IsNullOrEmpty(request.MediaVersionId) ?
+                DtoService.GetItemByDtoId(request.Id) :
+                DtoService.GetItemByDtoId(request.MediaVersionId);
 
             if (user != null && item.GetPlayAccess(user) != PlayAccess.Full)
             {

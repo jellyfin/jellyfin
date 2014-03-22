@@ -6,7 +6,7 @@
 
         getDefaultPageSize: function () {
 
-            var saved = localStorage.getItem('pagesize');
+            var saved = localStorage.getItem('pagesize_');
 
             if (saved) {
                 return parseInt(saved);

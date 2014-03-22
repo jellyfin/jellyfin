@@ -2192,20 +2192,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
-         * Gets a list of all available conrete BaseItem types from the server
-         */
-        self.getItemTypes = function (options) {
-
-            var url = self.getUrl("Library/ItemTypes", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        /**
          * Constructs a url for a user image
          * @param {String} userId
          * @param {Object} options
@@ -3805,7 +3791,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackStart = function (userId, itemId, canSeek, queueableMediaTypes) {
+        self.reportPlaybackStart = function (userId, itemId, mediaVersionId, canSeek, queueableMediaTypes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3823,6 +3809,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 var deferred = $.Deferred();
 
                 var msg = [itemId, canSeek, queueableMediaTypes];
+                
+                if (mediaVersionId) {
+                    msg.push(mediaVersionId);
+                }
 
                 self.sendWebSocketMessage("PlaybackStart", msg.join('|'));
 
@@ -3830,10 +3820,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 return deferred.promise();
             }
 
-            var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId, {
+            var params = {
                 CanSeek: canSeek,
                 QueueableMediaTypes: queueableMediaTypes
-            });
+            };
+
+            if (mediaVersionId) {
+                params.mediaVersionId = mediaVersionId;
+            }
+
+            var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId, params);
 
             return self.ajax({
                 type: "POST",
@@ -3846,7 +3842,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackProgress = function (userId, itemId, positionTicks, isPaused, isMuted) {
+        self.reportPlaybackProgress = function (userId, itemId, mediaVersionId, positionTicks, isPaused, isMuted) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3860,7 +3856,12 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
                 var deferred = $.Deferred();
 
-                var msgData = itemId + "|" + (positionTicks == null ? "" : positionTicks) + "|" + (isPaused == null ? "" : isPaused) + "|" + (isMuted == null ? "" : isMuted);
+                var msgData = itemId;
+
+                msgData += "|" + (positionTicks == null ? "" : positionTicks);
+                msgData += "|" + (isPaused == null ? "" : isPaused);
+                msgData += "|" + (isMuted == null ? "" : isMuted);
+                msgData += "|" + (mediaVersionId == null ? "" : mediaVersionId);
 
                 self.sendWebSocketMessage("PlaybackProgress", msgData);
 
@@ -3877,6 +3878,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 params.positionTicks = positionTicks;
             }
 
+            if (mediaVersionId) {
+                params.mediaVersionId = mediaVersionId;
+            }
+
             var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId + "/Progress", params);
 
             return self.ajax({
@@ -3890,7 +3895,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackStopped = function (userId, itemId, positionTicks) {
+        self.reportPlaybackStopped = function (userId, itemId, mediaVersionId, positionTicks) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3904,18 +3909,24 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
                 var deferred = $.Deferred();
 
-                self.sendWebSocketMessage("PlaybackStopped", itemId + "|" + (positionTicks == null ? "" : positionTicks));
+                var msg = itemId;
+                msg += "|" + (positionTicks == null ? "" : positionTicks);
+                msg += "|" + (mediaVersionId == null ? "" : mediaVersionId);
+
+                self.sendWebSocketMessage("PlaybackStopped", msg);
 
                 deferred.resolveWith(null, []);
                 return deferred.promise();
             }
 
-            var params = {
-
-            };
+            var params = {};
 
             if (positionTicks) {
                 params.positionTicks = positionTicks;
+            }
+
+            if (mediaVersionId) {
+                params.mediaVersionId = mediaVersionId;
             }
 
             var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId, params);
