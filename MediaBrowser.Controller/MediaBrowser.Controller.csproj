@@ -82,6 +82,7 @@
     <Compile Include="Dlna\DirectPlayProfile.cs" />
     <Compile Include="Dlna\IDlnaManager.cs" />
     <Compile Include="Dlna\DeviceProfile.cs" />
+    <Compile Include="Dlna\MediaProfile.cs" />
     <Compile Include="Dlna\TranscodingProfile.cs" />
     <Compile Include="Drawing\IImageProcessor.cs" />
     <Compile Include="Drawing\ImageFormat.cs" />

@@ -12,7 +12,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public DlnaProfileType MediaType { get; set; }
 
-        public string FileFormat { get; set; }
+        public string Container { get; set; }
 
         public string MimeType { get; set; }
 

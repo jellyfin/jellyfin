@@ -62,18 +62,33 @@ namespace MediaBrowser.Dlna
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mkv"}, 
-                        MimeType = "x-mkv", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
-                        MimeType = "x-msvideo", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mp4"},                       
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                MediaProfiles = new[]
+                {
+                    new MediaProfile
+                    {
+                        Container ="avi",
+                        MimeType = "video/x-msvideo",
+                        Type = DlnaProfileType.Video
+                    },
+
+                    new MediaProfile
+                    {
+                        Container ="mkv",
+                        MimeType = "video/x-mkv",
                         Type = DlnaProfileType.Video
                     }
                 }
@@ -114,18 +129,33 @@ namespace MediaBrowser.Dlna
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mkv"}, 
-                        MimeType = "x-mkv", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
-                        MimeType = "x-msvideo", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mp4"},                       
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                MediaProfiles = new[]
+                {
+                    new MediaProfile
+                    {
+                        Container ="avi",
+                        MimeType = "video/x-msvideo",
+                        Type = DlnaProfileType.Video
+                    },
+
+                    new MediaProfile
+                    {
+                        Container ="mkv",
+                        MimeType = "video/x-mkv",
                         Type = DlnaProfileType.Video
                     }
                 }
@@ -166,18 +196,33 @@ namespace MediaBrowser.Dlna
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mkv"}, 
-                        MimeType = "x-mkv", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
-                        MimeType = "x-msvideo", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mp4"},                       
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                MediaProfiles = new[]
+                {
+                    new MediaProfile
+                    {
+                        Container ="avi",
+                        MimeType = "video/x-msvideo",
+                        Type = DlnaProfileType.Video
+                    },
+
+                    new MediaProfile
+                    {
+                        Container ="mkv",
+                        MimeType = "video/x-mkv",
                         Type = DlnaProfileType.Video
                     }
                 }
@@ -217,12 +262,21 @@ namespace MediaBrowser.Dlna
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
-                        MimeType = "avi", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mp4"}, 
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                MediaProfiles = new[]
+                {
+                    new MediaProfile
+                    {
+                        Container ="avi",
+                        MimeType = "video/avi",
                         Type = DlnaProfileType.Video
                     }
                 }
@@ -263,7 +317,16 @@ namespace MediaBrowser.Dlna
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
-                        MimeType = "x-msvideo", 
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                MediaProfiles = new[]
+                {
+                    new MediaProfile
+                    {
+                        Container ="avi",
+                        MimeType = "video/x-msvideo",
                         Type = DlnaProfileType.Video
                     }
                 }
@@ -303,14 +366,29 @@ namespace MediaBrowser.Dlna
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
-                        Type = DlnaProfileType.Video,
-                        MimeType = "avi"
+                        Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"asf"}, 
-                        Type = DlnaProfileType.Audio,
-                        MimeType = "x-ms-wmv"
+                        Type = DlnaProfileType.Audio
+                    }
+                },
+
+                MediaProfiles = new[]
+                {
+                    new MediaProfile
+                    {
+                        Container ="avi",
+                        MimeType = "video/avi",
+                        Type = DlnaProfileType.Video
+                    },
+
+                    new MediaProfile
+                    {
+                        Container ="asf",
+                        MimeType = "video/x-ms-wmv",
+                        Type = DlnaProfileType.Audio
                     }
                 }
             });
@@ -335,8 +413,7 @@ namespace MediaBrowser.Dlna
                     new TranscodingProfile
                     {
                         Container = "ts", 
-                        Type = DlnaProfileType.Video,
-                        MimeType = "mpeg"
+                        Type = DlnaProfileType.Video
                     }
                 },
 
@@ -350,20 +427,48 @@ namespace MediaBrowser.Dlna
                     new DirectPlayProfile
                     {
                         Containers = new[]{"wma"}, 
-                        Type = DlnaProfileType.Audio,
-                        MimeType = "x-ms-wma"
+                        Type = DlnaProfileType.Audio
                     },                    
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
-                        Type = DlnaProfileType.Video,
-                        MimeType = "avi"
+                        Type = DlnaProfileType.Video
                     },
                      new DirectPlayProfile
                     {
                         Containers = new[]{"mp4"}, 
-                        Type = DlnaProfileType.Video,
-                        MimeType = "mp4"
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                MediaProfiles = new[]
+                {
+                    new MediaProfile
+                    {
+                        Container ="avi",
+                        MimeType = "video/avi",
+                        Type = DlnaProfileType.Video
+                    },
+
+                    new MediaProfile
+                    {
+                        Container ="mp4",
+                        MimeType = "video/mp4",
+                        Type = DlnaProfileType.Video
+                    },
+
+                    new MediaProfile
+                    {
+                        Container ="ts",
+                        MimeType = "video/mpeg",
+                        Type = DlnaProfileType.Video
+                    },
+
+                    new MediaProfile
+                    {
+                        Container ="wma",
+                        MimeType = "video/x-ms-wma",
+                        Type = DlnaProfileType.Audio
                     }
                 }
             });
@@ -450,13 +555,21 @@ namespace MediaBrowser.Dlna
                      new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
-                        Type = DlnaProfileType.Video                        ,
-                        MimeType="divx"
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                MediaProfiles = new[]
+                {
+                    new MediaProfile
+                    {
+                        Container ="avi",
+                        MimeType = "video/divx",
+                        Type = DlnaProfileType.Video
                     }
                 }
             });
 
-            //WDTV does not need any transcoding of the formats we support statically
             list.Add(new DeviceProfile
             {
                 Name = "Philips (2010-)",
@@ -479,20 +592,34 @@ namespace MediaBrowser.Dlna
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
-                        Type = DlnaProfileType.Video,
-                        MimeType = "avi"
+                        Type = DlnaProfileType.Video
                     },
 
                     new DirectPlayProfile
                     {
                         Containers = new[]{"mkv"}, 
-                        Type = DlnaProfileType.Video,
-                        MimeType = "x-matroska"
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                MediaProfiles = new[]
+                {
+                    new MediaProfile
+                    {
+                        Container ="avi",
+                        MimeType = "video/avi",
+                        Type = DlnaProfileType.Video
+                    },
+
+                    new MediaProfile
+                    {
+                        Container ="mkv",
+                        MimeType = "video/x-matroska",
+                        Type = DlnaProfileType.Video
                     }
                 }
             });
 
-            //WDTV does not need any transcoding of the formats we support statically
             list.Add(new DeviceProfile
             {
                 Name = "WDTV Live",
@@ -500,7 +627,30 @@ namespace MediaBrowser.Dlna
 
                 Identification = new DeviceIdentification
                 {
-                    ModelName = "WD TV HD Live"
+                    ModelName = "WD TV HD Live",
+
+                    Headers = new List<HttpHeaderInfo>
+                    {
+                         new HttpHeaderInfo{ Name="User-Agent", Value="alphanetworks", Match= HeaderMatchType.Substring},
+                         new HttpHeaderInfo{ Name="User-Agent", Value="ALPHA Networks", Match= HeaderMatchType.Substring}
+                    }
+                },
+
+                TranscodingProfiles = new[]
+                {
+                    new TranscodingProfile
+                    {
+                        Container = "mp3", 
+                        Type = DlnaProfileType.Audio,
+                        AudioCodec = "mp3"
+                    },
+                    new TranscodingProfile
+                    {
+                        Container = "ts", 
+                        Type = DlnaProfileType.Video,
+                        VideoCodec = "h264",
+                        AudioCodec = "aac"
+                    }
                 },
 
                 DirectPlayProfiles = new[]
@@ -521,7 +671,7 @@ namespace MediaBrowser.Dlna
 
             list.Add(new DeviceProfile
             {
-                //Linksys DMA2100us does not need any transcoding of the formats we support statically
+                // Linksys DMA2100us does not need any transcoding of the formats we support statically
                 Name = "Linksys DMA2100",
                 ClientType = "DLNA",
 
@@ -547,10 +697,10 @@ namespace MediaBrowser.Dlna
             });
 
             list.Add(new DeviceProfile
-            {                
+            {
                 Name = "Denon AVR",
-                ClientType = "DLNA",       
-         
+                ClientType = "DLNA",
+
                 Identification = new DeviceIdentification
                 {
                     FriendlyName = @"Denon:\[AVR:.*",
@@ -612,7 +762,7 @@ namespace MediaBrowser.Dlna
 
         public DeviceProfile GetProfile(DeviceIdentification deviceInfo)
         {
-            return GetProfiles().FirstOrDefault(i => IsMatch(deviceInfo, i.Identification)) ?? 
+            return GetProfiles().FirstOrDefault(i => IsMatch(deviceInfo, i.Identification)) ??
                 GetDefaultProfile();
         }
 

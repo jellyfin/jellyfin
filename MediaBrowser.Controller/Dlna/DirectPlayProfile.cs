@@ -1,60 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Xml.Serialization;
+﻿using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Dlna
 {
     public class DirectPlayProfile
     {
-        public string Container { get; set; }
-        public string AudioCodec { get; set; }
-        public string VideoCodec { get; set; }
+        public string[] Containers { get; set; }
+        public string[] AudioCodecs { get; set; }
+        public string[] VideoCodecs { get; set; }
 
-        [IgnoreDataMember]
-        [XmlIgnore]
-        public string[] Containers
-        {
-            get
-            {
-                return (Container ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            }
-            set
-            {
-                Container = value == null ? null : string.Join(",", value);
-            }
-        }
-
-        [IgnoreDataMember]
-        [XmlIgnore]
-        public string[] AudioCodecs
-        {
-            get
-            {
-                return (AudioCodec ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            }
-            set
-            {
-                AudioCodec = value == null ? null : string.Join(",", value);
-            }
-        }
-
-        [IgnoreDataMember]
-        [XmlIgnore]
-        public string[] VideoCodecs
-        {
-            get
-            {
-                return (VideoCodec ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            }
-            set
-            {
-                VideoCodec = value == null ? null : string.Join(",", value);
-            }
-        }
-
-        public string OrgPn { get; set; }
-        public string MimeType { get; set; }
         public DlnaProfileType Type { get; set; }
 
         public List<ProfileCondition> Conditions { get; set; }
@@ -62,6 +15,10 @@ namespace MediaBrowser.Controller.Dlna
         public DirectPlayProfile()
         {
             Conditions = new List<ProfileCondition>();
+
+            AudioCodecs = new string[] { };
+            VideoCodecs = new string[] { };
+            Containers = new string[] { };
         }
     }
 
@@ -95,6 +52,7 @@ namespace MediaBrowser.Controller.Dlna
         VideoWidth,
         VideoHeight,
         VideoBitrate,
-        VideoFramerate
+        VideoFramerate,
+        VideoLevel
     }
 }

@@ -24,39 +24,39 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var contentFeatures = string.Empty;
 
-            if (string.Equals(item.FileFormat, "mp3", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(item.Container, "mp3", StringComparison.OrdinalIgnoreCase))
             {
                 contentFeatures = "DLNA.ORG_PN=MP3";
             }
-            else if (string.Equals(item.FileFormat, "wma", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(item.Container, "wma", StringComparison.OrdinalIgnoreCase))
             {
                 contentFeatures = "DLNA.ORG_PN=WMABASE";
             }
-            else if (string.Equals(item.FileFormat, "wmw", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(item.Container, "wmw", StringComparison.OrdinalIgnoreCase))
             {
                 contentFeatures = "DLNA.ORG_PN=WMVMED_BASE";
             }
-            else if (string.Equals(item.FileFormat, "asf", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(item.Container, "asf", StringComparison.OrdinalIgnoreCase))
             {
                 contentFeatures = "DLNA.ORG_PN=WMVMED_BASE";
             }
-            else if (string.Equals(item.FileFormat, "avi", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(item.Container, "avi", StringComparison.OrdinalIgnoreCase))
             {
                 contentFeatures = "DLNA.ORG_PN=AVI";
             }
-            else if (string.Equals(item.FileFormat, "mkv", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(item.Container, "mkv", StringComparison.OrdinalIgnoreCase))
             {
                 contentFeatures = "DLNA.ORG_PN=MATROSKA";
             }
-            else if (string.Equals(item.FileFormat, "mp4", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(item.Container, "mp4", StringComparison.OrdinalIgnoreCase))
             {
                 contentFeatures = "DLNA.ORG_PN=AVC_MP4_MP_HD_720p_AAC";
             }
-            else if (string.Equals(item.FileFormat, "mpeg", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(item.Container, "mpeg", StringComparison.OrdinalIgnoreCase))
             {
                 contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
             }
-            else if (string.Equals(item.FileFormat, "ts", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(item.Container, "ts", StringComparison.OrdinalIgnoreCase))
             {
                 contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
             }
@@ -85,7 +85,7 @@ namespace MediaBrowser.Dlna.PlayTo
         internal static string GetAudioUrl(PlaylistItem item, string serverAddress)
         {
             if (!item.Transcode)
-                return string.Format("{0}/audio/{1}/stream{2}?Static=True", serverAddress, item.ItemId, item.FileFormat);
+                return string.Format("{0}/audio/{1}/stream{2}?Static=True", serverAddress, item.ItemId, item.Container);
 
             return string.Format("{0}/audio/{1}/stream.mp3?AudioCodec=Mp3", serverAddress, item.ItemId);
         }
@@ -108,7 +108,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (!item.Transcode)
             {
                 dlnaCommand = BuildDlnaUrl(deviceProperties.UUID, !item.Transcode, null, null, null, null, null, null, null, null, null, null, item.MimeType);
-                return string.Format("{0}/Videos/{1}/stream{2}?{3}", serverAddress, item.ItemId, item.FileFormat, dlnaCommand);
+                return string.Format("{0}/Videos/{1}/stream{2}?{3}", serverAddress, item.ItemId, item.Container, dlnaCommand);
             }
             var videostream = streams.Where(m => m.Type == MediaStreamType.Video).OrderBy(m => m.IsDefault).FirstOrDefault();
             var audiostream = streams.Where(m => m.Type == MediaStreamType.Audio).OrderBy(m => m.IsDefault).FirstOrDefault();
@@ -129,7 +129,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
 
             dlnaCommand = BuildDlnaUrl(deviceProperties.UUID, !item.Transcode, videoCodec, audioCodec, null, null, videoBitrate, audioChannels, audioBitrate, item.StartPositionTicks, "baseline", "3", item.MimeType);
-            return string.Format("{0}/Videos/{1}/stream{2}?{3}", serverAddress, item.ItemId, item.FileFormat, dlnaCommand);
+            return string.Format("{0}/Videos/{1}/stream{2}?{3}", serverAddress, item.ItemId, item.Container, dlnaCommand);
         }
 
         /// <summary>
