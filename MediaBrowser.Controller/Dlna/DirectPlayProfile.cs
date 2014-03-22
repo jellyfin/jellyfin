@@ -22,37 +22,10 @@ namespace MediaBrowser.Controller.Dlna
         }
     }
 
-    public class ProfileCondition
-    {
-        public ProfileConditionType Condition { get; set; }
-        public ProfileConditionValue Property { get; set; }
-        public string Value { get; set; }
-    }
-
     public enum DlnaProfileType
     {
         Audio = 0,
         Video = 1,
         Photo = 2
-    }
-
-    public enum ProfileConditionType
-    {
-        Equals = 0,
-        NotEquals = 1,
-        LessThanEqual = 2,
-        GreaterThanEqual = 3
-    }
-
-    public enum ProfileConditionValue
-    {
-        AudioChannels,
-        AudioBitrate,
-        Filesize,
-        VideoWidth,
-        VideoHeight,
-        VideoBitrate,
-        VideoFramerate,
-        VideoLevel
     }
 }

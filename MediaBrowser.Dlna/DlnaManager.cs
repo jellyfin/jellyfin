@@ -657,7 +657,7 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3", "flac", "m4a", "wma"}, 
+                        Containers = new[]{"mp3", "flac", "m4a", "wma", "aac"}, 
                         Type = DlnaProfileType.Audio
                     },
 
@@ -665,6 +665,54 @@ namespace MediaBrowser.Dlna
                     {
                         Containers = new[]{"avi", "mp4", "mkv", "ts"}, 
                         Type = DlnaProfileType.Video
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Type = DlnaProfileType.Photo,
+
+                        Conditions = new List<ProfileCondition>
+                        {
+                            new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Width, Value = "1920"},
+                            new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Height, Value = "1080"}
+                        }
+                    }
+                },
+
+                MediaProfiles = new[]
+                {
+                    new MediaProfile
+                    {
+                        Container ="ts",
+                        OrgPn = "MPEG_TS_SD_NA",
+                        Type = DlnaProfileType.Video
+                    }
+                },
+
+                CodecProfiles = new[]
+                {
+                    new CodecProfile
+                    {
+                         Type = CodecType.VideoCodec,
+                         Codecs = new[]{"h264"},
+
+                        Conditions = new List<ProfileCondition>
+                        {
+                            new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Width, Value = "1920"},
+                            new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Height, Value = "1080"},
+                            new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.VideoLevel, Value = "41"}
+                        }
+                    },
+
+                    new CodecProfile
+                    {
+                         Type = CodecType.VideoAudioCodec,
+                         Codecs = new[]{"aac"},
+
+                        Conditions = new List<ProfileCondition>
+                        {
+                            new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.AudioChannels, Value = "2"}
+                        }
                     }
                 }
             });

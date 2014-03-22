@@ -171,11 +171,14 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var mediaPath = item.Path;
 
-            // Check container type
-            var mediaContainer = Path.GetExtension(mediaPath);
-            if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+            if (profile.Containers.Length > 0)
             {
-                return false;
+                // Check container type
+                var mediaContainer = Path.GetExtension(mediaPath);
+                if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return false;
+                }
             }
 
             // Check additional conditions
@@ -191,11 +194,14 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var mediaPath = item.Path;
 
-            // Check container type
-            var mediaContainer = Path.GetExtension(mediaPath);
-            if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+            if (profile.Containers.Length > 0)
             {
-                return false;
+                // Check container type
+                var mediaContainer = Path.GetExtension(mediaPath);
+                if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return false;
+                }
             }
 
             // Check additional conditions
@@ -216,11 +222,14 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var mediaPath = item.Path;
 
-            // Check container type
-            var mediaContainer = Path.GetExtension(mediaPath);
-            if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+            if (profile.Containers.Length > 0)
             {
-                return false;
+                // Check container type
+                var mediaContainer = Path.GetExtension(mediaPath);
+                if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return false;
+                }
             }
 
             // Check video codec
@@ -330,9 +339,9 @@ namespace MediaBrowser.Dlna.PlayTo
                     return videoStream == null ? null : videoStream.BitRate;
                 case ProfileConditionValue.VideoFramerate:
                     return videoStream == null ? null : (ConvertToLong(videoStream.AverageFrameRate ?? videoStream.RealFrameRate));
-                case ProfileConditionValue.VideoHeight:
+                case ProfileConditionValue.Height:
                     return videoStream == null ? null : videoStream.Height;
-                case ProfileConditionValue.VideoWidth:
+                case ProfileConditionValue.Width:
                     return videoStream == null ? null : videoStream.Width;
                 case ProfileConditionValue.VideoLevel:
                     return videoStream == null ? null : ConvertToLong(videoStream.Level);
