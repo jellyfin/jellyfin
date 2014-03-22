@@ -60,7 +60,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
             }
-            else if (item.IsVideo)
+            else if (item.MediaType == Controller.Dlna.DlnaProfileType.Video)
             {
                 //Default to AVI for video
                 contentFeatures = "DLNA.ORG_PN=AVI";

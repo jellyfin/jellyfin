@@ -66,6 +66,7 @@
     <Compile Include="PlayTo\PlaylistItem.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="PlayTo\PlaylistItemFactory.cs" />
     <Compile Include="PlayTo\PlayToManager.cs" />
     <Compile Include="PlayTo\PlayToServerEntryPoint.cs" />
     <Compile Include="PlayTo\ServiceAction.cs" />

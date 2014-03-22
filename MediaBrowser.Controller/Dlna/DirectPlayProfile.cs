@@ -68,13 +68,15 @@ namespace MediaBrowser.Controller.Dlna
     public class ProfileCondition
     {
         public ProfileConditionType Condition { get; set; }
-        public ProfileConditionValue Value { get; set; }
+        public ProfileConditionValue Property { get; set; }
+        public string Value { get; set; }
     }
 
     public enum DlnaProfileType
     {
         Audio = 0,
-        Video = 1
+        Video = 1,
+        Photo = 2
     }
 
     public enum ProfileConditionType

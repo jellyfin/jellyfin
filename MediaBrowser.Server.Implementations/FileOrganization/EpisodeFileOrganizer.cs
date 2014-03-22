@@ -180,7 +180,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     result.StatusMessage = string.Empty;
                     return;
                 }
-                
+
                 if (fileExists || otherDuplicatePaths.Count > 0)
                 {
                     result.Status = FileSortingStatus.SkippedExisting;
@@ -453,24 +453,22 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private bool IsSameEpisode(string sourcePath, string newPath)
         {
+            var sourceFileInfo = new FileInfo(sourcePath);
+            var destinationFileInfo = new FileInfo(newPath);
 
-                FileInfo sourceFileInfo = new FileInfo(sourcePath);
-                FileInfo destinationFileInfo = new FileInfo(newPath);
-
-                try
+            try
+            {
+                if (sourceFileInfo.Length == destinationFileInfo.Length)
                 {
-                    if (sourceFileInfo.Length == destinationFileInfo.Length)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-                catch (FileNotFoundException)
-                {
-                    return false;
-                }
-
+            }
+            catch (FileNotFoundException)
+            {
                 return false;
+            }
 
+            return false;
         }
     }
 }

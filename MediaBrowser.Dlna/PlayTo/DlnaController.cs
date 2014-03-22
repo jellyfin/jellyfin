@@ -2,6 +2,7 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
@@ -263,7 +264,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 case PlaystateCommand.Seek:
                     var playlistItem = Playlist.FirstOrDefault(p => p.PlayState == 1);
-                    if (playlistItem != null && playlistItem.Transcode && playlistItem.IsVideo && _currentItem != null)
+                    if (playlistItem != null && playlistItem.Transcode && playlistItem.MediaType == DlnaProfileType.Video && _currentItem != null)
                     {
                         var newItem = CreatePlaylistItem(_currentItem, command.SeekPositionTicks ?? 0, GetServerAddress());
                         playlistItem.StartPositionTicks = newItem.StartPositionTicks;
@@ -394,11 +395,13 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var deviceInfo = _device.Properties;
 
-            var playlistItem = PlaylistItem.Create(item, _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()));
+            var playlistItem = GetPlaylistItem(item, _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()));
             playlistItem.StartPositionTicks = startPostionTicks;
 
-            if (playlistItem.IsAudio)
+            if (playlistItem.MediaType == DlnaProfileType.Audio)
+            {
                 playlistItem.StreamUrl = StreamHelper.GetAudioUrl(playlistItem, serverAddress);
+            }
             else
             {
                 playlistItem.StreamUrl = StreamHelper.GetVideoUrl(_device.Properties, playlistItem, streams, serverAddress);
@@ -410,6 +413,32 @@ namespace MediaBrowser.Dlna.PlayTo
             var header = StreamHelper.GetDlnaHeaders(playlistItem);
             playlistItem.DlnaHeaders = header;
             return playlistItem;
+        }
+
+        private PlaylistItem GetPlaylistItem(BaseItem item, DeviceProfile profile)
+        {
+            var video = item as Video;
+
+            if (video != null)
+            {
+                return new PlaylistItemFactory(_itemRepository).Create(video, profile);
+            }
+
+            var audio = item as Audio;
+
+            if (audio != null)
+            {
+                return new PlaylistItemFactory(_itemRepository).Create(audio, profile);
+            }
+
+            var photo = item as Photo;
+
+            if (photo != null)
+            {
+                return new PlaylistItemFactory(_itemRepository).Create(photo, profile);
+            }
+
+            throw new ArgumentException("Unrecognized item type.");
         }
 
         /// <summary>
