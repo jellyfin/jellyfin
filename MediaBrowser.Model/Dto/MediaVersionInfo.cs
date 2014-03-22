@@ -22,7 +22,5 @@ namespace MediaBrowser.Model.Dto
         public Video3DFormat? Video3DFormat { get; set; }
         
         public List<MediaStream> MediaStreams { get; set; }
-
-        public bool IsPrimaryVersion { get; set; }
     }
 }
