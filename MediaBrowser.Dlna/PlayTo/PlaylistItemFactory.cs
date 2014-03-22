@@ -233,20 +233,22 @@ namespace MediaBrowser.Dlna.PlayTo
             }
 
             // Check video codec
-            if (profile.VideoCodecs.Length > 0)
+            var videoCodecs = profile.GetVideoCodecs();
+            if (videoCodecs.Count > 0)
             {
                 var videoCodec = videoStream == null ? null : videoStream.Codec;
-                if (string.IsNullOrWhiteSpace(videoCodec) || !profile.VideoCodecs.Contains(videoCodec, StringComparer.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(videoCodec) || !videoCodecs.Contains(videoCodec, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
             }
 
-            if (profile.AudioCodecs.Length > 0)
+            var audioCodecs = profile.GetAudioCodecs();
+            if (audioCodecs.Count > 0)
             {
                 // Check audio codecs
                 var audioCodec = audioStream == null ? null : audioStream.Codec;
-                if (string.IsNullOrWhiteSpace(audioCodec) || !profile.AudioCodecs.Contains(audioCodec, StringComparer.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(audioCodec) || !audioCodecs.Contains(audioCodec, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }

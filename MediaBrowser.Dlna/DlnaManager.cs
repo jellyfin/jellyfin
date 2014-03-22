@@ -625,6 +625,8 @@ namespace MediaBrowser.Dlna
                 Name = "WDTV Live",
                 ClientType = "DLNA",
 
+                TimelineOffsetSeconds = 5,
+
                 Identification = new DeviceIdentification
                 {
                     ModelName = "WD TV HD Live",
@@ -650,6 +652,11 @@ namespace MediaBrowser.Dlna
                         Type = DlnaProfileType.Video,
                         VideoCodec = "h264",
                         AudioCodec = "aac"
+                    },
+                    new TranscodingProfile
+                    {
+                        Container = "jpeg", 
+                        Type = DlnaProfileType.Photo
                     }
                 },
 
@@ -657,19 +664,100 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3", "flac", "m4a", "wma", "aac"}, 
+                        Containers = new[]{"avi"}, 
+                        Type = DlnaProfileType.Video,
+                        VideoCodec = "mpeg1video,mpeg2video,mpeg4,h264,vc1",
+                        AudioCodec = "ac3,dca,mp2,mp3,pcm"
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mpeg"}, 
+                        Type = DlnaProfileType.Video,
+                        VideoCodec = "mpeg1video,mpeg2video",
+                        AudioCodec = "ac3,dca,mp2,mp3,pcm"
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mkv"}, 
+                        Type = DlnaProfileType.Video,
+                        VideoCodec = "mpeg1video,mpeg2video,mpeg4,h264,vc1",
+                        AudioCodec = "ac3,dca,aac,mp2,mp3,pcm"
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"ts"}, 
+                        Type = DlnaProfileType.Video,
+                        VideoCodec = "mpeg1video,mpeg2video,h264,vc1",
+                        AudioCodec = "ac3,dca,mp2,mp3"
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp4", "mov"}, 
+                        Type = DlnaProfileType.Video,
+                        VideoCodec = "h264,mpeg4",
+                        AudioCodec = "ac3,aac,mp2,mp3"
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"asf"}, 
+                        Type = DlnaProfileType.Video,
+                        VideoCodec = "vc1",
+                        AudioCodec = "wmav2,wmapro"
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"asf"}, 
+                        Type = DlnaProfileType.Video,
+                        VideoCodec = "mpeg2video",
+                        AudioCodec = "mp2,ac3"
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3"}, 
+                        AudioCodec = "mp2,mp3",
                         Type = DlnaProfileType.Audio
                     },
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi", "mp4", "mkv", "ts"}, 
-                        Type = DlnaProfileType.Video
+                        Containers = new[]{"mp4"}, 
+                        AudioCodec = "mp4",
+                        Type = DlnaProfileType.Audio
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"flac"}, 
+                        AudioCodec = "flac",
+                        Type = DlnaProfileType.Audio
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"asf"}, 
+                        AudioCodec = "wmav2,wmapro,wmavoice",
+                        Type = DlnaProfileType.Audio
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"ogg"}, 
+                        AudioCodec = "vorbis",
+                        Type = DlnaProfileType.Audio
                     },
 
                     new DirectPlayProfile
                     {
                         Type = DlnaProfileType.Photo,
+
+                        Containers = new[]{"jpeg", "png", "gif", "bmp", "tiff"},
 
                         Conditions = new List<ProfileCondition>
                         {
@@ -694,7 +782,7 @@ namespace MediaBrowser.Dlna
                     new CodecProfile
                     {
                          Type = CodecType.VideoCodec,
-                         Codecs = new[]{"h264"},
+                         Codec= "h264",
 
                         Conditions = new List<ProfileCondition>
                         {
@@ -706,8 +794,8 @@ namespace MediaBrowser.Dlna
 
                     new CodecProfile
                     {
-                         Type = CodecType.VideoAudioCodec,
-                         Codecs = new[]{"aac"},
+                        Type = CodecType.VideoAudioCodec,
+                         Codec= "aac",
 
                         Conditions = new List<ProfileCondition>
                         {
