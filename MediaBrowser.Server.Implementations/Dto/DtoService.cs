@@ -1132,7 +1132,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                     if (dto.MediaSources != null && dto.MediaSources.Count > 0)
                     {
-                        mediaStreams = dto.MediaSources.Where(i => i.IsPrimaryVersion)
+                        mediaStreams = dto.MediaSources.Where(i => new Guid(i.Id) == item.Id)
                             .SelectMany(i => i.MediaStreams)
                             .ToList();
                     }
@@ -1269,9 +1269,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         private List<MediaSourceInfo> GetMediaSources(Video item)
         {
-            var result = item.GetAlternateVersions().Select(i => GetVersionInfo(i, false)).ToList();
+            var result = item.GetAlternateVersions().Select(GetVersionInfo).ToList();
 
-            result.Add(GetVersionInfo(item, true));
+            result.Add(GetVersionInfo(item));
 
             return result.OrderBy(i =>
             {
@@ -1289,7 +1289,6 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 return stream == null || stream.Width == null ? 0 : stream.Width.Value;
             })
-            .ThenBy(i => i.IsPrimaryVersion ? 0 : 1)
             .ToList();
         }
 
@@ -1303,7 +1302,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             return result;
         }
 
-        private MediaSourceInfo GetVersionInfo(Video i, bool isPrimary)
+        private MediaSourceInfo GetVersionInfo(Video i)
         {
             var mediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList();
 
@@ -1317,8 +1316,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Path = GetMappedPath(i),
                 RunTimeTicks = i.RunTimeTicks,
                 Video3DFormat = i.Video3DFormat,
-                VideoType = i.VideoType,
-                IsPrimaryVersion = isPrimary
+                VideoType = i.VideoType
             };
         }
 
@@ -1331,8 +1329,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
                 Name = i.Name,
                 Path = GetMappedPath(i),
-                RunTimeTicks = i.RunTimeTicks,
-                IsPrimaryVersion = isPrimary
+                RunTimeTicks = i.RunTimeTicks
             };
         }
 

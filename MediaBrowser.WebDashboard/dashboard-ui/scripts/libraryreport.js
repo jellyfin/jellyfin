@@ -207,9 +207,7 @@
 
     function getItemCellsHtml(item, headercells) {
 
-        var primaryVersion = (item.MediaSources || []).filter(function (v) {
-            return v.IsPrimaryVersion;
-        })[0] || {};
+        var primaryVersion = (item.MediaSources || [])[0] || {};
 
         var mediaStreams = primaryVersion.MediaStreams || [];
         
