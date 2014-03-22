@@ -123,7 +123,7 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the now playing media version identifier.
         /// </summary>
         /// <value>The now playing media version identifier.</value>
-        public string NowPlayingMediaVersionId { get; set; }
+        public string NowPlayingMediaSourceId { get; set; }
         
 
         /// <summary>

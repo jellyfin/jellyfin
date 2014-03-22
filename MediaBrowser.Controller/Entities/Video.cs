@@ -37,11 +37,11 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public int AlternateVersionCount
+        public int MediaSourceCount
         {
             get
             {
-                return LinkedAlternateVersions.Count + LocalAlternateVersionIds.Count;
+                return LinkedAlternateVersions.Count + LocalAlternateVersionIds.Count + 1;
             }
         }
 

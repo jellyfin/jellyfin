@@ -213,7 +213,7 @@ namespace MediaBrowser.Providers.Savers
 
             builder.Append("<Added>" + SecurityElement.Escape(item.DateCreated.ToLocalTime().ToString("G")) + "</Added>");
 
-            builder.Append("<LockData>" + item.DontFetchMeta.ToString().ToLower() + "</LockData>");
+            builder.Append("<LockData>" + item.IsLocked.ToString().ToLower() + "</LockData>");
 
             if (item.LockedFields.Count > 0)
             {

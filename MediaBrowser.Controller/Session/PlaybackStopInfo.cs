@@ -27,6 +27,6 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the media version identifier.
         /// </summary>
         /// <value>The media version identifier.</value>
-        public string MediaVersionId { get; set; }
+        public string MediaSourceId { get; set; }
     }
 }

@@ -84,7 +84,7 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// The media versions
         /// </summary>
-        MediaVersions,
+        MediaSources,
 
         /// <summary>
         /// The metadata settings
