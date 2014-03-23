@@ -105,23 +105,6 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
-            MediaProfiles = new[]
-            {
-                new MediaProfile
-                {
-                    Container = "avi",
-                    MimeType = "video/avi",
-                    Type = DlnaProfileType.Video
-                },
-
-                new MediaProfile
-                {
-                    Container = "asf",
-                    MimeType = "video/x-ms-wmv",
-                    Type = DlnaProfileType.Audio
-                }
-            };
-
             ContainerProfiles = new[]
             {
                 new ContainerProfile
@@ -143,6 +126,68 @@ namespace MediaBrowser.Dlna.Profiles
                             Value = "1080"
                         }
                     }
+                }
+            };
+
+            MediaProfiles = new[]
+            {
+                new MediaProfile
+                {
+                    Container = "ts",
+                    VideoCodec="h264",
+                    AudioCodec="ac3,aac,mp3",
+                    MimeType = "video/vnd.dlna.mpeg-tts",
+                    OrgPn="AVC_TS_HD_24_AC3_T,AVC_TS_HD_50_AC3_T,AVC_TS_HD_60_AC3_T,AVC_TS_HD_EU_T",
+                    Type = DlnaProfileType.Video,
+
+                    Conditions = new []
+                    {
+                        new ProfileCondition{ Condition= ProfileConditionType.Equals, Property= ProfileConditionValue.VideoPacketLength, Value="192"},
+                        new ProfileCondition{ Condition= ProfileConditionType.Equals, Property= ProfileConditionValue.VideoTimestamp, Value="1"}
+                    }
+                },
+
+                new MediaProfile
+                {
+                    Container = "ts",
+                    VideoCodec="h264",
+                    AudioCodec="ac3,aac,mp3",
+                    MimeType = "video/mpeg",
+                    OrgPn="AVC_TS_HD_24_AC3_ISO,AVC_TS_HD_50_AC3_ISO,AVC_TS_HD_60_AC3_ISO,AVC_TS_HD_EU_ISO",
+                    Type = DlnaProfileType.Video,
+
+                    Conditions = new []
+                    {
+                        new ProfileCondition{ Condition= ProfileConditionType.Equals, Property= ProfileConditionValue.VideoPacketLength, Value="188"}
+                    }
+                },
+
+                new MediaProfile
+                {
+                    Container = "ts",
+                    VideoCodec="h264",
+                    AudioCodec="ac3,aac,mp3",
+                    MimeType = "video/vnd.dlna.mpeg-tts",
+                    OrgPn="AVC_TS_HD_24_AC3,AVC_TS_HD_50_AC3,AVC_TS_HD_60_AC3,AVC_TS_HD_EU",
+                    Type = DlnaProfileType.Video
+                },
+
+                new MediaProfile
+                {
+                    Container = "ts",
+                    VideoCodec="mpeg2video",
+                    MimeType = "video/vnd.dlna.mpeg-tts",
+                    OrgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO",
+                    Type = DlnaProfileType.Video
+                },
+
+                new MediaProfile
+                {
+                    Container = "mpeg",
+                    VideoCodec="mpeg1video,mpeg2video",
+                    MimeType = "video/mpeg",
+                    OrgPn="MPEG_PS_NTSC,MPEG_PS_PAL",
+                    Type = DlnaProfileType.Video
                 }
             };
 

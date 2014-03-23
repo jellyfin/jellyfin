@@ -17,8 +17,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetNextUpEpisodes
     /// </summary>
-    [Route("/Shows/NextUp", "GET")]
-    [Api(("Gets a list of next up episodes"))]
+    [Route("/Shows/NextUp", "GET", Summary = "Gets a list of next up episodes")]
     public class GetNextUpEpisodes : IReturn<ItemsResult>, IHasItemFields
     {
         /// <summary>
@@ -53,8 +52,7 @@ namespace MediaBrowser.Api
         public string SeriesId { get; set; }
     }
 
-    [Route("/Shows/Upcoming", "GET")]
-    [Api(("Gets a list of upcoming episodes"))]
+    [Route("/Shows/Upcoming", "GET", Summary = "Gets a list of upcoming episodes")]
     public class GetUpcomingEpisodes : IReturn<ItemsResult>, IHasItemFields
     {
         /// <summary>
@@ -86,14 +84,12 @@ namespace MediaBrowser.Api
         public string Fields { get; set; }
     }
 
-    [Route("/Shows/{Id}/Similar", "GET")]
-    [Api(Description = "Finds tv shows similar to a given one.")]
+    [Route("/Shows/{Id}/Similar", "GET", Summary = "Finds tv shows similar to a given one.")]
     public class GetSimilarShows : BaseGetSimilarItemsFromItem
     {
     }
 
-    [Route("/Shows/{Id}/Episodes", "GET")]
-    [Api(Description = "Gets episodes for a tv season")]
+    [Route("/Shows/{Id}/Episodes", "GET", Summary = "Gets episodes for a tv season")]
     public class GetEpisodes : IReturn<ItemsResult>, IHasItemFields
     {
         /// <summary>
@@ -129,8 +125,7 @@ namespace MediaBrowser.Api
         public string AdjacentTo { get; set; }
     }
 
-    [Route("/Shows/{Id}/Seasons", "GET")]
-    [Api(Description = "Gets seasons for a tv series")]
+    [Route("/Shows/{Id}/Seasons", "GET", Summary = "Gets seasons for a tv series")]
     public class GetSeasons : IReturn<ItemsResult>, IHasItemFields
     {
         /// <summary>
@@ -320,7 +315,7 @@ namespace MediaBrowser.Api
 
                     return 0;
                 })
-                .ThenByDescending(i =>i.Item2)
+                .ThenByDescending(i => i.Item2)
                 .ThenByDescending(i => i.Item1.PremiereDate ?? DateTime.MinValue)
                 .Select(i => i.Item1);
         }

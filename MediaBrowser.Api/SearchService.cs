@@ -1,5 +1,4 @@
-﻿using System;
-using MediaBrowser.Controller.Drawing;
+﻿using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -8,6 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
 using ServiceStack;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,8 +16,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetSearchHints
     /// </summary>
-    [Route("/Search/Hints", "GET")]
-    [Api(Description = "Gets search hints based on a search term")]
+    [Route("/Search/Hints", "GET", Summary = "Gets search hints based on a search term")]
     public class GetSearchHints : IReturn<SearchHintResult>
     {
         /// <summary>
@@ -66,7 +65,7 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "IncludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string IncludeItemTypes { get; set; }
-        
+
         public GetSearchHints()
         {
             IncludeArtists = true;

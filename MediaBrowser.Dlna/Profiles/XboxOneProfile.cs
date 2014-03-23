@@ -35,7 +35,7 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "mp3",
+                    Container = "mp3,wma",
                     Type = DlnaProfileType.Audio
                 }
             };

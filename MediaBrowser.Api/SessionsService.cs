@@ -14,8 +14,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetSessions
     /// </summary>
-    [Route("/Sessions", "GET")]
-    [Api(("Gets a list of sessions"))]
+    [Route("/Sessions", "GET", Summary = "Gets a list of sessions")]
     public class GetSessions : IReturn<List<SessionInfoDto>>
     {
         /// <summary>
@@ -35,8 +34,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class BrowseTo
     /// </summary>
-    [Route("/Sessions/{Id}/Viewing", "POST")]
-    [Api(("Instructs a session to browse to an item or view"))]
+    [Route("/Sessions/{Id}/Viewing", "POST", Summary = "Instructs a session to browse to an item or view")]
     public class BrowseTo : IReturnVoid
     {
         /// <summary>
@@ -77,8 +75,7 @@ namespace MediaBrowser.Api
         public string Context { get; set; }
     }
 
-    [Route("/Sessions/{Id}/Playing", "POST")]
-    [Api(("Instructs a session to play an item"))]
+    [Route("/Sessions/{Id}/Playing", "POST", Summary = "Instructs a session to play an item")]
     public class Play : IReturnVoid
     {
         /// <summary>
@@ -110,8 +107,7 @@ namespace MediaBrowser.Api
         public PlayCommand PlayCommand { get; set; }
     }
 
-    [Route("/Sessions/{Id}/Playing/{Command}", "POST")]
-    [Api(("Issues a playstate command to a client"))]
+    [Route("/Sessions/{Id}/Playing/{Command}", "POST", Summary = "Issues a playstate command to a client")]
     public class SendPlaystateCommand : IReturnVoid
     {
         /// <summary>
@@ -135,8 +131,7 @@ namespace MediaBrowser.Api
         public PlaystateCommand Command { get; set; }
     }
 
-    [Route("/Sessions/{Id}/System/{Command}", "POST")]
-    [Api(("Issues a system command to a client"))]
+    [Route("/Sessions/{Id}/System/{Command}", "POST", Summary = "Issues a system command to a client")]
     public class SendSystemCommand : IReturnVoid
     {
         /// <summary>
@@ -154,8 +149,7 @@ namespace MediaBrowser.Api
         public SystemCommand Command { get; set; }
     }
 
-    [Route("/Sessions/{Id}/Message", "POST")]
-    [Api(("Issues a command to a client to display a message to the user"))]
+    [Route("/Sessions/{Id}/Message", "POST", Summary = "Issues a command to a client to display a message to the user")]
     public class SendMessageCommand : IReturnVoid
     {
         /// <summary>
@@ -175,8 +169,7 @@ namespace MediaBrowser.Api
         public long? TimeoutMs { get; set; }
     }
 
-    [Route("/Sessions/{Id}/Users/{UserId}", "POST")]
-    [Api(("Adds an additional user to a session"))]
+    [Route("/Sessions/{Id}/Users/{UserId}", "POST", Summary = "Adds an additional user to a session")]
     public class AddUserToSession : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
@@ -186,8 +179,7 @@ namespace MediaBrowser.Api
         public Guid UserId { get; set; }
     }
 
-    [Route("/Sessions/{Id}/Users/{UserId}", "DELETE")]
-    [Api(("Removes an additional user from a session"))]
+    [Route("/Sessions/{Id}/Users/{UserId}", "DELETE", Summary = "Removes an additional user from a session")]
     public class RemoveUserFromSession : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
@@ -197,8 +189,7 @@ namespace MediaBrowser.Api
         public Guid UserId { get; set; }
     }
 
-    [Route("/Sessions/{Id}/Capabilities", "POST")]
-    [Api(("Updates capabilities for a device"))]
+    [Route("/Sessions/{Id}/Capabilities", "POST", Summary = "Updates capabilities for a device")]
     public class PostCapabilities : IReturnVoid
     {
         /// <summary>
