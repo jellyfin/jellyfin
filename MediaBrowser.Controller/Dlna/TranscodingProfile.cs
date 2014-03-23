@@ -11,6 +11,10 @@ namespace MediaBrowser.Controller.Dlna
         public string VideoCodec { get; set; }
         public string AudioCodec { get; set; }
 
+        public bool EstimateContentLength { get; set; }
+
+        public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
+
         public List<TranscodingSetting> Settings { get; set; }
 
         public TranscodingProfile()
@@ -27,6 +31,13 @@ namespace MediaBrowser.Controller.Dlna
 
     public enum TranscodingSettingType
     {
-        Profile
+        Profile = 0,
+        MaxAudioChannels = 1
+    }
+
+    public enum TranscodeSeekInfo
+    {
+        Auto = 0,
+        Bytes = 1
     }
 }

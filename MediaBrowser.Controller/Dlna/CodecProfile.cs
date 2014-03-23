@@ -32,6 +32,12 @@ namespace MediaBrowser.Controller.Dlna
         public ProfileConditionType Condition { get; set; }
         public ProfileConditionValue Property { get; set; }
         public string Value { get; set; }
+        public bool IsRequired { get; set; }
+
+        public ProfileCondition()
+        {
+            IsRequired = true;
+        }
     }
 
     public enum ProfileConditionType
@@ -46,11 +52,14 @@ namespace MediaBrowser.Controller.Dlna
     {
         AudioChannels,
         AudioBitrate,
+        AudioProfile,
         Filesize,
         Width,
         Height,
+        Has64BitOffsets,
         VideoBitrate,
         VideoFramerate,
-        VideoLevel
+        VideoLevel,
+        VideoProfile
     }
 }

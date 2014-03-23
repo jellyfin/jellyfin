@@ -233,9 +233,26 @@ namespace MediaBrowser.Dlna
                 Name = "Xbox 360",
                 ClientType = "DLNA",
 
+                ModelName = "Windows Media Player Sharing",
+                ModelNumber = "12.0",
+                ModelUrl = "http://www.microsoft.com/",
+                Manufacturer = "Microsoft Corporation",
+                ManufacturerUrl = "http://www.microsoft.com/",
+                XDlnaDoc = "DMS-1.50",
+
+                TimelineOffsetSeconds = 40,
+                RequiresPlainFolders = true,
+                RequiresPlainVideoItems = true,
+
                 Identification = new DeviceIdentification
                 {
-                    ModelName = "Xbox 360"
+                    ModelName = "Xbox 360",
+
+                    Headers = new List<HttpHeaderInfo>
+                    {
+                         new HttpHeaderInfo{ Name="User-Agent", Value="Xbox", Match= HeaderMatchType.Substring},
+                         new HttpHeaderInfo{ Name="User-Agent", Value="Xenon", Match= HeaderMatchType.Substring}
+                    }
                 },
 
                 TranscodingProfiles = new[]
@@ -243,12 +260,31 @@ namespace MediaBrowser.Dlna
                     new TranscodingProfile
                     {
                         Container = "mp3", 
+                        AudioCodec = "mp3",
                         Type = DlnaProfileType.Audio
                     },
                     new TranscodingProfile
                     {
-                        Container = "ts", 
-                        Type = DlnaProfileType.Video
+                        Container = "asf", 
+                        VideoCodec = "wmv2",
+                        AudioCodec = "wmav2",
+                        Type = DlnaProfileType.Video,
+                        TranscodeSeekInfo = TranscodeSeekInfo.Bytes,
+                        EstimateContentLength = true,
+
+                        Settings = new List<TranscodingSetting>
+                        {
+                            new TranscodingSetting
+                            {
+                                 Name = TranscodingSettingType.MaxAudioChannels,
+                                 Value = "6"
+                            }
+                        }
+                    },
+                    new TranscodingProfile
+                    {
+                        Container = "jpeg", 
+                        Type = DlnaProfileType.Photo
                     }
                 },
 
@@ -256,18 +292,59 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3"}, 
-                        Type = DlnaProfileType.Audio
+                        Containers = new[]{"avi"}, 
+                        VideoCodec = "mpeg4",
+                        AudioCodec = "ac3,mp3",
+                        Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
                         Containers = new[]{"avi"}, 
+                        VideoCodec = "h264",
+                        AudioCodec = "aac",
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp4"}, 
+                        Containers = new[]{"mp4", "mov"}, 
+                        VideoCodec = "h264,mpeg4",
+                        AudioCodec = "aac,ac3",
+                        Type = DlnaProfileType.Video,
+
+                          Conditions = new List<ProfileCondition>
+                           {
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Has64BitOffsets, Value = "false", IsRequired=false}
+                           }
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"asf"}, 
+                        VideoCodec = "wmv2,wmv3,vc1",
+                        AudioCodec = "wmav2,wmapro",
                         Type = DlnaProfileType.Video
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"asf"}, 
+                        AudioCodec = "wmav2,wmapro,wmavoice",
+                        Type = DlnaProfileType.Audio
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"mp3"}, 
+                        AudioCodec = "mp3",
+                        Type = DlnaProfileType.Audio
+                    },
+                    new DirectPlayProfile
+                    {
+                        Containers = new[]{"jpeg"}, 
+                        Type = DlnaProfileType.Photo,
+
+                          Conditions = new List<ProfileCondition>
+                           {
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Width, Value = "1920"},
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Height, Value = "1080"}
+                           }
                     }
                 },
 
@@ -278,6 +355,69 @@ namespace MediaBrowser.Dlna
                         Container ="avi",
                         MimeType = "video/avi",
                         Type = DlnaProfileType.Video
+                    }
+                },
+
+                CodecProfiles = new[]
+                {
+                    new CodecProfile
+                    {
+                         Type = CodecType.VideoCodec,
+                          Codec = "mpeg4",
+                          Conditions = new List<ProfileCondition>
+                           {
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Width, Value = "1280"},
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Height, Value = "720"},
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.VideoFramerate, Value = "30", IsRequired=false},
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.VideoBitrate, Value = "5120000", IsRequired=false}
+                           }
+                    },
+
+                    new CodecProfile
+                    {
+                         Type = CodecType.VideoCodec,
+                          Codec = "h264",
+                          Conditions = new List<ProfileCondition>
+                           {
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Width, Value = "1920"},
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Height, Value = "1080"},
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.VideoLevel, Value = "41", IsRequired=false},
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.VideoBitrate, Value = "10240000", IsRequired=false}
+                           }
+                    },
+
+                    new CodecProfile
+                    {
+                         Type = CodecType.VideoCodec,
+                          Codec = "wmv2,wmv3,vc1",
+                          Conditions = new List<ProfileCondition>
+                           {
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Width, Value = "1920"},
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Height, Value = "1080"},
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.VideoFramerate, Value = "30", IsRequired=false},
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.VideoBitrate, Value = "15360000", IsRequired=false}
+                           }
+                    },
+
+                    new CodecProfile
+                    {
+                         Type = CodecType.VideoAudioCodec,
+                          Codec = "ac3,wmav2,wmapro",
+                          Conditions = new List<ProfileCondition>
+                           {
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.AudioChannels, Value = "6", IsRequired=false}
+                           }
+                    },
+
+                    new CodecProfile
+                    {
+                         Type = CodecType.VideoAudioCodec,
+                          Codec = "aac",
+                          Conditions = new List<ProfileCondition>
+                           {
+                               new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.AudioChannels, Value = "6", IsRequired=false},
+                               new ProfileCondition{ Condition = ProfileConditionType.Equals, Property = ProfileConditionValue.AudioProfile, Value = "lc", IsRequired=false}
+                           }
                     }
                 }
             });
