@@ -399,8 +399,11 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var deviceInfo = _device.Properties;
 
-            var playlistItem = GetPlaylistItem(item, streams, _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()));
+            var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification());
+
+            var playlistItem = GetPlaylistItem(item, streams, profile);
             playlistItem.StartPositionTicks = startPostionTicks;
+            playlistItem.DeviceProfileName = profile.Name;
 
             if (playlistItem.MediaType == DlnaProfileType.Audio)
             {
