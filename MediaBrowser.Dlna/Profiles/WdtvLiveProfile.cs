@@ -7,7 +7,6 @@ namespace MediaBrowser.Dlna.Profiles
         public WdtvLiveProfile()
         {
             Name = "WDTV Live";
-            ClientType = "DLNA";
 
             TimelineOffsetSeconds = 5;
             IgnoreTranscodeByteRangeRequests = true;

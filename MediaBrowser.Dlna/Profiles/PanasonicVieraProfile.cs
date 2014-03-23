@@ -7,7 +7,6 @@ namespace MediaBrowser.Dlna.Profiles
        public PanasonicVieraProfile()
        {
            Name = "Panasonic Viera";
-           ClientType = "DLNA";
 
            Identification = new DeviceIdentification
            {

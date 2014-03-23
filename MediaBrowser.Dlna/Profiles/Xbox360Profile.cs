@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Dlna;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Dlna.Profiles
 {
@@ -8,7 +7,6 @@ namespace MediaBrowser.Dlna.Profiles
         public Xbox360Profile()
         {
             Name = "Xbox 360";
-            ClientType = "DLNA";
 
             ModelName = "Windows Media Player Sharing";
             ModelNumber = "12.0";

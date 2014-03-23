@@ -7,7 +7,6 @@ namespace MediaBrowser.Dlna.Profiles
         public SonyBravia2012Profile()
         {
             Name = "Sony Bravia (2012)";
-            ClientType = "DLNA";
 
             Identification = new DeviceIdentification
             {

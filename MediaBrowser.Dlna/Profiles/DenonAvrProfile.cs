@@ -7,7 +7,6 @@ namespace MediaBrowser.Dlna.Profiles
         public DenonAvrProfile()
         {
             Name = "Denon AVR";
-            ClientType = "DLNA";
 
             Identification = new DeviceIdentification
             {
