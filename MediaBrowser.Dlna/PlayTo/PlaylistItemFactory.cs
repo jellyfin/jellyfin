@@ -251,6 +251,11 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <exception cref="System.InvalidOperationException">Unexpected ProfileConditionType</exception>
         private bool IsConditionSatisfied(ProfileCondition condition, string mediaPath, MediaStream videoStream, MediaStream audioStream)
         {
+            if (condition.Property == ProfileConditionValue.Has64BitOffsets)
+            {
+                // TODO: Determine how to evaluate this
+            }
+
             if (condition.Property == ProfileConditionValue.VideoProfile)
             {
                 var profile = videoStream == null ? null : videoStream.Profile;
@@ -346,6 +351,12 @@ namespace MediaBrowser.Dlna.PlayTo
                     return videoStream == null ? null : videoStream.Width;
                 case ProfileConditionValue.VideoLevel:
                     return videoStream == null ? null : ConvertToLong(videoStream.Level);
+                case ProfileConditionValue.VideoPacketLength:
+                    // TODO: Determine how to get this
+                    return null;
+                case ProfileConditionValue.VideoTimestamp:
+                    // TODO: Determine how to get this
+                    return null;
                 default:
                     throw new InvalidOperationException("Unexpected Property");
             }

@@ -34,6 +34,8 @@ namespace MediaBrowser.Dlna
             list.Add(new Xbox360Profile());
 
             list.Add(new XboxOneProfile());
+
+            list.Add(new SonyPs3Profile());
             
             list.Add(new SonyBravia2010Profile());
 
@@ -43,6 +45,9 @@ namespace MediaBrowser.Dlna
 
             list.Add(new SonyBravia2013Profile());
 
+            list.Add(new SonyBlurayPlayer2013Profile());
+            list.Add(new SonyBlurayPlayerProfile());
+     
             list.Add(new PanasonicVieraProfile());
 
             list.Add(new WdtvLiveProfile());
