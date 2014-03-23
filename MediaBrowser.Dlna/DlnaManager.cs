@@ -27,35 +27,25 @@ namespace MediaBrowser.Dlna
 
         public IEnumerable<DeviceProfile> GetProfiles()
         {
-            var list = new List<DeviceProfile>();
+            var list = new List<DeviceProfile>
+            {
+                new SamsungSmartTvProfile(),
+                new Xbox360Profile(),
+                new XboxOneProfile(),
+                new SonyPs3Profile(),
+                new SonyBravia2010Profile(),
+                new SonyBravia2011Profile(),
+                new SonyBravia2012Profile(),
+                new SonyBravia2013Profile(),
+                new SonyBlurayPlayer2013Profile(),
+                new SonyBlurayPlayerProfile(),
+                new PanasonicVieraProfile(),
+                new WdtvLiveProfile(),
+                new DenonAvrProfile(),
+                new LinksysDMA2100Profile(),
+                new LgTvProfile()
+            };
 
-            list.Add(new SamsungSmartTvProfile());
-            
-            list.Add(new Xbox360Profile());
-
-            list.Add(new XboxOneProfile());
-
-            list.Add(new SonyPs3Profile());
-            
-            list.Add(new SonyBravia2010Profile());
-
-            list.Add(new SonyBravia2011Profile());
-
-            list.Add(new SonyBravia2012Profile());
-
-            list.Add(new SonyBravia2013Profile());
-
-            list.Add(new SonyBlurayPlayer2013Profile());
-            list.Add(new SonyBlurayPlayerProfile());
-     
-            list.Add(new PanasonicVieraProfile());
-
-            list.Add(new WdtvLiveProfile());
-
-            list.Add(new DenonAvrProfile());
-
-            list.Add(new LinksysDMA2100Profile());
-            
             foreach (var item in list)
             {
                 //_xmlSerializer.SerializeToFile(item, "d:\\" + _fileSystem.GetValidFilename(item.Name) + ".xml");
