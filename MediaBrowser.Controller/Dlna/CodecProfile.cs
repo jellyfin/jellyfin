@@ -6,12 +6,12 @@ namespace MediaBrowser.Controller.Dlna
     public class CodecProfile
     {
         public CodecType Type { get; set; }
-        public List<ProfileCondition> Conditions { get; set; }
+        public ProfileCondition[] Conditions { get; set; }
         public string Codec { get; set; }
 
         public CodecProfile()
         {
-            Conditions = new List<ProfileCondition>();
+            Conditions = new ProfileCondition[] {};
         }
 
         public List<string> GetCodecs()

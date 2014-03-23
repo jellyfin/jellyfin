@@ -20,12 +20,14 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <value>The transcoding profiles.</value>
         public TranscodingProfile[] TranscodingProfiles { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the direct play profiles.
         /// </summary>
         /// <value>The direct play profiles.</value>
         public DirectPlayProfile[] DirectPlayProfiles { get; set; }
+
+        public ContainerProfile[] ContainerProfiles { get; set; }
 
         /// <summary>
         /// Gets or sets the identification.
@@ -40,6 +42,8 @@ namespace MediaBrowser.Controller.Dlna
         public string ModelDescription { get; set; }
         public string ModelNumber { get; set; }
         public string ModelUrl { get; set; }
+        public bool IgnoreTranscodeByteRangeRequests { get; set; }
+
         /// <summary>
         /// Controls the content of the X_DLNADOC element in the urn:schemas-dlna-org:device-1-0 namespace.
         /// </summary>
@@ -62,13 +66,14 @@ namespace MediaBrowser.Controller.Dlna
 
         public bool RequiresPlainVideoItems { get; set; }
         public bool RequiresPlainFolders { get; set; }
-        
+
         public DeviceProfile()
         {
             DirectPlayProfiles = new DirectPlayProfile[] { };
             TranscodingProfiles = new TranscodingProfile[] { };
             MediaProfiles = new MediaProfile[] { };
             CodecProfiles = new CodecProfile[] { };
+            ContainerProfiles = new ContainerProfile[] { };
         }
     }
 }

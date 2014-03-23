@@ -47,6 +47,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 playlistItem.Transcode = true;
                 playlistItem.TranscodingSettings = transcodingProfile.Settings.ToList();
                 playlistItem.Container = "." + transcodingProfile.Container.TrimStart('.');
+                playlistItem.AudioCodec = transcodingProfile.AudioCodec;
             }
             
             return playlistItem;
@@ -118,6 +119,8 @@ namespace MediaBrowser.Dlna.PlayTo
                 playlistItem.Transcode = true;
                 playlistItem.TranscodingSettings = transcodingProfile.Settings.ToList();
                 playlistItem.Container = "." + transcodingProfile.Container.TrimStart('.');
+                playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',').FirstOrDefault();
+                playlistItem.VideoCodec = transcodingProfile.VideoCodec;
             }
 
             return playlistItem;
@@ -137,12 +140,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 }
             }
 
-            // Check additional conditions
-            if (!profile.Conditions.Any(i => IsConditionSatisfied(i, mediaPath, null, null)))
-            {
-                return false;
-            }
-
             return true;
         }
         
@@ -158,12 +155,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     return false;
                 }
-            }
-
-            // Check additional conditions
-            if (!profile.Conditions.Any(i => IsConditionSatisfied(i, mediaPath, null, audioStream)))
-            {
-                return false;
             }
 
             return true;
@@ -208,12 +199,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     return false;
                 }
-            }
-
-            // Check additional conditions
-            if (!profile.Conditions.Any(i => IsConditionSatisfied(i, mediaPath, videoStream, audioStream)))
-            {
-                return false;
             }
 
             return true;

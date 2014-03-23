@@ -81,6 +81,16 @@
     <Compile Include="PlayTo\uIcon.cs" />
     <Compile Include="PlayTo\uParser.cs" />
     <Compile Include="PlayTo\uPnpNamespaces.cs" />
+    <Compile Include="Profiles\DefaultProfile.cs" />
+    <Compile Include="Profiles\DenonAvrProfile.cs" />
+    <Compile Include="Profiles\PanasonicVieraProfile.cs" />
+    <Compile Include="Profiles\SonyBravia2010Profile.cs" />
+    <Compile Include="Profiles\SonyBravia2011Profile.cs" />
+    <Compile Include="Profiles\SonyBravia2012Profile.cs" />
+    <Compile Include="Profiles\SonyBravia2013Profile.cs" />
+    <Compile Include="Profiles\WdtvLiveProfile.cs" />
+    <Compile Include="Profiles\Xbox360Profile.cs" />
+    <Compile Include="Profiles\XboxOneProfile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

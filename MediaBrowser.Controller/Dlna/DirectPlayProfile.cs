@@ -11,13 +11,6 @@ namespace MediaBrowser.Controller.Dlna
 
         public DlnaProfileType Type { get; set; }
 
-        public List<ProfileCondition> Conditions { get; set; }
-
-        public DirectPlayProfile()
-        {
-            Conditions = new List<ProfileCondition>();
-        }
-
         public List<string> GetContainers()
         {
             return (Container ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
