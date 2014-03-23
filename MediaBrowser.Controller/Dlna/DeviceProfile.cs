@@ -60,6 +60,9 @@ namespace MediaBrowser.Controller.Dlna
 
         public int TimelineOffsetSeconds { get; set; }
 
+        public bool RequiresPlainVideoItems { get; set; }
+        public bool RequiresPlainFolders { get; set; }
+        
         public DeviceProfile()
         {
             DirectPlayProfiles = new DirectPlayProfile[] { };

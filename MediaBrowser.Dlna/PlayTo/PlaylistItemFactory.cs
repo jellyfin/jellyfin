@@ -36,15 +36,19 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
-            var directPlay = profile.DirectPlayProfiles
-                .FirstOrDefault(i => i.Type == playlistItem.MediaType && IsSupported(i, item, audioStream));
-
-            if (directPlay != null)
+            if (profile.CodecProfiles.Where(i => i.Type == CodecType.AudioCodec)
+                .All(i => IsCodecProfileSupported(i, item.Path, null, audioStream)))
             {
-                playlistItem.Transcode = false;
-                playlistItem.Container = Path.GetExtension(item.Path);
+                var directPlay = profile.DirectPlayProfiles
+                    .FirstOrDefault(i => i.Type == playlistItem.MediaType && IsSupported(i, item, audioStream));
 
-                return playlistItem;
+                if (directPlay != null)
+                {
+                    playlistItem.Transcode = false;
+                    playlistItem.Container = Path.GetExtension(item.Path);
+
+                    return playlistItem;
+                }
             }
 
             var transcodingProfile = profile.TranscodingProfiles
@@ -113,15 +117,19 @@ namespace MediaBrowser.Dlna.PlayTo
             var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
-            var directPlay = profile.DirectPlayProfiles
-                .FirstOrDefault(i => i.Type == playlistItem.MediaType && IsSupported(i, item, videoStream, audioStream));
-
-            if (directPlay != null)
+            if (profile.CodecProfiles.Where(i => i.Type == CodecType.VideoCodec || i.Type == CodecType.VideoAudioCodec)
+                .All(i => IsCodecProfileSupported(i, item.Path, videoStream, audioStream)))
             {
-                playlistItem.Transcode = false;
-                playlistItem.Container = Path.GetExtension(item.Path);
+                var directPlay = profile.DirectPlayProfiles
+                    .FirstOrDefault(i => i.Type == playlistItem.MediaType && IsSupported(i, item, videoStream, audioStream));
 
-                return playlistItem;
+                if (directPlay != null)
+                {
+                    playlistItem.Transcode = false;
+                    playlistItem.Container = Path.GetExtension(item.Path);
+
+                    return playlistItem;
+                }
             }
 
             var transcodingProfile = profile.TranscodingProfiles
@@ -281,6 +289,24 @@ namespace MediaBrowser.Dlna.PlayTo
             return true;
         }
 
+        private bool IsCodecProfileSupported(CodecProfile profile, string mediaPath, MediaStream videoStream, MediaStream audioStream)
+        {
+            var codecs = profile.GetCodecs();
+            var stream = profile.Type == CodecType.VideoCodec ? videoStream : audioStream;
+            var existingCodec = (stream == null ? null : stream.Codec) ?? string.Empty;
+
+            if (codecs.Count == 0 || codecs.Contains(existingCodec, StringComparer.OrdinalIgnoreCase))
+            {
+                // Check additional conditions
+                if (!profile.Conditions.Any(i => IsConditionSatisfied(i, mediaPath, videoStream, audioStream)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Determines whether [is condition satisfied] [the specified condition].
         /// </summary>
@@ -292,30 +318,70 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <exception cref="System.InvalidOperationException">Unexpected ProfileConditionType</exception>
         private bool IsConditionSatisfied(ProfileCondition condition, string mediaPath, MediaStream videoStream, MediaStream audioStream)
         {
-            var actualValue = GetConditionValue(condition, mediaPath, videoStream, audioStream);
-
-            if (actualValue.HasValue)
+            if (condition.Property == ProfileConditionValue.VideoProfile)
             {
-                long expected;
-                if (long.TryParse(condition.Value, NumberStyles.Any, _usCulture, out expected))
+                var profile = videoStream == null ? null : videoStream.Profile;
+
+                if (!string.IsNullOrWhiteSpace(profile))
                 {
                     switch (condition.Condition)
                     {
                         case ProfileConditionType.Equals:
-                            return actualValue.Value == expected;
-                        case ProfileConditionType.GreaterThanEqual:
-                            return actualValue.Value >= expected;
-                        case ProfileConditionType.LessThanEqual:
-                            return actualValue.Value <= expected;
+                            return string.Equals(profile, condition.Value, StringComparison.OrdinalIgnoreCase);
                         case ProfileConditionType.NotEquals:
-                            return actualValue.Value != expected;
+                            return !string.Equals(profile, condition.Value, StringComparison.OrdinalIgnoreCase);
                         default:
                             throw new InvalidOperationException("Unexpected ProfileConditionType");
                     }
                 }
             }
 
-            return false;
+            else if (condition.Property == ProfileConditionValue.AudioProfile)
+            {
+                var profile = audioStream == null ? null : audioStream.Profile;
+
+                if (!string.IsNullOrWhiteSpace(profile))
+                {
+                    switch (condition.Condition)
+                    {
+                        case ProfileConditionType.Equals:
+                            return string.Equals(profile, condition.Value, StringComparison.OrdinalIgnoreCase);
+                        case ProfileConditionType.NotEquals:
+                            return !string.Equals(profile, condition.Value, StringComparison.OrdinalIgnoreCase);
+                        default:
+                            throw new InvalidOperationException("Unexpected ProfileConditionType");
+                    }
+                }
+            }
+
+            else
+            {
+                var actualValue = GetConditionValue(condition, mediaPath, videoStream, audioStream);
+
+                if (actualValue.HasValue)
+                {
+                    long expected;
+                    if (long.TryParse(condition.Value, NumberStyles.Any, _usCulture, out expected))
+                    {
+                        switch (condition.Condition)
+                        {
+                            case ProfileConditionType.Equals:
+                                return actualValue.Value == expected;
+                            case ProfileConditionType.GreaterThanEqual:
+                                return actualValue.Value >= expected;
+                            case ProfileConditionType.LessThanEqual:
+                                return actualValue.Value <= expected;
+                            case ProfileConditionType.NotEquals:
+                                return actualValue.Value != expected;
+                            default:
+                                throw new InvalidOperationException("Unexpected ProfileConditionType");
+                        }
+                    }
+                }
+            }
+
+            // Value doesn't exist in metadata. Fail it if required.
+            return !condition.IsRequired;
         }
 
         /// <summary>
