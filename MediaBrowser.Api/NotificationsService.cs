@@ -1,15 +1,14 @@
 ﻿using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Notifications;
+using ServiceStack;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack;
 
 namespace MediaBrowser.Api
 {
-    [Route("/Notifications/{UserId}", "GET")]
-    [Api(Description = "Gets notifications")]
+    [Route("/Notifications/{UserId}", "GET", Summary = "Gets notifications")]
     public class GetNotifications : IReturn<NotificationResult>
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -25,16 +24,14 @@ namespace MediaBrowser.Api
         public int? Limit { get; set; }
     }
 
-    [Route("/Notifications/{UserId}/Summary", "GET")]
-    [Api(Description = "Gets a notification summary for a user")]
+    [Route("/Notifications/{UserId}/Summary", "GET", Summary = "Gets a notification summary for a user")]
     public class GetNotificationsSummary : IReturn<NotificationsSummary>
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid UserId { get; set; }
     }
 
-    [Route("/Notifications/{UserId}", "POST")]
-    [Api(Description = "Adds a notifications")]
+    [Route("/Notifications/{UserId}", "POST", Summary = "Adds a notifications")]
     public class AddUserNotification : IReturn<Notification>
     {
         [ApiMember(Name = "Id", Description = "The Id of the new notification. If unspecified one will be provided.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
@@ -61,9 +58,8 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Level", Description = "The notification level", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public NotificationLevel Level { get; set; }
     }
-    
-    [Route("/Notifications/{UserId}/Read", "POST")]
-    [Api(Description = "Marks notifications as read")]
+
+    [Route("/Notifications/{UserId}/Read", "POST", Summary = "Marks notifications as read")]
     public class MarkRead : IReturnVoid
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
@@ -73,8 +69,7 @@ namespace MediaBrowser.Api
         public string Ids { get; set; }
     }
 
-    [Route("/Notifications/{UserId}/Unread", "POST")]
-    [Api(Description = "Marks notifications as unread")]
+    [Route("/Notifications/{UserId}/Unread", "POST", Summary = "Marks notifications as unread")]
     public class MarkUnread : IReturnVoid
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]

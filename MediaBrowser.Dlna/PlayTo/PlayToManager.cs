@@ -135,7 +135,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                     _logger.Info("SSDP listener - Task completed");
                 }
-                catch (OperationCanceledException c)
+                catch (OperationCanceledException)
                 {
                 }
                 catch (Exception e)
@@ -154,7 +154,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     await CreateController(uri).ConfigureAwait(false);
                 }
-                catch (OperationCanceledException c)
+                catch (OperationCanceledException)
                 {
                 }
                 catch (Exception ex)
@@ -179,7 +179,7 @@ namespace MediaBrowser.Dlna.PlayTo
                         await Task.Delay(10000).ConfigureAwait(false);
                     }
                 }
-                catch (OperationCanceledException c)
+                catch (OperationCanceledException)
                 {
                 }
                 catch (Exception ex)

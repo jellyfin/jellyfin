@@ -266,7 +266,7 @@ namespace MediaBrowser.ServerApplication
             {
                 MigrateUserFolders();
             }
-            catch (IOException ex)
+            catch (IOException)
             {
             }
 
