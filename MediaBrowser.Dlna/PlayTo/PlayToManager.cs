@@ -176,7 +176,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     {
                         socket.SendTo(request, new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900));
 
-                        var delay = _config.Configuration.DlnaOptions.ClientDiscoveryIntervalSeconds*1000;
+                        var delay = _config.Configuration.DlnaOptions.ClientDiscoveryIntervalSeconds * 1000;
 
                         await Task.Delay(delay).ConfigureAwait(false);
                     }
