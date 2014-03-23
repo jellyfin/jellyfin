@@ -1211,71 +1211,75 @@ namespace MediaBrowser.Api.Playback
 
                 if (i == 0)
                 {
-                    request.DeviceId = val;
+                    // Device profile name
                 }
                 else if (i == 1)
                 {
-                    request.MediaSourceId = val;
+                    request.DeviceId = val;
                 }
                 else if (i == 2)
                 {
-                    request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    request.MediaSourceId = val;
                 }
                 else if (i == 3)
+                {
+                    request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                }
+                else if (i == 4)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.VideoCodec = (VideoCodecs)Enum.Parse(typeof(VideoCodecs), val, true);
                     }
                 }
-                else if (i == 4)
+                else if (i == 5)
                 {
                     request.AudioCodec = (AudioCodecs)Enum.Parse(typeof(AudioCodecs), val, true);
                 }
-                else if (i == 5)
+                else if (i == 6)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.AudioStreamIndex = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 6)
+                else if (i == 7)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.SubtitleStreamIndex = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 7)
+                else if (i == 8)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.VideoBitRate = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 8)
+                else if (i == 9)
                 {
                     request.AudioBitRate = int.Parse(val, UsCulture);
                 }
-                else if (i == 9)
+                else if (i == 10)
                 {
                     request.MaxAudioChannels = int.Parse(val, UsCulture);
                 }
-                else if (i == 10)
+                else if (i == 11)
                 {
                     if (videoRequest != null)
                     {
                         request.StartTimeTicks = long.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 11)
+                else if (i == 12)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.Profile = val;
                     }
                 }
-                else if (i == 12)
+                else if (i == 13)
                 {
                     if (videoRequest != null)
                     {

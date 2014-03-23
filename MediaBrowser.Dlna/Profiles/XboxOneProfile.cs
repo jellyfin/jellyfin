@@ -7,7 +7,6 @@ namespace MediaBrowser.Dlna.Profiles
         public XboxOneProfile()
         {
             Name = "Xbox One";
-            ClientType = "DLNA";
 
             Identification = new DeviceIdentification
             {
@@ -38,11 +37,6 @@ namespace MediaBrowser.Dlna.Profiles
                 {
                     Container = "mp3",
                     Type = DlnaProfileType.Audio
-                },
-                new DirectPlayProfile
-                {
-                    Container = "avi",
-                    Type = DlnaProfileType.Video
                 }
             };
 

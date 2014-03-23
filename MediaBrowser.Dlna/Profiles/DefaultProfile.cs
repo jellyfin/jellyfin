@@ -6,6 +6,16 @@ namespace MediaBrowser.Dlna.Profiles
     {
         public DefaultProfile()
         {
+            ProtocolInfo = "DLNA";
+
+            ClientType = "DLNA";
+            Manufacturer = "Media Browser";
+            ModelDescription = "Media Browser";
+            ModelName = "Media Browser";
+            ModelNumber = "Media Browser";
+            ModelUrl = "http://mediabrowser3.com/";
+            ManufacturerUrl = "http://mediabrowser3.com/";
+
             TranscodingProfiles = new[]
             {
                 new TranscodingProfile

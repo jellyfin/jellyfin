@@ -83,7 +83,9 @@
     <Compile Include="PlayTo\uPnpNamespaces.cs" />
     <Compile Include="Profiles\DefaultProfile.cs" />
     <Compile Include="Profiles\DenonAvrProfile.cs" />
+    <Compile Include="Profiles\LinksysDMA2100Profile.cs" />
     <Compile Include="Profiles\PanasonicVieraProfile.cs" />
+    <Compile Include="Profiles\SamsungSmartTvProfile.cs" />
     <Compile Include="Profiles\SonyBravia2010Profile.cs" />
     <Compile Include="Profiles\SonyBravia2011Profile.cs" />
     <Compile Include="Profiles\SonyBravia2012Profile.cs" />

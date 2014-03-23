@@ -43,6 +43,7 @@ namespace MediaBrowser.Controller.Dlna
         public string ModelNumber { get; set; }
         public string ModelUrl { get; set; }
         public bool IgnoreTranscodeByteRangeRequests { get; set; }
+        public bool SupportsAlbumArtInDidl { get; set; }
 
         /// <summary>
         /// Controls the content of the X_DLNADOC element in the urn:schemas-dlna-org:device-1-0 namespace.
