@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -12,27 +12,15 @@ namespace MediaBrowser.Dlna.PlayTo
 {
     public class PlaylistItemFactory
     {
-        private readonly IItemRepository _itemRepo;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public PlaylistItemFactory(IItemRepository itemRepo)
-        {
-            _itemRepo = itemRepo;
-        }
-
-        public PlaylistItem Create(Audio item, DeviceProfile profile)
+        public PlaylistItem Create(Audio item, List<MediaStream> mediaStreams, DeviceProfile profile)
         {
             var playlistItem = new PlaylistItem
             {
                 ItemId = item.Id.ToString("N"),
                 MediaType = DlnaProfileType.Audio
             };
-
-            var mediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
-            {
-                ItemId = item.Id,
-                Type = MediaStreamType.Audio
-            });
 
             var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
@@ -57,11 +45,9 @@ namespace MediaBrowser.Dlna.PlayTo
             if (transcodingProfile != null)
             {
                 playlistItem.Transcode = true;
-
+                playlistItem.TranscodingSettings = transcodingProfile.Settings.ToList();
                 playlistItem.Container = "." + transcodingProfile.Container.TrimStart('.');
             }
-
-            AttachMediaProfile(playlistItem, profile);
             
             return playlistItem;
         }
@@ -91,28 +77,20 @@ namespace MediaBrowser.Dlna.PlayTo
             if (transcodingProfile != null)
             {
                 playlistItem.Transcode = true;
-
+                playlistItem.TranscodingSettings = transcodingProfile.Settings.ToList();
                 playlistItem.Container = "." + transcodingProfile.Container.TrimStart('.');
             }
-
-            AttachMediaProfile(playlistItem, profile);
             
             return playlistItem;
         }
 
-        public PlaylistItem Create(Video item, DeviceProfile profile)
+        public PlaylistItem Create(Video item, List<MediaStream> mediaStreams, DeviceProfile profile)
         {
             var playlistItem = new PlaylistItem
             {
                 ItemId = item.Id.ToString("N"),
                 MediaType = DlnaProfileType.Video
             };
-
-            var mediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
-            {
-                ItemId = item.Id
-
-            }).ToList();
 
             var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
@@ -138,41 +116,11 @@ namespace MediaBrowser.Dlna.PlayTo
             if (transcodingProfile != null)
             {
                 playlistItem.Transcode = true;
+                playlistItem.TranscodingSettings = transcodingProfile.Settings.ToList();
                 playlistItem.Container = "." + transcodingProfile.Container.TrimStart('.');
             }
 
-            AttachMediaProfile(playlistItem, profile);
-
             return playlistItem;
-        }
-
-        private void AttachMediaProfile(PlaylistItem item, DeviceProfile profile)
-        {
-            var mediaProfile = GetMediaProfile(item, profile);
-
-            if (mediaProfile != null)
-            {
-                item.MimeType = (mediaProfile.MimeType ?? string.Empty).Split('/').LastOrDefault();
-
-                // TODO: Org_pn?
-            }
-        }
-
-        private MediaProfile GetMediaProfile(PlaylistItem item, DeviceProfile profile)
-        {
-            return profile.MediaProfiles.FirstOrDefault(i =>
-            {
-                if (i.Type == item.MediaType)
-                {
-                    if (string.Equals(item.Container.TrimStart('.'), i.Container.TrimStart('.'), StringComparison.OrdinalIgnoreCase))
-                    {
-                        // TODO: Enforce codecs
-                        return true;
-                    }
-                }
-
-                return false;
-            });
         }
 
         private bool IsSupported(DirectPlayProfile profile, Photo item)

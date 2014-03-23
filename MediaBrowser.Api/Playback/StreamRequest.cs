@@ -49,6 +49,9 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "AudioChannels", Description = "Optional. Specify a specific number of audio channels to encode to, e.g. 2", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? AudioChannels { get; set; }
 
+        [ApiMember(Name = "MaxAudioChannels", Description = "Optional. Specify a maximum number of audio channels to encode to, e.g. 2", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? MaxAudioChannels { get; set; }
+        
         /// <summary>
         /// Gets or sets the audio sample rate.
         /// </summary>
@@ -69,8 +72,6 @@ namespace MediaBrowser.Api.Playback
         public bool ThrowDebugError { get; set; }
 
         public string Params { get; set; }
-
-        public string ForcedMimeType { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest
