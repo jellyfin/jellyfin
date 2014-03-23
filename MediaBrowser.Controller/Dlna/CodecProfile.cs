@@ -57,6 +57,7 @@ namespace MediaBrowser.Controller.Dlna
         Width,
         Height,
         Has64BitOffsets,
+        VideoBitDepth,
         VideoBitrate,
         VideoFramerate,
         VideoLevel,
