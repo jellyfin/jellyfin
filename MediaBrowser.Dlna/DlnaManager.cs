@@ -274,11 +274,9 @@ namespace MediaBrowser.Dlna
 
                         Settings = new List<TranscodingSetting>
                         {
-                            new TranscodingSetting
-                            {
-                                 Name = TranscodingSettingType.MaxAudioChannels,
-                                 Value = "6"
-                            }
+                            new TranscodingSetting { Name = TranscodingSettingType.MaxAudioChannels, Value = "6" },
+                            new TranscodingSetting{ Name = TranscodingSettingType.VideoLevel, Value = "3"},
+                            new TranscodingSetting{ Name = TranscodingSettingType.VideoProfile, Value = "baseline"}
                         }
                     },
                     new TranscodingProfile
@@ -791,7 +789,13 @@ namespace MediaBrowser.Dlna
                         Container = "ts", 
                         Type = DlnaProfileType.Video,
                         VideoCodec = "h264",
-                        AudioCodec = "aac"
+                        AudioCodec = "aac",
+
+                        Settings = new List<TranscodingSetting>
+                        {
+                             new TranscodingSetting{ Name = TranscodingSettingType.VideoLevel, Value = "3"},
+                             new TranscodingSetting{ Name = TranscodingSettingType.VideoProfile, Value = "baseline"}
+                        }
                     },
                     new TranscodingProfile
                     {
@@ -1010,12 +1014,20 @@ namespace MediaBrowser.Dlna
                     new TranscodingProfile
                     {
                         Container = "mp3", 
+                        AudioCodec = "mp3",
                         Type = DlnaProfileType.Audio
                     },
                     new TranscodingProfile
                     {
                         Container = "ts", 
-                        Type = DlnaProfileType.Video
+                        Type = DlnaProfileType.Video,
+                        AudioCodec = "aac",
+                        VideoCodec = "h264",
+                        Settings = new List<TranscodingSetting>
+                        {
+                             new TranscodingSetting{ Name = TranscodingSettingType.VideoLevel, Value = "3"},
+                             new TranscodingSetting{ Name = TranscodingSettingType.VideoProfile, Value = "baseline"}
+                        }
                     }
                 },
 

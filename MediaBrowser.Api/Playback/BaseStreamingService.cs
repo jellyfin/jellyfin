@@ -745,6 +745,16 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
+            if (request.MaxAudioChannels.HasValue)
+            {
+                if (audioStream != null && audioStream.Channels.HasValue)
+                {
+                    return Math.Min(request.MaxAudioChannels.Value, audioStream.Channels.Value);
+                }
+
+                return request.MaxAudioChannels.Value;
+            }
+
             return request.AudioChannels;
         }
 
@@ -1205,72 +1215,72 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 1)
                 {
-                    request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    request.MediaSourceId = val;
                 }
                 else if (i == 2)
+                {
+                    request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                }
+                else if (i == 3)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.VideoCodec = (VideoCodecs)Enum.Parse(typeof(VideoCodecs), val, true);
                     }
                 }
-                else if (i == 3)
+                else if (i == 4)
                 {
                     request.AudioCodec = (AudioCodecs)Enum.Parse(typeof(AudioCodecs), val, true);
                 }
-                else if (i == 4)
+                else if (i == 5)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.AudioStreamIndex = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 5)
+                else if (i == 6)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.SubtitleStreamIndex = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 6)
+                else if (i == 7)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.VideoBitRate = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 7)
+                else if (i == 8)
                 {
                     request.AudioBitRate = int.Parse(val, UsCulture);
                 }
-                else if (i == 8)
-                {
-                    request.AudioChannels = int.Parse(val, UsCulture);
-                }
                 else if (i == 9)
+                {
+                    request.MaxAudioChannels = int.Parse(val, UsCulture);
+                }
+                else if (i == 10)
                 {
                     if (videoRequest != null)
                     {
                         request.StartTimeTicks = long.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 10)
+                else if (i == 11)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.Profile = val;
                     }
                 }
-                else if (i == 11)
+                else if (i == 12)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.Level = val;
                     }
-                }
-                else if (i == 12)
-                {
-                    request.ForcedMimeType = val;
                 }
             }
         }

@@ -270,7 +270,7 @@ namespace MediaBrowser.Dlna.PlayTo
                         playlistItem.StartPositionTicks = newItem.StartPositionTicks;
                         playlistItem.StreamUrl = newItem.StreamUrl;
                         playlistItem.Didl = newItem.Didl;
-                        return _device.SetAvTransport(playlistItem.StreamUrl, playlistItem.DlnaHeaders, playlistItem.Didl);
+                        return _device.SetAvTransport(playlistItem.StreamUrl, GetDlnaHeaders(playlistItem), playlistItem.Didl);
 
                     }
                     return _device.Seek(TimeSpan.FromTicks(command.SeekPositionTicks ?? 0));
@@ -391,16 +391,20 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private PlaylistItem CreatePlaylistItem(BaseItem item, long startPostionTicks, string serverAddress)
         {
-            var streams = _itemRepository.GetMediaStreams(new MediaStreamQuery { ItemId = item.Id }).ToList();
+            var streams = _itemRepository.GetMediaStreams(new MediaStreamQuery
+            {
+                ItemId = item.Id
+
+            }).ToList();
 
             var deviceInfo = _device.Properties;
 
-            var playlistItem = GetPlaylistItem(item, _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()));
+            var playlistItem = GetPlaylistItem(item, streams, _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()));
             playlistItem.StartPositionTicks = startPostionTicks;
 
             if (playlistItem.MediaType == DlnaProfileType.Audio)
             {
-                playlistItem.StreamUrl = StreamHelper.GetAudioUrl(playlistItem, serverAddress);
+                playlistItem.StreamUrl = StreamHelper.GetAudioUrl(deviceInfo, playlistItem, streams, serverAddress);
             }
             else
             {
@@ -410,32 +414,92 @@ namespace MediaBrowser.Dlna.PlayTo
             var didl = DidlBuilder.Build(item, _session.UserId.ToString(), serverAddress, playlistItem.StreamUrl, streams);
             playlistItem.Didl = didl;
 
-            var header = StreamHelper.GetDlnaHeaders(playlistItem);
-            playlistItem.DlnaHeaders = header;
             return playlistItem;
         }
 
-        private PlaylistItem GetPlaylistItem(BaseItem item, DeviceProfile profile)
+        private string GetDlnaHeaders(PlaylistItem item)
+        {
+            var orgOp = item.Transcode ? ";DLNA.ORG_OP=00" : ";DLNA.ORG_OP=01";
+
+            var orgCi = item.Transcode ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
+
+            const string dlnaflags = ";DLNA.ORG_FLAGS=01500000000000000000000000000000";
+
+            string contentFeatures;
+
+            var container = item.Container.TrimStart('.');
+
+            if (string.Equals(container, "mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MP3";
+            }
+            else if (string.Equals(container, "wma", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=WMABASE";
+            }
+            else if (string.Equals(container, "wmw", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=WMVMED_BASE";
+            }
+            else if (string.Equals(container, "asf", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=WMVMED_BASE";
+            }
+            else if (string.Equals(container, "avi", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=AVI";
+            }
+            else if (string.Equals(container, "mkv", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MATROSKA";
+            }
+            else if (string.Equals(container, "mp4", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=AVC_MP4_MP_HD_720p_AAC";
+            }
+            else if (string.Equals(container, "mpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
+            }
+            else if (string.Equals(container, "ts", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
+            }
+            else if (item.MediaType == DlnaProfileType.Video)
+            {
+                // Default to AVI for video
+                contentFeatures = "DLNA.ORG_PN=AVI";
+            }
+            else
+            {
+                // Default to MP3 for audio
+                contentFeatures = "DLNA.ORG_PN=MP3";
+            }
+
+            return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
+        }
+        
+        private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaStream> mediaStreams, DeviceProfile profile)
         {
             var video = item as Video;
 
             if (video != null)
             {
-                return new PlaylistItemFactory(_itemRepository).Create(video, profile);
+                return new PlaylistItemFactory().Create(video, mediaStreams, profile);
             }
 
             var audio = item as Audio;
 
             if (audio != null)
             {
-                return new PlaylistItemFactory(_itemRepository).Create(audio, profile);
+                return new PlaylistItemFactory().Create(audio, mediaStreams, profile);
             }
 
             var photo = item as Photo;
 
             if (photo != null)
             {
-                return new PlaylistItemFactory(_itemRepository).Create(photo, profile);
+                return new PlaylistItemFactory().Create(photo, profile);
             }
 
             throw new ArgumentException("Unrecognized item type.");
@@ -482,11 +546,18 @@ namespace MediaBrowser.Dlna.PlayTo
                 await _device.SetStop();
                 return true;
             }
+
             nextTrack.PlayState = 1;
-            _logger.Debug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", _device.Properties.Name, nextTrack.StreamUrl, nextTrack.DlnaHeaders);
-            await _device.SetAvTransport(nextTrack.StreamUrl, nextTrack.DlnaHeaders, nextTrack.Didl);
+
+            var dlnaheaders = GetDlnaHeaders(nextTrack);
+
+            _logger.Debug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", _device.Properties.Name, nextTrack.StreamUrl, dlnaheaders);
+
+            await _device.SetAvTransport(nextTrack.StreamUrl, dlnaheaders, nextTrack.Didl);
+         
             if (nextTrack.StartPositionTicks > 0 && !nextTrack.Transcode)
                 await _device.Seek(TimeSpan.FromTicks(nextTrack.StartPositionTicks));
+           
             return true;
         }
 
@@ -508,7 +579,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 return Task.FromResult(false);
 
             prevTrack.PlayState = 1;
-            return _device.SetAvTransport(prevTrack.StreamUrl, prevTrack.DlnaHeaders, prevTrack.Didl);
+            return _device.SetAvTransport(prevTrack.StreamUrl, GetDlnaHeaders(prevTrack), prevTrack.Didl);
         }
 
         #endregion
