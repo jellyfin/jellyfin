@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Configuration
         public DlnaOptions()
         {
             EnablePlayTo = true;
-            ClientDiscoveryIntervalSeconds = 30;
+            ClientDiscoveryIntervalSeconds = 60;
         }
     }
 }
