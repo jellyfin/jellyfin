@@ -56,22 +56,22 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3"}, 
+                        Container = "mp3", 
                         Type = DlnaProfileType.Audio,
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mkv"}, 
+                        Container = "mkv", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi"}, 
+                        Container = "avi", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp4"},                       
+                        Container = "mp4", 
                         Type = DlnaProfileType.Video
                     }
                 },
@@ -123,22 +123,22 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3"}, 
+                        Container = "mp3", 
                         Type = DlnaProfileType.Audio
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mkv"}, 
+                        Container = "mkv", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi"}, 
+                        Container = "avi", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp4"},                       
+                        Container = "mp4", 
                         Type = DlnaProfileType.Video
                     }
                 },
@@ -190,22 +190,22 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3"}, 
+                        Container = "mp3", 
                         Type = DlnaProfileType.Audio
                     },                  
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mkv"}, 
+                        Container = "mkv", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi"}, 
+                        Container = "avi", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp4"},                       
+                        Container = "mp4", 
                         Type = DlnaProfileType.Video
                     }
                 },
@@ -290,21 +290,21 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi"}, 
+                        Container = "avi", 
                         VideoCodec = "mpeg4",
                         AudioCodec = "ac3,mp3",
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi"}, 
+                        Container = "avi", 
                         VideoCodec = "h264",
                         AudioCodec = "aac",
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp4", "mov"}, 
+                        Container = "mp4,mov", 
                         VideoCodec = "h264,mpeg4",
                         AudioCodec = "aac,ac3",
                         Type = DlnaProfileType.Video,
@@ -316,26 +316,26 @@ namespace MediaBrowser.Dlna
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"asf"}, 
+                        Container = "asf", 
                         VideoCodec = "wmv2,wmv3,vc1",
                         AudioCodec = "wmav2,wmapro",
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"asf"}, 
+                        Container = "asf", 
                         AudioCodec = "wmav2,wmapro,wmavoice",
                         Type = DlnaProfileType.Audio
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3"}, 
+                        Container = "mp3", 
                         AudioCodec = "mp3",
                         Type = DlnaProfileType.Audio
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"jpeg"}, 
+                        Container = "jpeg", 
                         Type = DlnaProfileType.Photo,
 
                           Conditions = new List<ProfileCondition>
@@ -449,12 +449,12 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3"}, 
+                        Container = "mp3", 
                         Type = DlnaProfileType.Audio
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi"}, 
+                        Container = "avi", 
                         Type = DlnaProfileType.Video
                     }
                 },
@@ -498,17 +498,17 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3"}, 
+                        Container = "mp3", 
                         Type = DlnaProfileType.Audio
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi"}, 
+                        Container = "avi", 
                         Type = DlnaProfileType.Video
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"asf"}, 
+                        Container = "asf", 
                         Type = DlnaProfileType.Audio
                     }
                 },
@@ -559,22 +559,22 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3"}, 
+                        Container = "mp3", 
                         Type = DlnaProfileType.Audio
                     },
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"wma"}, 
+                        Container = "wma", 
                         Type = DlnaProfileType.Audio
                     },                    
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi"}, 
+                        Container = "avi", 
                         Type = DlnaProfileType.Video
                     },
                      new DirectPlayProfile
                     {
-                        Containers = new[]{"mp4"}, 
+                        Container = "mp4", 
                         Type = DlnaProfileType.Video
                     }
                 },
@@ -613,27 +613,41 @@ namespace MediaBrowser.Dlna
 
             list.Add(new DeviceProfile
             {
-                //Panasonic Viera (2011|2012) Without AVI Support
-                Name = "Panasonic Viera E/S/ST/VT (2011)",
+                Name = "Panasonic Viera",
                 ClientType = "DLNA",
 
                 Identification = new DeviceIdentification
                 {
-                    FriendlyName = @"(VIERA (E|S)T?(3|5)0?.*)|(VIERA VT30.*)",
-                    Manufacturer = "Panasonic"
+                    FriendlyName = @"VIERA",
+                    Manufacturer = "Panasonic",
+
+                    Headers = new List<HttpHeaderInfo>
+                    {
+                         new HttpHeaderInfo{ Name= "User-Agent", Value = "Panasonic MIL DLNA", Match = HeaderMatchType.Substring}
+                    }
                 },
+
+                TimelineOffsetSeconds = 10,
 
                 TranscodingProfiles = new[]
                 {
                     new TranscodingProfile
                     {
                         Container = "mp3", 
+                        AudioCodec = "mp3",
                         Type = DlnaProfileType.Audio
                     },
                     new TranscodingProfile
                     {
                         Container = "ts", 
+                        AudioCodec = "ac3",
+                        VideoCodec = "h264",
                         Type = DlnaProfileType.Video
+                    },
+                    new TranscodingProfile
+                    {
+                        Container = "jpeg", 
+                        Type = DlnaProfileType.Photo
                     }
                 },
 
@@ -641,69 +655,97 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3"}, 
-                        Type = DlnaProfileType.Audio
+                        Container = "mpeg", 
+                        VideoCodec = "mpeg2video,mpeg4",
+                        AudioCodec = "ac3,mp3",
+                        Type = DlnaProfileType.Video                        
                     },
+
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mkv"}, 
+                        Container = "mkv", 
+                        VideoCodec = "h264",
+                        AudioCodec = "aac,ac3,mp3,pcm",
                         Type = DlnaProfileType.Video                        
-                    }
-                }
-            });
-
-            list.Add(new DeviceProfile
-            {
-                //Panasonic Viera (2011|2012) With AVI Support
-                Name = "Panasonic Viera G/GT/DT/UT/VT (2011/2012)",
-                ClientType = "DLNA",
-
-                Identification = new DeviceIdentification
-                {
-                    FriendlyName = @"(VIERA (G|D|U)T?(3|5)0?.*)|(VIERA VT50.*)",
-                    Manufacturer = "Panasonic"
-                },
-
-                TranscodingProfiles = new[]
-                {
-                    new TranscodingProfile
-                    {
-                        Container = "mp3", 
-                        Type = DlnaProfileType.Audio
                     },
-                    new TranscodingProfile
+
+                    new DirectPlayProfile
                     {
                         Container = "ts", 
-                        Type = DlnaProfileType.Video
-                    }
-                },
-
-                DirectPlayProfiles = new[]
-                {
-                    new DirectPlayProfile
-                    {
-                        Containers = new[]{"mp3"}, 
-                        Type = DlnaProfileType.Audio
-                    },
-                    new DirectPlayProfile
-                    {
-                        Containers = new[]{"mkv"}, 
+                        VideoCodec = "h264",
+                        AudioCodec = "aac,mp3",
                         Type = DlnaProfileType.Video                        
                     },
-                     new DirectPlayProfile
+
+                    new DirectPlayProfile
                     {
-                        Containers = new[]{"avi"}, 
-                        Type = DlnaProfileType.Video
+                        Container = "mp4", 
+                        VideoCodec = "h264",
+                        AudioCodec = "aac,ac3,mp3,pcm",
+                        Type = DlnaProfileType.Video                        
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Container = "mov", 
+                        VideoCodec = "h264",
+                        AudioCodec = "aac,pcm",
+                        Type = DlnaProfileType.Video                        
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Container = "avi", 
+                        VideoCodec = "mpeg4",
+                        AudioCodec = "pcm",
+                        Type = DlnaProfileType.Video                        
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Container = "flv", 
+                        VideoCodec = "h264",
+                        AudioCodec = "aac",
+                        Type = DlnaProfileType.Video                        
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Container = "mp3", 
+                        AudioCodec = "mp3",
+                        Type = DlnaProfileType.Audio
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Container = "mp4", 
+                        AudioCodec = "aac",
+                        Type = DlnaProfileType.Audio
+                    },
+
+                    new DirectPlayProfile
+                    {
+                        Container = "jpeg", 
+                        Type = DlnaProfileType.Photo,
+
+                        Conditions = new List<ProfileCondition>
+                        {
+                            new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Width, Value = "1920"},
+                            new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Height, Value = "1080"}
+                        }                   
                     }
                 },
 
-                MediaProfiles = new[]
+                CodecProfiles = new []
                 {
-                    new MediaProfile
+                    new CodecProfile
                     {
-                        Container ="avi",
-                        MimeType = "video/divx",
-                        Type = DlnaProfileType.Video
+                        Conditions = new List<ProfileCondition>
+                        {
+                            new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Width, Value = "1920"},
+                            new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.Height, Value = "1080"},
+                            new ProfileCondition{ Condition = ProfileConditionType.LessThanEqual, Property = ProfileConditionValue.VideoBitDepth, Value = "8", IsRequired = false}
+                        }                   
                     }
                 }
             });
@@ -723,19 +765,19 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3", "wma"}, 
+                        Container = "mp3,wma", 
                         Type = DlnaProfileType.Audio
                     },
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi"}, 
+                        Container = "avi", 
                         Type = DlnaProfileType.Video
                     },
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mkv"}, 
+                        Container = "mkv", 
                         Type = DlnaProfileType.Video
                     }
                 },
@@ -808,7 +850,7 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi"}, 
+                        Container = "avi", 
                         Type = DlnaProfileType.Video,
                         VideoCodec = "mpeg1video,mpeg2video,mpeg4,h264,vc1",
                         AudioCodec = "ac3,dca,mp2,mp3,pcm"
@@ -816,7 +858,7 @@ namespace MediaBrowser.Dlna
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mpeg"}, 
+                        Container = "mpeg", 
                         Type = DlnaProfileType.Video,
                         VideoCodec = "mpeg1video,mpeg2video",
                         AudioCodec = "ac3,dca,mp2,mp3,pcm"
@@ -824,7 +866,7 @@ namespace MediaBrowser.Dlna
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mkv"}, 
+                        Container = "mkv", 
                         Type = DlnaProfileType.Video,
                         VideoCodec = "mpeg1video,mpeg2video,mpeg4,h264,vc1",
                         AudioCodec = "ac3,dca,aac,mp2,mp3,pcm"
@@ -832,7 +874,7 @@ namespace MediaBrowser.Dlna
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"ts"}, 
+                        Container = "ts", 
                         Type = DlnaProfileType.Video,
                         VideoCodec = "mpeg1video,mpeg2video,h264,vc1",
                         AudioCodec = "ac3,dca,mp2,mp3"
@@ -840,7 +882,7 @@ namespace MediaBrowser.Dlna
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp4", "mov"}, 
+                        Container = "mp4,mov", 
                         Type = DlnaProfileType.Video,
                         VideoCodec = "h264,mpeg4",
                         AudioCodec = "ac3,aac,mp2,mp3"
@@ -848,7 +890,7 @@ namespace MediaBrowser.Dlna
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"asf"}, 
+                        Container = "asf", 
                         Type = DlnaProfileType.Video,
                         VideoCodec = "vc1",
                         AudioCodec = "wmav2,wmapro"
@@ -856,7 +898,7 @@ namespace MediaBrowser.Dlna
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"asf"}, 
+                        Container = "asf", 
                         Type = DlnaProfileType.Video,
                         VideoCodec = "mpeg2video",
                         AudioCodec = "mp2,ac3"
@@ -864,35 +906,35 @@ namespace MediaBrowser.Dlna
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3"}, 
+                        Container = "mp3", 
                         AudioCodec = "mp2,mp3",
                         Type = DlnaProfileType.Audio
                     },
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp4"}, 
+                        Container = "mp4", 
                         AudioCodec = "mp4",
                         Type = DlnaProfileType.Audio
                     },
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"flac"}, 
+                        Container = "flac", 
                         AudioCodec = "flac",
                         Type = DlnaProfileType.Audio
                     },
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"asf"}, 
+                        Container = "asf", 
                         AudioCodec = "wmav2,wmapro,wmavoice",
                         Type = DlnaProfileType.Audio
                     },
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"ogg"}, 
+                        Container = "ogg", 
                         AudioCodec = "vorbis",
                         Type = DlnaProfileType.Audio
                     },
@@ -901,7 +943,7 @@ namespace MediaBrowser.Dlna
                     {
                         Type = DlnaProfileType.Photo,
 
-                        Containers = new[]{"jpeg", "png", "gif", "bmp", "tiff"},
+                        Container = "jpeg,png,gif,bmp,tiff",
 
                         Conditions = new List<ProfileCondition>
                         {
@@ -964,13 +1006,13 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3", "flac", "m4a", "wma"}, 
+                        Container = "mp3,flac,m4a,wma", 
                         Type = DlnaProfileType.Audio
                     },
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi", "mp4", "mkv", "ts"}, 
+                        Container = "avi,mp4,mkv,ts", 
                         Type = DlnaProfileType.Video
                     }
                 }
@@ -991,7 +1033,7 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3", "flac", "m4a", "wma"}, 
+                        Container = "mp3,flac,m4a,wma", 
                         Type = DlnaProfileType.Audio
                     },                   
                 }
@@ -1035,13 +1077,13 @@ namespace MediaBrowser.Dlna
                 {
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"mp3", "wma"}, 
+                        Container = "mp3,wma", 
                         Type = DlnaProfileType.Audio
                     },
 
                     new DirectPlayProfile
                     {
-                        Containers = new[]{"avi", "mp4"}, 
+                        Container = "avi,mp4", 
                         Type = DlnaProfileType.Video
                     }
                 }

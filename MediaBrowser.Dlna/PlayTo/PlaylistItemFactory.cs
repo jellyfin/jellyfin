@@ -127,11 +127,11 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var mediaPath = item.Path;
 
-            if (profile.Containers.Length > 0)
+            if (profile.Container.Length > 0)
             {
                 // Check container type
                 var mediaContainer = Path.GetExtension(mediaPath);
-                if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+                if (!profile.GetContainers().Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
@@ -150,11 +150,11 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var mediaPath = item.Path;
 
-            if (profile.Containers.Length > 0)
+            if (profile.Container.Length > 0)
             {
                 // Check container type
                 var mediaContainer = Path.GetExtension(mediaPath);
-                if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+                if (!profile.GetContainers().Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
@@ -178,11 +178,11 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var mediaPath = item.Path;
 
-            if (profile.Containers.Length > 0)
+            if (profile.Container.Length > 0)
             {
                 // Check container type
                 var mediaContainer = Path.GetExtension(mediaPath);
-                if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+                if (!profile.GetContainers().Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }

@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -16,7 +17,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -54,10 +54,8 @@ namespace MediaBrowser.Dlna.PlayTo
             _config = config;
         }
 
-        public async void Start()
+        public void Start()
         {
-            _logger.Log(LogSeverity.Info, "PlayTo-Manager starting");
-
             _locations = new ConcurrentDictionary<string, DateTime>();
 
             foreach (var network in NetworkInterface.GetAllNetworkInterfaces())
@@ -73,7 +71,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 IPAddress localIp = null;
 
-                foreach (UnicastIPAddressInformation ipInfo in network.GetIPProperties().UnicastAddresses)
+                foreach (var ipInfo in network.GetIPProperties().UnicastAddresses)
                 {
                     if (ipInfo.Address.AddressFamily == AddressFamily.InterNetwork)
                     {
@@ -95,8 +93,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     _logger.ErrorException("Failed to Initilize Socket", e);
                 }
-
-                await Task.Delay(100).ConfigureAwait(false);
             }
         }
 
