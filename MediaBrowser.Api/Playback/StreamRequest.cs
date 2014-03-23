@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
-using ServiceStack;
+﻿using ServiceStack;
 
 namespace MediaBrowser.Api.Playback
 {
