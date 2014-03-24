@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
-using ServiceStack;
+﻿using ServiceStack;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -26,7 +25,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <value>The audio codec.</value>
         [ApiMember(Name = "AudioCodec", Description = "Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public AudioCodecs? AudioCodec { get; set; }
+        public string AudioCodec { get; set; }
 
         /// <summary>
         /// Gets or sets the start time ticks.
@@ -81,7 +80,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <value>The video codec.</value>
         [ApiMember(Name = "VideoCodec", Description = "Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h264, mpeg4, theora, vpx, wmv.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public VideoCodecs? VideoCodec { get; set; }
+        public string VideoCodec { get; set; }
 
         /// <summary>
         /// Gets or sets the video bit rate.

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-
+﻿
 namespace MediaBrowser.Controller.Dlna
 {
     public class TranscodingProfile
@@ -15,12 +14,14 @@ namespace MediaBrowser.Controller.Dlna
 
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
 
-        public List<TranscodingSetting> Settings { get; set; }
+        public TranscodingSetting[] Settings { get; set; }
 
         public TranscodingProfile()
         {
-            Settings = new List<TranscodingSetting>();
+            Settings = new TranscodingSetting[] { };
         }
+
+        public bool EnableMpegtsM2TsMode { get; set; }
     }
 
     public class TranscodingSetting

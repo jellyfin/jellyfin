@@ -88,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 CreateRules(device);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //_logger.ErrorException("Error creating port forwarding rules", ex);
             }

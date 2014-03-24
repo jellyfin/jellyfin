@@ -47,6 +47,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 playlistItem.Transcode = true;
                 playlistItem.TranscodingSettings = transcodingProfile.Settings.ToList();
                 playlistItem.Container = "." + transcodingProfile.Container.TrimStart('.');
+                playlistItem.AudioCodec = transcodingProfile.AudioCodec;
             }
             
             return playlistItem;
@@ -118,6 +119,8 @@ namespace MediaBrowser.Dlna.PlayTo
                 playlistItem.Transcode = true;
                 playlistItem.TranscodingSettings = transcodingProfile.Settings.ToList();
                 playlistItem.Container = "." + transcodingProfile.Container.TrimStart('.');
+                playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',').FirstOrDefault();
+                playlistItem.VideoCodec = transcodingProfile.VideoCodec;
             }
 
             return playlistItem;
@@ -127,20 +130,14 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var mediaPath = item.Path;
 
-            if (profile.Containers.Length > 0)
+            if (profile.Container.Length > 0)
             {
                 // Check container type
                 var mediaContainer = Path.GetExtension(mediaPath);
-                if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+                if (!profile.GetContainers().Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
-            }
-
-            // Check additional conditions
-            if (!profile.Conditions.Any(i => IsConditionSatisfied(i, mediaPath, null, null)))
-            {
-                return false;
             }
 
             return true;
@@ -150,20 +147,14 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var mediaPath = item.Path;
 
-            if (profile.Containers.Length > 0)
+            if (profile.Container.Length > 0)
             {
                 // Check container type
                 var mediaContainer = Path.GetExtension(mediaPath);
-                if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+                if (!profile.GetContainers().Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
-            }
-
-            // Check additional conditions
-            if (!profile.Conditions.Any(i => IsConditionSatisfied(i, mediaPath, null, audioStream)))
-            {
-                return false;
             }
 
             return true;
@@ -178,11 +169,11 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var mediaPath = item.Path;
 
-            if (profile.Containers.Length > 0)
+            if (profile.Container.Length > 0)
             {
                 // Check container type
                 var mediaContainer = Path.GetExtension(mediaPath);
-                if (!profile.Containers.Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
+                if (!profile.GetContainers().Any(i => string.Equals("." + i.TrimStart('.'), mediaContainer, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
@@ -208,12 +199,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     return false;
                 }
-            }
-
-            // Check additional conditions
-            if (!profile.Conditions.Any(i => IsConditionSatisfied(i, mediaPath, videoStream, audioStream)))
-            {
-                return false;
             }
 
             return true;
@@ -266,6 +251,11 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <exception cref="System.InvalidOperationException">Unexpected ProfileConditionType</exception>
         private bool IsConditionSatisfied(ProfileCondition condition, string mediaPath, MediaStream videoStream, MediaStream audioStream)
         {
+            if (condition.Property == ProfileConditionValue.Has64BitOffsets)
+            {
+                // TODO: Determine how to evaluate this
+            }
+
             if (condition.Property == ProfileConditionValue.VideoProfile)
             {
                 var profile = videoStream == null ? null : videoStream.Profile;
@@ -361,6 +351,12 @@ namespace MediaBrowser.Dlna.PlayTo
                     return videoStream == null ? null : videoStream.Width;
                 case ProfileConditionValue.VideoLevel:
                     return videoStream == null ? null : ConvertToLong(videoStream.Level);
+                case ProfileConditionValue.VideoPacketLength:
+                    // TODO: Determine how to get this
+                    return null;
+                case ProfileConditionValue.VideoTimestamp:
+                    // TODO: Determine how to get this
+                    return null;
                 default:
                     throw new InvalidOperationException("Unexpected Property");
             }

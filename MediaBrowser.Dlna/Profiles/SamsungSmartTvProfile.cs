@@ -1,0 +1,315 @@
+﻿using MediaBrowser.Controller.Dlna;
+
+namespace MediaBrowser.Dlna.Profiles
+{
+    public class SamsungSmartTvProfile : DefaultProfile
+    {
+        public SamsungSmartTvProfile()
+        {
+            Name = "Samsung Smart TV";
+
+            SupportsAlbumArtInDidl = true;
+
+            Identification = new DeviceIdentification
+            {
+                ModelUrl = "samsung.com"
+            };
+
+            TranscodingProfiles = new[]
+           {
+               new TranscodingProfile
+               {
+                   Container = "mp3",
+                   AudioCodec = "mp3",
+                   Type = DlnaProfileType.Audio
+               },
+               new TranscodingProfile
+               {
+                   Container = "ts",
+                   AudioCodec = "ac3",
+                   VideoCodec = "h264",
+                   Type = DlnaProfileType.Video
+               },
+               new TranscodingProfile
+               {
+                   Container = "jpeg",
+                   Type = DlnaProfileType.Photo
+               }
+           };
+
+            DirectPlayProfiles = new[]
+            {
+                new DirectPlayProfile
+                {
+                    Container = "asf",
+                    VideoCodec = "h264,mpeg4,mjpeg",
+                    AudioCodec = "mp3,ac3,wmav2,wmapro,wmavoice",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "avi",
+                    VideoCodec = "h264,mpeg4,mjpeg",
+                    AudioCodec = "mp3,ac3,dca",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "mkv",
+                    VideoCodec = "h264,mpeg4,mjpeg4",
+                    AudioCodec = "mp3,ac3,dca,aac",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "mp4",
+                    VideoCodec = "h264,mpeg4",
+                    AudioCodec = "mp3,aac",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "3gpp",
+                    VideoCodec = "h264,mpeg4",
+                    AudioCodec = "aac,he-aac",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "mpg,mpeg",
+                    VideoCodec = "mpeg1video,mpeg2video,h264",
+                    AudioCodec = "ac3,mp2,mp3,aac",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "vro,vob",
+                    VideoCodec = "mpeg1video,mpeg2video",
+                    AudioCodec = "ac3,mp2,mp3",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "ts",
+                    VideoCodec = "mpeg2video,h264,vc1",
+                    AudioCodec = "ac3,aac,mp3,eac3",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "asf",
+                    VideoCodec = "wmv2,wmv3",
+                    AudioCodec = "wmav2,wmavoice",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "mp3",
+                    AudioCodec = "mp3",
+                    Type = DlnaProfileType.Audio
+                },
+                new DirectPlayProfile
+                {
+                    Container = "jpeg",
+                    Type = DlnaProfileType.Photo
+                }
+            };
+
+            ContainerProfiles = new[]
+            {
+                new ContainerProfile
+                {
+                    Type = DlnaProfileType.Photo,
+
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Width,
+                            Value = "1920"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Height,
+                            Value = "1080"
+                        }
+                    }
+                }
+            };
+
+            CodecProfiles = new[]
+           {
+               new CodecProfile
+               {
+                   Type = CodecType.VideoCodec,
+                   Codec = "mpeg2video",
+
+                   Conditions = new[]
+                   {
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.Width,
+                           Value = "1920"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.Height,
+                           Value = "1080"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.VideoFramerate,
+                           Value = "30"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.VideoBitrate,
+                           Value = "30720000"
+                       }
+                   }
+               },
+
+               new CodecProfile
+               {
+                   Type = CodecType.VideoCodec,
+                   Codec = "mpeg4",
+
+                   Conditions = new[]
+                   {
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.Width,
+                           Value = "1920"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.Height,
+                           Value = "1080"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.VideoFramerate,
+                           Value = "30"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.VideoBitrate,
+                           Value = "8192000"
+                       }
+                   }
+               },
+
+               new CodecProfile
+               {
+                   Type = CodecType.VideoCodec,
+                   Codec = "h264",
+
+                   Conditions = new[]
+                   {
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.Width,
+                           Value = "1920"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.Height,
+                           Value = "1080"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.VideoFramerate,
+                           Value = "30"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.VideoBitrate,
+                           Value = "37500000"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.VideoLevel,
+                           Value = "41"
+                       }
+                   }
+               },
+
+               new CodecProfile
+               {
+                   Type = CodecType.VideoCodec,
+                   Codec = "wmv2,wmv3,vc1",
+
+                   Conditions = new[]
+                   {
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.Width,
+                           Value = "1920"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.Height,
+                           Value = "1080"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.VideoFramerate,
+                           Value = "30"
+                       },
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.VideoBitrate,
+                           Value = "25600000"
+                       }
+                   }
+               },
+
+               new CodecProfile
+               {
+                   Type = CodecType.VideoAudioCodec,
+                   Codec = "ac3,wmav2,dca,aac,mp3",
+
+                   Conditions = new[]
+                   {
+                       new ProfileCondition
+                       {
+                           Condition = ProfileConditionType.LessThanEqual,
+                           Property = ProfileConditionValue.AudioChannels,
+                           Value = "6"
+                       }
+                   }
+               }
+           };
+
+            MediaProfiles = new[]
+            {
+                new MediaProfile
+                {
+                    Container = "mkv",
+                    MimeType = "video/x-mkv",
+                    Type = DlnaProfileType.Video
+                }
+            };
+
+        }
+    }
+}
