@@ -70,55 +70,55 @@ namespace MediaBrowser.Dlna
         {
             if (!string.IsNullOrWhiteSpace(profileInfo.DeviceDescription))
             {
-                if (!Regex.IsMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
+                if (deviceInfo.DeviceDescription == null || !Regex.IsMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
                     return false;
             }
 
             if (!string.IsNullOrWhiteSpace(profileInfo.FriendlyName))
             {
-                if (!Regex.IsMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
+                if (deviceInfo.FriendlyName == null || !Regex.IsMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
                     return false;
             }
 
             if (!string.IsNullOrWhiteSpace(profileInfo.Manufacturer))
             {
-                if (!Regex.IsMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
+                if (deviceInfo.Manufacturer == null || !Regex.IsMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
                     return false;
             }
 
             if (!string.IsNullOrWhiteSpace(profileInfo.ManufacturerUrl))
             {
-                if (!Regex.IsMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
+                if (deviceInfo.ManufacturerUrl == null || !Regex.IsMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
                     return false;
             }
 
             if (!string.IsNullOrWhiteSpace(profileInfo.ModelDescription))
             {
-                if (!Regex.IsMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
+                if (deviceInfo.ModelDescription == null || !Regex.IsMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
                     return false;
             }
 
             if (!string.IsNullOrWhiteSpace(profileInfo.ModelName))
             {
-                if (!Regex.IsMatch(deviceInfo.ModelName, profileInfo.ModelName))
+                if (deviceInfo.ModelName == null || !Regex.IsMatch(deviceInfo.ModelName, profileInfo.ModelName))
                     return false;
             }
 
             if (!string.IsNullOrWhiteSpace(profileInfo.ModelNumber))
             {
-                if (!Regex.IsMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
+                if (deviceInfo.ModelNumber == null || !Regex.IsMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
                     return false;
             }
 
             if (!string.IsNullOrWhiteSpace(profileInfo.ModelUrl))
             {
-                if (!Regex.IsMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
+                if (deviceInfo.ModelUrl == null || !Regex.IsMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
                     return false;
             }
 
             if (!string.IsNullOrWhiteSpace(profileInfo.SerialNumber))
             {
-                if (!Regex.IsMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
+                if (deviceInfo.SerialNumber == null || !Regex.IsMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
                     return false;
             }
 
