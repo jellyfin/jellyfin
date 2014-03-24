@@ -69,6 +69,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The name of the sort.</value>
         public string SortName { get; set; }
+        public string ForcedSortName { get; set; }
 
         /// <summary>
         /// Gets or sets the video3 D format.

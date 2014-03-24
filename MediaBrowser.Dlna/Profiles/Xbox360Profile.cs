@@ -49,8 +49,6 @@ namespace MediaBrowser.Dlna.Profiles
 
                     Settings = new []
                     {
-                        new TranscodingSetting {Name = TranscodingSettingType.MaxAudioChannels, Value = "6"},
-                        new TranscodingSetting {Name = TranscodingSettingType.VideoLevel, Value = "3"},
                         new TranscodingSetting {Name = TranscodingSettingType.VideoProfile, Value = "baseline"}
                     }
                 },
@@ -229,6 +227,13 @@ namespace MediaBrowser.Dlna.Profiles
                             Property = ProfileConditionValue.VideoBitrate,
                             Value = "10240000",
                             IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoLevel,
+                            Value = "3",
+                            IsRequired = false
                         }
                     }
                 },
@@ -264,6 +269,13 @@ namespace MediaBrowser.Dlna.Profiles
                             Property = ProfileConditionValue.VideoBitrate,
                             Value = "15360000",
                             IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoLevel,
+                            Value = "3",
+                            IsRequired = false
                         }
                     }
                 },
@@ -294,7 +306,7 @@ namespace MediaBrowser.Dlna.Profiles
                         {
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.AudioChannels,
-                            Value = "6",
+                            Value = "2",
                             IsRequired = false
                         },
                         new ProfileCondition

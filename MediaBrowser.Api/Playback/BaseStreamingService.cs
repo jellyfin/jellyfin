@@ -1168,18 +1168,23 @@ namespace MediaBrowser.Api.Playback
 
         protected double? GetFramerateParam(StreamState state)
         {
-            if (state.VideoRequest != null && state.VideoRequest.Framerate.HasValue)
+            if (state.VideoRequest != null)
             {
-                return state.VideoRequest.Framerate.Value;
-            }
-
-            if (state.VideoStream != null)
-            {
-                var contentRate = state.VideoStream.AverageFrameRate ?? state.VideoStream.RealFrameRate;
-
-                if (contentRate.HasValue && contentRate.Value > 23.976)
+                if (state.VideoRequest.Framerate.HasValue)
                 {
-                    return 23.976;
+                    return state.VideoRequest.Framerate.Value;
+                }
+
+                var maxrate = state.VideoRequest.MaxFramerate ?? 23.976;
+
+                if (state.VideoStream != null)
+                {
+                    var contentRate = state.VideoStream.AverageFrameRate ?? state.VideoStream.RealFrameRate;
+
+                    if (contentRate.HasValue && contentRate.Value > maxrate)
+                    {
+                        return maxrate;
+                    }
                 }
             }
 
@@ -1265,17 +1270,38 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (videoRequest != null)
                     {
-                        request.StartTimeTicks = long.Parse(val, UsCulture);
+                        videoRequest.MaxWidth = int.Parse(val, UsCulture);
                     }
                 }
                 else if (i == 12)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.Profile = val;
+                        videoRequest.MaxHeight = int.Parse(val, UsCulture);
                     }
                 }
                 else if (i == 13)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.Framerate = int.Parse(val, UsCulture);
+                    }
+                }
+                else if (i == 14)
+                {
+                    if (videoRequest != null)
+                    {
+                        request.StartTimeTicks = long.Parse(val, UsCulture);
+                    }
+                }
+                else if (i == 15)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.Profile = val;
+                    }
+                }
+                else if (i == 16)
                 {
                     if (videoRequest != null)
                     {

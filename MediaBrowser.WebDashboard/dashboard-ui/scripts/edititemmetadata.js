@@ -440,7 +440,7 @@
         $('#txtPath', page).val(item.Path || '');
         $('#txtName', page).val(item.Name || "");
         $('#txtOverview', page).val(item.Overview || "");
-        $('#txtSortName', page).val(item.SortName || "");
+        $('#txtSortName', page).val(item.ForcedSortName || "");
         $('#txtDisplayMediaType', page).val(item.DisplayMediaType || "");
         $('#txtCommunityRating', page).val(item.CommunityRating || "");
         $('#txtCommunityVoteCount', page).val(item.VoteCount || "");
@@ -725,7 +725,7 @@
             var item = {
                 Id: currentItem.Id,
                 Name: $('#txtName', form).val(),
-                SortName: $('#txtSortName', form).val(),
+                ForcedSortName: $('#txtSortName', form).val(),
                 DisplayMediaType: $('#txtDisplayMediaType', form).val(),
                 CommunityRating: $('#txtCommunityRating', form).val(),
                 VoteCount: $('#txtCommunityVoteCount', form).val(),

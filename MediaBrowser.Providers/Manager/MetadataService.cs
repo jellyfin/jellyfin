@@ -107,7 +107,8 @@ namespace MediaBrowser.Providers.Manager
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
-                var providers = GetProviders(item, refreshResult.DateLastMetadataRefresh.HasValue, refreshOptions).ToList();
+                var providers = GetProviders(item, refreshResult.DateLastMetadataRefresh.HasValue, refreshOptions)
+                    .ToList();
 
                 if (providers.Count > 0 || !refreshResult.DateLastMetadataRefresh.HasValue)
                 {

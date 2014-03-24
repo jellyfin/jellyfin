@@ -18,7 +18,7 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <returns>System.String.</returns>
         internal static string GetAudioUrl(DeviceInfo deviceProperties, PlaylistItem item, List<MediaStream> streams, string serverAddress)
         {
-            var dlnaCommand = BuildDlnaUrl(item.DeviceProfileName, item.MediaSourceId, deviceProperties.UUID, !item.Transcode, null, item.AudioCodec, item.AudioStreamIndex, item.SubtitleStreamIndex, null, 128000, item.StartPositionTicks, item.TranscodingSettings);
+            var dlnaCommand = BuildDlnaUrl(deviceProperties, item);
 
             return string.Format("{0}/audio/{1}/stream{2}?{3}", serverAddress, item.ItemId, "." + item.Container.TrimStart('.'), dlnaCommand);
         }
@@ -33,7 +33,7 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <returns>The url to send to the device</returns>
         internal static string GetVideoUrl(DeviceInfo deviceProperties, PlaylistItem item, List<MediaStream> streams, string serverAddress)
         {
-            var dlnaCommand = BuildDlnaUrl(item.DeviceProfileName, item.MediaSourceId, deviceProperties.UUID, !item.Transcode, item.VideoCodec, item.AudioCodec, item.AudioStreamIndex, item.SubtitleStreamIndex, 1500000, 128000, item.StartPositionTicks, item.TranscodingSettings);
+            var dlnaCommand = BuildDlnaUrl(deviceProperties, item);
 
             return string.Format("{0}/Videos/{1}/stream{2}?{3}", serverAddress, item.ItemId, item.Container, dlnaCommand);
         }
@@ -41,30 +41,33 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <summary>
         /// Builds the dlna URL.
         /// </summary>
-        private static string BuildDlnaUrl(string deviceProfileName, string mediaSourceId, string deviceID, bool isStatic, string videoCodec, string audioCodec, int? audiostreamIndex, int? subtitleIndex, int? videoBitrate, int? audioBitrate, long? startPositionTicks, List<TranscodingSetting> settings)
+        private static string BuildDlnaUrl(DeviceInfo deviceProperties, PlaylistItem item)
         {
-            var profile = settings.Where(i => i.Name == TranscodingSettingType.VideoProfile).Select(i => i.Value).FirstOrDefault();
-            var videoLevel = settings.Where(i => i.Name == TranscodingSettingType.VideoLevel).Select(i => i.Value).FirstOrDefault();
-            var maxAudioChannels = settings.Where(i => i.Name == TranscodingSettingType.MaxAudioChannels).Select(i => i.Value).FirstOrDefault();
+            var profile = item.TranscodingSettings.Where(i => i.Name == TranscodingSettingType.VideoProfile)
+                .Select(i => i.Value)
+                .FirstOrDefault();
 
             var usCulture = new CultureInfo("en-US");
-
+            
             var list = new List<string>
             {
-                deviceProfileName ?? string.Empty,
-                deviceID ?? string.Empty,
-                mediaSourceId ?? string.Empty,
-                isStatic.ToString().ToLower(),
-                videoCodec ?? string.Empty,
-                audioCodec ?? string.Empty,
-                audiostreamIndex.HasValue ? audiostreamIndex.Value.ToString(usCulture) : string.Empty,
-                subtitleIndex.HasValue ? subtitleIndex.Value.ToString(usCulture) : string.Empty,
-                videoBitrate.HasValue ? videoBitrate.Value.ToString(usCulture) : string.Empty,
-                audioBitrate.HasValue ? audioBitrate.Value.ToString(usCulture) : string.Empty,
-                maxAudioChannels ?? string.Empty,
-                startPositionTicks.HasValue ? startPositionTicks.Value.ToString(usCulture) : string.Empty,
+                item.DeviceProfileName ?? string.Empty,
+                deviceProperties.UUID ?? string.Empty,
+                item.MediaSourceId ?? string.Empty,
+                (!item.Transcode).ToString().ToLower(),
+                item.VideoCodec ?? string.Empty,
+                item.AudioCodec ?? string.Empty,
+                item.AudioStreamIndex.HasValue ? item.AudioStreamIndex.Value.ToString(usCulture) : string.Empty,
+                item.SubtitleStreamIndex.HasValue ? item.SubtitleStreamIndex.Value.ToString(usCulture) : string.Empty,
+                item.VideoBitrate.HasValue ? item.VideoBitrate.Value.ToString(usCulture) : string.Empty,
+                item.AudioBitrate.HasValue ? item.AudioBitrate.Value.ToString(usCulture) : string.Empty,
+                item.MaxAudioChannels.HasValue ? item.MaxAudioChannels.Value.ToString(usCulture) : string.Empty,
+                item.MaxFramerate.HasValue ? item.MaxFramerate.Value.ToString(usCulture) : string.Empty,
+                item.MaxWidth.HasValue ? item.MaxWidth.Value.ToString(usCulture) : string.Empty,
+                item.MaxHeight.HasValue ? item.MaxHeight.Value.ToString(usCulture) : string.Empty,
+                item.StartPositionTicks.ToString(usCulture),
                 profile ?? string.Empty,
-                videoLevel ?? string.Empty
+                item.VideoLevel.HasValue ? item.VideoLevel.Value.ToString(usCulture) : string.Empty
             };
 
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
