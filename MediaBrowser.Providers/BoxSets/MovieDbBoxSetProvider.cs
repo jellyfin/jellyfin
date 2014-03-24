@@ -172,7 +172,7 @@ namespace MediaBrowser.Providers.BoxSets
             if (!string.IsNullOrEmpty(language))
             {
                 // If preferred language isn't english, get those images too
-                if (imageLanguages.Contains(language, StringComparer.OrdinalIgnoreCase))
+                if (!imageLanguages.Contains(language, StringComparer.OrdinalIgnoreCase))
                 {
                     imageLanguages.Add(language);
                 }
