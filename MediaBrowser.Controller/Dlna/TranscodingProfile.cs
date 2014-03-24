@@ -8,12 +8,7 @@ namespace MediaBrowser.Controller.Dlna
 
         public DlnaProfileType Type { get; set; }
 
-        public string MimeType { get; set; }
-
-        public string OrgPn { get; set; }
-
         public string VideoCodec { get; set; }
-
         public string AudioCodec { get; set; }
 
         public List<TranscodingSetting> Settings { get; set; }

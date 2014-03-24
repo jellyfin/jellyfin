@@ -92,7 +92,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the media versions.
         /// </summary>
         /// <value>The media versions.</value>
-        public List<MediaVersionInfo> MediaVersions { get; set; }
+        public List<MediaSourceInfo> MediaSources { get; set; }
         
         /// <summary>
         /// Gets or sets the critic rating.
@@ -500,7 +500,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The part count.</value>
         public int? PartCount { get; set; }
-        public int? MediaVersionCount { get; set; }
+        public int? MediaSourceCount { get; set; }
 
         /// <summary>
         /// Determines whether the specified type is type.

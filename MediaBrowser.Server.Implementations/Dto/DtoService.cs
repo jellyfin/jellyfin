@@ -127,7 +127,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         public BaseItemDto GetItemByNameDto<T>(T item, List<ItemFields> fields, User user = null)
             where T : BaseItem, IItemByName
         {
-            var libraryItems = user != null ? user.RootFolder.GetRecursiveChildren(user) : 
+            var libraryItems = user != null ? user.RootFolder.GetRecursiveChildren(user) :
                 _libraryManager.RootFolder.RecursiveChildren;
 
             return GetItemByNameDto(item, fields, item.GetTaggedItems(libraryItems).ToList(), user);
@@ -267,12 +267,14 @@ namespace MediaBrowser.Server.Implementations.Dto
                 PlayableMediaTypes = session.PlayableMediaTypes,
                 RemoteEndPoint = session.RemoteEndPoint,
                 AdditionalUsers = session.AdditionalUsers,
-                SupportsFullscreenToggle = session.SupportsFullscreenToggle
+                SupportsFullscreenToggle = session.SupportsFullscreenToggle,
+                SupportsNavigationControl = session.SupportsNavigationControl,
+                SupportsOsdToggle = session.SupportsOsdToggle
             };
 
             if (session.NowPlayingItem != null)
             {
-                dto.NowPlayingItem = GetBaseItemInfo(session.NowPlayingItem);
+                dto.NowPlayingItem = GetNowPlayingInfo(session.NowPlayingItem, session.NowPlayingMediaSourceId, session.NowPlayingRunTimeTicks);
             }
 
             if (session.UserId.HasValue)
@@ -288,9 +290,11 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// Converts a BaseItem to a BaseItemInfo
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="mediaSourceId">The media version identifier.</param>
+        /// <param name="nowPlayingRuntimeTicks">The now playing runtime ticks.</param>
         /// <returns>BaseItemInfo.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public BaseItemInfo GetBaseItemInfo(BaseItem item)
+        private BaseItemInfo GetNowPlayingInfo(BaseItem item, string mediaSourceId, long? nowPlayingRuntimeTicks)
         {
             if (item == null)
             {
@@ -303,7 +307,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Name = item.Name,
                 MediaType = item.MediaType,
                 Type = item.GetClientTypeName(),
-                RunTimeTicks = item.RunTimeTicks
+                RunTimeTicks = nowPlayingRuntimeTicks,
+                MediaSourceId = mediaSourceId
             };
 
             info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary);
@@ -735,7 +740,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (fields.Contains(ItemFields.Settings))
             {
                 dto.LockedFields = item.LockedFields;
-                dto.LockData = item.DontFetchMeta;
+                dto.LockData = item.IsLocked;
             }
 
             var hasBudget = item as IHasBudget;
@@ -1041,7 +1046,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.IsPlaceHolder = supportsPlaceHolders.IsPlaceHolder;
             }
-            
+
             // Add audio info
             var audio = item as Audio;
             if (audio != null)
@@ -1058,8 +1063,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.AlbumPrimaryImageTag = GetImageCacheTag(albumParent, ImageType.Primary);
                 }
 
-                dto.MediaVersions = GetMediaVersions(audio);
-                dto.MediaVersionCount = 1;
+                dto.MediaSources = GetMediaSources(audio);
+                dto.MediaSourceCount = 1;
             }
 
             var album = item as MusicAlbum;
@@ -1090,22 +1095,20 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.IsHD = video.IsHD;
 
                 dto.PartCount = video.AdditionalPartIds.Count + 1;
-                dto.MediaVersionCount = video.AlternateVersionCount + 1;
+                dto.MediaSourceCount = video.MediaSourceCount;
 
-                if (fields.Contains(ItemFields.MediaVersions))
+                if (fields.Contains(ItemFields.MediaSources))
                 {
-                    dto.MediaVersions = GetMediaVersions(video);
+                    dto.MediaSources = GetMediaSources(video);
                 }
 
                 if (fields.Contains(ItemFields.Chapters))
                 {
                     List<ChapterInfoDto> chapters;
 
-                    if (dto.MediaVersions != null && dto.MediaVersions.Count > 0)
+                    if (dto.MediaSources != null && dto.MediaSources.Count > 0)
                     {
-                        chapters = dto.MediaVersions.Where(i => i.IsPrimaryVersion)
-                            .SelectMany(i => i.Chapters)
-                            .ToList();
+                        chapters = _itemRepo.GetChapters(item.Id).Select(c => GetChapterInfoDto(c, item)).ToList();
                     }
                     else
                     {
@@ -1127,9 +1130,9 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     List<MediaStream> mediaStreams;
 
-                    if (dto.MediaVersions != null && dto.MediaVersions.Count > 0)
+                    if (dto.MediaSources != null && dto.MediaSources.Count > 0)
                     {
-                        mediaStreams = dto.MediaVersions.Where(i => i.IsPrimaryVersion)
+                        mediaStreams = dto.MediaSources.Where(i => new Guid(i.Id) == item.Id)
                             .SelectMany(i => i.MediaStreams)
                             .ToList();
                     }
@@ -1264,11 +1267,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private List<MediaVersionInfo> GetMediaVersions(Video item)
+        private List<MediaSourceInfo> GetMediaSources(Video item)
         {
-            var result = item.GetAlternateVersions().Select(i => GetVersionInfo(i, false)).ToList();
+            var result = item.GetAlternateVersions().Select(GetVersionInfo).ToList();
 
-            result.Add(GetVersionInfo(item, true));
+            result.Add(GetVersionInfo(item));
 
             return result.OrderBy(i =>
             {
@@ -1286,49 +1289,47 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 return stream == null || stream.Width == null ? 0 : stream.Width.Value;
             })
-            .ThenBy(i => i.IsPrimaryVersion ? 0 : 1)
             .ToList();
         }
 
-        private List<MediaVersionInfo> GetMediaVersions(Audio item)
+        private List<MediaSourceInfo> GetMediaSources(Audio item)
         {
-            var result = new List<MediaVersionInfo>();
-
-            result.Add(GetVersionInfo(item, true));
+            var result = new List<MediaSourceInfo>
+            {
+                GetVersionInfo(item, true)
+            };
 
             return result;
         }
 
-        private MediaVersionInfo GetVersionInfo(Video i, bool isPrimary)
+        private MediaSourceInfo GetVersionInfo(Video i)
         {
-            return new MediaVersionInfo
-            {
-                Chapters = _itemRepo.GetChapters(i.Id).Select(c => GetChapterInfoDto(c, i)).ToList(),
+            var mediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList();
 
-                ItemId = i.Id.ToString("N"),
+            return new MediaSourceInfo
+            {
+                Id = i.Id.ToString("N"),
                 IsoType = i.IsoType,
                 LocationType = i.LocationType,
-                MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
-                Name = GetAlternateVersionName(i),
+                MediaStreams = mediaStreams,
+                Name = GetMediaSourceName(i, mediaStreams),
                 Path = GetMappedPath(i),
                 RunTimeTicks = i.RunTimeTicks,
                 Video3DFormat = i.Video3DFormat,
-                VideoType = i.VideoType,
-                IsPrimaryVersion = isPrimary
+                VideoType = i.VideoType
             };
         }
 
-        private MediaVersionInfo GetVersionInfo(Audio i, bool isPrimary)
+        private MediaSourceInfo GetVersionInfo(Audio i, bool isPrimary)
         {
-            return new MediaVersionInfo
+            return new MediaSourceInfo
             {
-                ItemId = i.Id.ToString("N"),
+                Id = i.Id.ToString("N"),
                 LocationType = i.LocationType,
                 MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
                 Name = i.Name,
                 Path = GetMappedPath(i),
-                RunTimeTicks = i.RunTimeTicks,
-                IsPrimaryVersion = isPrimary
+                RunTimeTicks = i.RunTimeTicks
             };
         }
 
@@ -1351,32 +1352,29 @@ namespace MediaBrowser.Server.Implementations.Dto
             return path;
         }
 
-        private string GetAlternateVersionName(Video video)
+        private string GetMediaSourceName(Video video, List<MediaStream> mediaStreams)
         {
-            var name = "";
+            var terms = new List<string>();
 
-            var videoStream = video.GetDefaultVideoStream();
+            var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
+            var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
             if (video.Video3DFormat.HasValue)
             {
-                name = "3D " + name;
-                name = name.Trim();
+                terms.Add("3D");
             }
 
             if (video.VideoType == VideoType.BluRay)
             {
-                name = name + " " + "Bluray";
-                name = name.Trim();
+                terms.Add("Bluray");
             }
             else if (video.VideoType == VideoType.Dvd)
             {
-                name = name + " " + "DVD";
-                name = name.Trim();
+                terms.Add("DVD");
             }
             else if (video.VideoType == VideoType.HdDvd)
             {
-                name = name + " " + "HD-DVD";
-                name = name.Trim();
+                terms.Add("HD-DVD");
             }
             else if (video.VideoType == VideoType.Iso)
             {
@@ -1384,18 +1382,17 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     if (video.IsoType.Value == IsoType.BluRay)
                     {
-                        name = name + " " + "Bluray";
+                        terms.Add("Bluray");
                     }
                     else if (video.IsoType.Value == IsoType.Dvd)
                     {
-                        name = name + " " + "DVD";
+                        terms.Add("DVD");
                     }
                 }
                 else
                 {
-                    name = name + " " + "ISO";
+                    terms.Add("ISO");
                 }
-                name = name.Trim();
             }
 
             if (videoStream != null)
@@ -1404,44 +1401,45 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     if (videoStream.Width.Value >= 3800)
                     {
-                        name = name + " " + "4K";
-                        name = name.Trim();
+                        terms.Add("4K");
                     }
                     else if (videoStream.Width.Value >= 1900)
                     {
-                        name = name + " " + "1080P";
-                        name = name.Trim();
+                        terms.Add("1080P");
                     }
                     else if (videoStream.Width.Value >= 1270)
                     {
-                        name = name + " " + "720P";
-                        name = name.Trim();
+                        terms.Add("720P");
                     }
                     else if (videoStream.Width.Value >= 700)
                     {
-                        name = name + " " + "480p";
-                        name = name.Trim();
+                        terms.Add("480P");
                     }
                     else
                     {
-                        name = name + " " + "SD";
-                        name = name.Trim();
+                        terms.Add("SD");
                     }
                 }
             }
 
             if (videoStream != null && !string.IsNullOrWhiteSpace(videoStream.Codec))
             {
-                name = name + " " + videoStream.Codec.ToUpper();
-                name = name.Trim();
+                terms.Add(videoStream.Codec.ToUpper());
             }
 
-            if (string.IsNullOrWhiteSpace(name))
+            if (audioStream != null)
             {
-                return video.Name;
+                var audioCodec = string.Equals(audioStream.Codec, "dca", StringComparison.OrdinalIgnoreCase)
+                    ? audioStream.Profile
+                    : audioStream.Codec;
+
+                if (!string.IsNullOrEmpty(audioCodec))
+                {
+                    terms.Add(audioCodec.ToUpper());
+                }
             }
 
-            return name;
+            return string.Join("/", terms.ToArray());
         }
 
         private string GetMappedPath(string path)

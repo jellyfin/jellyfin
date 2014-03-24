@@ -12,6 +12,7 @@ namespace MediaBrowser.Controller.Library
         public List<User> Users { get; set; }
         public long? PlaybackPositionTicks { get; set; }
         public BaseItem Item { get; set; }
+        public string MediaSourceId { get; set; }
 
         public PlaybackProgressEventArgs()
         {

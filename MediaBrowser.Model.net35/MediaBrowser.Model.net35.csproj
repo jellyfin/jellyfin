@@ -415,6 +415,9 @@
     <Compile Include="..\MediaBrowser.Model\Session\MessageCommand.cs">
       <Link>Session\MessageCommand.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Session\PlaybackReports.cs">
+      <Link>Session\PlaybackReports.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\PlayRequest.cs">
       <Link>Session\PlayRequest.cs</Link>
     </Compile>

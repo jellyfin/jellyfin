@@ -120,11 +120,23 @@ namespace MediaBrowser.Controller.Session
         public BaseItem NowPlayingItem { get; set; }
 
         /// <summary>
+        /// Gets or sets the now playing media version identifier.
+        /// </summary>
+        /// <value>The now playing media version identifier.</value>
+        public string NowPlayingMediaSourceId { get; set; }
+        
+
+        /// <summary>
+        /// Gets or sets the now playing run time ticks.
+        /// </summary>
+        /// <value>The now playing run time ticks.</value>
+        public long? NowPlayingRunTimeTicks { get; set; }
+
+        /// <summary>
         /// Gets or sets the now playing position ticks.
         /// </summary>
         /// <value>The now playing position ticks.</value>
         public long? NowPlayingPositionTicks { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether this instance is paused.
         /// </summary>
@@ -161,6 +173,18 @@ namespace MediaBrowser.Controller.Session
         /// <value><c>true</c> if [supports fullscreen toggle]; otherwise, <c>false</c>.</value>
         public bool SupportsFullscreenToggle { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [supports osd toggle].
+        /// </summary>
+        /// <value><c>true</c> if [supports osd toggle]; otherwise, <c>false</c>.</value>
+        public bool SupportsOsdToggle { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [supports navigation commands].
+        /// </summary>
+        /// <value><c>true</c> if [supports navigation commands]; otherwise, <c>false</c>.</value>
+        public bool SupportsNavigationControl { get; set; }
+        
         /// <summary>
         /// Gets a value indicating whether this instance is active.
         /// </summary>

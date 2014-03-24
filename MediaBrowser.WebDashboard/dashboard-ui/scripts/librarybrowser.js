@@ -6,7 +6,7 @@
 
         getDefaultPageSize: function () {
 
-            var saved = localStorage.getItem('pagesize');
+            var saved = localStorage.getItem('pagesize_');
 
             if (saved) {
                 return parseInt(saved);
@@ -665,11 +665,11 @@
 
                 cssClass += ' ' + options.shape + 'PosterItem';
 
-                var mediaVersionCount = item.MediaVersionCount || 1;
+                var mediaSourceCount = item.MediaSourceCount || 1;
 
                 var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
 
-                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-mediaversioncount="' + mediaVersionCount + '" href="' + href + '">';
+                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-mediasourcecount="' + mediaSourceCount + '" href="' + href + '">';
 
                 var style = "";
 
@@ -700,8 +700,8 @@
                     html += LibraryBrowser.getPlayedIndicatorHtml(item);
                 }
 
-                if (mediaVersionCount > 1) {
-                    html += '<div class="mediaVersionIndicator">' + mediaVersionCount + '</div>';
+                if (mediaSourceCount > 1) {
+                    html += '<div class="mediaSourceIndicator">' + mediaSourceCount + '</div>';
                 }
                 if (item.IsUnidentified) {
                     html += '<div class="unidentifiedIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';

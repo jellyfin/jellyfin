@@ -175,7 +175,7 @@
 
     function splitVersions(id, page) {
 
-        Dashboard.confirm("Are you sure you wish to split the versions apart into separate items?", "Split Versions Apart", function (confirmResult) {
+        Dashboard.confirm("Are you sure you wish to split the media sources into separate items?", "Split Media Apart", function (confirmResult) {
 
             if (confirmResult) {
 
@@ -183,7 +183,7 @@
 
                 $.ajax({
                     type: "DELETE",
-                    url: ApiClient.getUrl("Videos/" + id + "/AlternateVersions")
+                    url: ApiClient.getUrl("Videos/" + id + "/AlternateSources")
 
                 }).done(function () {
 
@@ -208,8 +208,8 @@
 
         items.push({ type: 'link', text: 'Images', url: 'edititemimages.html?id=' + id });
 
-        var versionCount = parseInt(elem.getAttribute('data-mediaversioncount') || '0');
-        
+        var versionCount = parseInt(elem.getAttribute('data-mediasourcecount') || '0');
+
         if (versionCount > 1) {
 
             items.push({ type: 'divider' });

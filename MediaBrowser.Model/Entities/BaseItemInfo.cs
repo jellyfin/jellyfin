@@ -69,6 +69,12 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The thumb item identifier.</value>
         public string BackdropItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media version identifier.
+        /// </summary>
+        /// <value>The media version identifier.</value>
+        public string MediaSourceId { get; set; }
         
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.

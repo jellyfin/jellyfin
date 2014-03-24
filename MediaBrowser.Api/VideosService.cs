@@ -13,8 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
-    [Route("/Videos/{Id}/AdditionalParts", "GET")]
-    [Api(Description = "Gets additional parts for a video.")]
+    [Route("/Videos/{Id}/AdditionalParts", "GET", Summary = "Gets additional parts for a video.")]
     public class GetAdditionalParts : IReturn<ItemsResult>
     {
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -28,16 +27,14 @@ namespace MediaBrowser.Api
         public string Id { get; set; }
     }
 
-    [Route("/Videos/{Id}/AlternateVersions", "DELETE")]
-    [Api(Description = "Assigns videos as alternates of antoher.")]
-    public class DeleteAlternateVersions : IReturnVoid
+    [Route("/Videos/{Id}/AlternateSources", "DELETE", Summary = "Removes alternate video sources.")]
+    public class DeleteAlternateSources : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public string Id { get; set; }
     }
 
-    [Route("/Videos/MergeVersions", "POST")]
-    [Api(Description = "Merges videos into a single record")]
+    [Route("/Videos/MergeVersions", "POST", Summary = "Merges videos into a single record")]
     public class MergeVersions : IReturnVoid
     {
         [ApiMember(Name = "Ids", Description = "Item id list. This allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
@@ -98,14 +95,14 @@ namespace MediaBrowser.Api
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public void Delete(DeleteAlternateVersions request)
+        public void Delete(DeleteAlternateSources request)
         {
             var task = RemoveAlternateVersions(request);
 
             Task.WaitAll(task);
         }
 
-        private async Task RemoveAlternateVersions(DeleteAlternateVersions request)
+        private async Task RemoveAlternateVersions(DeleteAlternateSources request)
         {
             var video = (Video)_dtoService.GetItemByDtoId(request.Id);
 
@@ -146,7 +143,7 @@ namespace MediaBrowser.Api
 
             var videos = items.Cast<Video>().ToList();
 
-            var videosWithVersions = videos.Where(i => i.AlternateVersionCount > 0)
+            var videosWithVersions = videos.Where(i => i.MediaSourceCount > 1)
                 .ToList();
 
             if (videosWithVersions.Count > 1)
@@ -158,14 +155,27 @@ namespace MediaBrowser.Api
 
             if (primaryVersion == null)
             {
-                primaryVersion = videos.OrderByDescending(i =>
+                primaryVersion = videos.OrderBy(i =>
+                {
+                    if (i.Video3DFormat.HasValue)
+                    {
+                        return 1;
+                    }
+
+                    if (i.VideoType != Model.Entities.VideoType.VideoFile)
+                    {
+                        return 1;
+                    }
+
+                    return 0;
+                })
+                    .ThenByDescending(i =>
                 {
                     var stream = i.GetDefaultVideoStream();
 
                     return stream == null || stream.Width == null ? 0 : stream.Width.Value;
 
-                }).ThenBy(i => i.Name.Length)
-                    .First();
+                }).First();
             }
 
             foreach (var item in videos.Where(i => i.Id != primaryVersion.Id))

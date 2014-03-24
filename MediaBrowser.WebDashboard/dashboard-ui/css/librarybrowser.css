@@ -866,7 +866,6 @@ a.itemTag:hover {
 }
 
 .mediaInfoStreamType {
-    font-size: 16px;
     display: block;
     color: #fff;
 }
@@ -874,14 +873,12 @@ a.itemTag:hover {
 .mediaInfoAttribute {
     color: #fff;
     display: inline-block;
-    width: 110px;
 }
 
 .mediaInfoLabel {
     color: #aaa;
     margin-right: 1em;
     display: inline-block;
-    width: 90px;
 }
 
 .posterRibbon {
@@ -929,7 +926,7 @@ a.itemTag:hover {
         background-color: transparent !important;
     }
 
-.mediaVersionIndicator {
+.mediaSourceIndicator {
     display: block;
     position: absolute;
     top: 5px;

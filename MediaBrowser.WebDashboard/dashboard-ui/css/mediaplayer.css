@@ -1,13 +1,13 @@
 ﻿/* Now playing bar */
 .nowPlayingBar {
-    padding: 6px 0 24px 0;
+    padding: 6px 0 20px 0;
     border-top: 2px solid green;
 }
 
     .nowPlayingBar .barBackground {
         border-top: 2px solid green;
         position: absolute;
-        margin: -8px -0.5em -26px !important;
+        margin: -8px -0.5em -22px !important;
         width: 100%;
         height: 100%;
     }

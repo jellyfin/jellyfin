@@ -8,7 +8,7 @@
         SortBy: defaultSortBy,
         SortOrder: "Ascending",
         Recursive: true,
-        Fields: "MediaVersions,DateCreated,Settings,Studios",
+        Fields: "MediaSources,DateCreated,Settings,Studios",
         StartIndex: 0,
         IncludeItemTypes: "Movie",
         IsMissing: false,
@@ -207,18 +207,26 @@
 
     function getItemCellsHtml(item, headercells) {
 
+        var primaryVersion = (item.MediaSources || [])[0] || {};
+
+        var mediaStreams = primaryVersion.MediaStreams || [];
+        
+        var videoStream = mediaStreams.filter(function (s) {
+
+            return s.Type == 'Video';
+
+        })[0];
+
+        var audioStream = mediaStreams.filter(function (s) {
+
+            return s.Type == 'Audio';
+
+        })[0];
+
         return headercells.map(function (cell) {
 
             var html = '';
             html += '<td>';
-
-            var stream;
-
-            var primaryVersion = (item.MediaVersions || []).filter(function(v) {
-                return v.IsPrimaryVersion;
-            })[0] || {};
-
-            var mediaStreams = primaryVersion.MediaStreams || [];
 
             switch (cell.type || cell.name) {
 
@@ -264,52 +272,30 @@
                     }
                 case 'Audio':
                     {
-                        stream = mediaStreams.filter(function (s) {
+                        if (audioStream) {
 
-                            return s.Type == 'Audio';
-
-                        })[0];
-
-                        if (stream) {
-
-                            var name = (stream.Codec || '').toUpperCase();
-                            html += name == 'DCA' ? (stream.Profile || '').toUpperCase() : name;
+                            var name = (audioStream.Codec || '').toUpperCase();
+                            html += name == 'DCA' ? (audioStream.Profile || '').toUpperCase() : name;
                         }
                         break;
                     }
                 case 'Video':
                     {
-                        stream = mediaStreams.filter(function (s) {
-
-                            return s.Type == 'Video';
-
-                        })[0];
-
-                        if (stream) {
-                            html += (stream.Codec || '').toUpperCase();
+                        if (videoStream) {
+                            html += (videoStream.Codec || '').toUpperCase();
                         }
                         break;
                     }
                 case 'Resolution':
                     {
-                        stream = mediaStreams.filter(function (s) {
-
-                            return s.Type == 'Video';
-
-                        })[0];
-
-                        if (stream && stream.Width) {
-                            html += stream.Width + "*" + (stream.Height || "-");
+                        if (videoStream && videoStream.Width) {
+                            html += videoStream.Width + "*" + (videoStream.Height || "-");
                         }
                         break;
                     }
                 case 'Embedded Image':
                     {
-                        if (mediaStreams.filter(function (s) {
-
-                            return s.Type == 'Video';
-
-                        }).length) {
+                        if (videoStream) {
                             html += '<div class="libraryReportIndicator clearLibraryReportIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
                         }
                         break;

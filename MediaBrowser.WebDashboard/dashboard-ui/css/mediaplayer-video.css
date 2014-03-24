@@ -33,7 +33,7 @@
 
 #videoControls {
     z-index: 99999;
-    padding: 0 20px 10px;
+    padding: 0 20px 5px;
     height: 80px;
     position: absolute;
     top: auto;
