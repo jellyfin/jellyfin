@@ -6,12 +6,12 @@ namespace MediaBrowser.Controller.Dlna
     public class CodecProfile
     {
         public CodecType Type { get; set; }
-        public List<ProfileCondition> Conditions { get; set; }
+        public ProfileCondition[] Conditions { get; set; }
         public string Codec { get; set; }
 
         public CodecProfile()
         {
-            Conditions = new List<ProfileCondition>();
+            Conditions = new ProfileCondition[] {};
         }
 
         public List<string> GetCodecs()
@@ -32,6 +32,12 @@ namespace MediaBrowser.Controller.Dlna
         public ProfileConditionType Condition { get; set; }
         public ProfileConditionValue Property { get; set; }
         public string Value { get; set; }
+        public bool IsRequired { get; set; }
+
+        public ProfileCondition()
+        {
+            IsRequired = true;
+        }
     }
 
     public enum ProfileConditionType
@@ -46,11 +52,17 @@ namespace MediaBrowser.Controller.Dlna
     {
         AudioChannels,
         AudioBitrate,
+        AudioProfile,
         Filesize,
         Width,
         Height,
+        Has64BitOffsets,
+        VideoBitDepth,
         VideoBitrate,
         VideoFramerate,
-        VideoLevel
+        VideoLevel,
+        VideoPacketLength,
+        VideoProfile,
+        VideoTimestamp
     }
 }

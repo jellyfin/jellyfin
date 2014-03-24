@@ -3809,7 +3809,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 var deferred = $.Deferred();
 
                 var msg = [itemId, canSeek, queueableMediaTypes];
-                
+
                 if (mediaSourceId) {
                     msg.push(mediaSourceId);
                 }
@@ -4029,7 +4029,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         self.createPackageReview = function (review) {
 
-            var url = self.getUrl("PackageReviews/" + review.id, review);
+            var url = self.getUrl("Packages/Reviews/" + review.id, review);
 
             return self.ajax({
                 type: "POST",
@@ -4058,7 +4058,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 options.ForceTitle = true;
             }
 
-            var url = self.getUrl("PackageReviews/" + packageId, options);
+            var url = self.getUrl("Packages/" + packageId + "Reviews", options);
 
             return self.ajax({
                 type: "GET",

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-
+﻿
 namespace MediaBrowser.Controller.Dlna
 {
     public class TranscodingProfile
@@ -11,12 +10,18 @@ namespace MediaBrowser.Controller.Dlna
         public string VideoCodec { get; set; }
         public string AudioCodec { get; set; }
 
-        public List<TranscodingSetting> Settings { get; set; }
+        public bool EstimateContentLength { get; set; }
+
+        public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
+
+        public TranscodingSetting[] Settings { get; set; }
 
         public TranscodingProfile()
         {
-            Settings = new List<TranscodingSetting>();
+            Settings = new TranscodingSetting[] { };
         }
+
+        public bool EnableMpegtsM2TsMode { get; set; }
     }
 
     public class TranscodingSetting
@@ -27,6 +32,14 @@ namespace MediaBrowser.Controller.Dlna
 
     public enum TranscodingSettingType
     {
-        Profile
+        VideoLevel = 0,
+        VideoProfile = 1,
+        MaxAudioChannels = 2
+    }
+
+    public enum TranscodeSeekInfo
+    {
+        Auto = 0,
+        Bytes = 1
     }
 }
