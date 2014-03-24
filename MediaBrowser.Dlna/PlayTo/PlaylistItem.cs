@@ -34,7 +34,20 @@ namespace MediaBrowser.Dlna.PlayTo
         public int? SubtitleStreamIndex { get; set; }
 
         public string DeviceProfileName { get; set; }
-        
+
+        public int? MaxAudioChannels { get; set; }
+
+        public int? AudioBitrate { get; set; }
+
+        public int? VideoBitrate { get; set; }
+
+        public int? VideoLevel { get; set; }
+
+        public int? MaxWidth { get; set; }
+        public int? MaxHeight { get; set; }
+
+        public int? MaxFramerate { get; set; }
+
         public PlaylistItem()
         {
             TranscodingSettings = new List<TranscodingSetting>();

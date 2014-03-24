@@ -6,10 +6,12 @@ namespace MediaBrowser.Dlna.Profiles
     {
         public SonyPs3Profile()
         {
-            Name = "Sony Bravia (2010)";
+            Name = "Sony PlayStation 3";
 
             Identification = new DeviceIdentification
             {
+                FriendlyName = "PLAYSTATION 3",
+
                 Headers = new[]
                 {
                     new HttpHeaderInfo

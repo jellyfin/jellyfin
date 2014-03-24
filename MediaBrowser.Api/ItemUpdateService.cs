@@ -211,12 +211,7 @@ namespace MediaBrowser.Api
         private void UpdateItem(BaseItemDto request, BaseItem item)
         {
             item.Name = request.Name;
-
-            // Only set the forced value if they changed it, or there's already one
-            if (!string.Equals(item.SortName, request.SortName) || !string.IsNullOrEmpty(item.ForcedSortName))
-            {
-                item.ForcedSortName = request.SortName;
-            }
+            item.ForcedSortName = request.ForcedSortName;
 
             var hasBudget = item as IHasBudget;
             if (hasBudget != null)
