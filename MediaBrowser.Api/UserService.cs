@@ -17,8 +17,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetUsers
     /// </summary>
-    [Route("/Users", "GET")]
-    [Api(Description = "Gets a list of users")]
+    [Route("/Users", "GET", Summary = "Gets a list of users")]
     public class GetUsers : IReturn<List<UserDto>>
     {
         [ApiMember(Name = "IsHidden", Description = "Optional filter by IsHidden=true or false", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
@@ -28,8 +27,7 @@ namespace MediaBrowser.Api
         public bool? IsDisabled { get; set; }
     }
 
-    [Route("/Users/Public", "GET")]
-    [Api(Description = "Gets a list of publicly visible users for display on a login screen.")]
+    [Route("/Users/Public", "GET", Summary = "Gets a list of publicly visible users for display on a login screen.")]
     public class GetPublicUsers : IReturn<List<UserDto>>
     {
     }
@@ -37,8 +35,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetUser
     /// </summary>
-    [Route("/Users/{Id}", "GET")]
-    [Api(Description = "Gets a user by Id")]
+    [Route("/Users/{Id}", "GET", Summary = "Gets a user by Id")]
     public class GetUser : IReturn<UserDto>
     {
         /// <summary>
@@ -52,8 +49,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class DeleteUser
     /// </summary>
-    [Route("/Users/{Id}", "DELETE")]
-    [Api(Description = "Deletes a user")]
+    [Route("/Users/{Id}", "DELETE", Summary = "Deletes a user")]
     public class DeleteUser : IReturnVoid
     {
         /// <summary>
@@ -67,8 +63,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class AuthenticateUser
     /// </summary>
-    [Route("/Users/{Id}/Authenticate", "POST")]
-    [Api(Description = "Authenticates a user")]
+    [Route("/Users/{Id}/Authenticate", "POST", Summary = "Authenticates a user")]
     public class AuthenticateUser : IReturn<AuthenticationResult>
     {
         /// <summary>
@@ -89,8 +84,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class AuthenticateUser
     /// </summary>
-    [Route("/Users/AuthenticateByName", "POST")]
-    [Api(Description = "Authenticates a user")]
+    [Route("/Users/AuthenticateByName", "POST", Summary = "Authenticates a user")]
     public class AuthenticateUserByName : IReturn<AuthenticationResult>
     {
         /// <summary>
@@ -111,8 +105,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UpdateUserPassword
     /// </summary>
-    [Route("/Users/{Id}/Password", "POST")]
-    [Api(Description = "Updates a user's password")]
+    [Route("/Users/{Id}/Password", "POST", Summary = "Updates a user's password")]
     public class UpdateUserPassword : IReturnVoid
     {
         /// <summary>
@@ -143,8 +136,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UpdateUser
     /// </summary>
-    [Route("/Users/{Id}", "POST")]
-    [Api(Description = "Updates a user")]
+    [Route("/Users/{Id}", "POST", Summary = "Updates a user")]
     public class UpdateUser : UserDto, IReturnVoid
     {
     }
@@ -152,8 +144,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class CreateUser
     /// </summary>
-    [Route("/Users", "POST")]
-    [Api(Description = "Creates a user")]
+    [Route("/Users", "POST", Summary = "Creates a user")]
     public class CreateUser : UserDto, IReturn<UserDto>
     {
     }

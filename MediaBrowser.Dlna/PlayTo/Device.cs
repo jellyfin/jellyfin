@@ -681,7 +681,10 @@ namespace MediaBrowser.Dlna.PlayTo
             var presentationUrl = document.Descendants(uPnpNamespaces.ud.GetName("presentationURL")).FirstOrDefault();
             if (presentationUrl != null)
                 deviceProperties.PresentationUrl = presentationUrl.Value;
-
+            var modelUrl = document.Descendants(uPnpNamespaces.ud.GetName("modelURL")).FirstOrDefault();
+            if (modelUrl != null)
+                deviceProperties.ModelUrl = modelUrl.Value;
+            
 
             deviceProperties.BaseUrl = String.Format("http://{0}:{1}", url.Host, url.Port);
 

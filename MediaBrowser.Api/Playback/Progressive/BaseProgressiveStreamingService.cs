@@ -50,39 +50,49 @@ namespace MediaBrowser.Api.Playback.Progressive
             var videoRequest = state.Request as VideoStreamRequest;
 
             // Try to infer based on the desired video codec
-            if (videoRequest != null && videoRequest.VideoCodec.HasValue)
+            if (videoRequest != null && !string.IsNullOrEmpty(videoRequest.VideoCodec))
             {
                 if (state.IsInputVideo)
                 {
-                    switch (videoRequest.VideoCodec.Value)
+                    if (string.Equals(videoRequest.VideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
                     {
-                        case VideoCodecs.H264:
-                            return ".ts";
-                        case VideoCodecs.Theora:
-                            return ".ogv";
-                        case VideoCodecs.Vpx:
-                            return ".webm";
-                        case VideoCodecs.Wmv:
-                            return ".asf";
+                        return ".ts";
+                    }
+                    if (string.Equals(videoRequest.VideoCodec, "theora", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return ".ogv";
+                    }
+                    if (string.Equals(videoRequest.VideoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return ".webm";
+                    }
+                    if (string.Equals(videoRequest.VideoCodec, "wmv", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return ".asf";
                     }
                 }
             }
 
             // Try to infer based on the desired audio codec
-            if (state.Request.AudioCodec.HasValue)
+            if (!string.IsNullOrEmpty(state.Request.AudioCodec))
             {
                 if (!state.IsInputVideo)
                 {
-                    switch (state.Request.AudioCodec.Value)
+                    if (string.Equals("aac", state.Request.AudioCodec, StringComparison.OrdinalIgnoreCase))
                     {
-                        case AudioCodecs.Aac:
-                            return ".aac";
-                        case AudioCodecs.Mp3:
-                            return ".mp3";
-                        case AudioCodecs.Vorbis:
-                            return ".ogg";
-                        case AudioCodecs.Wma:
-                            return ".wma";
+                        return ".aac";
+                    }
+                    if (string.Equals("mp3", state.Request.AudioCodec, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return ".mp3";
+                    }
+                    if (string.Equals("vorbis", state.Request.AudioCodec, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return ".ogg";
+                    }
+                    if (string.Equals("wma", state.Request.AudioCodec, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return ".wma";
                     }
                 }
             }

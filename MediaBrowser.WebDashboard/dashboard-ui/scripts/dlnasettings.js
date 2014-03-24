@@ -3,7 +3,9 @@
     function loadPage(page, config) {
 
         $('#chkEnablePlayTo', page).checked(config.DlnaOptions.EnablePlayTo).checkboxradio("refresh");
-        
+        $('#chkEnableDlnaDebugLogging', page).checked(config.DlnaOptions.EnableDebugLogging).checkboxradio("refresh");
+        $('#txtClientDiscoveryInterval', page).val(config.DlnaOptions.ClientDiscoveryIntervalSeconds);
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -30,6 +32,8 @@
         ApiClient.getServerConfiguration().done(function (config) {
 
             config.DlnaOptions.EnablePlayTo = $('#chkEnablePlayTo', form).checked();
+            config.DlnaOptions.EnableDebugLogging = $('#chkEnableDlnaDebugLogging', form).checked();
+            config.DlnaOptions.ClientDiscoveryIntervalSeconds = $('#txtClientDiscoveryInterval', form).val();
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });

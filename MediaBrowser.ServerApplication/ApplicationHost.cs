@@ -266,7 +266,7 @@ namespace MediaBrowser.ServerApplication
             {
                 MigrateUserFolders();
             }
-            catch (IOException ex)
+            catch (IOException)
             {
             }
 
@@ -498,7 +498,7 @@ namespace MediaBrowser.ServerApplication
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);
 
-            var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager);
+            var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, JsonSerializer);
             RegisterSingleInstance<IDlnaManager>(dlnaManager);
 
             var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);
