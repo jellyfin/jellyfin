@@ -79,6 +79,7 @@
     <Compile Include="Collections\CollectionCreationOptions.cs" />
     <Compile Include="Collections\ICollectionManager.cs" />
     <Compile Include="Dlna\CodecProfile.cs" />
+    <Compile Include="Dlna\ContainerProfile.cs" />
     <Compile Include="Dlna\DeviceIdentification.cs" />
     <Compile Include="Dlna\DirectPlayProfile.cs" />
     <Compile Include="Dlna\IDlnaManager.cs" />

@@ -5,19 +5,15 @@ namespace MediaBrowser.Controller.Dlna
 {
     public class DirectPlayProfile
     {
-        public string[] Containers { get; set; }
+        public string Container { get; set; }
         public string AudioCodec { get; set; }
         public string VideoCodec { get; set; }
 
         public DlnaProfileType Type { get; set; }
 
-        public List<ProfileCondition> Conditions { get; set; }
-
-        public DirectPlayProfile()
+        public List<string> GetContainers()
         {
-            Conditions = new List<ProfileCondition>();
-
-            Containers = new string[] { };
+            return (Container ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
         }
 
         public List<string> GetAudioCodecs()

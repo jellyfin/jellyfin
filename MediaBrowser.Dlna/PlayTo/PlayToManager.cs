@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -16,7 +17,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -54,10 +54,8 @@ namespace MediaBrowser.Dlna.PlayTo
             _config = config;
         }
 
-        public async void Start()
+        public void Start()
         {
-            _logger.Log(LogSeverity.Info, "PlayTo-Manager starting");
-
             _locations = new ConcurrentDictionary<string, DateTime>();
 
             foreach (var network in NetworkInterface.GetAllNetworkInterfaces())
@@ -73,7 +71,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 IPAddress localIp = null;
 
-                foreach (UnicastIPAddressInformation ipInfo in network.GetIPProperties().UnicastAddresses)
+                foreach (var ipInfo in network.GetIPProperties().UnicastAddresses)
                 {
                     if (ipInfo.Address.AddressFamily == AddressFamily.InterNetwork)
                     {
@@ -95,8 +93,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     _logger.ErrorException("Failed to Initilize Socket", e);
                 }
-
-                await Task.Delay(100).ConfigureAwait(false);
             }
         }
 
@@ -139,7 +135,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                     _logger.Info("SSDP listener - Task completed");
                 }
-                catch (OperationCanceledException c)
+                catch (OperationCanceledException)
                 {
                 }
                 catch (Exception e)
@@ -158,7 +154,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     await CreateController(uri).ConfigureAwait(false);
                 }
-                catch (OperationCanceledException c)
+                catch (OperationCanceledException)
                 {
                 }
                 catch (Exception ex)
@@ -180,10 +176,12 @@ namespace MediaBrowser.Dlna.PlayTo
                     {
                         socket.SendTo(request, new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900));
 
-                        await Task.Delay(10000).ConfigureAwait(false);
+                        var delay = _config.Configuration.DlnaOptions.ClientDiscoveryIntervalSeconds * 1000;
+
+                        await Task.Delay(delay).ConfigureAwait(false);
                     }
                 }
-                catch (OperationCanceledException c)
+                catch (OperationCanceledException)
                 {
                 }
                 catch (Exception ex)

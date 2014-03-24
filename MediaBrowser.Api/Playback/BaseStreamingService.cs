@@ -9,7 +9,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
@@ -735,13 +734,10 @@ namespace MediaBrowser.Api.Playback
         {
             if (audioStream != null)
             {
-                if (audioStream.Channels > 2 && request.AudioCodec.HasValue)
+                if (audioStream.Channels > 2 && string.Equals(request.AudioCodec, "wma", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (request.AudioCodec.Value == AudioCodecs.Wma)
-                    {
-                        // wmav2 currently only supports two channel output
-                        return 2;
-                    }
+                    // wmav2 currently only supports two channel output
+                    return 2;
                 }
             }
 
@@ -778,26 +774,26 @@ namespace MediaBrowser.Api.Playback
         {
             var codec = request.AudioCodec;
 
-            if (codec.HasValue)
+            if (!string.IsNullOrEmpty(codec))
             {
-                if (codec == AudioCodecs.Aac)
+                if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
                 {
                     return "aac -strict experimental";
                 }
-                if (codec == AudioCodecs.Mp3)
+                if (string.Equals(codec, "mp3", StringComparison.OrdinalIgnoreCase))
                 {
                     return "libmp3lame";
                 }
-                if (codec == AudioCodecs.Vorbis)
+                if (string.Equals(codec, "vorbis", StringComparison.OrdinalIgnoreCase))
                 {
                     return "libvorbis";
                 }
-                if (codec == AudioCodecs.Wma)
+                if (string.Equals(codec, "wma", StringComparison.OrdinalIgnoreCase))
                 {
                     return "wmav2";
                 }
 
-                return codec.ToString().ToLower();
+                return codec.ToLower();
             }
 
             return "copy";
@@ -812,26 +808,26 @@ namespace MediaBrowser.Api.Playback
         {
             var codec = request.VideoCodec;
 
-            if (codec.HasValue)
+            if (!string.IsNullOrEmpty(codec))
             {
-                if (codec == VideoCodecs.H264)
+                if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
                     return "libx264";
                 }
-                if (codec == VideoCodecs.Vpx)
+                if (string.Equals(codec, "vpx", StringComparison.OrdinalIgnoreCase))
                 {
                     return "libvpx";
                 }
-                if (codec == VideoCodecs.Wmv)
+                if (string.Equals(codec, "wmv", StringComparison.OrdinalIgnoreCase))
                 {
                     return "msmpeg4";
                 }
-                if (codec == VideoCodecs.Theora)
+                if (string.Equals(codec, "theora", StringComparison.OrdinalIgnoreCase))
                 {
                     return "libtheora";
                 }
 
-                return codec.ToString().ToLower();
+                return codec.ToLower();
             }
 
             return "copy";
@@ -1211,71 +1207,75 @@ namespace MediaBrowser.Api.Playback
 
                 if (i == 0)
                 {
-                    request.DeviceId = val;
+                    // Device profile name
                 }
                 else if (i == 1)
                 {
-                    request.MediaSourceId = val;
+                    request.DeviceId = val;
                 }
                 else if (i == 2)
                 {
-                    request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    request.MediaSourceId = val;
                 }
                 else if (i == 3)
                 {
-                    if (videoRequest != null)
-                    {
-                        videoRequest.VideoCodec = (VideoCodecs)Enum.Parse(typeof(VideoCodecs), val, true);
-                    }
+                    request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                 }
                 else if (i == 4)
                 {
-                    request.AudioCodec = (AudioCodecs)Enum.Parse(typeof(AudioCodecs), val, true);
+                    if (videoRequest != null)
+                    {
+                        videoRequest.VideoCodec = val;
+                    }
                 }
                 else if (i == 5)
+                {
+                    request.AudioCodec = val;
+                }
+                else if (i == 6)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.AudioStreamIndex = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 6)
+                else if (i == 7)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.SubtitleStreamIndex = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 7)
+                else if (i == 8)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.VideoBitRate = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 8)
+                else if (i == 9)
                 {
                     request.AudioBitRate = int.Parse(val, UsCulture);
                 }
-                else if (i == 9)
+                else if (i == 10)
                 {
                     request.MaxAudioChannels = int.Parse(val, UsCulture);
                 }
-                else if (i == 10)
+                else if (i == 11)
                 {
                     if (videoRequest != null)
                     {
                         request.StartTimeTicks = long.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 11)
+                else if (i == 12)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.Profile = val;
                     }
                 }
-                else if (i == 12)
+                else if (i == 13)
                 {
                     if (videoRequest != null)
                     {
@@ -1307,7 +1307,7 @@ namespace MediaBrowser.Api.Playback
 
             var url = Request.PathInfo;
 
-            if (!request.AudioCodec.HasValue)
+            if (string.IsNullOrEmpty(request.AudioCodec))
             {
                 request.AudioCodec = InferAudioCodec(url);
             }
@@ -1435,7 +1435,7 @@ namespace MediaBrowser.Api.Playback
 
             if (videoRequest != null)
             {
-                if (!videoRequest.VideoCodec.HasValue)
+                if (string.IsNullOrEmpty(videoRequest.VideoCodec))
                 {
                     videoRequest.VideoCodec = InferVideoCodec(url);
                 }
@@ -1542,41 +1542,41 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns>System.Nullable{AudioCodecs}.</returns>
-        private AudioCodecs? InferAudioCodec(string url)
+        private string InferAudioCodec(string url)
         {
             var ext = Path.GetExtension(url);
 
             if (string.Equals(ext, ".mp3", StringComparison.OrdinalIgnoreCase))
             {
-                return AudioCodecs.Mp3;
+                return "mp3";
             }
             if (string.Equals(ext, ".aac", StringComparison.OrdinalIgnoreCase))
             {
-                return AudioCodecs.Aac;
+                return "aac";
             }
             if (string.Equals(ext, ".wma", StringComparison.OrdinalIgnoreCase))
             {
-                return AudioCodecs.Wma;
+                return "wma";
             }
             if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase))
             {
-                return AudioCodecs.Vorbis;
+                return "vorbis";
             }
             if (string.Equals(ext, ".oga", StringComparison.OrdinalIgnoreCase))
             {
-                return AudioCodecs.Vorbis;
+                return "vorbis";
             }
             if (string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
             {
-                return AudioCodecs.Vorbis;
+                return "vorbis";
             }
             if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
             {
-                return AudioCodecs.Vorbis;
+                return "vorbis";
             }
             if (string.Equals(ext, ".webma", StringComparison.OrdinalIgnoreCase))
             {
-                return AudioCodecs.Vorbis;
+                return "vorbis";
             }
 
             return null;
@@ -1587,28 +1587,28 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns>System.Nullable{VideoCodecs}.</returns>
-        private VideoCodecs? InferVideoCodec(string url)
+        private string InferVideoCodec(string url)
         {
             var ext = Path.GetExtension(url);
 
             if (string.Equals(ext, ".asf", StringComparison.OrdinalIgnoreCase))
             {
-                return VideoCodecs.Wmv;
+                return "wmv";
             }
             if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
             {
-                return VideoCodecs.Vpx;
+                return "vpx";
             }
             if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
             {
-                return VideoCodecs.Theora;
+                return "theora";
             }
             if (string.Equals(ext, ".m3u8", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ts", StringComparison.OrdinalIgnoreCase))
             {
-                return VideoCodecs.H264;
+                return "h264";
             }
 
-            return VideoCodecs.Copy;
+            return "copy";
         }
     }
 }

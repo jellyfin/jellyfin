@@ -18,8 +18,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class Plugins
     /// </summary>
-    [Route("/Plugins", "GET")]
-    [Api(("Gets a list of currently installed plugins"))]
+    [Route("/Plugins", "GET", Summary = "Gets a list of currently installed plugins")]
     public class GetPlugins : IReturn<List<PluginInfo>>
     {
     }
@@ -27,8 +26,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UninstallPlugin
     /// </summary>
-    [Route("/Plugins/{Id}", "DELETE")]
-    [Api(("Uninstalls a plugin"))]
+    [Route("/Plugins/{Id}", "DELETE", Summary = "Uninstalls a plugin")]
     public class UninstallPlugin : IReturnVoid
     {
         /// <summary>
@@ -42,8 +40,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetPluginConfiguration
     /// </summary>
-    [Route("/Plugins/{Id}/Configuration", "GET")]
-    [Api(("Gets a plugin's configuration"))]
+    [Route("/Plugins/{Id}/Configuration", "GET", Summary = "Gets a plugin's configuration")]
     public class GetPluginConfiguration
     {
         /// <summary>
@@ -57,8 +54,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UpdatePluginConfiguration
     /// </summary>
-    [Route("/Plugins/{Id}/Configuration", "POST")]
-    [Api(("Updates a plugin's configuration"))]
+    [Route("/Plugins/{Id}/Configuration", "POST", Summary = "Updates a plugin's configuration")]
     public class UpdatePluginConfiguration : IRequiresRequestStream, IReturnVoid
     {
         /// <summary>
@@ -78,8 +74,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetPluginSecurityInfo
     /// </summary>
-    [Route("/Plugins/SecurityInfo", "GET")]
-    [Api(("Gets plugin registration information"))]
+    [Route("/Plugins/SecurityInfo", "GET", Summary = "Gets plugin registration information")]
     public class GetPluginSecurityInfo : IReturn<PluginSecurityInfo>
     {
     }
@@ -87,14 +82,12 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UpdatePluginSecurityInfo
     /// </summary>
-    [Route("/Plugins/SecurityInfo", "POST")]
-    [Api("Updates plugin registration information")]
+    [Route("/Plugins/SecurityInfo", "POST", Summary = "Updates plugin registration information")]
     public class UpdatePluginSecurityInfo : PluginSecurityInfo, IReturnVoid
     {
     }
 
-    [Route("/Plugins/RegistrationRecords/{Name}", "GET")]
-    [Api("Gets registration status for a feature")]
+    [Route("/Plugins/RegistrationRecords/{Name}", "GET", Summary = "Gets registration status for a feature")]
     public class GetRegistrationStatus
     {
         [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
