@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Dto
 {
-    public class MediaVersionInfo
+    public class MediaSourceInfo
     {
-        public string ItemId { get; set; }
+        public string Id { get; set; }
 
         public string Path { get; set; }
 
@@ -22,9 +22,5 @@ namespace MediaBrowser.Model.Dto
         public Video3DFormat? Video3DFormat { get; set; }
         
         public List<MediaStream> MediaStreams { get; set; }
-
-        public List<ChapterInfoDto> Chapters { get; set; }
-
-        public bool IsPrimaryVersion { get; set; }
     }
 }

@@ -22,5 +22,11 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The position ticks.</value>
         public long? PositionTicks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media version identifier.
+        /// </summary>
+        /// <value>The media version identifier.</value>
+        public string MediaSourceId { get; set; }
     }
 }

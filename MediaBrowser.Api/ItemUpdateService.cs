@@ -94,7 +94,7 @@ namespace MediaBrowser.Api
             var item = _dtoService.GetItemByDtoId(request.ItemId);
 
             var newLockData = request.LockData ?? false;
-            var dontFetchMetaChanged = item.DontFetchMeta != newLockData;
+            var dontFetchMetaChanged = item.IsLocked != newLockData;
 
             UpdateItem(request, item);
 

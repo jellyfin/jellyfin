@@ -67,5 +67,12 @@ namespace MediaBrowser.Controller.Dlna
     {
         public string Name { get; set; }
         public string Value { get; set; }
+        public HeaderMatchType Match { get; set; }
+    }
+
+    public enum HeaderMatchType
+    {
+        Equals = 0,
+        Substring = 1
     }
 }
