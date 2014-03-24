@@ -98,6 +98,11 @@
     <Compile Include="Profiles\Xbox360Profile.cs" />
     <Compile Include="Profiles\XboxOneProfile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server\DlnaServerEntryPoint.cs" />
+    <Compile Include="Server\Headers.cs" />
+    <Compile Include="Server\RawHeaders.cs" />
+    <Compile Include="Server\SsdpHandler.cs" />
+    <Compile Include="Server\UpnpDevice.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
@@ -113,9 +118,7 @@
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Server\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
