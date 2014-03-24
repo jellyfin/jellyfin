@@ -145,6 +145,9 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "Framerate", Description = "Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements.", IsRequired = false, DataType = "double", ParameterType = "query", Verb = "GET")]
         public double? Framerate { get; set; }
 
+        [ApiMember(Name = "MaxFramerate", Description = "Optional. A specific maximum video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements.", IsRequired = false, DataType = "double", ParameterType = "query", Verb = "GET")]
+        public double? MaxFramerate { get; set; }
+        
         /// <summary>
         /// Gets or sets the profile.
         /// </summary>

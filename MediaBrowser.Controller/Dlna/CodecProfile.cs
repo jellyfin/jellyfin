@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MediaBrowser.Controller.Dlna
@@ -17,6 +18,13 @@ namespace MediaBrowser.Controller.Dlna
         public List<string> GetCodecs()
         {
             return (Codec ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+        }
+
+        public bool ContainsCodec(string codec)
+        {
+            var codecs = GetCodecs();
+
+            return codecs.Count == 0 || codecs.Contains(codec, StringComparer.OrdinalIgnoreCase);
         }
     }
 
