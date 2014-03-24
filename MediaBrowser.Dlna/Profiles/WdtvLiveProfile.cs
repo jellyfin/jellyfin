@@ -44,7 +44,6 @@ namespace MediaBrowser.Dlna.Profiles
 
                     Settings = new []
                     {
-                        new TranscodingSetting {Name = TranscodingSettingType.VideoLevel, Value = "3"},
                         new TranscodingSetting {Name = TranscodingSettingType.VideoProfile, Value = "baseline"}
                     }
                 },

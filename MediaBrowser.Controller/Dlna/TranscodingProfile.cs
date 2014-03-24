@@ -32,9 +32,7 @@ namespace MediaBrowser.Controller.Dlna
 
     public enum TranscodingSettingType
     {
-        VideoLevel = 0,
-        VideoProfile = 1,
-        MaxAudioChannels = 2
+        VideoProfile = 0
     }
 
     public enum TranscodeSeekInfo
