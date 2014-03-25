@@ -14,8 +14,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetPackage
     /// </summary>
-    [Route("/Packages/{Name}", "GET")]
-    [Api(("Gets a package, by name or assembly guid"))]
+    [Route("/Packages/{Name}", "GET", Summary = "Gets a package, by name or assembly guid")]
     public class GetPackage : IReturn<PackageInfo>
     {
         /// <summary>
@@ -36,8 +35,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetPackages
     /// </summary>
-    [Route("/Packages", "GET")]
-    [Api(("Gets available packages"))]
+    [Route("/Packages", "GET", Summary = "Gets available packages")]
     public class GetPackages : IReturn<List<PackageInfo>>
     {
         /// <summary>
@@ -57,8 +55,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetPackageVersionUpdates
     /// </summary>
-    [Route("/Packages/Updates", "GET")]
-    [Api(("Gets available package updates for currently installed packages"))]
+    [Route("/Packages/Updates", "GET", Summary = "Gets available package updates for currently installed packages")]
     public class GetPackageVersionUpdates : IReturn<List<PackageVersionInfo>>
     {
         /// <summary>
@@ -72,8 +69,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class InstallPackage
     /// </summary>
-    [Route("/Packages/Installed/{Name}", "POST")]
-    [Api(("Installs a package"))]
+    [Route("/Packages/Installed/{Name}", "POST", Summary = "Installs a package")]
     public class InstallPackage : IReturnVoid
     {
         /// <summary>
@@ -108,8 +104,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class CancelPackageInstallation
     /// </summary>
-    [Route("/Packages/Installing/{Id}", "DELETE")]
-    [Api(("Cancels a package installation"))]
+    [Route("/Packages/Installing/{Id}", "DELETE", Summary = "Cancels a package installation")]
     public class CancelPackageInstallation : IReturnVoid
     {
         /// <summary>

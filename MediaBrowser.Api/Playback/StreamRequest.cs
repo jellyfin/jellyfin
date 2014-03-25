@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
-using ServiceStack;
+﻿using ServiceStack;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -26,7 +25,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <value>The audio codec.</value>
         [ApiMember(Name = "AudioCodec", Description = "Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public AudioCodecs? AudioCodec { get; set; }
+        public string AudioCodec { get; set; }
 
         /// <summary>
         /// Gets or sets the start time ticks.
@@ -49,6 +48,9 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "AudioChannels", Description = "Optional. Specify a specific number of audio channels to encode to, e.g. 2", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? AudioChannels { get; set; }
 
+        [ApiMember(Name = "MaxAudioChannels", Description = "Optional. Specify a maximum number of audio channels to encode to, e.g. 2", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? MaxAudioChannels { get; set; }
+        
         /// <summary>
         /// Gets or sets the audio sample rate.
         /// </summary>
@@ -69,8 +71,6 @@ namespace MediaBrowser.Api.Playback
         public bool ThrowDebugError { get; set; }
 
         public string Params { get; set; }
-
-        public string ForcedMimeType { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest
@@ -80,7 +80,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <value>The video codec.</value>
         [ApiMember(Name = "VideoCodec", Description = "Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h264, mpeg4, theora, vpx, wmv.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public VideoCodecs? VideoCodec { get; set; }
+        public string VideoCodec { get; set; }
 
         /// <summary>
         /// Gets or sets the video bit rate.
@@ -145,6 +145,9 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "Framerate", Description = "Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements.", IsRequired = false, DataType = "double", ParameterType = "query", Verb = "GET")]
         public double? Framerate { get; set; }
 
+        [ApiMember(Name = "MaxFramerate", Description = "Optional. A specific maximum video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements.", IsRequired = false, DataType = "double", ParameterType = "query", Verb = "GET")]
+        public double? MaxFramerate { get; set; }
+        
         /// <summary>
         /// Gets or sets the profile.
         /// </summary>

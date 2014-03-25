@@ -34,6 +34,8 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public string ModelNumber { get; set; }
 
+        public string ModelUrl { get; set; }
+
         public string Manufacturer { get; set; }
 
         public string ManufacturerUrl { get; set; }
@@ -72,7 +74,8 @@ namespace MediaBrowser.Dlna.PlayTo
                 ModelName = ModelName,
                 ModelNumber = ModelNumber,
                 FriendlyName = Name,
-                ManufacturerUrl = ManufacturerUrl
+                ManufacturerUrl = ManufacturerUrl,
+                ModelUrl = ModelUrl
             };
         }
     }

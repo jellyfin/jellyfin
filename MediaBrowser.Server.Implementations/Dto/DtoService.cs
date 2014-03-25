@@ -741,6 +741,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.LockedFields = item.LockedFields;
                 dto.LockData = item.IsLocked;
+                dto.ForcedSortName = item.ForcedSortName;
             }
 
             var hasBudget = item as IHasBudget;

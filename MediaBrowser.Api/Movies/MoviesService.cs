@@ -117,10 +117,9 @@ namespace MediaBrowser.Api.Movies
 
         public object Get(GetMovieRecommendations request)
         {
-            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+            var user = _userManager.GetUserById(request.UserId.Value);
 
-            var folder = user.RootFolder;
-            var movies = folder.RecursiveChildren.OfType<Movie>().ToList();
+            var movies = user.RootFolder.GetRecursiveChildren(user).OfType<Movie>().ToList();
 
             var result = GetRecommendationCategories(user, movies, request.CategoryLimit, request.ItemLimit, request.GetItemFields().ToList());
 
