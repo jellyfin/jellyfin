@@ -1,4 +1,6 @@
-﻿
+﻿using System.Collections.Generic;
+using System.Linq;
+
 namespace MediaBrowser.Controller.Dlna
 {
     public class TranscodingProfile
@@ -11,7 +13,7 @@ namespace MediaBrowser.Controller.Dlna
         public string AudioCodec { get; set; }
 
         public bool EstimateContentLength { get; set; }
-
+        public bool EnableMpegtsM2TsMode { get; set; }
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
 
         public TranscodingSetting[] Settings { get; set; }
@@ -21,7 +23,11 @@ namespace MediaBrowser.Controller.Dlna
             Settings = new TranscodingSetting[] { };
         }
 
-        public bool EnableMpegtsM2TsMode { get; set; }
+
+        public List<string> GetAudioCodecs()
+        {
+            return (AudioCodec ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+        }
     }
 
     public class TranscodingSetting

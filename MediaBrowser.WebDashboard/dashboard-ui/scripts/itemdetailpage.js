@@ -1075,14 +1075,11 @@
                 attributes.push(createAttribute("Language", stream.Language));
             }
 
-            if (stream.Codec && stream.Codec != "dca") {
+            if (stream.Codec) {
                 attributes.push(createAttribute("Codec", stream.Codec.toUpperCase()));
             }
 
-            if (stream.Profile && stream.Codec == "dca") {
-                attributes.push(createAttribute("Codec", stream.Profile.toUpperCase()));
-            }
-            else if (stream.Profile) {
+            if (stream.Profile) {
                 attributes.push(createAttribute("Profile", stream.Profile));
             }
 

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -284,22 +283,6 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
-                case "TagLine":
-                    {
-                        var tagline = reader.ReadElementContentAsString();
-
-                        var hasTaglines = item as IHasTaglines;
-                        if (hasTaglines != null)
-                        {
-                            if (!string.IsNullOrWhiteSpace(tagline))
-                            {
-                                hasTaglines.AddTagline(tagline);
-                            }
-                        }
-
-                        break;
-                    }
-
                 case "Language":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -380,9 +363,7 @@ namespace MediaBrowser.Controller.Providers
                     }
 
                 case "ContentRating":
-                case "certification":
                 case "MPAARating":
-                case "ESRBRating":
                     {
                         var rating = reader.ReadElementContentAsString();
 
@@ -415,7 +396,6 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
-                case "Runtime":
                 case "RunningTime":
                     {
                         var text = reader.ReadElementContentAsString();
@@ -427,19 +407,6 @@ namespace MediaBrowser.Controller.Providers
                             {
                                 item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                             }
-                        }
-                        break;
-                    }
-
-                case "Genre":
-                    {
-                        foreach (var name in SplitNames(reader.ReadElementContentAsString()))
-                        {
-                            if (string.IsNullOrWhiteSpace(name))
-                            {
-                                continue;
-                            }
-                            item.AddGenre(name);
                         }
                         break;
                     }
@@ -587,7 +554,6 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
-                case "ReleaseYear":
                 case "ProductionYear":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -606,7 +572,6 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Rating":
                 case "IMDBrating":
-                case "TGDBRating":
                     {
 
                         var rating = reader.ReadElementContentAsString();
@@ -679,22 +644,6 @@ namespace MediaBrowser.Controller.Providers
                             if (int.TryParse(val, NumberStyles.Integer, _usCulture, out num))
                             {
                                 item.VoteCount = num;
-                            }
-                        }
-                        break;
-                    }
-                case "MusicbrainzId":
-                    {
-                        var mbz = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(mbz))
-                        {
-                            if (item is MusicAlbum)
-                            {
-                                item.SetProviderId(MetadataProviders.MusicBrainzAlbum, mbz);
-                            }
-                            else if (item is MusicArtist)
-                            {
-                                item.SetProviderId(MetadataProviders.MusicBrainzArtist, mbz);
                             }
                         }
                         break;
@@ -802,9 +751,7 @@ namespace MediaBrowser.Controller.Providers
                     }
                     break;
 
-                case "IMDB_ID":
                 case "IMDB":
-                case "IMDbId":
                     var imDbId = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(imDbId))
                     {
@@ -852,15 +799,6 @@ namespace MediaBrowser.Controller.Providers
                         using (var subtree = reader.ReadSubtree())
                         {
                             FetchDataFromPersonsNode(subtree, item);
-                        }
-                        break;
-                    }
-
-                case "ParentalRating":
-                    {
-                        using (var subtree = reader.ReadSubtree())
-                        {
-                            FetchFromParentalRatingNode(subtree, item);
                         }
                         break;
                     }
@@ -1218,32 +1156,6 @@ namespace MediaBrowser.Controller.Providers
                                 }
                                 break;
                             }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Fetches from parental rating node.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        private void FetchFromParentalRatingNode(XmlReader reader, T item)
-        {
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        // Removed support for "Value" tag as it conflicted with MPAA rating but leaving this function for possible
-                        // future support of "Description" -ebr
 
                         default:
                             reader.Skip();

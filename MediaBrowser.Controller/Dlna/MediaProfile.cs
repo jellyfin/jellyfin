@@ -19,6 +19,11 @@ namespace MediaBrowser.Controller.Dlna
         {
             Conditions = new ProfileCondition[] {};
         }
+
+        public List<string> GetContainers()
+        {
+            return (Container ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+        }
         
         public List<string> GetAudioCodecs()
         {

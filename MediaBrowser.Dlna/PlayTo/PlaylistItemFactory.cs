@@ -162,7 +162,8 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private void ApplyTranscodingConditions(PlaylistItem item, IEnumerable<ProfileCondition> conditions)
         {
-            foreach (var condition in conditions.Where(i => !string.IsNullOrEmpty(i.Value)))
+            foreach (var condition in conditions
+                .Where(i => !string.IsNullOrEmpty(i.Value)))
             {
                 var value = condition.Value;
 
@@ -170,7 +171,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     case ProfileConditionValue.AudioBitrate:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.AudioBitrate = num;
@@ -179,7 +180,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     case ProfileConditionValue.AudioChannels:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.MaxAudioChannels = num;
@@ -199,7 +200,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     case ProfileConditionValue.Height:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.MaxHeight = num;
@@ -208,7 +209,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     case ProfileConditionValue.VideoBitrate:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.VideoBitrate = num;
@@ -217,7 +218,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     case ProfileConditionValue.VideoFramerate:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.MaxFramerate = num;
@@ -226,7 +227,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     case ProfileConditionValue.VideoLevel:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.VideoLevel = num;
@@ -235,7 +236,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     case ProfileConditionValue.Width:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.MaxWidth = num;

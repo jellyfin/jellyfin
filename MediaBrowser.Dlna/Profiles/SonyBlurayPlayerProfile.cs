@@ -6,6 +6,8 @@ namespace MediaBrowser.Dlna.Profiles
     {
         public SonyBlurayPlayerProfile()
         {
+            Name = "Sony Blu-ray Player";
+
             Identification = new DeviceIdentification
             {
                 FriendlyName = @"Blu-ray Disc Player",

@@ -140,8 +140,15 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 _updateTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-                //Session is inactive, mark it for Disposal and don't start the elapsed timer.
-                await _sessionManager.ReportSessionEnded(_session.Id);
+                try
+                {
+                    // Session is inactive, mark it for Disposal and don't start the elapsed timer.
+                    await _sessionManager.ReportSessionEnded(_session.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in ReportSessionEnded", ex);
+                }
             }
         }
 
@@ -156,7 +163,15 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (!_playbackStarted)
             {
-                await _sessionManager.OnPlaybackStart(new PlaybackInfo { Item = _currentItem, SessionId = _session.Id, CanSeek = true, QueueableMediaTypes = new List<string> { "Audio", "Video" } }).ConfigureAwait(false);
+                await _sessionManager.OnPlaybackStart(new PlaybackInfo
+                {
+                    Item = _currentItem, 
+                    SessionId = _session.Id, 
+                    CanSeek = true, 
+                    QueueableMediaTypes = new List<string> { "Audio", "Video" }
+
+                }).ConfigureAwait(false);
+
                 _playbackStarted = true;
             }
 
@@ -403,7 +418,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var playlistItem = GetPlaylistItem(item, streams, profile);
             playlistItem.StartPositionTicks = startPostionTicks;
-            playlistItem.DeviceProfileName = profile.Name;
 
             if (playlistItem.MediaType == DlnaProfileType.Audio)
             {
@@ -414,8 +428,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 playlistItem.StreamUrl = StreamHelper.GetVideoUrl(_device.Properties, playlistItem, streams, serverAddress);
             }
 
-            var didl = DidlBuilder.Build(item, _session.UserId.ToString(), serverAddress, playlistItem.StreamUrl, streams);
-            playlistItem.Didl = didl;
+            playlistItem.Didl = DidlBuilder.Build(item, _session.UserId.ToString(), serverAddress, playlistItem.StreamUrl, streams);
 
             return playlistItem;
         }
