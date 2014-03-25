@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using System.Collections.Generic;
@@ -77,8 +78,21 @@ namespace MediaBrowser.Api.Playback
 
         public string InputAudioCodec { get; set; }
 
+        public string MimeType { get; set; }
+        public string OrgPn { get; set; }
+
+        // DLNA Settings
+        public bool EstimateContentLength { get; set; }
+        public bool EnableMpegtsM2TsMode { get; set; }
+        public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
+        
         public string GetMimeType(string outputPath)
         {
+            if (!string.IsNullOrEmpty(MimeType))
+            {
+                return MimeType;
+            }
+
             return MimeTypes.GetMimeType(outputPath);
         }
     }

@@ -6,9 +6,10 @@ namespace MediaBrowser.Dlna.Profiles
     {
         public DefaultProfile()
         {
+            Name = "Generic Device";
+
             ProtocolInfo = "DLNA";
 
-            ClientType = "DLNA";
             Manufacturer = "Media Browser";
             ModelDescription = "Media Browser";
             ModelName = "Media Browser";

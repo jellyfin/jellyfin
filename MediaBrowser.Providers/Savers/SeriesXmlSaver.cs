@@ -60,11 +60,6 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<id>" + SecurityElement.Escape(tvdb) + "</id>");
             }
 
-            if (!string.IsNullOrEmpty(item.Name))
-            {
-                builder.Append("<SeriesName>" + SecurityElement.Escape(item.Name) + "</SeriesName>");
-            }
-
             if (series.Status.HasValue)
             {
                 builder.Append("<Status>" + SecurityElement.Escape(series.Status.Value.ToString()) + "</Status>");
@@ -111,7 +106,6 @@ namespace MediaBrowser.Providers.Savers
             XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>
                 {
                     "id", 
-                    "SeriesName",
                     "Status",
                     "Network",
                     "Airs_Time",
@@ -120,6 +114,10 @@ namespace MediaBrowser.Providers.Savers
 
                     // Don't preserve old series node
                     "Series",
+
+                    "SeriesName",
+
+                    // Deprecated. No longer saving in this field.
                     "AnimeSeriesIndex"
                 });
         }

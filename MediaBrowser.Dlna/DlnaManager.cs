@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Dlna.Profiles;
 using MediaBrowser.Model.Serialization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -43,7 +44,8 @@ namespace MediaBrowser.Dlna
                 new WdtvLiveProfile(),
                 new DenonAvrProfile(),
                 new LinksysDMA2100Profile(),
-                new LgTvProfile()
+                new LgTvProfile(),
+                new Foobar2000Profile()
             };
 
             foreach (var item in list)
@@ -123,6 +125,39 @@ namespace MediaBrowser.Dlna
             }
 
             return true;
+        }
+
+        public DeviceProfile GetProfile(IDictionary<string, string> headers)
+        {
+            return GetProfiles().FirstOrDefault(i => IsMatch(headers, i.Identification)) ??
+                GetDefaultProfile();
+        }
+
+        private bool IsMatch(IDictionary<string, string> headers, DeviceIdentification profileInfo)
+        {
+            return profileInfo.Headers.Any(i => IsMatch(headers, i));
+        }
+
+        private bool IsMatch(IDictionary<string, string> headers, HttpHeaderInfo header)
+        {
+            string value;
+
+            if (headers.TryGetValue(header.Name, out value))
+            {
+                switch (header.Match)
+                {
+                    case HeaderMatchType.Equals:
+                        return string.Equals(value, header.Value, StringComparison.OrdinalIgnoreCase);
+                    case HeaderMatchType.Substring:
+                        return value.IndexOf(header.Value, StringComparison.OrdinalIgnoreCase) != -1;
+                    case HeaderMatchType.Regex:
+                        return Regex.IsMatch(value, header.Value, RegexOptions.IgnoreCase);
+                    default:
+                        throw new ArgumentException("Unrecognized HeaderMatchType");
+                }
+            }
+
+            return false;
         }
     }
 }

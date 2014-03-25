@@ -164,14 +164,13 @@
 
             html += '<div>';
             if (deviceId == connection.DeviceId) {
-                html += connection.Client;
+                html += connection.DeviceName;
             } else {
-                html += '<a href="#" onclick="RemoteControl.showMenu({sessionId:\'' + connection.Id + '\'});">' + connection.Client + '</a>';
+                html += '<a href="#" onclick="RemoteControl.showMenu({sessionId:\'' + connection.Id + '\'});">' + connection.DeviceName + '</a>';
             }
             html += '</div>';
 
             html += '<div>' + connection.ApplicationVersion + '</div>';
-            html += '<div>' + connection.DeviceName + '</div>';
 
             html += '<div class="username">';
             html += DashboardPage.getUsersHtml(connection);
