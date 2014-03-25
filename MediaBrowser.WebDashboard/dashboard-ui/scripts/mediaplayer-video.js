@@ -59,7 +59,7 @@
                 }
                 $('#videoPlayer').removeClass('fullscreenVideo');
             } else {
-                requestFullScreen(document.documentElement);
+                requestFullScreen(document.body);
             }
         };
 
