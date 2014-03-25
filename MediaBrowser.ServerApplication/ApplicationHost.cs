@@ -795,7 +795,7 @@ namespace MediaBrowser.ServerApplication
             list.Add(typeof(ApiEntryPoint).Assembly);
 
             // Include composable parts in the Dashboard assembly 
-            list.Add(typeof(DashboardInfo).Assembly);
+            list.Add(typeof(DashboardService).Assembly);
 
             // Include composable parts in the Model assembly 
             list.Add(typeof(SystemInfo).Assembly);

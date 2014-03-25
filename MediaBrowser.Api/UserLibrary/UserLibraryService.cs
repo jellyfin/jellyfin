@@ -705,7 +705,7 @@ namespace MediaBrowser.Api.UserLibrary
                 datePlayed = DateTime.ParseExact(request.DatePlayed, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
             }
 
-            var session = GetSession();
+            var session = GetSession(_sessionManager);
 
             var dto = await UpdatePlayedStatus(user, request.Id, true, datePlayed).ConfigureAwait(false);
 
@@ -717,15 +717,6 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return dto;
-        }
-
-        private SessionInfo GetSession()
-        {
-            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
-
-            return _sessionManager.Sessions.First(i => string.Equals(i.DeviceId, auth.DeviceId) &&
-                string.Equals(i.Client, auth.Client) &&
-                string.Equals(i.ApplicationVersion, auth.Version));
         }
 
         /// <summary>
@@ -744,7 +735,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 CanSeek = request.CanSeek,
                 Item = item,
-                SessionId = GetSession().Id,
+                SessionId = GetSession(_sessionManager).Id,
                 QueueableMediaTypes = queueableMediaTypes.Split(',').ToList(),
                 MediaSourceId = request.MediaSourceId
             };
@@ -768,7 +759,7 @@ namespace MediaBrowser.Api.UserLibrary
                 PositionTicks = request.PositionTicks,
                 IsMuted = request.IsMuted,
                 IsPaused = request.IsPaused,
-                SessionId = GetSession().Id,
+                SessionId = GetSession(_sessionManager).Id,
                 MediaSourceId = request.MediaSourceId
             };
 
@@ -787,7 +778,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = _dtoService.GetItemByDtoId(request.Id, user.Id);
 
-            var session = GetSession();
+            var session = GetSession(_sessionManager);
 
             var info = new PlaybackStopInfo
             {
@@ -817,7 +808,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var session = GetSession();
+            var session = GetSession(_sessionManager);
 
             var dto = await UpdatePlayedStatus(user, request.Id, false, null).ConfigureAwait(false);
 

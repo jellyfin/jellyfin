@@ -17,8 +17,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetConfiguration
     /// </summary>
-    [Route("/System/Configuration", "GET")]
-    [Api(("Gets application configuration"))]
+    [Route("/System/Configuration", "GET", Summary = "Gets application configuration")]
     public class GetConfiguration : IReturn<ServerConfiguration>
     {
 
@@ -27,28 +26,24 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UpdateConfiguration
     /// </summary>
-    [Route("/System/Configuration", "POST")]
-    [Api(("Updates application configuration"))]
+    [Route("/System/Configuration", "POST", Summary = "Updates application configuration")]
     public class UpdateConfiguration : ServerConfiguration, IReturnVoid
     {
     }
 
-    [Route("/System/Configuration/MetadataOptions/Default", "GET")]
-    [Api(("Gets a default MetadataOptions object"))]
+    [Route("/System/Configuration/MetadataOptions/Default", "GET", Summary = "Gets a default MetadataOptions object")]
     public class GetDefaultMetadataOptions : IReturn<MetadataOptions>
     {
 
     }
 
-    [Route("/System/Configuration/MetadataPlugins", "GET")]
-    [Api(("Gets all available metadata plugins"))]
+    [Route("/System/Configuration/MetadataPlugins", "GET", Summary = "Gets all available metadata plugins")]
     public class GetMetadataPlugins : IReturn<List<MetadataPluginSummary>>
     {
 
     }
 
-    [Route("/System/Configuration/VideoImageExtraction", "POST")]
-    [Api(("Updates image extraction for all types"))]
+    [Route("/System/Configuration/VideoImageExtraction", "POST", Summary = "Updates image extraction for all types")]
     public class UpdateVideoImageExtraction : IReturnVoid
     {
         public bool Enabled { get; set; }

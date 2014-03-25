@@ -191,9 +191,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     case ProfileConditionValue.AudioProfile:
                     case ProfileConditionValue.Has64BitOffsets:
                     case ProfileConditionValue.VideoBitDepth:
-                    case ProfileConditionValue.VideoPacketLength:
                     case ProfileConditionValue.VideoProfile:
-                    case ProfileConditionValue.VideoTimestamp:
                     {
                         // Not supported yet
                         break;
@@ -461,12 +459,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     return videoStream == null ? null : videoStream.Width;
                 case ProfileConditionValue.VideoLevel:
                     return videoStream == null ? null : ConvertToLong(videoStream.Level);
-                case ProfileConditionValue.VideoPacketLength:
-                    // TODO: Determine how to get this
-                    return null;
-                case ProfileConditionValue.VideoTimestamp:
-                    // TODO: Determine how to get this
-                    return null;
                 default:
                     throw new InvalidOperationException("Unexpected Property");
             }

@@ -22,7 +22,11 @@ namespace MediaBrowser.Dlna.PlayTo
             _config = config;
         }
 
-        public async Task<XDocument> SendCommandAsync(string baseUrl, DeviceService service, string command, string postData, string header = null)
+        public async Task<XDocument> SendCommandAsync(string baseUrl, 
+            DeviceService service, 
+            string command, 
+            string postData, 
+            string header = null)
         {
             var serviceUrl = service.ControlUrl;
             if (!serviceUrl.StartsWith("/"))
@@ -40,7 +44,12 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public async Task SubscribeAsync(string url, string ip, int port, string localIp, int eventport, int timeOut = 3600)
+        public async Task SubscribeAsync(string url, 
+            string ip, 
+            int port, 
+            string localIp, 
+            int eventport, 
+            int timeOut = 3600)
         {
             var options = new HttpRequestOptions
             {
@@ -59,7 +68,11 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public async Task RespondAsync(Uri url, string ip, int port, string localIp, int eventport, int timeOut = 20000)
+        public async Task RespondAsync(Uri url, 
+            string ip, 
+            int port, 
+            string localIp, 
+            int eventport)
         {
             var options = new HttpRequestOptions
             {
@@ -97,7 +110,10 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        private Task<HttpResponseInfo> PostSoapDataAsync(string url, string soapAction, string postData, string header = null)
+        private Task<HttpResponseInfo> PostSoapDataAsync(string url, 
+            string soapAction, 
+            string postData, 
+            string header = null)
         {
             if (!soapAction.StartsWith("\""))
                 soapAction = "\"" + soapAction + "\"";

@@ -1,16 +1,13 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Tasks;
 using ServiceStack;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +15,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using ServiceStack.Web;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -67,14 +63,6 @@ namespace MediaBrowser.WebDashboard.Api
     }
 
     /// <summary>
-    /// Class GetDashboardInfo
-    /// </summary>
-    [Route("/dashboard/dashboardInfo", "GET")]
-    public class GetDashboardInfo : IReturn<DashboardInfo>
-    {
-    }
-
-    /// <summary>
     /// Class DashboardService
     /// </summary>
     public class DashboardService : IRestfulService, IHasResultFactory
@@ -98,12 +86,6 @@ namespace MediaBrowser.WebDashboard.Api
         public IRequest Request { get; set; }
 
         /// <summary>
-        /// Gets or sets the task manager.
-        /// </summary>
-        /// <value>The task manager.</value>
-        private readonly ITaskManager _taskManager;
-
-        /// <summary>
         /// The _app host
         /// </summary>
         private readonly IServerApplicationHost _appHost;
@@ -113,24 +95,18 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
-        private readonly ISessionManager _sessionManager;
-        private readonly IDtoService _dtoService;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
         /// </summary>
-        /// <param name="taskManager">The task manager.</param>
         /// <param name="appHost">The app host.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
-        /// <param name="sessionManager">The session manager.</param>
-        public DashboardService(ITaskManager taskManager, IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, ISessionManager sessionManager, IDtoService dtoService, IFileSystem fileSystem)
+        /// <param name="fileSystem">The file system.</param>
+        public DashboardService(IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, IFileSystem fileSystem)
         {
-            _taskManager = taskManager;
             _appHost = appHost;
             _serverConfigurationManager = serverConfigurationManager;
-            _sessionManager = sessionManager;
-            _dtoService = dtoService;
             _fileSystem = fileSystem;
         }
 
@@ -161,45 +137,6 @@ namespace MediaBrowser.WebDashboard.Api
         private string GetDashboardResourcePath(string virtualPath)
         {
             return Path.Combine(DashboardUIPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetDashboardInfo request)
-        {
-            var result = GetDashboardInfo(_appHost, _taskManager, _sessionManager, _dtoService);
-
-            return ResultFactory.GetOptimizedResult(Request, result);
-        }
-
-        /// <summary>
-        /// Gets the dashboard info.
-        /// </summary>
-        /// <param name="appHost">The app host.</param>
-        /// <param name="taskManager">The task manager.</param>
-        /// <param name="connectionManager">The connection manager.</param>
-        /// <returns>DashboardInfo.</returns>
-        public static DashboardInfo GetDashboardInfo(IServerApplicationHost appHost,
-            ITaskManager taskManager,
-            ISessionManager connectionManager, IDtoService dtoService)
-        {
-            var connections = connectionManager.Sessions.Where(i => i.IsActive).ToList();
-
-            return new DashboardInfo
-            {
-                SystemInfo = appHost.GetSystemInfo(),
-
-                RunningTasks = taskManager.ScheduledTasks.Where(i => i.State == TaskState.Running || i.State == TaskState.Cancelling)
-                                     .Select(ScheduledTaskHelpers.GetTaskInfo)
-                                     .ToList(),
-
-                ApplicationUpdateTaskId = taskManager.ScheduledTasks.First(t => t.ScheduledTask.GetType().Name.Equals("SystemUpdateTask", StringComparison.OrdinalIgnoreCase)).Id,
-
-                ActiveConnections = connections.Select(dtoService.GetSessionInfoDto).ToList()
-            };
         }
 
         /// <summary>
@@ -473,6 +410,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "alphapicker.js",
                                       "addpluginpage.js",
                                       "advancedconfigurationpage.js",
+                                      "advancedpaths.js",
                                       "advancedserversettings.js",
                                       "metadataadvanced.js",
                                       "appsplayback.js",

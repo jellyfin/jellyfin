@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -245,12 +246,13 @@ namespace MediaBrowser.Api.Library
 
         private readonly IDtoService _dtoService;
         private readonly IChannelManager _channelManager;
+        private readonly ISessionManager _sessionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IChannelManager channelManager)
+                              IDtoService dtoService, IUserDataManager userDataManager, IChannelManager channelManager, ISessionManager sessionManager)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
@@ -258,6 +260,7 @@ namespace MediaBrowser.Api.Library
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _channelManager = channelManager;
+            _sessionManager = sessionManager;
         }
 
         public object Get(GetMediaFolders request)
@@ -504,6 +507,13 @@ namespace MediaBrowser.Api.Library
         {
             var item = _dtoService.GetItemByDtoId(request.Id);
 
+            var session = GetSession(_sessionManager);
+
+            if (!session.UserId.HasValue || !_userManager.GetUserById(session.UserId.Value).Configuration.EnableContentDeletion)
+            {
+                throw new UnauthorizedAccessException("This operation requires a logged in user with delete access.");
+            }
+            
             return _libraryManager.DeleteItem(item);
         }
 

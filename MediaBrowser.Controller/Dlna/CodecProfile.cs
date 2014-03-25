@@ -69,8 +69,6 @@ namespace MediaBrowser.Controller.Dlna
         VideoBitrate,
         VideoFramerate,
         VideoLevel,
-        VideoPacketLength,
-        VideoProfile,
-        VideoTimestamp
+        VideoProfile
     }
 }

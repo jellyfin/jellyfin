@@ -26,6 +26,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
         {
             UpdateItemsByNamePath();
             UpdateTranscodingTempPath();
+            UpdateMetadataPath();
         }
 
         /// <summary>
@@ -77,6 +78,16 @@ namespace MediaBrowser.Server.Implementations.Configuration
         }
 
         /// <summary>
+        /// Updates the metadata path.
+        /// </summary>
+        private void UpdateMetadataPath()
+        {
+            ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = string.IsNullOrEmpty(Configuration.MetadataPath) ?
+                null :
+                Configuration.MetadataPath;
+        }
+
+        /// <summary>
         /// Updates the transcoding temporary path.
         /// </summary>
         private void UpdateTranscodingTempPath()
@@ -98,6 +109,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
             ValidateItemByNamePath(newConfig);
             ValidateTranscodingTempPath(newConfig);
             ValidatePathSubstitutions(newConfig);
+            ValidateMetadataPath(newConfig);
 
             base.ReplaceConfiguration(newConfiguration);
         }
@@ -158,6 +170,26 @@ namespace MediaBrowser.Server.Implementations.Configuration
 
             if (!string.IsNullOrWhiteSpace(newPath)
                 && !string.Equals(Configuration.TranscodingTempPath ?? string.Empty, newPath))
+            {
+                // Validate
+                if (!Directory.Exists(newPath))
+                {
+                    throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates the metadata path.
+        /// </summary>
+        /// <param name="newConfig">The new configuration.</param>
+        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        private void ValidateMetadataPath(ServerConfiguration newConfig)
+        {
+            var newPath = newConfig.MetadataPath;
+
+            if (!string.IsNullOrWhiteSpace(newPath)
+                && !string.Equals(Configuration.MetadataPath ?? string.Empty, newPath))
             {
                 // Validate
                 if (!Directory.Exists(newPath))

@@ -2,18 +2,17 @@
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Tasks;
 using ServiceStack;
+using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ServiceStack.Text.Controller;
 
 namespace MediaBrowser.Api.ScheduledTasks
 {
     /// <summary>
     /// Class GetScheduledTask
     /// </summary>
-    [Route("/ScheduledTasks/{Id}", "GET")]
-    [Api(Description = "Gets a scheduled task, by Id")]
+    [Route("/ScheduledTasks/{Id}", "GET", Summary = "Gets a scheduled task, by Id")]
     public class GetScheduledTask : IReturn<TaskInfo>
     {
         /// <summary>
@@ -27,8 +26,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// <summary>
     /// Class GetScheduledTasks
     /// </summary>
-    [Route("/ScheduledTasks", "GET")]
-    [Api(Description = "Gets scheduled tasks")]
+    [Route("/ScheduledTasks", "GET", Summary = "Gets scheduled tasks")]
     public class GetScheduledTasks : IReturn<List<TaskInfo>>
     {
         [ApiMember(Name = "IsHidden", Description = "Optional filter tasks that are hidden, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
@@ -38,8 +36,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// <summary>
     /// Class StartScheduledTask
     /// </summary>
-    [Route("/ScheduledTasks/Running/{Id}", "POST")]
-    [Api(Description = "Starts a scheduled task")]
+    [Route("/ScheduledTasks/Running/{Id}", "POST", Summary = "Starts a scheduled task")]
     public class StartScheduledTask : IReturnVoid
     {
         /// <summary>
@@ -53,8 +50,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// <summary>
     /// Class StopScheduledTask
     /// </summary>
-    [Route("/ScheduledTasks/Running/{Id}", "DELETE")]
-    [Api(Description = "Stops a scheduled task")]
+    [Route("/ScheduledTasks/Running/{Id}", "DELETE", Summary = "Stops a scheduled task")]
     public class StopScheduledTask : IReturnVoid
     {
         /// <summary>
@@ -68,8 +64,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// <summary>
     /// Class UpdateScheduledTaskTriggers
     /// </summary>
-    [Route("/ScheduledTasks/{Id}/Triggers", "POST")]
-    [Api(Description = "Updates the triggers for a scheduled task")]
+    [Route("/ScheduledTasks/{Id}/Triggers", "POST", Summary = "Updates the triggers for a scheduled task")]
     public class UpdateScheduledTaskTriggers : List<TaskTriggerInfo>, IReturnVoid
     {
         /// <summary>
