@@ -61,7 +61,6 @@
     <Compile Include="PlayTo\DeviceService.cs" />
     <Compile Include="PlayTo\DidlBuilder.cs" />
     <Compile Include="PlayTo\DlnaController.cs" />
-    <Compile Include="PlayTo\DlnaControllerFactory.cs" />
     <Compile Include="PlayTo\Extensions.cs" />
     <Compile Include="PlayTo\PlaylistItem.cs">
       <SubType>Code</SubType>
@@ -70,7 +69,8 @@
     <Compile Include="PlayTo\PlayToManager.cs" />
     <Compile Include="PlayTo\PlayToServerEntryPoint.cs" />
     <Compile Include="PlayTo\ServiceAction.cs" />
-    <Compile Include="PlayTo\SsdpHelper.cs" />
+    <Compile Include="Profiles\Foobar2000Profile.cs" />
+    <Compile Include="Ssdp\SsdpHelper.cs" />
     <Compile Include="PlayTo\SsdpHttpClient.cs" />
     <Compile Include="PlayTo\StateVariable.cs" />
     <Compile Include="PlayTo\StreamHelper.cs" />
@@ -100,7 +100,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\DlnaServerEntryPoint.cs" />
     <Compile Include="Server\Headers.cs" />
-    <Compile Include="Server\RawHeaders.cs" />
     <Compile Include="Server\SsdpHandler.cs" />
     <Compile Include="Server\UpnpDevice.cs" />
   </ItemGroup>

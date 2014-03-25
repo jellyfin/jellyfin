@@ -33,8 +33,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public int? SubtitleStreamIndex { get; set; }
 
-        public string DeviceProfileName { get; set; }
-
         public int? MaxAudioChannels { get; set; }
 
         public int? AudioBitrate { get; set; }

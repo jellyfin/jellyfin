@@ -96,7 +96,7 @@ namespace MediaBrowser.Dlna.Server
                         {
                             break;
                         }
-                        var parts = line.Split(new char[] { ':' }, 2);
+                        var parts = line.Split(new[] { ':' }, 2);
                         headers[parts[0]] = parts[1].Trim();
                     }
 
@@ -148,7 +148,7 @@ namespace MediaBrowser.Dlna.Server
 
         private void SendSearchResponse(IPEndPoint endpoint, UpnpDevice dev)
         {
-            var headers = new RawHeaders();
+            var headers = new Headers(true);
             headers.Add("CACHE-CONTROL", "max-age = 600");
             headers.Add("DATE", DateTime.Now.ToString("R"));
             headers.Add("EXT", "");
@@ -188,7 +188,7 @@ namespace MediaBrowser.Dlna.Server
         private void NotifyDevice(UpnpDevice dev, string type, bool sticky)
         {
             _logger.Debug("NotifyDevice");
-            var headers = new RawHeaders();
+            var headers = new Headers(true);
             headers.Add("HOST", "239.255.255.250:1900");
             headers.Add("CACHE-CONTROL", "max-age = 600");
             headers.Add("LOCATION", dev.Descriptor.ToString());

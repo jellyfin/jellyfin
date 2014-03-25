@@ -43,15 +43,10 @@ namespace MediaBrowser.Dlna.PlayTo
         /// </summary>
         private static string BuildDlnaUrl(DeviceInfo deviceProperties, PlaylistItem item)
         {
-            var profile = item.TranscodingSettings.Where(i => i.Name == TranscodingSettingType.VideoProfile)
-                .Select(i => i.Value)
-                .FirstOrDefault();
-
             var usCulture = new CultureInfo("en-US");
             
             var list = new List<string>
             {
-                item.DeviceProfileName ?? string.Empty,
                 deviceProperties.UUID ?? string.Empty,
                 item.MediaSourceId ?? string.Empty,
                 (!item.Transcode).ToString().ToLower(),
@@ -66,7 +61,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 item.MaxWidth.HasValue ? item.MaxWidth.Value.ToString(usCulture) : string.Empty,
                 item.MaxHeight.HasValue ? item.MaxHeight.Value.ToString(usCulture) : string.Empty,
                 item.StartPositionTicks.ToString(usCulture),
-                profile ?? string.Empty,
                 item.VideoLevel.HasValue ? item.VideoLevel.Value.ToString(usCulture) : string.Empty
             };
 

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -65,6 +66,7 @@ namespace MediaBrowser.Api.Playback
 
         protected IItemRepository ItemRepository { get; private set; }
         protected ILiveTvManager LiveTvManager { get; private set; }
+        protected IDlnaManager DlnaManager { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
@@ -77,8 +79,9 @@ namespace MediaBrowser.Api.Playback
         /// <param name="dtoService">The dto service.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="itemRepository">The item repository.</param>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager)
         {
+            DlnaManager = dlnaManager;
             EncodingManager = encodingManager;
             LiveTvManager = liveTvManager;
             ItemRepository = itemRepository;
@@ -774,29 +777,24 @@ namespace MediaBrowser.Api.Playback
         {
             var codec = request.AudioCodec;
 
-            if (!string.IsNullOrEmpty(codec))
+            if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "aac -strict experimental";
-                }
-                if (string.Equals(codec, "mp3", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "libmp3lame";
-                }
-                if (string.Equals(codec, "vorbis", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "libvorbis";
-                }
-                if (string.Equals(codec, "wma", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "wmav2";
-                }
-
-                return codec.ToLower();
+                return "aac -strict experimental";
+            }
+            if (string.Equals(codec, "mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                return "libmp3lame";
+            }
+            if (string.Equals(codec, "vorbis", StringComparison.OrdinalIgnoreCase))
+            {
+                return "libvorbis";
+            }
+            if (string.Equals(codec, "wma", StringComparison.OrdinalIgnoreCase))
+            {
+                return "wmav2";
             }
 
-            return "copy";
+            return codec.ToLower();
         }
 
         /// <summary>
@@ -1212,96 +1210,85 @@ namespace MediaBrowser.Api.Playback
 
                 if (i == 0)
                 {
-                    // Device profile name
+                    request.DeviceId = val;
                 }
                 else if (i == 1)
                 {
-                    request.DeviceId = val;
+                    request.MediaSourceId = val;
                 }
                 else if (i == 2)
                 {
-                    request.MediaSourceId = val;
-                }
-                else if (i == 3)
-                {
                     request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                 }
-                else if (i == 4)
+                else if (i == 3)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.VideoCodec = val;
                     }
                 }
-                else if (i == 5)
+                else if (i == 4)
                 {
                     request.AudioCodec = val;
                 }
-                else if (i == 6)
+                else if (i == 5)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.AudioStreamIndex = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 7)
+                else if (i == 6)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.SubtitleStreamIndex = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 8)
+                else if (i == 7)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.VideoBitRate = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 9)
+                else if (i == 8)
                 {
                     request.AudioBitRate = int.Parse(val, UsCulture);
                 }
-                else if (i == 10)
+                else if (i == 9)
                 {
                     request.MaxAudioChannels = int.Parse(val, UsCulture);
                 }
-                else if (i == 11)
+                else if (i == 10)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.MaxWidth = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 12)
+                else if (i == 11)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.MaxHeight = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 13)
+                else if (i == 12)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.Framerate = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 14)
+                else if (i == 13)
                 {
                     if (videoRequest != null)
                     {
                         request.StartTimeTicks = long.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 15)
-                {
-                    if (videoRequest != null)
-                    {
-                        videoRequest.Profile = val;
-                    }
-                }
-                else if (i == 16)
+                else if (i == 14)
                 {
                     if (videoRequest != null)
                     {
@@ -1487,7 +1474,170 @@ namespace MediaBrowser.Api.Playback
             state.SegmentLength = state.ReadInputAtNativeFramerate ? 5 : 10;
             state.HlsListSize = state.ReadInputAtNativeFramerate ? 100 : 1440;
 
+            ApplyDeviceProfileSettings(state);
+
             return state;
+        }
+
+        private void ApplyDeviceProfileSettings(StreamState state)
+        {
+            var headers = new Dictionary<string, string>();
+
+            foreach (var key in Request.Headers.AllKeys)
+            {
+                headers[key] = Request.Headers[key];
+            }
+
+            var profile = DlnaManager.GetProfile(headers);
+
+            var container = Path.GetExtension(state.RequestedUrl);
+
+            if (string.IsNullOrEmpty(container))
+            {
+                container = Path.GetExtension(GetOutputFilePath(state));
+            }
+
+            var audioCodec = state.Request.AudioCodec;
+
+            if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.AudioStream != null)
+            {
+                audioCodec = state.AudioStream.Codec;
+            }
+
+            var videoCodec = state.VideoRequest == null ? null : state.VideoRequest.VideoCodec;
+
+            if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.VideoStream != null)
+            {
+                videoCodec = state.VideoStream.Codec;
+            }
+
+            var mediaProfile = state.VideoRequest == null ?
+                profile.GetAudioMediaProfile(container, audioCodec, state.AudioStream) :
+                profile.GetVideoMediaProfile(container, audioCodec, videoCodec, state.AudioStream, state.VideoStream);
+
+            if (mediaProfile != null)
+            {
+                state.MimeType = mediaProfile.MimeType;
+                state.OrgPn = mediaProfile.OrgPn;
+            }
+
+            var transcodingProfile = state.VideoRequest == null ?
+                profile.GetAudioTranscodingProfile(container, audioCodec) :
+                profile.GetVideoTranscodingProfile(container, audioCodec, videoCodec);
+
+            if (transcodingProfile != null)
+            {
+                state.EstimateContentLength = transcodingProfile.EstimateContentLength;
+                state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
+                state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
+
+                foreach (var setting in transcodingProfile.Settings)
+                {
+                    switch (setting.Name)
+                    {
+                        case TranscodingSettingType.VideoProfile:
+                        {
+                            if (state.VideoRequest != null && string.IsNullOrWhiteSpace(state.VideoRequest.Profile))
+                            {
+                                state.VideoRequest.Profile = setting.Value;
+                            }
+                            break;
+                        }
+                        default:
+                            throw new ArgumentException("Unrecognized TranscodingSettingType");
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Adds the dlna headers.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <param name="responseHeaders">The response headers.</param>
+        /// <param name="isStaticallyStreamed">if set to <c>true</c> [is statically streamed].</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        protected void AddDlnaHeaders(StreamState state, IDictionary<string, string> responseHeaders, bool isStaticallyStreamed)
+        {
+            var timeSeek = GetHeader("TimeSeekRange.dlna.org");
+
+            if (!string.IsNullOrEmpty(timeSeek))
+            {
+                ResultFactory.ThrowError(406, "Time seek not supported during encoding.", responseHeaders);
+                return;
+            }
+
+            var transferMode = GetHeader("transferMode.dlna.org");
+            responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
+            responseHeaders["realTimeInfo.dlna.org"] = "DLNA.ORG_TLAG=*";
+
+            var contentFeatures = string.Empty;
+            var extension = GetOutputFileExtension(state);
+
+            // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
+            var orgOp = isStaticallyStreamed || state.TranscodeSeekInfo == TranscodeSeekInfo.Bytes ? ";DLNA.ORG_OP=01" : ";DLNA.ORG_OP=00";
+
+            // 0 = native, 1 = transcoded
+            var orgCi = isStaticallyStreamed ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
+
+            const string dlnaflags = ";DLNA.ORG_FLAGS=01500000000000000000000000000000";
+
+            if (!string.IsNullOrWhiteSpace(state.OrgPn))
+            {
+                contentFeatures = "DLNA.ORG_PN=" + state.OrgPn;
+            }
+            else if (string.Equals(extension, ".mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MP3";
+            }
+            else if (string.Equals(extension, ".aac", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=AAC_ISO";
+            }
+            else if (string.Equals(extension, ".wma", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=WMABASE";
+            }
+            else if (string.Equals(extension, ".avi", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=AVI";
+            }
+            else if (string.Equals(extension, ".mkv", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MATROSKA";
+            }
+            else if (string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=AVC_MP4_MP_HD_720p_AAC";
+            }
+            else if (string.Equals(extension, ".mpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
+            }
+            else if (string.Equals(extension, ".ts", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
+            }
+            //else if (string.Equals(extension, ".wmv", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
+            //}
+            //else if (string.Equals(extension, ".asf", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    // ??
+            //    contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
+            //}
+
+            if (!string.IsNullOrEmpty(contentFeatures))
+            {
+                responseHeaders["contentFeatures.dlna.org"] = (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
+            }
+
+            foreach (var item in responseHeaders)
+            {
+                Request.Response.AddHeader(item.Key, item.Value);
+            }
         }
 
         /// <summary>
@@ -1605,7 +1755,7 @@ namespace MediaBrowser.Api.Playback
                 return "vorbis";
             }
 
-            return null;
+            return "copy";
         }
 
         /// <summary>
