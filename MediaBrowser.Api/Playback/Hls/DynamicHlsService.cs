@@ -136,11 +136,11 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
 
-            if (!state.VideoRequest.VideoBitRate.HasValue && (!state.VideoRequest.VideoCodec.HasValue || state.VideoRequest.VideoCodec.Value != VideoCodecs.Copy))
+            if (!state.VideoRequest.VideoBitRate.HasValue && (string.IsNullOrEmpty(state.VideoRequest.VideoCodec) || !string.Equals(state.VideoRequest.VideoCodec, "copy", StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException("A video bitrate is required");
             }
-            if (!state.Request.AudioBitRate.HasValue && (!state.Request.AudioCodec.HasValue || state.Request.AudioCodec.Value != AudioCodecs.Copy))
+            if (!state.Request.AudioBitRate.HasValue && (string.IsNullOrEmpty(state.Request.AudioCodec) || !string.Equals(state.Request.AudioCodec, "copy", StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException("An audio bitrate is required");
             }

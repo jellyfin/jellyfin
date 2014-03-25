@@ -10,7 +10,7 @@
         /// Omit to copy
         /// </summary>
         /// <value>The video codec.</value>
-        public VideoCodecs? VideoCodec { get; set; }
+        public string VideoCodec { get; set; }
 
         /// <summary>
         /// Gets or sets the video bit rate.
@@ -113,7 +113,7 @@
         /// Omit to copy the original stream
         /// </summary>
         /// <value>The audio encoding format.</value>
-        public AudioCodecs? AudioCodec { get; set; }
+        public string AudioCodec { get; set; }
 
         /// <summary>
         /// Gets or sets the item id.
@@ -157,69 +157,5 @@
         /// </summary>
         /// <value>The device id.</value>
         public string DeviceId { get; set; }
-    }
-
-    /// <summary>
-    /// These are the codecs the api is capable of encoding to
-    /// </summary>
-    public enum AudioCodecs
-    {
-        /// <summary>
-        /// The aac
-        /// </summary>
-        Aac,
-        /// <summary>
-        /// The MP3
-        /// </summary>
-        Mp3,
-        /// <summary>
-        /// The vorbis
-        /// </summary>
-        Vorbis,
-        /// <summary>
-        /// The wma
-        /// </summary>
-        Wma,
-        /// <summary>
-        /// The copy
-        /// </summary>
-        Copy
-    }
-
-    /// <summary>
-    /// Enum VideoCodecs
-    /// </summary>
-    public enum VideoCodecs
-    {
-        H263,
-
-        /// <summary>
-        /// The H264
-        /// </summary>
-        H264,
-
-        /// <summary>
-        /// The mpeg4
-        /// </summary>
-        Mpeg4,
-
-        /// <summary>
-        /// The theora
-        /// </summary>
-        Theora,
-
-        /// <summary>
-        /// The VPX
-        /// </summary>
-        Vpx,
-
-        /// <summary>
-        /// The WMV
-        /// </summary>
-        Wmv,
-        /// <summary>
-        /// The copy
-        /// </summary>
-        Copy
     }
 }

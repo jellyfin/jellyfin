@@ -1030,7 +1030,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="timer">The timer.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task CreateLiveTvTimerAsync(TimerInfoDto timer, CancellationToken cancellationToken);
+        Task CreateLiveTvTimerAsync(BaseTimerInfoDto timer, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the live tv timer asynchronous.

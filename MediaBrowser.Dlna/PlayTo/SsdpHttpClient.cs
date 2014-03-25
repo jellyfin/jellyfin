@@ -49,7 +49,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url.ToString(),
                 UserAgent = USERAGENT,
-                LogRequest = _config.Configuration.DlnaOptions.EnablePlayToDebugLogging
+                LogRequest = _config.Configuration.DlnaOptions.EnableDebugLogging
             };
 
             options.RequestHeaders["HOST"] = ip + ":" + port;
@@ -88,7 +88,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url.ToString(),
                 UserAgent = USERAGENT,
-                LogRequest = _config.Configuration.DlnaOptions.EnablePlayToDebugLogging
+                LogRequest = _config.Configuration.DlnaOptions.EnableDebugLogging
             };
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
@@ -112,7 +112,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url.ToString(),
                 UserAgent = USERAGENT,
-                LogRequest = _config.Configuration.DlnaOptions.EnablePlayToDebugLogging
+                LogRequest = _config.Configuration.DlnaOptions.EnableDebugLogging
             };
 
             options.RequestHeaders["SOAPAction"] = soapAction;

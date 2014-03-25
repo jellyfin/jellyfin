@@ -13,6 +13,13 @@ namespace MediaBrowser.Controller.Dlna
         public string OrgPn { get; set; }
         public string MimeType { get; set; }
 
+        public ProfileCondition[] Conditions { get; set; }
+
+        public MediaProfile()
+        {
+            Conditions = new ProfileCondition[] {};
+        }
+        
         public List<string> GetAudioCodecs()
         {
             return (AudioCodec ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();

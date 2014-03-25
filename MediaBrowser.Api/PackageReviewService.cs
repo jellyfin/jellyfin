@@ -1,21 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Constants;
+﻿using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
     /// <summary>
     /// Class InstallPackage
     /// </summary>
-    [Route("/PackageReviews/{Id}", "POST")]
-    [Api(("Creates or updates a package review"))]
+    [Route("/Packages/Reviews/{Id}", "POST", Summary = "Creates or updates a package review")]
     public class CreateReviewRequest : IReturnVoid
     {
         /// <summary>
@@ -57,8 +56,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class InstallPackage
     /// </summary>
-    [Route("/PackageReviews/{Id}", "GET")]
-    [Api(("Retrieve reviews for a package"))]
+    [Route("/Packages/{Id}/Reviews", "GET", Summary = "Gets reviews for a package")]
     public class ReviewRequest : IReturn<List<PackageReviewInfo>>
     {
         /// <summary>
@@ -114,7 +112,7 @@ namespace MediaBrowser.Api
         public object Get(ReviewRequest request)
         {
             var parms = "?id=" + request.Id;
-            
+
             if (request.MaxRating > 0)
             {
                 parms += "&max=" + request.MaxRating;
@@ -132,7 +130,7 @@ namespace MediaBrowser.Api
                 parms += "&title=true";
             }
 
-            var result = _httpClient.Get(Constants.MbAdminUrl + "/service/packageReview/retrieve"+parms, CancellationToken.None).Result;
+            var result = _httpClient.Get(Constants.MbAdminUrl + "/service/packageReview/retrieve" + parms, CancellationToken.None).Result;
 
             var reviews = _serializer.DeserializeFromStream<List<PackageReviewInfo>>(result);
 

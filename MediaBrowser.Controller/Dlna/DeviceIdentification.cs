@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-
+﻿
 namespace MediaBrowser.Controller.Dlna
 {
     public class DeviceIdentification
@@ -55,11 +54,11 @@ namespace MediaBrowser.Controller.Dlna
         /// Gets or sets the headers.
         /// </summary>
         /// <value>The headers.</value>
-        public List<HttpHeaderInfo> Headers { get; set; }
+        public HttpHeaderInfo[] Headers { get; set; }
 
         public DeviceIdentification()
         {
-            Headers = new List<HttpHeaderInfo>();
+            Headers = new HttpHeaderInfo[] {};
         }
     }
 
@@ -73,6 +72,7 @@ namespace MediaBrowser.Controller.Dlna
     public enum HeaderMatchType
     {
         Equals = 0,
-        Substring = 1
+        Regex = 1,
+        Substring = 2
     }
 }

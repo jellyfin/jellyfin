@@ -1,11 +1,11 @@
-﻿using System.Globalization;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Common.Net
 {
@@ -16,6 +16,7 @@ namespace MediaBrowser.Common.Net
     /// <typeparam name="TStateType">The type of the T state type.</typeparam>
     public abstract class BasePeriodicWebSocketListener<TReturnDataType, TStateType> : IWebSocketListener, IDisposable
         where TStateType : class, new()
+        where TReturnDataType : class
     {
         /// <summary>
         /// The _active connections
@@ -144,12 +145,15 @@ namespace MediaBrowser.Common.Net
 
                 var data = await GetDataToSend(tuple.Item4).ConfigureAwait(false);
 
-                await connection.SendAsync(new WebSocketMessage<TReturnDataType>
+                if (data != null)
                 {
-                    MessageType = Name,
-                    Data = data
+                    await connection.SendAsync(new WebSocketMessage<TReturnDataType>
+                    {
+                        MessageType = Name,
+                        Data = data
 
-                }, tuple.Item2.Token).ConfigureAwait(false);
+                    }, tuple.Item2.Token).ConfigureAwait(false);
+                }
 
                 tuple.Item5.Release();
             }

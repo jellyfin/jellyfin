@@ -8,8 +8,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetSystemInfo
     /// </summary>
-    [Route("/System/Info", "GET")]
-    [Api(Description = "Gets information about the server")]
+    [Route("/System/Info", "GET", Summary = "Gets information about the server")]
     public class GetSystemInfo : IReturn<SystemInfo>
     {
 
@@ -18,18 +17,16 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class RestartApplication
     /// </summary>
-    [Route("/System/Restart", "POST")]
-    [Api(("Restarts the application, if needed"))]
+    [Route("/System/Restart", "POST", Summary = "Restarts the application, if needed")]
     public class RestartApplication
     {
     }
 
-    [Route("/System/Shutdown", "POST")]
-    [Api(("Shuts down the application"))]
+    [Route("/System/Shutdown", "POST", Summary = "Shuts down the application")]
     public class ShutdownApplication
     {
     }
-    
+
     /// <summary>
     /// Class SystemInfoService
     /// </summary>

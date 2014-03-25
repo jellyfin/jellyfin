@@ -79,16 +79,6 @@ namespace MediaBrowser.Api.Playback
 
         public string GetMimeType(string outputPath)
         {
-            if (!string.IsNullOrWhiteSpace(Request.ForcedMimeType))
-            {
-                if (VideoRequest == null)
-                {
-                    return "audio/" + Request.ForcedMimeType;
-                }
-
-                return "video/" + Request.ForcedMimeType;
-            }
-
             return MimeTypes.GetMimeType(outputPath);
         }
     }

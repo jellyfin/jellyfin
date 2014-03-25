@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MediaBrowser.Controller.Dlna
@@ -6,17 +7,24 @@ namespace MediaBrowser.Controller.Dlna
     public class CodecProfile
     {
         public CodecType Type { get; set; }
-        public List<ProfileCondition> Conditions { get; set; }
+        public ProfileCondition[] Conditions { get; set; }
         public string Codec { get; set; }
 
         public CodecProfile()
         {
-            Conditions = new List<ProfileCondition>();
+            Conditions = new ProfileCondition[] {};
         }
 
         public List<string> GetCodecs()
         {
             return (Codec ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+        }
+
+        public bool ContainsCodec(string codec)
+        {
+            var codecs = GetCodecs();
+
+            return codecs.Count == 0 || codecs.Contains(codec, StringComparer.OrdinalIgnoreCase);
         }
     }
 
@@ -57,9 +65,12 @@ namespace MediaBrowser.Controller.Dlna
         Width,
         Height,
         Has64BitOffsets,
+        VideoBitDepth,
         VideoBitrate,
         VideoFramerate,
         VideoLevel,
-        VideoProfile
+        VideoPacketLength,
+        VideoProfile,
+        VideoTimestamp
     }
 }
