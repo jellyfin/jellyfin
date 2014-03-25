@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Web;
 using System;
@@ -76,6 +77,20 @@ namespace MediaBrowser.Api
            where T : class
         {
             return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the session.
+        /// </summary>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <returns>SessionInfo.</returns>
+        protected SessionInfo GetSession(ISessionManager sessionManager)
+        {
+            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
+
+            return sessionManager.Sessions.First(i => string.Equals(i.DeviceId, auth.DeviceId) &&
+                string.Equals(i.Client, auth.Client) &&
+                string.Equals(i.ApplicationVersion, auth.Version));
         }
 
         /// <summary>

@@ -8,15 +8,13 @@ using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
     /// Class GetStudios
     /// </summary>
-    [Route("/Studios", "GET")]
-    [Api(Description = "Gets all studios from a given item, folder, or the entire library")]
+    [Route("/Studios", "GET", Summary = "Gets all studios from a given item, folder, or the entire library")]
     public class GetStudios : GetItemsByName
     {
     }
@@ -24,8 +22,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetStudio
     /// </summary>
-    [Route("/Studios/{Name}", "GET")]
-    [Api(Description = "Gets a studio, by name")]
+    [Route("/Studios/{Name}", "GET", Summary = "Gets a studio, by name")]
     public class GetStudio : IReturn<BaseItemDto>
     {
         /// <summary>

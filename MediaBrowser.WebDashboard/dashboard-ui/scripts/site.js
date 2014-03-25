@@ -729,10 +729,6 @@ var Dashboard = {
             href: "metadata.html",
             selected: pageElem.id == "metadataConfigurationPage" || pageElem.id == "advancedMetadataConfigurationPage" || pageElem.id == "metadataImagesConfigurationPage"
         }, {
-            name: "Plugins",
-            href: "plugins.html",
-            selected: page.hasClass("pluginConfigurationPage")
-        }, {
             name: "Auto-Organize",
             href: "autoorganizelog.html",
             selected: page.hasClass("organizePage")
@@ -744,6 +740,10 @@ var Dashboard = {
             name: "Live TV",
             href: "livetvstatus.html",
             selected: page.hasClass("liveTvSettingsPage")
+        }, {
+            name: "Plugins",
+            href: "plugins.html",
+            selected: page.hasClass("pluginConfigurationPage")
         }, {
             name: "Users",
             divider: true,

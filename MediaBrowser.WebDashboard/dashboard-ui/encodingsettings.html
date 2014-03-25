@@ -11,6 +11,7 @@
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="advanced.html" data-role="button">General</a>
+                    <a href="advancedpaths.html" data-role="button">Paths</a>
                     <a href="advancedserversettings.html" data-role="button">Server</a>
                     <a href="#" data-role="button" class="ui-btn-active">Transcoding</a>
                 </div>
@@ -51,25 +52,7 @@
                         </li>
                     </ul>
 
-                    <h2>Transcoding Temporary Path</h2>
                     <ul data-role="listview" class="ulForm">
-                        <li>
-                            <input type="checkbox" id="chkEnableCustomTranscodingTempPath" name="chkEnableCustomTranscodingTempPath" data-mini="true" />
-                            <label for="chkEnableCustomTranscodingTempPath">Use custom transcoding temporary path</label>
-                            <div class="fieldDescription">
-                                This folder contains working files used by the transcoder.
-                            </div>
-                        </li>
-                        <li id="fldEnterTranscodingTempPath" style="display: none;">
-                            <label for="txtTranscodingTempPath">Transcoding temporary path: </label>
-                            <div style="display: inline-block; width: 92%;">
-                                <input type="text" id="txtTranscodingTempPath" name="txtTranscodingTempPath" data-mini="true" />
-                            </div>
-                            <button id="btnSelectTranscodingTempPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">Select Directory</button>
-                            <div class="fieldDescription">
-                                Supply a custom transcoding temporary path. Media Browser Server must have write access to this folder.
-                            </div>
-                        </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
                                 Save

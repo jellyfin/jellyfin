@@ -241,7 +241,13 @@ namespace MediaBrowser.Dlna.PlayTo
 
                     _sessionManager.ReportCapabilities(sessionInfo.Id, new SessionCapabilities
                     {
-                        PlayableMediaTypes = new[] { MediaType.Audio, MediaType.Video, MediaType.Photo },
+                        PlayableMediaTypes = new[]
+                        {
+                            MediaType.Audio, 
+                            MediaType.Video, 
+                            MediaType.Photo
+                        },
+
                         SupportsFullscreenToggle = false
                     });
 

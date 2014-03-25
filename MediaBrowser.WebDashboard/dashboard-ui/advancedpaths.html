@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Advanced</title>
+</head>
+<body>
+    <div id="advancedPathsPage" data-role="page" class="page type-interior advancedConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="advanced.html" data-role="button">General</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Paths</a>
+                    <a href="advancedserversettings.html" data-role="button">Server</a>
+                    <a href="encodingsettings.html" data-role="button">Transcoding</a>
+                </div>
+                <form class="advancedPathsForm">
+
+                    <p>Specify custom paths where desired. Leave fields empty to use the defaults.</p>
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="txtCachePath">Cache path: </label>
+                            <div style="display: inline-block; width: 92%;">
+                                <input type="text" id="txtCachePath" name="txtCachePath" data-mini="true" />
+                            </div>
+                            <button id="btnSelectCachePath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">Select Directory</button>
+                            <div class="fieldDescription">This folder contains server cache files, such as images.</div>
+                        </li>
+                        <li>
+                            <label for="txtItemsByNamePath">Images by name path: </label>
+                            <div style="display: inline-block; width: 92%;">
+                                <input type="text" id="txtItemsByNamePath" name="txtItemsByNamePath" />
+                            </div>
+                            <button id="btnSelectIBNPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">Select Directory</button>
+                            <div class="fieldDescription">This folder contains actor, artist, genre and studio images.</div>
+                        </li>
+                        <li>
+                            <label for="txtMetadataPath">Metadata path: </label>
+                            <div style="display: inline-block; width: 92%;">
+                                <input type="text" id="txtMetadataPath" name="txtMetadataPath" />
+                            </div>
+                            <button id="btnSelectMetadataPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">Select Directory</button>
+                            <div class="fieldDescription">This location contains downloaded artwork and metadata that is not configured to be stored in media folders.</div>
+                        </li>
+                        <li>
+                            <label for="txtTranscodingTempPath">Transcoding temporary path: </label>
+                            <div style="display: inline-block; width: 92%;">
+                                <input type="text" id="txtTranscodingTempPath" name="txtTranscodingTempPath" data-mini="true" />
+                            </div>
+                            <button id="btnSelectTranscodingTempPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">Select Directory</button>
+                            <div class="fieldDescription">
+                                This folder contains working files used by the transcoder.
+                            </div>
+                        </li>
+                    </ul>
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                                Cancel
+                            </button>
+                        </li>
+
+                    </ul>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.advancedPathsForm').off('submit', AdvancedPathsPage.onSubmit).on('submit', AdvancedPathsPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

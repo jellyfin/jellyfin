@@ -49,7 +49,7 @@ namespace MediaBrowser.Api.WebSocket
         /// <returns>Task{SystemInfo}.</returns>
         protected override Task<IEnumerable<SessionInfoDto>> GetDataToSend(object state)
         {
-            return Task.FromResult(_sessionManager.Sessions.Select(_dtoService.GetSessionInfoDto));
+            return Task.FromResult(_sessionManager.Sessions.Where(i => i.IsActive).Select(_dtoService.GetSessionInfoDto));
         }
     }
 }

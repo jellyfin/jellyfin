@@ -9,28 +9,24 @@ using System.Linq;
 
 namespace MediaBrowser.Api.Music
 {
-    [Route("/Songs/{Id}/InstantMix", "GET")]
-    [Api(Description = "Creates an instant playlist based on a given song")]
+    [Route("/Songs/{Id}/InstantMix", "GET", Summary = "Creates an instant playlist based on a given song")]
     public class GetInstantMixFromSong : BaseGetSimilarItemsFromItem
     {
     }
 
-    [Route("/Albums/{Id}/InstantMix", "GET")]
-    [Api(Description = "Creates an instant playlist based on a given album")]
+    [Route("/Albums/{Id}/InstantMix", "GET", Summary = "Creates an instant playlist based on a given album")]
     public class GetInstantMixFromAlbum : BaseGetSimilarItemsFromItem
     {
     }
 
-    [Route("/Artists/{Name}/InstantMix", "GET")]
-    [Api(Description = "Creates an instant playlist based on a given artist")]
+    [Route("/Artists/{Name}/InstantMix", "GET", Summary = "Creates an instant playlist based on a given artist")]
     public class GetInstantMixFromArtist : BaseGetSimilarItems
     {
         [ApiMember(Name = "Name", Description = "The artist name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
 
-    [Route("/MusicGenres/{Name}/InstantMix", "GET")]
-    [Api(Description = "Creates an instant playlist based on a music genre")]
+    [Route("/MusicGenres/{Name}/InstantMix", "GET", Summary = "Creates an instant playlist based on a music genre")]
     public class GetInstantMixFromMusicGenre : BaseGetSimilarItems
     {
         [ApiMember(Name = "Name", Description = "The genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]

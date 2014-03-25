@@ -26,6 +26,7 @@
 
         $('#chkManageLiveTv', page).checked(user.Configuration.EnableLiveTvManagement || false).checkboxradio("refresh");
         $('#chkEnableLiveTvAccess', page).checked(user.Configuration.EnableLiveTvAccess || false).checkboxradio("refresh");
+        $('#chkEnableContentDeletion', page).checked(user.Configuration.EnableContentDeletion || false).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -59,6 +60,7 @@
         user.Configuration.EnableLiveTvManagement = $('#chkManageLiveTv', page).checked();
         user.Configuration.EnableMediaPlayback = $('#chkEnableMediaPlayback', page).checked();
         user.Configuration.EnableLiveTvAccess = $('#chkEnableLiveTvAccess', page).checked();
+        user.Configuration.EnableContentDeletion = $('#chkEnableContentDeletion', page).checked();
 
         var userId = getParameterByName("userId");
 

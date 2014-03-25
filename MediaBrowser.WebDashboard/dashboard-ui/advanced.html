@@ -11,6 +11,7 @@
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">General</a>
+                    <a href="advancedpaths.html" data-role="button">Paths</a>
                     <a href="advancedserversettings.html" data-role="button">Server</a>
                     <a href="encodingsettings.html" data-role="button">Transcoding</a>
                 </div>
@@ -50,25 +51,8 @@
                             </div>
                         </li>
                     </ul>
-                    <h2>Cache Path</h2>
+                    <br />
                     <ul data-role="listview" class="ulForm">
-                        <li>
-                            <input type="checkbox" id="chkEnableCustomCachePath" name="chkEnableCustomCachePath" data-mini="true" />
-                            <label for="chkEnableCustomCachePath">Use custom server cache path</label>
-                            <div class="fieldDescription">
-                                This folder contains server cache files, such as images.
-                            </div>
-                        </li>
-                        <li id="fldEnterCachePath" style="display: none;">
-                            <label for="txtCachePath">Server cache path: </label>
-                            <div style="display: inline-block; width: 92%;">
-                                <input type="text" id="txtCachePath" name="txtCachePath" data-mini="true" />
-                            </div>
-                            <button id="btnSelectCachePath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">Select Directory</button>
-                            <div class="fieldDescription">
-                                Supply a custom cache path. Media Browser Server must have write access to this folder. The location of this folder will directly impact server performance and should ideally be placed on a solid state drive.
-                            </div>
-                        </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
                                 Save

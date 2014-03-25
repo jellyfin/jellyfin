@@ -1,6 +1,6 @@
-﻿using System;
-using MediaBrowser.Common.Implementations;
+﻿using MediaBrowser.Common.Implementations;
 using MediaBrowser.Controller;
+using System;
 using System.IO;
 
 namespace MediaBrowser.Server.Implementations
@@ -239,13 +239,19 @@ namespace MediaBrowser.Server.Implementations
             }
         }
 
+        private string _internalMetadataPath;
         public string InternalMetadataPath
         {
             get
             {
-                return Path.Combine(DataPath, "metadata");
+                return _internalMetadataPath ?? (_internalMetadataPath = Path.Combine(DataPath, "metadata"));
+            }
+            set
+            {
+                _internalMetadataPath = value;
             }
         }
+
 
         public string GetInternalMetadataPath(Guid id)
         {
