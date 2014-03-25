@@ -304,6 +304,13 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new MediaProfile
                 {
+                    Container = "avi",
+                    MimeType = "video/x-msvideo",
+                    Type = DlnaProfileType.Video
+                },
+
+                new MediaProfile
+                {
                     Container = "mkv",
                     MimeType = "video/x-mkv",
                     Type = DlnaProfileType.Video

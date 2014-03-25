@@ -1,4 +1,7 @@
-﻿
+﻿using MediaBrowser.Model.Entities;
+using System;
+using System.Linq;
+
 namespace MediaBrowser.Controller.Dlna
 {
     public class DeviceProfile
@@ -8,12 +11,6 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the client.
-        /// </summary>
-        /// <value>The type of the client.</value>
-        public string ClientType { get; set; }
 
         /// <summary>
         /// Gets or sets the transcoding profiles.
@@ -75,6 +72,142 @@ namespace MediaBrowser.Controller.Dlna
             MediaProfiles = new MediaProfile[] { };
             CodecProfiles = new CodecProfile[] { };
             ContainerProfiles = new ContainerProfile[] { };
+        }
+
+        public TranscodingProfile GetAudioTranscodingProfile(string container, string audioCodec)
+        {
+            container = (container ?? string.Empty).TrimStart('.');
+
+            return TranscodingProfiles.FirstOrDefault(i =>
+            {
+                if (i.Type != DlnaProfileType.Audio)
+                {
+                    return false;
+                }
+
+                if (!string.Equals(container, i.Container, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty))
+                {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        public TranscodingProfile GetVideoTranscodingProfile(string container, string audioCodec, string videoCodec)
+        {
+            container = (container ?? string.Empty).TrimStart('.');
+
+            return TranscodingProfiles.FirstOrDefault(i =>
+            {
+                if (i.Type != DlnaProfileType.Video)
+                {
+                    return false;
+                }
+
+                if (!string.Equals(container, i.Container, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty))
+                {
+                    return false;
+                }
+
+                if (!string.Equals(videoCodec, i.VideoCodec, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        public MediaProfile GetAudioMediaProfile(string container, string audioCodec, MediaStream audioStream)
+        {
+            container = (container ?? string.Empty).TrimStart('.');
+
+            return MediaProfiles.FirstOrDefault(i =>
+            {
+                if (i.Type != DlnaProfileType.Audio)
+                {
+                    return false;
+                }
+
+                var containers = i.GetContainers().ToList();
+                if (containers.Count > 0 && !containers.Contains(container))
+                {
+                    return false;
+                }
+
+                var audioCodecs = i.GetAudioCodecs().ToList();
+                if (audioCodecs.Count > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty))
+                {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        public MediaProfile GetVideoMediaProfile(string container, string audioCodec, string videoCodec, MediaStream audioStream, MediaStream videoStream)
+        {
+            container = (container ?? string.Empty).TrimStart('.');
+
+            return MediaProfiles.FirstOrDefault(i =>
+            {
+                if (i.Type != DlnaProfileType.Video)
+                {
+                    return false;
+                }
+
+                var containers = i.GetContainers().ToList();
+                if (containers.Count > 0 && !containers.Contains(container))
+                {
+                    return false;
+                }
+
+                var audioCodecs = i.GetAudioCodecs().ToList();
+                if (audioCodecs.Count > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty))
+                {
+                    return false;
+                }
+
+                var videoCodecs = i.GetVideoCodecs().ToList();
+                if (videoCodecs.Count > 0 && !videoCodecs.Contains(videoCodec ?? string.Empty))
+                {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        public MediaProfile GetPhotoMediaProfile(string container)
+        {
+            container = (container ?? string.Empty).TrimStart('.');
+
+            return MediaProfiles.FirstOrDefault(i =>
+            {
+                if (i.Type != DlnaProfileType.Photo)
+                {
+                    return false;
+                }
+
+                var containers = i.GetContainers().ToList();
+                if (containers.Count > 0 && !containers.Contains(container))
+                {
+                    return false;
+                }
+
+                return true;
+            });
         }
     }
 }

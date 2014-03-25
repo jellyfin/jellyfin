@@ -28,7 +28,10 @@ namespace MediaBrowser.Providers.Savers
                     "AwardSummary",
                     "BirthDate",
                     "Budget",
+                    
+                    // Deprecated. No longer saving in this field.
                     "certification",
+                    
                     "Chapters",
                     "ContentRating",
                     "CustomRating",
@@ -40,22 +43,31 @@ namespace MediaBrowser.Providers.Savers
                     "Genres",
                     "Genre",
                     "GamesDbId",
+                    
+                    // Deprecated. No longer saving in this field.
                     "IMDB_ID",
+                    
                     "IMDB",
+                    
+                    // Deprecated. No longer saving in this field.
                     "IMDbId",
+                    
                     "Language",
                     "LocalTitle",
                     "LockData",
                     "LockedFields",
                     "Format3D",
                     "Metascore",
+                    
+                    // Deprecated. No longer saving in this field.
                     "MPAARating",
+
                     "MusicBrainzArtistId",
                     "MusicBrainzAlbumArtistId",
                     "MusicBrainzAlbumId",
                     "MusicBrainzReleaseGroupId",
 
-                    // Old - not used anymore
+                    // Deprecated. No longer saving in this field.
                     "MusicbrainzId",
 
                     "Overview",
@@ -67,15 +79,24 @@ namespace MediaBrowser.Providers.Savers
                     "Revenue",
                     "RottenTomatoesId",
                     "RunningTime",
+                    
+                    // Deprecated. No longer saving in this field.
                     "Runtime",
+                    
                     "SortTitle",
                     "Studios",
                     "Tags",
+                    
+                    // Deprecated. No longer saving in this field.
                     "TagLine",
+
                     "Taglines",
                     "TMDbCollectionId",
                     "TMDbId",
+
+                    // Deprecated. No longer saving in this field.
                     "Trailer",
+
                     "Trailers",
                     "TVcomId",
                     "TvDbId",
@@ -207,8 +228,6 @@ namespace MediaBrowser.Providers.Savers
             if (!string.IsNullOrEmpty(item.OfficialRating))
             {
                 builder.Append("<ContentRating>" + SecurityElement.Escape(item.OfficialRating) + "</ContentRating>");
-                builder.Append("<MPAARating>" + SecurityElement.Escape(item.OfficialRating) + "</MPAARating>");
-                builder.Append("<certification>" + SecurityElement.Escape(item.OfficialRating) + "</certification>");
             }
 
             builder.Append("<Added>" + SecurityElement.Escape(item.DateCreated.ToLocalTime().ToString("G")) + "</Added>");
@@ -376,16 +395,13 @@ namespace MediaBrowser.Providers.Savers
                 var timespan = TimeSpan.FromTicks(runTimeTicks.Value);
 
                 builder.Append("<RunningTime>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</RunningTime>");
-                builder.Append("<Runtime>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</Runtime>");
             }
 
             var imdb = item.GetProviderId(MetadataProviders.Imdb);
 
             if (!string.IsNullOrEmpty(imdb))
             {
-                builder.Append("<IMDB_ID>" + SecurityElement.Escape(imdb) + "</IMDB_ID>");
                 builder.Append("<IMDB>" + SecurityElement.Escape(imdb) + "</IMDB>");
-                builder.Append("<IMDbId>" + SecurityElement.Escape(imdb) + "</IMDbId>");
             }
 
             var tmdb = item.GetProviderId(MetadataProviders.Tmdb);
