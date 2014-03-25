@@ -1367,6 +1367,8 @@ $(function () {
 
     videoPlayerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="video-sendMediaButton" class="mediaButton sendMediaButton" title="Remote" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Remote</button>';
 
+    videoPlayerHtml += '<button onclick="MediaPlayer.toggleVideoPlayerMenu();" id="video-videoPlayerMenuButton" class="mediaButton videoPlayerMenuButton" title="Menu" type="button" data-icon="bars" data-iconpos="notext" data-inline="true">Menu</button>';
+
     videoPlayerHtml += '</div>'; // videoControls
 
     videoPlayerHtml += '</div>'; // videoPlayer

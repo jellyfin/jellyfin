@@ -22,6 +22,7 @@
         var fullscreenExited = false;
         var idleState = true;
         var remoteFullscreen = false;
+        var videoMenuVisible = false;
 
         self.initVideoPlayer = function () {
             video = playVideo(item, mediaSource, startPosition, user);
@@ -137,6 +138,21 @@
             } else {
                 toggleFlyout(flyout, '#video-audioTracksButton');
             }
+        };
+
+        self.toggleVideoPlayerMenu = function () {
+            
+            var mediaPlayer = $("#mediaPlayer");
+
+            if (videoMenuVisible) {
+                $(mediaPlayer).removeClass("showVideoMenu");
+            } else {
+                $(mediaPlayer).addClass("showVideoMenu");
+            }
+
+            videoMenuVisible = !videoMenuVisible;
+
+            console.log("show vid click");
         };
 
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function (e) {
@@ -831,9 +847,9 @@
             if (mediaStreams.filter(function (i) {
                 return i.Type == "Subtitle";
             }).length) {
-                $('#video-subtitleButton', videoControls).show();
+                $('#video-subtitleButton', videoControls).show().prop("disabled", false);
             } else {
-                $('#video-subtitleButton', videoControls).hide();
+                $('#video-subtitleButton', videoControls).hide().prop("disabled", true);;
             }
 
             if (item.Chapters && item.Chapters.length) {

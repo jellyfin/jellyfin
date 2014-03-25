@@ -50,12 +50,6 @@
     font-weight: normal;
 }
 
-@media all and (max-width: 650px) {
-    .nowPlayingMediaInfo {
-        display: none;
-    }
-}
-
 .mediaButton img {
     height: 24px;
 }
@@ -131,6 +125,12 @@ input[type="range"]::-ms-fill-upper {
 @media all and (max-width: 800px) {
     .volumeButton, .volumeSliderContainer, .muteButton, .unmuteButton, .nowPlayingMediaInfo {
         display: none!important;
+    }
+}
+
+@media all and (max-width: 650px) {
+    .nowPlayingMediaInfo {
+        display: none;
     }
 }
 

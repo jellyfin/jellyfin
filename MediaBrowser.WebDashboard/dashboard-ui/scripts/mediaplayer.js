@@ -30,11 +30,11 @@
         self.updateVolumeButtons = function (vol) {
 
             if (vol) {
-                self.muteButton.show();
-                self.unmuteButton.hide();
+                self.muteButton.show().prop("disabled", false);
+                self.unmuteButton.hide().prop("disabled", true);
             } else {
-                self.muteButton.hide();
-                self.unmuteButton.show();
+                self.muteButton.hide().prop("disabled", true);
+                self.unmuteButton.show().prop("disabled", false);
             }
         };
 
