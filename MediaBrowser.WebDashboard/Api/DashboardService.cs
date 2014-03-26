@@ -422,6 +422,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "dashboardinfo.js",
                                       "dashboardpage.js",
                                       "directorybrowser.js",
+                                      "dlnaprofiles.js",
                                       "dlnasettings.js",
                                       "editcollectionitems.js",
                                       "edititemmetadata.js",
