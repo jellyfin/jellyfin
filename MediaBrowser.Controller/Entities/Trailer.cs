@@ -3,8 +3,9 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -22,7 +23,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The preferred metadata country code.</value>
         public string PreferredMetadataCountryCode { get; set; }
-        
+
         public Trailer()
         {
             RemoteTrailers = new List<MediaUrl>();
@@ -33,19 +34,19 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public float? Metascore { get; set; }
-        
+
         public List<Guid> LocalTrailerIds { get; set; }
-        
+
         public List<MediaUrl> RemoteTrailers { get; set; }
 
         public List<string> Keywords { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the taglines.
         /// </summary>
         /// <value>The taglines.</value>
         public List<string> Taglines { get; set; }
-   
+
         /// <summary>
         /// Gets or sets the budget.
         /// </summary>
@@ -91,6 +92,12 @@ namespace MediaBrowser.Controller.Entities
             if (!string.IsNullOrWhiteSpace(key))
             {
                 key = key + "-trailer";
+
+                // Make sure different trailers have their own data.
+                if (RunTimeTicks.HasValue)
+                {
+                    key += "-" + RunTimeTicks.Value.ToString(CultureInfo.InvariantCulture);
+                }
 
                 return key;
             }
