@@ -53,7 +53,6 @@
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
@@ -67,6 +66,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="ChannelService.cs" />
+    <Compile Include="DlnaService.cs" />
     <Compile Include="Movies\CollectionService.cs" />
     <Compile Include="Music\AlbumsService.cs" />
     <Compile Include="AppThemeService.cs" />

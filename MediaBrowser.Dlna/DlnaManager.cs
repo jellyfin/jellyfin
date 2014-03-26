@@ -350,6 +350,18 @@ namespace MediaBrowser.Dlna
             Directory.CreateDirectory(UserProfilesPath);
         }
 
+        public void DeleteProfile(string id)
+        {
+            var info = GetProfileInfosInternal().First(i => string.Equals(id, i.Info.Id));
+
+            if (info.Info.Type == DeviceProfileType.System)
+            {
+                throw new ArgumentException("System profiles cannot be deleted.");
+            }
+
+            File.Delete(info.Path);
+        }
+
         class InternalProfileInfo
         {
             internal DeviceProfileInfo Info { get; set; }
