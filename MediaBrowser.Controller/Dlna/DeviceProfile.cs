@@ -1,9 +1,12 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Controller.Dlna
 {
+    [XmlRoot("Profile")]
     public class DeviceProfile
     {
         /// <summary>
@@ -12,19 +15,9 @@ namespace MediaBrowser.Controller.Dlna
         /// <value>The name.</value>
         public string Name { get; set; }
 
-        /// <summary>
-        /// Gets or sets the transcoding profiles.
-        /// </summary>
-        /// <value>The transcoding profiles.</value>
-        public TranscodingProfile[] TranscodingProfiles { get; set; }
-
-        /// <summary>
-        /// Gets or sets the direct play profiles.
-        /// </summary>
-        /// <value>The direct play profiles.</value>
-        public DirectPlayProfile[] DirectPlayProfiles { get; set; }
-
-        public ContainerProfile[] ContainerProfiles { get; set; }
+        [XmlIgnore]
+        [IgnoreDataMember]
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the identification.
@@ -57,13 +50,26 @@ namespace MediaBrowser.Controller.Dlna
 
         public string ProtocolInfo { get; set; }
 
-        public MediaProfile[] MediaProfiles { get; set; }
-        public CodecProfile[] CodecProfiles { get; set; }
-
         public int TimelineOffsetSeconds { get; set; }
-
         public bool RequiresPlainVideoItems { get; set; }
         public bool RequiresPlainFolders { get; set; }
+
+        /// <summary>
+        /// Gets or sets the direct play profiles.
+        /// </summary>
+        /// <value>The direct play profiles.</value>
+        public DirectPlayProfile[] DirectPlayProfiles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transcoding profiles.
+        /// </summary>
+        /// <value>The transcoding profiles.</value>
+        public TranscodingProfile[] TranscodingProfiles { get; set; }
+
+        public ContainerProfile[] ContainerProfiles { get; set; }
+
+        public CodecProfile[] CodecProfiles { get; set; }
+        public MediaProfile[] MediaProfiles { get; set; }
 
         public DeviceProfile()
         {

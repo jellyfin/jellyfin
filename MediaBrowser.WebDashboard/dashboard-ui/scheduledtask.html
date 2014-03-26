@@ -19,7 +19,7 @@
             </div>
         </div>
         <div data-role="popup" id="popupAddTrigger" class="popup" style="min-width: 300px;">
-            <form id="addTriggerForm">
+            <form class="addTriggerForm">
                 <div class="ui-bar-b" style="text-align: center; padding: 0 20px;">
                     <h3>Add Task Trigger</h3>
                 </div>
@@ -85,6 +85,9 @@
                 </div>
             </form>
         </div>
+        <script type="text/javascript">
+            $('.addTriggerForm').off('submit', ScheduledTaskPage.onSubmit).on('submit', ScheduledTaskPage.onSubmit);
+        </script>
     </div>
 </body>
 </html>

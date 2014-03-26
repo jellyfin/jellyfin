@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Name>Panasonic Viera</Name>
+  <Identification>
+    <FriendlyName>VIERA</FriendlyName>
+    <Manufacturer>Panasonic</Manufacturer>
+    <Headers>
+      <HttpHeaderInfo name="User-Agent" value="Panasonic MIL DLNA" match="Substring" />
+    </Headers>
+  </Identification>
+  <Manufacturer>Media Browser</Manufacturer>
+  <ManufacturerUrl>http://mediabrowser3.com/</ManufacturerUrl>
+  <ModelName>Media Browser</ModelName>
+  <ModelDescription>Media Browser</ModelDescription>
+  <ModelNumber>Media Browser</ModelNumber>
+  <ModelUrl>http://mediabrowser3.com/</ModelUrl>
+  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
+  <SupportsAlbumArtInDidl>false</SupportsAlbumArtInDidl>
+  <ProtocolInfo>DLNA</ProtocolInfo>
+  <TimelineOffsetSeconds>10</TimelineOffsetSeconds>
+  <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
+  <RequiresPlainFolders>false</RequiresPlainFolders>
+  <DirectPlayProfiles>
+    <DirectPlayProfile container="mpeg" audioCodec="ac3,mp3" videoCodec="mpeg2video,mpeg4" type="Video" />
+    <DirectPlayProfile container="mkv" audioCodec="aac,ac3,mp3,pcm" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="ts" audioCodec="aac,mp3" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="mp4" audioCodec="aac,ac3,mp3,pcm" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="mov" audioCodec="aac,pcm" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="avi" audioCodec="pcm" videoCodec="mpeg4" type="Video" />
+    <DirectPlayProfile container="flv" audioCodec="aac" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
+    <DirectPlayProfile container="mp4" audioCodec="aac" type="Audio" />
+    <DirectPlayProfile container="jpeg" type="Photo" />
+  </DirectPlayProfiles>
+  <TranscodingProfiles>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+  </TranscodingProfiles>
+  <ContainerProfiles>
+    <ContainerProfile type="Photo">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+      </Conditions>
+    </ContainerProfile>
+  </ContainerProfiles>
+  <CodecProfiles>
+    <CodecProfile type="VideoCodec">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitDepth" value="8" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+  </CodecProfiles>
+  <MediaProfiles />
+</Profile>

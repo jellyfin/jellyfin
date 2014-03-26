@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using System.Xml.Serialization;
+using MediaBrowser.Controller.Dlna;
 
 namespace MediaBrowser.Dlna.Profiles
 {
+    [XmlRoot("Profile")]
     public class SonyBravia2013Profile : DefaultProfile
     {
         public SonyBravia2013Profile()

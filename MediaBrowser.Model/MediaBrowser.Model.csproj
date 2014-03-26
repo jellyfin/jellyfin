@@ -66,6 +66,7 @@
     <Compile Include="Configuration\MetadataPlugin.cs" />
     <Compile Include="Configuration\MetadataOptions.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
+    <Compile Include="Dlna\DeviceProfileInfo.cs" />
     <Compile Include="Drawing\ImageOutputFormat.cs" />
     <Compile Include="Dto\BaseItemPerson.cs" />
     <Compile Include="Dto\ChapterInfoDto.cs" />

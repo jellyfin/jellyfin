@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Controller.Dlna
 {
     public class CodecProfile
     {
+        [XmlAttribute("type")]
         public CodecType Type { get; set; }
+       
         public ProfileCondition[] Conditions { get; set; }
+
+        [XmlAttribute("codec")]
         public string Codec { get; set; }
 
         public CodecProfile()
@@ -37,9 +42,16 @@ namespace MediaBrowser.Controller.Dlna
 
     public class ProfileCondition
     {
+        [XmlAttribute("condition")]
         public ProfileConditionType Condition { get; set; }
+
+        [XmlAttribute("property")]
         public ProfileConditionValue Property { get; set; }
+
+        [XmlAttribute("value")]
         public string Value { get; set; }
+
+        [XmlAttribute("isRequired")]
         public bool IsRequired { get; set; }
 
         public ProfileCondition()

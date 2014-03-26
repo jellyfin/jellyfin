@@ -65,6 +65,9 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "Static", Description = "Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool Static { get; set; }
 
+        [ApiMember(Name = "DeviceProfileId", Description = "Optional. The dlna device profile id to utilize.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string DeviceProfileId { get; set; }
+        
         /// <summary>
         /// For testing purposes
         /// </summary>

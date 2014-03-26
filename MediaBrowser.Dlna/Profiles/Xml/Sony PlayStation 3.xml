@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Name>Sony PlayStation 3</Name>
+  <Identification>
+    <FriendlyName>PLAYSTATION 3</FriendlyName>
+    <Headers>
+      <HttpHeaderInfo name="User-Agent" value="PLAYSTATION 3" match="Substring" />
+      <HttpHeaderInfo name="X-AV-Client-Info" value="PLAYSTATION 3" match="Substring" />
+    </Headers>
+  </Identification>
+  <Manufacturer>Media Browser</Manufacturer>
+  <ManufacturerUrl>http://mediabrowser3.com/</ManufacturerUrl>
+  <ModelName>Media Browser</ModelName>
+  <ModelDescription>Media Browser</ModelDescription>
+  <ModelNumber>Media Browser</ModelNumber>
+  <ModelUrl>http://mediabrowser3.com/</ModelUrl>
+  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
+  <SupportsAlbumArtInDidl>false</SupportsAlbumArtInDidl>
+  <XDlnaDoc>DMS-1.50</XDlnaDoc>
+  <SonyAggregationFlags>10</SonyAggregationFlags>
+  <ProtocolInfo>DLNA</ProtocolInfo>
+  <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
+  <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
+  <RequiresPlainFolders>false</RequiresPlainFolders>
+  <DirectPlayProfiles>
+    <DirectPlayProfile container="mp3,wma" type="Audio" />
+    <DirectPlayProfile container="avi,mp4" type="Video" />
+  </DirectPlayProfiles>
+  <TranscodingProfiles>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+  </TranscodingProfiles>
+  <ContainerProfiles>
+    <ContainerProfile type="Photo">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+      </Conditions>
+    </ContainerProfile>
+  </ContainerProfiles>
+  <CodecProfiles>
+    <CodecProfile type="VideoCodec" codec="h264">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="15360000" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudioCodec" codec="ac3">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="AudioBitrate" value="640000" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudioCodec" codec="wmapro">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudioCodec" codec="aac">
+      <Conditions>
+        <ProfileCondition condition="NotEquals" property="AudioProfile" value="he-aac" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudioCodec" codec="aac">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
+        <ProfileCondition condition="NotEquals" property="AudioProfile" value="he-aac" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+  </CodecProfiles>
+  <MediaProfiles>
+    <MediaProfile container="mp4,mov" audioCodec="aac" type="Video" mimeType="video/mp4">
+      <Conditions />
+    </MediaProfile>
+    <MediaProfile container="avi" type="Video" orgPn="AVI" mimeType="video/divx">
+      <Conditions />
+    </MediaProfile>
+    <MediaProfile container="wav" type="Audio" mimeType="audio/wav">
+      <Conditions />
+    </MediaProfile>
+  </MediaProfiles>
+</Profile>

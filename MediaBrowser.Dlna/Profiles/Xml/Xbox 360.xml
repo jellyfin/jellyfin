@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Name>Xbox 360</Name>
+  <Identification>
+    <ModelName>Xbox 360</ModelName>
+    <Headers>
+      <HttpHeaderInfo name="User-Agent" value="Xbox" match="Substring" />
+      <HttpHeaderInfo name="User-Agent" value="Xenon" match="Substring" />
+    </Headers>
+  </Identification>
+  <Manufacturer>Microsoft Corporation</Manufacturer>
+  <ManufacturerUrl>http://www.microsoft.com/</ManufacturerUrl>
+  <ModelName>Windows Media Player Sharing</ModelName>
+  <ModelDescription>Media Browser</ModelDescription>
+  <ModelNumber>12.0</ModelNumber>
+  <ModelUrl>http://www.microsoft.com/</ModelUrl>
+  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
+  <SupportsAlbumArtInDidl>false</SupportsAlbumArtInDidl>
+  <XDlnaDoc>DMS-1.50</XDlnaDoc>
+  <ProtocolInfo>DLNA</ProtocolInfo>
+  <TimelineOffsetSeconds>40</TimelineOffsetSeconds>
+  <RequiresPlainVideoItems>true</RequiresPlainVideoItems>
+  <RequiresPlainFolders>true</RequiresPlainFolders>
+  <DirectPlayProfiles>
+    <DirectPlayProfile container="avi" audioCodec="ac3,mp3" videoCodec="mpeg4" type="Video" />
+    <DirectPlayProfile container="avi" audioCodec="aac" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="mp4,mov" audioCodec="aac,ac3" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro" videoCodec="wmv2,wmv3,vc1" type="Video" />
+    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" type="Audio" />
+    <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
+    <DirectPlayProfile container="jpeg" type="Photo" />
+  </DirectPlayProfiles>
+  <TranscodingProfiles>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+    <TranscodingProfile container="asf" type="Video" videoCodec="wmv2" audioCodec="wmav2" estimateContentLength="true" enableMpegtsM2TsMode="false" transcodeSeekInfo="Bytes">
+      <Settings>
+        <TranscodingSetting name="VideoProfile" value="baseline" />
+      </Settings>
+    </TranscodingProfile>
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+  </TranscodingProfiles>
+  <ContainerProfiles>
+    <ContainerProfile type="Video" container="mp4,mov">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Has64BitOffsets" value="false" isRequired="false" />
+      </Conditions>
+    </ContainerProfile>
+    <ContainerProfile type="Photo">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+      </Conditions>
+    </ContainerProfile>
+  </ContainerProfiles>
+  <CodecProfiles>
+    <CodecProfile type="VideoCodec" codec="mpeg4">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1280" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="720" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="5120000" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoCodec" codec="h264">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="10240000" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="3" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoCodec" codec="wmv2,wmv3,vc1">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="15360000" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="3" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudioCodec" codec="ac3,wmav2,wmapro">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudioCodec" codec="aac">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="false" />
+        <ProfileCondition condition="Equals" property="AudioProfile" value="lc" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+  </CodecProfiles>
+  <MediaProfiles>
+    <MediaProfile container="avi" type="Video" mimeType="video/avi">
+      <Conditions />
+    </MediaProfile>
+  </MediaProfiles>
+</Profile>

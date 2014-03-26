@@ -88,6 +88,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\UserConfiguration.cs">
       <Link>Configuration\UserConfiguration.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\DeviceProfileInfo.cs">
+      <Link>Dlna\DeviceProfileInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Drawing\DrawingUtils.cs">
       <Link>Drawing\DrawingUtils.cs</Link>
     </Compile>

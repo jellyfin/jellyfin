@@ -45,6 +45,7 @@ namespace MediaBrowser.Dlna.PlayTo
             
             var list = new List<string>
             {
+                item.DeviceProfileId ?? string.Empty,
                 deviceProperties.UUID ?? string.Empty,
                 item.MediaSourceId ?? string.Empty,
                 (!item.Transcode).ToString().ToLower(),

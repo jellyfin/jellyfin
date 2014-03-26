@@ -46,6 +46,8 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public int? MaxFramerate { get; set; }
 
+        public string DeviceProfileId { get; set; }
+
         public PlaylistItem()
         {
             TranscodingSettings = new List<TranscodingSetting>();

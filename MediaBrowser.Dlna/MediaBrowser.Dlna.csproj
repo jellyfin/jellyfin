@@ -117,7 +117,27 @@
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Denon AVR.xml" />
+    <EmbeddedResource Include="Profiles\Xml\foobar2000.xml" />
+    <EmbeddedResource Include="Profiles\Xml\LG Smart TV.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Linksys DMA2100.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Panasonic Viera.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Samsung Smart TV.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2013.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282010%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282011%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282012%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282013%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 3.xml" />
+    <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Xbox 360.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Default.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
