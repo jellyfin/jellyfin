@@ -1,5 +1,5 @@
-﻿using System.Xml.Serialization;
-using MediaBrowser.Controller.Dlna;
+﻿using MediaBrowser.Controller.Dlna;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
 {

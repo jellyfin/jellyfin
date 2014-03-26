@@ -30,6 +30,18 @@ namespace MediaBrowser.Api
         public string Id { get; set; }
     }
 
+    [Route("/Dlna/Profiles/{ProfileId}", "POST", Summary = "Updates a profile")]
+    public class UpdateProfile : DeviceProfile, IReturnVoid
+    {
+        [ApiMember(Name = "ProfileId", Description = "Profile Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string ProfileId { get; set; }
+    }
+
+    [Route("/Dlna/Profiles", "POST", Summary = "Creates a profile")]
+    public class CreateProfile : DeviceProfile, IReturnVoid
+    {
+    }
+
     public class DlnaService : BaseApiService
     {
         private readonly IDlnaManager _dlnaManager;
@@ -63,6 +75,16 @@ namespace MediaBrowser.Api
         public void Delete(DeleteProfile request)
         {
             _dlnaManager.DeleteProfile(request.Id);
+        }
+
+        public void Post(UpdateProfile request)
+        {
+            _dlnaManager.UpdateProfile(request);
+        }
+
+        public void Post(CreateProfile request)
+        {
+            _dlnaManager.CreateProfile(request);
         }
     }
 }

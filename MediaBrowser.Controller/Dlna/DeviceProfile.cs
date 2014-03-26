@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +18,10 @@ namespace MediaBrowser.Controller.Dlna
         public string Name { get; set; }
 
         [XmlIgnore]
-        [IgnoreDataMember]
         public string Id { get; set; }
+
+        [XmlIgnore]
+        public DeviceProfileType ProfileType { get; set; }
 
         /// <summary>
         /// Gets or sets the identification.

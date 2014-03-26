@@ -6,6 +6,7 @@
     <ModelName>Xbox One</ModelName>
     <Headers />
   </Identification>
+  <FriendlyName>Media Browser</FriendlyName>
   <Manufacturer>Media Browser</Manufacturer>
   <ManufacturerUrl>http://mediabrowser3.com/</ManufacturerUrl>
   <ModelName>Media Browser</ModelName>

@@ -7,6 +7,7 @@
     <Manufacturer>Sony</Manufacturer>
     <Headers />
   </Identification>
+  <FriendlyName>Media Browser</FriendlyName>
   <Manufacturer>Microsoft Corporation</Manufacturer>
   <ManufacturerUrl>http://mediabrowser3.com/</ManufacturerUrl>
   <ModelName>Windows Media Player Sharing</ModelName>

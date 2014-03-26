@@ -35,11 +35,11 @@ namespace MediaBrowser.Dlna
         {
             ExtractProfilesIfNeeded();
 
-            var list = GetProfiles(UserProfilesPath)
+            var list = GetProfiles(UserProfilesPath, DeviceProfileType.User)
                 .OrderBy(i => i.Name)
                 .ToList();
 
-            list.AddRange(GetProfiles(SystemProfilesPath)
+            list.AddRange(GetProfiles(SystemProfilesPath, DeviceProfileType.System)
                 .OrderBy(i => i.Name));
 
             return list;
@@ -111,7 +111,13 @@ namespace MediaBrowser.Dlna
 
         public DeviceProfile GetProfile(DeviceIdentification deviceInfo)
         {
-            var profile = GetProfiles().FirstOrDefault(i => IsMatch(deviceInfo, i.Identification));
+            if (deviceInfo == null)
+            {
+                throw new ArgumentNullException("deviceInfo");
+            }
+
+            var profile = GetProfiles()
+                .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
 
             if (profile != null)
             {
@@ -127,12 +133,6 @@ namespace MediaBrowser.Dlna
 
         private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
         {
-            if (profileInfo == null)
-            {
-                //There are profiles without identification, ignore thoose
-                return false;
-            }
-
             if (!string.IsNullOrWhiteSpace(profileInfo.DeviceDescription))
             {
                 if (deviceInfo.DeviceDescription == null || !Regex.IsMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
@@ -192,6 +192,11 @@ namespace MediaBrowser.Dlna
 
         public DeviceProfile GetProfile(IDictionary<string, string> headers)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException("headers");
+            }
+
             return GetProfiles().FirstOrDefault(i => IsMatch(headers, i.Identification));
         }
 
@@ -238,14 +243,14 @@ namespace MediaBrowser.Dlna
             }
         }
 
-        private IEnumerable<DeviceProfile> GetProfiles(string path)
+        private IEnumerable<DeviceProfile> GetProfiles(string path, DeviceProfileType type)
         {
             try
             {
                 return new DirectoryInfo(path)
                     .EnumerateFiles("*", SearchOption.TopDirectoryOnly)
                     .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
-                    .Select(i => ParseProfileXmlFile(i.FullName))
+                    .Select(i => ParseProfileXmlFile(i.FullName, type))
                     .Where(i => i != null)
                     .ToList();
             }
@@ -255,13 +260,14 @@ namespace MediaBrowser.Dlna
             }
         }
 
-        private DeviceProfile ParseProfileXmlFile(string path)
+        private DeviceProfile ParseProfileXmlFile(string path, DeviceProfileType type)
         {
             try
             {
                 var profile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
 
                 profile.Id = path.ToLower().GetMD5().ToString("N");
+                profile.ProfileType = type;
 
                 return profile;
             }
@@ -275,9 +281,14 @@ namespace MediaBrowser.Dlna
 
         public DeviceProfile GetProfile(string id)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
             var info = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, id));
 
-            return ParseProfileXmlFile(info.Path);
+            return ParseProfileXmlFile(info.Path, info.Info.Type);
         }
 
         private IEnumerable<InternalProfileInfo> GetProfileInfosInternal()
@@ -366,6 +377,14 @@ namespace MediaBrowser.Dlna
             }
 
             File.Delete(info.Path);
+        }
+
+        public void CreateProfile(DeviceProfile profile)
+        {
+        }
+
+        public void UpdateProfile(DeviceProfile profile)
+        {
         }
 
         class InternalProfileInfo
