@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>DLNA</title>
+</head>
+<body>
+    <div id="dlnaProfilePage" data-role="page" class="page type-interior adminPage dlnaPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="dlnasettings.html" data-role="button">Settings</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Profiles</a>
+                </div>
+
+                <form class="dlnaProfileForm">
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                                Cancel
+                            </button>
+                        </li>
+
+                    </ul>
+                </form>
+
+            </div>
+        </div>
+        <script type="text/javascript">
+            $('.dlnaProfileForm').off('submit', DlnaProfilePage.onSubmit).on('submit', DlnaProfilePage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

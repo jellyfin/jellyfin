@@ -1118,6 +1118,10 @@
                 attributes.push(createAttribute("Sample Rate", stream.SampleRate + ' khz'));
             }
 
+            if (stream.PixelFormat) {
+                attributes.push(createAttribute("Pixel Format", stream.PixelFormat));
+            }
+
             if (stream.Type != "Video") {
                 attributes.push(createAttribute("Default", (stream.IsDefault ? 'Yes' : 'No')));
             }

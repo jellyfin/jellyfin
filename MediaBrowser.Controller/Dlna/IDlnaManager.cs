@@ -23,6 +23,12 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <returns>DeviceProfile.</returns>
         DeviceProfile GetDefaultProfile();
+
+        /// <summary>
+        /// Deletes the profile.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        void DeleteProfile(string id);
         
         /// <summary>
         /// Gets the profile.

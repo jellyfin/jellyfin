@@ -1,0 +1,68 @@
+﻿using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Model.Dlna;
+using ServiceStack;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace MediaBrowser.Api
+{
+    [Route("/Dlna/ProfileInfos", "GET", Summary = "Gets a list of profiles")]
+    public class GetProfileInfos : IReturn<List<DeviceProfileInfo>>
+    {
+    }
+
+    [Route("/Dlna/Profiles/{Id}", "DELETE", Summary = "Deletes a profile")]
+    public class DeleteProfile : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Profile Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Dlna/Profiles/Default", "GET", Summary = "Gets the default profile")]
+    public class GetDefaultProfile : IReturn<DeviceProfile>
+    {
+    }
+
+    [Route("/Dlna/Profiles/{Id}", "GET", Summary = "Gets a single profile")]
+    public class GetProfile : IReturn<DeviceProfile>
+    {
+        [ApiMember(Name = "Id", Description = "Profile Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    public class DlnaService : BaseApiService
+    {
+        private readonly IDlnaManager _dlnaManager;
+
+        public DlnaService(IDlnaManager dlnaManager)
+        {
+            _dlnaManager = dlnaManager;
+        }
+
+        public object Get(GetProfileInfos request)
+        {
+            var result = _dlnaManager.GetProfileInfos().ToList();
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Get(GetProfile request)
+        {
+            var result = _dlnaManager.GetProfile(request.Id);
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Get(GetDefaultProfile request)
+        {
+            var result = _dlnaManager.GetDefaultProfile();
+
+            return ToOptimizedResult(result);
+        }
+
+        public void Delete(DeleteProfile request)
+        {
+            _dlnaManager.DeleteProfile(request.Id);
+        }
+    }
+}
