@@ -8,6 +8,7 @@
       <HttpHeaderInfo name="User-Agent" value="Xenon" match="Substring" />
     </Headers>
   </Identification>
+  <FriendlyName>Media Browser</FriendlyName>
   <Manufacturer>Microsoft Corporation</Manufacturer>
   <ManufacturerUrl>http://www.microsoft.com/</ManufacturerUrl>
   <ModelName>Windows Media Player Sharing</ModelName>

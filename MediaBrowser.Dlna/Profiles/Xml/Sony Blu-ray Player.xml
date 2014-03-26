@@ -9,6 +9,7 @@
       <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="(Blu-ray Disc Player|Home Theater System|Home Theatre System|Media Player)" match="Regex" />
     </Headers>
   </Identification>
+  <FriendlyName>Media Browser</FriendlyName>
   <Manufacturer>Microsoft Corporation</Manufacturer>
   <ManufacturerUrl>http://mediabrowser3.com/</ManufacturerUrl>
   <ModelName>Windows Media Player Sharing</ModelName>

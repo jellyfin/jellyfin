@@ -4,20 +4,78 @@
 
         Dashboard.showLoadingMsg();
 
-        var id = getParameterByName('id');
-        var url = id ? 'Dlna/Profiles/' + id :
-            'Dlna/Profiles/Default';
-
-        $.getJSON(ApiClient.getUrl(url)).done(function (result) {
+        getProfile().done(function (result) {
 
             renderProfile(page, result);
 
             Dashboard.hideLoadingMsg();
         });
     }
-    
+
+    function getProfile() {
+
+        var id = getParameterByName('id');
+        var url = id ? 'Dlna/Profiles/' + id :
+            'Dlna/Profiles/Default';
+
+        return $.getJSON(ApiClient.getUrl(url));
+    }
+
     function renderProfile(page, profile) {
+
+        if (profile.ProfileType == 'User' || !profile.Id) {
+            $('.btnSave', page).show();
+        } else {
+            $('.btnSave', page).hide();
+        }
         
+        $('#txtName', page).val(profile.Name);
+
+    }
+
+    function saveProfile(page, profile) {
+
+        updateProfile(page, profile);
+
+        var id = getParameterByName('id');
+
+        if (id) {
+
+            $.ajax({
+                type: "POST",
+                url: ApiClient.getUrl("Dlna/Profiles/" + id),
+                data: JSON.stringify(profile),
+                contentType: "application/json"
+
+            }).done(function () {
+
+                Dashboard.alert('Settings saved.');
+
+            });
+
+        } else {
+
+            $.ajax({
+                type: "POST",
+                url: ApiClient.getUrl("Dlna/Profiles"),
+                data: JSON.stringify(profile),
+                contentType: "application/json"
+
+            }).done(function () {
+
+                Dashboard.navigate('dlnaprofiles.html');
+
+            });
+
+        }
+
+        Dashboard.hideLoadingMsg();
+    }
+
+    function updateProfile(page, profile) {
+
+        profile.Name = $('#txtName', page).val();
+
     }
 
     $(document).on('pageshow', "#dlnaProfilePage", function () {
@@ -28,9 +86,19 @@
 
     });
 
-    window.DlnaProfilePage = {        
-      
-        onSubmit: function() {
+    window.DlnaProfilePage = {
+
+        onSubmit: function () {
+
+            Dashboard.showLoadingMsg();
+
+            var form = this;
+            var page = $(form).parents('.page');
+
+            getProfile().done(function (profile) {
+
+                saveProfile(page, profile);
+            });
 
             return false;
         }

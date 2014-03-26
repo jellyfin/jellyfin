@@ -11,17 +11,24 @@
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="dlnasettings.html" data-role="button">Settings</a>
-                    <a href="#" data-role="button" class="ui-btn-active">Profiles</a>
+                    <a href="dlnaprofiles.html" data-role="button" class="ui-btn-active">Profiles</a>
                 </div>
 
                 <form class="dlnaProfileForm">
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            <label for="txtName">Name</label>
+                            <input type="text" id="txtName" data-mini="true" required="required" />
+                        </li>
+                    </ul>
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button class="btnSave" style="display: none;" type="submit" data-theme="b" data-icon="check" data-mini="true">
                                 Save
                             </button>
-                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                            <button type="button" onclick="Dashboard.navigate('dlnaprofiles.html');" data-icon="delete" data-mini="true">
                                 Cancel
                             </button>
                         </li>
