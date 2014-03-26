@@ -127,6 +127,12 @@ namespace MediaBrowser.Dlna
 
         private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
         {
+            if (profileInfo == null)
+            {
+                //There are profiles without identification, ignore thoose
+                return false;
+            }
+
             if (!string.IsNullOrWhiteSpace(profileInfo.DeviceDescription))
             {
                 if (deviceInfo.DeviceDescription == null || !Regex.IsMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
