@@ -10,7 +10,7 @@ namespace MediaBrowser.Dlna.Profiles
         {
             Name = "Samsung Smart TV";
 
-            SupportsAlbumArtInDidl = true;
+            EnableAlbumArtInDidl = true;
 
             Identification = new DeviceIdentification
             {

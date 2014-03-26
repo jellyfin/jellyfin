@@ -172,8 +172,8 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     Item = _currentItem, 
                     SessionId = _session.Id, 
-                    CanSeek = true, 
-                    QueueableMediaTypes = new List<string> { "Audio", "Video" }
+                    CanSeek = true,
+                    QueueableMediaTypes = new List<string> { _currentItem.MediaType }
 
                 }).ConfigureAwait(false);
 

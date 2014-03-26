@@ -1,5 +1,5 @@
-﻿using System.Xml.Serialization;
-using MediaBrowser.Controller.Dlna;
+﻿using MediaBrowser.Controller.Dlna;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
 {
@@ -10,6 +10,8 @@ namespace MediaBrowser.Dlna.Profiles
         {
             Name = "foobar2000";
 
+            SupportedMediaTypes = "Audio";
+            
             Identification = new DeviceIdentification
             {
                 FriendlyName = @"foobar",

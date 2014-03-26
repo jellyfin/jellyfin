@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
@@ -33,7 +34,9 @@ namespace MediaBrowser.Controller.Dlna
         public string ModelNumber { get; set; }
         public string ModelUrl { get; set; }
         public bool IgnoreTranscodeByteRangeRequests { get; set; }
-        public bool SupportsAlbumArtInDidl { get; set; }
+        public bool EnableAlbumArtInDidl { get; set; }
+
+        public string SupportedMediaTypes { get; set; }
 
         /// <summary>
         /// Controls the content of the X_DLNADOC element in the urn:schemas-dlna-org:device-1-0 namespace.
@@ -78,6 +81,13 @@ namespace MediaBrowser.Controller.Dlna
             MediaProfiles = new MediaProfile[] { };
             CodecProfiles = new CodecProfile[] { };
             ContainerProfiles = new ContainerProfile[] { };
+
+            SupportedMediaTypes = "Audio,Photo,Video";
+        }
+
+        public List<string> GetSupportedMediaTypes()
+        {
+            return (SupportedMediaTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
         }
 
         public TranscodingProfile GetAudioTranscodingProfile(string container, string audioCodec)
