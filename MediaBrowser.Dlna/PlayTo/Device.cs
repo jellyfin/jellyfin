@@ -42,6 +42,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 if (_currentId == value)
                     return;
                 _currentId = value;
+
                 NotifyCurrentIdChanged(value);
             }
         }
@@ -250,7 +251,7 @@ namespace MediaBrowser.Dlna.PlayTo
             StopTimer();
 
             await SetStop().ConfigureAwait(false);
-            CurrentId = "0";
+            CurrentId = null;
 
             var command = AvCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
             if (command == null)
@@ -514,7 +515,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (String.IsNullOrEmpty(track))
             {
-                CurrentId = "0";
+                CurrentId = null;
                 return;
             }
 
@@ -775,7 +776,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private void NotifyCurrentIdChanged(string value)
         {
             if (CurrentIdChanged != null)
-                CurrentIdChanged.Invoke(this, new CurrentIdEventArgs(value));
+                CurrentIdChanged.Invoke(this, new CurrentIdEventArgs { Id = value });
         }
 
         #endregion

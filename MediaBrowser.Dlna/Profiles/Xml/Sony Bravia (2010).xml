@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Name>Sony Bravia (2010)</Name>
+  <Identification>
+    <FriendlyName>KDL-\d{2}[EHLNPB]X\d[01]\d.*</FriendlyName>
+    <Manufacturer>Sony</Manufacturer>
+    <Headers>
+      <HttpHeaderInfo name="X-AV-Client-Info" value=".*KDL-\d{2}[EHLNPB]X\d[01]\d.*" match="Regex" />
+    </Headers>
+  </Identification>
+  <Manufacturer>Microsoft Corporation</Manufacturer>
+  <ManufacturerUrl>http://www.microsoft.com/</ManufacturerUrl>
+  <ModelName>Windows Media Player Sharing</ModelName>
+  <ModelDescription>Media Browser</ModelDescription>
+  <ModelNumber>3.0</ModelNumber>
+  <ModelUrl>http://www.microsoft.com/</ModelUrl>
+  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
+  <SupportsAlbumArtInDidl>false</SupportsAlbumArtInDidl>
+  <SonyAggregationFlags>10</SonyAggregationFlags>
+  <ProtocolInfo>http-get:*:audio/mpeg:DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=81500000000000000000000000000000,http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=00D00000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_PS_PAL;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=81500000000000000000000000000000</ProtocolInfo>
+  <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
+  <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
+  <RequiresPlainFolders>false</RequiresPlainFolders>
+  <DirectPlayProfiles>
+    <DirectPlayProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="ts" audioCodec="mp3,mp2" videoCodec="mpeg1video,mpeg2video" type="Video" />
+    <DirectPlayProfile container="mpeg" audioCodec="mp3,mp2" videoCodec="mpeg2video,mpeg1video" type="Video" />
+    <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
+  </DirectPlayProfiles>
+  <TranscodingProfiles>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="ac3,aac" estimateContentLength="false" enableMpegtsM2TsMode="true" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+  </TranscodingProfiles>
+  <ContainerProfiles>
+    <ContainerProfile type="Photo">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+      </Conditions>
+    </ContainerProfile>
+  </ContainerProfiles>
+  <CodecProfiles>
+    <CodecProfile type="VideoCodec">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoCodec" codec="h264">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="20000000" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoCodec" codec="mpeg2video">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="20000000" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudioCodec" codec="ac3">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudioCodec" codec="aac">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
+        <ProfileCondition condition="NotEquals" property="AudioProfile" value="he-aac" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+  </CodecProfiles>
+  <MediaProfiles>
+    <MediaProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3_T,AVC_TS_HD_50_AC3_T,AVC_TS_HD_60_AC3_T,AVC_TS_HD_EU_T" mimeType="video/vnd.dlna.mpeg-tts">
+      <Conditions />
+    </MediaProfile>
+    <MediaProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3_ISO,AVC_TS_HD_50_AC3_ISO,AVC_TS_HD_60_AC3_ISO,AVC_TS_HD_EU_ISO" mimeType="video/mpeg">
+      <Conditions />
+    </MediaProfile>
+    <MediaProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3,AVC_TS_HD_50_AC3,AVC_TS_HD_60_AC3,AVC_TS_HD_EU" mimeType="video/vnd.dlna.mpeg-tts">
+      <Conditions />
+    </MediaProfile>
+    <MediaProfile container="ts" videoCodec="mpeg2video" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
+      <Conditions />
+    </MediaProfile>
+    <MediaProfile container="mpeg" videoCodec="mpeg1video,mpeg2video" type="Video" orgPn="MPEG_PS_NTSC,MPEG_PS_PAL" mimeType="video/mpeg">
+      <Conditions />
+    </MediaProfile>
+  </MediaProfiles>
+</Profile>

@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Name>Xbox One</Name>
+  <Identification>
+    <FriendlyName>Xbox-SystemOS</FriendlyName>
+    <ModelName>Xbox One</ModelName>
+    <Headers />
+  </Identification>
+  <Manufacturer>Media Browser</Manufacturer>
+  <ManufacturerUrl>http://mediabrowser3.com/</ManufacturerUrl>
+  <ModelName>Media Browser</ModelName>
+  <ModelDescription>Media Browser</ModelDescription>
+  <ModelNumber>Media Browser</ModelNumber>
+  <ModelUrl>http://mediabrowser3.com/</ModelUrl>
+  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
+  <SupportsAlbumArtInDidl>false</SupportsAlbumArtInDidl>
+  <ProtocolInfo>DLNA</ProtocolInfo>
+  <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
+  <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
+  <RequiresPlainFolders>false</RequiresPlainFolders>
+  <DirectPlayProfiles>
+    <DirectPlayProfile container="mp3,wma" type="Audio" />
+  </DirectPlayProfiles>
+  <TranscodingProfiles>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+  </TranscodingProfiles>
+  <ContainerProfiles />
+  <CodecProfiles>
+    <CodecProfile type="VideoCodec">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="3" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+  </CodecProfiles>
+  <MediaProfiles>
+    <MediaProfile container="avi" type="Video" mimeType="video/x-msvideo">
+      <Conditions />
+    </MediaProfile>
+  </MediaProfiles>
+</Profile>

@@ -1,19 +1,21 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using System.Xml.Serialization;
+using MediaBrowser.Controller.Dlna;
 
 namespace MediaBrowser.Dlna.Profiles
 {
-   public class PanasonicVieraProfile : DefaultProfile
+    [XmlRoot("Profile")]
+    public class PanasonicVieraProfile : DefaultProfile
     {
-       public PanasonicVieraProfile()
-       {
-           Name = "Panasonic Viera";
+        public PanasonicVieraProfile()
+        {
+            Name = "Panasonic Viera";
 
-           Identification = new DeviceIdentification
-           {
-               FriendlyName = @"VIERA",
-               Manufacturer = "Panasonic",
+            Identification = new DeviceIdentification
+            {
+                FriendlyName = @"VIERA",
+                Manufacturer = "Panasonic",
 
-               Headers = new[]
+                Headers = new[]
                {
                    new HttpHeaderInfo
                    {
@@ -22,11 +24,11 @@ namespace MediaBrowser.Dlna.Profiles
                        Match = HeaderMatchType.Substring
                    }
                }
-           };
+            };
 
-           TimelineOffsetSeconds = 10;
+            TimelineOffsetSeconds = 10;
 
-           TranscodingProfiles = new[]
+            TranscodingProfiles = new[]
            {
                new TranscodingProfile
                {
@@ -48,7 +50,7 @@ namespace MediaBrowser.Dlna.Profiles
                }
            };
 
-           DirectPlayProfiles = new[]
+            DirectPlayProfiles = new[]
            {
                new DirectPlayProfile
                {
@@ -127,7 +129,7 @@ namespace MediaBrowser.Dlna.Profiles
                }
            };
 
-           ContainerProfiles = new[]
+            ContainerProfiles = new[]
             {
                 new ContainerProfile
                 {
@@ -151,7 +153,7 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
-           CodecProfiles = new[]
+            CodecProfiles = new[]
            {
                new CodecProfile
                {
@@ -181,6 +183,6 @@ namespace MediaBrowser.Dlna.Profiles
                    }
                }
            };
-       }
+        }
     }
 }

@@ -20,7 +20,7 @@ namespace MediaBrowser.Dlna.PlayTo
     public class PlayToController : ISessionController, IDisposable
     {
         private Device _device;
-        private BaseItem _currentItem = null;
+        private BaseItem _currentItem;
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
         private readonly IItemRepository _itemRepository;
@@ -30,7 +30,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IDlnaManager _dlnaManager;
         private readonly IUserManager _userManager;
         private readonly IServerApplicationHost _appHost;
-        private bool _playbackStarted = false;
+        private bool _playbackStarted;
 
         private const int UpdateTimerIntervalMs = 1000;
 
@@ -103,22 +103,27 @@ namespace MediaBrowser.Dlna.PlayTo
 
         async void Device_CurrentIdChanged(object sender, CurrentIdEventArgs e)
         {
-            if (e.Id != Guid.Empty)
+            if (!string.IsNullOrWhiteSpace(e.Id))
             {
-                if (_currentItem != null && _currentItem.Id == e.Id)
+                Guid guid;
+
+                if (Guid.TryParse(e.Id, out guid))
                 {
-                    return;
-                }
+                    if (_currentItem != null && _currentItem.Id == guid)
+                    {
+                        return;
+                    }
 
-                var item = _libraryManager.GetItemById(e.Id);
+                    var item = _libraryManager.GetItemById(guid);
 
-                if (item != null)
-                {
-                    _logger.Debug("{0} - CurrentId {1}", _session.DeviceName, item.Id);
-                    _currentItem = item;
-                    _playbackStarted = false;
+                    if (item != null)
+                    {
+                        _logger.Debug("{0} - CurrentId {1}", _session.DeviceName, item.Id);
+                        _currentItem = item;
+                        _playbackStarted = false;
 
-                    await ReportProgress().ConfigureAwait(false);
+                        await ReportProgress().ConfigureAwait(false);
+                    }
                 }
             }
         }
@@ -418,6 +423,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var playlistItem = GetPlaylistItem(item, streams, profile);
             playlistItem.StartPositionTicks = startPostionTicks;
+            playlistItem.DeviceProfileId = profile.Id;
 
             if (playlistItem.MediaType == DlnaProfileType.Audio)
             {

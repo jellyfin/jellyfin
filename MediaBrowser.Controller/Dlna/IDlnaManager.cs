@@ -1,20 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Model.Dlna;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Dlna
 {
     public interface IDlnaManager
     {
         /// <summary>
-        /// Gets the dlna profiles.
+        /// Gets the profile infos.
         /// </summary>
-        /// <returns>IEnumerable{DlnaProfile}.</returns>
-        IEnumerable<DeviceProfile> GetProfiles();
-
-        /// <summary>
-        /// Gets the default profile.
-        /// </summary>
-        /// <returns>DlnaProfile.</returns>
-        DeviceProfile GetDefaultProfile();
+        /// <returns>IEnumerable{DeviceProfileInfo}.</returns>
+        IEnumerable<DeviceProfileInfo> GetProfileInfos();
 
         /// <summary>
         /// Gets the profile.
@@ -23,6 +18,13 @@ namespace MediaBrowser.Controller.Dlna
         /// <returns>DeviceProfile.</returns>
         DeviceProfile GetProfile(IDictionary<string,string> headers);
 
+        /// <summary>
+        /// Gets the profile.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>DeviceProfile.</returns>
+        DeviceProfile GetProfile(string id);
+        
         /// <summary>
         /// Gets the profile.
         /// </summary>

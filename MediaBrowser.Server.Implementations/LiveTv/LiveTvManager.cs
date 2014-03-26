@@ -1498,8 +1498,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var programs = _programs.ToList();
 
-            var startDate = programs.Select(i => i.Value.StartDate).Min();
-            var endDate = programs.Select(i => i.Value.StartDate).Max();
+            var startDate = _programs.Count == 0 ? DateTime.MinValue :
+                programs.Select(i => i.Value.StartDate).Min();
+
+            var endDate = programs.Count == 0 ? DateTime.MinValue : 
+                programs.Select(i => i.Value.StartDate).Max();
 
             return new GuideInfo
             {
