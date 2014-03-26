@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -24,7 +23,18 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets or sets the chapters.
         /// </summary>
         /// <value>The chapters.</value>
-        public List<ChapterInfo> Chapters { get; set; }
+        public MediaChapter[] Chapters { get; set; }
+    }
+
+    public class MediaChapter
+    {
+        public int id { get; set; }
+        public string time_base { get; set; }
+        public long start { get; set; }
+        public string start_time { get; set; }
+        public long end { get; set; }
+        public string end_time { get; set; }
+        public Dictionary<string, string> tags { get; set; }
     }
 
     /// <summary>

@@ -175,6 +175,10 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                                                                  string probeSizeArgument,
                                                                  CancellationToken cancellationToken)
         {
+            var args = extractChapters
+                ? "{0} -i {1} -threads 0 -v info -print_format json -show_streams -show_chapters -show_format"
+                : "{0} -i {1} -threads 0 -v info -print_format json -show_streams -show_format";
+
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -186,8 +190,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     FileName = FFProbePath,
-                    Arguments = string.Format(
-                            "{0} -i {1} -threads 0 -v info -print_format json -show_streams -show_format",
+                    Arguments = string.Format(args,
                             probeSizeArgument, inputPath).Trim(),
 
                     WindowStyle = ProcessWindowStyle.Hidden,
@@ -204,7 +207,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             InternalMediaInfoResult result;
-            string standardError = null;
 
             try
             {
@@ -221,24 +223,9 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             try
             {
-                Task<string> standardErrorReadTask = null;
-
-                // MUST read both stdout and stderr asynchronously or a deadlock may occurr
-                if (extractChapters)
-                {
-                    standardErrorReadTask = process.StandardError.ReadToEndAsync();
-                }
-                else
-                {
-                    process.BeginErrorReadLine();
-                }
+                process.BeginErrorReadLine();
 
                 result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
-
-                if (extractChapters)
-                {
-                    standardError = await standardErrorReadTask.ConfigureAwait(false);
-                }
             }
             catch
             {
@@ -282,11 +269,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 }
             }
 
-            if (extractChapters && !string.IsNullOrEmpty(standardError))
-            {
-                AddChapters(result, standardError);
-            }
-
             return result;
         }
 
@@ -294,66 +276,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// The us culture
         /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        /// <summary>
-        /// Adds the chapters.
-        /// </summary>
-        /// <param name="result">The result.</param>
-        /// <param name="standardError">The standard error.</param>
-        private void AddChapters(InternalMediaInfoResult result, string standardError)
-        {
-            var lines = standardError.Split('\n').Select(l => l.TrimStart());
-
-            var chapters = new List<ChapterInfo>();
-
-            ChapterInfo lastChapter = null;
-
-            foreach (var line in lines)
-            {
-                if (line.StartsWith("Chapter", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Example:
-                    // Chapter #0.2: start 400.534, end 4565.435
-                    const string srch = "start ";
-                    var start = line.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
-
-                    if (start == -1)
-                    {
-                        continue;
-                    }
-
-                    var subString = line.Substring(start + srch.Length);
-                    subString = subString.Substring(0, subString.IndexOf(','));
-
-                    double seconds;
-
-                    if (double.TryParse(subString, NumberStyles.Any, UsCulture, out seconds))
-                    {
-                        lastChapter = new ChapterInfo
-                            {
-                                StartPositionTicks = TimeSpan.FromSeconds(seconds).Ticks
-                            };
-
-                        chapters.Add(lastChapter);
-                    }
-                }
-
-                else if (line.StartsWith("title", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (lastChapter != null && string.IsNullOrEmpty(lastChapter.Name))
-                    {
-                        var index = line.IndexOf(':');
-
-                        if (index != -1)
-                        {
-                            lastChapter.Name = line.Substring(index + 1).Trim().TrimEnd('\r');
-                        }
-                    }
-                }
-            }
-
-            result.Chapters = chapters;
-        }
 
         /// <summary>
         /// Processes the exited.
