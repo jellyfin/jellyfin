@@ -107,6 +107,8 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
+        private const string SchemaVersion = "1";
+
         private async Task<InternalMediaInfoResult> GetMediaInfo(BaseItem item, IIsoMount isoMount, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -114,7 +116,9 @@ namespace MediaBrowser.Providers.MediaInfo
             cancellationToken.ThrowIfCancellationRequested();
 
             var idString = item.Id.ToString("N");
-            var cachePath = Path.Combine(_appPaths.CachePath, "ffprobe-video", idString.Substring(0, 2), idString, "v" + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
+            var cachePath = Path.Combine(_appPaths.CachePath, 
+                "ffprobe-video",
+                idString.Substring(0, 2), idString, "v" + SchemaVersion + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
 
             try
             {
@@ -161,7 +165,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var mediaStreams = MediaEncoderHelpers.GetMediaInfo(data).MediaStreams;
 
-            var chapters = data.Chapters ?? new List<ChapterInfo>();
+            var mediaChapters = (data.Chapters ?? new MediaChapter[] { }).ToList();
+            var chapters = mediaChapters.Select(GetChapterInfo).ToList();
 
             if (video.VideoType == VideoType.BluRay || (video.IsoType.HasValue && video.IsoType.Value == IsoType.BluRay))
             {
@@ -198,6 +203,24 @@ namespace MediaBrowser.Providers.MediaInfo
             await _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
 
             await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
+        }
+
+        private ChapterInfo GetChapterInfo(MediaChapter chapter)
+        {
+            var info = new ChapterInfo();
+
+            if (chapter.tags != null)
+            {
+                string name;
+                if (chapter.tags.TryGetValue("title", out name))
+                {
+                    info.Name = name;
+                }
+            }
+
+            info.StartPositionTicks = chapter.start/100;
+
+            return info;
         }
 
         private void FetchBdInfo(BaseItem item, List<ChapterInfo> chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)

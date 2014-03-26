@@ -50,12 +50,16 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
+        private const string SchemaVersion = "1";
+
         private async Task<InternalMediaInfoResult> GetMediaInfo(BaseItem item, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var idString = item.Id.ToString("N");
-            var cachePath = Path.Combine(_appPaths.CachePath, "ffprobe-audio", idString.Substring(0, 2), idString, "v" + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
+            var cachePath = Path.Combine(_appPaths.CachePath, 
+                "ffprobe-audio", 
+                idString.Substring(0, 2), idString, "v" + SchemaVersion + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
 
             try
             {
