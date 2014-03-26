@@ -70,7 +70,9 @@ namespace MediaBrowser.Dlna
 
             foreach (var item in list)
             {
-                _xmlSerializer.SerializeToFile(item, "d:\\" + _fileSystem.GetValidFilename(item.Name) + ".xml");
+                var path = Path.Combine(_appPaths.ProgramDataPath, _fileSystem.GetValidFilename(item.Name) + ".xml");
+
+                _xmlSerializer.SerializeToFile(item, path);
             }
         }
 
@@ -102,6 +104,8 @@ namespace MediaBrowser.Dlna
 
         public DeviceProfile GetDefaultProfile()
         {
+            ExtractProfilesIfNeeded();
+
             return new DefaultProfile();
         }
 

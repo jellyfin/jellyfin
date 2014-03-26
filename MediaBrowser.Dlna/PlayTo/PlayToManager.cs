@@ -239,14 +239,12 @@ namespace MediaBrowser.Dlna.PlayTo
 
                     controller.Init(device);
 
+                    var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
+                                  _dlnaManager.GetDefaultProfile();
+
                     _sessionManager.ReportCapabilities(sessionInfo.Id, new SessionCapabilities
                     {
-                        PlayableMediaTypes = new[]
-                        {
-                            MediaType.Audio, 
-                            MediaType.Video, 
-                            MediaType.Photo
-                        },
+                        PlayableMediaTypes = profile.GetSupportedMediaTypes().ToArray(),
 
                         SupportsFullscreenToggle = false
                     });

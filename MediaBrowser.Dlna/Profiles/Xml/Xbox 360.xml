@@ -15,7 +15,8 @@
   <ModelNumber>12.0</ModelNumber>
   <ModelUrl>http://www.microsoft.com/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
-  <SupportsAlbumArtInDidl>false</SupportsAlbumArtInDidl>
+  <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
+  <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
   <ProtocolInfo>DLNA</ProtocolInfo>
   <TimelineOffsetSeconds>40</TimelineOffsetSeconds>

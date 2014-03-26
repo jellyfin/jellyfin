@@ -15,7 +15,8 @@
   <ModelNumber>3.0</ModelNumber>
   <ModelUrl>http://www.microsoft.com/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
-  <SupportsAlbumArtInDidl>false</SupportsAlbumArtInDidl>
+  <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
+  <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <SonyAggregationFlags>10</SonyAggregationFlags>
   <ProtocolInfo>DLNA</ProtocolInfo>
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
