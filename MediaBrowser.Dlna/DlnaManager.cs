@@ -107,10 +107,16 @@ namespace MediaBrowser.Dlna
 
         public DeviceProfile GetProfile(DeviceIdentification deviceInfo)
         {
-            var profile = GetProfiles().FirstOrDefault(i => IsMatch(deviceInfo, i.Identification)) ??
-                GetDefaultProfile();
+            var profile = GetProfiles().FirstOrDefault(i => IsMatch(deviceInfo, i.Identification));
 
-            _logger.Debug("Found matching device profile: {0}", profile.Name);
+            if (profile != null)
+            {
+                _logger.Debug("Found matching device profile: {0}", profile.Name);
+            }
+            else
+            {
+                _logger.Debug("No matching device profile found. The default will need to be used.");
+            }
 
             return profile;
         }
@@ -176,8 +182,7 @@ namespace MediaBrowser.Dlna
 
         public DeviceProfile GetProfile(IDictionary<string, string> headers)
         {
-            return GetProfiles().FirstOrDefault(i => IsMatch(headers, i.Identification)) ??
-                GetDefaultProfile();
+            return GetProfiles().FirstOrDefault(i => IsMatch(headers, i.Identification));
         }
 
         private bool IsMatch(IDictionary<string, string> headers, DeviceIdentification profileInfo)

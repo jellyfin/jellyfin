@@ -419,7 +419,8 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var deviceInfo = _device.Properties;
 
-            var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification());
+            var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
+                _dlnaManager.GetDefaultProfile();
 
             var playlistItem = GetPlaylistItem(item, streams, profile);
             playlistItem.StartPositionTicks = startPostionTicks;

@@ -1492,7 +1492,16 @@ namespace MediaBrowser.Api.Playback
                 headers[key] = Request.Headers[key];
             }
 
-            var profile = DlnaManager.GetProfile(headers);
+            var profile = string.IsNullOrWhiteSpace(state.Request.DeviceProfileId) ?
+                DlnaManager.GetProfile(headers) :
+                DlnaManager.GetProfile(state.Request.DeviceProfileId);
+
+            if (profile == null)
+            {
+                // Don't use settings from the default profile. 
+                // Only use a specific profile if it was requested.
+                return;
+            }
 
             var container = Path.GetExtension(state.RequestedUrl);
 
