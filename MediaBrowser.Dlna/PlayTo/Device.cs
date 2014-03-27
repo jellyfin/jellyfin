@@ -631,7 +631,7 @@ namespace MediaBrowser.Dlna.PlayTo
             RendererCommands = TransportCommands.Create(document);
         }
 
-        internal TransportCommands AvCommands
+        private TransportCommands AvCommands
         {
             get;
             set;

@@ -229,13 +229,6 @@ namespace MediaBrowser.Dlna.Profiles
                             Property = ProfileConditionValue.VideoBitrate,
                             Value = "10240000",
                             IsRequired = false
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoLevel,
-                            Value = "3",
-                            IsRequired = false
                         }
                     }
                 },
@@ -270,13 +263,6 @@ namespace MediaBrowser.Dlna.Profiles
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.VideoBitrate,
                             Value = "15360000",
-                            IsRequired = false
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoLevel,
-                            Value = "3",
                             IsRequired = false
                         }
                     }

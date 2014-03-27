@@ -6,17 +6,15 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.MediaEncoder
+namespace MediaBrowser.MediaEncoding.Encoder
 {
     /// <summary>
     /// Class MediaEncoder
@@ -53,6 +51,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// The FF probe resource pool
         /// </summary>
         private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(2, 2);
+
         private readonly IFileSystem _fileSystem;
 
         public string FFMpegPath { get; private set; }
@@ -62,7 +61,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         public string Version { get; private set; }
 
         public MediaEncoder(ILogger logger, IApplicationPaths appPaths,
-                            IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IFileSystem fileSystem)
+            IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version,
+            IFileSystem fileSystem)
         {
             _logger = logger;
             _appPaths = appPaths;
@@ -85,7 +85,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <summary>
         /// The _semaphoreLocks
         /// </summary>
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
+            new ConcurrentDictionary<string, SemaphoreSlim>();
 
         /// <summary>
         /// Gets the lock.
@@ -106,10 +107,10 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         public Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, InputType type, bool isAudio,
-                                                  CancellationToken cancellationToken)
+            CancellationToken cancellationToken)
         {
             return GetMediaInfoInternal(GetInputArgument(inputFiles, type), !isAudio,
-                                        GetProbeSizeArgument(type), cancellationToken);
+                GetProbeSizeArgument(type), cancellationToken);
         }
 
         /// <summary>
@@ -172,8 +173,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <returns>Task{MediaInfoResult}.</returns>
         /// <exception cref="System.ApplicationException"></exception>
         private async Task<InternalMediaInfoResult> GetMediaInfoInternal(string inputPath, bool extractChapters,
-                                                                 string probeSizeArgument,
-                                                                 CancellationToken cancellationToken)
+            string probeSizeArgument,
+            CancellationToken cancellationToken)
         {
             var args = extractChapters
                 ? "{0} -i {1} -threads 0 -v info -print_format json -show_streams -show_chapters -show_format"
@@ -191,7 +192,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     RedirectStandardError = true,
                     FileName = FFProbePath,
                     Arguments = string.Format(args,
-                            probeSizeArgument, inputPath).Trim(),
+                        probeSizeArgument, inputPath).Trim(),
 
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
@@ -225,7 +226,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 process.BeginErrorReadLine();
 
-                result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
+                result =
+                    _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
             }
             catch
             {
@@ -295,7 +297,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="language">The language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task ConvertTextSubtitleToAss(string inputPath, string outputPath, string language, CancellationToken cancellationToken)
+        public async Task ConvertTextSubtitleToAss(string inputPath, string outputPath, string language,
+            CancellationToken cancellationToken)
         {
             var semaphore = GetLock(outputPath);
 
@@ -340,33 +343,35 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
 
 
-            var encodingParam = string.IsNullOrEmpty(language) ? string.Empty :
-                GetSubtitleLanguageEncodingParam(language) + " ";
+            var encodingParam = string.IsNullOrEmpty(language)
+                ? string.Empty
+                : GetSubtitleLanguageEncodingParam(language) + " ";
 
             var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
                 {
-                    StartInfo = new ProcessStartInfo
-                        {
-                            RedirectStandardOutput = false,
-                            RedirectStandardError = true,
+                    RedirectStandardOutput = false,
+                    RedirectStandardError = true,
 
-                            CreateNoWindow = true,
-                            UseShellExecute = false,
-                            FileName = FFMpegPath,
-                            Arguments =
-                                string.Format("{0} -i \"{1}\" -c:s ass \"{2}\"", encodingParam, inputPath, outputPath),
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    FileName = FFMpegPath,
+                    Arguments =
+                        string.Format("{0} -i \"{1}\" -c:s ass \"{2}\"", encodingParam, inputPath, outputPath),
 
-                            WindowStyle = ProcessWindowStyle.Hidden,
-                            ErrorDialog = false
-                        }
-                };
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                }
+            };
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-convert-" + Guid.NewGuid() + ".txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
-            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
+            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read,
+                true);
 
             try
             {
@@ -525,7 +530,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentException">Must use inputPath list overload</exception>
-        public async Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, bool copySubtitleStream, string outputPath, CancellationToken cancellationToken)
+        public async Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex,
+            bool copySubtitleStream, string outputPath, CancellationToken cancellationToken)
         {
             var semaphore = GetLock(outputPath);
 
@@ -535,7 +541,9 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 if (!File.Exists(outputPath))
                 {
-                    await ExtractTextSubtitleInternal(GetInputArgument(inputFiles, type), subtitleStreamIndex, copySubtitleStream, outputPath, cancellationToken).ConfigureAwait(false);
+                    await
+                        ExtractTextSubtitleInternal(GetInputArgument(inputFiles, type), subtitleStreamIndex,
+                            copySubtitleStream, outputPath, cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
@@ -559,7 +567,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// or
         /// cancellationToken</exception>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task ExtractTextSubtitleInternal(string inputPath, int subtitleStreamIndex, bool copySubtitleStream, string outputPath, CancellationToken cancellationToken)
+        private async Task ExtractTextSubtitleInternal(string inputPath, int subtitleStreamIndex,
+            bool copySubtitleStream, string outputPath, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -571,11 +580,13 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-            string processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s ass \"{2}\"", inputPath, subtitleStreamIndex, outputPath);
+            string processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s ass \"{2}\"", inputPath,
+                subtitleStreamIndex, outputPath);
 
             if (copySubtitleStream)
             {
-                processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s copy \"{2}\"", inputPath, subtitleStreamIndex, outputPath);
+                processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s copy \"{2}\"", inputPath,
+                    subtitleStreamIndex, outputPath);
             }
 
             var process = new Process
@@ -600,7 +611,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-extract-" + Guid.NewGuid() + ".txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
-            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
+            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read,
+                true);
 
             try
             {
@@ -715,7 +727,18 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
         }
 
-        public async Task<Stream> ExtractImage(string[] inputFiles, InputType type, bool isAudio,
+        public Task<Stream> ExtractAudioImage(string path, CancellationToken cancellationToken)
+        {
+            return ExtractImage(new[] { path }, InputType.File, true, null, null, cancellationToken);
+        }
+
+        public Task<Stream> ExtractVideoImage(string[] inputFiles, InputType type, Video3DFormat? threedFormat,
+            TimeSpan? offset, CancellationToken cancellationToken)
+        {
+            return ExtractImage(inputFiles, type, false, threedFormat, offset, cancellationToken);
+        }
+
+        private async Task<Stream> ExtractImage(string[] inputFiles, InputType type, bool isAudio,
             Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
             var resourcePool = isAudio ? _audioImageResourcePool : _videoImageResourcePool;
@@ -773,7 +796,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2},thumbnail\" -f image2 \"{1}\"", inputPath, "-", vf) :
+            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2},thumbnail=80\" -f image2 \"{1}\"", inputPath, "-", vf) :
                 string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf);
 
             var probeSize = GetProbeSizeArgument(type);
@@ -834,7 +857,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     _logger.ErrorException("Error killing process", ex);
                 }
             }
-            
+
             resourcePool.Release();
 
             var exitCode = ranToCompletion ? process.ExitCode : -1;

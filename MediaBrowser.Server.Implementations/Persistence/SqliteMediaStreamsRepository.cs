@@ -37,6 +37,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var createTableCommand
                 = "create table if not exists mediastreams ";
 
+            // Add PixelFormat column
+
             createTableCommand += "(ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
             string[] queries = {
