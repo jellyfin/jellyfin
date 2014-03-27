@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                        using (var stream = await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.File, true, null, null, cancellationToken).ConfigureAwait(false))
+                        using (var stream = await _mediaEncoder.ExtractAudioImage(item.Path, cancellationToken).ConfigureAwait(false))
                         {
                             using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                             {

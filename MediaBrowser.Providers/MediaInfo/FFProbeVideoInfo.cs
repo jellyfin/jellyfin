@@ -113,8 +113,6 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             var idString = item.Id.ToString("N");
             var cachePath = Path.Combine(_appPaths.CachePath, 
                 "ffprobe-video",

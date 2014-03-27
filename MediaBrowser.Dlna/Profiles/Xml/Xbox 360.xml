@@ -73,7 +73,6 @@
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="10240000" isRequired="false" />
-        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="3" isRequired="false" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="VideoCodec" codec="wmv2,wmv3,vc1">
@@ -82,7 +81,6 @@
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="15360000" isRequired="false" />
-        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="3" isRequired="false" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="VideoAudioCodec" codec="ac3,wmav2,wmapro">

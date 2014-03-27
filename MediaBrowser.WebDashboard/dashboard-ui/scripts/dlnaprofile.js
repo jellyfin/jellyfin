@@ -28,9 +28,13 @@
         } else {
             $('.btnSave', page).hide();
         }
-        
+
         $('#txtName', page).val(profile.Name);
 
+        $('.chkMediaType', page).each(function () {
+            this.checked = (profile.SupportedMediaTypes || '').split(',').indexOf(this.getAttribute('data-value')) != -1;
+            
+        }).checkboxradio('refresh');
     }
 
     function saveProfile(page, profile) {
@@ -78,11 +82,29 @@
 
     }
 
-    $(document).on('pageshow', "#dlnaProfilePage", function () {
+    $(document).on('pageinit', "#dlnaProfilePage", function () {
+
+        var page = this;
+
+        $('.radioProfileTab', page).on('change', function () {
+
+            $('.profileTab', page).hide();
+            $('.' + this.value, page).show();
+
+        });
+
+    }).on('pageshow', "#dlnaProfilePage", function () {
 
         var page = this;
 
         loadProfile(page);
+
+    }).on('pagebeforeshow', "#dlnaProfilePage", function () {
+
+        var page = this;
+
+        $('.radioSeriesTimerTab', page).checked(false).checkboxradio('refresh');
+        $('#radioInfo', page).checked(true).checkboxradio('refresh').trigger('change');
 
     });
 
