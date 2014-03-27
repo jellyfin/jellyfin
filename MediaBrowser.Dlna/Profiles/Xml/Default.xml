@@ -30,12 +30,5 @@
     </TranscodingProfile>
   </TranscodingProfiles>
   <ContainerProfiles />
-  <CodecProfiles>
-    <CodecProfile type="VideoCodec">
-      <Conditions>
-        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="3" isRequired="false" />
-      </Conditions>
-    </CodecProfile>
-  </CodecProfiles>
   <MediaProfiles />
 </Profile>

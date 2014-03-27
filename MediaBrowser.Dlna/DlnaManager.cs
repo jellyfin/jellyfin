@@ -197,7 +197,7 @@ namespace MediaBrowser.Dlna
                 throw new ArgumentNullException("headers");
             }
 
-            return GetProfiles().FirstOrDefault(i => IsMatch(headers, i.Identification));
+            return GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
         }
 
         private bool IsMatch(IDictionary<string, string> headers, DeviceIdentification profileInfo)

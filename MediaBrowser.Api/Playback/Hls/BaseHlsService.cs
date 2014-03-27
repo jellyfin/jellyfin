@@ -200,7 +200,7 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.AppendLine("#EXTM3U");
 
             // Pad a little to satisfy the apple hls validator
-            var paddedBitrate = Convert.ToInt32(bitrate * 1.05);
+            var paddedBitrate = Convert.ToInt32(bitrate * 1.15);
 
             // Main stream
             builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + paddedBitrate.ToString(UsCulture));

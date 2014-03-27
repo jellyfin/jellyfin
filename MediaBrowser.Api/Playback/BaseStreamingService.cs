@@ -316,6 +316,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="state">The state.</param>
         /// <param name="videoCodec">The video codec.</param>
+        /// <param name="isHls">if set to <c>true</c> [is HLS].</param>
         /// <returns>System.String.</returns>
         protected string GetVideoQualityParam(StreamState state, string videoCodec, bool isHls)
         {
@@ -340,20 +341,17 @@ namespace MediaBrowser.Api.Playback
                         break;
                 }
 
-                if (!isHls)
+                switch (qualitySetting)
                 {
-                    switch (qualitySetting)
-                    {
-                        case EncodingQuality.HighSpeed:
-                            param += " -crf 23";
-                            break;
-                        case EncodingQuality.HighQuality:
-                            param += " -crf 20";
-                            break;
-                        case EncodingQuality.MaxQuality:
-                            param += " -crf 18";
-                            break;
-                    }
+                    case EncodingQuality.HighSpeed:
+                        param += " -crf 23";
+                        break;
+                    case EncodingQuality.HighQuality:
+                        param += " -crf 20";
+                        break;
+                    case EncodingQuality.MaxQuality:
+                        param += " -crf 18";
+                        break;
                 }
             }
 
@@ -1032,11 +1030,6 @@ namespace MediaBrowser.Api.Playback
             {
                 var hasFixedResolution = state.VideoRequest.HasFixedResolution;
 
-                if (isHls)
-                {
-                    return string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
-                }
-
                 if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
                 {
                     if (hasFixedResolution)
@@ -1047,7 +1040,6 @@ namespace MediaBrowser.Api.Playback
                     // With vpx when crf is used, b:v becomes a max rate
                     // https://trac.ffmpeg.org/wiki/vpxEncodingGuide
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
-                    //return string.Format(" -minrate:v ({0}*.95) -maxrate:v ({0}*1.05) -bufsize:v {0} -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
 
                 if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
@@ -1055,13 +1047,17 @@ namespace MediaBrowser.Api.Playback
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
 
-
                 // H264
                 if (hasFixedResolution)
                 {
+                    if (isHls)
+                    {
+                        return string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
+                    }
+
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
-
+                
                 return string.Format(" -maxrate {0} -bufsize {1}",
                     bitrate.Value.ToString(UsCulture),
                     (bitrate.Value * 2).ToString(UsCulture));
