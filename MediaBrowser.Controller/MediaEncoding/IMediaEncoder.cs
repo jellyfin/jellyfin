@@ -88,6 +88,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="type">The type.</param>
         /// <returns>System.String.</returns>
         string GetInputArgument(string[] inputFiles, InputType type);
+
+        /// <summary>
+        /// Encodes the image.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        Task<Stream> EncodeImage(ImageEncodingOptions options, CancellationToken cancellationToken);
     }
 
     /// <summary>
