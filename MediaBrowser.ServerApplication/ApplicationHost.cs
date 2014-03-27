@@ -33,13 +33,14 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Themes;
 using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.PlayTo;
+using MediaBrowser.MediaEncoding.BdInfo;
+using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Server.Implementations;
-using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Channels;
 using MediaBrowser.Server.Implementations.Collections;
 using MediaBrowser.Server.Implementations.Configuration;
@@ -815,7 +816,10 @@ namespace MediaBrowser.ServerApplication
             // Server implementations
             list.Add(typeof(ServerApplicationPaths).Assembly);
 
-            // Dlna implementations
+            // MediaEncoding
+            list.Add(typeof(MediaEncoder).Assembly);
+
+            // Dlna 
             list.Add(typeof(PlayToServerEntryPoint).Assembly);
 
             list.AddRange(Assemblies.GetAssembliesWithParts());

@@ -23,6 +23,31 @@
                         </li>
                     </ul>
 
+                    <div data-role="controlgroup" data-type="horizontal" data-mini="true">
+                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioInfo" value="tabInfo">
+                        <label for="radioInfo">Info</label>
+                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioIdentification" value="tabIdentification">
+                        <label for="radioIdentification">Identification</label>
+                    </div>
+                    <br />
+                    <div class="profileTab tabInfo">
+
+                        <fieldset data-role="controlgroup">
+                            <legend>Supported Media Types:</legend>
+                            <input type="checkbox" data-mini="true" id="chkAudio" data-value="Audio" class="chkMediaType" />
+                            <label for="chkAudio">Audio</label>
+
+                            <input type="checkbox" data-mini="true" id="chkPhoto" data-value="Photo" class="chkMediaType" />
+                            <label for="chkPhoto">Photo</label>
+
+                            <input type="checkbox" data-mini="true" id="chkVideo" data-value="Video" class="chkMediaType" />
+                            <label for="chkVideo">Video</label>
+                        </fieldset>
+                    </div>
+                    <div class="profileTab tabIdentification">
+                    </div>
+
+                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button class="btnSave" style="display: none;" type="submit" data-theme="b" data-icon="check" data-mini="true">

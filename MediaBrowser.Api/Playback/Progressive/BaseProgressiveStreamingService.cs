@@ -266,6 +266,11 @@ namespace MediaBrowser.Api.Playback.Progressive
             return result;
         }
 
+        /// <summary>
+        /// Gets the length of the estimated content.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <returns>System.Nullable{System.Int64}.</returns>
         private long? GetEstimatedContentLength(StreamState state)
         {
             var totalBitrate = 0;

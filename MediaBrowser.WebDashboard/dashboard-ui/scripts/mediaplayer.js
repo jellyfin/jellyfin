@@ -118,7 +118,6 @@
                 params = params || {};
 
                 var currentSrc = element.currentSrc;
-                currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
 
                 if (params.AudioStreamIndex != null) {
                     currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
@@ -142,10 +141,18 @@
                 currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
                 currentSrc = replaceQueryString(currentSrc, 'Static', finalParams.isStatic);
 
+                currentSrc = replaceQueryString(currentSrc, 'AudioCodec', finalParams.audioCodec);
+                currentSrc = replaceQueryString(currentSrc, 'VideoCodec', finalParams.videoCodec);
+
+                currentSrc = replaceQueryString(currentSrc, 'profile', finalParams.profile || '');
+                currentSrc = replaceQueryString(currentSrc, 'level', finalParams.level || '');
+
                 if (finalParams.isStatic) {
                     currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
+                    currentSrc = replaceQueryString(currentSrc, 'starttimeticks', '');
                 } else {
-                    currentSrc = currentSrc.replace('.mp4', transcodingExtension);
+                    currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension);
+                    currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
                 }
 
                 clearProgressInterval();
@@ -260,7 +267,7 @@
 
             var videoBitrate = bitrate - audioBitrate;
 
-            return {
+            var params = {
                 isStatic: canPlayDirect,
                 maxWidth: maxWidth,
                 audioCodec: transcodingExtension == '.webm' ? 'vorbis' : 'aac',
@@ -268,6 +275,13 @@
                 audioBitrate: audioBitrate,
                 videoBitrate: videoBitrate
             };
+            
+            if (params.videoCodec == 'h264') {
+                params.profile = 'baseline';
+                params.level = '3';
+            }
+
+            return params;
         };
 
         self.canPlay = function (item, user) {

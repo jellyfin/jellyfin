@@ -751,8 +751,6 @@
             var seekParam = isStatic && startPosition ? '#t=' + (startPosition / 10000000) : '';
 
             var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
-                profile: 'baseline',
-                level: 3,
                 Static: isStatic,
                 maxWidth: mp4Quality.maxWidth,
                 videoBitrate: mp4Quality.videoBitrate,
@@ -773,8 +771,6 @@
             })) + seekParam;
 
             var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
-                profile: 'baseline',
-                level: 3,
                 timeStampOffsetMs: 0,
                 maxWidth: m3U8Quality.maxWidth,
                 videoBitrate: m3U8Quality.videoBitrate,
