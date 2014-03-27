@@ -157,6 +157,7 @@ namespace MediaBrowser.ServerApplication
         private IHttpServer HttpServer { get; set; }
         private IDtoService DtoService { get; set; }
         private IImageProcessor ImageProcessor { get; set; }
+        private ISeriesOrderManager SeriesOrderManager { get; set; }
 
         /// <summary>
         /// Gets or sets the media encoder.
@@ -453,6 +454,9 @@ namespace MediaBrowser.ServerApplication
             ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager);
             RegisterSingleInstance(ProviderManager);
 
+            SeriesOrderManager = new SeriesOrderManager();
+            RegisterSingleInstance(SeriesOrderManager);
+
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
             SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager);
@@ -679,6 +683,8 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<IMetadataSaver>(),
                                     GetExports<IImageSaver>(),
                                     GetExports<IExternalId>());
+
+            SeriesOrderManager.AddParts(GetExports<ISeriesOrderProvider>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 
