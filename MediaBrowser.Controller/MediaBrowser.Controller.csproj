@@ -188,6 +188,7 @@
     <Compile Include="Providers\MetadataRefreshOptions.cs" />
     <Compile Include="Providers\NameParser.cs" />
     <Compile Include="Providers\MetadataStatus.cs" />
+    <Compile Include="Providers\ISeriesOrderManager.cs" />
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Entities\AggregateFolder.cs" />

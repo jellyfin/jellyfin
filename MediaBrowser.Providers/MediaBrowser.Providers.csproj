@@ -103,6 +103,7 @@
     <Compile Include="Games\GameXmlParser.cs" />
     <Compile Include="Games\GameXmlProvider.cs" />
     <Compile Include="Games\GameSystemXmlProvider.cs" />
+    <Compile Include="Manager\SeriesOrderManager.cs" />
     <Compile Include="MediaInfo\FFProbeAudioInfo.cs" />
     <Compile Include="MediaInfo\FFProbeHelpers.cs" />
     <Compile Include="MediaInfo\FFProbeProvider.cs" />
