@@ -26,7 +26,8 @@ namespace MediaBrowser.Api.Playback.Progressive
         protected readonly IImageProcessor ImageProcessor;
         protected readonly IHttpClient HttpClient;
 
-        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IHttpClient httpClient, IImageProcessor imageProcessor) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager)
+        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IHttpClient httpClient, IImageProcessor imageProcessor)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager)
         {
             HttpClient = httpClient;
             ImageProcessor = imageProcessor;
@@ -216,18 +217,30 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var contentType = state.GetMimeType(outputPath);
 
+            var contentLength = state.EstimateContentLength ? GetEstimatedContentLength(state) : null;
+
+            if (contentLength.HasValue)
+            {
+                responseHeaders["Content-Length"] = contentLength.Value.ToString(UsCulture);
+            }
+
             // Headers only
             if (isHeadRequest)
             {
                 var streamResult = ResultFactory.GetResult(new byte[] { }, contentType, responseHeaders);
-                var hasOptions = streamResult as IHasOptions;
-                if (hasOptions != null)
+
+                if (!contentLength.HasValue)
                 {
-                    if (hasOptions.Options.ContainsKey("Content-Length"))
+                    var hasOptions = streamResult as IHasOptions;
+                    if (hasOptions != null)
                     {
-                        hasOptions.Options.Remove("Content-Length");
+                        if (hasOptions.Options.ContainsKey("Content-Length"))
+                        {
+                            hasOptions.Options.Remove("Content-Length");
+                        }
                     }
                 }
+
                 return streamResult;
             }
 
@@ -251,6 +264,27 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             return result;
+        }
+
+        private long? GetEstimatedContentLength(StreamState state)
+        {
+            var totalBitrate = 0;
+
+            if (state.Request.AudioBitRate.HasValue)
+            {
+                totalBitrate += state.Request.AudioBitRate.Value;
+            }
+            if (state.VideoRequest != null && state.VideoRequest.VideoBitRate.HasValue)
+            {
+                totalBitrate += state.VideoRequest.VideoBitRate.Value;
+            }
+
+            if (totalBitrate > 0 && state.RunTimeTicks.HasValue)
+            {
+                return Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds);
+            }
+
+            return null;
         }
     }
 }
