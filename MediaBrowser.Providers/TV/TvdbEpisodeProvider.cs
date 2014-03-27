@@ -52,7 +52,7 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    var item = FetchEpisodeData(searchInfo, seriesDataPath, cancellationToken);
+                    var item = FetchEpisodeData(searchInfo, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
 
                     if (item != null)
                     {
@@ -96,7 +96,7 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    result.Item = FetchEpisodeData(searchInfo, seriesDataPath, cancellationToken);
+                    result.Item = FetchEpisodeData(searchInfo, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
                     result.HasMetadata = result.Item != null;
                 }
                 catch (FileNotFoundException)
@@ -213,7 +213,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private Episode FetchEpisodeData(EpisodeInfo id, string seriesDataPath, CancellationToken cancellationToken)
+        private Episode FetchEpisodeData(EpisodeInfo id, string seriesDataPath, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
         {
             if (id.IndexNumber == null)
             {
@@ -221,7 +221,8 @@ namespace MediaBrowser.Providers.TV
             }
 
             var episodeNumber = id.IndexNumber.Value;
-            var seasonNumber = id.ParentIndexNumber;
+            var seasonOffset = TvdbSeriesProvider.GetSeriesOffset(seriesProviderIds) ?? 0;
+            var seasonNumber = id.ParentIndexNumber + seasonOffset;
 
             if (seasonNumber == null)
             {
