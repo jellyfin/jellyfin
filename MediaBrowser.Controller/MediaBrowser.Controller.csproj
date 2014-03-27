@@ -157,6 +157,7 @@
     <Compile Include="Localization\ILocalizationManager.cs" />
     <Compile Include="MediaEncoding\ChapterImageRefreshOptions.cs" />
     <Compile Include="MediaEncoding\IEncodingManager.cs" />
+    <Compile Include="MediaEncoding\ImageEncodingOptions.cs" />
     <Compile Include="MediaEncoding\IMediaEncoder.cs" />
     <Compile Include="MediaEncoding\InternalMediaInfoResult.cs" />
     <Compile Include="Net\IHasResultFactory.cs" />

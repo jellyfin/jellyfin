@@ -948,14 +948,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return GetFileInputArgument(playableStreamFiles[0]);
         }
 
-        /// <summary>
-        /// Gets the bluray input argument.
-        /// </summary>
-        /// <param name="blurayRoot">The bluray root.</param>
-        /// <returns>System.String.</returns>
-        private string GetBlurayInputArgument(string blurayRoot)
+        public Task<Stream> EncodeImage(ImageEncodingOptions options, CancellationToken cancellationToken)
         {
-            return string.Format("bluray:\"{0}\"", blurayRoot);
+            return new ImageEncoder(FFMpegPath, _logger).EncodeImage(options, cancellationToken);
         }
 
         /// <summary>
