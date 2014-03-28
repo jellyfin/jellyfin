@@ -18,6 +18,9 @@ namespace MediaBrowser.Controller.Dlna
         [XmlAttribute("audioCodec")]
         public string AudioCodec { get; set; }
 
+        [XmlAttribute("protocol")]
+        public string Protocol { get; set; }
+        
         [XmlAttribute("estimateContentLength")]
         public bool EstimateContentLength { get; set; }
 

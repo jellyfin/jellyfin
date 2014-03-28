@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -7,6 +6,7 @@ using MediaBrowser.Model.Dto;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -15,8 +15,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetSimilarGames
     /// </summary>
-    [Route("/Games/{Id}/Similar", "GET")]
-    [Api(Description = "Finds games similar to a given game.")]
+    [Route("/Games/{Id}/Similar", "GET", Summary = "Finds games similar to a given game.")]
     public class GetSimilarGames : BaseGetSimilarItemsFromItem
     {
     }
@@ -24,8 +23,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetGameSystemSummaries
     /// </summary>
-    [Route("/Games/SystemSummaries", "GET")]
-    [Api(Description = "Finds games similar to a given game.")]
+    [Route("/Games/SystemSummaries", "GET", Summary = "Finds games similar to a given game.")]
     public class GetGameSystemSummaries : IReturn<List<GameSystemSummary>>
     {
         /// <summary>
@@ -39,8 +37,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetGameSystemSummaries
     /// </summary>
-    [Route("/Games/PlayerIndex", "GET")]
-    [Api(Description = "Gets an index of players (1-x) and the number of games listed under each")]
+    [Route("/Games/PlayerIndex", "GET", Summary = "Gets an index of players (1-x) and the number of games listed under each")]
     public class GetPlayerIndex : IReturn<List<ItemIndex>>
     {
         /// <summary>
@@ -117,7 +114,7 @@ namespace MediaBrowser.Api
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         public object Get(GetPlayerIndex request)
         {
             var games = GetAllLibraryItems(request.UserId, _userManager, _libraryManager)
