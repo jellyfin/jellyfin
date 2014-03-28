@@ -1,10 +1,13 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,16 +18,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly string _ffmpegPath;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly IApplicationPaths _appPaths;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private static readonly SemaphoreSlim ResourcePool = new SemaphoreSlim(10, 10);
 
-        public ImageEncoder(string ffmpegPath, ILogger logger, IFileSystem fileSystem)
+        public ImageEncoder(string ffmpegPath, ILogger logger, IFileSystem fileSystem, IApplicationPaths appPaths)
         {
             _ffmpegPath = ffmpegPath;
             _logger = logger;
             _fileSystem = fileSystem;
+            _appPaths = appPaths;
         }
 
         public async Task<Stream> EncodeImage(ImageEncodingOptions options, CancellationToken cancellationToken)
@@ -47,6 +52,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             ValidateInput(options);
 
+            var inputPath = options.InputPath;
+            var filename = Path.GetFileName(inputPath);
+
+            if (HasDiacritics(filename))
+            {
+                inputPath = GetTempFile(inputPath);
+                filename = Path.GetFileName(inputPath);
+            }
+
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -54,12 +68,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = _ffmpegPath,
-                    Arguments = GetArguments(options),
+                    Arguments = GetArguments(options, filename),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    WorkingDirectory = Path.GetDirectoryName(options.InputPath)
+                    WorkingDirectory = Path.GetDirectoryName(inputPath)
                 }
             };
 
@@ -113,8 +127,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             memoryStream.Position = 0;
             return memoryStream;
         }
+
+        private string GetTempFile(string path)
+        {
+            var extension = Path.GetExtension(path) ?? string.Empty;
+
+            var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N") + extension);
+
+            File.Copy(path, tempPath);
+
+            return tempPath;
+        }
         
-        private string GetArguments(ImageEncodingOptions options)
+        private string GetArguments(ImageEncodingOptions options, string inputFilename)
         {
             var vfScale = GetFilterGraph(options);
             var outputFormat = GetOutputFormat(options.Format);
@@ -127,7 +152,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 qualityValue.ToString(_usCulture),
                 vfScale,
                 outputFormat,
-                Path.GetFileName(options.InputPath));
+                inputFilename);
         }
 
         private string GetFilterGraph(ImageEncodingOptions options)
@@ -163,10 +188,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var scaleMethod = "lanczos";
 
-            return string.Format("-vf scale=\"{0}:{1}\" -sws_flags {2}",
+            return string.Format("-vf scale=\"{0}:{1}\"",
                 widthScale,
-                heightScale,
-                scaleMethod);
+                heightScale);
         }
 
         private string GetOutputFormat(string format)
@@ -182,6 +206,30 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private void ValidateInput(ImageEncodingOptions options)
         {
 
+        }
+
+        /// <summary>
+        /// Determines whether the specified text has diacritics.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns><c>true</c> if the specified text has diacritics; otherwise, <c>false</c>.</returns>
+        private bool HasDiacritics(string text)
+        {
+            return !String.Equals(text, RemoveDiacritics(text), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Removes the diacritics.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns>System.String.</returns>
+        private string RemoveDiacritics(string text)
+        {
+            return String.Concat(
+                text.Normalize(NormalizationForm.FormD)
+                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
+                                              UnicodeCategory.NonSpacingMark)
+              ).Normalize(NormalizationForm.FormC);
         }
     }
 }

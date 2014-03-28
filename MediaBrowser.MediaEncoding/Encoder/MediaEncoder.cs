@@ -911,7 +911,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public Task<Stream> EncodeImage(ImageEncodingOptions options, CancellationToken cancellationToken)
         {
-            return new ImageEncoder(FFMpegPath, _logger, _fileSystem).EncodeImage(options, cancellationToken);
+            return new ImageEncoder(FFMpegPath, _logger, _fileSystem, _appPaths).EncodeImage(options, cancellationToken);
         }
 
         /// <summary>
