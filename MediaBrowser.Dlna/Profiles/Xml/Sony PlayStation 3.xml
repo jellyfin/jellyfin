@@ -48,7 +48,7 @@
     </ContainerProfile>
   </ContainerProfiles>
   <CodecProfiles>
-    <CodecProfile type="VideoCodec" codec="h264">
+    <CodecProfile type="Video" codec="h264">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
@@ -57,23 +57,23 @@
         <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="false" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoAudioCodec" codec="ac3">
+    <CodecProfile type="VideoAudio" codec="ac3">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="AudioBitrate" value="640000" isRequired="false" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoAudioCodec" codec="wmapro">
+    <CodecProfile type="VideoAudio" codec="wmapro">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoAudioCodec" codec="aac">
+    <CodecProfile type="VideoAudio" codec="aac">
       <Conditions>
         <ProfileCondition condition="NotEquals" property="AudioProfile" value="he-aac" isRequired="false" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoAudioCodec" codec="aac">
+    <CodecProfile type="VideoAudio" codec="aac">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
         <ProfileCondition condition="NotEquals" property="AudioProfile" value="he-aac" isRequired="true" />

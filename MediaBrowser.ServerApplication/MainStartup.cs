@@ -1,12 +1,11 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations.Logging;
-using MediaBrowser.Common.Implementations.Updates;
-using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.ServerApplication.Native;
 using MediaBrowser.ServerApplication.Splash;
+using MediaBrowser.ServerApplication.Updates;
 using Microsoft.Win32;
 using System;
 using System.Configuration.Install;
@@ -490,7 +489,7 @@ namespace MediaBrowser.ServerApplication
                 try
                 {
                     var serviceName = _isRunningAsService ? BackgroundService.Name : string.Empty;
-                    new ApplicationUpdater().UpdateApplication(MBApplication.MBServer, appPaths, updateArchive, logger, serviceName);
+                    new ApplicationUpdater().UpdateApplication(appPaths, updateArchive, logger, serviceName);
 
                     // And just let the app exit so it can update
                     return true;

@@ -14,23 +14,34 @@
                     <a href="dlnaprofiles.html" data-role="button" class="ui-btn-active">Profiles</a>
                 </div>
 
-                <form class="dlnaProfileForm">
+                <form class="dlnaProfileForm" style="max-width: 650px;">
 
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="txtName">Name</label>
-                            <input type="text" id="txtName" data-mini="true" required="required" />
-                        </li>
-                    </ul>
-
+                    <p>Profile Information</p>
                     <div data-role="controlgroup" data-type="horizontal" data-mini="true">
                         <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioInfo" value="tabInfo">
                         <label for="radioInfo">Info</label>
                         <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioIdentification" value="tabIdentification">
                         <label for="radioIdentification">Identification</label>
+                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioDirectPlay" value="tabDirectPlayProfiles">
+                        <label for="radioDirectPlay">Direct Play</label>
+                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioTranscoding" value="tabTranscodingProfiles">
+                        <label for="radioTranscoding">Transcoding</label>
+                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioContainers" value="tabContainerProfiles">
+                        <label for="radioContainers">Containers</label>
+                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioCodecs" value="tabCodecProfiles">
+                        <label for="radioCodecs">Codecs</label>
+                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioMediaProfiles" value="tabMediaProfiles">
+                        <label for="radioMediaProfiles">Responses</label>
                     </div>
                     <br />
                     <div class="profileTab tabInfo">
+
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <label for="txtName">Name</label>
+                                <input type="text" id="txtName" data-mini="true" required="required" />
+                            </li>
+                        </ul>
 
                         <fieldset data-role="controlgroup">
                             <legend>Supported Media Types:</legend>
@@ -43,10 +54,91 @@
                             <input type="checkbox" data-mini="true" id="chkVideo" data-value="Video" class="chkMediaType" />
                             <label for="chkVideo">Video</label>
                         </fieldset>
+
+                        <br />
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <label for="chkEnableAlbumArtInDidl">Embed album art in Didl</label>
+                                <input type="checkbox" id="chkEnableAlbumArtInDidl" data-mini="true" />
+                                <div class="fieldDescription">Some devices prefer this method for obtaining album art. Other devices may fail to play with this option enabled.</div>
+                            </li>
+                        </ul>
+
                     </div>
                     <div class="profileTab tabIdentification">
+
+                        <p>Devices have two forms of identification, device properties and HTTP request headers. At least one form should be supplied.</p>
+                        <br />
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <label for="txtIdFriendlyName">Friendly name</label>
+                                <input type="text" id="txtIdFriendlyName" data-mini="true" />
+                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                            </li>
+                            <li>
+                                <label for="txtIdManufacturer">Manufacturer</label>
+                                <input type="text" id="txtIdManufacturer" data-mini="true" />
+                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                            </li>
+                            <li>
+                                <label for="txtIdManufacturerUrl">Manufacturer url</label>
+                                <input type="text" id="txtIdManufacturerUrl" data-mini="true" />
+                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                            </li>
+                            <li>
+                                <label for="txtIdModelName">Model name</label>
+                                <input type="text" id="txtIdModelName" data-mini="true" />
+                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                            </li>
+                            <li>
+                                <label for="txtIdModelNumber">Model number</label>
+                                <input type="text" id="txtIdModelNumber" data-mini="true" />
+                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                            </li>
+                            <li>
+                                <label for="txtIdModelDesription">Model description</label>
+                                <input type="text" id="txtIdModelDesription" data-mini="true" />
+                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                            </li>
+                            <li>
+                                <label for="txtIdModelUrl">Model url</label>
+                                <input type="text" id="txtIdModelUrl" data-mini="true" />
+                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                            </li>
+                            <li>
+                                <label for="txtIdSerialNumber">Serial number</label>
+                                <input type="text" id="txtIdSerialNumber" data-mini="true" />
+                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                            </li>
+                            <li>
+                                <label for="txtIdDeviceDescription">Device description</label>
+                                <input type="text" id="txtIdDeviceDescription" data-mini="true" />
+                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                            </li>
+                        </ul>
+
                     </div>
 
+                    <div class="profileTab tabDirectPlayProfiles">
+                        <p>Add direct play profiles to indicate what formats the device can handle natively.</p>
+                        <div class="directPlayProfiles"></div>
+                    </div>
+                    <div class="profileTab tabTranscodingProfiles">
+                        <p>Add transcoding profiles to indicate what formats should be used when transcoding is required.</p>
+                        <div class="transcodingProfiles"></div>
+                    </div>
+                    <div class="profileTab tabContainerProfiles">
+                        <p>Container profiles indicate the limitations of a device when playing specific formats. If a limitation applies then the media will be transcoded, even if the device supports the container natively.</p>
+                        <div class="containerProfiles"></div>
+                    </div>
+                    <div class="profileTab tabCodecProfiles">
+                        <p>Codec profiles indicate the limitations of a device when playing specific codecs. If a limitation applies then the media will be transcoded, even if the device supports the codec natively.</p>
+                        <div class="codecProfiles"></div>
+                    </div>
+                    <div class="profileTab tabMediaProfiles">
+                        <p>Response profiles provide a way to customize responses sent to the device when playing certain kinds of media.</p>
+                        <div class="mediaProfiles"></div>
+                    </div>
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>

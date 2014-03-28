@@ -59,7 +59,7 @@
     </ContainerProfile>
   </ContainerProfiles>
   <CodecProfiles>
-    <CodecProfile type="VideoCodec" codec="mpeg4">
+    <CodecProfile type="Video" codec="mpeg4">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1280" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="720" isRequired="true" />
@@ -67,7 +67,7 @@
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="5120000" isRequired="false" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoCodec" codec="h264">
+    <CodecProfile type="Video" codec="h264">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
@@ -75,7 +75,7 @@
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="10240000" isRequired="false" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoCodec" codec="wmv2,wmv3,vc1">
+    <CodecProfile type="Video" codec="wmv2,wmv3,vc1">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
@@ -83,12 +83,12 @@
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="15360000" isRequired="false" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoAudioCodec" codec="ac3,wmav2,wmapro">
+    <CodecProfile type="VideoAudio" codec="ac3,wmav2,wmapro">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="false" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoAudioCodec" codec="aac">
+    <CodecProfile type="VideoAudio" codec="aac">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="false" />
         <ProfileCondition condition="Equals" property="AudioProfile" value="lc" isRequired="false" />
