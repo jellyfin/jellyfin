@@ -7,6 +7,8 @@ namespace MediaBrowser.Model.Session
     {
         public string Name { get; set; }
 
+        public string ControllingUserId { get; set; }
+
         public Dictionary<string, string> Arguments { get; set; }
 
         public GenericCommand()
@@ -15,6 +17,9 @@ namespace MediaBrowser.Model.Session
         }
     }
 
+    /// <summary>
+    /// This exists simply to identify a set of known commands.
+    /// </summary>
     public enum CoreGenericCommand
     {
         MoveUp = 0,
