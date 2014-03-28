@@ -33,7 +33,15 @@ namespace MediaBrowser.Model.Session
         /// <summary>
         /// The fullscreen
         /// </summary>
-        Fullscreen
+        Fullscreen,
+        /// <summary>
+        /// The rewind
+        /// </summary>
+        Rewind,
+        /// <summary>
+        /// The fast forward
+        /// </summary>
+        FastForward
     }
 
     public class PlaystateRequest

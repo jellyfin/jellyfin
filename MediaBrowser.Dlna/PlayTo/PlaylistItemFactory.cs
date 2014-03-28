@@ -32,7 +32,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 var audioCodec = audioStream == null ? null : audioStream.Codec;
 
                 // Make sure audio codec profiles are satisfied
-                if (!string.IsNullOrEmpty(audioCodec) && profile.CodecProfiles.Where(i => i.Type == CodecType.AudioCodec && i.ContainsCodec(audioCodec))
+                if (!string.IsNullOrEmpty(audioCodec) && profile.CodecProfiles.Where(i => i.Type == CodecType.Audio && i.ContainsCodec(audioCodec))
                     .All(i => AreConditionsSatisfied(i.Conditions, item.Path, null, audioStream)))
                 {
                     playlistItem.Transcode = false;
@@ -53,7 +53,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec;
 
                 var audioTranscodingConditions = profile.CodecProfiles
-                    .Where(i => i.Type == CodecType.AudioCodec && i.ContainsCodec(transcodingProfile.AudioCodec))
+                    .Where(i => i.Type == CodecType.Audio && i.ContainsCodec(transcodingProfile.AudioCodec))
                     .Take(1)
                     .SelectMany(i => i.Conditions);
 
@@ -114,13 +114,13 @@ namespace MediaBrowser.Dlna.PlayTo
                 var videoCodec = videoStream == null ? null : videoStream.Codec;
 
                 // Make sure video codec profiles are satisfied
-                if (!string.IsNullOrEmpty(videoCodec) && profile.CodecProfiles.Where(i => i.Type == CodecType.VideoCodec && i.ContainsCodec(videoCodec))
+                if (!string.IsNullOrEmpty(videoCodec) && profile.CodecProfiles.Where(i => i.Type == CodecType.Video && i.ContainsCodec(videoCodec))
                     .All(i => AreConditionsSatisfied(i.Conditions, item.Path, videoStream, audioStream)))
                 {
                     var audioCodec = audioStream == null ? null : audioStream.Codec;
 
                     // Make sure audio codec profiles are satisfied
-                    if (string.IsNullOrEmpty(audioCodec) || profile.CodecProfiles.Where(i => i.Type == CodecType.VideoAudioCodec && i.ContainsCodec(audioCodec))
+                    if (string.IsNullOrEmpty(audioCodec) || profile.CodecProfiles.Where(i => i.Type == CodecType.VideoAudio && i.ContainsCodec(audioCodec))
                         .All(i => AreConditionsSatisfied(i.Conditions, item.Path, videoStream, audioStream)))
                     {
                         playlistItem.Transcode = false;
@@ -143,14 +143,14 @@ namespace MediaBrowser.Dlna.PlayTo
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
 
                 var videoTranscodingConditions = profile.CodecProfiles
-                    .Where(i => i.Type == CodecType.VideoCodec && i.ContainsCodec(transcodingProfile.VideoCodec))
+                    .Where(i => i.Type == CodecType.Video && i.ContainsCodec(transcodingProfile.VideoCodec))
                     .Take(1)
                     .SelectMany(i => i.Conditions);
 
                 ApplyTranscodingConditions(playlistItem, videoTranscodingConditions);
 
                 var audioTranscodingConditions = profile.CodecProfiles
-                    .Where(i => i.Type == CodecType.VideoAudioCodec && i.ContainsCodec(transcodingProfile.AudioCodec))
+                    .Where(i => i.Type == CodecType.VideoAudio && i.ContainsCodec(transcodingProfile.AudioCodec))
                     .Take(1)
                     .SelectMany(i => i.Conditions);
 
