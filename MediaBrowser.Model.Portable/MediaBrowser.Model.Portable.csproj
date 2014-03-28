@@ -428,6 +428,9 @@
     <Compile Include="..\MediaBrowser.Model\Session\BrowseRequest.cs">
       <Link>Session\BrowseRequest.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Session\GenericCommand.cs">
+      <Link>Session\GenericCommand.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\MessageCommand.cs">
       <Link>Session\MessageCommand.cs</Link>
     </Compile>

@@ -145,6 +145,7 @@
     <Compile Include="Splash\SplashForm.Designer.cs">
       <DependentUpon>SplashForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Updates\ApplicationUpdater.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

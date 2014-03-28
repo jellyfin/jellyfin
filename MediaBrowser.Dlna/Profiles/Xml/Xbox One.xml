@@ -32,6 +32,7 @@
     </TranscodingProfile>
   </TranscodingProfiles>
   <ContainerProfiles />
+  <CodecProfiles />
   <MediaProfiles>
     <MediaProfile container="avi" type="Video" mimeType="video/x-msvideo">
       <Conditions />

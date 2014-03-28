@@ -13,8 +13,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetDirectoryContents
     /// </summary>
-    [Route("/Environment/DirectoryContents", "GET")]
-    [Api(Description = "Gets the contents of a given directory in the file system")]
+    [Route("/Environment/DirectoryContents", "GET", Summary = "Gets the contents of a given directory in the file system")]
     public class GetDirectoryContents : IReturn<List<FileSystemEntryInfo>>
     {
         /// <summary>
@@ -46,8 +45,7 @@ namespace MediaBrowser.Api
         public bool IncludeHidden { get; set; }
     }
 
-    [Route("/Environment/NetworkShares", "GET")]
-    [Api(Description = "Gets shares from a network device")]
+    [Route("/Environment/NetworkShares", "GET", Summary = "Gets shares from a network device")]
     public class GetNetworkShares : IReturn<List<FileSystemEntryInfo>>
     {
         /// <summary>
@@ -61,8 +59,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetDrives
     /// </summary>
-    [Route("/Environment/Drives", "GET")]
-    [Api(Description = "Gets available drives from the server's file system")]
+    [Route("/Environment/Drives", "GET", Summary = "Gets available drives from the server's file system")]
     public class GetDrives : IReturn<List<FileSystemEntryInfo>>
     {
     }
@@ -70,14 +67,12 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetNetworkComputers
     /// </summary>
-    [Route("/Environment/NetworkDevices", "GET")]
-    [Api(Description = "Gets a list of devices on the network")]
+    [Route("/Environment/NetworkDevices", "GET", Summary = "Gets a list of devices on the network")]
     public class GetNetworkDevices : IReturn<List<FileSystemEntryInfo>>
     {
     }
 
-    [Route("/Environment/ParentPath", "GET")]
-    [Api(Description = "Gets the parent path of a given path")]
+    [Route("/Environment/ParentPath", "GET", Summary = "Gets the parent path of a given path")]
     public class GetParentPath : IReturn<string>
     {
         /// <summary>

@@ -52,7 +52,7 @@
     </ContainerProfile>
   </ContainerProfiles>
   <CodecProfiles>
-    <CodecProfile type="VideoCodec" codec="mpeg2video">
+    <CodecProfile type="Video" codec="mpeg2video">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
@@ -60,7 +60,7 @@
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="30720000" isRequired="true" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoCodec" codec="mpeg4">
+    <CodecProfile type="Video" codec="mpeg4">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
@@ -68,7 +68,7 @@
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="8192000" isRequired="true" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoCodec" codec="h264">
+    <CodecProfile type="Video" codec="h264">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
@@ -77,7 +77,7 @@
         <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="true" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoCodec" codec="wmv2,wmv3,vc1">
+    <CodecProfile type="Video" codec="wmv2,wmv3,vc1">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
@@ -85,7 +85,7 @@
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="25600000" isRequired="true" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoAudioCodec" codec="ac3,wmav2,dca,aac,mp3">
+    <CodecProfile type="VideoAudio" codec="ac3,wmav2,dca,aac,mp3">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="true" />
       </Conditions>
