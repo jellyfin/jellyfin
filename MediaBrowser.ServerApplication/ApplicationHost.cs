@@ -473,7 +473,13 @@ namespace MediaBrowser.ServerApplication
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(LocalizationManager);
 
-            ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer);
+            var innerProgress = new ActionableProgress<double>();
+            innerProgress.RegisterAction(p => progress.Report((.75 * p) + 15));
+
+            await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
+            progress.Report(90);
+
+            ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, MediaEncoder);
             RegisterSingleInstance(ImageProcessor);
 
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager);
@@ -486,12 +492,6 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance<IFileOrganizationService>(fileOrganizationService);
 
             progress.Report(15);
-
-            var innerProgress = new ActionableProgress<double>();
-            innerProgress.RegisterAction(p => progress.Report((.75 * p) + 15));
-
-            await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
-            progress.Report(90);
 
             EncodingManager = new EncodingManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository,
                 MediaEncoder);

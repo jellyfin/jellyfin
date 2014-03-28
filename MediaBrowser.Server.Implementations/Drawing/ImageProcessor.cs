@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -52,12 +53,14 @@ namespace MediaBrowser.Server.Implementations.Drawing
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationPaths _appPaths;
+        private readonly IMediaEncoder _mediaEncoder;
 
-        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
+        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
+            _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
 
             _saveImageSizeTimer = new Timer(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
@@ -66,7 +69,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                sizeDictionary = jsonSerializer.DeserializeFromFile<Dictionary<Guid, ImageSize>>(ImageSizeFile) ?? 
+                sizeDictionary = jsonSerializer.DeserializeFromFile<Dictionary<Guid, ImageSize>>(ImageSizeFile) ??
                     new Dictionary<Guid, ImageSize>();
             }
             catch (FileNotFoundException)
@@ -213,6 +216,39 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
+                var hasPostProcessing = !string.IsNullOrEmpty(options.BackgroundColor) || options.UnplayedCount.HasValue || options.AddPlayedIndicator || options.PercentPlayed.HasValue;
+
+                if (!hasPostProcessing)
+                {
+                    using (var outputStream = await _mediaEncoder.EncodeImage(new ImageEncodingOptions
+                    {
+                        InputPath = originalImagePath,
+                        MaxHeight = options.MaxHeight,
+                        MaxWidth = options.MaxWidth,
+                        Height = options.Height,
+                        Width = options.Width,
+                        Quality = options.Quality,
+                        Format = options.OutputFormat == ImageOutputFormat.Original ? Path.GetExtension(originalImagePath).TrimStart('.') : options.OutputFormat.ToString().ToLower()
+
+                    }, CancellationToken.None).ConfigureAwait(false))
+                    {
+                        using (var outputMemoryStream = new MemoryStream())
+                        {
+                            // Save to the memory stream
+                            await outputStream.CopyToAsync(outputMemoryStream).ConfigureAwait(false);
+
+                            var bytes = outputMemoryStream.ToArray();
+
+                            await toStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+
+                            // kick off a task to cache the result
+                            await CacheResizedImage(cacheFilePath, bytes).ConfigureAwait(false);
+                        }
+
+                        return;
+                    }
+                }
+
                 using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
                 {
                     // Copy to memory stream to avoid Image locking file
@@ -241,8 +277,8 @@ namespace MediaBrowser.Server.Implementations.Drawing
                                     thumbnailGraph.SmoothingMode = SmoothingMode.HighQuality;
                                     thumbnailGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
                                     thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                                    thumbnailGraph.CompositingMode = string.IsNullOrEmpty(options.BackgroundColor) && !options.UnplayedCount.HasValue && !options.AddPlayedIndicator && !options.PercentPlayed.HasValue ? 
-                                        CompositingMode.SourceCopy : 
+                                    thumbnailGraph.CompositingMode = !hasPostProcessing ?
+                                        CompositingMode.SourceCopy :
                                         CompositingMode.SourceOver;
 
                                     SetBackgroundColor(thumbnailGraph, options);
@@ -263,7 +299,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                                         await toStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
 
                                         // kick off a task to cache the result
-                                        CacheResizedImage(cacheFilePath, bytes, semaphore);
+                                        await CacheResizedImage(cacheFilePath, bytes).ConfigureAwait(false);
                                     }
                                 }
                             }
@@ -272,11 +308,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     }
                 }
             }
-            catch
+            finally
             {
                 semaphore.Release();
-
-                throw;
             }
         }
 
@@ -285,33 +319,26 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// </summary>
         /// <param name="cacheFilePath">The cache file path.</param>
         /// <param name="bytes">The bytes.</param>
-        /// <param name="semaphore">The semaphore.</param>
-        private void CacheResizedImage(string cacheFilePath, byte[] bytes, SemaphoreSlim semaphore)
+        /// <returns>Task.</returns>
+        private async Task CacheResizedImage(string cacheFilePath, byte[] bytes)
         {
-            Task.Run(async () =>
+            try
             {
-                try
-                {
-                    var parentPath = Path.GetDirectoryName(cacheFilePath);
+                var parentPath = Path.GetDirectoryName(cacheFilePath);
 
-                    Directory.CreateDirectory(parentPath);
+                Directory.CreateDirectory(parentPath);
 
-                    // Save to the cache location
-                    using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                    {
-                        // Save to the filestream
-                        await cacheFileStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-                    }
-                }
-                catch (Exception ex)
+                // Save to the cache location
+                using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {
-                    _logger.ErrorException("Error writing to image cache file {0}", ex, cacheFilePath);
+                    // Save to the filestream
+                    await cacheFileStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
                 }
-                finally
-                {
-                    semaphore.Release();
-                }
-            });
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error writing to image cache file {0}", ex, cacheFilePath);
+            }
         }
 
         /// <summary>
@@ -519,7 +546,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 filename += "iv=" + IndicatorVersion;
             }
-            
+
             if (!string.IsNullOrEmpty(backgroundColor))
             {
                 filename += "b=" + backgroundColor;

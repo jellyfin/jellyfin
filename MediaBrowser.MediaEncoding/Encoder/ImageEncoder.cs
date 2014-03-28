@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.MediaEncoding;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Diagnostics;
@@ -13,17 +14,36 @@ namespace MediaBrowser.MediaEncoding.Encoder
     {
         private readonly string _ffmpegPath;
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
+
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        private static readonly SemaphoreSlim ResourcePool = new SemaphoreSlim(5, 5);
+        private static readonly SemaphoreSlim ResourcePool = new SemaphoreSlim(10, 10);
 
-        public ImageEncoder(string ffmpegPath, ILogger logger)
+        public ImageEncoder(string ffmpegPath, ILogger logger, IFileSystem fileSystem)
         {
             _ffmpegPath = ffmpegPath;
             _logger = logger;
+            _fileSystem = fileSystem;
         }
 
         public async Task<Stream> EncodeImage(ImageEncodingOptions options, CancellationToken cancellationToken)
+        {
+            ValidateInput(options);
+
+            await ResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                return await EncodeImageInternal(options, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                ResourcePool.Release();
+            }
+        }
+
+        private async Task<Stream> EncodeImageInternal(ImageEncodingOptions options, CancellationToken cancellationToken)
         {
             ValidateInput(options);
 
@@ -38,11 +58,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    RedirectStandardError = true,
+                    WorkingDirectory = Path.GetDirectoryName(options.InputPath)
                 }
             };
 
-            await ResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            _logger.Debug("ffmpeg " + process.StartInfo.Arguments);
 
             process.Start();
 
@@ -74,8 +95,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            ResourcePool.Release();
-
             var exitCode = ranToCompletion ? process.ExitCode : -1;
 
             process.Dispose();
@@ -94,16 +113,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
             memoryStream.Position = 0;
             return memoryStream;
         }
-
+        
         private string GetArguments(ImageEncodingOptions options)
         {
             var vfScale = GetFilterGraph(options);
-            var outputFormat = GetOutputFormat(options);
+            var outputFormat = GetOutputFormat(options.Format);
 
-            return string.Format("-i file:\"{0}\" {1} -f {2}",
-                options.InputPath,
+            var quality = (options.Quality ?? 100) * .3;
+            quality = 31 - quality;
+            var qualityValue = Convert.ToInt32(Math.Max(quality, 1));
+
+            return string.Format("-f image2 -i file:\"{3}\" -q:v {0} {1} -f image2pipe -vcodec {2} -",
+                qualityValue.ToString(_usCulture),
                 vfScale,
-                outputFormat);
+                outputFormat,
+                Path.GetFileName(options.InputPath));
         }
 
         private string GetFilterGraph(ImageEncodingOptions options)
@@ -121,7 +145,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (options.MaxWidth.HasValue)
             {
-                widthScale = "min(iw," + options.MaxWidth.Value.ToString(_usCulture) + ")";
+                widthScale = "min(iw\\," + options.MaxWidth.Value.ToString(_usCulture) + ")";
             }
             else if (options.Width.HasValue)
             {
@@ -130,7 +154,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (options.MaxHeight.HasValue)
             {
-                heightScale = "min(ih," + options.MaxHeight.Value.ToString(_usCulture) + ")";
+                heightScale = "min(ih\\," + options.MaxHeight.Value.ToString(_usCulture) + ")";
             }
             else if (options.Height.HasValue)
             {
@@ -139,15 +163,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var scaleMethod = "lanczos";
 
-            return string.Format("-vf scale=\"{0}:{1}\" -sws_flags {2}", 
-                widthScale, 
+            return string.Format("-vf scale=\"{0}:{1}\" -sws_flags {2}",
+                widthScale,
                 heightScale,
                 scaleMethod);
         }
 
-        private string GetOutputFormat(ImageEncodingOptions options)
+        private string GetOutputFormat(string format)
         {
-            return options.Format;
+            if (string.Equals(format, "jpeg", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(format, "jpg", StringComparison.OrdinalIgnoreCase))
+            {
+                return "mjpeg";
+            }
+            return format;
         }
 
         private void ValidateInput(ImageEncodingOptions options)
