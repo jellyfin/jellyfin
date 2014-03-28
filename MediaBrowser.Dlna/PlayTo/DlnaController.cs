@@ -435,7 +435,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 playlistItem.StreamUrl = StreamHelper.GetVideoUrl(_device.Properties, playlistItem, streams, serverAddress);
             }
 
-            playlistItem.Didl = DidlBuilder.Build(item, _session.UserId.ToString(), serverAddress, playlistItem.StreamUrl, streams);
+            playlistItem.Didl = DidlBuilder.Build(item, _session.UserId.ToString(), serverAddress, playlistItem.StreamUrl, streams, profile.EnableAlbumArtInDidl);
 
             return playlistItem;
         }
