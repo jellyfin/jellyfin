@@ -198,7 +198,7 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new CodecProfile
                 {
-                    Type = CodecType.VideoCodec,
+                    Type = CodecType.Video,
                     Conditions = new[]
                     {
                         new ProfileCondition
@@ -218,7 +218,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new CodecProfile
                 {
-                    Type = CodecType.VideoAudioCodec,
+                    Type = CodecType.VideoAudio,
                     Codec = "ac3",
 
                     Conditions = new[]

@@ -35,9 +35,9 @@ namespace MediaBrowser.Controller.Dlna
 
     public enum CodecType
     {
-        VideoCodec = 0,
-        VideoAudioCodec = 1,
-        AudioCodec = 2
+        Video = 0,
+        VideoAudio = 1,
+        Audio = 2
     }
 
     public class ProfileCondition

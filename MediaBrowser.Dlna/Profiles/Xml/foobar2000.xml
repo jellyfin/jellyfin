@@ -36,5 +36,6 @@
     </TranscodingProfile>
   </TranscodingProfiles>
   <ContainerProfiles />
+  <CodecProfiles />
   <MediaProfiles />
 </Profile>
