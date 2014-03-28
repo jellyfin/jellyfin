@@ -131,30 +131,6 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <summary>
-        /// Determines whether the specified text has diacritics.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <returns><c>true</c> if the specified text has diacritics; otherwise, <c>false</c>.</returns>
-        private bool HasDiacritics(string text)
-        {
-            return !String.Equals(text, RemoveDiacritics(text), StringComparison.Ordinal);
-        }
-
-        /// <summary>
-        /// Removes the diacritics.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <returns>System.String.</returns>
-        private string RemoveDiacritics(string text)
-        {
-            return String.Concat(
-                text.Normalize(NormalizationForm.FormD)
-                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
-                                              UnicodeCategory.NonSpacingMark)
-              ).Normalize(NormalizationForm.FormC);
-        }
-
-        /// <summary>
         /// Encodes an URL.
         /// </summary>
         /// <param name="name">The name.</param>
