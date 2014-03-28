@@ -40,7 +40,7 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <param name="streamUrl">The stream URL.</param>
         /// <param name="streams">The streams.</param>
         /// <returns>System.String.</returns>
-        public static string Build(BaseItem dto, string userId, string serverAddress, string streamUrl, IEnumerable<MediaStream> streams)
+        public static string Build(BaseItem dto, string userId, string serverAddress, string streamUrl, IEnumerable<MediaStream> streams, bool includeImageRes)
         {
             string response = string.Format(DIDL_START, dto.Id, userId);
             response += string.Format(DIDL_TITLE, dto.Name.Replace("&", "and"));
@@ -51,7 +51,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var imageUrl = GetImageUrl(dto, serverAddress);
 
-            if (!string.IsNullOrEmpty(imageUrl))
+            if (!string.IsNullOrWhiteSpace(imageUrl))
             {
                 response += string.Format(DIDL_IMAGE, imageUrl);
             }
@@ -65,7 +65,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 response += string.Format(DESCRIPTION, UNKNOWN);
                 response += GetVideoDIDL(dto, streamUrl, streams);
 
-                if (!string.IsNullOrEmpty(imageUrl))
+                if (includeImageRes && !string.IsNullOrWhiteSpace(imageUrl))
                 {
                     response += string.Format(DIDL_IMAGE_RES, imageUrl);
                 }
@@ -84,7 +84,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 response += GetAudioDIDL(dto, streamUrl, streams);
 
-                if (!string.IsNullOrEmpty(imageUrl))
+                if (includeImageRes && !string.IsNullOrWhiteSpace(imageUrl))
                 {
                     response += string.Format(DIDL_ALBUMIMAGE_RES, imageUrl);
                 }
