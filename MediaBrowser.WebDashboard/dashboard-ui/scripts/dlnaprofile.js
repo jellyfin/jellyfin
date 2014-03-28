@@ -146,6 +146,7 @@
             html += '<li>';
             html += '<a href="#">';
 
+            html += '<p>Protocol: ' + (profile.Protocol || 'Http') + '</p>';
             html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
 
             if (profile.Type == 'Video') {

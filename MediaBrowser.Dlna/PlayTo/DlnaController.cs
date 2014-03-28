@@ -619,5 +619,10 @@ namespace MediaBrowser.Dlna.PlayTo
                 _logger.Log(LogSeverity.Debug, "Controller disposed");
             }
         }
+
+        public Task SendGenericCommand(GenericCommand command, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

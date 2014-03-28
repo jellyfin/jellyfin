@@ -60,6 +60,14 @@ namespace MediaBrowser.Controller.Session
         Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Sends the generic command.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendGenericCommand(GenericCommand command, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Sends the library update info.
         /// </summary>
         /// <param name="info">The info.</param>
