@@ -880,45 +880,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <summary>
-        /// Starts the and wait for process.
-        /// </summary>
-        /// <param name="process">The process.</param>
-        /// <param name="timeout">The timeout.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool StartAndWaitForProcess(Process process, int timeout = 10000)
-        {
-            process.Start();
-
-            var ranToCompletion = process.WaitForExit(timeout);
-
-            if (!ranToCompletion)
-            {
-                try
-                {
-                    _logger.Info("Killing ffmpeg process");
-
-                    process.Kill();
-
-                    process.WaitForExit(1000);
-                }
-                catch (Win32Exception ex)
-                {
-                    _logger.ErrorException("Error killing process", ex);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    _logger.ErrorException("Error killing process", ex);
-                }
-                catch (NotSupportedException ex)
-                {
-                    _logger.ErrorException("Error killing process", ex);
-                }
-            }
-
-            return ranToCompletion;
-        }
-
-        /// <summary>
         /// Gets the file input argument.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -950,7 +911,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public Task<Stream> EncodeImage(ImageEncodingOptions options, CancellationToken cancellationToken)
         {
-            return new ImageEncoder(FFMpegPath, _logger).EncodeImage(options, cancellationToken);
+            return new ImageEncoder(FFMpegPath, _logger, _fileSystem).EncodeImage(options, cancellationToken);
         }
 
         /// <summary>
