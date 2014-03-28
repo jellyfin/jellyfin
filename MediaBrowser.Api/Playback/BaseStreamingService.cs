@@ -967,8 +967,6 @@ namespace MediaBrowser.Api.Playback
 
         private async void StreamToStandardInput(Process process, StreamState state)
         {
-            state.StandardInputCancellationTokenSource = new CancellationTokenSource();
-
             try
             {
                 await StreamToStandardInputInternal(process, state).ConfigureAwait(false);
@@ -1263,31 +1261,38 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxWidth = int.Parse(val, UsCulture);
+                        videoRequest.MaxFramerate = double.Parse(val, UsCulture);
                     }
                 }
                 else if (i == 12)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxHeight = int.Parse(val, UsCulture);
+                        videoRequest.MaxWidth = int.Parse(val, UsCulture);
                     }
                 }
                 else if (i == 13)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.Framerate = int.Parse(val, UsCulture);
+                        videoRequest.MaxHeight = int.Parse(val, UsCulture);
                     }
                 }
                 else if (i == 14)
                 {
                     if (videoRequest != null)
                     {
-                        request.StartTimeTicks = long.Parse(val, UsCulture);
+                        videoRequest.Framerate = int.Parse(val, UsCulture);
                     }
                 }
                 else if (i == 15)
+                {
+                    if (videoRequest != null)
+                    {
+                        request.StartTimeTicks = long.Parse(val, UsCulture);
+                    }
+                }
+                else if (i == 16)
                 {
                     if (videoRequest != null)
                     {

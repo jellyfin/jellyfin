@@ -218,36 +218,36 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 var hasPostProcessing = !string.IsNullOrEmpty(options.BackgroundColor) || options.UnplayedCount.HasValue || options.AddPlayedIndicator || options.PercentPlayed.HasValue;
 
-                if (!hasPostProcessing)
-                {
-                    using (var outputStream = await _mediaEncoder.EncodeImage(new ImageEncodingOptions
-                    {
-                        InputPath = originalImagePath,
-                        MaxHeight = options.MaxHeight,
-                        MaxWidth = options.MaxWidth,
-                        Height = options.Height,
-                        Width = options.Width,
-                        Quality = options.Quality,
-                        Format = options.OutputFormat == ImageOutputFormat.Original ? Path.GetExtension(originalImagePath).TrimStart('.') : options.OutputFormat.ToString().ToLower()
+                //if (!hasPostProcessing)
+                //{
+                //    using (var outputStream = await _mediaEncoder.EncodeImage(new ImageEncodingOptions
+                //    {
+                //        InputPath = originalImagePath,
+                //        MaxHeight = options.MaxHeight,
+                //        MaxWidth = options.MaxWidth,
+                //        Height = options.Height,
+                //        Width = options.Width,
+                //        Quality = options.Quality,
+                //        Format = options.OutputFormat == ImageOutputFormat.Original ? Path.GetExtension(originalImagePath).TrimStart('.') : options.OutputFormat.ToString().ToLower()
 
-                    }, CancellationToken.None).ConfigureAwait(false))
-                    {
-                        using (var outputMemoryStream = new MemoryStream())
-                        {
-                            // Save to the memory stream
-                            await outputStream.CopyToAsync(outputMemoryStream).ConfigureAwait(false);
+                //    }, CancellationToken.None).ConfigureAwait(false))
+                //    {
+                //        using (var outputMemoryStream = new MemoryStream())
+                //        {
+                //            // Save to the memory stream
+                //            await outputStream.CopyToAsync(outputMemoryStream).ConfigureAwait(false);
 
-                            var bytes = outputMemoryStream.ToArray();
+                //            var bytes = outputMemoryStream.ToArray();
 
-                            await toStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                //            await toStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
 
-                            // kick off a task to cache the result
-                            await CacheResizedImage(cacheFilePath, bytes).ConfigureAwait(false);
-                        }
+                //            // kick off a task to cache the result
+                //            await CacheResizedImage(cacheFilePath, bytes).ConfigureAwait(false);
+                //        }
 
-                        return;
-                    }
-                }
+                //        return;
+                //    }
+                //}
 
                 using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
                 {
