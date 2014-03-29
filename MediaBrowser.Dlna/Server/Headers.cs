@@ -13,7 +13,7 @@ namespace MediaBrowser.Dlna.Server
         private readonly Dictionary<string, string> _dict = new Dictionary<string, string>();
         private readonly static Regex Validator = new Regex(@"^[a-z\d][a-z\d_.-]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        protected Headers(bool asIs)
+        public Headers(bool asIs)
         {
             _asIs = asIs;
         }

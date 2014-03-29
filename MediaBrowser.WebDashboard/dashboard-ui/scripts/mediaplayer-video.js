@@ -22,6 +22,7 @@
         var fullscreenExited = false;
         var idleState = true;
         var remoteFullscreen = false;
+        var videoMenuVisible = false;
 
         self.initVideoPlayer = function () {
             video = playVideo(item, mediaSource, startPosition, user);
@@ -59,7 +60,7 @@
                 }
                 $('#videoPlayer').removeClass('fullscreenVideo');
             } else {
-                requestFullScreen(document.documentElement);
+                requestFullScreen(document.body);
             }
         };
 
@@ -137,6 +138,21 @@
             } else {
                 toggleFlyout(flyout, '#video-audioTracksButton');
             }
+        };
+
+        self.toggleVideoPlayerMenu = function () {
+            
+            var mediaPlayer = $("#mediaPlayer");
+
+            if (videoMenuVisible) {
+                $(mediaPlayer).removeClass("showVideoMenu");
+            } else {
+                $(mediaPlayer).addClass("showVideoMenu");
+            }
+
+            videoMenuVisible = !videoMenuVisible;
+
+            console.log("show vid click");
         };
 
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function (e) {
@@ -735,8 +751,6 @@
             var seekParam = isStatic && startPosition ? '#t=' + (startPosition / 10000000) : '';
 
             var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
-                profile: 'baseline',
-                level: 3,
                 Static: isStatic,
                 maxWidth: mp4Quality.maxWidth,
                 videoBitrate: mp4Quality.videoBitrate,
@@ -757,8 +771,6 @@
             })) + seekParam;
 
             var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
-                profile: 'baseline',
-                level: 3,
                 timeStampOffsetMs: 0,
                 maxWidth: m3U8Quality.maxWidth,
                 videoBitrate: m3U8Quality.videoBitrate,
@@ -831,9 +843,9 @@
             if (mediaStreams.filter(function (i) {
                 return i.Type == "Subtitle";
             }).length) {
-                $('#video-subtitleButton', videoControls).show();
+                $('#video-subtitleButton', videoControls).show().prop("disabled", false);
             } else {
-                $('#video-subtitleButton', videoControls).hide();
+                $('#video-subtitleButton', videoControls).hide().prop("disabled", true);;
             }
 
             if (item.Chapters && item.Chapters.length) {

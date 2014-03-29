@@ -260,6 +260,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public event EventHandler<GenericEventArgs<User>> UserCreated;
 
+        private readonly SemaphoreSlim _userListLock = new SemaphoreSlim(1, 1);
+
         /// <summary>
         /// Creates the user.
         /// </summary>
@@ -279,19 +281,28 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentException(string.Format("A user with the name '{0}' already exists.", name));
             }
 
-            var user = InstantiateNewUser(name);
+            await _userListLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 
-            var list = Users.ToList();
-            list.Add(user);
-            Users = list;
+            try
+            {
+                var user = InstantiateNewUser(name);
 
-            user.DateLastSaved = DateTime.UtcNow;
+                var list = Users.ToList();
+                list.Add(user);
+                Users = list;
 
-            await UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
+                user.DateLastSaved = DateTime.UtcNow;
 
-            EventHelper.QueueEventIfNotNull(UserCreated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+                await UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
 
-            return user;
+                EventHelper.QueueEventIfNotNull(UserCreated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+
+                return user;
+            }
+            finally
+            {
+                _userListLock.Release();
+            }
         }
 
         /// <summary>
@@ -325,23 +336,32 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentException(string.Format("The user '{0}' cannot be deleted because there must be at least one admin user in the system.", user.Name));
             }
 
-            await UserRepository.DeleteUser(user, CancellationToken.None).ConfigureAwait(false);
-
-            var path = user.ConfigurationFilePath;
+            await _userListLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 
             try
             {
-                File.Delete(path);
+                await UserRepository.DeleteUser(user, CancellationToken.None).ConfigureAwait(false);
+
+                var path = user.ConfigurationFilePath;
+
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (IOException ex)
+                {
+                    _logger.ErrorException("Error deleting file {0}", ex, path);
+                }
+
+                // Force this to be lazy loaded again
+                Users = await LoadUsers().ConfigureAwait(false);
+
+                OnUserDeleted(user);
             }
-            catch (IOException ex)
+            finally
             {
-                _logger.ErrorException("Error deleting file {0}", ex, path);
+                _userListLock.Release();
             }
-
-            // Force this to be lazy loaded again
-            Users = await LoadUsers().ConfigureAwait(false);
-
-            OnUserDeleted(user);
         }
 
         /// <summary>

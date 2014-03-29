@@ -178,7 +178,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                         {
                             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                            using (var stream = await _encoder.ExtractImage(inputPath, type, false, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false))
+                            using (var stream = await _encoder.ExtractVideoImage(inputPath, type, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false))
                             {
                                 using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                                 {

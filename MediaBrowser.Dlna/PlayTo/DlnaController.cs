@@ -20,7 +20,7 @@ namespace MediaBrowser.Dlna.PlayTo
     public class PlayToController : ISessionController, IDisposable
     {
         private Device _device;
-        private BaseItem _currentItem = null;
+        private BaseItem _currentItem;
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
         private readonly IItemRepository _itemRepository;
@@ -30,7 +30,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IDlnaManager _dlnaManager;
         private readonly IUserManager _userManager;
         private readonly IServerApplicationHost _appHost;
-        private bool _playbackStarted = false;
+        private bool _playbackStarted;
 
         private const int UpdateTimerIntervalMs = 1000;
 
@@ -103,22 +103,27 @@ namespace MediaBrowser.Dlna.PlayTo
 
         async void Device_CurrentIdChanged(object sender, CurrentIdEventArgs e)
         {
-            if (e.Id != Guid.Empty)
+            if (!string.IsNullOrWhiteSpace(e.Id))
             {
-                if (_currentItem != null && _currentItem.Id == e.Id)
+                Guid guid;
+
+                if (Guid.TryParse(e.Id, out guid))
                 {
-                    return;
-                }
+                    if (_currentItem != null && _currentItem.Id == guid)
+                    {
+                        return;
+                    }
 
-                var item = _libraryManager.GetItemById(e.Id);
+                    var item = _libraryManager.GetItemById(guid);
 
-                if (item != null)
-                {
-                    _logger.Debug("{0} - CurrentId {1}", _session.DeviceName, item.Id);
-                    _currentItem = item;
-                    _playbackStarted = false;
+                    if (item != null)
+                    {
+                        _logger.Debug("{0} - CurrentId {1}", _session.DeviceName, item.Id);
+                        _currentItem = item;
+                        _playbackStarted = false;
 
-                    await ReportProgress().ConfigureAwait(false);
+                        await ReportProgress().ConfigureAwait(false);
+                    }
                 }
             }
         }
@@ -140,8 +145,15 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 _updateTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-                //Session is inactive, mark it for Disposal and don't start the elapsed timer.
-                await _sessionManager.ReportSessionEnded(_session.Id);
+                try
+                {
+                    // Session is inactive, mark it for Disposal and don't start the elapsed timer.
+                    await _sessionManager.ReportSessionEnded(_session.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in ReportSessionEnded", ex);
+                }
             }
         }
 
@@ -156,7 +168,15 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (!_playbackStarted)
             {
-                await _sessionManager.OnPlaybackStart(new PlaybackInfo { Item = _currentItem, SessionId = _session.Id, CanSeek = true, QueueableMediaTypes = new List<string> { "Audio", "Video" } }).ConfigureAwait(false);
+                await _sessionManager.OnPlaybackStart(new PlaybackInfo
+                {
+                    Item = _currentItem, 
+                    SessionId = _session.Id, 
+                    CanSeek = true,
+                    QueueableMediaTypes = new List<string> { _currentItem.MediaType }
+
+                }).ConfigureAwait(false);
+
                 _playbackStarted = true;
             }
 
@@ -399,11 +419,12 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var deviceInfo = _device.Properties;
 
-            var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification());
+            var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
+                _dlnaManager.GetDefaultProfile();
 
             var playlistItem = GetPlaylistItem(item, streams, profile);
             playlistItem.StartPositionTicks = startPostionTicks;
-            playlistItem.DeviceProfileName = profile.Name;
+            playlistItem.DeviceProfileId = profile.Id;
 
             if (playlistItem.MediaType == DlnaProfileType.Audio)
             {
@@ -414,8 +435,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 playlistItem.StreamUrl = StreamHelper.GetVideoUrl(_device.Properties, playlistItem, streams, serverAddress);
             }
 
-            var didl = DidlBuilder.Build(item, _session.UserId.ToString(), serverAddress, playlistItem.StreamUrl, streams);
-            playlistItem.Didl = didl;
+            playlistItem.Didl = DidlBuilder.Build(item, _session.UserId.ToString(), serverAddress, playlistItem.StreamUrl, streams, profile.EnableAlbumArtInDidl);
 
             return playlistItem;
         }
@@ -598,6 +618,11 @@ namespace MediaBrowser.Dlna.PlayTo
                 _device.Dispose();
                 _logger.Log(LogSeverity.Debug, "Controller disposed");
             }
+        }
+
+        public Task SendGenericCommand(GenericCommand command, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

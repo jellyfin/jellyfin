@@ -52,6 +52,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableLiveTvAccess { get; set; }
 
         public bool EnableMediaPlayback { get; set; }
+        public bool EnableContentDeletion { get; set; }
 
         public string[] BlockedMediaFolders { get; set; }
 
@@ -63,8 +64,9 @@ namespace MediaBrowser.Model.Configuration
         public UserConfiguration()
         {
             IsAdministrator = true;
-            EnableRemoteControlOfOtherUsers = true;
 
+            EnableRemoteControlOfOtherUsers = true;
+            EnableContentDeletion = true;
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;

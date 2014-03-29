@@ -1,11 +1,15 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using System.Xml.Serialization;
+using MediaBrowser.Controller.Dlna;
 
 namespace MediaBrowser.Dlna.Profiles
 {
+    [XmlRoot("Profile")]
     public class SonyBlurayPlayerProfile : DefaultProfile
     {
         public SonyBlurayPlayerProfile()
         {
+            Name = "Sony Blu-ray Player";
+
             Identification = new DeviceIdentification
             {
                 FriendlyName = @"Blu-ray Disc Player",
@@ -105,7 +109,7 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new CodecProfile
                 {
-                    Type = CodecType.VideoCodec,
+                    Type = CodecType.Video,
                     Codec = "h264",
                     Conditions = new []
                     {
@@ -147,7 +151,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new CodecProfile
                 {
-                    Type = CodecType.VideoAudioCodec,
+                    Type = CodecType.VideoAudio,
                     Codec = "ac3",
                     Conditions = new []
                     {
@@ -163,7 +167,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new CodecProfile
                 {
-                    Type = CodecType.VideoAudioCodec,
+                    Type = CodecType.VideoAudio,
                     Codec = "aac",
                     Conditions = new []
                     {

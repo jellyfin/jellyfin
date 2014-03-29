@@ -12,8 +12,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UpdateDisplayPreferences
     /// </summary>
-    [Route("/DisplayPreferences/{DisplayPreferencesId}", "POST")]
-    [Api(("Updates a user's display preferences for an item"))]
+    [Route("/DisplayPreferences/{DisplayPreferencesId}", "POST", Summary = "Updates a user's display preferences for an item")]
     public class UpdateDisplayPreferences : DisplayPreferences, IReturnVoid
     {
         /// <summary>
@@ -30,8 +29,7 @@ namespace MediaBrowser.Api
         public string Client { get; set; }
     }
 
-    [Route("/DisplayPreferences/{Id}", "GET")]
-    [Api(("Gets a user's display preferences for an item"))]
+    [Route("/DisplayPreferences/{Id}", "GET", Summary = "Gets a user's display preferences for an item")]
     public class GetDisplayPreferences : IReturn<DisplayPreferences>
     {
         /// <summary>

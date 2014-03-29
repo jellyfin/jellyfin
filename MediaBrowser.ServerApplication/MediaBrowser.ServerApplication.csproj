@@ -145,6 +145,7 @@
     <Compile Include="Splash\SplashForm.Designer.cs">
       <DependentUpon>SplashForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Updates\ApplicationUpdater.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -194,6 +195,10 @@
     <ProjectReference Include="..\MediaBrowser.Dlna\MediaBrowser.Dlna.csproj">
       <Project>{734098eb-6dc1-4dd0-a1ca-3140dcd2737c}</Project>
       <Name>MediaBrowser.Dlna</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj">
+      <Project>{0bd82fa6-eb8a-4452-8af5-74f9c3849451}</Project>
+      <Name>MediaBrowser.MediaEncoding</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>

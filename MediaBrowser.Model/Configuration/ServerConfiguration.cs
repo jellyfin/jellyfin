@@ -58,6 +58,12 @@ namespace MediaBrowser.Model.Configuration
         public string ItemsByNamePath { get; set; }
 
         /// <summary>
+        /// Gets or sets the metadata path.
+        /// </summary>
+        /// <value>The metadata path.</value>
+        public string MetadataPath { get; set; }
+        
+        /// <summary>
         /// Gets or sets the display name of the season zero.
         /// </summary>
         /// <value>The display name of the season zero.</value>

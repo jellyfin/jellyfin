@@ -33,13 +33,14 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Themes;
 using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.PlayTo;
+using MediaBrowser.MediaEncoding.BdInfo;
+using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Server.Implementations;
-using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Channels;
 using MediaBrowser.Server.Implementations.Collections;
 using MediaBrowser.Server.Implementations.Configuration;
@@ -157,6 +158,7 @@ namespace MediaBrowser.ServerApplication
         private IHttpServer HttpServer { get; set; }
         private IDtoService DtoService { get; set; }
         private IImageProcessor ImageProcessor { get; set; }
+        private ISeriesOrderManager SeriesOrderManager { get; set; }
 
         /// <summary>
         /// Gets or sets the media encoder.
@@ -441,7 +443,7 @@ namespace MediaBrowser.ServerApplication
             FileOrganizationRepository = await GetFileOrganizationRepository().ConfigureAwait(false);
             RegisterSingleInstance(FileOrganizationRepository);
 
-            UserManager = new UserManager(Logger, ServerConfigurationManager, UserRepository);
+            UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository);
             RegisterSingleInstance(UserManager);
 
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager);
@@ -453,6 +455,9 @@ namespace MediaBrowser.ServerApplication
             ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager);
             RegisterSingleInstance(ProviderManager);
 
+            SeriesOrderManager = new SeriesOrderManager();
+            RegisterSingleInstance(SeriesOrderManager);
+
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
             SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager);
@@ -462,13 +467,19 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
-            ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager);
+            ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager);
             RegisterSingleInstance(ServerManager);
 
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(LocalizationManager);
 
-            ImageProcessor = new ImageProcessor(Logger, ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer);
+            var innerProgress = new ActionableProgress<double>();
+            innerProgress.RegisterAction(p => progress.Report((.75 * p) + 15));
+
+            await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
+            progress.Report(90);
+
+            ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, MediaEncoder);
             RegisterSingleInstance(ImageProcessor);
 
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager);
@@ -477,16 +488,10 @@ namespace MediaBrowser.ServerApplication
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
 
-            var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, Logger, LibraryMonitor, LibraryManager, ServerConfigurationManager, FileSystemManager, ProviderManager);
+            var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, LogManager.GetLogger("FileOrganizationService"), LibraryMonitor, LibraryManager, ServerConfigurationManager, FileSystemManager, ProviderManager);
             RegisterSingleInstance<IFileOrganizationService>(fileOrganizationService);
 
             progress.Report(15);
-
-            var innerProgress = new ActionableProgress<double>();
-            innerProgress.RegisterAction(p => progress.Report((.75 * p) + 15));
-
-            await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
-            progress.Report(90);
 
             EncodingManager = new EncodingManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository,
                 MediaEncoder);
@@ -498,7 +503,7 @@ namespace MediaBrowser.ServerApplication
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);
 
-            var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, JsonSerializer);
+            var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("DLNA"));
             RegisterSingleInstance<IDlnaManager>(dlnaManager);
 
             var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);
@@ -680,6 +685,8 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<IImageSaver>(),
                                     GetExports<IExternalId>());
 
+            SeriesOrderManager.AddParts(GetExports<ISeriesOrderProvider>());
+
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 
             LiveTvManager.AddParts(GetExports<ILiveTvService>());
@@ -795,7 +802,7 @@ namespace MediaBrowser.ServerApplication
             list.Add(typeof(ApiEntryPoint).Assembly);
 
             // Include composable parts in the Dashboard assembly 
-            list.Add(typeof(DashboardInfo).Assembly);
+            list.Add(typeof(DashboardService).Assembly);
 
             // Include composable parts in the Model assembly 
             list.Add(typeof(SystemInfo).Assembly);
@@ -815,7 +822,10 @@ namespace MediaBrowser.ServerApplication
             // Server implementations
             list.Add(typeof(ServerApplicationPaths).Assembly);
 
-            // Dlna implementations
+            // MediaEncoding
+            list.Add(typeof(MediaEncoder).Assembly);
+
+            // Dlna 
             list.Add(typeof(PlayToServerEntryPoint).Assembly);
 
             list.AddRange(Assemblies.GetAssembliesWithParts());

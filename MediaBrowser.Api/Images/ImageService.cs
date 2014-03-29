@@ -15,7 +15,6 @@ using ServiceStack.Text.Controller;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -775,15 +774,6 @@ namespace MediaBrowser.Api.Images
                 var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
                 var bytes = Convert.FromBase64String(text);
-
-                // Validate first
-                using (var validationStream = new MemoryStream(bytes))
-                {
-                    // This will throw an exception if it's not a valid image
-                    using (Image.FromStream(validationStream))
-                    {
-                    }
-                }
 
                 var memoryStream = new MemoryStream(bytes)
                 {

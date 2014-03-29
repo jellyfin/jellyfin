@@ -63,19 +63,6 @@
 
             $('#refreshLoading', page).hide();
 
-            if (item.Type != "TvChannel" &&
-                item.Type != "Genre" &&
-                item.Type != "Studio" &&
-                item.Type != "MusicGenre" &&
-                item.Type != "GameGenre" &&
-                item.Type != "Person" &&
-                item.Type != "MusicArtist" &&
-                item.Type != "CollectionFolder") {
-                $('#fldDelete', page).show();
-            } else {
-                $('#fldDelete', page).hide();
-            }
-
             LibraryBrowser.renderName(item, $('.itemName', page), true);
 
             updateTabs(page, item);
@@ -95,7 +82,25 @@
                 $('#btnEditCollectionTitles', page).hide();
             }
 
-            Dashboard.hideLoadingMsg();
+            Dashboard.getCurrentUser().done(function(user) {
+                
+                if (user.Configuration.EnableContentDeletion &&
+                    item.Type != "TvChannel" &&
+                    item.Type != "Genre" &&
+                    item.Type != "Studio" &&
+                    item.Type != "MusicGenre" &&
+                    item.Type != "GameGenre" &&
+                    item.Type != "Person" &&
+                    item.Type != "MusicArtist" &&
+                    item.Type != "CollectionFolder") {
+                    $('#fldDelete', page).show();
+                } else {
+                    $('#fldDelete', page).hide();
+                }
+
+                Dashboard.hideLoadingMsg();
+            });
+
         });
     }
 

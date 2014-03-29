@@ -146,5 +146,16 @@ namespace MediaBrowser.Server.Implementations.Roku
                 RequestContentType = "application/json"
             });
         }
+
+
+        public Task SendGenericCommand(GenericCommand command, CancellationToken cancellationToken)
+        {
+            return SendCommand(new WebSocketMessage<GenericCommand>
+            {
+                MessageType = "Command",
+                Data = command
+
+            }, cancellationToken);
+        }
     }
 }

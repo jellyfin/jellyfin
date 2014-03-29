@@ -1141,7 +1141,7 @@
         getPagingHtml: function (query, totalRecordCount, updatePageSizeSetting, pageSizes, showLimit) {
 
             if (query.Limit && updatePageSizeSetting !== false) {
-                localStorage.setItem('pagesize', query.Limit);
+                localStorage.setItem('pagesize_', query.Limit);
             }
 
             var html = '';

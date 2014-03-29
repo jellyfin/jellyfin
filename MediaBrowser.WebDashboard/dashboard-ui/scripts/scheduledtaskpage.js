@@ -140,13 +140,13 @@
             $('#addTriggerForm', page).off("submit");
             $(this).off("popupafterclose");
         });
+    },
+    
+    onSubmit: function() {
+        
+        ScheduledTaskPage.addTrigger();
 
-        $('#addTriggerForm', page).on('submit', function () {
-
-            ScheduledTaskPage.addTrigger();
-
-            return false;
-        });
+        return false;
     },
 
     addTrigger: function () {

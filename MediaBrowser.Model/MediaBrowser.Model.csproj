@@ -66,6 +66,7 @@
     <Compile Include="Configuration\MetadataPlugin.cs" />
     <Compile Include="Configuration\MetadataOptions.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
+    <Compile Include="Dlna\DeviceProfileInfo.cs" />
     <Compile Include="Drawing\ImageOutputFormat.cs" />
     <Compile Include="Dto\BaseItemPerson.cs" />
     <Compile Include="Dto\ChapterInfoDto.cs" />
@@ -131,6 +132,7 @@
     <Compile Include="Querying\UserQuery.cs" />
     <Compile Include="Search\SearchQuery.cs" />
     <Compile Include="Session\BrowseRequest.cs" />
+    <Compile Include="Session\GenericCommand.cs" />
     <Compile Include="Session\MessageCommand.cs" />
     <Compile Include="Session\PlaybackReports.cs" />
     <Compile Include="Session\PlayRequest.cs" />

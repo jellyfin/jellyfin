@@ -267,7 +267,7 @@
 
         var page = this;
 
-        $('.radioSeriesTimerTab', page).checked(false).checkboxradio('refresh');
+        $('.radioProfileTab', page).checked(false).checkboxradio('refresh');
         $('#radioSettings', page).checked(true).checkboxradio('refresh').trigger('change');
 
         reload(page);

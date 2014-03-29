@@ -25,6 +25,7 @@ namespace MediaBrowser.Model.Drawing
         /// <summary>
         /// The PNG
         /// </summary>
-        Png
+        Png,
+        Webp
     }
 }

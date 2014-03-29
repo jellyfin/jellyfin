@@ -1,14 +1,16 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using System.Xml.Serialization;
+using MediaBrowser.Controller.Dlna;
 
 namespace MediaBrowser.Dlna.Profiles
 {
+    [XmlRoot("Profile")]
     public class SamsungSmartTvProfile : DefaultProfile
     {
         public SamsungSmartTvProfile()
         {
             Name = "Samsung Smart TV";
 
-            SupportsAlbumArtInDidl = true;
+            EnableAlbumArtInDidl = true;
 
             Identification = new DeviceIdentification
             {
@@ -143,7 +145,7 @@ namespace MediaBrowser.Dlna.Profiles
            {
                new CodecProfile
                {
-                   Type = CodecType.VideoCodec,
+                   Type = CodecType.Video,
                    Codec = "mpeg2video",
 
                    Conditions = new[]
@@ -177,7 +179,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                new CodecProfile
                {
-                   Type = CodecType.VideoCodec,
+                   Type = CodecType.Video,
                    Codec = "mpeg4",
 
                    Conditions = new[]
@@ -211,7 +213,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                new CodecProfile
                {
-                   Type = CodecType.VideoCodec,
+                   Type = CodecType.Video,
                    Codec = "h264",
 
                    Conditions = new[]
@@ -251,7 +253,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                new CodecProfile
                {
-                   Type = CodecType.VideoCodec,
+                   Type = CodecType.Video,
                    Codec = "wmv2,wmv3,vc1",
 
                    Conditions = new[]
@@ -285,7 +287,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                new CodecProfile
                {
-                   Type = CodecType.VideoAudioCodec,
+                   Type = CodecType.VideoAudio,
                    Codec = "ac3,wmav2,dca,aac,mp3",
 
                    Conditions = new[]
@@ -302,6 +304,13 @@ namespace MediaBrowser.Dlna.Profiles
 
             MediaProfiles = new[]
             {
+                new MediaProfile
+                {
+                    Container = "avi",
+                    MimeType = "video/x-msvideo",
+                    Type = DlnaProfileType.Video
+                },
+
                 new MediaProfile
                 {
                     Container = "mkv",

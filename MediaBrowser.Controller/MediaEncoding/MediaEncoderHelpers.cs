@@ -154,7 +154,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 Codec = streamInfo.codec_name,
                 Profile = streamInfo.profile,
                 Level = streamInfo.level,
-                Index = streamInfo.index
+                Index = streamInfo.index,
+                PixelFormat = streamInfo.pix_fmt
             };
 
             if (streamInfo.tags != null)
@@ -196,24 +197,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // Get stream bitrate
-            if (stream.Type != MediaStreamType.Subtitle)
+            var bitrate = 0;
+
+            if (!string.IsNullOrEmpty(streamInfo.bit_rate))
             {
-                var bitrate = 0;
+                bitrate = int.Parse(streamInfo.bit_rate, UsCulture);
+            }
+            else if (formatInfo != null && !string.IsNullOrEmpty(formatInfo.bit_rate) && stream.Type == MediaStreamType.Video)
+            {
+                // If the stream info doesn't have a bitrate get the value from the media format info
+                bitrate = int.Parse(formatInfo.bit_rate, UsCulture);
+            }
 
-                if (!string.IsNullOrEmpty(streamInfo.bit_rate))
-                {
-                    bitrate = int.Parse(streamInfo.bit_rate, UsCulture);
-                }
-                else if (formatInfo != null && !string.IsNullOrEmpty(formatInfo.bit_rate))
-                {
-                    // If the stream info doesn't have a bitrate get the value from the media format info
-                    bitrate = int.Parse(formatInfo.bit_rate, UsCulture);
-                }
-
-                if (bitrate > 0)
-                {
-                    stream.BitRate = bitrate;
-                }
+            if (bitrate > 0)
+            {
+                stream.BitRate = bitrate;
             }
 
             if (streamInfo.disposition != null)

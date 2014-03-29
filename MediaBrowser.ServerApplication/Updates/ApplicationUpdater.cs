@@ -3,14 +3,8 @@ using MediaBrowser.Model.Logging;
 using System.Diagnostics;
 using System.IO;
 
-namespace MediaBrowser.Common.Implementations.Updates
+namespace MediaBrowser.ServerApplication.Updates
 {
-    public enum MBApplication
-    {
-        MBServer,
-        MBTheater
-    }
-
     /// <summary>
     /// Update the specified application using the specified archive
     /// </summary>
@@ -18,7 +12,7 @@ namespace MediaBrowser.Common.Implementations.Updates
     {
         private const string UpdaterExe = "Mediabrowser.Updater.exe";
         private const string UpdaterDll = "Mediabrowser.InstallUtil.dll";
-        public void UpdateApplication(MBApplication app, IApplicationPaths appPaths, string archive, ILogger logger, string restartServiceName)
+        public void UpdateApplication(IApplicationPaths appPaths, string archive, ILogger logger, string restartServiceName)
         {
             // First see if there is a version file and read that in
             var version = "Unknown";
@@ -39,7 +33,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             logger.Info("Copying updater dependencies to temporary location");
             File.Copy(source, tempUpdaterDll, true);
-            var product = app == MBApplication.MBTheater ? "mbt" : "server";
+            const string product = "server";
             // Our updater needs SS and ionic
             source = Path.Combine(appPaths.ProgramSystemPath, "ServiceStack.Text.dll");
             File.Copy(source, Path.Combine(Path.GetTempPath(), "ServiceStack.Text.dll"), true);

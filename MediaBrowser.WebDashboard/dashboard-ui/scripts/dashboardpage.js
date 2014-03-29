@@ -11,7 +11,11 @@
         Dashboard.showLoadingMsg();
         DashboardPage.pollForInfo(page);
         DashboardPage.startInterval();
-        $(ApiClient).on("websocketmessage", DashboardPage.onWebSocketMessage).on("websocketopen", DashboardPage.onWebSocketConnectionChange).on("websocketerror", DashboardPage.onWebSocketConnectionChange).on("websocketclose", DashboardPage.onWebSocketConnectionChange);
+        
+        $(ApiClient).on("websocketmessage", DashboardPage.onWebSocketMessage)
+            .on("websocketopen", DashboardPage.onWebSocketConnectionChange)
+            .on("websocketerror", DashboardPage.onWebSocketConnectionChange)
+            .on("websocketclose", DashboardPage.onWebSocketConnectionChange);
 
         DashboardPage.lastAppUpdateCheck = null;
         DashboardPage.lastPluginUpdateCheck = null;
@@ -26,7 +30,45 @@
 
         });
 
+        DashboardPage.reloadSystemInfo(page);
         DashboardPage.reloadNews(page);
+    },
+
+    reloadSystemInfo: function (page) {
+
+        ApiClient.getSystemInfo().done(function (systemInfo) {
+
+            Dashboard.updateSystemInfo(systemInfo);
+
+            $('#appVersionNumber', page).html(systemInfo.Version);
+
+            var port = systemInfo.HttpServerPortNumber;
+
+            if (port == systemInfo.WebSocketPortNumber) {
+                $('#ports', page).html('Running on port <b>' + port + '</b>');
+            } else {
+                $('#ports', page).html('Running on ports <b>' + port + '</b> and <b>' + systemInfo.WebSocketPortNumber + '</b>');
+            }
+
+            if (systemInfo.CanSelfRestart) {
+                $('.btnRestartContainer', page).removeClass('hide');
+            } else {
+                $('.btnRestartContainer', page).addClass('hide');
+            }
+
+            DashboardPage.renderUrls(page, systemInfo);
+            DashboardPage.renderPendingInstallations(page, systemInfo);
+
+            if (systemInfo.CanSelfUpdate) {
+                $('#btnUpdateApplicationContainer', page).show();
+                $('#btnManualUpdateContainer', page).hide();
+            } else {
+                $('#btnUpdateApplicationContainer', page).hide();
+                $('#btnManualUpdateContainer', page).show();
+            }
+
+            DashboardPage.renderHasPendingRestart(page, systemInfo.HasPendingRestart);
+        });
     },
 
     reloadNews: function (page) {
@@ -85,14 +127,16 @@
     startInterval: function () {
 
         if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("DashboardInfoStart", "0,1500");
+            ApiClient.sendWebSocketMessage("SessionsStart", "0,1500");
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "0,1500");
         }
     },
 
     stopInterval: function () {
 
         if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("DashboardInfoStop");
+            ApiClient.sendWebSocketMessage("SessionsStop");
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
         }
     },
 
@@ -100,8 +144,23 @@
 
         var page = $.mobile.activePage;
 
-        if (msg.MessageType == "DashboardInfo") {
+        if (msg.MessageType == "Sessions") {
             DashboardPage.renderInfo(page, msg.Data);
+        }
+        else if (msg.MessageType == "RestartRequired") {
+            DashboardPage.renderHasPendingRestart(page, true);
+        }
+        else if (msg.MessageType == "ServerShuttingDown") {
+            DashboardPage.renderHasPendingRestart(page, false);
+        }
+        else if (msg.MessageType == "ServerRestarting") {
+            DashboardPage.renderHasPendingRestart(page, false);
+        }
+        else if (msg.MessageType == "ScheduledTasksInfo") {
+
+            var tasks = msg.Data;
+
+            DashboardPage.renderRunningTasks(page, tasks);
         }
     },
 
@@ -113,25 +172,21 @@
 
     pollForInfo: function (page) {
 
-        $.getJSON("dashboardInfo").done(function (result) {
-
-            DashboardPage.renderInfo(page, result);
-
+        ApiClient.getSessions().done(function (sessions) {
+            
+            DashboardPage.renderInfo(page, sessions);
         });
     },
 
-    renderInfo: function (page, dashboardInfo) {
+    renderInfo: function (page, sessions) {
 
-        DashboardPage.lastDashboardInfo = dashboardInfo;
-
-        DashboardPage.renderRunningTasks(dashboardInfo);
-        DashboardPage.renderSystemInfo(page, dashboardInfo);
-        DashboardPage.renderActiveConnections(page, dashboardInfo);
+        DashboardPage.renderActiveConnections(page, sessions);
+        DashboardPage.renderPluginUpdateInfo(page);
 
         Dashboard.hideLoadingMsg();
     },
 
-    renderActiveConnections: function (page, dashboardInfo) {
+    renderActiveConnections: function (page, sessions) {
 
         var html = '';
 
@@ -141,9 +196,9 @@
 
         var deviceId = ApiClient.deviceId();
 
-        for (var i = 0, length = dashboardInfo.ActiveConnections.length; i < length; i++) {
+        for (var i = 0, length = sessions.length; i < length; i++) {
 
-            var connection = dashboardInfo.ActiveConnections[i];
+            var connection = sessions[i];
 
             var rowId = 'trSession' + connection.Id;
 
@@ -164,14 +219,13 @@
 
             html += '<div>';
             if (deviceId == connection.DeviceId) {
-                html += connection.Client;
+                html += connection.DeviceName;
             } else {
-                html += '<a href="#" onclick="RemoteControl.showMenu({sessionId:\'' + connection.Id + '\'});">' + connection.Client + '</a>';
+                html += '<a href="#" onclick="RemoteControl.showMenu({sessionId:\'' + connection.Id + '\'});">' + connection.DeviceName + '</a>';
             }
             html += '</div>';
 
             html += '<div>' + connection.ApplicationVersion + '</div>';
-            html += '<div>' + connection.DeviceName + '</div>';
 
             html += '<div class="username">';
             html += DashboardPage.getUsersHtml(connection);
@@ -352,27 +406,42 @@
         return html;
     },
 
-    renderRunningTasks: function (dashboardInfo) {
+    systemUpdateTaskName: "Check for application updates",
 
-        var page = $.mobile.activePage;
+    renderRunningTasks: function (page, tasks) {
 
         var html = '';
 
-        if (!dashboardInfo.RunningTasks.length) {
+        tasks = tasks.filter(function (t) {
+            return t.State != 'Idle';
+        });
+
+        if (tasks.filter(function (t) {
+
+            return t.Name == DashboardPage.systemUpdateTaskName;
+
+        }).length) {
+
+            $('#btnUpdateApplication', page).buttonEnabled(false);
+        } else {
+            $('#btnUpdateApplication', page).buttonEnabled(true);
+        }
+
+        if (!tasks.length) {
             html += '<p>No tasks are currently running.</p>';
             $('#runningTasksCollapsible', page).hide();
         } else {
             $('#runningTasksCollapsible', page).show();
         }
 
-        for (var i = 0, length = dashboardInfo.RunningTasks.length; i < length; i++) {
+        for (var i = 0, length = tasks.length; i < length; i++) {
 
 
-            var task = dashboardInfo.RunningTasks[i];
+            var task = tasks[i];
 
             html += '<p>';
 
-            html += task.Name+"<br/>";
+            html += task.Name + "<br/>";
 
             if (task.State == "Running") {
                 var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
@@ -396,43 +465,6 @@
         $('#divRunningTasks', page).html(html).trigger('create');
     },
 
-    renderSystemInfo: function (page, dashboardInfo) {
-
-        Dashboard.updateSystemInfo(dashboardInfo.SystemInfo);
-
-        $('#appVersionNumber', page).html(dashboardInfo.SystemInfo.Version);
-
-        var port = dashboardInfo.SystemInfo.HttpServerPortNumber;
-
-        if (port == dashboardInfo.SystemInfo.WebSocketPortNumber) {
-            $('#ports', page).html('Running on port <b>' + port + '</b>');
-        } else {
-            $('#ports', page).html('Running on ports <b>' + port + '</b> and <b>' + dashboardInfo.SystemInfo.WebSocketPortNumber + '</b>');
-        }
-
-        if (dashboardInfo.RunningTasks.filter(function (task) {
-
-            return task.Id == dashboardInfo.ApplicationUpdateTaskId;
-
-        }).length) {
-
-            $('#btnUpdateApplication', page).buttonEnabled(false);
-        } else {
-            $('#btnUpdateApplication', page).buttonEnabled(true);
-        }
-
-        if (dashboardInfo.SystemInfo.CanSelfRestart) {
-            $('.btnRestartContainer', page).removeClass('hide');
-        } else {
-            $('.btnRestartContainer', page).addClass('hide');
-        }
-
-        DashboardPage.renderUrls(page, dashboardInfo.SystemInfo);
-        DashboardPage.renderApplicationUpdateInfo(page, dashboardInfo);
-        DashboardPage.renderPluginUpdateInfo(page, dashboardInfo);
-        DashboardPage.renderPendingInstallations(page, dashboardInfo.SystemInfo);
-    },
-
     renderUrls: function (page, systemInfo) {
 
         var url = ApiClient.serverAddress() + "/mediabrowser";
@@ -449,14 +481,14 @@
         }
     },
 
-    renderApplicationUpdateInfo: function (page, dashboardInfo) {
+    renderHasPendingRestart: function (page, hasPendingRestart) {
 
         $('#updateFail', page).hide();
 
-        if (!dashboardInfo.SystemInfo.HasPendingRestart) {
+        if (!hasPendingRestart) {
 
-            // Only check once every 10 mins
-            if (DashboardPage.lastAppUpdateCheck && (new Date().getTime() - DashboardPage.lastAppUpdateCheck) < 600000) {
+            // Only check once every 30 mins
+            if (DashboardPage.lastAppUpdateCheck && (new Date().getTime() - DashboardPage.lastAppUpdateCheck) < 1800000) {
                 return;
             }
 
@@ -474,14 +506,6 @@
 
                     $('#pUpdateNow', page).show();
 
-                    if (dashboardInfo.SystemInfo.CanSelfUpdate) {
-                        $('#btnUpdateApplicationContainer', page).show();
-                        $('#btnManualUpdateContainer', page).hide();
-                    } else {
-                        $('#btnUpdateApplicationContainer', page).hide();
-                        $('#btnManualUpdateContainer', page).show();
-                    }
-
                     $('#newVersionNumber', page).html("Version " + version.versionStr + " is now available for download.");
                 }
 
@@ -493,11 +517,7 @@
 
         } else {
 
-            if (dashboardInfo.SystemInfo.HasPendingRestart) {
-                $('#pUpToDate', page).hide();
-            } else {
-                $('#pUpToDate', page).show();
-            }
+            $('#pUpToDate', page).hide();
 
             $('#pUpdateNow', page).hide();
         }
@@ -527,10 +547,10 @@
         $('#pendingInstallations', page).html(html);
     },
 
-    renderPluginUpdateInfo: function (page, dashboardInfo) {
+    renderPluginUpdateInfo: function (page) {
 
-        // Only check once every 10 mins
-        if (DashboardPage.lastPluginUpdateCheck && (new Date().getTime() - DashboardPage.lastPluginUpdateCheck) < 600000) {
+        // Only check once every 30 mins
+        if (DashboardPage.lastPluginUpdateCheck && (new Date().getTime() - DashboardPage.lastPluginUpdateCheck) < 1800000) {
             return;
         }
 
@@ -593,11 +613,19 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.startScheduledTask(DashboardPage.lastDashboardInfo.ApplicationUpdateTaskId).done(function () {
+        ApiClient.getScheduledTasks().done(function (tasks) {
 
-            DashboardPage.pollForInfo(page);
+            var task = tasks.filter(function (t) {
 
-            Dashboard.hideLoadingMsg();
+                return t.Name == DashboardPage.systemUpdateTaskName;
+            });
+
+            ApiClient.startScheduledTask(task.Id).done(function () {
+
+                DashboardPage.pollForInfo(page);
+
+                Dashboard.hideLoadingMsg();
+            });
         });
     },
 

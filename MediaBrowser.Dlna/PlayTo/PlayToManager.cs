@@ -5,16 +5,17 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -126,10 +127,9 @@ namespace MediaBrowser.Dlna.PlayTo
 
                         if (receivedBytes > 0)
                         {
-                            var rawData = Encoding.UTF8.GetString(receiveBuffer, 0, receivedBytes);
-                            var uri = SsdpHelper.ParseSsdpResponse(rawData);
+                            var headers = SsdpHelper.ParseSsdpResponse(receiveBuffer);
 
-                            TryCreateController(uri);
+                            TryCreateController(headers);
                         }
                     }
 
@@ -146,13 +146,20 @@ namespace MediaBrowser.Dlna.PlayTo
             }, _tokenSource.Token, TaskCreationOptions.LongRunning);
         }
 
-        private void TryCreateController(Uri uri)
+        private void TryCreateController(IDictionary<string,string> headers)
         {
+            string location;
+
+            if (!headers.TryGetValue("Location", out location))
+            {
+                return;
+            }
+
             Task.Run(async () =>
             {
                 try
                 {
-                    await CreateController(uri).ConfigureAwait(false);
+                    await CreateController(new Uri(location)).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -221,46 +228,29 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (device != null && device.RendererCommands != null && !_sessionManager.Sessions.Any(s => string.Equals(s.DeviceId, device.Properties.UUID) && s.IsActive))
             {
-                GetProfileSettings(device.Properties);
-
-                var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, device.Properties.Name, device.Properties.UUID, device.Properties.DisplayName, uri.OriginalString, null)
+                var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null)
                     .ConfigureAwait(false);
-
-                _sessionManager.ReportCapabilities(sessionInfo.Id, new SessionCapabilities
-                {
-                    PlayableMediaTypes = new[] { MediaType.Audio, MediaType.Video, MediaType.Photo },
-                    SupportsFullscreenToggle = false
-                });
 
                 var controller = sessionInfo.SessionController as PlayToController;
 
                 if (controller == null)
                 {
                     sessionInfo.SessionController = controller = new PlayToController(sessionInfo, _sessionManager, _itemRepository, _libraryManager, _logger, _networkManager, _dlnaManager, _userManager, _appHost);
+
+                    controller.Init(device);
+
+                    var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
+                                  _dlnaManager.GetDefaultProfile();
+
+                    _sessionManager.ReportCapabilities(sessionInfo.Id, new SessionCapabilities
+                    {
+                        PlayableMediaTypes = profile.GetSupportedMediaTypes().ToArray(),
+
+                        SupportsFullscreenToggle = false
+                    });
+
+                    _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
                 }
-
-                controller.Init(device);
-
-                _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
-            }
-        }
-
-        /// <summary>
-        /// Gets the profile settings.
-        /// </summary>
-        /// <param name="deviceProperties">The device properties.</param>
-        /// <returns>The TranscodeSettings for the device</returns>
-        private void GetProfileSettings(DeviceInfo deviceProperties)
-        {
-            var profile = _dlnaManager.GetProfile(deviceProperties.ToDeviceIdentification());
-
-            if (!string.IsNullOrWhiteSpace(profile.Name))
-            {
-                deviceProperties.DisplayName = profile.Name;
-            }
-            if (!string.IsNullOrWhiteSpace(profile.ClientType))
-            {
-                deviceProperties.ClientType = profile.ClientType;
             }
         }
 

@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace MediaBrowser.Dlna.Ssdp
 {
     public class SsdpHelper
     {
@@ -29,28 +30,29 @@ namespace MediaBrowser.Dlna.PlayTo
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public static Uri ParseSsdpResponse(string data)
+        public static Dictionary<string,string> ParseSsdpResponse(byte[] data)
         {
-            var res = (from line in data.Split(new[] { '\r', '\n' })
-                       where line.ToLowerInvariant().StartsWith("location:")
-                       select line).FirstOrDefault();
+            var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            return !string.IsNullOrEmpty(res) ? new Uri(res.Substring(9).Trim()) : null;
-        }
+            using (var reader = new StreamReader(new MemoryStream(data), Encoding.ASCII))
+            {
+                for (var line = reader.ReadLine(); line != null; line = reader.ReadLine())
+                {
+                    line = line.Trim();
+                    if (string.IsNullOrEmpty(line))
+                    {
+                        break;
+                    }
+                    var parts = line.Split(new[] { ':' }, 2);
 
-        /// <summary>
-        /// Parses data into SSDP event.        
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <returns></returns>
-        [Obsolete("Not yet used", true)]
-        public static string ParseSsdpEvent(string data)
-        {
-            var sid = (from line in data.Split(new[] { '\r', '\n' })
-                       where line.ToLowerInvariant().StartsWith("sid:")
-                       select line).FirstOrDefault();
-
-            return data;
+                    if (parts.Length == 2)
+                    {
+                        headers[parts[0]] = parts[1].Trim();
+                    }
+                }
+            }
+            
+            return headers;
         }
     }
 }

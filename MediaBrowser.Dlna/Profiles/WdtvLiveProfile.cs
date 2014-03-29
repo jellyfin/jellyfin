@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Controller.Dlna;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
 {
+    [XmlRoot("Profile")]
     public class WdtvLiveProfile : DefaultProfile
     {
         public WdtvLiveProfile()
@@ -193,7 +195,7 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new CodecProfile
                 {
-                    Type = CodecType.VideoCodec,
+                    Type = CodecType.Video,
                     Codec = "h264",
 
                     Conditions = new []
@@ -221,7 +223,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new CodecProfile
                 {
-                    Type = CodecType.VideoAudioCodec,
+                    Type = CodecType.VideoAudio,
                     Codec = "aac",
 
                     Conditions = new []

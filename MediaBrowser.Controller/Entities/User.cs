@@ -121,10 +121,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 _configuration = value;
 
-                if (value == null)
-                {
-                    _configurationInitialized = false;
-                }
+                _configurationInitialized = value != null;
             }
         }
 

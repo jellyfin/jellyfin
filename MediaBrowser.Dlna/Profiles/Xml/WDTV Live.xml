@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Name>WDTV Live</Name>
+  <Identification>
+    <ModelName>WD TV HD Live</ModelName>
+    <Headers>
+      <HttpHeaderInfo name="User-Agent" value="alphanetworks" match="Substring" />
+      <HttpHeaderInfo name="User-Agent" value="ALPHA Networks" match="Substring" />
+    </Headers>
+  </Identification>
+  <FriendlyName>Media Browser</FriendlyName>
+  <Manufacturer>Media Browser</Manufacturer>
+  <ManufacturerUrl>http://mediabrowser3.com/</ManufacturerUrl>
+  <ModelName>Media Browser</ModelName>
+  <ModelDescription>Media Browser</ModelDescription>
+  <ModelNumber>Media Browser</ModelNumber>
+  <ModelUrl>http://mediabrowser3.com/</ModelUrl>
+  <IgnoreTranscodeByteRangeRequests>true</IgnoreTranscodeByteRangeRequests>
+  <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
+  <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
+  <ProtocolInfo>DLNA</ProtocolInfo>
+  <TimelineOffsetSeconds>5</TimelineOffsetSeconds>
+  <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
+  <RequiresPlainFolders>false</RequiresPlainFolders>
+  <DirectPlayProfiles>
+    <DirectPlayProfile container="avi" audioCodec="ac3,dca,mp2,mp3,pcm" videoCodec="mpeg1video,mpeg2video,mpeg4,h264,vc1" type="Video" />
+    <DirectPlayProfile container="mpeg" audioCodec="ac3,dca,mp2,mp3,pcm" videoCodec="mpeg1video,mpeg2video" type="Video" />
+    <DirectPlayProfile container="mkv" audioCodec="ac3,dca,aac,mp2,mp3,pcm" videoCodec="mpeg1video,mpeg2video,mpeg4,h264,vc1" type="Video" />
+    <DirectPlayProfile container="ts" audioCodec="ac3,dca,mp2,mp3" videoCodec="mpeg1video,mpeg2video,h264,vc1" type="Video" />
+    <DirectPlayProfile container="mp4,mov" audioCodec="ac3,aac,mp2,mp3" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro" videoCodec="vc1" type="Video" />
+    <DirectPlayProfile container="asf" audioCodec="mp2,ac3" videoCodec="mpeg2video" type="Video" />
+    <DirectPlayProfile container="mp3" audioCodec="mp2,mp3" type="Audio" />
+    <DirectPlayProfile container="mp4" audioCodec="mp4" type="Audio" />
+    <DirectPlayProfile container="flac" audioCodec="flac" type="Audio" />
+    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" type="Audio" />
+    <DirectPlayProfile container="ogg" audioCodec="vorbis" type="Audio" />
+    <DirectPlayProfile container="jpeg,png,gif,bmp,tiff" type="Photo" />
+  </DirectPlayProfiles>
+  <TranscodingProfiles>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings>
+        <TranscodingSetting name="VideoProfile" value="baseline" />
+      </Settings>
+    </TranscodingProfile>
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+  </TranscodingProfiles>
+  <ContainerProfiles>
+    <ContainerProfile type="Photo">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+      </Conditions>
+    </ContainerProfile>
+  </ContainerProfiles>
+  <CodecProfiles>
+    <CodecProfile type="Video" codec="h264">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudio" codec="aac">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+  </CodecProfiles>
+  <MediaProfiles>
+    <MediaProfile container="ts" type="Video" orgPn="MPEG_TS_SD_NA">
+      <Conditions />
+    </MediaProfile>
+  </MediaProfiles>
+</Profile>

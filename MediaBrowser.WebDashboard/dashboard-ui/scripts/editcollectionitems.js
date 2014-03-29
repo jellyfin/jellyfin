@@ -278,11 +278,16 @@
             removeItemsFromCollection(page);
         });
 
+
     }).on('pagebeforeshow', "#editCollectionTitlesPage", function () {
 
         var page = this;
 
         reload(page);
+
+        $("body").on("popupafteropen.collections", ".popupIdentify", function (e) {
+            $("#txtLookupName").focus().select();
+        });
 
     }).on('pagehide', "#editCollectionTitlesPage", function () {
 
@@ -290,6 +295,7 @@
 
         currentItem = null;
 
+        $("body").off("popupafteropen.collections");
     });
 
     window.EditCollectionItemsPage = {

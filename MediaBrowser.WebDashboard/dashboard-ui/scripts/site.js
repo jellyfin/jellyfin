@@ -729,10 +729,6 @@ var Dashboard = {
             href: "metadata.html",
             selected: pageElem.id == "metadataConfigurationPage" || pageElem.id == "advancedMetadataConfigurationPage" || pageElem.id == "metadataImagesConfigurationPage"
         }, {
-            name: "Plugins",
-            href: "plugins.html",
-            selected: page.hasClass("pluginConfigurationPage")
-        }, {
             name: "Auto-Organize",
             href: "autoorganizelog.html",
             selected: page.hasClass("organizePage")
@@ -744,6 +740,10 @@ var Dashboard = {
             name: "Live TV",
             href: "livetvstatus.html",
             selected: page.hasClass("liveTvSettingsPage")
+        }, {
+            name: "Plugins",
+            href: "plugins.html",
+            selected: page.hasClass("pluginConfigurationPage")
         }, {
             name: "Users",
             divider: true,
@@ -1366,6 +1366,8 @@ $(function () {
     videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
 
     videoPlayerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="video-sendMediaButton" class="mediaButton sendMediaButton" title="Remote" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Remote</button>';
+
+    videoPlayerHtml += '<button onclick="MediaPlayer.toggleVideoPlayerMenu();" id="video-videoPlayerMenuButton" class="mediaButton videoPlayerMenuButton" title="Menu" type="button" data-icon="bars" data-iconpos="notext" data-inline="true">Menu</button>';
 
     videoPlayerHtml += '</div>'; // videoControls
 

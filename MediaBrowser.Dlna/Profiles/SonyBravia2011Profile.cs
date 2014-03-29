@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using System.Xml.Serialization;
+using MediaBrowser.Controller.Dlna;
 
 namespace MediaBrowser.Dlna.Profiles
 {
+    [XmlRoot("Profile")]
     public class SonyBravia2011Profile : DefaultProfile
     {
         public SonyBravia2011Profile()
@@ -138,13 +140,7 @@ namespace MediaBrowser.Dlna.Profiles
                     AudioCodec="ac3,aac,mp3",
                     MimeType = "video/vnd.dlna.mpeg-tts",
                     OrgPn="AVC_TS_HD_24_AC3_T,AVC_TS_HD_50_AC3_T,AVC_TS_HD_60_AC3_T,AVC_TS_HD_EU_T",
-                    Type = DlnaProfileType.Video,
-
-                    Conditions = new []
-                    {
-                        new ProfileCondition{ Condition= ProfileConditionType.Equals, Property= ProfileConditionValue.VideoPacketLength, Value="192"},
-                        new ProfileCondition{ Condition= ProfileConditionType.Equals, Property= ProfileConditionValue.VideoTimestamp, Value="1"}
-                    }
+                    Type = DlnaProfileType.Video
                 },
 
                 new MediaProfile
@@ -154,12 +150,7 @@ namespace MediaBrowser.Dlna.Profiles
                     AudioCodec="ac3,aac,mp3",
                     MimeType = "video/mpeg",
                     OrgPn="AVC_TS_HD_24_AC3_ISO,AVC_TS_HD_50_AC3_ISO,AVC_TS_HD_60_AC3_ISO,AVC_TS_HD_EU_ISO",
-                    Type = DlnaProfileType.Video,
-
-                    Conditions = new []
-                    {
-                        new ProfileCondition{ Condition= ProfileConditionType.Equals, Property= ProfileConditionValue.VideoPacketLength, Value="188"}
-                    }
+                    Type = DlnaProfileType.Video
                 },
 
                 new MediaProfile
@@ -195,7 +186,7 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new CodecProfile
                 {
-                    Type = CodecType.VideoCodec,
+                    Type = CodecType.Video,
                     Conditions = new []
                     {
                         new ProfileCondition
@@ -215,7 +206,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new CodecProfile
                 {
-                    Type = CodecType.VideoCodec,
+                    Type = CodecType.Video,
                     Codec = "h264",
                     Conditions = new []
                     {
@@ -242,7 +233,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new CodecProfile
                 {
-                    Type = CodecType.VideoCodec,
+                    Type = CodecType.Video,
                     Codec = "mpeg2video",
                     Conditions = new []
                     {
@@ -263,7 +254,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new CodecProfile
                 {
-                    Type = CodecType.VideoAudioCodec,
+                    Type = CodecType.VideoAudio,
                     Codec = "ac3",
 
                     Conditions = new []
@@ -279,7 +270,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new CodecProfile
                 {
-                    Type = CodecType.VideoAudioCodec,
+                    Type = CodecType.VideoAudio,
                     Codec = "aac",
 
                     Conditions = new[]

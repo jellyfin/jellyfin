@@ -61,7 +61,6 @@
     <Compile Include="PlayTo\DeviceService.cs" />
     <Compile Include="PlayTo\DidlBuilder.cs" />
     <Compile Include="PlayTo\DlnaController.cs" />
-    <Compile Include="PlayTo\DlnaControllerFactory.cs" />
     <Compile Include="PlayTo\Extensions.cs" />
     <Compile Include="PlayTo\PlaylistItem.cs">
       <SubType>Code</SubType>
@@ -70,7 +69,8 @@
     <Compile Include="PlayTo\PlayToManager.cs" />
     <Compile Include="PlayTo\PlayToServerEntryPoint.cs" />
     <Compile Include="PlayTo\ServiceAction.cs" />
-    <Compile Include="PlayTo\SsdpHelper.cs" />
+    <Compile Include="Profiles\Foobar2000Profile.cs" />
+    <Compile Include="Ssdp\SsdpHelper.cs" />
     <Compile Include="PlayTo\SsdpHttpClient.cs" />
     <Compile Include="PlayTo\StateVariable.cs" />
     <Compile Include="PlayTo\StreamHelper.cs" />
@@ -100,7 +100,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\DlnaServerEntryPoint.cs" />
     <Compile Include="Server\Headers.cs" />
-    <Compile Include="Server\RawHeaders.cs" />
     <Compile Include="Server\SsdpHandler.cs" />
     <Compile Include="Server\UpnpDevice.cs" />
   </ItemGroup>
@@ -118,7 +117,27 @@
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Denon AVR.xml" />
+    <EmbeddedResource Include="Profiles\Xml\foobar2000.xml" />
+    <EmbeddedResource Include="Profiles\Xml\LG Smart TV.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Linksys DMA2100.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Panasonic Viera.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Samsung Smart TV.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2013.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282010%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282011%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282012%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282013%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 3.xml" />
+    <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Xbox 360.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Default.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
