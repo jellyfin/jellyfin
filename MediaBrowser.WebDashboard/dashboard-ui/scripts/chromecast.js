@@ -118,8 +118,7 @@
      * Generic error callback function 
      */
     CastPlayer.prototype.onError = function () {
-        console.log("error");
-        $('.btnCast').hide();
+        console.log("chromecast error");
     };
 
     /**
@@ -147,13 +146,11 @@
      */
     CastPlayer.prototype.receiverListener = function (e) {
         if (e === 'available') {
-            console.log("receiver found");
-            $('.btnCast').show();
+            console.log("chromecast receiver found");
             this.hasReceivers = true;
         }
         else {
-            console.log("receiver list empty");
-            $('.btnCast').hide();
+            console.log("chromecast receiver list empty");
             this.hasReceivers = false;
         }
     };
@@ -686,7 +683,7 @@
         } else {
         }
 
-        $('.btnCast').attr('title', this.castPlayerState + " on " + this.session.receiver.friendlyName);
+        // this.session.receiver.friendlyName
     };
 
     /**
@@ -695,19 +692,15 @@
     CastPlayer.prototype.updateMediaControlUI = function () {
 
         if (!chrome || !chrome.cast) {
-            $('.btnCast').hide();
             return;
         }
         
         if (this.hasReceivers) {
-            $('.btnCast').show();
         }
 
         if (this.deviceState == DEVICE_STATE.ACTIVE) {
-            $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
             var playerState = this.castPlayerState;
         } else {
-            $('.btnCast').removeClass('btnActiveCast').addClass('btnDefaultCast');
             var playerState = this.localPlayerState;
         }
 
@@ -738,15 +731,6 @@
         var page = this;
 
         castPlayer.updateMediaControlUI();
-
-        $('.btnCast', page).on('click', function () {
-
-            if (castPlayer.deviceState == DEVICE_STATE.ACTIVE) {
-                castPlayer.stopApp();
-            } else {
-                castPlayer.launchApp();
-            }
-        });
 
     });
 
