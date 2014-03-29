@@ -20,13 +20,15 @@ namespace MediaBrowser.Dlna
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
+        private readonly IJsonSerializer _jsonSerializer;
 
-        public DlnaManager(IXmlSerializer xmlSerializer, IFileSystem fileSystem, IApplicationPaths appPaths, ILogger logger)
+        public DlnaManager(IXmlSerializer xmlSerializer, IFileSystem fileSystem, IApplicationPaths appPaths, ILogger logger, IJsonSerializer jsonSerializer)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
             _logger = logger;
+            _jsonSerializer = jsonSerializer;
 
             //DumpProfiles();
         }
@@ -381,10 +383,66 @@ namespace MediaBrowser.Dlna
 
         public void CreateProfile(DeviceProfile profile)
         {
+            profile = ReserializeProfile(profile);
+
+            if (string.IsNullOrWhiteSpace(profile.Name))
+            {
+                throw new ArgumentException("Profile is missing Name");
+            }
+
+            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
+            var path = Path.Combine(UserProfilesPath, newFilename);
+
+            _xmlSerializer.SerializeToFile(profile, path);
         }
 
         public void UpdateProfile(DeviceProfile profile)
         {
+            profile = ReserializeProfile(profile);
+
+            if (string.IsNullOrWhiteSpace(profile.Id))
+            {
+                throw new ArgumentException("Profile is missing Id");
+            }
+            if (string.IsNullOrWhiteSpace(profile.Name))
+            {
+                throw new ArgumentException("Profile is missing Name");
+            }
+
+            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
+
+            if (current.Info.Type == DeviceProfileType.System)
+            {
+                throw new ArgumentException("System profiles are readonly");
+            }
+
+            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
+            var path = Path.Combine(UserProfilesPath, newFilename);
+
+            if (!string.Equals(path, current.Path, StringComparison.Ordinal))
+            {
+                File.Delete(current.Path);
+            }
+
+            _xmlSerializer.SerializeToFile(profile, path);
+        }
+
+        /// <summary>
+        /// Recreates the object using serialization, to ensure it's not a subclass.
+        /// If it's a subclass it may not serlialize properly to xml (different root element tag name)
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <returns></returns>
+        private DeviceProfile ReserializeProfile(DeviceProfile profile)
+        {
+            if (profile.GetType() == typeof(DeviceProfile))
+            {
+                return profile;
+            }
+
+            var json = _jsonSerializer.SerializeToString(profile);
+
+            return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
         }
 
         class InternalProfileInfo
