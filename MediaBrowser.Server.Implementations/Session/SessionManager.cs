@@ -3,6 +3,8 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
@@ -564,7 +566,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             return playedToCompletion;
         }
-        
+
         /// <summary>
         /// Updates playstate position for an item but does not save
         /// </summary>
@@ -666,7 +668,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var controllingSession = GetSession(controllingSessionId);
             AssertCanControl(session, controllingSession);
-            
+
             return session.SessionController.SendSystemCommand(command, cancellationToken);
         }
 
@@ -676,7 +678,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var controllingSession = GetSession(controllingSessionId);
             AssertCanControl(session, controllingSession);
-            
+
             return session.SessionController.SendMessageCommand(command, cancellationToken);
         }
 
@@ -684,14 +686,22 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSessionForRemoteControl(sessionId);
 
-            var items = command.ItemIds.Select(i => _libraryManager.GetItemById(new Guid(i)))
+            var user = session.UserId.HasValue ? _userManager.GetUserById(session.UserId.Value) : null;
+
+            var items = command.ItemIds.SelectMany(i => TranslateItemForPlayback(i, user))
                 .Where(i => i.LocationType != LocationType.Virtual)
                 .ToList();
 
-            if (session.UserId.HasValue)
+            if (command.PlayCommand == PlayCommand.PlayShuffle)
             {
-                var user = _userManager.GetUserById(session.UserId.Value);
+                items = items.OrderBy(i => Guid.NewGuid()).ToList();
+                command.PlayCommand = PlayCommand.PlayNow;
+            }
 
+            command.ItemIds = items.Select(i => i.Id.ToString("N")).ToArray();
+
+            if (user != null)
+            {
                 if (items.Any(i => i.GetPlayAccess(user) != PlayAccess.Full))
                 {
                     throw new ArgumentException(string.Format("{0} is not allowed to play media.", user.Name));
@@ -723,13 +733,34 @@ namespace MediaBrowser.Server.Implementations.Session
             return session.SessionController.SendPlayCommand(command, cancellationToken);
         }
 
+        private IEnumerable<BaseItem> TranslateItemForPlayback(string id, User user)
+        {
+            var item = _libraryManager.GetItemById(new Guid(id));
+
+            if (item.IsFolder)
+            {
+                var folder = (Folder)item;
+
+                var items = user == null ? folder.RecursiveChildren:
+                    folder.GetRecursiveChildren(user);
+
+                items = items.Where(i => !i.IsFolder);
+
+                items = items.OrderBy(i => i.SortName);
+
+                return items;
+            }
+
+            return new[] { item };
+        }
+
         public Task SendBrowseCommand(Guid controllingSessionId, Guid sessionId, BrowseRequest command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
             var controllingSession = GetSession(controllingSessionId);
             AssertCanControl(session, controllingSession);
-            
+
             return session.SessionController.SendBrowseCommand(command, cancellationToken);
         }
 
