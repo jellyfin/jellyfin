@@ -67,7 +67,7 @@
     }
 
     function renderSubProfiles(page, profile) {
-        
+
         renderDirectPlayProfiles(page, profile.DirectPlayProfiles);
         renderTranscodingProfiles(page, profile.TranscodingProfiles);
         renderContainerProfiles(page, profile.ContainerProfiles);
@@ -75,10 +75,11 @@
         renderMediaProfiles(page, profile.MediaProfiles);
     }
 
-    function editDirectPlayProfile(page, directPlayProfile, isNew) {
+    function editDirectPlayProfile(page, directPlayProfile) {
 
+        isSubProfileNew = directPlayProfile == null;
+        directPlayProfile = directPlayProfile || {};
         currentSubProfile = directPlayProfile;
-        isSubProfileNew = isNew;
 
         var popup = $('#popupEditDirectPlayProfile', page).popup('open');
 
@@ -94,16 +95,16 @@
         currentSubProfile.Container = $('#txtDirectPlayContainer', page).val();
         currentSubProfile.AudioCodec = $('#txtDirectPlayAudioCodec', page).val();
         currentSubProfile.VideoCodec = $('#txtDirectPlayVideoCodec', page).val();
-        
+
         if (isSubProfileNew) {
 
             currentProfile.DirectPlayProfiles.push(currentSubProfile);
-        } 
+        }
 
         renderSubProfiles(page, currentProfile);
 
         currentSubProfile = null;
-        
+
         $('#popupEditDirectPlayProfile', page).popup('close');
     }
 
@@ -432,7 +433,7 @@
 
             }).done(function () {
 
-                Dashboard.navigate('dlnaprofiles.html');
+                Dashboard.alert('Settings saved.');
             });
 
         } else {
@@ -500,6 +501,12 @@
             } else {
                 $('#fldDirectPlayAudioCodec', page).show();
             }
+
+        });
+
+        $('.btnAddDirectPlayProfile', page).on('click', function () {
+
+            editDirectPlayProfile(page);
 
         });
 

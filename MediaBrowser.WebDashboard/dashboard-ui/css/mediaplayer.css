@@ -135,7 +135,7 @@ input[type="range"]::-ms-fill-upper {
 }
 
 @media all and (max-width: 600px) {
-    .chaptersButton, .audioTracksButton, .sendMediaButton {
+    .chaptersButton, .audioTracksButton {
         display: none!important;
     }
 

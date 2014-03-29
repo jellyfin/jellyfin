@@ -453,8 +453,6 @@
                 html += "</div>";
             }
 
-            html += '<div style="padding: 5px;"><a data-role="button" data-icon="gear" href="usersettings.html?userid=' + Dashboard.getCurrentUserId() + '" data-mini="true" data-theme="a">Preferences</a></div>';
-
             return html;
         };
 
@@ -527,8 +525,6 @@
 
                 html += "</div>";
             }
-
-            html += '<div style="padding: 5px;"><a data-role="button" data-icon="gear" href="usersettings.html?userid=' + Dashboard.getCurrentUserId() + '" data-mini="true" data-theme="a">Preferences</a></div>';
 
             return html;
         };

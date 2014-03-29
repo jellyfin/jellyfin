@@ -27,7 +27,7 @@
 
         var mediaType = currentItem.MediaType;
 
-        LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, mediaType, userdata.PlaybackPositionTicks);
+        LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, false, mediaType, userdata.PlaybackPositionTicks);
     }
 
     function renderRecording(page, item) {
@@ -68,7 +68,7 @@
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            if (MediaPlayer.canPlay(item, user)) {
+            if (MediaController.canPlay(item)) {
                 $('#playButtonContainer', page).show();
             } else {
                 $('#playButtonContainer', page).hide();
@@ -106,15 +106,6 @@
 
         $('#btnDelete', page).on('click', deleteRecording);
         $('#btnPlay', page).on('click', play);
-
-        $('#btnRemote', page).on('click', function () {
-
-            RemoteControl.showMenuForItem({
-
-                item: currentItem,
-                context: 'livetv'
-            });
-        });
 
     }).on('pagebeforeshow', "#liveTvRecordingPage", function () {
 

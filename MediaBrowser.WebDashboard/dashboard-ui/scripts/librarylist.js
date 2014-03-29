@@ -102,16 +102,16 @@
 
         var buttonCount = 0;
 
-        if (MediaPlayer.canPlay(item, currentUser)) {
+        if (MediaController.canPlay(item)) {
 
             var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
-            var onPlayClick = 'LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'' + item.Type + '\', \'' + item.MediaType + '\', ' + resumePosition + ');return false;';
+            var onPlayClick = 'LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'' + item.Type + '\', ' + item.IsFolder + ', \'' + item.MediaType + '\', ' + resumePosition + ');return false;';
 
             html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext" title="Play" onclick="' + onPlayClick + '" style="' + buttonMargin + '">Play</button>';
             buttonCount++;
 
             if (item.MediaType == "Audio" || item.Type == "MusicAlbum") {
-                html += '<button type="button" data-mini="true" data-inline="true" data-icon="plus" data-iconpos="notext" title="Queue" onclick="MediaPlayer.queue(\'' + item.Id + '\');return false;" style="' + buttonMargin + '">Queue</button>';
+                html += '<button type="button" data-mini="true" data-inline="true" data-icon="plus" data-iconpos="notext" title="Queue" onclick="MediaController.queue(\'' + item.Id + '\');return false;" style="' + buttonMargin + '">Queue</button>';
                 buttonCount++;
             }
         }
@@ -126,10 +126,6 @@
             buttonCount++;
         }
 
-        if (!isPortrait || buttonCount < 3) {
-            html += '<button type="button" data-mini="true" data-inline="true" data-icon="wireless" data-iconpos="notext" title="Remote" class="btnRemoteControl" data-itemid="' + item.Id + '" style="' + buttonMargin + '">Remote</button>';
-        }
-
         html += '</div>';
 
         html += '</div>';
@@ -142,22 +138,7 @@
         var id = this.getAttribute('data-itemid');
 
         ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), id).done(function (trailers) {
-            MediaPlayer.play(trailers);
-        });
-
-        return false;
-    }
-
-    function onRemoteControlButtonClick() {
-
-        var id = this.getAttribute('data-itemid');
-
-        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
-
-            RemoteControl.showMenuForItem({
-                item: item
-            });
-
+            MediaController.play({ items: trailers });
         });
 
         return false;
@@ -248,7 +229,6 @@
                 innerElem.html(getOverlayHtml(item, user, elem)).trigger('create');
 
                 $('.btnPlayTrailer', innerElem).on('click', onTrailerButtonClick);
-                $('.btnRemoteControl', innerElem).on('click', onRemoteControlButtonClick);
             });
 
             innerElem.show().each(function () {
