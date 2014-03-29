@@ -39,6 +39,9 @@ namespace MediaBrowser.Api.LiveTv
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Limit { get; set; }
+
+        [ApiMember(Name = "IsFavorite", Description = "Filter by channels that are favorites, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsFavorite { get; set; }
     }
 
     [Route("/LiveTv/Channels/{Id}", "GET", Summary = "Gets a live tv channel")]
@@ -290,7 +293,8 @@ namespace MediaBrowser.Api.LiveTv
                 ChannelType = request.Type,
                 UserId = request.UserId,
                 StartIndex = request.StartIndex,
-                Limit = request.Limit
+                Limit = request.Limit,
+                IsFavorite = request.IsFavorite
 
             }, CancellationToken.None).Result;
 

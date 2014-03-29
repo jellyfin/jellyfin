@@ -155,8 +155,57 @@
 
             </div>
         </div>
+        <div data-role="popup" data-transition="slidefade" id="popupEditDirectPlayProfile" class="popup">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>Direct Play Profile</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="editDirectPlayProfileForm">
+
+                    <div style="margin: 1em 0;">
+                        <label for="selectDirectPlayProfileType">Type:</label>
+                        <select id="selectDirectPlayProfileType" data-mini="true">
+                            <option value="Audio">Audio</option>
+                            <option value="Photo">Photo</option>
+                            <option value="Video">Video</option>
+                        </select>
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtDirectPlayContainer">Containers:</label>
+                        <input type="text" id="txtDirectPlayContainer" data-mini="true" />
+                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                    </div>
+
+                    <div id="fldDirectPlayVideoCodec" style="margin: 1em 0;">
+                        <label for="txtDirectPlayVideoCodec">Video codecs:</label>
+                        <input type="text" id="txtDirectPlayVideoCodec" data-mini="true" />
+                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                    </div>
+
+                    <div id="fldDirectPlayAudioCodec" style="margin: 1em 0 2em;">
+                        <label for="txtDirectPlayAudioCodec">Audio codecs:</label>
+                        <input type="text" id="txtDirectPlayAudioCodec" data-mini="true" />
+                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                    </div>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            Ok
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            Cancel
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
         <script type="text/javascript">
             $('.dlnaProfileForm').off('submit', DlnaProfilePage.onSubmit).on('submit', DlnaProfilePage.onSubmit);
+            $('.editDirectPlayProfileForm').off('submit', DlnaProfilePage.onDirectPlayFormSubmit).on('submit', DlnaProfilePage.onDirectPlayFormSubmit);
         </script>
     </div>
 </body>

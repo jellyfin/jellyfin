@@ -134,6 +134,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                         return number;
 
                     });
+
+                if (query.IsFavorite.HasValue)
+                {
+                    var val = query.IsFavorite.Value;
+
+                    channels = channels
+                        .Where(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite == val);
+                }
             }
 
             channels = channels.OrderBy(i =>
