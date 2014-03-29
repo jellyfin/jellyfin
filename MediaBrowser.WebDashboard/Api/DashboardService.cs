@@ -404,6 +404,10 @@ namespace MediaBrowser.WebDashboard.Api
                                       //"chromecast.js",
                                       "contextmenu.js",
 
+                                      "mediacontroller.js",
+                                      "mediaplayer.js",
+                                      "mediaplayer-video.js",
+
                                       "ratingdialog.js",
                                       "aboutpage.js",
                                       "allusersettings.js",
@@ -461,10 +465,6 @@ namespace MediaBrowser.WebDashboard.Api
                                       "loginpage.js",
                                       "logpage.js",
                                       "medialibrarypage.js",
-                                      "mediaplayer.js",
-
-                                      "mediaplayer-video.js",
-
                                       "metadataconfigurationpage.js",
                                       "metadataimagespage.js",
                                       "moviegenres.js",
