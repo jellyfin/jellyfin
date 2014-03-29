@@ -432,7 +432,7 @@
 
             }).done(function () {
 
-                Dashboard.alert('Settings saved.');
+                Dashboard.navigate('dlnaprofiles.html');
             });
 
         } else {
