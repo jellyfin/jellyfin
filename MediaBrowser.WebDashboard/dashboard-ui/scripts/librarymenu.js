@@ -24,7 +24,7 @@
 
         html += '<div class="viewMenuSecondary">';
 
-        html += '<button class="btnCast btnDefaultCast" type="button" data-role="none" style="display:none;"></button>';
+        html += '<button class="btnCast btnDefaultCast" type="button" data-role="none"></button>';
 
         html += '<a class="viewMenuLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
@@ -210,6 +210,7 @@
                 });
             });
         }
+
     }).on('pageshow', ".libraryPage", function () {
 
         var page = this;
@@ -223,5 +224,24 @@
             $(document).scrollTop(0);
         }
     });
+
+    $(function() {
+        
+        $(MediaController).on('playerchange', function () {
+
+            var info = MediaController.getPlayerInfo();
+
+            if (info.isLocalPlayer) {
+
+                $('.btnCast').addClass('btnDefaultCast').removeClass('btnActiveCast');
+
+            } else {
+
+                $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
+            }
+        });
+
+    });
+
 
 })(window, document, jQuery);

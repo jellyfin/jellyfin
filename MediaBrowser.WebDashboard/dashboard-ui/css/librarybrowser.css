@@ -676,14 +676,14 @@ a.itemTag:hover {
     }
 }
 
-@media all and (min-width: 800px) {
+@media all and (min-width: 880px) {
 
     .libraryMenuButton {
         display: none;
     }
 }
 
-@media all and (max-width: 800px) {
+@media all and (max-width: 880px) {
 
     .desktopHomeLink {
         display: none;

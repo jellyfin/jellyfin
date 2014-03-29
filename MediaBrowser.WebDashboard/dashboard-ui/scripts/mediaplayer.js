@@ -24,6 +24,18 @@
         self.playlist = [];
 
         self.isLocalPlayer = true;
+        self.name = 'Html5 Player';
+
+        self.getTargets = function () {
+
+            var targets = [{
+                name: 'My Browser',
+                id: self.name,
+                playerName: self.name
+            }];
+
+            return targets;
+        };
 
         self.updateCanClientSeek = function (elem) {
             var duration = elem.duration;
@@ -1102,6 +1114,12 @@
     window.MediaPlayer = new mediaPlayer();
 
     window.MediaController.registerPlayer(window.MediaPlayer);
+    window.MediaController.setActivePlayer(window.MediaPlayer, {
+        
+        id: window.MediaPlayer.name,
+        name: window.MediaPlayer.name
+
+    });
 
 
 })(document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window);

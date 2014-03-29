@@ -411,4 +411,79 @@
 
     window.RemoteControl = new remoteControl();
 
+    function remoteControlPlayer() {
+
+        var self = this;
+
+        self.name = 'Remote Control';
+
+        self.play = function (options) {
+
+        };
+
+        self.shuffle = function (id) {
+
+        };
+
+        self.instantMix = function (id) {
+
+        };
+
+        self.queue = function (options) {
+
+        };
+
+        self.queueNext = function (options) {
+
+        };
+
+        self.isPlaying = function () {
+
+        };
+
+        self.canPlayMediaType = function (mediaType) {
+
+            return false;
+        };
+
+        self.canQueueMediaType = function (mediaType) {
+
+            return false;
+        };
+
+        self.getTargets = function () {
+
+            var deferred = $.Deferred();
+
+            ApiClient.getSessions({
+
+                controllableByUserId: Dashboard.getCurrentUserId()
+
+            }).done(function (sessions) {
+                
+                var targets = sessions.filter(function(s) {
+
+                    return s.DeviceId != ApiClient.deviceId();
+
+                }).map(function(s) {
+                    return {
+                        name: s.DeviceName,
+                        id: s.Id,
+                        playerName: self.name
+                    };
+                });
+
+                deferred.resolveWith(null, [targets]);
+
+            }).fail(function() {
+                
+                deferred.reject();
+            });
+
+            return deferred.promise();
+        };
+    }
+
+    MediaController.registerPlayer(new remoteControlPlayer());
+
 })(window, document, jQuery);
