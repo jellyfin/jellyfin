@@ -289,9 +289,7 @@
 
         showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks) {
 
-            var isPlaying = MediaPlayer.isPlaying();
-
-            if (!isPlaying && !resumePositionTicks && mediaType != "Audio" && !isFolder) {
+            if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
                 MediaController.play(itemId);
                 return;
             }

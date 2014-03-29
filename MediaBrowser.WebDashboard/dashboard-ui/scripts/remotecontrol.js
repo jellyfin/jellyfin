@@ -411,6 +411,27 @@
 
     window.RemoteControl = new remoteControl();
 
+    function sendPlayCommand(options, playType) {
+
+        var sessionId = MediaController.getPlayerInfo().id;
+
+        var ids = options.ids || options.items.map(function (i) {
+            return i.Id;
+        });
+
+        var remoteOptions = {
+            ItemIds: ids.join(','),
+
+            PlayCommand: playType
+        };
+        
+        if (options.startPositionTicks) {
+            remoteOptions.startPositionTicks = options.startPositionTicks;
+        }
+
+        ApiClient.sendPlayCommand(sessionId, remoteOptions);
+    }
+
     function remoteControlPlayer() {
 
         var self = this;
@@ -419,36 +440,32 @@
 
         self.play = function (options) {
 
+            sendPlayCommand(options, 'PlayNow');
         };
 
         self.shuffle = function (id) {
 
+            sendPlayCommand({ ids: [id] }, 'PlayShuffle');
         };
 
         self.instantMix = function (id) {
 
+            sendPlayCommand({ ids: [id] }, 'PlayInstantMix');
         };
 
         self.queue = function (options) {
 
+            sendPlayCommand(options, 'PlayNext');
         };
 
         self.queueNext = function (options) {
 
-        };
-
-        self.isPlaying = function () {
-
-        };
-
-        self.canPlayMediaType = function (mediaType) {
-
-            return false;
+            sendPlayCommand(options, 'PlayLast');
         };
 
         self.canQueueMediaType = function (mediaType) {
 
-            return false;
+            return mediaType == 'Audio' || mediaType == 'Video';
         };
 
         self.getTargets = function () {
@@ -460,23 +477,25 @@
                 controllableByUserId: Dashboard.getCurrentUserId()
 
             }).done(function (sessions) {
-                
-                var targets = sessions.filter(function(s) {
+
+                var targets = sessions.filter(function (s) {
 
                     return s.DeviceId != ApiClient.deviceId();
 
-                }).map(function(s) {
+                }).map(function (s) {
                     return {
                         name: s.DeviceName,
                         id: s.Id,
-                        playerName: self.name
+                        playerName: self.name,
+                        appName: s.Client,
+                        playableMediaTypes: s.PlayableMediaTypes
                     };
                 });
 
                 deferred.resolveWith(null, [targets]);
 
-            }).fail(function() {
-                
+            }).fail(function () {
+
                 deferred.reject();
             });
 

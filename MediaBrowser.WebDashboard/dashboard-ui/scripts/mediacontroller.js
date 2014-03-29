@@ -19,7 +19,9 @@
 
                 name: currentPlayer.name,
                 isLocalPlayer: currentPlayer.isLocalPlayer,
-                targetInfo: currentTargetInfo
+                id: currentTargetInfo.id,
+                deviceName: currentTargetInfo.deviceName,
+                playableMediaTypes: currentTargetInfo.playableMediaTypes
             };
         };
 
@@ -124,17 +126,12 @@
                 return true;
             }
 
-            return currentPlayer.canPlayMediaType(item.MediaType);
+            return self.getPlayerInfo().playableMediaTypes.indexOf(item.MediaType) != -1;
         };
 
         self.canQueueMediaType = function (mediaType) {
 
             return currentPlayer.canQueueMediaType(mediaType);
-        };
-
-        self.isPlaying = function () {
-
-            return currentPlayer.isPlaying();
         };
 
         self.getLocalPlayer = function () {
@@ -151,7 +148,7 @@
 
     window.MediaController = new mediaController();
 
-    function onWebSocketMessageReceived(msg) {
+    function onWebSocketMessageReceived(e, msg) {
 
         var localPlayer = msg.MessageType === "Play" || msg.MessageType === "Play" ?
             MediaController.getLocalPlayer() :
@@ -212,11 +209,17 @@
 
             var id = 'radioPlayerTarget' + i;
 
-            var isChecked = target.id == playerInfo.targetInfo.id;
+            var isChecked = target.id == playerInfo.id;
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            html += '<input type="radio" class="radioSelectPlayerTarget" name="radioSelectPlayerTarget" data-playername="' + target.playerName + '" data-targetid="' + target.id + '" data-targetname="' + target.name + '" id="' + id + '" value="' + target.id + '"' + checkedHtml + '>';
-            html += '<label for="' + id + '">' + target.name + '</label>';
+            html += '<input type="radio" class="radioSelectPlayerTarget" name="radioSelectPlayerTarget" data-mediatypes="' + target.playableMediaTypes.join(',') + '" data-playername="' + target.playerName + '" data-targetid="' + target.id + '" data-targetname="' + target.name + '" id="' + id + '" value="' + target.id + '"' + checkedHtml + '>';
+            html += '<label for="' + id + '" style="font-weight:normal;">' + target.name;
+
+            if (target.appName) {
+                html += '<br/><span style="color:#bbb;">' + target.appName + '</span>';
+            }
+
+            html += '</label>';
         }
 
         html += '</fieldset>';
@@ -249,10 +252,12 @@
                 var playerName = this.getAttribute('data-playername');
                 var targetId = this.getAttribute('data-targetid');
                 var targetName = this.getAttribute('data-targetname');
+                var playableMediaTypes = this.getAttribute('data-mediatypes').split(',');
 
                 MediaController.setActivePlayer(playerName, {
                     id: targetId,
-                    name: targetName
+                    name: targetName,
+                    playableMediaTypes: playableMediaTypes
 
                 });
             });

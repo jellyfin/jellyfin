@@ -174,6 +174,20 @@
     window.LibraryMenu = {
         showLibraryMenu: showLibraryMenu
     };
+    
+    function updateCastIcon() {
+        
+        var info = MediaController.getPlayerInfo();
+
+        if (info.isLocalPlayer) {
+
+            $('.btnCast').addClass('btnDefaultCast').removeClass('btnActiveCast');
+
+        } else {
+
+            $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
+        }
+    }
 
     $(document).on('pageinit', ".libraryPage", function () {
 
@@ -211,6 +225,8 @@
             });
         }
 
+        updateCastIcon();
+
     }).on('pageshow', ".libraryPage", function () {
 
         var page = this;
@@ -228,17 +244,7 @@
     $(function() {
         
         $(MediaController).on('playerchange', function () {
-
-            var info = MediaController.getPlayerInfo();
-
-            if (info.isLocalPlayer) {
-
-                $('.btnCast').addClass('btnDefaultCast').removeClass('btnActiveCast');
-
-            } else {
-
-                $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
-            }
+            updateCastIcon();
         });
 
     });

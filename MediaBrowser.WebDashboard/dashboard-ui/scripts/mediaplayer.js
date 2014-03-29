@@ -30,8 +30,9 @@
 
             var targets = [{
                 name: 'My Browser',
-                id: self.name,
-                playerName: self.name
+                id: ApiClient.deviceId(),
+                playerName: self.name,
+                playableMediaTypes: ['Audio', 'Video']
             }];
 
             return targets;
@@ -297,19 +298,6 @@
             }
 
             return params;
-        };
-
-        self.canPlayMediaType = function (mediaType) {
-
-            if (mediaType === "Video") {
-                return true;
-            }
-
-            if (mediaType === "Audio") {
-                return true;
-            }
-
-            return false;
         };
 
         self.canQueueMediaType = function (mediaType) {
@@ -1114,12 +1102,7 @@
     window.MediaPlayer = new mediaPlayer();
 
     window.MediaController.registerPlayer(window.MediaPlayer);
-    window.MediaController.setActivePlayer(window.MediaPlayer, {
-        
-        id: window.MediaPlayer.name,
-        name: window.MediaPlayer.name
-
-    });
+    window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
 
 
 })(document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window);
