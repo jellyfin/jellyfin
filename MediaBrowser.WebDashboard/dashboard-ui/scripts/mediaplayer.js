@@ -305,16 +305,70 @@
             return currentItem && currentItem.MediaType == mediaType;
         };
 
+        function translateItemsForPlayback(items) {
+
+            var deferred = $.Deferred();
+
+            var firstItem = items[0];
+            var promise;
+
+            if (firstItem.IsFolder) {
+
+                promise = self.getItemsForPlayback({
+                    ParentId: firstItem.Id,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio,Video"
+                });
+            }
+            else if (firstItem.Type == "MusicArtist") {
+                
+                promise = self.getItemsForPlayback({
+                    Artists: firstItem.Name,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio"
+                });
+
+            }
+            else if (firstItem.Type == "MusicGenre") {
+                
+                promise = self.getItemsForPlayback({
+                    Genres: firstItem.Name,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio"
+                });
+            }
+
+            if (promise) {
+                promise.done(function (result) {
+
+                    deferred.resolveWith(null, [result.Items]);
+                });
+            } else {
+                deferred.resolveWith(null, [items]);
+            }
+
+            return deferred.promise();
+        }
+
         self.play = function (options) {
 
             Dashboard.getCurrentUser().done(function (user) {
 
                 if (options.items) {
 
-                    self.playInternal(options.items[0], options.startPositionTicks, user);
+                    translateItemsForPlayback(options.items).done(function (items) {
 
-                    self.playlist = options.items;
-                    currentPlaylistIndex = 0;
+                        self.playInternal(items[0], options.startPositionTicks, user);
+
+                        self.playlist = items;
+                        currentPlaylistIndex = 0;
+                    });
 
                 } else {
 
@@ -324,12 +378,13 @@
 
                     }).done(function (result) {
 
-                        options.items = result.Items;
+                        translateItemsForPlayback(result.Items).done(function (items) {
 
-                        self.playInternal(options.items[0], options.startPositionTicks, user);
+                            self.playInternal(items[0], options.startPositionTicks, user);
 
-                        self.playlist = options.items;
-                        currentPlaylistIndex = 0;
+                            self.playlist = items;
+                            currentPlaylistIndex = 0;
+                        });
 
                     });
                 }
@@ -580,7 +635,10 @@
 
                 if (options.items) {
 
-                    self.queueItems(options.items);
+                    translateItemsForPlayback(options.items).done(function (items) {
+
+                        self.queueItems(items);
+                    });
 
                 } else {
 
@@ -590,13 +648,13 @@
 
                     }).done(function (result) {
 
-                        options.items = result.Items;
+                        translateItemsForPlayback(result.Items).done(function (items) {
 
-                        self.queueItems(options.items);
+                            self.queueItems(items);
+                        });
 
                     });
                 }
-
             });
         };
 

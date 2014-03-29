@@ -472,11 +472,12 @@
 
             var deferred = $.Deferred();
 
-            ApiClient.getSessions({
+            var sessionQuery = {
+                SupportsRemoteControl: true,
+                ControllableByUserId: Dashboard.getCurrentUserId()
+            };
 
-                controllableByUserId: Dashboard.getCurrentUserId()
-
-            }).done(function (sessions) {
+            ApiClient.getSessions(sessionQuery).done(function (sessions) {
 
                 var targets = sessions.filter(function (s) {
 

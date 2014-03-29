@@ -150,7 +150,7 @@
 
     function onWebSocketMessageReceived(e, msg) {
 
-        var localPlayer = msg.MessageType === "Play" || msg.MessageType === "Play" ?
+        var localPlayer = msg.MessageType === "Play" || msg.MessageType === "Playstate" ?
             MediaController.getLocalPlayer() :
             null;
 
