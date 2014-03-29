@@ -22,8 +22,9 @@ namespace MediaBrowser.Providers.TV
 {
     public class TvdbSeasonImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
     {
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
         private readonly IServerConfigurationManager _config;
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
 
@@ -77,7 +78,8 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    return GetImages(path, item.GetPreferredMetadataLanguage(), season.IndexNumber.Value, cancellationToken);
+                    int seasonNumber = AdjustForSeriesOffset(series, season.IndexNumber.Value);
+                    return GetImages(path, item.GetPreferredMetadataLanguage(), seasonNumber, cancellationToken);
                 }
                 catch (FileNotFoundException)
                 {
@@ -88,7 +90,16 @@ namespace MediaBrowser.Providers.TV
             return new RemoteImageInfo[] { };
         }
 
-        private IEnumerable<RemoteImageInfo> GetImages(string xmlPath, string preferredLanguage, int seasonNumber, CancellationToken cancellationToken)
+        private int AdjustForSeriesOffset(Series series, int seasonNumber)
+        {
+            var offset = TvdbSeriesProvider.GetSeriesOffset(series.ProviderIds);
+            if (offset != null)
+                return (int) (seasonNumber + offset);
+
+            return seasonNumber;
+        }
+
+        internal static IEnumerable<RemoteImageInfo> GetImages(string xmlPath, string preferredLanguage, int seasonNumber, CancellationToken cancellationToken)
         {
             var settings = new XmlReaderSettings
             {
@@ -159,7 +170,7 @@ namespace MediaBrowser.Providers.TV
                 .ToList();
         }
 
-        private void AddImage(XmlReader reader, List<RemoteImageInfo> images, int seasonNumber)
+        private static void AddImage(XmlReader reader, List<RemoteImageInfo> images, int seasonNumber)
         {
             reader.MoveToContent();
 
@@ -186,7 +197,7 @@ namespace MediaBrowser.Providers.TV
 
                                 double rval;
 
-                                if (double.TryParse(val, NumberStyles.Any, _usCulture, out rval))
+                                if (double.TryParse(val, NumberStyles.Any, UsCulture, out rval))
                                 {
                                     rating = rval;
                                 }
@@ -200,7 +211,7 @@ namespace MediaBrowser.Providers.TV
 
                                 int rval;
 
-                                if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
                                 {
                                     voteCount = rval;
                                 }
@@ -237,12 +248,12 @@ namespace MediaBrowser.Providers.TV
                                 {
                                     int rval;
 
-                                    if (int.TryParse(resolutionParts[0], NumberStyles.Integer, _usCulture, out rval))
+                                    if (int.TryParse(resolutionParts[0], NumberStyles.Integer, UsCulture, out rval))
                                     {
                                         width = rval;
                                     }
 
-                                    if (int.TryParse(resolutionParts[1], NumberStyles.Integer, _usCulture, out rval))
+                                    if (int.TryParse(resolutionParts[1], NumberStyles.Integer, UsCulture, out rval))
                                     {
                                         height = rval;
                                     }
@@ -285,7 +296,7 @@ namespace MediaBrowser.Providers.TV
                     CommunityRating = rating,
                     VoteCount = voteCount,
                     Url = TVUtils.BannerUrl + url,
-                    ProviderName = Name,
+                    ProviderName = ProviderName,
                     Language = language,
                     Width = width,
                     Height = height

@@ -42,6 +42,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 if (_currentId == value)
                     return;
                 _currentId = value;
+
                 NotifyCurrentIdChanged(value);
             }
         }
@@ -250,7 +251,7 @@ namespace MediaBrowser.Dlna.PlayTo
             StopTimer();
 
             await SetStop().ConfigureAwait(false);
-            CurrentId = "0";
+            CurrentId = null;
 
             var command = AvCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
             if (command == null)
@@ -514,7 +515,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (String.IsNullOrEmpty(track))
             {
-                CurrentId = "0";
+                CurrentId = null;
                 return;
             }
 
@@ -607,7 +608,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 url = "/" + url;
 
             var httpClient = new SsdpHttpClient(_httpClient, _config);
-            var document = await httpClient.GetDataAsync(new Uri(Properties.BaseUrl + url));
+            var document = await httpClient.GetDataAsync(Properties.BaseUrl + url);
 
             AvCommands = TransportCommands.Create(document);
         }
@@ -625,12 +626,12 @@ namespace MediaBrowser.Dlna.PlayTo
                 url = "/" + url;
 
             var httpClient = new SsdpHttpClient(_httpClient, _config);
-            var document = await httpClient.GetDataAsync(new Uri(Properties.BaseUrl + url));
+            var document = await httpClient.GetDataAsync(Properties.BaseUrl + url);
 
             RendererCommands = TransportCommands.Create(document);
         }
 
-        internal TransportCommands AvCommands
+        private TransportCommands AvCommands
         {
             get;
             set;
@@ -646,7 +647,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var ssdpHttpClient = new SsdpHttpClient(httpClient, config);
 
-            var document = await ssdpHttpClient.GetDataAsync(url).ConfigureAwait(false);
+            var document = await ssdpHttpClient.GetDataAsync(url.ToString()).ConfigureAwait(false);
 
             var deviceProperties = new DeviceInfo();
 
@@ -681,10 +682,18 @@ namespace MediaBrowser.Dlna.PlayTo
             var presentationUrl = document.Descendants(uPnpNamespaces.ud.GetName("presentationURL")).FirstOrDefault();
             if (presentationUrl != null)
                 deviceProperties.PresentationUrl = presentationUrl.Value;
+
             var modelUrl = document.Descendants(uPnpNamespaces.ud.GetName("modelURL")).FirstOrDefault();
             if (modelUrl != null)
                 deviceProperties.ModelUrl = modelUrl.Value;
-            
+
+            var serialNumber = document.Descendants(uPnpNamespaces.ud.GetName("serialNumber")).FirstOrDefault();
+            if (serialNumber != null)
+                deviceProperties.SerialNumber = serialNumber.Value;
+
+            var modelDescription = document.Descendants(uPnpNamespaces.ud.GetName("modelDescription")).FirstOrDefault();
+            if (modelDescription != null)
+                deviceProperties.ModelDescription = modelDescription.Value;
 
             deviceProperties.BaseUrl = String.Format("http://{0}:{1}", url.Host, url.Port);
 
@@ -724,7 +733,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (isRenderer)
             {
-
                 var device = new Device(deviceProperties, httpClient, logger, config);
 
                 await device.GetRenderingProtocolAsync().ConfigureAwait(false);
@@ -768,7 +776,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private void NotifyCurrentIdChanged(string value)
         {
             if (CurrentIdChanged != null)
-                CurrentIdChanged.Invoke(this, new CurrentIdEventArgs(value));
+                CurrentIdChanged.Invoke(this, new CurrentIdEventArgs { Id = value });
         }
 
         #endregion

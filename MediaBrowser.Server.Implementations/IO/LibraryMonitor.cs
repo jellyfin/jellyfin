@@ -249,17 +249,24 @@ namespace MediaBrowser.Server.Implementations.IO
             // Creating a FileSystemWatcher over the LAN can take hundreds of milliseconds, so wrap it in a Task to do them all in parallel
             Task.Run(() =>
             {
-                var newWatcher = new FileSystemWatcher(path, "*") { IncludeSubdirectories = true, InternalBufferSize = 32767 };
-
-                newWatcher.Created += watcher_Changed;
-                newWatcher.Deleted += watcher_Changed;
-                newWatcher.Renamed += watcher_Changed;
-                newWatcher.Changed += watcher_Changed;
-
-                newWatcher.Error += watcher_Error;
-
                 try
                 {
+                    var newWatcher = new FileSystemWatcher(path, "*")
+                    {
+                        IncludeSubdirectories = true,
+                        InternalBufferSize = 32767
+                    };
+
+                    newWatcher.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.DirectoryName |
+                                              NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size;
+
+                    newWatcher.Created += watcher_Changed;
+                    newWatcher.Deleted += watcher_Changed;
+                    newWatcher.Renamed += watcher_Changed;
+                    newWatcher.Changed += watcher_Changed;
+
+                    newWatcher.Error += watcher_Error;
+
                     if (_fileSystemWatchers.TryAdd(path, newWatcher))
                     {
                         newWatcher.EnableRaisingEvents = true;
@@ -272,11 +279,7 @@ namespace MediaBrowser.Server.Implementations.IO
                     }
 
                 }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error watching path: {0}", ex, path);
-                }
-                catch (PlatformNotSupportedException ex)
+                catch (Exception ex)
                 {
                     Logger.ErrorException("Error watching path: {0}", ex, path);
                 }
@@ -346,19 +349,14 @@ namespace MediaBrowser.Server.Implementations.IO
         {
             try
             {
-                OnWatcherChanged(e);
+                Logger.Debug("Watcher sees change of type " + e.ChangeType + " to " + e.FullPath);
+
+                ReportFileSystemChanged(e.FullPath);
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("Exception in watcher changed. Path: {0}", ex, e.FullPath);
             }
-        }
-
-        private void OnWatcherChanged(FileSystemEventArgs e)
-        {
-            Logger.Debug("Watcher sees change of type " + e.ChangeType + " to " + e.FullPath);
-
-            ReportFileSystemChanged(e.FullPath);
         }
 
         public void ReportFileSystemChanged(string path)
@@ -370,12 +368,9 @@ namespace MediaBrowser.Server.Implementations.IO
 
             var filename = Path.GetFileName(path);
 
-            // Ignore certain files
-            if (!string.IsNullOrEmpty(filename) && _alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase))
-            {
-                return;
-            }
+            var monitorPath = !(!string.IsNullOrEmpty(filename) && _alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase));
 
+            // Ignore certain files
             var tempIgnorePaths = _tempIgnoredPaths.Keys.ToList();
 
             // If the parent of an ignored path has a change event, ignore that too
@@ -416,12 +411,15 @@ namespace MediaBrowser.Server.Implementations.IO
 
             }))
             {
-                return;
+                monitorPath = false;
             }
 
-            // Avoid implicitly captured closure
-            var affectedPath = path;
-            _affectedPaths.AddOrUpdate(path, path, (key, oldValue) => affectedPath);
+            if (monitorPath)
+            {
+                // Avoid implicitly captured closure
+                var affectedPath = path;
+                _affectedPaths.AddOrUpdate(path, path, (key, oldValue) => affectedPath);
+            }
 
             lock (_timerLock)
             {

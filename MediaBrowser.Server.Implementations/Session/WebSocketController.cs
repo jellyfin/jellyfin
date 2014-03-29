@@ -198,5 +198,17 @@ namespace MediaBrowser.Server.Implementations.Session
 
             }, cancellationToken);
         }
+
+        public Task SendGenericCommand(GenericCommand command, CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+
+            return socket.SendAsync(new WebSocketMessage<GenericCommand>
+            {
+                MessageType = "Command",
+                Data = command
+
+            }, cancellationToken);
+        }
     }
 }

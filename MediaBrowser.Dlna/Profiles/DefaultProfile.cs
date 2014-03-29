@@ -1,14 +1,18 @@
 ﻿using MediaBrowser.Controller.Dlna;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
 {
+    [XmlRoot("Profile")]
     public class DefaultProfile : DeviceProfile
     {
         public DefaultProfile()
         {
+            Name = "Generic Device";
+
             ProtocolInfo = "DLNA";
 
-            ClientType = "DLNA";
+            FriendlyName = "Media Browser";
             Manufacturer = "Media Browser";
             ModelDescription = "Media Browser";
             ModelName = "Media Browser";
@@ -51,24 +55,6 @@ namespace MediaBrowser.Dlna.Profiles
                 {
                     Container = "avi,mp4",
                     Type = DlnaProfileType.Video
-                }
-            };
-
-            CodecProfiles = new[]
-            {
-                new CodecProfile
-                {
-                    Type = CodecType.VideoCodec,
-                    Conditions = new []
-                    {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoLevel,
-                            Value = "3",
-                            IsRequired = false
-                        }
-                    }
                 }
             };
         }

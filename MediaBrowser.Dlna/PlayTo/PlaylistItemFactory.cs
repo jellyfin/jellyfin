@@ -32,7 +32,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 var audioCodec = audioStream == null ? null : audioStream.Codec;
 
                 // Make sure audio codec profiles are satisfied
-                if (!string.IsNullOrEmpty(audioCodec) && profile.CodecProfiles.Where(i => i.Type == CodecType.AudioCodec && i.ContainsCodec(audioCodec))
+                if (!string.IsNullOrEmpty(audioCodec) && profile.CodecProfiles.Where(i => i.Type == CodecType.Audio && i.ContainsCodec(audioCodec))
                     .All(i => AreConditionsSatisfied(i.Conditions, item.Path, null, audioStream)))
                 {
                     playlistItem.Transcode = false;
@@ -53,7 +53,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec;
 
                 var audioTranscodingConditions = profile.CodecProfiles
-                    .Where(i => i.Type == CodecType.AudioCodec && i.ContainsCodec(transcodingProfile.AudioCodec))
+                    .Where(i => i.Type == CodecType.Audio && i.ContainsCodec(transcodingProfile.AudioCodec))
                     .Take(1)
                     .SelectMany(i => i.Conditions);
 
@@ -114,13 +114,13 @@ namespace MediaBrowser.Dlna.PlayTo
                 var videoCodec = videoStream == null ? null : videoStream.Codec;
 
                 // Make sure video codec profiles are satisfied
-                if (!string.IsNullOrEmpty(videoCodec) && profile.CodecProfiles.Where(i => i.Type == CodecType.VideoCodec && i.ContainsCodec(videoCodec))
+                if (!string.IsNullOrEmpty(videoCodec) && profile.CodecProfiles.Where(i => i.Type == CodecType.Video && i.ContainsCodec(videoCodec))
                     .All(i => AreConditionsSatisfied(i.Conditions, item.Path, videoStream, audioStream)))
                 {
                     var audioCodec = audioStream == null ? null : audioStream.Codec;
 
                     // Make sure audio codec profiles are satisfied
-                    if (string.IsNullOrEmpty(audioCodec) || profile.CodecProfiles.Where(i => i.Type == CodecType.VideoAudioCodec && i.ContainsCodec(audioCodec))
+                    if (string.IsNullOrEmpty(audioCodec) || profile.CodecProfiles.Where(i => i.Type == CodecType.VideoAudio && i.ContainsCodec(audioCodec))
                         .All(i => AreConditionsSatisfied(i.Conditions, item.Path, videoStream, audioStream)))
                     {
                         playlistItem.Transcode = false;
@@ -143,14 +143,14 @@ namespace MediaBrowser.Dlna.PlayTo
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
 
                 var videoTranscodingConditions = profile.CodecProfiles
-                    .Where(i => i.Type == CodecType.VideoCodec && i.ContainsCodec(transcodingProfile.VideoCodec))
+                    .Where(i => i.Type == CodecType.Video && i.ContainsCodec(transcodingProfile.VideoCodec))
                     .Take(1)
                     .SelectMany(i => i.Conditions);
 
                 ApplyTranscodingConditions(playlistItem, videoTranscodingConditions);
 
                 var audioTranscodingConditions = profile.CodecProfiles
-                    .Where(i => i.Type == CodecType.VideoAudioCodec && i.ContainsCodec(transcodingProfile.AudioCodec))
+                    .Where(i => i.Type == CodecType.VideoAudio && i.ContainsCodec(transcodingProfile.AudioCodec))
                     .Take(1)
                     .SelectMany(i => i.Conditions);
 
@@ -162,7 +162,8 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private void ApplyTranscodingConditions(PlaylistItem item, IEnumerable<ProfileCondition> conditions)
         {
-            foreach (var condition in conditions.Where(i => !string.IsNullOrEmpty(i.Value)))
+            foreach (var condition in conditions
+                .Where(i => !string.IsNullOrEmpty(i.Value)))
             {
                 var value = condition.Value;
 
@@ -170,7 +171,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     case ProfileConditionValue.AudioBitrate:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.AudioBitrate = num;
@@ -179,7 +180,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     case ProfileConditionValue.AudioChannels:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.MaxAudioChannels = num;
@@ -190,16 +191,14 @@ namespace MediaBrowser.Dlna.PlayTo
                     case ProfileConditionValue.AudioProfile:
                     case ProfileConditionValue.Has64BitOffsets:
                     case ProfileConditionValue.VideoBitDepth:
-                    case ProfileConditionValue.VideoPacketLength:
                     case ProfileConditionValue.VideoProfile:
-                    case ProfileConditionValue.VideoTimestamp:
                     {
                         // Not supported yet
                         break;
                     }
                     case ProfileConditionValue.Height:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.MaxHeight = num;
@@ -208,7 +207,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     case ProfileConditionValue.VideoBitrate:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.VideoBitrate = num;
@@ -217,7 +216,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     case ProfileConditionValue.VideoFramerate:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.MaxFramerate = num;
@@ -226,7 +225,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     case ProfileConditionValue.VideoLevel:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.VideoLevel = num;
@@ -235,7 +234,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     case ProfileConditionValue.Width:
                     {
-                        var num = 0;
+                        int num;
                         if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
                         {
                             item.MaxWidth = num;
@@ -460,12 +459,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     return videoStream == null ? null : videoStream.Width;
                 case ProfileConditionValue.VideoLevel:
                     return videoStream == null ? null : ConvertToLong(videoStream.Level);
-                case ProfileConditionValue.VideoPacketLength:
-                    // TODO: Determine how to get this
-                    return null;
-                case ProfileConditionValue.VideoTimestamp:
-                    // TODO: Determine how to get this
-                    return null;
                 default:
                     throw new InvalidOperationException("Unexpected Property");
             }

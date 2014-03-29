@@ -1,4 +1,6 @@
 ﻿
+using System.Xml.Serialization;
+
 namespace MediaBrowser.Controller.Dlna
 {
     public class DeviceIdentification
@@ -41,9 +43,7 @@ namespace MediaBrowser.Controller.Dlna
         /// <summary>
         /// Gets or sets the manufacturer.
         /// </summary>
-        /// <value>
-        /// The manufacturer.
-        /// </value>
+        /// <value>The manufacturer.</value>
         public string Manufacturer { get; set; }
         /// <summary>
         /// Gets or sets the manufacturer URL.
@@ -64,8 +64,13 @@ namespace MediaBrowser.Controller.Dlna
 
     public class HttpHeaderInfo
     {
+        [XmlAttribute("name")]
         public string Name { get; set; }
+
+        [XmlAttribute("value")]
         public string Value { get; set; }
+
+        [XmlAttribute("match")]
         public HeaderMatchType Match { get; set; }
     }
 

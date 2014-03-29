@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Server.Implementations.BdInfo
+namespace MediaBrowser.MediaEncoding.BdInfo
 {
     /// <summary>
     /// Class BdInfoExaminer

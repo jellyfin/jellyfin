@@ -1,21 +1,54 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Model.Dlna;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Dlna
 {
     public interface IDlnaManager
     {
         /// <summary>
-        /// Gets the dlna profiles.
+        /// Gets the profile infos.
         /// </summary>
-        /// <returns>IEnumerable{DlnaProfile}.</returns>
-        IEnumerable<DeviceProfile> GetProfiles();
+        /// <returns>IEnumerable{DeviceProfileInfo}.</returns>
+        IEnumerable<DeviceProfileInfo> GetProfileInfos();
+
+        /// <summary>
+        /// Gets the profile.
+        /// </summary>
+        /// <param name="headers">The headers.</param>
+        /// <returns>DeviceProfile.</returns>
+        DeviceProfile GetProfile(IDictionary<string,string> headers);
 
         /// <summary>
         /// Gets the default profile.
         /// </summary>
-        /// <returns>DlnaProfile.</returns>
+        /// <returns>DeviceProfile.</returns>
         DeviceProfile GetDefaultProfile();
 
+        /// <summary>
+        /// Creates the profile.
+        /// </summary>
+        /// <param name="profile">The profile.</param>
+        void CreateProfile(DeviceProfile profile);
+        
+        /// <summary>
+        /// Updates the profile.
+        /// </summary>
+        /// <param name="profile">The profile.</param>
+        void UpdateProfile(DeviceProfile profile);
+        
+        /// <summary>
+        /// Deletes the profile.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        void DeleteProfile(string id);
+        
+        /// <summary>
+        /// Gets the profile.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>DeviceProfile.</returns>
+        DeviceProfile GetProfile(string id);
+        
         /// <summary>
         /// Gets the profile.
         /// </summary>

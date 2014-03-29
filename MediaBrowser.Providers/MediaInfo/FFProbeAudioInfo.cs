@@ -50,12 +50,16 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
+        private const string SchemaVersion = "1";
+
         private async Task<InternalMediaInfoResult> GetMediaInfo(BaseItem item, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var idString = item.Id.ToString("N");
-            var cachePath = Path.Combine(_appPaths.CachePath, "ffprobe-audio", idString.Substring(0, 2), idString, "v" + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
+            var cachePath = Path.Combine(_appPaths.CachePath, 
+                "ffprobe-audio", 
+                idString.Substring(0, 2), idString, "v" + SchemaVersion + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
 
             try
             {
@@ -148,7 +152,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (!string.IsNullOrWhiteSpace(composer))
                 {
-                    foreach (var person in Split(composer))
+                    foreach (var person in Split(composer, false))
                     {
                         audio.AddPerson(new PersonInfo { Name = person, Type = PersonType.Composer });
                     }
@@ -221,12 +225,15 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Splits the specified val.
         /// </summary>
         /// <param name="val">The val.</param>
+        /// <param name="allowCommaDelimiter">if set to <c>true</c> [allow comma delimiter].</param>
         /// <returns>System.String[][].</returns>
-        private IEnumerable<string> Split(string val)
+        private IEnumerable<string> Split(string val, bool allowCommaDelimiter)
         {
             // Only use the comma as a delimeter if there are no slashes or pipes. 
             // We want to be careful not to split names that have commas in them
-            var delimeter = _nameDelimiters.Any(i => val.IndexOf(i) != -1) ? _nameDelimiters : new[] { ',' };
+            var delimeter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i) != -1) ? 
+                _nameDelimiters : 
+                new[] { ',' };
 
             return val.Split(delimeter, StringSplitOptions.RemoveEmptyEntries)
                 .Where(i => !string.IsNullOrWhiteSpace(i))
@@ -312,7 +319,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (!string.IsNullOrEmpty(val))
             {
                 // Sometimes the artist name is listed here, account for that
-                var studios = Split(val).Where(i => !audio.HasArtist(i));
+                var studios = Split(val, true).Where(i => !audio.HasArtist(i));
 
                 foreach (var studio in studios)
                 {
@@ -334,7 +341,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 audio.Genres.Clear();
 
-                foreach (var genre in Split(val))
+                foreach (var genre in Split(val, true))
                 {
                     audio.AddGenre(genre);
                 }

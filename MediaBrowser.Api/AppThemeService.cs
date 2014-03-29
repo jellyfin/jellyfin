@@ -9,16 +9,14 @@ using System.Linq;
 
 namespace MediaBrowser.Api
 {
-    [Route("/Themes", "GET")]
-    [Api(Description = "Gets a list of available themes for an app")]
+    [Route("/Themes", "GET", Summary = "Gets a list of available themes for an app")]
     public class GetAppThemes : IReturn<List<AppThemeInfo>>
     {
         [ApiMember(Name = "App", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string App { get; set; }
     }
 
-    [Route("/Themes/Info", "GET")]
-    [Api(Description = "Gets an app theme")]
+    [Route("/Themes/Info", "GET", Summary = "Gets an app theme")]
     public class GetAppTheme : IReturn<AppTheme>
     {
         [ApiMember(Name = "App", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -28,8 +26,7 @@ namespace MediaBrowser.Api
         public string Name { get; set; }
     }
 
-    [Route("/Themes/Images", "GET")]
-    [Api(Description = "Gets an app theme")]
+    [Route("/Themes/Images", "GET", Summary = "Gets an app theme")]
     public class GetAppThemeImage
     {
         [ApiMember(Name = "App", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -45,12 +42,11 @@ namespace MediaBrowser.Api
         public string CacheTag { get; set; }
     }
 
-    [Route("/Themes", "POST")]
-    [Api(Description = "Saves a theme")]
+    [Route("/Themes", "POST", Summary = "Saves a theme")]
     public class SaveTheme : AppTheme, IReturnVoid
     {
     }
-    
+
     public class AppThemeService : BaseApiService
     {
         private readonly IAppThemeManager _themeManager;

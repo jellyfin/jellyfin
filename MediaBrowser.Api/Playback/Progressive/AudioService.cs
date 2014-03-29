@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
@@ -16,23 +17,22 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// <summary>
     /// Class GetAudioStream
     /// </summary>
-    [Route("/Audio/{Id}/stream.mp3", "GET")]
-    [Route("/Audio/{Id}/stream.wma", "GET")]
-    [Route("/Audio/{Id}/stream.aac", "GET")]
-    [Route("/Audio/{Id}/stream.flac", "GET")]
-    [Route("/Audio/{Id}/stream.ogg", "GET")]
-    [Route("/Audio/{Id}/stream.oga", "GET")]
-    [Route("/Audio/{Id}/stream.webm", "GET")]
-    [Route("/Audio/{Id}/stream", "GET")]
-    [Route("/Audio/{Id}/stream.mp3", "HEAD")]
-    [Route("/Audio/{Id}/stream.wma", "HEAD")]
-    [Route("/Audio/{Id}/stream.aac", "HEAD")]
-    [Route("/Audio/{Id}/stream.flac", "HEAD")]
-    [Route("/Audio/{Id}/stream.ogg", "HEAD")]
-    [Route("/Audio/{Id}/stream.oga", "HEAD")]
-    [Route("/Audio/{Id}/stream.webm", "HEAD")]
-    [Route("/Audio/{Id}/stream", "HEAD")]
-    [Api(Description = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.mp3", "GET", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.wma", "GET", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.aac", "GET", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.flac", "GET", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.ogg", "GET", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.oga", "GET", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.webm", "GET", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream", "GET", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.mp3", "HEAD", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.wma", "HEAD", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.aac", "HEAD", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.flac", "HEAD", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.ogg", "HEAD", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.oga", "HEAD", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.webm", "HEAD", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream", "HEAD", Summary = "Gets an audio stream")]
     public class GetAudioStream : StreamRequest
     {
 
@@ -43,7 +43,8 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public class AudioService : BaseProgressiveStreamingService
     {
-        public AudioService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IHttpClient httpClient, IImageProcessor imageProcessor) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, httpClient, imageProcessor)
+        public AudioService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IHttpClient httpClient, IImageProcessor imageProcessor)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager, httpClient, imageProcessor)
         {
         }
 

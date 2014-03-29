@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -75,16 +74,6 @@ namespace MediaBrowser.Providers.Savers
 
             XmlSaverHelpers.AddCommonNodes(video, builder);
 
-            if (video.CommunityRating.HasValue)
-            {
-                builder.Append("<IMDBrating>" + SecurityElement.Escape(video.CommunityRating.Value.ToString(UsCulture)) + "</IMDBrating>");
-            }
-
-            if (!string.IsNullOrEmpty(video.Overview))
-            {
-                builder.Append("<Description><![CDATA[" + video.Overview + "]]></Description>");
-            }
-
             var musicVideo = item as MusicVideo;
 
             if (musicVideo != null)
@@ -117,8 +106,12 @@ namespace MediaBrowser.Providers.Savers
 
             XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>
                 {
+                    // Deprecated. No longer saving in this field.
                     "IMDBrating",
+                    
+                    // Deprecated. No longer saving in this field.
                     "Description",
+
                     "Artist",
                     "Album",
                     "TmdbCollectionName"

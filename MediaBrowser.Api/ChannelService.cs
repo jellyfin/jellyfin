@@ -7,8 +7,7 @@ using System.Threading;
 
 namespace MediaBrowser.Api
 {
-    [Route("/Channels", "GET")]
-    [Api(("Gets available channels"))]
+    [Route("/Channels", "GET", Summary = "Gets available channels")]
     public class GetChannels : IReturn<QueryResult<BaseItemDto>>
     {
         public string UserId { get; set; }
@@ -18,8 +17,7 @@ namespace MediaBrowser.Api
         public int? Limit { get; set; }
     }
 
-    [Route("/Channels/{Id}/Items", "GET")]
-    [Api(("Gets channel items"))]
+    [Route("/Channels/{Id}/Items", "GET", Summary = "Gets channel items")]
     public class GetChannelItems : IReturn<QueryResult<BaseItemDto>>
     {
         public string Id { get; set; }

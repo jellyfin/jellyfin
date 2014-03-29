@@ -1,13 +1,13 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using ServiceStack.Web;
 using System;
@@ -26,8 +26,8 @@ namespace MediaBrowser.Api.Playback.Progressive
         protected readonly IImageProcessor ImageProcessor;
         protected readonly IHttpClient HttpClient;
 
-        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IHttpClient httpClient, IImageProcessor imageProcessor)
-            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager)
+        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IHttpClient httpClient, IImageProcessor imageProcessor)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager)
         {
             HttpClient = httpClient;
             ImageProcessor = imageProcessor;
@@ -98,92 +98,6 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Adds the dlna headers.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <param name="isStaticallyStreamed">if set to <c>true</c> [is statically streamed].</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private void AddDlnaHeaders(StreamState state, IDictionary<string, string> responseHeaders, bool isStaticallyStreamed)
-        {
-            var timeSeek = GetHeader("TimeSeekRange.dlna.org");
-
-            if (!string.IsNullOrEmpty(timeSeek))
-            {
-                ResultFactory.ThrowError(406, "Time seek not supported during encoding.", responseHeaders);
-                return;
-            }
-
-            var transferMode = GetHeader("transferMode.dlna.org");
-            responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
-            responseHeaders["realTimeInfo.dlna.org"] = "DLNA.ORG_TLAG=*";
-
-            var contentFeatures = string.Empty;
-            var extension = GetOutputFileExtension(state);
-
-            // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
-            var orgOp = isStaticallyStreamed ? ";DLNA.ORG_OP=01" : ";DLNA.ORG_OP=00";
-
-            // 0 = native, 1 = transcoded
-            var orgCi = isStaticallyStreamed ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
-
-            const string dlnaflags = ";DLNA.ORG_FLAGS=01500000000000000000000000000000";
-
-            if (string.Equals(extension, ".mp3", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MP3";
-            }
-            else if (string.Equals(extension, ".aac", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=AAC_ISO";
-            }
-            else if (string.Equals(extension, ".wma", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=WMABASE";
-            }
-            else if (string.Equals(extension, ".avi", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=AVI";
-            }
-            else if (string.Equals(extension, ".mkv", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MATROSKA";
-            }
-            else if (string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=AVC_MP4_MP_HD_720p_AAC";
-            }
-            else if (string.Equals(extension, ".mpeg", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
-            }
-            else if (string.Equals(extension, ".ts", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
-            }
-            //else if (string.Equals(extension, ".wmv", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
-            //}
-            //else if (string.Equals(extension, ".asf", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    // ??
-            //    contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
-            //}
-
-
-            if (!string.IsNullOrEmpty(contentFeatures))
-            {
-                responseHeaders["contentFeatures.dlna.org"] = (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
-            }
-
-            foreach (var item in responseHeaders)
-            {
-                Request.Response.AddHeader(item.Key, item.Value);
-            }
         }
 
         /// <summary>
@@ -303,18 +217,30 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var contentType = state.GetMimeType(outputPath);
 
+            var contentLength = state.EstimateContentLength ? GetEstimatedContentLength(state) : null;
+
+            if (contentLength.HasValue)
+            {
+                responseHeaders["Content-Length"] = contentLength.Value.ToString(UsCulture);
+            }
+
             // Headers only
             if (isHeadRequest)
             {
                 var streamResult = ResultFactory.GetResult(new byte[] { }, contentType, responseHeaders);
-                var hasOptions = streamResult as IHasOptions;
-                if (hasOptions != null)
+
+                if (!contentLength.HasValue)
                 {
-                    if (hasOptions.Options.ContainsKey("Content-Length"))
+                    var hasOptions = streamResult as IHasOptions;
+                    if (hasOptions != null)
                     {
-                        hasOptions.Options.Remove("Content-Length");
+                        if (hasOptions.Options.ContainsKey("Content-Length"))
+                        {
+                            hasOptions.Options.Remove("Content-Length");
+                        }
                     }
                 }
+
                 return streamResult;
             }
 
@@ -338,6 +264,32 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the length of the estimated content.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <returns>System.Nullable{System.Int64}.</returns>
+        private long? GetEstimatedContentLength(StreamState state)
+        {
+            var totalBitrate = 0;
+
+            if (state.Request.AudioBitRate.HasValue)
+            {
+                totalBitrate += state.Request.AudioBitRate.Value;
+            }
+            if (state.VideoRequest != null && state.VideoRequest.VideoBitRate.HasValue)
+            {
+                totalBitrate += state.VideoRequest.VideoBitRate.Value;
+            }
+
+            if (totalBitrate > 0 && state.RunTimeTicks.HasValue)
+            {
+                return Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds);
+            }
+
+            return null;
         }
     }
 }

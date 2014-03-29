@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Configuration;
 using System;
 using System.IO;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -14,8 +13,6 @@ namespace MediaBrowser.Dlna.PlayTo
         private const string USERAGENT = "Microsoft-Windows/6.2 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50";
         private const string FriendlyName = "MediaBrowser";
 
-        private static readonly CookieContainer Container = new CookieContainer();
-
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _config;
 
@@ -25,13 +22,17 @@ namespace MediaBrowser.Dlna.PlayTo
             _config = config;
         }
 
-        public async Task<XDocument> SendCommandAsync(string baseUrl, DeviceService service, string command, string postData, string header = null)
+        public async Task<XDocument> SendCommandAsync(string baseUrl, 
+            DeviceService service, 
+            string command, 
+            string postData, 
+            string header = null)
         {
             var serviceUrl = service.ControlUrl;
             if (!serviceUrl.StartsWith("/"))
                 serviceUrl = "/" + serviceUrl;
 
-            var response = await PostSoapDataAsync(new Uri(baseUrl + serviceUrl), "\"" + service.ServiceType + "#" + command + "\"", postData, header)
+            var response = await PostSoapDataAsync(baseUrl + serviceUrl, "\"" + service.ServiceType + "#" + command + "\"", postData, header)
                 .ConfigureAwait(false);
 
             using (var stream = response.Content)
@@ -43,11 +44,16 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public async Task SubscribeAsync(Uri url, string ip, int port, string localIp, int eventport, int timeOut = 3600)
+        public async Task SubscribeAsync(string url, 
+            string ip, 
+            int port, 
+            string localIp, 
+            int eventport, 
+            int timeOut = 3600)
         {
             var options = new HttpRequestOptions
             {
-                Url = url.ToString(),
+                Url = url,
                 UserAgent = USERAGENT,
                 LogRequest = _config.Configuration.DlnaOptions.EnableDebugLogging
             };
@@ -56,14 +62,17 @@ namespace MediaBrowser.Dlna.PlayTo
             options.RequestHeaders["CALLBACK"] = "<" + localIp + ":" + eventport + ">";
             options.RequestHeaders["NT"] = "upnp:event";
             options.RequestHeaders["TIMEOUT"] = "Second - " + timeOut;
-            //request.CookieContainer = Container;
 
             using (await _httpClient.Get(options).ConfigureAwait(false))
             {
             }
         }
 
-        public async Task RespondAsync(Uri url, string ip, int port, string localIp, int eventport, int timeOut = 20000)
+        public async Task RespondAsync(Uri url, 
+            string ip, 
+            int port, 
+            string localIp, 
+            int eventport)
         {
             var options = new HttpRequestOptions
             {
@@ -75,24 +84,22 @@ namespace MediaBrowser.Dlna.PlayTo
             options.RequestHeaders["CALLBACK"] = "<" + localIp + ":" + eventport + ">";
             options.RequestHeaders["NT"] = "upnp:event";
             options.RequestHeaders["TIMEOUT"] = "Second - 3600";
-            //request.CookieContainer = Container;
 
             using (await _httpClient.Get(options).ConfigureAwait(false))
             {
             }
         }
 
-        public async Task<XDocument> GetDataAsync(Uri url)
+        public async Task<XDocument> GetDataAsync(string url)
         {
             var options = new HttpRequestOptions
             {
-                Url = url.ToString(),
+                Url = url,
                 UserAgent = USERAGENT,
                 LogRequest = _config.Configuration.DlnaOptions.EnableDebugLogging
             };
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
-            //request.CookieContainer = Container;
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
@@ -103,14 +110,17 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        private Task<HttpResponseInfo> PostSoapDataAsync(Uri url, string soapAction, string postData, string header = null, int timeOut = 20000)
+        private Task<HttpResponseInfo> PostSoapDataAsync(string url, 
+            string soapAction, 
+            string postData, 
+            string header = null)
         {
             if (!soapAction.StartsWith("\""))
                 soapAction = "\"" + soapAction + "\"";
 
             var options = new HttpRequestOptions
             {
-                Url = url.ToString(),
+                Url = url,
                 UserAgent = USERAGENT,
                 LogRequest = _config.Configuration.DlnaOptions.EnableDebugLogging
             };

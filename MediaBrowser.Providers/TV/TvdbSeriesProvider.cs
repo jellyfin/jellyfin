@@ -25,6 +25,8 @@ namespace MediaBrowser.Providers.TV
 {
     public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
+        internal const string TvdbSeriesOffset = "TvdbSeriesOffset";
+
         internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(2, 2);
         internal static TvdbSeriesProvider Current { get; private set; }
         private readonly IZipClient _zipClient;
@@ -33,14 +35,16 @@ namespace MediaBrowser.Providers.TV
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
+        private readonly ISeriesOrderManager _seriesOrder;
 
-        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger)
+        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ISeriesOrderManager seriesOrder)
         {
             _zipClient = zipClient;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
             _config = config;
             _logger = logger;
+            _seriesOrder = seriesOrder;
             Current = this;
         }
 
@@ -92,9 +96,33 @@ namespace MediaBrowser.Providers.TV
                 result.HasMetadata = true;
 
                 FetchSeriesData(result.Item, seriesId, cancellationToken);
+                await FindAnimeSeriesIndex(result.Item, itemId).ConfigureAwait(false);
             }
 
             return result;
+        }
+
+        private async Task FindAnimeSeriesIndex(Series series, SeriesInfo info)
+        {
+            var index = await _seriesOrder.FindSeriesIndex(SeriesOrderTypes.Anime, series.Name);
+            if (index == null)
+                return;
+
+            var offset = info.AnimeSeriesIndex - index;
+            series.SetProviderId(TvdbSeriesOffset, offset.ToString());
+        }
+
+        internal static int? GetSeriesOffset(Dictionary<string, string> seriesProviderIds)
+        {
+            string offsetString;
+            if (!seriesProviderIds.TryGetValue(TvdbSeriesOffset, out offsetString))
+                return null;
+
+            int offset;
+            if (int.TryParse(offsetString, out offset))
+                return offset;
+
+            return null;
         }
 
         /// <summary>

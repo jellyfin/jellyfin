@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Name>Samsung Smart TV</Name>
+  <Identification>
+    <ModelUrl>samsung.com</ModelUrl>
+    <Headers />
+  </Identification>
+  <FriendlyName>Media Browser</FriendlyName>
+  <Manufacturer>Media Browser</Manufacturer>
+  <ManufacturerUrl>http://mediabrowser3.com/</ManufacturerUrl>
+  <ModelName>Media Browser</ModelName>
+  <ModelDescription>Media Browser</ModelDescription>
+  <ModelNumber>Media Browser</ModelNumber>
+  <ModelUrl>http://mediabrowser3.com/</ModelUrl>
+  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
+  <EnableAlbumArtInDidl>true</EnableAlbumArtInDidl>
+  <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
+  <ProtocolInfo>DLNA</ProtocolInfo>
+  <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
+  <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
+  <RequiresPlainFolders>false</RequiresPlainFolders>
+  <DirectPlayProfiles>
+    <DirectPlayProfile container="asf" audioCodec="mp3,ac3,wmav2,wmapro,wmavoice" videoCodec="h264,mpeg4,mjpeg" type="Video" />
+    <DirectPlayProfile container="avi" audioCodec="mp3,ac3,dca" videoCodec="h264,mpeg4,mjpeg" type="Video" />
+    <DirectPlayProfile container="mkv" audioCodec="mp3,ac3,dca,aac" videoCodec="h264,mpeg4,mjpeg4" type="Video" />
+    <DirectPlayProfile container="mp4" audioCodec="mp3,aac" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="3gpp" audioCodec="aac,he-aac" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="mpg,mpeg" audioCodec="ac3,mp2,mp3,aac" videoCodec="mpeg1video,mpeg2video,h264" type="Video" />
+    <DirectPlayProfile container="vro,vob" audioCodec="ac3,mp2,mp3" videoCodec="mpeg1video,mpeg2video" type="Video" />
+    <DirectPlayProfile container="ts" audioCodec="ac3,aac,mp3,eac3" videoCodec="mpeg2video,h264,vc1" type="Video" />
+    <DirectPlayProfile container="asf" audioCodec="wmav2,wmavoice" videoCodec="wmv2,wmv3" type="Video" />
+    <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
+    <DirectPlayProfile container="jpeg" type="Photo" />
+  </DirectPlayProfiles>
+  <TranscodingProfiles>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
+      <Settings />
+    </TranscodingProfile>
+  </TranscodingProfiles>
+  <ContainerProfiles>
+    <ContainerProfile type="Photo">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+      </Conditions>
+    </ContainerProfile>
+  </ContainerProfiles>
+  <CodecProfiles>
+    <CodecProfile type="Video" codec="mpeg2video">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="30720000" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="Video" codec="mpeg4">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="8192000" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="Video" codec="h264">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="37500000" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="Video" codec="wmv2,wmv3,vc1">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="25600000" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudio" codec="ac3,wmav2,dca,aac,mp3">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+  </CodecProfiles>
+  <MediaProfiles>
+    <MediaProfile container="avi" type="Video" mimeType="video/x-msvideo">
+      <Conditions />
+    </MediaProfile>
+    <MediaProfile container="mkv" type="Video" mimeType="video/x-mkv">
+      <Conditions />
+    </MediaProfile>
+  </MediaProfiles>
+</Profile>

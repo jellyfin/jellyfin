@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Dlna;
+﻿using MediaBrowser.Controller.Dlna;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -17,26 +17,17 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public string ClientType { get; set; }
 
-        private string _displayName = string.Empty;
-        public string DisplayName
-        {
-            get
-            {
-                return string.IsNullOrEmpty(_displayName) ? Name : _displayName;
-            }
-            set
-            {
-                _displayName = value;
-            }
-        }
-
         public string ModelName { get; set; }
 
         public string ModelNumber { get; set; }
 
+        public string ModelDescription { get; set; }
+
         public string ModelUrl { get; set; }
 
         public string Manufacturer { get; set; }
+
+        public string SerialNumber { get; set; }
 
         public string ManufacturerUrl { get; set; }
 
@@ -75,7 +66,9 @@ namespace MediaBrowser.Dlna.PlayTo
                 ModelNumber = ModelNumber,
                 FriendlyName = Name,
                 ManufacturerUrl = ManufacturerUrl,
-                ModelUrl = ModelUrl
+                ModelUrl = ModelUrl,
+                ModelDescription = ModelDescription,
+                SerialNumber = SerialNumber
             };
         }
     }

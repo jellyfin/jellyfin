@@ -20,9 +20,8 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetItems
     /// </summary>
-    [Route("/Items", "GET")]
-    [Route("/Users/{UserId}/Items", "GET")]
-    [Api(Description = "Gets items based on a query.")]
+    [Route("/Items", "GET", Summary = "Gets items based on a query.")]
+    [Route("/Users/{UserId}/Items", "GET", Summary = "Gets items based on a query.")]
     public class GetItems : BaseItemsRequest, IReturn<ItemsResult>
     {
         /// <summary>
