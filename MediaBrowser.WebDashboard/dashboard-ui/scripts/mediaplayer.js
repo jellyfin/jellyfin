@@ -13,14 +13,30 @@
         var canClientSeek;
         var currentPlaylistIndex = 0;
 
-        self.currentTimeElement;
-        self.unmuteButton;
-        self.muteButton;
-        self.positionSlider;
-        self.isPositionSliderActive;
-        self.volumeSlider;
-        self.startTimeTicksOffset;
+        self.currentTimeElement = null;
+        self.unmuteButton = null;
+        self.muteButton = null;
+        self.positionSlider = null;
+        self.isPositionSliderActive = null;
+        self.volumeSlider = null;
+        self.startTimeTicksOffset = null;
+
         self.playlist = [];
+
+        self.isLocalPlayer = true;
+        self.name = 'Html5 Player';
+
+        self.getTargets = function () {
+
+            var targets = [{
+                name: 'My Browser',
+                id: ApiClient.deviceId(),
+                playerName: self.name,
+                playableMediaTypes: ['Audio', 'Video']
+            }];
+
+            return targets;
+        };
 
         self.updateCanClientSeek = function (elem) {
             var duration = elem.duration;
@@ -275,7 +291,7 @@
                 audioBitrate: audioBitrate,
                 videoBitrate: videoBitrate
             };
-            
+
             if (params.videoCodec == 'h264') {
                 params.profile = 'baseline';
                 params.level = '3';
@@ -284,137 +300,100 @@
             return params;
         };
 
-        self.canPlay = function (item, user) {
+        self.canQueueMediaType = function (mediaType) {
 
-            if (item.PlayAccess != 'Full') {
-                return false;
-            }
-
-            if (item.LocationType == "Virtual" || item.IsPlaceHolder) {
-                return false;
-            }
-            if (item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
-                return true;
-            }
-
-            if (item.GameSystem == "Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
-                return true;
-            }
-
-            if (item.GameSystem == "Super Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
-                return true;
-            }
-
-            return self.canPlayMediaType(item.MediaType);
+            return currentItem && currentItem.MediaType == mediaType;
         };
 
-        self.getPlayUrl = function (item) {
+        function translateItemsForPlayback(items) {
 
+            var deferred = $.Deferred();
 
-            if (item.GameSystem == "Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
+            var firstItem = items[0];
+            var promise;
 
-                return "http://nesbox.com/game/" + item.ProviderIds.NesBox + '/rom/' + item.ProviderIds.NesBoxRom;
+            if (firstItem.IsFolder) {
+
+                promise = self.getItemsForPlayback({
+                    ParentId: firstItem.Id,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio,Video"
+                });
+            }
+            else if (firstItem.Type == "MusicArtist") {
+                
+                promise = self.getItemsForPlayback({
+                    Artists: firstItem.Name,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio"
+                });
+
+            }
+            else if (firstItem.Type == "MusicGenre") {
+                
+                promise = self.getItemsForPlayback({
+                    Genres: firstItem.Name,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio"
+                });
             }
 
-            if (item.GameSystem == "Super Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
+            if (promise) {
+                promise.done(function (result) {
 
-                return "http://snesbox.com/game/" + item.ProviderIds.NesBox + '/rom/' + item.ProviderIds.NesBoxRom;
+                    deferred.resolveWith(null, [result.Items]);
+                });
+            } else {
+                deferred.resolveWith(null, [items]);
             }
 
-            return null;
-        };
+            return deferred.promise();
+        }
 
-        self.canPlayMediaType = function (mediaType) {
-
-            if (mediaType === "Video") {
-                return true;
-            }
-
-            if (mediaType === "Audio") {
-                return true;
-            }
-
-            return false;
-        };
-
-        self.play = function (items, startPosition) {
+        self.play = function (options) {
 
             Dashboard.getCurrentUser().done(function (user) {
 
-                var item = items[0];
+                if (options.items) {
 
-                var videoType = (item.VideoType || "").toLowerCase();
+                    translateItemsForPlayback(options.items).done(function (items) {
 
-                var expirementalText = "This feature is experimental. It may not work at all with some titles. Do you wish to continue?";
+                        self.playInternal(items[0], options.startPositionTicks, user);
 
-                if (videoType == "dvd") {
+                        self.playlist = items;
+                        currentPlaylistIndex = 0;
+                    });
 
-                    self.playWithWarning(items, startPosition, user, "dvdstreamconfirmed", "Dvd Folder Streaming", expirementalText);
-                    return;
-                }
-                else if (videoType == "bluray") {
+                } else {
 
-                    self.playWithWarning(items, startPosition, user, "bluraystreamconfirmed", "Blu-ray Folder Streaming", expirementalText);
-                    return;
-                }
-                else if (videoType == "iso") {
+                    self.getItemsForPlayback({
 
-                    var isoType = (item.IsoType || "").toLowerCase();
+                        Ids: options.ids.join(',')
 
-                    if (isoType == "dvd") {
+                    }).done(function (result) {
 
-                        self.playWithWarning(items, startPosition, user, "dvdisostreamconfirmed", "Dvd Iso Streaming", expirementalText);
-                        return;
-                    }
-                    else if (isoType == "bluray") {
+                        translateItemsForPlayback(result.Items).done(function (items) {
 
-                        self.playWithWarning(items, startPosition, user, "blurayisostreamconfirmed", "Blu-ray Iso Streaming", expirementalText);
-                        return;
-                    }
-                }
+                            self.playInternal(items[0], options.startPositionTicks, user);
 
-                self.playInternal(items[0], startPosition, user);
-                self.onPlaybackStarted(items);
-            });
-        };
+                            self.playlist = items;
+                            currentPlaylistIndex = 0;
+                        });
 
-        self.playWithWarning = function (items, startPosition, user, localStorageKeyName, header, text) {
-
-            // Increment this version when changes are made and we want users to see the prompts again
-            var warningVersion = "2";
-            localStorageKeyName += new Date().getMonth() + warningVersion;
-
-            if (localStorage.getItem(localStorageKeyName) == "1") {
-
-                self.playInternal(items[0], startPosition, user);
-
-                self.onPlaybackStarted(items);
-
-                return;
-            }
-
-            Dashboard.confirm(text, header, function (result) {
-
-                if (result) {
-
-                    localStorage.setItem(localStorageKeyName, "1");
-
-                    self.playInternal(items[0], startPosition, user);
-
-                    self.onPlaybackStarted(items);
+                    });
                 }
 
             });
 
         };
 
-        self.onPlaybackStarted = function (items) {
-
-            self.playlist = items;
-            currentPlaylistIndex = 0;
-        };
-
-        self.getBitrateSetting = function() {
+        self.getBitrateSetting = function () {
             return parseInt(localStorage.getItem('preferredVideoBitrate') || '') || 1500000;
         };
 
@@ -569,161 +548,9 @@
 
             query.Limit = query.Limit || 100;
             query.Fields = getItemFields;
+            query.ExcludeLocationTypes = "Virtual";
 
             return ApiClient.getItems(userId, query);
-        };
-
-        self.playById = function (id, startPositionTicks) {
-
-            ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
-
-                if (item.IsFolder) {
-
-                    self.getItemsForPlayback({
-
-                        ParentId: id,
-                        Recursive: true,
-                        SortBy: "SortName"
-
-                    }).done(function (result) {
-
-                        self.play(result.Items, startPositionTicks);
-
-                    });
-
-                } else {
-                    self.play([item], startPositionTicks);
-                }
-
-            });
-
-        };
-
-        self.playInstantMixFromSong = function (id) {
-
-            ApiClient.getInstantMixFromSong(id, {
-
-                UserId: Dashboard.getCurrentUserId(),
-                Fields: getItemFields,
-                Limit: 50
-
-            }).done(function (result) {
-
-                self.play(result.Items);
-            });
-
-        };
-
-        self.playInstantMixFromAlbum = function (id) {
-
-            ApiClient.getInstantMixFromAlbum(id, {
-
-                UserId: Dashboard.getCurrentUserId(),
-                Fields: getItemFields,
-                Limit: 50
-
-            }).done(function (result) {
-
-                self.play(result.Items);
-            });
-
-        };
-
-        self.playInstantMixFromArtist = function (name) {
-
-            ApiClient.getInstantMixFromArtist(name, {
-
-                UserId: Dashboard.getCurrentUserId(),
-                Fields: getItemFields,
-                Limit: 50
-
-            }).done(function (result) {
-
-                self.play(result.Items);
-            });
-
-        };
-
-        self.playInstantMixFromMusicGenre = function (name) {
-
-            ApiClient.getInstantMixFromMusicGenre(name, {
-
-                UserId: Dashboard.getCurrentUserId(),
-                Fields: getItemFields,
-                Limit: 50
-
-            }).done(function (result) {
-
-                self.play(result.Items);
-            });
-
-        };
-
-        self.playArtist = function (artist) {
-
-            self.getItemsForPlayback({
-
-                Artists: artist,
-                Recursive: true,
-                SortBy: "Album,SortName",
-                IncludeItemTypes: "Audio"
-
-            }).done(function (result) {
-
-                self.play(result.Items);
-
-            });
-
-        };
-
-        self.shuffleArtist = function (artist) {
-
-            self.getItemsForPlayback({
-
-                Artists: artist,
-                Recursive: true,
-                SortBy: "Random",
-                IncludeItemTypes: "Audio"
-
-            }).done(function (result) {
-
-                self.play(result.Items);
-
-            });
-
-        };
-
-        self.shuffleMusicGenre = function (genre) {
-
-            self.getItemsForPlayback({
-
-                Genres: genre,
-                Recursive: true,
-                SortBy: "Random",
-                IncludeItemTypes: "Audio"
-
-            }).done(function (result) {
-
-                self.play(result.Items);
-
-            });
-
-        };
-
-        self.shuffleFolder = function (id) {
-
-            self.getItemsForPlayback({
-
-                ParentId: id,
-                Recursive: true,
-                SortBy: "Random"
-
-            }).done(function (result) {
-
-                self.play(result.Items);
-
-            });
-
         };
 
         self.removeFromPlaylist = function (index) {
@@ -797,51 +624,69 @@
             }
         };
 
-        self.queue = function (id) {
+        self.queue = function (options) {
 
             if (!currentMediaElement) {
-                self.playById(id);
+                self.play(options);
                 return;
             }
 
-            ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+            Dashboard.getCurrentUser().done(function (user) {
 
-                if (item.IsFolder) {
+                if (options.items) {
 
-                    self.getItemsForPlayback({
+                    translateItemsForPlayback(options.items).done(function (items) {
 
-                        ParentId: id,
-                        Recursive: true,
-                        SortBy: "SortName"
-
-                    }).done(function (result) {
-
-                        self.queueItems(result.Items);
-
+                        self.queueItems(items);
                     });
 
                 } else {
-                    self.queueItems([item]);
-                }
 
+                    self.getItemsForPlayback({
+
+                        Ids: options.ids.join(',')
+
+                    }).done(function (result) {
+
+                        translateItemsForPlayback(result.Items).done(function (items) {
+
+                            self.queueItems(items);
+                        });
+
+                    });
+                }
             });
         };
 
-        self.queueArtist = function (artist) {
+        self.queueNext = function (options) {
 
-            self.getItemsForPlayback({
+            if (!currentMediaElement) {
+                self.play(options);
+                return;
+            }
 
-                Artists: artist,
-                Recursive: true,
-                SortBy: "Album,SortName",
-                IncludeItemTypes: "Audio"
+            Dashboard.getCurrentUser().done(function (user) {
 
-            }).done(function (result) {
+                if (options.items) {
 
-                self.queueItems(result.Items);
+                    self.queueItemsNext(options.items);
+
+                } else {
+
+                    self.getItemsForPlayback({
+
+                        Ids: options.ids.join(',')
+
+                    }).done(function (result) {
+
+                        options.items = result.Items;
+
+                        self.queueItemsNext(options.items);
+
+                    });
+                }
 
             });
-
         };
 
         self.pause = function () {
@@ -905,6 +750,108 @@
             }
         };
 
+        self.shuffle = function (id) {
+
+            var userId = Dashboard.getCurrentUserId();
+
+            ApiClient.getItem(userId, id).done(function (item) {
+
+                var query = {
+                    UserId: userId,
+                    Fields: getItemFields,
+                    Limit: 50,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "Random"
+                };
+
+                if (item.IsFolder) {
+                    query.ParentId = id;
+
+                }
+                else if (item.Type == "MusicArtist") {
+
+                    query.MediaTypes = "Audio";
+                    query.Artists = item.Name;
+
+                }
+                else if (item.Type == "MusicGenre") {
+
+                    query.MediaTypes = "Audio";
+                    query.Genres = item.Name;
+
+                } else {
+                    return;
+                }
+
+                self.getItemsForPlayback(query).done(function (result) {
+
+                    self.play({ items: result.Items });
+
+                });
+
+            });
+
+        };
+
+        self.instantMix = function (id) {
+
+            var userId = Dashboard.getCurrentUserId();
+
+            ApiClient.getItem(userId, id).done(function (item) {
+
+                var promise;
+
+                if (item.Type == "MusicArtist") {
+
+                    promise = ApiClient.getInstantMixFromArtist(name, {
+                        UserId: Dashboard.getCurrentUserId(),
+                        Fields: getItemFields,
+                        Limit: 50
+                    });
+
+                }
+                else if (item.Type == "MusicGenre") {
+
+                    promise = ApiClient.getInstantMixFromMusicGenre(name, {
+                        UserId: Dashboard.getCurrentUserId(),
+                        Fields: getItemFields,
+                        Limit: 50
+                    });
+
+                }
+                else if (item.Type == "MusicAlbum") {
+
+                    promise = ApiClient.getInstantMixFromAlbum(id, {
+                        UserId: Dashboard.getCurrentUserId(),
+                        Fields: getItemFields,
+                        Limit: 50
+                    });
+
+                }
+                else if (item.Type == "Audio") {
+
+                    promise = ApiClient.getInstantMixFromSong(id, {
+                        UserId: Dashboard.getCurrentUserId(),
+                        Fields: getItemFields,
+                        Limit: 50
+                    });
+
+                }
+                else {
+                    return;
+                }
+
+                promise.done(function (result) {
+
+                    self.play({ items: result.Items });
+
+                });
+
+            });
+
+        };
+
         self.stop = function () {
 
             var elem = currentMediaElement;
@@ -931,14 +878,6 @@
 
         self.isPlaying = function () {
             return currentMediaElement;
-        };
-
-        self.showSendMediaMenu = function () {
-
-            RemoteControl.showMenuForItem({
-                item: currentItem
-            });
-
         };
 
         self.bindPositionSlider = function () {
@@ -1219,5 +1158,9 @@
     }
 
     window.MediaPlayer = new mediaPlayer();
+
+    window.MediaController.registerPlayer(window.MediaPlayer);
+    window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
+
 
 })(document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window);

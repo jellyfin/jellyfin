@@ -30,7 +30,7 @@ namespace MediaBrowser.Server.Implementations.Roku
 
         public bool SupportsMediaRemoteControl
         {
-            get { return true; }
+            get { return false; }
         }
 
         public bool IsSessionActive

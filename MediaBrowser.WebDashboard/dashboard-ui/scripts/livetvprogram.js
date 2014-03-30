@@ -114,22 +114,13 @@
             ApiClient.getLiveTvChannel(currentItem.ChannelId, Dashboard.getCurrentUserId()).done(function (channel) {
                 
                 var userdata = channel.UserData || {};
-                LibraryBrowser.showPlayMenu(this, channel.Id, channel.Type, channel.MediaType, userdata.PlaybackPositionTicks);
+                LibraryBrowser.showPlayMenu(this, channel.Id, channel.Type, false, channel.MediaType, userdata.PlaybackPositionTicks);
             });
         });
 
         $('#btnCancelRecording', page).on('click', function () {
 
             deleteTimer(page, currentItem.TimerId);
-        });
-
-        $('#btnRemote', page).on('click', function () {
-
-            RemoteControl.showMenuForItem({
-
-                item: currentItem,
-                context: 'livetv'
-            });
         });
 
     }).on('pageshow', "#liveTvProgramPage", function () {

@@ -165,7 +165,7 @@
 /****************************************/
 
 @media all and (max-width: 1200px), all and (max-height: 720px) {
-    #mediaPlayer .chaptersButton, #mediaPlayer .audioTracksButton, #mediaPlayer .sendMediaButton {
+    #mediaPlayer .chaptersButton, #mediaPlayer .audioTracksButton {
         display: none!important;
     }
 
@@ -179,7 +179,7 @@
 }
 
 @media all and (max-width: 960px), all and (max-height: 550px) {
-    #mediaPlayer .nowPlayingBarImage, #mediaPlayer .qualityButton,  #mediaPlayer .audioTracksButton, #mediaPlayer .chaptersButton, #mediaPlayer .sendMediaButton {
+    #mediaPlayer .nowPlayingBarImage, #mediaPlayer .qualityButton,  #mediaPlayer .audioTracksButton, #mediaPlayer .chaptersButton {
         display: none!important;
     }
 
@@ -193,7 +193,7 @@
 }
 
 @media all and (max-width: 800px), all and (max-height: 460px) {
-    #mediaPlayer .muteButton, #mediaPlayer .unmuteButton, #mediaPlayer .nowPlayingMediaInfo, #mediaPlayer .sendMediaButton {
+    #mediaPlayer .muteButton, #mediaPlayer .unmuteButton, #mediaPlayer .nowPlayingMediaInfo {
         display: none!important;
     }
 

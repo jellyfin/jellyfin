@@ -2,6 +2,9 @@
 
     var currentProfile;
 
+    var currentSubProfile;
+    var isSubProfileNew;
+
     function loadProfile(page) {
 
         Dashboard.showLoadingMsg();
@@ -60,11 +63,49 @@
         profile.CodecProfiles = (profile.CodecProfiles || []);
         profile.MediaProfiles = (profile.MediaProfiles || []);
 
+        renderSubProfiles(page, profile);
+    }
+
+    function renderSubProfiles(page, profile) {
+
         renderDirectPlayProfiles(page, profile.DirectPlayProfiles);
         renderTranscodingProfiles(page, profile.TranscodingProfiles);
         renderContainerProfiles(page, profile.ContainerProfiles);
         renderCodecProfiles(page, profile.CodecProfiles);
         renderMediaProfiles(page, profile.MediaProfiles);
+    }
+
+    function editDirectPlayProfile(page, directPlayProfile) {
+
+        isSubProfileNew = directPlayProfile == null;
+        directPlayProfile = directPlayProfile || {};
+        currentSubProfile = directPlayProfile;
+
+        var popup = $('#popupEditDirectPlayProfile', page).popup('open');
+
+        $('#selectDirectPlayProfileType', popup).val(directPlayProfile.Type || 'Video').selectmenu('refresh').trigger('change');
+        $('#txtDirectPlayContainer', popup).val(directPlayProfile.Container || '');
+        $('#txtDirectPlayAudioCodec', popup).val(directPlayProfile.AudioCodec || '');
+        $('#txtDirectPlayVideoCodec', popup).val(directPlayProfile.VideoCodec || '');
+    }
+
+    function saveDirectPlayProfile(page) {
+
+        currentSubProfile.Type = $('#selectDirectPlayProfileType', page).val();
+        currentSubProfile.Container = $('#txtDirectPlayContainer', page).val();
+        currentSubProfile.AudioCodec = $('#txtDirectPlayAudioCodec', page).val();
+        currentSubProfile.VideoCodec = $('#txtDirectPlayVideoCodec', page).val();
+
+        if (isSubProfileNew) {
+
+            currentProfile.DirectPlayProfiles.push(currentSubProfile);
+        }
+
+        renderSubProfiles(page, currentProfile);
+
+        currentSubProfile = null;
+
+        $('#popupEditDirectPlayProfile', page).popup('close');
     }
 
     function renderDirectPlayProfiles(page, profiles) {
@@ -86,7 +127,7 @@
             }
 
             html += '<li>';
-            html += '<a href="#">';
+            html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
             html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
 
@@ -101,7 +142,7 @@
 
             html += '</a>';
 
-            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileIndex="' + i + '">Delete</a>';
+            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileindex="' + i + '">Delete</a>';
 
             html += '</li>';
         }
@@ -112,8 +153,15 @@
 
         $('.btnDeleteProfile', elem).on('click', function () {
 
-            var index = this.getAttribute('data-profileIndex');
+            var index = this.getAttribute('data-profileindex');
             deleteDirectPlayProfile(page, index);
+        });
+
+        $('.lnkEditSubProfile', elem).on('click', function () {
+
+            var index = parseInt(this.getAttribute('data-profileindex'));
+
+            editDirectPlayProfile(page, currentProfile.DirectPlayProfiles[index]);
         });
     }
 
@@ -160,7 +208,7 @@
 
             html += '</a>';
 
-            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileIndex="' + i + '">Delete</a>';
+            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileindex="' + i + '">Delete</a>';
 
             html += '</li>';
         }
@@ -171,7 +219,7 @@
 
         $('.btnDeleteProfile', elem).on('click', function () {
 
-            var index = this.getAttribute('data-profileIndex');
+            var index = this.getAttribute('data-profileindex');
             deleteTranscodingProfile(page, index);
         });
     }
@@ -218,7 +266,7 @@
 
             html += '</a>';
 
-            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileIndex="' + i + '">Delete</a>';
+            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileindex="' + i + '">Delete</a>';
 
             html += '</li>';
         }
@@ -229,7 +277,7 @@
 
         $('.btnDeleteProfile', elem).on('click', function () {
 
-            var index = this.getAttribute('data-profileIndex');
+            var index = this.getAttribute('data-profileindex');
             deleteContainerProfile(page, index);
         });
     }
@@ -278,7 +326,7 @@
 
             html += '</a>';
 
-            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileIndex="' + i + '">Delete</a>';
+            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileindex="' + i + '">Delete</a>';
 
             html += '</li>';
         }
@@ -289,7 +337,7 @@
 
         $('.btnDeleteProfile', elem).on('click', function () {
 
-            var index = this.getAttribute('data-profileIndex');
+            var index = this.getAttribute('data-profileindex');
             deleteCodecProfile(page, index);
         });
     }
@@ -345,7 +393,7 @@
 
             html += '</a>';
 
-            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileIndex="' + i + '">Delete</a>';
+            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileindex="' + i + '">Delete</a>';
 
             html += '</li>';
         }
@@ -356,7 +404,7 @@
 
         $('.btnDeleteProfile', elem).on('click', function () {
 
-            var index = this.getAttribute('data-profileIndex');
+            var index = this.getAttribute('data-profileindex');
             deleteMediaProfile(page, index);
         });
     }
@@ -440,6 +488,28 @@
 
         });
 
+        $('#selectDirectPlayProfileType', page).on('change', function () {
+
+            if (this.value == 'Video') {
+                $('#fldDirectPlayVideoCodec', page).show();
+            } else {
+                $('#fldDirectPlayVideoCodec', page).hide();
+            }
+
+            if (this.value == 'Photo') {
+                $('#fldDirectPlayAudioCodec', page).hide();
+            } else {
+                $('#fldDirectPlayAudioCodec', page).show();
+            }
+
+        });
+
+        $('.btnAddDirectPlayProfile', page).on('click', function () {
+
+            editDirectPlayProfile(page);
+
+        });
+
     }).on('pageshow', "#dlnaProfilePage", function () {
 
         var page = this;
@@ -465,6 +535,16 @@
             var page = $(form).parents('.page');
 
             saveProfile(page, currentProfile);
+
+            return false;
+        },
+
+        onDirectPlayFormSubmit: function () {
+
+            var form = this;
+            var page = $(form).parents('.page');
+
+            saveDirectPlayProfile(page);
 
             return false;
         }

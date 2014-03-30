@@ -882,51 +882,6 @@ var Dashboard = {
 
             Dashboard.onBrowseCommand(msg.Data);
         }
-        else if (msg.MessageType === "Play") {
-
-            MediaPlayer.getItemsForPlayback({
-
-                Ids: msg.Data.ItemIds.join(',')
-
-            }).done(function (result) {
-
-                if (msg.Data.PlayCommand == "PlayNext") {
-                    MediaPlayer.queueItemsNext(result.Items);
-                }
-                else if (msg.Data.PlayCommand == "PlayLast") {
-                    MediaPlayer.queueItems(result.Items);
-                }
-                else {
-                    MediaPlayer.play(result.Items, msg.Data.StartPositionTicks);
-                }
-
-            });
-
-        }
-        else if (msg.MessageType === "Playstate") {
-
-            if (msg.Data.Command === 'Stop') {
-                MediaPlayer.stop();
-            }
-            else if (msg.Data.Command === 'Pause') {
-                MediaPlayer.pause();
-            }
-            else if (msg.Data.Command === 'Unpause') {
-                MediaPlayer.unpause();
-            }
-            else if (msg.Data.Command === 'Seek') {
-                MediaPlayer.seek(msg.Data.SeekPositionTicks);
-            }
-            else if (msg.Data.Command === 'NextTrack') {
-                MediaPlayer.nextTrack();
-            }
-            else if (msg.Data.Command === 'PreviousTrack') {
-                MediaPlayer.previousTrack();
-            }
-            else if (msg.Data.Command === 'Fullscreen') {
-                MediaPlayer.remoteFullscreen();
-            }
-        }
         else if (msg.MessageType === "SystemCommand") {
 
             if (msg.Data === 'GoHome') {
@@ -1365,8 +1320,6 @@ $(function () {
     videoPlayerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="video-chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
     videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
 
-    videoPlayerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="video-sendMediaButton" class="mediaButton sendMediaButton" title="Remote" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Remote</button>';
-
     videoPlayerHtml += '<button onclick="MediaPlayer.toggleVideoPlayerMenu();" id="video-videoPlayerMenuButton" class="mediaButton videoPlayerMenuButton" title="Menu" type="button" data-icon="bars" data-iconpos="notext" data-inline="true">Menu</button>';
 
     videoPlayerHtml += '</div>'; // videoControls
@@ -1421,8 +1374,6 @@ $(function () {
     footerHtml += '<div class="mediaFlyoutContainer"><div id="chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
 
     footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
-
-    footerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="sendMediaButton" class="mediaButton sendMediaButton" title="Remote" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Remote</button>';
 
     footerHtml += '</div>';
 
