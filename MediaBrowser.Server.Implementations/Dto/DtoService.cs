@@ -1297,7 +1297,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var result = new List<MediaSourceInfo>
             {
-                GetVersionInfo(item, true)
+                GetVersionInfo(item)
             };
 
             return result;
@@ -1321,7 +1321,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             };
         }
 
-        private MediaSourceInfo GetVersionInfo(Audio i, bool isPrimary)
+        private MediaSourceInfo GetVersionInfo(Audio i)
         {
             return new MediaSourceInfo
             {
