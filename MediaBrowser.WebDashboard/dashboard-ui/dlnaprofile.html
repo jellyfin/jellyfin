@@ -127,6 +127,8 @@
                     </div>
                     <div class="profileTab tabTranscodingProfiles">
                         <p>Add transcoding profiles to indicate which formats should be used when transcoding is required.</p>
+                        <button class="btnAddTranscodingProfile" type="button" data-mini="true" data-icon="plus">New</button>
+                        <br />
                         <div class="transcodingProfiles"></div>
                     </div>
                     <div class="profileTab tabContainerProfiles">
@@ -176,7 +178,7 @@
                     </div>
 
                     <div style="margin: 1em 0;">
-                        <label for="txtDirectPlayContainer">Containers:</label>
+                        <label for="txtDirectPlayContainer">Container:</label>
                         <input type="text" id="txtDirectPlayContainer" data-mini="true" />
                         <div>Separated by comma. This can be left empty to apply to all containers</div>
                     </div>
@@ -205,9 +207,55 @@
             </div>
 
         </div>
+        <div data-role="popup" data-transition="slidefade" id="transcodingProfilePopup" class="popup">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>Transcoding Profile</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="transcodingProfileForm" style="min-width: 250px;">
+
+                    <div style="margin: 1em 0;">
+                        <label for="selectTranscodingProfileType">Type:</label>
+                        <select id="selectTranscodingProfileType" data-mini="true">
+                            <option value="Audio">Audio</option>
+                            <option value="Photo">Photo</option>
+                            <option value="Video">Video</option>
+                        </select>
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtTranscodingContainer">Containers:</label>
+                        <input type="text" id="txtTranscodingContainer" data-mini="true" required="required" />
+                    </div>
+
+                    <div id="fldTranscodingVideoCodec" style="margin: 1em 0;">
+                        <label for="txtTranscodingVideoCodec">Video codec:</label>
+                        <input type="text" id="txtTranscodingVideoCodec" data-mini="true" />
+                    </div>
+
+                    <div id="fldTranscodingAudioCodec" style="margin: 1em 0 2em;">
+                        <label for="txtTranscodingAudioCodec">Audio codec:</label>
+                        <input type="text" id="txtTranscodingAudioCodec" data-mini="true" />
+                    </div>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            Ok
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            Cancel
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
         <script type="text/javascript">
             $('.dlnaProfileForm').off('submit', DlnaProfilePage.onSubmit).on('submit', DlnaProfilePage.onSubmit);
             $('.editDirectPlayProfileForm').off('submit', DlnaProfilePage.onDirectPlayFormSubmit).on('submit', DlnaProfilePage.onDirectPlayFormSubmit);
+            $('.transcodingProfileForm').off('submit', DlnaProfilePage.onTranscodingProfileFormSubmit).on('submit', DlnaProfilePage.onTranscodingProfileFormSubmit);
         </script>
     </div>
 </body>

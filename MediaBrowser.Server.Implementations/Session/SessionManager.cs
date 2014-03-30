@@ -3,8 +3,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
@@ -43,6 +41,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
+        private readonly IMusicManager _musicManager;
 
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -688,9 +687,22 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var user = session.UserId.HasValue ? _userManager.GetUserById(session.UserId.Value) : null;
 
-            var items = command.ItemIds.SelectMany(i => TranslateItemForPlayback(i, user))
-                .Where(i => i.LocationType != LocationType.Virtual)
-                .ToList();
+            List<BaseItem> items;
+
+            if (command.PlayCommand == PlayCommand.PlayInstantMix)
+            {
+                items = command.ItemIds.SelectMany(i => TranslateItemForInstantMix(i, user))
+                    .Where(i => i.LocationType != LocationType.Virtual)
+                    .ToList();
+
+                command.PlayCommand = PlayCommand.PlayNow;
+            }
+            else
+            {
+                items = command.ItemIds.SelectMany(i => TranslateItemForPlayback(i, user))
+                   .Where(i => i.LocationType != LocationType.Virtual)
+                   .ToList();
+            }
 
             if (command.PlayCommand == PlayCommand.PlayShuffle)
             {
@@ -741,7 +753,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var folder = (Folder)item;
 
-                var items = user == null ? folder.RecursiveChildren:
+                var items = user == null ? folder.RecursiveChildren :
                     folder.GetRecursiveChildren(user);
 
                 items = items.Where(i => !i.IsFolder);
@@ -752,6 +764,41 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             return new[] { item };
+        }
+
+        private IEnumerable<BaseItem> TranslateItemForInstantMix(string id, User user)
+        {
+            var item = _libraryManager.GetItemById(new Guid(id));
+
+            var audio = item as Audio;
+
+            if (audio != null)
+            {
+                return _musicManager.GetInstantMixFromSong(audio, user);
+            }
+
+            var artist = item as MusicArtist;
+
+            if (artist != null)
+            {
+                return _musicManager.GetInstantMixFromArtist(artist.Name, user);
+            }
+
+            var album = item as MusicAlbum;
+
+            if (album != null)
+            {
+                return _musicManager.GetInstantMixFromAlbum(album, user);
+            }
+
+            var genre = item as MusicGenre;
+
+            if (genre != null)
+            {
+                return _musicManager.GetInstantMixFromGenres(new[] { genre.Name }, user);
+            }
+
+            return new BaseItem[] { };
         }
 
         public Task SendBrowseCommand(Guid controllingSessionId, Guid sessionId, BrowseRequest command, CancellationToken cancellationToken)

@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,103 +36,74 @@ namespace MediaBrowser.Api.Music
     public class InstantMixService : BaseApiService
     {
         private readonly IUserManager _userManager;
-        private readonly ILibraryManager _libraryManager;
 
         private readonly IDtoService _dtoService;
+        private readonly IMusicManager _musicManager;
 
-        public InstantMixService(IUserManager userManager, ILibraryManager libraryManager, IDtoService dtoService)
+        public InstantMixService(IUserManager userManager, IDtoService dtoService, IMusicManager musicManager)
         {
             _userManager = userManager;
-            _libraryManager = libraryManager;
             _dtoService = dtoService;
+            _musicManager = musicManager;
         }
 
         public object Get(GetInstantMixFromSong request)
         {
-            var item = _dtoService.GetItemByDtoId(request.Id);
+            var item = (Audio)_dtoService.GetItemByDtoId(request.Id);
 
-            var result = GetInstantMixResult(request, item.Genres);
+            var user = _userManager.GetUserById(request.UserId.Value);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            var items = _musicManager.GetInstantMixFromSong(item, user);
+
+            return GetResult(items, user, request);
         }
 
         public object Get(GetInstantMixFromAlbum request)
         {
             var album = (MusicAlbum)_dtoService.GetItemByDtoId(request.Id);
 
-            var genres = album
-               .RecursiveChildren
-               .OfType<Audio>()
-               .SelectMany(i => i.Genres)
-               .Concat(album.Genres)
-               .Distinct(StringComparer.OrdinalIgnoreCase);
+            var user = _userManager.GetUserById(request.UserId.Value);
 
-            var result = GetInstantMixResult(request, genres);
+            var items = _musicManager.GetInstantMixFromAlbum(album, user);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return GetResult(items, user, request);
         }
 
         public object Get(GetInstantMixFromMusicGenre request)
         {
-            var genre = GetMusicGenre(request.Name, _libraryManager);
+            var user = _userManager.GetUserById(request.UserId.Value);
 
-            var result = GetInstantMixResult(request, new[] { genre.Name });
+            var items = _musicManager.GetInstantMixFromGenres(new[] { request.Name }, user);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return GetResult(items, user, request);
         }
 
         public object Get(GetInstantMixFromArtist request)
         {
-            var artist = GetArtist(request.Name, _libraryManager);
+            var user = _userManager.GetUserById(request.UserId.Value);
 
-            var genres = _libraryManager.RootFolder
-                .RecursiveChildren
-                .OfType<Audio>()
-                .Where(i => i.HasArtist(artist.Name))
-                .SelectMany(i => i.Genres)
-                .Concat(artist.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase);
+            var items = _musicManager.GetInstantMixFromArtist(request.Name, user);
 
-            var result = GetInstantMixResult(request, genres);
-
-            return ToOptimizedSerializedResultUsingCache(result);
+            return GetResult(items, user, request);
         }
 
-        private ItemsResult GetInstantMixResult(BaseGetSimilarItems request, IEnumerable<string> genres)
+        private object GetResult(IEnumerable<Audio> items, User user, BaseGetSimilarItems request)
         {
-            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
-
             var fields = request.GetItemFields().ToList();
 
-            var inputItems = user == null
-                                 ? _libraryManager.RootFolder.RecursiveChildren
-                                 : user.RootFolder.GetRecursiveChildren(user);
-
-            var genresDictionary = genres.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
-
-            var limit = request.Limit.HasValue ? request.Limit.Value * 2 : 100;
-
-            var items = inputItems
-                .OfType<Audio>()
-                .Select(i => new Tuple<Audio, int>(i, i.Genres.Count(genresDictionary.ContainsKey)))
-                .OrderByDescending(i => i.Item2)
-                .ThenBy(i => Guid.NewGuid())
-                .Select(i => i.Item1)
-                .Take(limit)
-                .OrderBy(i => Guid.NewGuid())
-                .ToList();
+            var list = items.ToList();
 
             var result = new ItemsResult
             {
-                TotalRecordCount = items.Count
+                TotalRecordCount = list.Count
             };
 
-            var dtos = items.Take(request.Limit ?? items.Count)
+            var dtos = list.Take(request.Limit ?? list.Count)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
             result.Items = dtos.ToArray();
 
-            return result;
+            return ToOptimizedResult(result);
         }
 
     }

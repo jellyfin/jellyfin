@@ -200,8 +200,8 @@
         var playerInfo = MediaController.getPlayerInfo();
 
         var html = '';
+        html += '<h3>Select Player:</h3>';
         html += '<fieldset data-role="controlgroup" data-mini="true">';
-        html += '<legend>Select Player:</legend>';
 
         for (var i = 0, length = targets.length; i < length; i++) {
 
@@ -223,14 +223,17 @@
         }
 
         html += '</fieldset>';
+
+        html += '<p class="fieldDescription">All plays will be sent to the selected player.</p>';
+
         return html;
     }
 
-    function showPlayerSelection() {
+    function showPlayerSelection(page) {
 
         var promise = MediaController.getTargets();
-
-        var html = '<div data-role="panel" data-position="right" data-display="overlay" id="playerFlyout" data-theme="b">';
+        
+        var html = '<div data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" id="playerSelectionPanel" class="playerSelectionPanel" data-theme="b">';
 
         html += '<div class="players"></div>';
 
@@ -238,7 +241,7 @@
 
         $(document.body).append(html);
 
-        var elem = $('#playerFlyout').panel({}).trigger('create').panel("open").on("panelafterclose", function () {
+        var elem = $('#playerSelectionPanel').panel({}).trigger('create').panel("open").on("panelafterclose", function () {
 
             $(this).off("panelafterclose").remove();
         });
@@ -270,7 +273,7 @@
 
         $('.btnCast', page).on('click', function () {
 
-            showPlayerSelection();
+            showPlayerSelection(page);
         });
     });
 

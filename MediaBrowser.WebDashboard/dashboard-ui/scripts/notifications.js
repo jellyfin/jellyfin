@@ -1,11 +1,10 @@
 ﻿(function ($, document, Dashboard) {
 
-    var userId;
     var getNotificationsSummaryPromise;
 
     function getNotificationsSummary() {
 
-        getNotificationsSummaryPromise = getNotificationsSummaryPromise || ApiClient.getNotificationSummary(userId);
+        getNotificationsSummaryPromise = getNotificationsSummaryPromise || ApiClient.getNotificationSummary(Dashboard.getCurrentUserId());
 
         return getNotificationsSummaryPromise;
     }
@@ -64,6 +63,9 @@
 
                 $('.notificationsFlyout').popup("close");
 
+                getNotificationsSummaryPromise = null;
+
+                updateNotificationCount();
             });
 
         });
@@ -172,8 +174,6 @@
         if (!user || $('.notificationsButton', header).length) {
             return;
         }
-
-        userId = user.Id;
 
         $('<a class="imageLink btnNotifications" href="#" title="Notifications">0</a>').insertAfter($('.btnCurrentUser', header)).on('click', showNotificationsFlyout);
 
