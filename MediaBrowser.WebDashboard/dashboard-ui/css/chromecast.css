@@ -7,7 +7,13 @@
     background-size: 100%;
     vertical-align: middle;
     margin: 0 .6em;
+    cursor: pointer;
+    border: 0 !important;
 }
+
+    .btnCast:hover {
+        opacity: .5;
+    }
 
 .btnDefaultCast {
     background-image: url(images/chromecast/ic_media_route_off_holo_dark.png);

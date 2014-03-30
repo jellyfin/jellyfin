@@ -141,6 +141,7 @@
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
+    <Compile Include="Library\MusicManager.cs" />
     <Compile Include="Library\Resolvers\PhotoResolver.cs" />
     <Compile Include="Library\SearchEngine.cs" />
     <Compile Include="Library\ResolverHelper.cs" />

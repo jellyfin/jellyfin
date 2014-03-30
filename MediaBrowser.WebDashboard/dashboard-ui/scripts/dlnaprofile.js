@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿(function($, document, window) {
 
     var currentProfile;
 
@@ -9,7 +9,7 @@
 
         Dashboard.showLoadingMsg();
 
-        getProfile().done(function (result) {
+        getProfile().done(function(result) {
 
             currentProfile = result;
 
@@ -38,7 +38,7 @@
 
         $('#txtName', page).val(profile.Name);
 
-        $('.chkMediaType', page).each(function () {
+        $('.chkMediaType', page).each(function() {
             this.checked = (profile.SupportedMediaTypes || '').split(',').indexOf(this.getAttribute('data-value')) != -1;
 
         }).checkboxradio('refresh');
@@ -134,9 +134,7 @@
             if (profile.Type == 'Video') {
                 html += '<p>Video Codec: ' + (profile.VideoCodec || 'All') + '</p>';
                 html += '<p>Audio Codec: ' + (profile.AudioCodec || 'All') + '</p>';
-            }
-
-            else if (profile.Type == 'Audio') {
+            } else if (profile.Type == 'Audio') {
                 html += '<p>Codec: ' + (profile.AudioCodec || 'All') + '</p>';
             }
 
@@ -151,13 +149,13 @@
 
         var elem = $('.directPlayProfiles', page).html(html).trigger('create');
 
-        $('.btnDeleteProfile', elem).on('click', function () {
+        $('.btnDeleteProfile', elem).on('click', function() {
 
             var index = this.getAttribute('data-profileindex');
             deleteDirectPlayProfile(page, index);
         });
 
-        $('.lnkEditSubProfile', elem).on('click', function () {
+        $('.lnkEditSubProfile', elem).on('click', function() {
 
             var index = parseInt(this.getAttribute('data-profileindex'));
 
@@ -192,7 +190,7 @@
             }
 
             html += '<li>';
-            html += '<a href="#">';
+            html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
             html += '<p>Protocol: ' + (profile.Protocol || 'Http') + '</p>';
             html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
@@ -200,9 +198,7 @@
             if (profile.Type == 'Video') {
                 html += '<p>Video Codec: ' + (profile.VideoCodec || 'All') + '</p>';
                 html += '<p>Audio Codec: ' + (profile.AudioCodec || 'All') + '</p>';
-            }
-
-            else if (profile.Type == 'Audio') {
+            } else if (profile.Type == 'Audio') {
                 html += '<p>Codec: ' + (profile.AudioCodec || 'All') + '</p>';
             }
 
@@ -217,11 +213,32 @@
 
         var elem = $('.transcodingProfiles', page).html(html).trigger('create');
 
-        $('.btnDeleteProfile', elem).on('click', function () {
+        $('.btnDeleteProfile', elem).on('click', function() {
 
             var index = this.getAttribute('data-profileindex');
             deleteTranscodingProfile(page, index);
         });
+
+        $('.lnkEditSubProfile', elem).on('click', function () {
+
+            var index = parseInt(this.getAttribute('data-profileindex'));
+
+            editTranscodingProfile(page, currentProfile.TranscodingProfiles[index]);
+        });
+    }
+
+    function editTranscodingProfile(page, transcodingProfile) {
+
+        isSubProfileNew = transcodingProfile == null;
+        transcodingProfile = transcodingProfile || {};
+        currentSubProfile = transcodingProfile;
+
+        var popup = $('#transcodingProfilePopup', page).popup('open');
+
+        $('#selectTranscodingProfileType', popup).val(transcodingProfile.Type || 'Video').selectmenu('refresh').trigger('change');
+        $('#txtTranscodingContainer', popup).val(transcodingProfile.Container || '');
+        $('#txtTranscodingAudioCodec', popup).val(transcodingProfile.AudioCodec || '');
+        $('#txtTranscodingVideoCodec', popup).val(transcodingProfile.VideoCodec || '');
     }
 
     function deleteTranscodingProfile(page, index) {
@@ -230,6 +247,25 @@
 
         renderTranscodingProfiles(page, currentProfile.TranscodingProfiles);
 
+    }
+
+    function saveTranscodingProfile(page) {
+
+        currentSubProfile.Type = $('#selectTranscodingProfileType', page).val();
+        currentSubProfile.Container = $('#txtTranscodingContainer', page).val();
+        currentSubProfile.AudioCodec = $('#txtTranscodingAudioCodec', page).val();
+        currentSubProfile.VideoCodec = $('#txtTranscodingVideoCodec', page).val();
+
+        if (isSubProfileNew) {
+
+            currentProfile.TranscodingProfiles.push(currentSubProfile);
+        }
+
+        renderSubProfiles(page, currentProfile);
+
+        currentSubProfile = null;
+
+        $('#transcodingProfilePopup', page).popup('close');
     }
 
     function renderContainerProfiles(page, profiles) {
@@ -251,14 +287,14 @@
             }
 
             html += '<li>';
-            html += '<a href="#">';
+            html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
             html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
 
             if (profile.Conditions && profile.Conditions.length) {
 
                 html += '<p>Conditions: ';
-                html += profile.Conditions.map(function (c) {
+                html += profile.Conditions.map(function(c) {
                     return c.Property;
                 }).join(', ');
                 html += '</p>';
@@ -275,7 +311,7 @@
 
         var elem = $('.containerProfiles', page).html(html).trigger('create');
 
-        $('.btnDeleteProfile', elem).on('click', function () {
+        $('.btnDeleteProfile', elem).on('click', function() {
 
             var index = this.getAttribute('data-profileindex');
             deleteContainerProfile(page, index);
@@ -311,14 +347,14 @@
             }
 
             html += '<li>';
-            html += '<a href="#">';
+            html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
             html += '<p>Codec: ' + (profile.Codec || 'All') + '</p>';
 
             if (profile.Conditions && profile.Conditions.length) {
 
                 html += '<p>Conditions: ';
-                html += profile.Conditions.map(function (c) {
+                html += profile.Conditions.map(function(c) {
                     return c.Property;
                 }).join(', ');
                 html += '</p>';
@@ -335,7 +371,7 @@
 
         var elem = $('.codecProfiles', page).html(html).trigger('create');
 
-        $('.btnDeleteProfile', elem).on('click', function () {
+        $('.btnDeleteProfile', elem).on('click', function() {
 
             var index = this.getAttribute('data-profileindex');
             deleteCodecProfile(page, index);
@@ -369,23 +405,21 @@
             }
 
             html += '<li>';
-            html += '<a href="#">';
+            html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
             html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
 
             if (profile.Type == 'Video') {
                 html += '<p>Video Codec: ' + (profile.VideoCodec || 'All') + '</p>';
                 html += '<p>Audio Codec: ' + (profile.AudioCodec || 'All') + '</p>';
-            }
-
-            else if (profile.Type == 'Audio') {
+            } else if (profile.Type == 'Audio') {
                 html += '<p>Codec: ' + (profile.AudioCodec || 'All') + '</p>';
             }
 
             if (profile.Conditions && profile.Conditions.length) {
 
                 html += '<p>Conditions: ';
-                html += profile.Conditions.map(function (c) {
+                html += profile.Conditions.map(function(c) {
                     return c.Property;
                 }).join(', ');
                 html += '</p>';
@@ -402,7 +436,7 @@
 
         var elem = $('.mediaProfiles', page).html(html).trigger('create');
 
-        $('.btnDeleteProfile', elem).on('click', function () {
+        $('.btnDeleteProfile', elem).on('click', function() {
 
             var index = this.getAttribute('data-profileindex');
             deleteMediaProfile(page, index);
@@ -430,8 +464,7 @@
                 url: ApiClient.getUrl("Dlna/Profiles/" + id),
                 data: JSON.stringify(profile),
                 contentType: "application/json"
-
-            }).done(function () {
+            }).done(function() {
 
                 Dashboard.alert('Settings saved.');
             });
@@ -443,8 +476,7 @@
                 url: ApiClient.getUrl("Dlna/Profiles"),
                 data: JSON.stringify(profile),
                 contentType: "application/json"
-
-            }).done(function () {
+            }).done(function() {
 
                 Dashboard.navigate('dlnaprofiles.html');
 
@@ -460,7 +492,7 @@
         profile.Name = $('#txtName', page).val();
         profile.EnableAlbumArtInDidl = $('#chkEnableAlbumArtInDidl', page).checked();
 
-        profile.SupportedMediaTypes = $('.chkMediaType:checked', page).get().map(function (c) {
+        profile.SupportedMediaTypes = $('.chkMediaType:checked', page).get().map(function(c) {
             return c.getAttribute('data-value');
         }).join(',');
 
@@ -477,18 +509,18 @@
         profile.Identification.DeviceDescription = $('#txtIdDeviceDescription', page).val();
     }
 
-    $(document).on('pageinit', "#dlnaProfilePage", function () {
+    $(document).on('pageinit', "#dlnaProfilePage", function() {
 
         var page = this;
 
-        $('.radioProfileTab', page).on('change', function () {
+        $('.radioProfileTab', page).on('change', function() {
 
             $('.profileTab', page).hide();
             $('.' + this.value, page).show();
 
         });
 
-        $('#selectDirectPlayProfileType', page).on('change', function () {
+        $('#selectDirectPlayProfileType', page).on('change', function() {
 
             if (this.value == 'Video') {
                 $('#fldDirectPlayVideoCodec', page).show();
@@ -504,19 +536,41 @@
 
         });
 
-        $('.btnAddDirectPlayProfile', page).on('click', function () {
+        $('#selectTranscodingProfileType', page).on('change', function () {
+
+            if (this.value == 'Video') {
+                $('#fldTranscodingVideoCodec', page).show();
+            } else {
+                $('#fldTranscodingVideoCodec', page).hide();
+            }
+
+            if (this.value == 'Photo') {
+                $('#fldTranscodingAudioCodec', page).hide();
+            } else {
+                $('#fldTranscodingAudioCodec', page).show();
+            }
+
+        });
+
+        $('.btnAddDirectPlayProfile', page).on('click', function() {
 
             editDirectPlayProfile(page);
 
         });
 
-    }).on('pageshow', "#dlnaProfilePage", function () {
+        $('.btnAddTranscodingProfile', page).on('click', function () {
+
+            editTranscodingProfile(page);
+
+        });
+
+    }).on('pageshow', "#dlnaProfilePage", function() {
 
         var page = this;
 
         loadProfile(page);
 
-    }).on('pagebeforeshow', "#dlnaProfilePage", function () {
+    }).on('pagebeforeshow', "#dlnaProfilePage", function() {
 
         var page = this;
 
@@ -526,8 +580,7 @@
     });
 
     window.DlnaProfilePage = {
-
-        onSubmit: function () {
+        onSubmit: function() {
 
             Dashboard.showLoadingMsg();
 
@@ -539,7 +592,7 @@
             return false;
         },
 
-        onDirectPlayFormSubmit: function () {
+        onDirectPlayFormSubmit: function() {
 
             var form = this;
             var page = $(form).parents('.page');
@@ -547,6 +600,17 @@
             saveDirectPlayProfile(page);
 
             return false;
+        },
+
+        onTranscodingProfileFormSubmit: function() {
+            
+            var form = this;
+            var page = $(form).parents('.page');
+
+            saveTranscodingProfile(page);
+
+            return false;
+
         }
     };
 

@@ -1199,3 +1199,21 @@ a.itemTag:hover {
         width: 32.95%;
     }
 }
+
+.playerSelectionPanel {
+    width: 250px;
+}
+
+.ui-panel-dismiss-open.ui-panel-dismiss-position-right[data-panelid=playerSelectionPanel] {
+    right: 250px;
+}
+
+@media all and (min-width: 600px) {
+    .playerSelectionPanel {
+        width: 300px;
+    }
+
+    .ui-panel-dismiss-open.ui-panel-dismiss-position-right[data-panelid=playerSelectionPanel] {
+        right: 300px;
+    }
+}

@@ -222,12 +222,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 RunTimeTicks = (info.EndDate - info.StartDate).Ticks,
                 OriginalAirDate = info.OriginalAirDate,
 
-                MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
-                {
-                    ItemId = recording.Id
-
-                }).ToList()
+                MediaSources = _dtoService.GetMediaSources((BaseItem)recording)
             };
+
+            dto.MediaStreams = dto.MediaSources.SelectMany(i => i.MediaStreams).ToList();
 
             if (info.Status == RecordingStatus.InProgress)
             {
@@ -317,7 +315,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Type = info.GetClientTypeName(),
                 Id = info.Id.ToString("N"),
                 MediaType = info.MediaType,
-                ExternalId = info.ExternalId
+                ExternalId = info.ExternalId,
+                MediaSources = _dtoService.GetMediaSources(info)
             };
 
             if (user != null)

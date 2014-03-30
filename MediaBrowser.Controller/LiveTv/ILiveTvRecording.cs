@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Library;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Library;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -13,6 +13,8 @@ namespace MediaBrowser.Controller.LiveTv
         string MediaType { get; }
 
         RecordingInfo RecordingInfo { get; set; }
+
+        long? RunTimeTicks { get; set; }
 
         string GetClientTypeName();
 

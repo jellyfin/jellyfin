@@ -134,6 +134,7 @@
     <Compile Include="Library\DeleteOptions.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\IMetadataSaver.cs" />
+    <Compile Include="Library\IMusicManager.cs" />
     <Compile Include="Library\ItemUpdateType.cs" />
     <Compile Include="Library\IUserDataManager.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
@@ -155,11 +156,14 @@
     <Compile Include="LiveTv\SeriesTimerInfo.cs" />
     <Compile Include="LiveTv\TimerInfo.cs" />
     <Compile Include="Localization\ILocalizationManager.cs" />
+    <Compile Include="MediaEncoding\EncodingOptions.cs" />
     <Compile Include="MediaEncoding\ChapterImageRefreshOptions.cs" />
+    <Compile Include="MediaEncoding\EncodingResult.cs" />
     <Compile Include="MediaEncoding\IEncodingManager.cs" />
     <Compile Include="MediaEncoding\ImageEncodingOptions.cs" />
     <Compile Include="MediaEncoding\IMediaEncoder.cs" />
     <Compile Include="MediaEncoding\InternalMediaInfoResult.cs" />
+    <Compile Include="MediaEncoding\VideoEncodingOptions.cs" />
     <Compile Include="Net\IHasResultFactory.cs" />
     <Compile Include="Net\IHttpResultFactory.cs" />
     <Compile Include="Net\IHttpServer.cs" />

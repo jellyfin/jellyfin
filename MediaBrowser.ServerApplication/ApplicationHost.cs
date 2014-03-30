@@ -449,6 +449,8 @@ namespace MediaBrowser.ServerApplication
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager);
             RegisterSingleInstance(LibraryManager);
 
+            RegisterSingleInstance<IMusicManager>(new MusicManager(LibraryManager));
+
             LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(LibraryMonitor);
 
