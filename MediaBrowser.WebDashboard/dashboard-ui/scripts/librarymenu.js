@@ -24,7 +24,7 @@
 
         html += '<div class="viewMenuSecondary">';
 
-        html += '<button class="btnCast btnDefaultCast" type="button" data-role="none"></button>';
+        html += '<button id="btnCast" class="btnCast btnDisabledCast" type="button" data-role="none"></button>';
 
         html += '<a class="viewMenuLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
@@ -178,6 +178,8 @@
     function updateCastIcon() {
         
         var info = MediaController.getPlayerInfo();
+
+        if ($(".btnCast").hasClass("btnDisabledCast") == false) return; // No icon change if no CC is detected
 
         if (info.isLocalPlayer) {
 

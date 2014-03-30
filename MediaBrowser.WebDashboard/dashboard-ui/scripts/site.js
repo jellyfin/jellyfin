@@ -1320,6 +1320,8 @@ $(function () {
     videoPlayerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="video-chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
     videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
 
+    videoPlayerHtml += '<button onclick="CastPlayer.initializeLocalPlayer();CastPlayer.playMedia();" id="video-ccastButton" class="mediaButton videoCCastButton" title="Cast" type="button" data-icon="ccast" data-iconpos="notext" data-inline="true" style="display: none;">Cast</button>';
+
     videoPlayerHtml += '<button onclick="MediaPlayer.toggleVideoPlayerMenu();" id="video-videoPlayerMenuButton" class="mediaButton videoPlayerMenuButton" title="Menu" type="button" data-icon="bars" data-iconpos="notext" data-inline="true">Menu</button>';
 
     videoPlayerHtml += '</div>'; // videoControls
