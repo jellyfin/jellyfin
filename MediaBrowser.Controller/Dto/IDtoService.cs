@@ -86,6 +86,13 @@ namespace MediaBrowser.Controller.Dto
         ChapterInfoDto GetChapterInfoDto(ChapterInfo chapterInfo, BaseItem item);
 
         /// <summary>
+        /// Gets the media sources.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>List{MediaSourceInfo}.</returns>
+        List<MediaSourceInfo> GetMediaSources(BaseItem item);
+
+        /// <summary>
         /// Gets the item by name dto.
         /// </summary>
         /// <param name="item">The item.</param>

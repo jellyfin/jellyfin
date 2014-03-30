@@ -34,8 +34,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                 {
                     var collectionType = args.GetCollectionType();
 
-                    if (string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase) ||
-                        string.IsNullOrEmpty(collectionType))
+                    if (string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
                     {
                         return new Controller.Entities.Audio.Audio();
                     }
