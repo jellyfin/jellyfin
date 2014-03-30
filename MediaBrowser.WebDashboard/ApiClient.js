@@ -4058,7 +4058,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 options.ForceTitle = true;
             }
 
-            var url = self.getUrl("Packages/" + packageId + "Reviews", options);
+            var url = self.getUrl("Packages/" + packageId + "/Reviews", options);
 
             return self.ajax({
                 type: "GET",

@@ -67,11 +67,6 @@ namespace MediaBrowser.Api.Playback
 
         [ApiMember(Name = "DeviceProfileId", Description = "Optional. The dlna device profile id to utilize.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string DeviceProfileId { get; set; }
-        
-        /// <summary>
-        /// For testing purposes
-        /// </summary>
-        public bool ThrowDebugError { get; set; }
 
         public string Params { get; set; }
     }

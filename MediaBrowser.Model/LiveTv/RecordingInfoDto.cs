@@ -1,11 +1,11 @@
-﻿using System.Diagnostics;
-using System.Runtime.Serialization;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Library;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using MediaBrowser.Model.Library;
+using System.Diagnostics;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -248,10 +248,13 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The type.</value>
         public string Type { get; set; }
 
+        public List<MediaSourceInfo> MediaSources { get; set; }
+        
         public RecordingInfoDto()
         {
             Genres = new List<string>();
             ImageTags = new Dictionary<ImageType, Guid>();
+            MediaSources = new List<MediaSourceInfo>();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

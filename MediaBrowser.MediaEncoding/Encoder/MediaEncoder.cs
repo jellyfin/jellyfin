@@ -6,10 +6,10 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -122,35 +122,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <exception cref="System.ArgumentException">Unrecognized InputType</exception>
         public string GetInputArgument(string[] inputFiles, InputType type)
         {
-            string inputPath;
-
-            switch (type)
-            {
-                case InputType.Bluray:
-                case InputType.Dvd:
-                case InputType.File:
-                    inputPath = GetConcatInputArgument(inputFiles);
-                    break;
-                case InputType.Url:
-                    inputPath = GetHttpInputArgument(inputFiles);
-                    break;
-                default:
-                    throw new ArgumentException("Unrecognized InputType");
-            }
-
-            return inputPath;
-        }
-
-        /// <summary>
-        /// Gets the HTTP input argument.
-        /// </summary>
-        /// <param name="inputFiles">The input files.</param>
-        /// <returns>System.String.</returns>
-        private string GetHttpInputArgument(string[] inputFiles)
-        {
-            var url = inputFiles[0];
-
-            return string.Format("\"{0}\"", url);
+            return EncodingUtils.GetInputArgument(inputFiles.ToList(), type == InputType.Url);
         }
 
         /// <summary>
@@ -160,7 +132,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>System.String.</returns>
         public string GetProbeSizeArgument(InputType type)
         {
-            return type == InputType.Dvd ? "-probesize 1G -analyzeduration 200M" : string.Empty;
+            return EncodingUtils.GetProbeSizeArgument(type == InputType.Dvd);
         }
 
         /// <summary>
@@ -877,36 +849,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             memoryStream.Position = 0;
             return memoryStream;
-        }
-
-        /// <summary>
-        /// Gets the file input argument.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.String.</returns>
-        private string GetFileInputArgument(string path)
-        {
-            return string.Format("file:\"{0}\"", path);
-        }
-
-        /// <summary>
-        /// Gets the concat input argument.
-        /// </summary>
-        /// <param name="playableStreamFiles">The playable stream files.</param>
-        /// <returns>System.String.</returns>
-        private string GetConcatInputArgument(string[] playableStreamFiles)
-        {
-            // Get all streams
-            // If there's more than one we'll need to use the concat command
-            if (playableStreamFiles.Length > 1)
-            {
-                var files = string.Join("|", playableStreamFiles);
-
-                return string.Format("concat:\"{0}\"", files);
-            }
-
-            // Determine the input path for video files
-            return GetFileInputArgument(playableStreamFiles[0]);
         }
 
         public Task<Stream> EncodeImage(ImageEncodingOptions options, CancellationToken cancellationToken)

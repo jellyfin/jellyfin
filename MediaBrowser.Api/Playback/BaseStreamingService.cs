@@ -835,11 +835,6 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetInputArgument(StreamState state)
         {
-            if (state.SendInputOverStandardInput)
-            {
-                return "-";
-            }
-
             var type = InputType.File;
 
             var inputPath = new[] { state.MediaPath };
@@ -898,9 +893,7 @@ namespace MediaBrowser.Api.Playback
                     Arguments = commandLineArgs,
 
                     WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false,
-
-                    RedirectStandardInput = state.SendInputOverStandardInput
+                    ErrorDialog = false
                 },
 
                 EnableRaisingEvents = true
@@ -933,11 +926,6 @@ namespace MediaBrowser.Api.Playback
                 throw;
             }
 
-            if (state.SendInputOverStandardInput)
-            {
-                StreamToStandardInput(process, state);
-            }
-
             // MUST read both stdout and stderr asynchronously or a deadlock may occurr
             process.BeginOutputReadLine();
 
@@ -962,32 +950,6 @@ namespace MediaBrowser.Api.Playback
             if (state.IsRemote)
             {
                 await Task.Delay(3000).ConfigureAwait(false);
-            }
-        }
-
-        private async void StreamToStandardInput(Process process, StreamState state)
-        {
-            try
-            {
-                await StreamToStandardInputInternal(process, state).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                Logger.Debug("Stream to standard input closed normally.");
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error writing to standard input", ex);
-            }
-        }
-
-        private async Task StreamToStandardInputInternal(Process process, StreamState state)
-        {
-            state.StandardInputCancellationTokenSource = new CancellationTokenSource();
-
-            using (var fileStream = FileSystem.GetFileStream(state.MediaPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-            {
-                await new EndlessStreamCopy().CopyStream(fileStream, process.StandardInput.BaseStream, state.StandardInputCancellationTokenSource.Token).ConfigureAwait(false);
             }
         }
 
@@ -1315,11 +1277,6 @@ namespace MediaBrowser.Api.Playback
                 ParseParams(request);
             }
 
-            if (request.ThrowDebugError)
-            {
-                throw new InvalidOperationException("You asked for a debug error, you got one.");
-            }
-
             var user = AuthorizationRequestFilterAttribute.GetCurrentUser(Request, UserManager);
 
             var url = Request.PathInfo;
@@ -1369,8 +1326,6 @@ namespace MediaBrowser.Api.Playback
                 {
                     state.MediaPath = path;
                     state.IsRemote = false;
-
-                    state.SendInputOverStandardInput = recording.RecordingInfo.Status == RecordingStatus.InProgress;
                 }
                 else if (!string.IsNullOrEmpty(mediaUrl))
                 {
@@ -1378,7 +1333,8 @@ namespace MediaBrowser.Api.Playback
                     state.IsRemote = true;
                 }
 
-                //state.RunTimeTicks = recording.RunTimeTicks;
+                state.RunTimeTicks = recording.RunTimeTicks;
+
                 if (recording.RecordingInfo.Status == RecordingStatus.InProgress && !state.IsRemote)
                 {
                     await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
