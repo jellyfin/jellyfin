@@ -282,6 +282,14 @@
     <EmbeddedResource Include="Localization\Ratings\ru.txt" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Localization\JavaScript\javascript.json" />
+    <EmbeddedResource Include="Localization\Server\server.json" />
+    <EmbeddedResource Include="Localization\Server\de.json" />
+    <EmbeddedResource Include="Localization\Server\pt_PT.json" />
+    <EmbeddedResource Include="Localization\Server\ru.json" />
+    <EmbeddedResource Include="Localization\JavaScript\en_US.json" />
+    <EmbeddedResource Include="Localization\JavaScript\pt_PT.json" />
+    <EmbeddedResource Include="Localization\Server\en_US.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -386,6 +394,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

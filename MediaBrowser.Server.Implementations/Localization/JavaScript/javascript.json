@@ -1,0 +1,21 @@
+﻿{
+    "SettingsSaved": "Settings saved.",
+	"AddUser": "Add User",
+	"Users": "Users",
+	"Delete": "Delete",
+	"Administrator": "Administrator",
+	"Password": "Password",
+	"CreatePassword": "Create Password",
+	"DeleteImage": "Delete Image",
+	"DeleteImageConfirmation": "Are you sure you wish to delete this image?",
+	"FileReadCancelled": "The file read has been cancelled.",
+	"FileNotFound": "File not found.",
+	"FileReadError": "An error occurred while reading the file.",
+	"DeleteUser": "Delete User",
+	"DeleteUserConfirmation": "Are you sure you wish to delete {0}?",
+	"PasswordResetHeader": "Password Reset",
+	"PasswordResetComplete": "The password has been reset.",
+	"PasswordResetConfirmation": "Are you sure you wish to reset the password?",
+	"PasswordSaved": "Password saved.",
+	"PasswordMatchError": "Password and password confirmation must match."
+}
