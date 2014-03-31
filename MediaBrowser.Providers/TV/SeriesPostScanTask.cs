@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -11,6 +12,11 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
+    class SeriesGroup : List<Series>, IGrouping<string, Series>
+    {
+        public string Key { get; set; }
+    }
+
     class SeriesPostScanTask : ILibraryPostScanTask, IHasOrder
     {
         /// <summary>
@@ -39,11 +45,7 @@ namespace MediaBrowser.Providers.TV
                 .OfType<Series>()
                 .ToList();
 
-            var seriesGroups = from series in seriesList
-                               let tvdbId = series.GetProviderId(MetadataProviders.Tvdb)
-                               where !string.IsNullOrEmpty(tvdbId)
-                               group series by tvdbId into g
-                               select g;
+            var seriesGroups = FindSeriesGroups(seriesList).Where(g => !string.IsNullOrEmpty(g.Key)).ToList();
 
             await new MissingEpisodeProvider(_logger, _config, _libraryManager).Run(seriesGroups, cancellationToken).ConfigureAwait(false);
 
@@ -82,6 +84,51 @@ namespace MediaBrowser.Providers.TV
 
                 progress.Report(percent);
             }
+        }
+
+        private IEnumerable<IGrouping<string, Series>> FindSeriesGroups(List<Series> seriesList)
+        {
+            var links = seriesList.ToDictionary(s => s, s => seriesList.Where(c => c != s && ShareProviderId(s, c)).ToList());
+
+            var visited = new HashSet<Series>();
+
+            foreach (var series in seriesList)
+            {
+                if (!visited.Contains(series))
+                {
+                    var group = new SeriesGroup();
+                    FindAllLinked(series, visited, links, group);
+
+                    group.Key = group.Select(s => s.GetProviderId(MetadataProviders.Tvdb)).FirstOrDefault(id => !string.IsNullOrEmpty(id));
+
+                    yield return group;
+                }
+            }
+        }
+
+        private void FindAllLinked(Series series, HashSet<Series> visited, IDictionary<Series, List<Series>> linksMap, List<Series> results)
+        {
+            results.Add(series);
+            visited.Add(series);
+
+            var links = linksMap[series];
+
+            foreach (var s in links)
+            {
+                if (!visited.Contains(s))
+                {
+                    FindAllLinked(s, visited, linksMap, results);
+                }
+            }
+        }
+
+        private bool ShareProviderId(Series a, Series b)
+        {
+            return a.ProviderIds.Any(id =>
+            {
+                string value;
+                return b.ProviderIds.TryGetValue(id.Key, out value) && id.Value == value;
+            });
         }
 
         public int Order
