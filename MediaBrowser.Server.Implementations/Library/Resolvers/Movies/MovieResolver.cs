@@ -115,22 +115,19 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             // Find movies that are mixed in the same folder
-            if (args.Path.IndexOf("[trailers]", StringComparison.OrdinalIgnoreCase) != -1 ||
-                string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
             {
                 return ResolveVideo<Trailer>(args);
             }
 
             Video item = null;
 
-            if (args.Path.IndexOf("[musicvideos]", StringComparison.OrdinalIgnoreCase) != -1 ||
-                string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
             {
                 item = ResolveVideo<MusicVideo>(args);
             }
 
-            if (args.Path.IndexOf("[adultvideos]", StringComparison.OrdinalIgnoreCase) != -1 ||
-                string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
             {
                 item = ResolveVideo<AdultVideo>(args);
             }

@@ -661,16 +661,6 @@ namespace MediaBrowser.Server.Implementations.Session
             return session;
         }
 
-        public Task SendSystemCommand(Guid controllingSessionId, Guid sessionId, SystemCommand command, CancellationToken cancellationToken)
-        {
-            var session = GetSessionForRemoteControl(sessionId);
-
-            var controllingSession = GetSession(controllingSessionId);
-            AssertCanControl(session, controllingSession);
-
-            return session.SessionController.SendSystemCommand(command, cancellationToken);
-        }
-
         public Task SendMessageCommand(Guid controllingSessionId, Guid sessionId, MessageCommand command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
@@ -679,6 +669,16 @@ namespace MediaBrowser.Server.Implementations.Session
             AssertCanControl(session, controllingSession);
 
             return session.SessionController.SendMessageCommand(command, cancellationToken);
+        }
+
+        public Task SendGeneralCommand(Guid controllingSessionId, Guid sessionId, GeneralCommand command, CancellationToken cancellationToken)
+        {
+            var session = GetSessionForRemoteControl(sessionId);
+
+            var controllingSession = GetSession(controllingSessionId);
+            AssertCanControl(session, controllingSession);
+
+            return session.SessionController.SendGeneralCommand(command, cancellationToken);
         }
 
         public Task SendPlayCommand(Guid controllingSessionId, Guid sessionId, PlayRequest command, CancellationToken cancellationToken)

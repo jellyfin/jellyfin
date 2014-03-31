@@ -219,7 +219,7 @@ namespace MediaBrowser.WebDashboard.Api
             var contentType = MimeTypes.GetMimeType(path);
 
             var isHtml = IsHtml(path);
-            var localizationCulture = isHtml ? GetLocalizationCulture() : null;
+            var localizationCulture = GetLocalizationCulture();
 
             // Don't cache if not configured to do so
             // But always cache images to simulate production
