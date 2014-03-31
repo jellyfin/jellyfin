@@ -25,7 +25,8 @@ namespace MediaBrowser.Providers.TV
 {
     public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
-        internal const string TvdbSeriesOffset = "TvdbSeriesOffset";
+        private const string TvdbSeriesOffset = "TvdbSeriesOffset";
+        private const string TvdbSeriesOffsetFormat = "{0}-{1}";
 
         internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(2, 2);
         internal static TvdbSeriesProvider Current { get; private set; }
@@ -109,17 +110,22 @@ namespace MediaBrowser.Providers.TV
                 return;
 
             var offset = info.AnimeSeriesIndex - index;
-            series.SetProviderId(TvdbSeriesOffset, offset.ToString());
+            var id = string.Format(TvdbSeriesOffsetFormat, series.GetProviderId(MetadataProviders.Tvdb), offset);
+            series.SetProviderId(TvdbSeriesOffset, id);
         }
 
         internal static int? GetSeriesOffset(Dictionary<string, string> seriesProviderIds)
         {
-            string offsetString;
-            if (!seriesProviderIds.TryGetValue(TvdbSeriesOffset, out offsetString))
+            string idString;
+            if (!seriesProviderIds.TryGetValue(TvdbSeriesOffset, out idString))
+                return null;
+
+            var parts = idString.Split('-');
+            if (parts.Length < 2)
                 return null;
 
             int offset;
-            if (int.TryParse(offsetString, out offset))
+            if (int.TryParse(parts[1], out offset))
                 return offset;
 
             return null;
