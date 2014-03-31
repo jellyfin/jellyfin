@@ -57,18 +57,6 @@ namespace MediaBrowser.Server.Implementations.Session
             return socket;
         }
 
-        public Task SendSystemCommand(SystemCommand command, CancellationToken cancellationToken)
-        {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<string>
-            {
-                MessageType = "SystemCommand",
-                Data = command.ToString()
-
-            }, cancellationToken);
-        }
-
         public Task SendMessageCommand(MessageCommand command, CancellationToken cancellationToken)
         {
             var socket = GetActiveSocket();
@@ -199,13 +187,13 @@ namespace MediaBrowser.Server.Implementations.Session
             }, cancellationToken);
         }
 
-        public Task SendGenericCommand(GenericCommand command, CancellationToken cancellationToken)
+        public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
             var socket = GetActiveSocket();
 
-            return socket.SendAsync(new WebSocketMessage<GenericCommand>
+            return socket.SendAsync(new WebSocketMessage<GeneralCommand>
             {
-                MessageType = "Command",
+                MessageType = "GeneralCommand",
                 Data = command
 
             }, cancellationToken);

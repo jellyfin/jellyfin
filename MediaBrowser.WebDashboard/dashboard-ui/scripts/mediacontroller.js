@@ -150,7 +150,9 @@
 
     function onWebSocketMessageReceived(e, msg) {
 
-        var localPlayer = msg.MessageType === "Play" || msg.MessageType === "Playstate" ?
+        var localPlayer = msg.MessageType === "Play" ||
+            msg.MessageType === "Playstate" ||
+            msg.MessageType === "GeneralCommand" ?
             MediaController.getLocalPlayer() :
             null;
 
@@ -189,6 +191,26 @@
             }
             else if (msg.Data.Command === 'Fullscreen') {
                 localPlayer.remoteFullscreen();
+            }
+        }
+        else if (msg.MessageType === "GeneralCommand") {
+
+            var cmd = msg.Data;
+
+            if (cmd.Name === 'Mute') {
+                localPlayer.mute();
+            }
+            else if (cmd.Name === 'Unmute') {
+                localPlayer.unmute();
+            }
+            else if (cmd.Name === 'VolumeUp') {
+                localPlayer.volumeUp();
+            }
+            else if (cmd.Name === 'VolumeDown') {
+                localPlayer.volumeDown();
+            }
+            else if (cmd.Name === 'ToggleMute') {
+                localPlayer.toggleMute();
             }
         }
     }
@@ -232,7 +254,7 @@
     function showPlayerSelection(page) {
 
         var promise = MediaController.getTargets();
-        
+
         var html = '<div data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" id="playerSelectionPanel" class="playerSelectionPanel" data-theme="b">';
 
         html += '<div class="players"></div>';

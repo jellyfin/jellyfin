@@ -882,28 +882,15 @@ var Dashboard = {
 
             Dashboard.onBrowseCommand(msg.Data);
         }
-        else if (msg.MessageType === "SystemCommand") {
+        else if (msg.MessageType === "GeneralCommand") {
 
-            if (msg.Data === 'GoHome') {
+            var cmd = msg.Data;
+
+            if (cmd.Name === 'GoHome') {
                 Dashboard.navigate('index.html');
             }
-            else if (msg.Data === 'GoToSettings') {
+            else if (cmd.Name === 'GoToSettings') {
                 Dashboard.navigate('dashboard.html');
-            }
-            else if (msg.Data === 'Mute') {
-                MediaPlayer.mute();
-            }
-            else if (msg.Data === 'Unmute') {
-                MediaPlayer.unmute();
-            }
-            else if (msg.Data === 'VolumeUp') {
-                MediaPlayer.volumeUp();
-            }
-            else if (msg.Data === 'VolumeDown') {
-                MediaPlayer.volumeDown();
-            }
-            else if (msg.Data === 'ToggleMute') {
-                MediaPlayer.toggleMute();
             }
         }
         else if (msg.MessageType === "MessageCommand") {

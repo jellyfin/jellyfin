@@ -51,27 +51,21 @@
 
             if (result.Items.length) {
                 $('#resumableSection', page).show();
+                $('.noNextUpItems', page).hide();
             } else {
                 $('#resumableSection', page).hide();
+                $('.noNextUpItems', page).show();
             }
 
-            if (result.Items.length) {
+            $('#nextUpItems', page).html(LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true,
+                shape: "backdrop",
+                showTitle: true,
+                showParentTitle: true,
+                overlayText: true
 
-                $('#nextUpItems', page).html(LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    useAverageAspectRatio: true,
-                    shape: "backdrop",
-                    showTitle: true,
-                    showParentTitle: true,
-                    overlayText: true
-
-                })).createPosterItemMenus();
-
-            } else {
-
-                $('#nextUpItems', page).html('<br/><p>None found. Start watching your shows!</p>');
-
-            }
+            })).createPosterItemMenus();
 
         });
     }

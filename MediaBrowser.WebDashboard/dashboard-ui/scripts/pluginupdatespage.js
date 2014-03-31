@@ -33,7 +33,11 @@
 
         var fieldId = "liPluginUpdateFielda" + fieldIndex;
 
-        var options = PluginUpdatesPage.getHtmlOptions(["Off", "On"], (plugin.EnableAutoUpdate ? "On" : "Off"));
+        var enabledOptions = [
+            Globalize.translate('OptionOff'),
+            Globalize.translate('OptionOn')
+        ];
+        var options = PluginUpdatesPage.getHtmlOptions(enabledOptions, (plugin.EnableAutoUpdate ? "On" : "Off"));
 
         html += "<td style='vertical-align:middle;text-align:left;'>";
         html += "<select data-mini='true' data-id='" + plugin.Id + "' onchange='PluginUpdatesPage.setAutoUpdate(this);' data-role='slider' id='" + fieldId + "' name='" + fieldId + "'>" + options + "</select>";
@@ -41,7 +45,12 @@
 
         fieldId = "liPluginUpdateFieldb" + fieldIndex;
 
-        options = PluginUpdatesPage.getHtmlOptions(["Release", "Beta", "Dev"], plugin.UpdateClass);
+        var updateOptions = [
+            Globalize.translate('OptionRelease'),
+            Globalize.translate('OptionBeta'),
+            Globalize.translate('OptionDev')
+        ];
+        options = PluginUpdatesPage.getHtmlOptions(updateOptions, plugin.UpdateClass);
 
         html += "<td style='vertical-align:middle;text-align:left;'>";
         html += "<select data-mini='true' data-id='" + plugin.Id + "' onchange='PluginUpdatesPage.setUpdateClass(this);' data-inline='true' id='" + fieldId + "' name='" + fieldId + "'>" + options + "</select>";

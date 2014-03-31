@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Media Browser</title>
+    <title>${LabelMediaBrowser}</title>
 </head>
 <body>
     <div id="wizardUserPage" data-role="page" class="page standalonePage wizardPage">
@@ -11,17 +11,15 @@
             <div class="ui-corner-all ui-shadow wizardContent">
                 <form id="wizardUserForm">
                     <h2>
-                        <img src="css/images/mblogoicon.png" style="height: 30px;" />Tell us about yourself</h2>
+                        <img src="css/images/mblogoicon.png" style="height: 30px;" />${TellUsAboutYourself}</h2>
 
-                    <p>Media Browser includes built-in support for user profiles, enabling each user to have their own display settings, playstate and parental controls.</p>
+                    <p>${UserProfilesIntro}</p>
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="txtUsername">Your first name: </label>
+                            <label for="txtUsername">${LabelYourFirstName}</label>
                             <input type="text" id="txtUsername" name="txtUsername" required="required" />
-                            <div class="fieldDescription">
-                                More users can be added later within the Dashboard.
-                            </div>
+                            <div class="fieldDescription">${MoreUsersCanBeAddedLater}</div>
                         </li>
                     </ul>
 
