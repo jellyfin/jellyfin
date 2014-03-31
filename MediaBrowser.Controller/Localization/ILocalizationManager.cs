@@ -61,5 +61,12 @@ namespace MediaBrowser.Controller.Localization
         /// </summary>
         /// <returns>IEnumerable{LocalizatonOption}.</returns>
         IEnumerable<LocalizatonOption> GetLocalizationOptions();
+
+        /// <summary>
+        /// Gets the java script localization dictionary.
+        /// </summary>
+        /// <param name="culture">The culture.</param>
+        /// <returns>Dictionary{System.StringSystem.String}.</returns>
+        Dictionary<string, string> GetJavaScriptLocalizationDictionary(string culture);
     }
 }

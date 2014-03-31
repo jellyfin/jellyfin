@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using ServiceStack.Web;
 using System;
@@ -100,6 +101,7 @@ namespace MediaBrowser.WebDashboard.Api
 
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
+        private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
@@ -107,12 +109,13 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="appHost">The app host.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <param name="fileSystem">The file system.</param>
-        public DashboardService(IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, IFileSystem fileSystem, ILocalizationManager localization)
+        public DashboardService(IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer)
         {
             _appHost = appHost;
             _serverConfigurationManager = serverConfigurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
+            _jsonSerializer = jsonSerializer;
         }
 
         /// <summary>
@@ -484,7 +487,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 Logger.ErrorException("Error minifying javascript", ex);
             }
-            
+
             var bytes = Encoding.UTF8.GetBytes(js);
             await memoryStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
 
@@ -524,6 +527,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "autoorganizelog.js",
                                 "channels.js",
                                 "channelitems.js",
+                                "dashboardgeneral.js",
                                 "dashboardinfo.js",
                                 "dashboardpage.js",
                                 "directorybrowser.js",
@@ -619,7 +623,10 @@ namespace MediaBrowser.WebDashboard.Api
 
         private async Task AppendLocalization(Stream stream)
         {
+            var js = "window.localizationGlossary=" + _jsonSerializer.SerializeToString(_localization.GetJavaScriptLocalizationDictionary(GetLocalizationCulture()));
 
+            var bytes = Encoding.UTF8.GetBytes(js);
+            await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -668,16 +675,16 @@ namespace MediaBrowser.WebDashboard.Api
 
             var css = builder.ToString();
 
-            try
-            {
-                var result = new KristensenCssMinifier().Minify(builder.ToString(), false, Encoding.UTF8);
+            //try
+            //{
+            //    var result = new KristensenCssMinifier().Minify(builder.ToString(), false, Encoding.UTF8);
 
-                //css = result.MinifiedContent;
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error minifying css", ex);
-            }
+            //    css = result.MinifiedContent;
+            //}
+            //catch (Exception ex)
+            //{
+            //    Logger.ErrorException("Error minifying css", ex);
+            //}
 
             var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(css));
 
