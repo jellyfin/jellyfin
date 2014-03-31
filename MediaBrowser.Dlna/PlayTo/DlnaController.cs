@@ -308,25 +308,6 @@ namespace MediaBrowser.Dlna.PlayTo
             return Task.FromResult(true);
         }
 
-        public Task SendSystemCommand(SystemCommand command, CancellationToken cancellationToken)
-        {
-            switch (command)
-            {
-                case SystemCommand.VolumeDown:
-                    return _device.VolumeDown();
-                case SystemCommand.VolumeUp:
-                    return _device.VolumeUp();
-                case SystemCommand.Mute:
-                    return _device.VolumeDown(true);
-                case SystemCommand.Unmute:
-                    return _device.VolumeUp(true);
-                case SystemCommand.ToggleMute:
-                    return _device.ToggleMute();
-                default:
-                    return Task.FromResult(true);
-            }
-        }
-
         public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
@@ -620,9 +601,30 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public Task SendGenericCommand(GenericCommand command, CancellationToken cancellationToken)
+        public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            GeneralCommandType commandType;
+
+            if (!Enum.TryParse(command.Name, true, out commandType))
+            {
+                switch (commandType)
+                {
+                    case GeneralCommandType.VolumeDown:
+                        return _device.VolumeDown();
+                    case GeneralCommandType.VolumeUp:
+                        return _device.VolumeUp();
+                    case GeneralCommandType.Mute:
+                        return _device.VolumeDown(true);
+                    case GeneralCommandType.Unmute:
+                        return _device.VolumeUp(true);
+                    case GeneralCommandType.ToggleMute:
+                        return _device.ToggleMute();
+                    default:
+                        return Task.FromResult(true);
+                }
+            }
+
+            return Task.FromResult(true);
         }
     }
 }

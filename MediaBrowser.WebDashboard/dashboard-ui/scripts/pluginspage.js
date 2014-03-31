@@ -12,7 +12,7 @@
 
         var promise2 = $.getJSON("configurationpages?pageType=PluginConfiguration");
 
-        $.when(promise1, promise2).done(function(response1, response2) {
+        $.when(promise1, promise2).done(function (response1, response2) {
 
             PluginsPage.populateList(page, response1[0], response2[0]);
 
@@ -32,7 +32,7 @@
         for (var i = 0, length = plugins.length; i < length; i++) {
 
             var plugin = plugins[i];
-            
+
             var configPage = $.grep(pluginConfigurationPages, function (pluginConfigurationPage) {
                 return pluginConfigurationPage.PluginId == plugin.Id;
             })[0];
@@ -42,7 +42,7 @@
             if (configPage) {
                 html += "<a href='" + Dashboard.getConfigurationPageUrl(configPage.Name) + "'>";
             } else {
-                html += "<a onclick='Dashboard.alert(\"Nothing to configure.\");' href='#'>";
+                html += "<a onclick='Dashboard.alert(\"" + Globalize.translate("NoPluginConfigurationMessage") + "\");' href='#'>";
             }
 
             html += "<h3>" + plugin.Name + "</h3>";
@@ -51,18 +51,24 @@
 
             html += "</a>";
 
-            html += "<a data-id='" + plugin.Id + "' data-pluginname='" + plugin.Name + "' onclick='PluginsPage.deletePlugin(this);' href='#'>Delete</a>";
+            html += "<a data-id='" + plugin.Id + "' data-pluginname='" + plugin.Name + "' onclick='PluginsPage.deletePlugin(this);' href='#'>" + Globalize.translate("Delete") + "</a>";
 
             html += "</li>";
         }
 
-	    if (plugins.length == 0 || !plugins.length) {
-		    html += '<li style="padding:5px;">You have no plugins installed. Browse our <a href="plugincatalog.html">plugin catalog</a> to view available plugins.</li>';
-	        $('#ulInstalledPlugins', page).html(html);
-	    }else {
-	        $('#ulInstalledPlugins', page).html(html).listview('refresh');
-        }
+        if (!plugins.length) {
 
+            html += '<li style="padding:5px;">';
+            html += '<p>You have no plugins installed.</p>';
+            html += '<p><a href="plugincatalog.html">';
+            html += Globalize.translate("BrowsePluginCatalogMessage");
+            html += '</a></p>';
+            html += '</li>';
+
+            $('#ulInstalledPlugins', page).html(html);
+        } else {
+            $('#ulInstalledPlugins', page).html(html).listview('refresh');
+        }
 
         Dashboard.hideLoadingMsg();
     },
@@ -73,9 +79,9 @@
         var name = link.getAttribute('data-pluginname');
         var uniqueid = link.getAttribute('data-id');
 
-        var msg = "Are you sure you wish to uninstall " + name + "?";
+        var msg = Globalize.translate("UninstallPluginConfirmation").replace("{0}", name);
 
-        Dashboard.confirm(msg, "Uninstall Plugin", function (result) {
+        Dashboard.confirm(msg, Globalize.translate("UninstallPluginHeader"), function (result) {
 
             if (result) {
                 Dashboard.showLoadingMsg();

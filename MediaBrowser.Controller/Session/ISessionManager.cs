@@ -84,15 +84,15 @@ namespace MediaBrowser.Controller.Session
         Task ReportSessionEnded(Guid sessionId);
 
         /// <summary>
-        /// Sends the system command.
+        /// Sends the general command.
         /// </summary>
         /// <param name="controllingSessionId">The controlling session identifier.</param>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="sessionId">The session identifier.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSystemCommand(Guid controllingSessionId, Guid sessionId, SystemCommand command, CancellationToken cancellationToken);
-
+        Task SendGeneralCommand(Guid controllingSessionId, Guid sessionId, GeneralCommand command, CancellationToken cancellationToken);
+        
         /// <summary>
         /// Sends the message command.
         /// </summary>

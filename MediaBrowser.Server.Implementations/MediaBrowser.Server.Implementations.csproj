@@ -290,6 +290,17 @@
     <EmbeddedResource Include="Localization\JavaScript\en_US.json" />
     <EmbeddedResource Include="Localization\JavaScript\pt_PT.json" />
     <EmbeddedResource Include="Localization\Server\en_US.json" />
+    <EmbeddedResource Include="Localization\JavaScript\de.json" />
+    <EmbeddedResource Include="Localization\JavaScript\fr.json" />
+    <EmbeddedResource Include="Localization\JavaScript\nl.json" />
+    <EmbeddedResource Include="Localization\JavaScript\ru.json" />
+    <EmbeddedResource Include="Localization\JavaScript\zh_TW.json" />
+    <EmbeddedResource Include="Localization\Server\fr.json" />
+    <EmbeddedResource Include="Localization\Server\nl.json" />
+    <EmbeddedResource Include="Localization\Server\zh_TW.json" />
+    <EmbeddedResource Include="Localization\JavaScript\es.json" />
+    <EmbeddedResource Include="Localization\Server\es.json" />
+    <EmbeddedResource Include="Localization\Server\pt_BR.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

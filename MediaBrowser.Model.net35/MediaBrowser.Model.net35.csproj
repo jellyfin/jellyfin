@@ -415,8 +415,8 @@
     <Compile Include="..\MediaBrowser.Model\Session\BrowseRequest.cs">
       <Link>Session\BrowseRequest.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Session\GenericCommand.cs">
-      <Link>Session\GenericCommand.cs</Link>
+    <Compile Include="..\MediaBrowser.Model\Session\GeneralCommand.cs">
+      <Link>Session\GeneralCommand.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\MessageCommand.cs">
       <Link>Session\MessageCommand.cs</Link>
@@ -435,9 +435,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\SessionInfoDto.cs">
       <Link>Session\SessionInfoDto.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Session\SystemCommand.cs">
-      <Link>Session\SystemCommand.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\UserDataChangeInfo.cs">
       <Link>Session\UserDataChangeInfo.cs</Link>

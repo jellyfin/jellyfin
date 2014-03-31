@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
@@ -12,7 +13,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Server.Implementations.Localization
 {
@@ -334,9 +334,14 @@ namespace MediaBrowser.Server.Implementations.Localization
             return new List<LocalizatonOption>
             {
                 new LocalizatonOption{ Name="English (United States)", Value="en-us"},
+                new LocalizatonOption{ Name="Chinese Traditional", Value="zh-TW"},
+                new LocalizatonOption{ Name="Dutch", Value="nl"},
+                new LocalizatonOption{ Name="French", Value="fr"},
                 new LocalizatonOption{ Name="German", Value="de"},
+                new LocalizatonOption{ Name="Portuguese (Brazil)", Value="pt-BR"},
                 new LocalizatonOption{ Name="Portuguese (Portugal)", Value="pt-PT"},
-                new LocalizatonOption{ Name="Russian", Value="ru"}
+                new LocalizatonOption{ Name="Russian", Value="ru"},
+                new LocalizatonOption{ Name="Spanish", Value="es"}
 
             }.OrderBy(i => i.Name);
         }

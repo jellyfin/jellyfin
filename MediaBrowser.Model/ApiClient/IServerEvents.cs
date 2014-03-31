@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Session;
+using System;
 
 namespace MediaBrowser.Model.ApiClient
 {
@@ -66,7 +67,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Occurs when [system command].
         /// </summary>
-        event EventHandler<SystemCommandEventArgs> SystemCommand;
+        event EventHandler<GeneralCommandEventArgs> GeneralCommand;
         /// <summary>
         /// Occurs when [notification added].
         /// </summary>
