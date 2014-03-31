@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Serialization;
 using MoreLinq;
 using System;
 using System.Collections.Concurrent;
@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Server.Implementations.Localization
 {
@@ -33,15 +35,17 @@ namespace MediaBrowser.Server.Implementations.Localization
             new ConcurrentDictionary<string, Dictionary<string, ParentalRating>>(StringComparer.OrdinalIgnoreCase);
 
         private readonly IFileSystem _fileSystem;
-        
+        private readonly IJsonSerializer _jsonSerializer;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager"/> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
-        public LocalizationManager(IServerConfigurationManager configurationManager, IFileSystem fileSystem)
+        public LocalizationManager(IServerConfigurationManager configurationManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
         {
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
+            _jsonSerializer = jsonSerializer;
 
             ExtractAll();
         }
@@ -240,6 +244,109 @@ namespace MediaBrowser.Server.Implementations.Localization
             }
 
             return value == null ? (int?)null : value.Value;
+        }
+
+        public string GetLocalizedString(string phrase)
+        {
+            return GetLocalizedString(phrase, _configurationManager.Configuration.UICulture);
+        }
+
+        public string GetLocalizedString(string phrase, string culture)
+        {
+            var dictionary = GetLocalizationDictionary(culture);
+
+            string value;
+
+            if (dictionary.TryGetValue(phrase, out value))
+            {
+                return value;
+            }
+
+            return phrase;
+        }
+
+        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries =
+            new ConcurrentDictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+
+        public Dictionary<string, string> GetLocalizationDictionary(string culture)
+        {
+            const string prefix = "Server";
+            var key = prefix + culture;
+
+            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, "server.json"));
+        }
+
+        public Dictionary<string, string> GetJavaScriptLocalizationDictionary(string culture)
+        {
+            const string prefix = "JavaScript";
+            var key = prefix + culture;
+
+            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, "javascript.json"));
+        }
+
+        private Dictionary<string, string> GetDictionary(string prefix, string culture, string baseFilename)
+        {
+            var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            var assembly = GetType().Assembly;
+            var namespaceName = GetType().Namespace + "." + prefix;
+
+            CopyInto(dictionary, namespaceName + "." + baseFilename, assembly);
+            CopyInto(dictionary, namespaceName + "." + GetResourceFilename(culture), assembly);
+
+            return dictionary;
+        }
+
+        private void CopyInto(IDictionary<string, string> dictionary, string resourcePath, Assembly assembly)
+        {
+            using (var stream = assembly.GetManifestResourceStream(resourcePath))
+            {
+                if (stream != null)
+                {
+                    var dict = _jsonSerializer.DeserializeFromStream<Dictionary<string, string>>(stream);
+
+                    foreach (var key in dict.Keys)
+                    {
+                        dictionary[key] = dict[key];
+                    }
+                }
+            }
+        }
+
+        private string GetResourceFilename(string culture)
+        {
+            var parts = culture.Split('-');
+
+            if (parts.Length == 2)
+            {
+                culture = parts[0].ToLower() + "_" + parts[1].ToUpper();
+            }
+            else
+            {
+                culture = culture.ToLower();
+            }
+
+            return culture + ".json";
+        }
+
+        public IEnumerable<LocalizatonOption> GetLocalizationOptions()
+        {
+            return new List<LocalizatonOption>
+            {
+                new LocalizatonOption{ Name="English (United States)", Value="en-us"}
+            };
+        }
+
+        public string LocalizeDocument(string document, string culture, Func<string,string> tokenBuilder)
+        {
+            foreach (var pair in GetLocalizationDictionary(culture).ToList())
+            {
+                var token = tokenBuilder(pair.Key);
+
+                document = document.Replace(token, pair.Value, StringComparison.Ordinal);
+            }
+
+            return document;
         }
     }
 }

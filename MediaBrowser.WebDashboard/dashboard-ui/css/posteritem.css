@@ -161,6 +161,14 @@
         height: 144px;
     }
 
+.bannerPosterItem {
+    width: 280px;
+}
+
+    .bannerPosterItem .posterItemImage {
+        height: 51.8px;
+    }
+
 .posterItemProgress .itemProgressBar {
     height: 10px;
     width: 100%;
@@ -263,6 +271,14 @@
         .smallBackdropPosterItem .posterItemImage {
             height: 113.625px;
         }
+
+    .bannerPosterItem {
+        width: 300px;
+    }
+
+        .bannerPosterItem .posterItemImage {
+            height: 55.5px;
+        }
 }
 
 @media all and (min-width: 750px) {
@@ -273,6 +289,14 @@
 
         .portraitPosterItem .posterItemImage {
             height: 177px;
+        }
+
+    .bannerPosterItem {
+        width: 330px;
+    }
+
+        .bannerPosterItem .posterItemImage {
+            height: 61.05px;
         }
 }
 
@@ -301,6 +325,14 @@
     .storeReviewCount {
         display: inline;
     }
+
+    .bannerPosterItem {
+        width: 500px;
+    }
+
+        .bannerPosterItem .posterItemImage {
+            height: 92.5px;
+        }
 }
 
 @media all and (min-width: 1440px) {

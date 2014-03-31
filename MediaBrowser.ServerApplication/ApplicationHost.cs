@@ -170,7 +170,7 @@ namespace MediaBrowser.ServerApplication
 
         private ILiveTvManager LiveTvManager { get; set; }
 
-        private ILocalizationManager LocalizationManager { get; set; }
+        internal ILocalizationManager LocalizationManager { get; set; }
 
         private IEncodingManager EncodingManager { get; set; }
         private IChannelManager ChannelManager { get; set; }
@@ -421,6 +421,9 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance(ServerConfigurationManager);
 
+            LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer);
+            RegisterSingleInstance(LocalizationManager);
+
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
@@ -471,9 +474,6 @@ namespace MediaBrowser.ServerApplication
 
             ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager);
             RegisterSingleInstance(ServerManager);
-
-            LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager);
-            RegisterSingleInstance(LocalizationManager);
 
             var innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p => progress.Report((.75 * p) + 15));

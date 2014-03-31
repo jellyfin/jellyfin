@@ -103,8 +103,6 @@
                 $('#missingIndicator', page).hide();
             }
 
-            $(".autoNumeric").autoNumeric('init');
-
             setPeopleHeader(page, item);
 
             if (ApiClient.isWebSocketOpen()) {

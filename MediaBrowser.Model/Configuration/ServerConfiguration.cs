@@ -218,6 +218,8 @@ namespace MediaBrowser.Model.Configuration
         public string ServerName { get; set; }
         public string WanDdns { get; set; }
 
+        public string UICulture { get; set; }
+        
         public DlnaOptions DlnaOptions { get; set; }
 
         /// <summary>
@@ -281,6 +283,8 @@ namespace MediaBrowser.Model.Configuration
             MetadataOptions = options.ToArray();
 
             DlnaOptions = new DlnaOptions();
+
+            UICulture = "en-us";
         }
     }
 

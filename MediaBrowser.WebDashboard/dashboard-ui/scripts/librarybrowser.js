@@ -509,6 +509,15 @@
                     });
 
                 }
+                else if (options.preferBanner && item.ImageTags && item.ImageTags.Banner) {
+
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                        type: "Banner",
+                        maxwidth: 1200,
+                        tag: item.ImageTags.Banner
+                    });
+
+                }
                 else if (options.preferThumb && item.SeriesThumbImageTag) {
 
                     imgUrl = ApiClient.getImageUrl(item.SeriesId, {
@@ -1683,7 +1692,7 @@
         renderBudget: function (elem, item) {
             if (item.Budget) {
 
-                elem.show().html('Budget:&nbsp;&nbsp;$<span class="autoNumeric" data-a-pad="false">' + item.Budget + '</span>');
+                elem.show().html('Budget:&nbsp;&nbsp;$<span>' + item.Budget + '</span>');
             } else {
                 elem.hide();
             }
@@ -1692,7 +1701,7 @@
         renderRevenue: function (elem, item) {
             if (item.Revenue) {
 
-                elem.show().html('Revenue:&nbsp;&nbsp;$<span class="autoNumeric" data-a-pad="false">' + item.Revenue + '</span>');
+                elem.show().html('Revenue:&nbsp;&nbsp;$<span>' + item.Revenue + '</span>');
             } else {
                 elem.hide();
             }

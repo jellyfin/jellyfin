@@ -276,7 +276,7 @@ namespace MediaBrowser.Api.Playback.Hls
                                        ? 0
                                        : ((GetHlsVideoStream)state.VideoRequest).TimeStampOffsetMs;
 
-            var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds);
+            var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds.ToString(UsCulture));
 
             var threads = GetNumberOfThreads(state, false);
 

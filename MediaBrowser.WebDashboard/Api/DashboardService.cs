@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
@@ -15,6 +16,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using WebMarkupMin.Core.Minifiers;
+using WebMarkupMin.Core.Settings;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -96,6 +99,7 @@ namespace MediaBrowser.WebDashboard.Api
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
@@ -103,11 +107,12 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="appHost">The app host.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <param name="fileSystem">The file system.</param>
-        public DashboardService(IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, IFileSystem fileSystem)
+        public DashboardService(IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, IFileSystem fileSystem, ILocalizationManager localization)
         {
             _appHost = appHost;
             _serverConfigurationManager = serverConfigurationManager;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
         /// <summary>
@@ -148,7 +153,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), page.Plugin.AssemblyDateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream()));
+            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), page.Plugin.AssemblyDateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream(), null));
         }
 
         /// <summary>
@@ -210,13 +215,16 @@ namespace MediaBrowser.WebDashboard.Api
 
             var contentType = MimeTypes.GetMimeType(path);
 
+            var isHtml = IsHtml(path);
+            var localizationCulture = isHtml ? GetLocalizationCulture() : null;
+
             // Don't cache if not configured to do so
             // But always cache images to simulate production
-            if (!_serverConfigurationManager.Configuration.EnableDashboardResponseCaching && 
-                !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) && 
+            if (!_serverConfigurationManager.Configuration.EnableDashboardResponseCaching &&
+                !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) &&
                 !contentType.StartsWith("font/", StringComparison.OrdinalIgnoreCase))
             {
-                return ResultFactory.GetResult(GetResourceStream(path).Result, contentType);
+                return ResultFactory.GetResult(GetResourceStream(path, isHtml, localizationCulture).Result, contentType);
             }
 
             TimeSpan? cacheDuration = null;
@@ -230,17 +238,24 @@ namespace MediaBrowser.WebDashboard.Api
 
             var assembly = GetType().Assembly.GetName();
 
-            var cacheKey = (assembly.Version + path).GetMD5();
+            var cacheKey = (assembly.Version + (localizationCulture ?? string.Empty) + path).GetMD5();
 
-            return ResultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path));
+            return ResultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path, isHtml, localizationCulture));
+        }
+
+        private string GetLocalizationCulture()
+        {
+            return _serverConfigurationManager.Configuration.UICulture;
         }
 
         /// <summary>
         /// Gets the resource stream.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="isHtml">if set to <c>true</c> [is HTML].</param>
+        /// <param name="localizationCulture">The localization culture.</param>
         /// <returns>Task{Stream}.</returns>
-        private async Task<Stream> GetResourceStream(string path)
+        private async Task<Stream> GetResourceStream(string path, bool isHtml, string localizationCulture)
         {
             Stream resourceStream;
 
@@ -259,13 +274,11 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (resourceStream != null)
             {
-                var isHtml = IsHtml(path);
-
                 // Don't apply any caching for html pages
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
                 if (isHtml)
                 {
-                    resourceStream = await ModifyHtml(resourceStream).ConfigureAwait(false);
+                    resourceStream = await ModifyHtml(resourceStream, localizationCulture).ConfigureAwait(false);
                 }
             }
 
@@ -297,26 +310,48 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <param name="sourceStream">The source stream.</param>
         /// <returns>Task{Stream}.</returns>
-        internal async Task<Stream> ModifyHtml(Stream sourceStream)
+        private async Task<Stream> ModifyHtml(Stream sourceStream, string localizationCulture)
         {
-            string html;
-
-            using (var memoryStream = new MemoryStream())
+            using (sourceStream)
             {
-                await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                string html;
 
-                html = Encoding.UTF8.GetString(memoryStream.ToArray());
+                using (var memoryStream = new MemoryStream())
+                {
+                    await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+                    html = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+                    if (!string.IsNullOrWhiteSpace(localizationCulture))
+                    {
+                        html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
+                    }
+
+                    try
+                    {
+                        var minifier = new HtmlMinifier(new HtmlMinificationSettings(true));
+
+                        html = minifier.Minify(html).MinifiedContent;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error minifying html", ex);
+                    }
+                }
+
+                var version = GetType().Assembly.GetName().Version;
+
+                html = html.Replace("<head>", "<head>" + GetMetaTags() + GetCommonCss(version) + GetCommonJavascript(version));
+
+                var bytes = Encoding.UTF8.GetBytes(html);
+
+                return new MemoryStream(bytes);
             }
+        }
 
-            var version = GetType().Assembly.GetName().Version;
-
-            html = html.Replace("<head>", "<head>" + GetMetaTags() + GetCommonCss(version) + GetCommonJavascript(version));
-
-            var bytes = Encoding.UTF8.GetBytes(html);
-
-            sourceStream.Dispose();
-
-            return new MemoryStream(bytes);
+        private string GetLocalizationToken(string phrase)
+        {
+            return "${" + phrase + "}";
         }
 
         /// <summary>
@@ -393,152 +428,198 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{Stream}.</returns>
         private async Task<Stream> GetAllJavascript()
         {
-            var scriptFiles = new[]
-                                  {
-                                      "extensions.js",
-                                      "site.js",
-                                      "librarybrowser.js",
-                                      "librarylist.js",
-                                      "editorsidebar.js",
-                                      "librarymenu.js",
-                                      "chromecast.js",
-                                      "contextmenu.js",
-
-                                      "mediacontroller.js",
-                                      "mediaplayer.js",
-                                      "mediaplayer-video.js",
-
-                                      "ratingdialog.js",
-                                      "aboutpage.js",
-                                      "allusersettings.js",
-                                      "alphapicker.js",
-                                      "addpluginpage.js",
-                                      "advancedconfigurationpage.js",
-                                      "advancedpaths.js",
-                                      "advancedserversettings.js",
-                                      "metadataadvanced.js",
-                                      "appsplayback.js",
-                                      "appsweather.js",
-                                      "autoorganizetv.js",
-                                      "autoorganizelog.js",
-                                      "channels.js",
-                                      "channelitems.js",
-                                      "dashboardinfo.js",
-                                      "dashboardpage.js",
-                                      "directorybrowser.js",
-                                      "dlnaprofile.js",
-                                      "dlnaprofiles.js",
-                                      "dlnasettings.js",
-                                      "editcollectionitems.js",
-                                      "edititemmetadata.js",
-                                      "edititempeople.js",
-                                      "edititemimages.js",
-                                      "encodingsettings.js",
-                                      "gamesrecommendedpage.js",
-                                      "gamesystemspage.js",
-                                      "gamespage.js",
-                                      "gamegenrepage.js",
-                                      "gamestudiospage.js",
-                                      "indexpage.js",
-                                      "itembynamedetailpage.js",
-                                      "itemdetailpage.js",
-                                      "itemgallery.js",
-                                      "itemlistpage.js",
-                                      "librarypathmapping.js",
-                                      "libraryreport.js",
-                                      "librarysettings.js",
-                                      "livetvchannel.js",
-                                      "livetvchannels.js",
-                                      "livetvguide.js",
-                                      "livetvnewrecording.js",
-                                      "livetvprogram.js",
-                                      "livetvrecording.js",
-                                      "livetvrecordinglist.js",
-                                      "livetvrecordings.js",
-                                      "livetvtimer.js",
-                                      "livetvseriestimer.js",
-                                      "livetvseriestimers.js",
-                                      "livetvsettings.js",
-                                      "livetvsuggested.js",
-                                      "livetvstatus.js",
-                                      "livetvtimers.js",
-                                      "loginpage.js",
-                                      "logpage.js",
-                                      "medialibrarypage.js",
-                                      "metadataconfigurationpage.js",
-                                      "metadataimagespage.js",
-                                      "moviegenres.js",
-                                      "moviecollections.js",
-                                      "movies.js",
-                                      "movieslatest.js",
-                                      "moviepeople.js",
-                                      "moviesrecommended.js",
-                                      "moviestudios.js",
-                                      "movietrailers.js",
-                                      "musicalbums.js",
-                                      "musicalbumartists.js",
-                                      "musicartists.js",
-                                      "musicgenres.js",
-                                      "musicrecommended.js",
-                                      "musicvideos.js",
-                                      "notifications.js",
-                                      "playlist.js",
-                                      "plugincatalogpage.js",
-                                      "pluginspage.js",
-                                      "pluginupdatespage.js",
-                                      "remotecontrol.js",
-                                      "scheduledtaskpage.js",
-                                      "scheduledtaskspage.js",
-                                      "search.js",
-                                      "songs.js",
-                                      "supporterkeypage.js",
-                                      "supporterpage.js",
-                                      "episodes.js",
-                                      "tvgenres.js",
-                                      "tvlatest.js",
-                                      "tvpeople.js",
-                                      "tvrecommended.js",
-                                      "tvshows.js",
-                                      "tvstudios.js",
-                                      "tvupcoming.js",
-                                      "useredit.js",
-                                      "userpassword.js",
-                                      "userimagepage.js",
-                                      "userprofilespage.js",
-                                      "usersettings.js",
-                                      "userparentalcontrol.js",
-                                      "wizardfinishpage.js",
-                                      "wizardimagesettings.js",
-                                      "wizardservice.js",
-                                      "wizardstartpage.js",
-                                      "wizardsettings.js",
-                                      "wizarduserpage.js"
-                                  };
-
             var memoryStream = new MemoryStream();
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
+            // jQuery + jQuery mobile
             await AppendResource(memoryStream, "thirdparty/jquery-2.0.3.min.js", newLineBytes).ConfigureAwait(false);
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.2/jquery.mobile-1.4.2.min.js", newLineBytes).ConfigureAwait(false);
 
+            await AppendLocalization(memoryStream).ConfigureAwait(false);
+            await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
+
+            // Write the version string for the dashboard comparison function
             var versionString = string.Format("window.dashboardVersion='{0}';", _appHost.ApplicationVersion);
             var versionBytes = Encoding.UTF8.GetBytes(versionString);
 
             await memoryStream.WriteAsync(versionBytes, 0, versionBytes.Length).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
-            await AppendResource(memoryStream, "thirdparty/autonumeric/autoNumeric.min.js", newLineBytes).ConfigureAwait(false);
-            
+            var builder = new StringBuilder();
             var assembly = GetType().Assembly;
-            await AppendResource(assembly, memoryStream, "MediaBrowser.WebDashboard.ApiClient.js", newLineBytes).ConfigureAwait(false);
-
-            foreach (var file in scriptFiles)
+            using (var stream = assembly.GetManifestResourceStream("MediaBrowser.WebDashboard.ApiClient.js"))
             {
-                await AppendResource(memoryStream, "scripts/" + file, newLineBytes).ConfigureAwait(false);
+                using (var streamReader = new StreamReader(stream))
+                {
+                    var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+                    builder.Append(text);
+                    builder.Append(Environment.NewLine);
+                }
             }
+
+            foreach (var file in GetScriptFiles())
+            {
+                var path = GetDashboardResourcePath("scripts/" + file);
+
+                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                {
+                    using (var streamReader = new StreamReader(fs))
+                    {
+                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+                        builder.Append(text);
+                        builder.Append(Environment.NewLine);
+                    }
+                }
+            }
+
+            var js = builder.ToString();
+
+            try
+            {
+                var result = new CrockfordJsMinifier().Minify(js, false, Encoding.UTF8);
+
+                js = result.MinifiedContent;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error minifying javascript", ex);
+            }
+            
+            var bytes = Encoding.UTF8.GetBytes(js);
+            await memoryStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
 
             memoryStream.Position = 0;
             return memoryStream;
+        }
+
+        private IEnumerable<string> GetScriptFiles()
+        {
+            return new[]
+                            {
+                                "extensions.js",
+                                "site.js",
+                                "librarybrowser.js",
+                                "librarylist.js",
+                                "editorsidebar.js",
+                                "librarymenu.js",
+                                "chromecast.js",
+                                "contextmenu.js",
+
+                                "mediacontroller.js",
+                                "mediaplayer.js",
+                                "mediaplayer-video.js",
+
+                                "ratingdialog.js",
+                                "aboutpage.js",
+                                "allusersettings.js",
+                                "alphapicker.js",
+                                "addpluginpage.js",
+                                "advancedconfigurationpage.js",
+                                "advancedpaths.js",
+                                "advancedserversettings.js",
+                                "metadataadvanced.js",
+                                "appsplayback.js",
+                                "appsweather.js",
+                                "autoorganizetv.js",
+                                "autoorganizelog.js",
+                                "channels.js",
+                                "channelitems.js",
+                                "dashboardinfo.js",
+                                "dashboardpage.js",
+                                "directorybrowser.js",
+                                "dlnaprofile.js",
+                                "dlnaprofiles.js",
+                                "dlnasettings.js",
+                                "editcollectionitems.js",
+                                "edititemmetadata.js",
+                                "edititempeople.js",
+                                "edititemimages.js",
+                                "encodingsettings.js",
+                                "gamesrecommendedpage.js",
+                                "gamesystemspage.js",
+                                "gamespage.js",
+                                "gamegenrepage.js",
+                                "gamestudiospage.js",
+                                "indexpage.js",
+                                "itembynamedetailpage.js",
+                                "itemdetailpage.js",
+                                "itemgallery.js",
+                                "itemlistpage.js",
+                                "librarypathmapping.js",
+                                "libraryreport.js",
+                                "librarysettings.js",
+                                "livetvchannel.js",
+                                "livetvchannels.js",
+                                "livetvguide.js",
+                                "livetvnewrecording.js",
+                                "livetvprogram.js",
+                                "livetvrecording.js",
+                                "livetvrecordinglist.js",
+                                "livetvrecordings.js",
+                                "livetvtimer.js",
+                                "livetvseriestimer.js",
+                                "livetvseriestimers.js",
+                                "livetvsettings.js",
+                                "livetvsuggested.js",
+                                "livetvstatus.js",
+                                "livetvtimers.js",
+                                "loginpage.js",
+                                "logpage.js",
+                                "medialibrarypage.js",
+                                "metadataconfigurationpage.js",
+                                "metadataimagespage.js",
+                                "moviegenres.js",
+                                "moviecollections.js",
+                                "movies.js",
+                                "movieslatest.js",
+                                "moviepeople.js",
+                                "moviesrecommended.js",
+                                "moviestudios.js",
+                                "movietrailers.js",
+                                "musicalbums.js",
+                                "musicalbumartists.js",
+                                "musicartists.js",
+                                "musicgenres.js",
+                                "musicrecommended.js",
+                                "musicvideos.js",
+                                "notifications.js",
+                                "playlist.js",
+                                "plugincatalogpage.js",
+                                "pluginspage.js",
+                                "pluginupdatespage.js",
+                                "remotecontrol.js",
+                                "scheduledtaskpage.js",
+                                "scheduledtaskspage.js",
+                                "search.js",
+                                "songs.js",
+                                "supporterkeypage.js",
+                                "supporterpage.js",
+                                "episodes.js",
+                                "tvgenres.js",
+                                "tvlatest.js",
+                                "tvpeople.js",
+                                "tvrecommended.js",
+                                "tvshows.js",
+                                "tvstudios.js",
+                                "tvupcoming.js",
+                                "useredit.js",
+                                "userpassword.js",
+                                "userimagepage.js",
+                                "userprofilespage.js",
+                                "usersettings.js",
+                                "userparentalcontrol.js",
+                                "wizardfinishpage.js",
+                                "wizardimagesettings.js",
+                                "wizardservice.js",
+                                "wizardstartpage.js",
+                                "wizardsettings.js",
+                                "wizarduserpage.js"
+                            };
+        }
+
+        private async Task AppendLocalization(Stream stream)
+        {
+
         }
 
         /// <summary>
@@ -568,35 +649,40 @@ namespace MediaBrowser.WebDashboard.Api
                                       "icons.css"
                                   };
 
-            var memoryStream = new MemoryStream();
-
-            var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
+            var builder = new StringBuilder();
 
             foreach (var file in files)
             {
-                await AppendResource(memoryStream, "css/" + file, newLineBytes).ConfigureAwait(false);
+                var path = GetDashboardResourcePath("css/" + file);
+
+                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                {
+                    using (var streamReader = new StreamReader(fs))
+                    {
+                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+                        builder.Append(text);
+                        builder.Append(Environment.NewLine);
+                    }
+                }
             }
-            
+
+            var css = builder.ToString();
+
+            try
+            {
+                var result = new KristensenCssMinifier().Minify(builder.ToString(), false, Encoding.UTF8);
+
+                //css = result.MinifiedContent;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error minifying css", ex);
+            }
+
+            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(css));
+
             memoryStream.Position = 0;
             return memoryStream;
-        }
-
-        /// <summary>
-        /// Appends the resource.
-        /// </summary>
-        /// <param name="assembly">The assembly.</param>
-        /// <param name="outputStream">The output stream.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="newLineBytes">The new line bytes.</param>
-        /// <returns>Task.</returns>
-        private async Task AppendResource(Assembly assembly, Stream outputStream, string path, byte[] newLineBytes)
-        {
-            using (var stream = assembly.GetManifestResourceStream(path))
-            {
-                await stream.CopyToAsync(outputStream).ConfigureAwait(false);
-
-                await outputStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
-            }
         }
 
         /// <summary>
