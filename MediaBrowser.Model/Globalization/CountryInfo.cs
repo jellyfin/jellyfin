@@ -30,4 +30,10 @@ namespace MediaBrowser.Model.Globalization
         /// <value>The name of the three letter ISO region.</value>
         public string ThreeLetterISORegionName { get; set; }
     }
+
+    public class LocalizatonOption
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
 }

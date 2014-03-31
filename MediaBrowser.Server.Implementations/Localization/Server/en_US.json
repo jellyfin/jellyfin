@@ -1,0 +1,17 @@
+{
+	"LabelExit": "Exit",
+	"LabelVisitCommunity": "Visit Community",
+	"LabelGithubWiki": "Github Wiki",
+	"LabelSwagger": "Swagger",
+	"LabelStandard": "Standard",
+	"LabelViewApiDocumentation": "View Api Documentation",
+	"LabelBrowseLibrary": "Browse Library",
+	"LabelConfigureMediaBrowser": "Configure Media Browser",
+	"LabelOpenLibraryViewer": "Open Library Viewer",
+	"LabelRestartServer": "Restart Server",
+	"LabelShowLogWindow": "Show Log Window",
+	"LabelPrevious": "Previous",
+	"LabelFinish": "Finish",
+	"LabelNext": "Next",
+	"LabelYoureDone": "You're Done!"
+}

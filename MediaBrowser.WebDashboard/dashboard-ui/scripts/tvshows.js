@@ -39,6 +39,16 @@
                 
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
+            else if (view == "Banner") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "banner",
+                    preferBanner: true,
+                    context: 'tv'
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
             else if (view == "Poster") {
 
                 html = LibraryBrowser.getPosterViewHtml({

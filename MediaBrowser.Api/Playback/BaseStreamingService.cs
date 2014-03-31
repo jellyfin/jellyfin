@@ -1242,19 +1242,9 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 14)
                 {
-                    if (videoRequest != null)
-                    {
-                        videoRequest.Framerate = int.Parse(val, UsCulture);
-                    }
+                    request.StartTimeTicks = long.Parse(val, UsCulture);
                 }
                 else if (i == 15)
-                {
-                    if (videoRequest != null)
-                    {
-                        request.StartTimeTicks = long.Parse(val, UsCulture);
-                    }
-                }
-                else if (i == 16)
                 {
                     if (videoRequest != null)
                     {

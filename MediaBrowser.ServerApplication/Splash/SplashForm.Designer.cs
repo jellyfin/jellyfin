@@ -121,9 +121,9 @@
             this.lblStatus.Location = new System.Drawing.Point(3, 0);
             this.lblStatus.MaximumSize = new System.Drawing.Size(0, 100);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(599, 59);
+            this.lblStatus.Size = new System.Drawing.Size(469, 59);
             this.lblStatus.TabIndex = 0;
-            this.lblStatus.Text = "Loading Media Browser Server";
+            this.lblStatus.Text = "Loading Media Browser";
             this.lblStatus.UseWaitCursor = true;
             // 
             // panel1

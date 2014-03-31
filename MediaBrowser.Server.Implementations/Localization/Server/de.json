@@ -1,0 +1,17 @@
+{
+	"LabelExit": "Ende",
+	"LabelVisitCommunity": "Besuche die Community",
+	"LabelGithubWiki": "Github Wiki",
+	"LabelSwagger": "Swagger",
+	"LabelStandard": "Standard",
+	"LabelViewApiDocumentation": "Zeige Api Dokumentation",
+	"LabelBrowseLibrary": "Durchsuche Bibliothek",
+	"LabelConfigureMediaBrowser": "Konfiguriere Media Browser",
+	"LabelOpenLibraryViewer": "\u00d6ffne Bibliothekenansicht",
+	"LabelRestartServer": "Server neustarten",
+	"LabelShowLogWindow": "Zeige Log Fenster",
+	"LabelPrevious": "Vorheriges",
+	"LabelFinish": "Ende",
+	"LabelNext": "N\u00e4chstes",
+	"LabelYoureDone": "Du bist fertig!"
+}

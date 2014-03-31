@@ -1,0 +1,17 @@
+{
+	"LabelExit": "Sair",
+	"LabelVisitCommunity": "Visitar a Comunidade",
+	"LabelGithubWiki": "Wiki Github",
+	"LabelSwagger": "Swagger",
+	"LabelStandard": "Padr\u00e3o",
+	"LabelViewApiDocumentation": "Ver Documenta\u00e7\u00e3o da API",
+	"LabelBrowseLibrary": "Navegar na Biblioteca",
+	"LabelConfigureMediaBrowser": "Configurar Media Browser",
+	"LabelOpenLibraryViewer": "Abrir Visualizador da Biblioteca",
+	"LabelRestartServer": "Reiniciar Servidor",
+	"LabelShowLogWindow": "Mostrar Janela de Log",
+	"LabelPrevious": "Anterior",
+	"LabelFinish": "Terminar",
+	"LabelNext": "Seguinte",
+	"LabelYoureDone": "Concluiu!"
+}
