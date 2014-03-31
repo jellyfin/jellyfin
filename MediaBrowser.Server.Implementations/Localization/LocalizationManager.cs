@@ -333,8 +333,12 @@ namespace MediaBrowser.Server.Implementations.Localization
         {
             return new List<LocalizatonOption>
             {
-                new LocalizatonOption{ Name="English (United States)", Value="en-us"}
-            };
+                new LocalizatonOption{ Name="English (United States)", Value="en-us"},
+                new LocalizatonOption{ Name="German", Value="de"},
+                new LocalizatonOption{ Name="Portuguese (Portugal)", Value="pt-PT"},
+                new LocalizatonOption{ Name="Russian", Value="ru"}
+
+            }.OrderBy(i => i.Name);
         }
 
         public string LocalizeDocument(string document, string culture, Func<string,string> tokenBuilder)

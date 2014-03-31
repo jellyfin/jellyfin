@@ -1,5 +1,5 @@
 ﻿function IsStorageEnabled() {
-    
+
     if (!window.localStorage) {
         return false;
     }
@@ -36,7 +36,7 @@ $.fn.checked = function (value) {
     }
 };
 
-$.fn.buttonEnabled = function(enabled) {
+$.fn.buttonEnabled = function (enabled) {
 
     return enabled ? this.attr('disabled', '').removeAttr('disabled') : this.attr('disabled', 'disabled');
 };
@@ -132,8 +132,8 @@ var WebNotifications = {
             }
         }
     },
-    
-    supported: function() {
+
+    supported: function () {
         return window.Notification || window.webkitNotifications;
     }
 };
@@ -461,3 +461,19 @@ function ticks_to_human(str) {
     });
 
 })();
+
+(function (window) {
+
+    // Mimic Globalize api
+    // https://github.com/jquery/globalize
+    // Maybe later switch to it
+
+    window.Globalize = {
+        translate: function (key) {
+
+            return window.localizationGlossary[key] || key;
+
+        }
+    };
+
+})(window);

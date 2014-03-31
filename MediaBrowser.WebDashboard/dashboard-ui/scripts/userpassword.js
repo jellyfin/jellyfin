@@ -15,7 +15,7 @@
             } else {
                 $('#btnResetPassword', page).hide();
                 $('#fldCurrentPassword', page).hide();
-                $('.formheader', page).html('Create Password').show();
+                $('.formheader', page).html(Globalize.translate("CreatePassword")).show();
             }
 
         });
@@ -36,7 +36,7 @@
 
             Dashboard.hideLoadingMsg();
 
-            Dashboard.alert("Password saved.");
+            Dashboard.alert(Globalize.translate("PasswordSaved"));
             loadUser(page);
 
         });
@@ -53,7 +53,7 @@
 
             if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
 
-                Dashboard.showError("Password and password confirmation must match.");
+                Dashboard.showError(Globalize.translate("PasswordMatchError"));
                 return false;
             }
 
@@ -68,11 +68,11 @@
 
         self.resetPassword = function () {
 
-            var msg = "Are you sure you wish to reset the password?";
+            var msg = Globalize.translate("PasswordResetConfirmation");
 
             var page = $.mobile.activePage;
 
-            Dashboard.confirm(msg, "Password Reset", function (result) {
+            Dashboard.confirm(msg, Globalize.translate("PasswordResetHeader"), function (result) {
 
                 if (result) {
                     var userId = getParameterByName("userId");
@@ -84,10 +84,10 @@
                         Dashboard.hideLoadingMsg();
 
                         Dashboard.alert({
-                            message: "The password has been reset.",
-                            title: "Password Reset"
+                            message: Globalize.translate("PasswordResetComplete"),
+                            title: Globalize.translate("PasswordResetHeader")
                         });
-                        
+
                         loadUser(page);
 
                     });

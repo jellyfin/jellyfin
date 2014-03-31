@@ -1,0 +1,21 @@
+{
+	"SettingsSaved": "Configura\u00e7\u00f5es guardadas.",
+	"AddUser": "Adicionar Utilizador",
+	"Users": "Utilizadores",
+	"Delete": "Apagar",
+	"Administrator": "Administrador",
+	"Password": "Senha",
+	"CreatePassword": "Criar Senha",
+	"DeleteImage": "Apagar Imagem",
+	"DeleteImageConfirmation": "Tem a certeza que pretende apagar a imagem?",
+	"FileReadCancelled": "The file read has been cancelled.",
+	"FileNotFound": "Ficheiro n\u00e3o encontrado",
+	"FileReadError": "Ocorreu um erro ao ler o ficheiro.",
+	"DeleteUser": "Apagar Utilizador",
+	"DeleteUserConfirmation": "Tem a certeza que pretende apagar {0}?",
+	"PasswordResetHeader": "Password Reset",
+	"PasswordResetComplete": "The password has been reset.",
+	"PasswordResetConfirmation": "Are you sure you wish to reset the password?",
+	"PasswordSaved": "Senha guardada.",
+	"PasswordMatchError": "Password and password confirmation must match."
+}

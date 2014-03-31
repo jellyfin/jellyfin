@@ -257,8 +257,12 @@ namespace MediaBrowser.Server.Implementations.IO
                         InternalBufferSize = 32767
                     };
 
-                    newWatcher.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.DirectoryName |
-                                              NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size;
+                    newWatcher.NotifyFilter = NotifyFilters.CreationTime |
+                        NotifyFilters.DirectoryName |
+                        NotifyFilters.FileName |
+                        NotifyFilters.LastWrite |
+                        NotifyFilters.Size |
+                        NotifyFilters.Attributes;
 
                     newWatcher.Created += watcher_Changed;
                     newWatcher.Deleted += watcher_Changed;
