@@ -734,7 +734,9 @@ namespace MediaBrowser.Api.Playback
         {
             if (audioStream != null)
             {
-                if (audioStream.Channels > 2 && string.Equals(request.AudioCodec, "wma", StringComparison.OrdinalIgnoreCase))
+                var codec = request.AudioCodec ?? string.Empty;
+
+                if (audioStream.Channels > 2 && codec.IndexOf("wma", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     // wmav2 currently only supports two channel output
                     return 2;

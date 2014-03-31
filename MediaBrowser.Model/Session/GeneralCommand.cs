@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Session
 {
-    public class GenericCommand
+    public class GeneralCommand
     {
         public string Name { get; set; }
 
@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Session
 
         public Dictionary<string, string> Arguments { get; set; }
 
-        public GenericCommand()
+        public GeneralCommand()
         {
             Arguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
@@ -20,7 +20,7 @@ namespace MediaBrowser.Model.Session
     /// <summary>
     /// This exists simply to identify a set of known commands.
     /// </summary>
-    public enum CoreGenericCommand
+    public enum GeneralCommandType
     {
         MoveUp = 0,
         MoveDown = 1,

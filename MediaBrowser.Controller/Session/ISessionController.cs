@@ -20,14 +20,6 @@ namespace MediaBrowser.Controller.Session
         bool IsSessionActive { get; }
 
         /// <summary>
-        /// Sends the system command.
-        /// </summary>
-        /// <param name="command">The command.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SendSystemCommand(SystemCommand command, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Sends the message command.
         /// </summary>
         /// <param name="command">The command.</param>
@@ -65,7 +57,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendGenericCommand(GenericCommand command, CancellationToken cancellationToken);
+        Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken);
         
         /// <summary>
         /// Sends the library update info.

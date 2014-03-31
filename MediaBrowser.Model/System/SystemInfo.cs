@@ -117,6 +117,12 @@ namespace MediaBrowser.Model.System
         public string LogPath { get; set; }
 
         /// <summary>
+        /// Gets or sets the internal metadata path.
+        /// </summary>
+        /// <value>The internal metadata path.</value>
+        public string InternalMetadataPath { get; set; }
+        
+        /// <summary>
         /// Gets or sets the transcoding temporary path.
         /// </summary>
         /// <value>The transcoding temporary path.</value>

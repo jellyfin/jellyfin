@@ -17,5 +17,15 @@
 	"PasswordResetComplete": "The password has been reset.",
 	"PasswordResetConfirmation": "Are you sure you wish to reset the password?",
 	"PasswordSaved": "Password saved.",
-	"PasswordMatchError": "Password and password confirmation must match."
+	"PasswordMatchError": "Password and password confirmation must match.",
+	"OptionOff": "Off",
+	"OptionOn": "On",
+	"OptionRelease": "Release",
+	"OptionBeta": "Beta",
+	"OptionDev": "Dev",
+	"UninstallPluginHeader": "Uninstall Plugin",
+	"UninstallPluginConfirmation": "Are you sure you wish to uninstall {0}?",
+	"NoPluginConfigurationMessage": "This plugin has nothing to configure.",
+	"NoPluginsInstalledMessage": "You have no plugins installed.",
+	"BrowsePluginCatalogMessage": "Browse our plugin catalog to view available plugins."
 }

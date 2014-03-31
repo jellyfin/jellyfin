@@ -152,13 +152,13 @@ namespace MediaBrowser.Model.ApiClient
     /// <summary>
     /// Class SystemCommandEventArgs
     /// </summary>
-    public class SystemCommandEventArgs : EventArgs
+    public class GeneralCommandEventArgs : EventArgs
     {
         /// <summary>
         /// Gets or sets the command.
         /// </summary>
         /// <value>The command.</value>
-        public SystemCommand Command { get; set; }
+        public GeneralCommand Command { get; set; }
     }
 
     /// <summary>
