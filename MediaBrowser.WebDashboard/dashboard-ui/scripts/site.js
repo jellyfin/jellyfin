@@ -1288,6 +1288,8 @@ $(function () {
     videoPlayerHtml += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
     videoPlayerHtml += '</div>';
 
+    videoPlayerHtml += '<div id="video-basic-controls">';
+
     videoPlayerHtml += '<a id="video-playlistButton" class="mediaButton playlistButton" href="playlist.videoPlayerHtml" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="Playlist">Playlist</a>';
     videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
     videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">Play</button>';
@@ -1306,7 +1308,8 @@ $(function () {
     videoPlayerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
     videoPlayerHtml += '</div>';
 
-    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
+    videoPlayerHtml += '</div>'; // video-basic-controls
+    videoPlayerHtml += '<div id="video-advanced-controls">';
 
     videoPlayerHtml += '<button onclick="MediaPlayer.showQualityFlyout();" id="video-qualityButton" class="mediaButton qualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">Quality</button>';
     videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-qualityFlyout" style="display:none;" class="mediaPlayerFlyout"></div></div>';
@@ -1322,7 +1325,9 @@ $(function () {
 
     videoPlayerHtml += '<button onclick="CastPlayer.initializeLocalPlayer();CastPlayer.playMedia();" id="video-ccastButton" class="mediaButton videoCCastButton" title="Cast" type="button" data-icon="ccast" data-iconpos="notext" data-inline="true" style="display: none;">Cast</button>';
 
-    videoPlayerHtml += '<button onclick="MediaPlayer.toggleVideoPlayerMenu();" id="video-videoPlayerMenuButton" class="mediaButton videoPlayerMenuButton" title="Menu" type="button" data-icon="bars" data-iconpos="notext" data-inline="true">Menu</button>';
+    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
+
+    videoPlayerHtml += '</div>'; // video-advanced-controls
 
     videoPlayerHtml += '</div>'; // videoControls
 
