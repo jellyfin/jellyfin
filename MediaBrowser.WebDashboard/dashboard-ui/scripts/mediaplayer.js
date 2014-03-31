@@ -12,7 +12,7 @@
         var canClientSeek;
         var currentPlaylistIndex = 0;
 
-        self.curentDurationTicks = null;
+        self.currentDurationTicks = null;
         self.currentTimeElement = null;
         self.unmuteButton = null;
         self.muteButton = null;
@@ -200,12 +200,12 @@
 
             var timeText = Dashboard.getDisplayTime(ticks);
 
-            if (self.curentDurationTicks) {
+            if (self.currentDurationTicks) {
 
-                timeText += " / " + Dashboard.getDisplayTime(self.curentDurationTicks);
+                timeText += " / " + Dashboard.getDisplayTime(self.currentDurationTicks);
 
                 if (updateSlider) {
-                    var percent = ticks / self.curentDurationTicks;
+                    var percent = ticks / self.currentDurationTicks;
                     percent *= 100;
 
                     self.positionSlider.val(percent).slider('enable').slider('refresh');
@@ -446,7 +446,7 @@
 
                 videoPlayer(self, item, currentMediaSource, startPosition, user);
                 mediaElement = self.initVideoPlayer();
-                self.curentDurationTicks = currentMediaSource.RunTimeTicks;
+                self.currentDurationTicks = currentMediaSource.RunTimeTicks;
 
                 mediaControls = $("#videoControls");
 
@@ -458,7 +458,7 @@
                 mediaElement = playAudio(item, currentMediaSource, startPosition);
                 mediaControls.show();
 
-                self.curentDurationTicks = currentMediaSource.RunTimeTicks;
+                self.currentDurationTicks = currentMediaSource.RunTimeTicks;
 
             } else {
                 throw new Error("Unrecognized media type");

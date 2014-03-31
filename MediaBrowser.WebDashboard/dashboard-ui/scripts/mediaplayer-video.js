@@ -222,13 +222,13 @@
 
                 var pct = $(this).val();
 
-                var time = self.curentDurationTicks * (Number(pct) * .01);
+                var time = self.currentDurationTicks * (Number(pct) * .01);
 
                 var tooltext = Dashboard.getDisplayTime(time)
 
                 tooltip.text(tooltext);
 
-                console.log("slidin", pct, self.curentDurationTicks, time);
+                console.log("slidin", pct, self.currentDurationTicks, time);
 
             }).on("slidestart", function (e) {
                 trackChange = true;
