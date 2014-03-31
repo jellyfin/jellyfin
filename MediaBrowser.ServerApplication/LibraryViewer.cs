@@ -16,18 +16,16 @@ namespace MediaBrowser.ServerApplication
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ILibraryManager _libraryManager;
-        private readonly IDisplayPreferencesRepository _displayPreferencesManager;
         private readonly IItemRepository _itemRepository;
 
         private User _currentUser;
 
-        public LibraryViewer(IJsonSerializer jsonSerializer, IUserManager userManager, ILibraryManager libraryManager, IDisplayPreferencesRepository displayPreferencesManager, IItemRepository itemRepo)
+        public LibraryViewer(IJsonSerializer jsonSerializer, IUserManager userManager, ILibraryManager libraryManager, IItemRepository itemRepo)
         {
             InitializeComponent();
 
             _jsonSerializer = jsonSerializer;
             _libraryManager = libraryManager;
-            _displayPreferencesManager = displayPreferencesManager;
             _itemRepository = itemRepo;
 
             foreach (var user in userManager.Users)
@@ -44,7 +42,7 @@ namespace MediaBrowser.ServerApplication
             if (e.Node != null)
             {
                 var item = (BaseItem)e.Node.Tag;
-                lblType.Text = "Type: " + item.GetType().Name;
+                lblType.Text = item.GetType().Name;
 
                 var json = FormatJson(_jsonSerializer.SerializeToString(item));
 
