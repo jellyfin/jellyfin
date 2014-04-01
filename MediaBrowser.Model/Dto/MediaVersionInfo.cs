@@ -9,6 +9,8 @@ namespace MediaBrowser.Model.Dto
 
         public string Path { get; set; }
 
+        public string Container { get; set; }
+
         public LocationType LocationType { get; set; }
         
         public string Name { get; set; }

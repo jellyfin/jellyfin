@@ -70,6 +70,7 @@
     <Compile Include="PlayTo\PlayToServerEntryPoint.cs" />
     <Compile Include="PlayTo\ServiceAction.cs" />
     <Compile Include="Profiles\Foobar2000Profile.cs" />
+    <Compile Include="Profiles\Windows81Profile.cs" />
     <Compile Include="Ssdp\SsdpHelper.cs" />
     <Compile Include="PlayTo\SsdpHttpClient.cs" />
     <Compile Include="PlayTo\StateVariable.cs" />
@@ -78,7 +79,7 @@
     <Compile Include="PlayTo\TransportStateEventArgs.cs" />
     <Compile Include="PlayTo\uBaseObject.cs" />
     <Compile Include="PlayTo\uContainer.cs" />
-    <Compile Include="PlayTo\uIcon.cs" />
+    <Compile Include="PlayTo\DeviceIcon.cs" />
     <Compile Include="PlayTo\uParser.cs" />
     <Compile Include="PlayTo\uPnpNamespaces.cs" />
     <Compile Include="Profiles\DefaultProfile.cs" />

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Globalization;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
 using System;
@@ -453,10 +454,10 @@ namespace MediaBrowser.Dlna.PlayTo
             var volume = result.Document.Descendants(uPnpNamespaces.RenderingControl + "GetVolumeResponse").Select(i => i.Element("CurrentVolume")).FirstOrDefault(i => i != null);
             var volumeValue = volume == null ? null : volume.Value;
 
-            if (volumeValue == null)
+            if (string.IsNullOrWhiteSpace(volumeValue))
                 return;
 
-            Volume = Int32.Parse(volumeValue);
+            Volume = int.Parse(volumeValue, UsCulture);
 
             //Reset the Mute value if Volume is bigger than zero
             if (Volume > 0 && _muteVol > 0)
@@ -555,17 +556,17 @@ namespace MediaBrowser.Dlna.PlayTo
             var durationElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i != null);
             var duration = durationElem == null ? null : durationElem.Value;
 
-            if (duration != null)
+            if (!string.IsNullOrWhiteSpace(duration))
             {
-                Duration = TimeSpan.Parse(duration);
+                Duration = TimeSpan.Parse(duration, UsCulture);
             }
 
             var positionElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("RelTime")).FirstOrDefault(i => i != null);
             var position = positionElem == null ? null : positionElem.Value;
 
-            if (position != null)
+            if (!string.IsNullOrWhiteSpace(position))
             {
-                Position = TimeSpan.Parse(position);
+                Position = TimeSpan.Parse(position, UsCulture);
             }
 
             var track = result.Document.Descendants("TrackMetaData").Select(i => i.Value)
@@ -701,7 +702,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (icon != null)
             {
-                deviceProperties.Icon = uIcon.Create(icon);
+                deviceProperties.Icon = CreateIcon(icon);
             }
 
             var isRenderer = false;
@@ -745,6 +746,33 @@ namespace MediaBrowser.Dlna.PlayTo
         }
 
         #endregion
+
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        private static DeviceIcon CreateIcon(XElement element)
+        {
+            if (element == null)
+            {
+                throw new ArgumentNullException("element");
+            }
+
+            var mimeType = element.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype"));
+            var width = element.GetDescendantValue(uPnpNamespaces.ud.GetName("width"));
+            var height = element.GetDescendantValue(uPnpNamespaces.ud.GetName("height"));
+            var depth = element.GetDescendantValue(uPnpNamespaces.ud.GetName("depth"));
+            var url = element.GetDescendantValue(uPnpNamespaces.ud.GetName("url"));
+
+            var widthValue = int.Parse(width, NumberStyles.Any, UsCulture);
+            var heightValue = int.Parse(height, NumberStyles.Any, UsCulture);
+
+            return new DeviceIcon
+            {
+                Depth = depth,
+                Height = heightValue,
+                MimeType = mimeType,
+                Url = url,
+                Width = widthValue
+            };
+        }
 
         private static DeviceService Create(XElement element)
         {

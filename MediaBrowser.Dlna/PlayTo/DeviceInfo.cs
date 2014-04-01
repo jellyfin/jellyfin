@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Dlna;
 using System.Collections.Generic;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -46,7 +47,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public uIcon Icon { get; set; }
+        public DeviceIcon Icon { get; set; }
 
         private readonly List<DeviceService> _services = new List<DeviceService>();
         public List<DeviceService> Services

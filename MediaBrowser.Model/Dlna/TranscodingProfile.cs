@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Xml.Serialization;
 
-namespace MediaBrowser.Controller.Dlna
+namespace MediaBrowser.Model.Dlna
 {
     public class TranscodingProfile
     {
@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.Dlna
 
         public List<string> GetAudioCodecs()
         {
-            return (AudioCodec ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            return (AudioCodec ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
         }
     }
 
