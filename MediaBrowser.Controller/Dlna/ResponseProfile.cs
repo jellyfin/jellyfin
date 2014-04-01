@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 
 namespace MediaBrowser.Controller.Dlna
 {
-    public class MediaProfile
+    public class ResponseProfile
     {
         [XmlAttribute("container")]
         public string Container { get; set; }
@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Dlna
 
         public ProfileCondition[] Conditions { get; set; }
 
-        public MediaProfile()
+        public ResponseProfile()
         {
             Conditions = new ProfileCondition[] {};
         }

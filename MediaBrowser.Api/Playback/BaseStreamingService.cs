@@ -1492,21 +1492,9 @@ namespace MediaBrowser.Api.Playback
                 state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
                 state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
 
-                foreach (var setting in transcodingProfile.Settings)
+                if (state.VideoRequest != null && string.IsNullOrWhiteSpace(state.VideoRequest.Profile))
                 {
-                    switch (setting.Name)
-                    {
-                        case TranscodingSettingType.VideoProfile:
-                        {
-                            if (state.VideoRequest != null && string.IsNullOrWhiteSpace(state.VideoRequest.Profile))
-                            {
-                                state.VideoRequest.Profile = setting.Value;
-                            }
-                            break;
-                        }
-                        default:
-                            throw new ArgumentException("Unrecognized TranscodingSettingType");
-                    }
+                    state.VideoRequest.Profile = transcodingProfile.VideoProfile;
                 }
             }
         }
@@ -1523,12 +1511,6 @@ namespace MediaBrowser.Api.Playback
         {
             var timeSeek = GetHeader("TimeSeekRange.dlna.org");
 
-            if (!string.IsNullOrEmpty(timeSeek))
-            {
-                ResultFactory.ThrowError(406, "Time seek not supported during encoding.", responseHeaders);
-                return;
-            }
-
             var transferMode = GetHeader("transferMode.dlna.org");
             responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
             responseHeaders["realTimeInfo.dlna.org"] = "DLNA.ORG_TLAG=*";
@@ -1537,7 +1519,13 @@ namespace MediaBrowser.Api.Playback
             var extension = GetOutputFileExtension(state);
 
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
-            var orgOp = isStaticallyStreamed || state.TranscodeSeekInfo == TranscodeSeekInfo.Bytes ? ";DLNA.ORG_OP=01" : ";DLNA.ORG_OP=00";
+            var orgOp = ";DLNA.ORG_OP=";
+
+            // Time-based seeking currently only possible when transcoding
+            orgOp += isStaticallyStreamed ? "0" : "1";
+
+            // Byte-based seeking only possible when not transcoding
+            orgOp += isStaticallyStreamed || state.TranscodeSeekInfo == TranscodeSeekInfo.Bytes ? "1" : "0";
 
             // 0 = native, 1 = transcoded
             var orgCi = isStaticallyStreamed ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
