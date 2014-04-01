@@ -41,6 +41,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
+        private readonly IMusicManager _musicManager;
 
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -564,7 +565,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             return playedToCompletion;
         }
-        
+
         /// <summary>
         /// Updates playstate position for an item but does not save
         /// </summary>
@@ -660,38 +661,59 @@ namespace MediaBrowser.Server.Implementations.Session
             return session;
         }
 
-        public Task SendSystemCommand(Guid controllingSessionId, Guid sessionId, SystemCommand command, CancellationToken cancellationToken)
-        {
-            var session = GetSessionForRemoteControl(sessionId);
-
-            var controllingSession = GetSession(controllingSessionId);
-            AssertCanControl(session, controllingSession);
-            
-            return session.SessionController.SendSystemCommand(command, cancellationToken);
-        }
-
         public Task SendMessageCommand(Guid controllingSessionId, Guid sessionId, MessageCommand command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
             var controllingSession = GetSession(controllingSessionId);
             AssertCanControl(session, controllingSession);
-            
+
             return session.SessionController.SendMessageCommand(command, cancellationToken);
+        }
+
+        public Task SendGeneralCommand(Guid controllingSessionId, Guid sessionId, GeneralCommand command, CancellationToken cancellationToken)
+        {
+            var session = GetSessionForRemoteControl(sessionId);
+
+            var controllingSession = GetSession(controllingSessionId);
+            AssertCanControl(session, controllingSession);
+
+            return session.SessionController.SendGeneralCommand(command, cancellationToken);
         }
 
         public Task SendPlayCommand(Guid controllingSessionId, Guid sessionId, PlayRequest command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
-            var items = command.ItemIds.Select(i => _libraryManager.GetItemById(new Guid(i)))
-                .Where(i => i.LocationType != LocationType.Virtual)
-                .ToList();
+            var user = session.UserId.HasValue ? _userManager.GetUserById(session.UserId.Value) : null;
 
-            if (session.UserId.HasValue)
+            List<BaseItem> items;
+
+            if (command.PlayCommand == PlayCommand.PlayInstantMix)
             {
-                var user = _userManager.GetUserById(session.UserId.Value);
+                items = command.ItemIds.SelectMany(i => TranslateItemForInstantMix(i, user))
+                    .Where(i => i.LocationType != LocationType.Virtual)
+                    .ToList();
 
+                command.PlayCommand = PlayCommand.PlayNow;
+            }
+            else
+            {
+                items = command.ItemIds.SelectMany(i => TranslateItemForPlayback(i, user))
+                   .Where(i => i.LocationType != LocationType.Virtual)
+                   .ToList();
+            }
+
+            if (command.PlayCommand == PlayCommand.PlayShuffle)
+            {
+                items = items.OrderBy(i => Guid.NewGuid()).ToList();
+                command.PlayCommand = PlayCommand.PlayNow;
+            }
+
+            command.ItemIds = items.Select(i => i.Id.ToString("N")).ToArray();
+
+            if (user != null)
+            {
                 if (items.Any(i => i.GetPlayAccess(user) != PlayAccess.Full))
                 {
                     throw new ArgumentException(string.Format("{0} is not allowed to play media.", user.Name));
@@ -723,13 +745,69 @@ namespace MediaBrowser.Server.Implementations.Session
             return session.SessionController.SendPlayCommand(command, cancellationToken);
         }
 
+        private IEnumerable<BaseItem> TranslateItemForPlayback(string id, User user)
+        {
+            var item = _libraryManager.GetItemById(new Guid(id));
+
+            if (item.IsFolder)
+            {
+                var folder = (Folder)item;
+
+                var items = user == null ? folder.RecursiveChildren :
+                    folder.GetRecursiveChildren(user);
+
+                items = items.Where(i => !i.IsFolder);
+
+                items = items.OrderBy(i => i.SortName);
+
+                return items;
+            }
+
+            return new[] { item };
+        }
+
+        private IEnumerable<BaseItem> TranslateItemForInstantMix(string id, User user)
+        {
+            var item = _libraryManager.GetItemById(new Guid(id));
+
+            var audio = item as Audio;
+
+            if (audio != null)
+            {
+                return _musicManager.GetInstantMixFromSong(audio, user);
+            }
+
+            var artist = item as MusicArtist;
+
+            if (artist != null)
+            {
+                return _musicManager.GetInstantMixFromArtist(artist.Name, user);
+            }
+
+            var album = item as MusicAlbum;
+
+            if (album != null)
+            {
+                return _musicManager.GetInstantMixFromAlbum(album, user);
+            }
+
+            var genre = item as MusicGenre;
+
+            if (genre != null)
+            {
+                return _musicManager.GetInstantMixFromGenres(new[] { genre.Name }, user);
+            }
+
+            return new BaseItem[] { };
+        }
+
         public Task SendBrowseCommand(Guid controllingSessionId, Guid sessionId, BrowseRequest command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
             var controllingSession = GetSession(controllingSessionId);
             AssertCanControl(session, controllingSession);
-            
+
             return session.SessionController.SendBrowseCommand(command, cancellationToken);
         }
 

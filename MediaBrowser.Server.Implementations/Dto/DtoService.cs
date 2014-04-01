@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
@@ -1064,7 +1065,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.AlbumPrimaryImageTag = GetImageCacheTag(albumParent, ImageType.Primary);
                 }
 
-                dto.MediaSources = GetMediaSources(audio);
+                dto.MediaSources = GetAudioMediaSources(audio);
                 dto.MediaSourceCount = 1;
             }
 
@@ -1100,7 +1101,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (fields.Contains(ItemFields.MediaSources))
                 {
-                    dto.MediaSources = GetMediaSources(video);
+                    dto.MediaSources = GetVideoMediaSources(video);
                 }
 
                 if (fields.Contains(ItemFields.Chapters))
@@ -1266,9 +1267,48 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 SetBookProperties(dto, book);
             }
+
+            var tvChannel = item as LiveTvChannel;
+
+            if (tvChannel != null)
+            {
+                dto.MediaSources = GetMediaSources(tvChannel);
+            }
         }
 
-        private List<MediaSourceInfo> GetMediaSources(Video item)
+        public List<MediaSourceInfo> GetMediaSources(BaseItem item)
+        {
+            var video = item as Video;
+
+            if (video != null)
+            {
+                return GetVideoMediaSources(video);
+            }
+
+            var audio = item as Audio;
+
+            if (audio != null)
+            {
+                return GetAudioMediaSources(audio);
+            }
+
+            var result = new List<MediaSourceInfo>
+            {
+                new MediaSourceInfo
+                {
+                    Id = item.Id.ToString("N"),
+                    LocationType = item.LocationType,
+                    Name = item.Name,
+                    Path = GetMappedPath(item),
+                    MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = item.Id }).ToList(),
+                    RunTimeTicks = item.RunTimeTicks
+                }            
+            };
+
+            return result;
+        }
+
+        private List<MediaSourceInfo> GetVideoMediaSources(Video item)
         {
             var result = item.GetAlternateVersions().Select(GetVersionInfo).ToList();
 
@@ -1293,11 +1333,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             .ToList();
         }
 
-        private List<MediaSourceInfo> GetMediaSources(Audio item)
+        private List<MediaSourceInfo> GetAudioMediaSources(Audio item)
         {
             var result = new List<MediaSourceInfo>
             {
-                GetVersionInfo(item, true)
+                GetVersionInfo(item)
             };
 
             return result;
@@ -1321,7 +1361,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             };
         }
 
-        private MediaSourceInfo GetVersionInfo(Audio i, bool isPrimary)
+        private MediaSourceInfo GetVersionInfo(Audio i)
         {
             return new MediaSourceInfo
             {

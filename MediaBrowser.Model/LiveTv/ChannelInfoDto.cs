@@ -33,6 +33,8 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The external identifier.</value>
         public string ExternalId { get; set; }
 
+        public List<MediaSourceInfo> MediaSources { get; set; }
+        
         /// <summary>
         /// Gets or sets the image tags.
         /// </summary>
@@ -112,6 +114,7 @@ namespace MediaBrowser.Model.LiveTv
         public ChannelInfoDto()
         {
             ImageTags = new Dictionary<ImageType, Guid>();
+            MediaSources = new List<MediaSourceInfo>();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

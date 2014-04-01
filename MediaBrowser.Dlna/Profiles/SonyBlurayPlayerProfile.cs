@@ -206,9 +206,9 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
-            MediaProfiles = new[]
+            ResponseProfiles = new[]
             {
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "ts",
                     VideoCodec = "h264,mpeg4,vc1",
@@ -218,42 +218,42 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "avi",
                     MimeType = "video/mpeg",
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "mkv",
                     MimeType = "video/vnd.dlna.mpeg-tts",
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "ts",
                     MimeType = "video/vnd.dlna.mpeg-tts",
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "mp4",
                     MimeType = "video/mpeg",
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "mpeg",
                     MimeType = "video/mpeg",
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "mp3",
                     MimeType = "audio/mpeg",

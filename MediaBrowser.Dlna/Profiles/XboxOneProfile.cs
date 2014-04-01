@@ -42,9 +42,9 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
-            MediaProfiles = new[]
+            ResponseProfiles = new[]
             {
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "avi",
                     MimeType = "video/x-msvideo",

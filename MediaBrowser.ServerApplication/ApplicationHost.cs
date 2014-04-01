@@ -170,7 +170,7 @@ namespace MediaBrowser.ServerApplication
 
         private ILiveTvManager LiveTvManager { get; set; }
 
-        private ILocalizationManager LocalizationManager { get; set; }
+        internal ILocalizationManager LocalizationManager { get; set; }
 
         private IEncodingManager EncodingManager { get; set; }
         private IChannelManager ChannelManager { get; set; }
@@ -421,6 +421,9 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance(ServerConfigurationManager);
 
+            LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer);
+            RegisterSingleInstance(LocalizationManager);
+
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
@@ -449,6 +452,8 @@ namespace MediaBrowser.ServerApplication
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager);
             RegisterSingleInstance(LibraryManager);
 
+            RegisterSingleInstance<IMusicManager>(new MusicManager(LibraryManager));
+
             LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(LibraryMonitor);
 
@@ -469,9 +474,6 @@ namespace MediaBrowser.ServerApplication
 
             ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager);
             RegisterSingleInstance(ServerManager);
-
-            LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager);
-            RegisterSingleInstance(LocalizationManager);
 
             var innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p => progress.Report((.75 * p) + 15));
@@ -503,7 +505,7 @@ namespace MediaBrowser.ServerApplication
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);
 
-            var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("DLNA"));
+            var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("DLNA"), JsonSerializer);
             RegisterSingleInstance<IDlnaManager>(dlnaManager);
 
             var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);
@@ -877,6 +879,7 @@ namespace MediaBrowser.ServerApplication
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 LogPath = ApplicationPaths.LogDirectoryPath,
                 ItemsByNamePath = ApplicationPaths.ItemsByNamePath,
+                InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
                 CachePath = ApplicationPaths.CachePath,
                 MacAddress = GetMacAddress(),
                 HttpServerPortNumber = HttpServerPort,

@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -41,6 +42,7 @@ namespace MediaBrowser.ServerApplication
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IDisplayPreferencesRepository _displayPreferencesManager;
         private readonly IItemRepository _itemRepository;
+        private readonly ILocalizationManager _localization;
         private LogForm _logForm;
 
         public bool Visible
@@ -56,10 +58,17 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        public ServerNotifyIcon(ILogManager logManager, IServerApplicationHost appHost, IServerConfigurationManager configurationManager, IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer, IDisplayPreferencesRepository displayPreferencesManager, IItemRepository itemRepo)
+        public ServerNotifyIcon(ILogManager logManager, 
+            IServerApplicationHost appHost, 
+            IServerConfigurationManager configurationManager, 
+            IUserManager userManager, ILibraryManager libraryManager, 
+            IJsonSerializer jsonSerializer, 
+            IDisplayPreferencesRepository displayPreferencesManager, 
+            IItemRepository itemRepo, ILocalizationManager localization)
         {
             _logger = logManager.GetLogger("MainWindow");
             _itemRepository = itemRepo;
+            _localization = localization;
             _appHost = appHost;
             _logManager = logManager;
             _configurationManager = configurationManager;
@@ -118,20 +127,17 @@ namespace MediaBrowser.ServerApplication
             // 
             cmdExit.Name = "cmdExit";
             cmdExit.Size = new System.Drawing.Size(208, 22);
-            cmdExit.Text = "Exit";
             // 
             // cmdCommunity
             // 
             cmdCommunity.Name = "cmdCommunity";
             cmdCommunity.Size = new System.Drawing.Size(208, 22);
-            cmdCommunity.Text = "Visit Community";
             // 
             // cmdLogWindow
             // 
             cmdLogWindow.CheckOnClick = true;
             cmdLogWindow.Name = "cmdLogWindow";
             cmdLogWindow.Size = new System.Drawing.Size(208, 22);
-            cmdLogWindow.Text = "Show Log Window";
             // 
             // toolStripSeparator1
             // 
@@ -142,13 +148,11 @@ namespace MediaBrowser.ServerApplication
             // 
             cmdRestart.Name = "cmdRestart";
             cmdRestart.Size = new System.Drawing.Size(208, 22);
-            cmdRestart.Text = "Restart Server";
             // 
             // cmdLibraryExplorer
             // 
             cmdLibraryExplorer.Name = "cmdLibraryExplorer";
             cmdLibraryExplorer.Size = new System.Drawing.Size(208, 22);
-            cmdLibraryExplorer.Text = "Open Library Explorer";
             // 
             // toolStripSeparator2
             // 
@@ -159,13 +163,11 @@ namespace MediaBrowser.ServerApplication
             // 
             cmdConfigure.Name = "cmdConfigure";
             cmdConfigure.Size = new System.Drawing.Size(208, 22);
-            cmdConfigure.Text = "Configure Media Browser";
             // 
             // cmdBrowse
             // 
             cmdBrowse.Name = "cmdBrowse";
             cmdBrowse.Size = new System.Drawing.Size(208, 22);
-            cmdBrowse.Text = "Browse Library";
             // 
             // cmdApiDocs
             // 
@@ -175,25 +177,21 @@ namespace MediaBrowser.ServerApplication
             cmdGtihub});
             cmdApiDocs.Name = "cmdApiDocs";
             cmdApiDocs.Size = new System.Drawing.Size(208, 22);
-            cmdApiDocs.Text = "View Api Documentation";
             // 
             // cmdStandardDocs
             // 
             cmdStandardDocs.Name = "cmdStandardDocs";
             cmdStandardDocs.Size = new System.Drawing.Size(136, 22);
-            cmdStandardDocs.Text = "Standard";
             // 
             // cmdSwagger
             // 
             cmdSwagger.Name = "cmdSwagger";
             cmdSwagger.Size = new System.Drawing.Size(136, 22);
-            cmdSwagger.Text = "Swagger";
             // 
             // cmdGtihub
             // 
             cmdGtihub.Name = "cmdGtihub";
             cmdGtihub.Size = new System.Drawing.Size(136, 22);
-            cmdGtihub.Text = "Github Wiki";
 
             cmdExit.Click += cmdExit_Click;
             cmdRestart.Click += cmdRestart_Click;
@@ -211,6 +209,8 @@ namespace MediaBrowser.ServerApplication
             _logManager.LoggerLoaded += LoadLogWindow;
             _configurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
 
+            LocalizeText();
+
             if (_appHost.IsFirstRun)
             {
                 Action action = () => notifyIcon1.ShowBalloonTip(5000, "Media Browser", "Welcome to Media Browser Server!", ToolTipIcon.Info);
@@ -219,6 +219,24 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        private void LocalizeText()
+        {
+            _uiCulture = _configurationManager.Configuration.UICulture;
+
+            cmdExit.Text = _localization.GetLocalizedString("LabelExit");
+            cmdCommunity.Text = _localization.GetLocalizedString("LabelVisitCommunity");
+            cmdGtihub.Text = _localization.GetLocalizedString("LabelGithubWiki");
+            cmdSwagger.Text = _localization.GetLocalizedString("LabelSwagger");
+            cmdStandardDocs.Text = _localization.GetLocalizedString("LabelStandard");
+            cmdApiDocs.Text = _localization.GetLocalizedString("LabelViewApiDocumentation");
+            cmdBrowse.Text = _localization.GetLocalizedString("LabelBrowseLibrary");
+            cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureMediaBrowser");
+            cmdLibraryExplorer.Text = _localization.GetLocalizedString("LabelOpenLibraryViewer");
+            cmdRestart.Text = _localization.GetLocalizedString("LabelRestartServer");
+            cmdLogWindow.Text = _localization.GetLocalizedString("LabelShowLogWindow");
+        }
+
+        private string _uiCulture;
         /// <summary>
         /// Handles the ConfigurationUpdated event of the Instance control.
         /// </summary>
@@ -226,6 +244,12 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void Instance_ConfigurationUpdated(object sender, EventArgs e)
         {
+            if (!string.Equals(_configurationManager.Configuration.UICulture, _uiCulture,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                LocalizeText();
+            }
+
             Action action = () =>
             {
                 var isLogWindowOpen = _logForm != null;
@@ -307,7 +331,7 @@ namespace MediaBrowser.ServerApplication
 
         void cmdLibraryExplorer_Click(object sender, EventArgs e)
         {
-            new LibraryViewer(_jsonSerializer, _userManager, _libraryManager, _displayPreferencesManager, _itemRepository).Show();
+            new LibraryViewer(_jsonSerializer, _userManager, _libraryManager, _itemRepository).Show();
         }
 
         void cmdRestart_Click(object sender, EventArgs e)

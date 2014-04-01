@@ -734,7 +734,9 @@ namespace MediaBrowser.Api.Playback
         {
             if (audioStream != null)
             {
-                if (audioStream.Channels > 2 && string.Equals(request.AudioCodec, "wma", StringComparison.OrdinalIgnoreCase))
+                var codec = request.AudioCodec ?? string.Empty;
+
+                if (audioStream.Channels > 2 && codec.IndexOf("wma", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     // wmav2 currently only supports two channel output
                     return 2;
@@ -835,11 +837,6 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetInputArgument(StreamState state)
         {
-            if (state.SendInputOverStandardInput)
-            {
-                return "-";
-            }
-
             var type = InputType.File;
 
             var inputPath = new[] { state.MediaPath };
@@ -898,9 +895,7 @@ namespace MediaBrowser.Api.Playback
                     Arguments = commandLineArgs,
 
                     WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false,
-
-                    RedirectStandardInput = state.SendInputOverStandardInput
+                    ErrorDialog = false
                 },
 
                 EnableRaisingEvents = true
@@ -933,11 +928,6 @@ namespace MediaBrowser.Api.Playback
                 throw;
             }
 
-            if (state.SendInputOverStandardInput)
-            {
-                StreamToStandardInput(process, state);
-            }
-
             // MUST read both stdout and stderr asynchronously or a deadlock may occurr
             process.BeginOutputReadLine();
 
@@ -962,32 +952,6 @@ namespace MediaBrowser.Api.Playback
             if (state.IsRemote)
             {
                 await Task.Delay(3000).ConfigureAwait(false);
-            }
-        }
-
-        private async void StreamToStandardInput(Process process, StreamState state)
-        {
-            try
-            {
-                await StreamToStandardInputInternal(process, state).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                Logger.Debug("Stream to standard input closed normally.");
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error writing to standard input", ex);
-            }
-        }
-
-        private async Task StreamToStandardInputInternal(Process process, StreamState state)
-        {
-            state.StandardInputCancellationTokenSource = new CancellationTokenSource();
-
-            using (var fileStream = FileSystem.GetFileStream(state.MediaPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-            {
-                await new EndlessStreamCopy().CopyStream(fileStream, process.StandardInput.BaseStream, state.StandardInputCancellationTokenSource.Token).ConfigureAwait(false);
             }
         }
 
@@ -1280,19 +1244,9 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 14)
                 {
-                    if (videoRequest != null)
-                    {
-                        videoRequest.Framerate = int.Parse(val, UsCulture);
-                    }
+                    request.StartTimeTicks = long.Parse(val, UsCulture);
                 }
                 else if (i == 15)
-                {
-                    if (videoRequest != null)
-                    {
-                        request.StartTimeTicks = long.Parse(val, UsCulture);
-                    }
-                }
-                else if (i == 16)
                 {
                     if (videoRequest != null)
                     {
@@ -1313,11 +1267,6 @@ namespace MediaBrowser.Api.Playback
             if (!string.IsNullOrWhiteSpace(request.Params))
             {
                 ParseParams(request);
-            }
-
-            if (request.ThrowDebugError)
-            {
-                throw new InvalidOperationException("You asked for a debug error, you got one.");
             }
 
             var user = AuthorizationRequestFilterAttribute.GetCurrentUser(Request, UserManager);
@@ -1369,8 +1318,6 @@ namespace MediaBrowser.Api.Playback
                 {
                     state.MediaPath = path;
                     state.IsRemote = false;
-
-                    state.SendInputOverStandardInput = recording.RecordingInfo.Status == RecordingStatus.InProgress;
                 }
                 else if (!string.IsNullOrEmpty(mediaUrl))
                 {
@@ -1378,7 +1325,8 @@ namespace MediaBrowser.Api.Playback
                     state.IsRemote = true;
                 }
 
-                //state.RunTimeTicks = recording.RunTimeTicks;
+                state.RunTimeTicks = recording.RunTimeTicks;
+
                 if (recording.RecordingInfo.Status == RecordingStatus.InProgress && !state.IsRemote)
                 {
                     await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
@@ -1544,21 +1492,9 @@ namespace MediaBrowser.Api.Playback
                 state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
                 state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
 
-                foreach (var setting in transcodingProfile.Settings)
+                if (state.VideoRequest != null && string.IsNullOrWhiteSpace(state.VideoRequest.Profile))
                 {
-                    switch (setting.Name)
-                    {
-                        case TranscodingSettingType.VideoProfile:
-                        {
-                            if (state.VideoRequest != null && string.IsNullOrWhiteSpace(state.VideoRequest.Profile))
-                            {
-                                state.VideoRequest.Profile = setting.Value;
-                            }
-                            break;
-                        }
-                        default:
-                            throw new ArgumentException("Unrecognized TranscodingSettingType");
-                    }
+                    state.VideoRequest.Profile = transcodingProfile.VideoProfile;
                 }
             }
         }
@@ -1575,12 +1511,6 @@ namespace MediaBrowser.Api.Playback
         {
             var timeSeek = GetHeader("TimeSeekRange.dlna.org");
 
-            if (!string.IsNullOrEmpty(timeSeek))
-            {
-                ResultFactory.ThrowError(406, "Time seek not supported during encoding.", responseHeaders);
-                return;
-            }
-
             var transferMode = GetHeader("transferMode.dlna.org");
             responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
             responseHeaders["realTimeInfo.dlna.org"] = "DLNA.ORG_TLAG=*";
@@ -1589,7 +1519,13 @@ namespace MediaBrowser.Api.Playback
             var extension = GetOutputFileExtension(state);
 
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
-            var orgOp = isStaticallyStreamed || state.TranscodeSeekInfo == TranscodeSeekInfo.Bytes ? ";DLNA.ORG_OP=01" : ";DLNA.ORG_OP=00";
+            var orgOp = ";DLNA.ORG_OP=";
+
+            // Time-based seeking currently only possible when transcoding
+            orgOp += isStaticallyStreamed ? "0" : "1";
+
+            // Byte-based seeking only possible when not transcoding
+            orgOp += isStaticallyStreamed || state.TranscodeSeekInfo == TranscodeSeekInfo.Bytes ? "1" : "0";
 
             // 0 = native, 1 = transcoded
             var orgCi = isStaticallyStreamed ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";

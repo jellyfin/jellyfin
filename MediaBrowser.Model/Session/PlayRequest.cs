@@ -39,14 +39,22 @@ namespace MediaBrowser.Model.Session
         /// <summary>
         /// The play now
         /// </summary>
-        PlayNow,
+        PlayNow = 0,
         /// <summary>
         /// The play next
         /// </summary>
-        PlayNext,
+        PlayNext = 1,
         /// <summary>
         /// The play last
         /// </summary>
-        PlayLast
+        PlayLast = 2,
+        /// <summary>
+        /// The play instant mix
+        /// </summary>
+        PlayInstantMix = 3,
+        /// <summary>
+        /// The play shuffle
+        /// </summary>
+        PlayShuffle = 4
     }
 }

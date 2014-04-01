@@ -33,17 +33,9 @@
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
-    <TranscodingProfile container="asf" type="Video" videoCodec="wmv2" audioCodec="wmav2" estimateContentLength="true" enableMpegtsM2TsMode="false" transcodeSeekInfo="Bytes">
-      <Settings>
-        <TranscodingSetting name="VideoProfile" value="baseline" />
-      </Settings>
-    </TranscodingProfile>
-    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
+    <TranscodingProfile container="asf" type="Video" videoCodec="wmv2" audioCodec="wmav2" estimateContentLength="true" enableMpegtsM2TsMode="false" transcodeSeekInfo="Bytes" videoProfile="baseline" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
   </TranscodingProfiles>
   <ContainerProfiles>
     <ContainerProfile type="Video" container="mp4,mov">
@@ -95,9 +87,9 @@
       </Conditions>
     </CodecProfile>
   </CodecProfiles>
-  <MediaProfiles>
-    <MediaProfile container="avi" type="Video" mimeType="video/avi">
+  <ResponseProfiles>
+    <ResponseProfile container="avi" type="Video" mimeType="video/avi">
       <Conditions />
-    </MediaProfile>
-  </MediaProfiles>
+    </ResponseProfile>
+  </ResponseProfiles>
 </Profile>

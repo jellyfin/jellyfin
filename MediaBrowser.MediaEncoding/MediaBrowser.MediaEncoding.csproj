@@ -48,7 +48,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BdInfo\BdInfoExaminer.cs" />
+    <Compile Include="Encoder\AudioEncoder.cs" />
+    <Compile Include="Encoder\EncodingUtils.cs" />
+    <Compile Include="Encoder\FFMpegProcess.cs" />
     <Compile Include="Encoder\ImageEncoder.cs" />
+    <Compile Include="Encoder\InternalEncodingTask.cs" />
+    <Compile Include="Encoder\InternalEncodingTaskFactory.cs" />
     <Compile Include="Encoder\MediaEncoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

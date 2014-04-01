@@ -74,13 +74,13 @@ namespace MediaBrowser.Controller.Dlna
         public ContainerProfile[] ContainerProfiles { get; set; }
 
         public CodecProfile[] CodecProfiles { get; set; }
-        public MediaProfile[] MediaProfiles { get; set; }
+        public ResponseProfile[] ResponseProfiles { get; set; }
 
         public DeviceProfile()
         {
             DirectPlayProfiles = new DirectPlayProfile[] { };
             TranscodingProfiles = new TranscodingProfile[] { };
-            MediaProfiles = new MediaProfile[] { };
+            ResponseProfiles = new ResponseProfile[] { };
             CodecProfiles = new CodecProfile[] { };
             ContainerProfiles = new ContainerProfile[] { };
 
@@ -147,11 +147,11 @@ namespace MediaBrowser.Controller.Dlna
             });
         }
 
-        public MediaProfile GetAudioMediaProfile(string container, string audioCodec, MediaStream audioStream)
+        public ResponseProfile GetAudioMediaProfile(string container, string audioCodec, MediaStream audioStream)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
-            return MediaProfiles.FirstOrDefault(i =>
+            return ResponseProfiles.FirstOrDefault(i =>
             {
                 if (i.Type != DlnaProfileType.Audio)
                 {
@@ -174,11 +174,11 @@ namespace MediaBrowser.Controller.Dlna
             });
         }
 
-        public MediaProfile GetVideoMediaProfile(string container, string audioCodec, string videoCodec, MediaStream audioStream, MediaStream videoStream)
+        public ResponseProfile GetVideoMediaProfile(string container, string audioCodec, string videoCodec, MediaStream audioStream, MediaStream videoStream)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
-            return MediaProfiles.FirstOrDefault(i =>
+            return ResponseProfiles.FirstOrDefault(i =>
             {
                 if (i.Type != DlnaProfileType.Video)
                 {
@@ -207,11 +207,11 @@ namespace MediaBrowser.Controller.Dlna
             });
         }
 
-        public MediaProfile GetPhotoMediaProfile(string container)
+        public ResponseProfile GetPhotoMediaProfile(string container)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
-            return MediaProfiles.FirstOrDefault(i =>
+            return ResponseProfiles.FirstOrDefault(i =>
             {
                 if (i.Type != DlnaProfileType.Photo)
                 {

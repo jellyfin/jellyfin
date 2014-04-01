@@ -257,8 +257,12 @@ namespace MediaBrowser.Server.Implementations.IO
                         InternalBufferSize = 32767
                     };
 
-                    newWatcher.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.DirectoryName |
-                                              NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size;
+                    newWatcher.NotifyFilter = NotifyFilters.CreationTime |
+                        NotifyFilters.DirectoryName |
+                        NotifyFilters.FileName |
+                        NotifyFilters.LastWrite |
+                        NotifyFilters.Size |
+                        NotifyFilters.Attributes;
 
                     newWatcher.Created += watcher_Changed;
                     newWatcher.Deleted += watcher_Changed;
@@ -349,13 +353,13 @@ namespace MediaBrowser.Server.Implementations.IO
         {
             try
             {
-                Logger.Debug("Watcher sees change of type " + e.ChangeType + " to " + e.FullPath);
+                Logger.Debug("Changed detected of type " + e.ChangeType + " to " + e.FullPath);
 
                 ReportFileSystemChanged(e.FullPath);
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Exception in watcher changed. Path: {0}", ex, e.FullPath);
+                Logger.ErrorException("Exception in ReportFileSystemChanged. Path: {0}", ex, e.FullPath);
             }
         }
 
@@ -392,14 +396,6 @@ namespace MediaBrowser.Server.Implementations.IO
                 var parent = Path.GetDirectoryName(i);
                 if (!string.IsNullOrEmpty(parent))
                 {
-                    if (string.Equals(parent, path, StringComparison.OrdinalIgnoreCase))
-                    {
-                        Logger.Debug("Ignoring change to {0}", path);
-                        return true;
-                    }
-
-                    // Go up another level
-                    parent = Path.GetDirectoryName(i);
                     if (string.Equals(parent, path, StringComparison.OrdinalIgnoreCase))
                     {
                         Logger.Debug("Ignoring change to {0}", path);
