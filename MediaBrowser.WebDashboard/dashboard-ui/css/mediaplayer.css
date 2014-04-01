@@ -79,6 +79,10 @@
     width: 130px;
 }
 
+#nowPlayingBar .positionSliderContainer {
+    margin-top: 8px;
+}
+
 .volumeSliderContainer {
     width: 90px;
 }
@@ -123,41 +127,41 @@ input[type="range"]::-ms-fill-upper {
 }
 
 @media all and (max-width: 800px) {
-    .volumeButton, .volumeSliderContainer, .muteButton, .unmuteButton, .nowPlayingMediaInfo {
-        display: none!important;
+    #nowPlayingBar .volumeButton, #nowPlayingBar .volumeSliderContainer, #nowPlayingBar .muteButton, #nowPlayingBar .unmuteButton, #nowPlayingBar .nowPlayingMediaInfo {
+        display: none; /*!important;*/
     }
 }
 
 @media all and (max-width: 650px) {
-    .nowPlayingMediaInfo {
+    #nowPlayingBar .nowPlayingMediaInfo {
         display: none;
     }
 }
 
 @media all and (max-width: 600px) {
-    .chaptersButton, .audioTracksButton {
-        display: none!important;
+    #nowPlayingBar .chaptersButton, #nowPlayingBar .audioTracksButton {
+        display: none; /*!important;*/
     }
 
-    .positionSliderContainer, .currentTime {
+    #nowPlayingBar .positionSliderContainer, #nowPlayingBar .currentTime {
         top: 0!important;
         position: relative!important;
     }
 }
 
 @media all and (max-width: 500px) {
-    .positionSliderContainer {
+    #nowPlayingBar .positionSliderContainer {
         width: 80px;
     }
 
-    .previousTrackButton, .nextTrackButton {
-        display: none!important;
+    #nowPlayingBar .previousTrackButton, #nowPlayingBar .nextTrackButton {
+        display: none; /*!important;*/
     }
 }
 
 @media all and (max-width: 400px) {
-    .playlistButton {
-        display: none!important;
+    #nowPlayingBar .playlistButton {
+        display: none; /*!important;*/
     }
 }
 
@@ -173,18 +177,15 @@ input[type="range"]::-ms-fill-upper {
     position: absolute;
     z-index: 99999;
     bottom: 78px;
-    margin-left: -50px;
+    margin-left: -125px;
     max-height: 300px;
     overflow-y: auto;
     font-size: 13px;
 }
 
-.chaptersFlyout {
+.chaptersFlyout,.audioTracksFlyout {
     width: 250px;
-}
-
-.audioTracksFlyout {
-    width: 250px;
+    margin-left: -150px;
 }
 
 .mediaFlyoutOption {
@@ -248,7 +249,7 @@ input[type="range"]::-ms-fill-upper {
 }
 
 @media (min-width: 1440px) {
-    .positionSliderContainer {
+    #nowPlayingBar .positionSliderContainer {
         width: 300px;
     }
 }
