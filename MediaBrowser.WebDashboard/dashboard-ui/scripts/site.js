@@ -1379,7 +1379,7 @@ $(function () {
     var footerElem = $('#footer', document.body);
     footerElem.trigger('create');
 
-    $(window).on("beforeunload popstate", function () {
+    $(window).on("beforeunload", function () {
 
         // Close the connection gracefully when possible
         if (ApiClient.isWebSocketOpen() && !MediaPlayer.isPlaying()) {

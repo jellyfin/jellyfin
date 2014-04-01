@@ -730,7 +730,6 @@
         
 
         if (this.hasReceivers) {
-            document.getElementById("btnCast").className = "btnCast btnDefaultCast";
             document.getElementById("video-ccastButton").removeAttribute("style");
             this.initializeLocalPlayer();
         }

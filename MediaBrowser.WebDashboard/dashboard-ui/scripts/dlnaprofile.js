@@ -1,4 +1,4 @@
-﻿(function($, document, window) {
+﻿(function ($, document, window) {
 
     var currentProfile;
 
@@ -9,7 +9,7 @@
 
         Dashboard.showLoadingMsg();
 
-        getProfile().done(function(result) {
+        getProfile().done(function (result) {
 
             currentProfile = result;
 
@@ -38,7 +38,7 @@
 
         $('#txtName', page).val(profile.Name);
 
-        $('.chkMediaType', page).each(function() {
+        $('.chkMediaType', page).each(function () {
             this.checked = (profile.SupportedMediaTypes || '').split(',').indexOf(this.getAttribute('data-value')) != -1;
 
         }).checkboxradio('refresh');
@@ -61,7 +61,7 @@
         profile.TranscodingProfiles = (profile.TranscodingProfiles || []);
         profile.ContainerProfiles = (profile.ContainerProfiles || []);
         profile.CodecProfiles = (profile.CodecProfiles || []);
-        profile.MediaProfiles = (profile.MediaProfiles || []);
+        profile.ResponseProfiles = (profile.ResponseProfiles || []);
 
         renderSubProfiles(page, profile);
     }
@@ -72,7 +72,7 @@
         renderTranscodingProfiles(page, profile.TranscodingProfiles);
         renderContainerProfiles(page, profile.ContainerProfiles);
         renderCodecProfiles(page, profile.CodecProfiles);
-        renderMediaProfiles(page, profile.MediaProfiles);
+        renderResponseProfiles(page, profile.ResponseProfiles);
     }
 
     function editDirectPlayProfile(page, directPlayProfile) {
@@ -149,13 +149,13 @@
 
         var elem = $('.directPlayProfiles', page).html(html).trigger('create');
 
-        $('.btnDeleteProfile', elem).on('click', function() {
+        $('.btnDeleteProfile', elem).on('click', function () {
 
             var index = this.getAttribute('data-profileindex');
             deleteDirectPlayProfile(page, index);
         });
 
-        $('.lnkEditSubProfile', elem).on('click', function() {
+        $('.lnkEditSubProfile', elem).on('click', function () {
 
             var index = parseInt(this.getAttribute('data-profileindex'));
 
@@ -213,7 +213,7 @@
 
         var elem = $('.transcodingProfiles', page).html(html).trigger('create');
 
-        $('.btnDeleteProfile', elem).on('click', function() {
+        $('.btnDeleteProfile', elem).on('click', function () {
 
             var index = this.getAttribute('data-profileindex');
             deleteTranscodingProfile(page, index);
@@ -239,6 +239,11 @@
         $('#txtTranscodingContainer', popup).val(transcodingProfile.Container || '');
         $('#txtTranscodingAudioCodec', popup).val(transcodingProfile.AudioCodec || '');
         $('#txtTranscodingVideoCodec', popup).val(transcodingProfile.VideoCodec || '');
+
+        $('#txtTranscodingVideoProfile', popup).val(transcodingProfile.VideoProfile || '');
+        $('#chkEnableMpegtsM2TsMode', popup).checked(transcodingProfile.EnableMpegtsM2TsMode).checkboxradio('refresh');
+        $('#chkEstimateContentLength', popup).checked(transcodingProfile.EstimateContentLength).checkboxradio('refresh');
+        $('#chkReportByteRangeRequests', popup).checked(transcodingProfile.TranscodeSeekInfo == 'Bytes').checkboxradio('refresh');
     }
 
     function deleteTranscodingProfile(page, index) {
@@ -255,6 +260,11 @@
         currentSubProfile.Container = $('#txtTranscodingContainer', page).val();
         currentSubProfile.AudioCodec = $('#txtTranscodingAudioCodec', page).val();
         currentSubProfile.VideoCodec = $('#txtTranscodingVideoCodec', page).val();
+
+        currentSubProfile.VideoProfile = $('#txtTranscodingVideoProfile', page).val();
+        currentSubProfile.EnableMpegtsM2TsMode = $('#chkEnableMpegtsM2TsMode', page).checked();
+        currentSubProfile.EstimateContentLength = $('#chkEstimateContentLength', page).checked();
+        currentSubProfile.TranscodeSeekInfo = $('#chkReportByteRangeRequests', page).checked() ? 'Bytes' : 'Auto';
 
         if (isSubProfileNew) {
 
@@ -294,7 +304,7 @@
             if (profile.Conditions && profile.Conditions.length) {
 
                 html += '<p>Conditions: ';
-                html += profile.Conditions.map(function(c) {
+                html += profile.Conditions.map(function (c) {
                     return c.Property;
                 }).join(', ');
                 html += '</p>';
@@ -311,7 +321,7 @@
 
         var elem = $('.containerProfiles', page).html(html).trigger('create');
 
-        $('.btnDeleteProfile', elem).on('click', function() {
+        $('.btnDeleteProfile', elem).on('click', function () {
 
             var index = this.getAttribute('data-profileindex');
             deleteContainerProfile(page, index);
@@ -354,7 +364,7 @@
             if (profile.Conditions && profile.Conditions.length) {
 
                 html += '<p>Conditions: ';
-                html += profile.Conditions.map(function(c) {
+                html += profile.Conditions.map(function (c) {
                     return c.Property;
                 }).join(', ');
                 html += '</p>';
@@ -371,7 +381,7 @@
 
         var elem = $('.codecProfiles', page).html(html).trigger('create');
 
-        $('.btnDeleteProfile', elem).on('click', function() {
+        $('.btnDeleteProfile', elem).on('click', function () {
 
             var index = this.getAttribute('data-profileindex');
             deleteCodecProfile(page, index);
@@ -386,7 +396,7 @@
 
     }
 
-    function renderMediaProfiles(page, profiles) {
+    function renderResponseProfiles(page, profiles) {
 
         var html = '';
 
@@ -419,7 +429,7 @@
             if (profile.Conditions && profile.Conditions.length) {
 
                 html += '<p>Conditions: ';
-                html += profile.Conditions.map(function(c) {
+                html += profile.Conditions.map(function (c) {
                     return c.Property;
                 }).join(', ');
                 html += '</p>';
@@ -436,18 +446,18 @@
 
         var elem = $('.mediaProfiles', page).html(html).trigger('create');
 
-        $('.btnDeleteProfile', elem).on('click', function() {
+        $('.btnDeleteProfile', elem).on('click', function () {
 
             var index = this.getAttribute('data-profileindex');
-            deleteMediaProfile(page, index);
+            deleteResponseProfile(page, index);
         });
     }
 
-    function deleteMediaProfile(page, index) {
+    function deleteResponseProfile(page, index) {
 
-        currentProfile.MediaProfiles.splice(index, 1);
+        currentProfile.ResponseProfiles.splice(index, 1);
 
-        renderMediaProfiles(page, currentProfile.MediaProfiles);
+        renderResponseProfiles(page, currentProfile.ResponseProfiles);
 
     }
 
@@ -464,7 +474,7 @@
                 url: ApiClient.getUrl("Dlna/Profiles/" + id),
                 data: JSON.stringify(profile),
                 contentType: "application/json"
-            }).done(function() {
+            }).done(function () {
 
                 Dashboard.alert('Settings saved.');
             });
@@ -476,7 +486,7 @@
                 url: ApiClient.getUrl("Dlna/Profiles"),
                 data: JSON.stringify(profile),
                 contentType: "application/json"
-            }).done(function() {
+            }).done(function () {
 
                 Dashboard.navigate('dlnaprofiles.html');
 
@@ -492,7 +502,7 @@
         profile.Name = $('#txtName', page).val();
         profile.EnableAlbumArtInDidl = $('#chkEnableAlbumArtInDidl', page).checked();
 
-        profile.SupportedMediaTypes = $('.chkMediaType:checked', page).get().map(function(c) {
+        profile.SupportedMediaTypes = $('.chkMediaType:checked', page).get().map(function (c) {
             return c.getAttribute('data-value');
         }).join(',');
 
@@ -509,18 +519,18 @@
         profile.Identification.DeviceDescription = $('#txtIdDeviceDescription', page).val();
     }
 
-    $(document).on('pageinit', "#dlnaProfilePage", function() {
+    $(document).on('pageinit', "#dlnaProfilePage", function () {
 
         var page = this;
 
-        $('.radioProfileTab', page).on('change', function() {
+        $('.radioProfileTab', page).on('change', function () {
 
             $('.profileTab', page).hide();
             $('.' + this.value, page).show();
 
         });
 
-        $('#selectDirectPlayProfileType', page).on('change', function() {
+        $('#selectDirectPlayProfileType', page).on('change', function () {
 
             if (this.value == 'Video') {
                 $('#fldDirectPlayVideoCodec', page).show();
@@ -540,19 +550,30 @@
 
             if (this.value == 'Video') {
                 $('#fldTranscodingVideoCodec', page).show();
+                $('#fldEnableMpegtsM2TsMode', page).show();
+                $('#fldVideoProfile', page).show();
             } else {
                 $('#fldTranscodingVideoCodec', page).hide();
+                $('#fldEnableMpegtsM2TsMode', page).hide();
+                $('#fldVideoProfile', page).hide();
             }
 
             if (this.value == 'Photo') {
                 $('#fldTranscodingAudioCodec', page).hide();
+
+                $('#fldEstimateContentLength', page).hide();
+                $('#fldReportByteRangeRequests', page).hide();
+
             } else {
                 $('#fldTranscodingAudioCodec', page).show();
+
+                $('#fldEstimateContentLength', page).show();
+                $('#fldReportByteRangeRequests', page).show();
             }
 
         });
 
-        $('.btnAddDirectPlayProfile', page).on('click', function() {
+        $('.btnAddDirectPlayProfile', page).on('click', function () {
 
             editDirectPlayProfile(page);
 
@@ -564,13 +585,13 @@
 
         });
 
-    }).on('pageshow', "#dlnaProfilePage", function() {
+    }).on('pageshow', "#dlnaProfilePage", function () {
 
         var page = this;
 
         loadProfile(page);
 
-    }).on('pagebeforeshow', "#dlnaProfilePage", function() {
+    }).on('pagebeforeshow', "#dlnaProfilePage", function () {
 
         var page = this;
 
@@ -580,7 +601,7 @@
     });
 
     window.DlnaProfilePage = {
-        onSubmit: function() {
+        onSubmit: function () {
 
             Dashboard.showLoadingMsg();
 
@@ -592,7 +613,7 @@
             return false;
         },
 
-        onDirectPlayFormSubmit: function() {
+        onDirectPlayFormSubmit: function () {
 
             var form = this;
             var page = $(form).parents('.page');
@@ -602,8 +623,8 @@
             return false;
         },
 
-        onTranscodingProfileFormSubmit: function() {
-            
+        onTranscodingProfileFormSubmit: function () {
+
             var form = this;
             var page = $(form).parents('.page');
 
