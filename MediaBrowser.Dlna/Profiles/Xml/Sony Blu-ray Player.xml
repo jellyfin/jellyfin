@@ -32,15 +32,9 @@
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
-    <TranscodingProfile container="ts" type="Video" videoCodec="mpeg2video" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
-    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="mpeg2video" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
   </TranscodingProfiles>
   <ContainerProfiles>
     <ContainerProfile type="Photo">
@@ -71,27 +65,27 @@
       </Conditions>
     </CodecProfile>
   </CodecProfiles>
-  <MediaProfiles>
-    <MediaProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264,mpeg4,vc1" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
+  <ResponseProfiles>
+    <ResponseProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264,mpeg4,vc1" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
       <Conditions />
-    </MediaProfile>
-    <MediaProfile container="avi" type="Video" mimeType="video/mpeg">
+    </ResponseProfile>
+    <ResponseProfile container="avi" type="Video" mimeType="video/mpeg">
       <Conditions />
-    </MediaProfile>
-    <MediaProfile container="mkv" type="Video" mimeType="video/vnd.dlna.mpeg-tts">
+    </ResponseProfile>
+    <ResponseProfile container="mkv" type="Video" mimeType="video/vnd.dlna.mpeg-tts">
       <Conditions />
-    </MediaProfile>
-    <MediaProfile container="ts" type="Video" mimeType="video/vnd.dlna.mpeg-tts">
+    </ResponseProfile>
+    <ResponseProfile container="ts" type="Video" mimeType="video/vnd.dlna.mpeg-tts">
       <Conditions />
-    </MediaProfile>
-    <MediaProfile container="mp4" type="Video" mimeType="video/mpeg">
+    </ResponseProfile>
+    <ResponseProfile container="mp4" type="Video" mimeType="video/mpeg">
       <Conditions />
-    </MediaProfile>
-    <MediaProfile container="mpeg" type="Video" mimeType="video/mpeg">
+    </ResponseProfile>
+    <ResponseProfile container="mpeg" type="Video" mimeType="video/mpeg">
       <Conditions />
-    </MediaProfile>
-    <MediaProfile container="mp3" type="Audio" mimeType="audio/mpeg">
+    </ResponseProfile>
+    <ResponseProfile container="mp3" type="Audio" mimeType="audio/mpeg">
       <Conditions />
-    </MediaProfile>
-  </MediaProfiles>
+    </ResponseProfile>
+  </ResponseProfiles>
 </Profile>

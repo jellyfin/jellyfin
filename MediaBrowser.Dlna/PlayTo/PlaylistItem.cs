@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Dlna;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -27,8 +26,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public string AudioCodec { get; set; }
 
-        public List<TranscodingSetting> TranscodingSettings { get; set; }
-
         public int? AudioStreamIndex { get; set; }
 
         public int? SubtitleStreamIndex { get; set; }
@@ -47,10 +44,5 @@ namespace MediaBrowser.Dlna.PlayTo
         public int? MaxFramerate { get; set; }
 
         public string DeviceProfileId { get; set; }
-
-        public PlaylistItem()
-        {
-            TranscodingSettings = new List<TranscodingSetting>();
-        }
     }
 }

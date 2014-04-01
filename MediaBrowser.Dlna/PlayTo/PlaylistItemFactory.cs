@@ -48,7 +48,6 @@ namespace MediaBrowser.Dlna.PlayTo
             if (transcodingProfile != null)
             {
                 playlistItem.Transcode = true;
-                playlistItem.TranscodingSettings = transcodingProfile.Settings.ToList();
                 playlistItem.Container = "." + transcodingProfile.Container.TrimStart('.');
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec;
 
@@ -88,7 +87,6 @@ namespace MediaBrowser.Dlna.PlayTo
             if (transcodingProfile != null)
             {
                 playlistItem.Transcode = true;
-                playlistItem.TranscodingSettings = transcodingProfile.Settings.ToList();
                 playlistItem.Container = "." + transcodingProfile.Container.TrimStart('.');
             }
 
@@ -137,7 +135,6 @@ namespace MediaBrowser.Dlna.PlayTo
             if (transcodingProfile != null)
             {
                 playlistItem.Transcode = true;
-                playlistItem.TranscodingSettings = transcodingProfile.Settings.ToList();
                 playlistItem.Container = "." + transcodingProfile.Container.TrimStart('.');
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',').FirstOrDefault();
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;

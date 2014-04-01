@@ -89,9 +89,9 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
-            MediaProfiles = new[]
+            ResponseProfiles = new[]
             {
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "ts",
                     VideoCodec="h264",
@@ -101,7 +101,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "ts",
                     VideoCodec="h264",
@@ -111,7 +111,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "ts",
                     VideoCodec="h264",
@@ -121,7 +121,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "ts",
                     VideoCodec="mpeg2video",
@@ -130,7 +130,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "mpeg",
                     VideoCodec="mpeg1video,mpeg2video",

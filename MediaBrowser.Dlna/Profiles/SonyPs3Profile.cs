@@ -207,9 +207,9 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
-            MediaProfiles = new[]
+            ResponseProfiles = new[]
             {
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "mp4,mov",
                     AudioCodec="aac",
@@ -217,7 +217,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "avi",
                     MimeType = "video/divx",
@@ -225,7 +225,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video
                 },
 
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "wav",
                     MimeType = "audio/wav",

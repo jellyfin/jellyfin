@@ -30,7 +30,7 @@
 	"LabelEnableVideoImageExtraction": "Activer l'extraction d'image des videos",
 	"VideoImageExtractionHelp": "Pour les vid\u00e9os sans images et que nous n'avons pas trouv\u00e9 par Internet. Ce processus  prolongera la mise \u00e0 jour initiale de biblioth\u00e8que mais offrira une meilleure pr\u00e9sentation visuelle.",
 	"LabelEnableChapterImageExtractionForMovies": "Extraire les images de chapitre pour les films",
-	"LabelChapterImageExtractionForMoviesHelp": "Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs as a nightly scheduled task at 4am, although this is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours.",
+	"LabelChapterImageExtractionForMoviesHelp": "L'extraction d'images de chapitre permettra aux clients d'afficher des menus graphiques des sc\u00e8nes. Le processus peut \u00eatre long et exigeant en ressource processeur et de stockage (plusieurs Gigabytes). Il s'ex\u00e9cute par d\u00e9faut dans les t\u00e2ches programm\u00e9es \u00e0 4:00 AM mais peut \u00eatre modifi\u00e9 dans les options de t\u00e2ches programm\u00e9es. Il n'est pas recommand\u00e9 d'ex\u00e9cuter cette t\u00e2che dans les heures d'utilisation standard.",
 	"LabelEnableAutomaticPortMapping": "Activer la configuration automatique de port",
 	"LabelEnableAutomaticPortMappingHelp": "UPnP permet la configuration automatique de routeur pour un acc\u00e8s distance facile. Ceci peut ne pas fonctionner sur certains mod\u00e8les de routeur.",
 	"ButtonOk": "Ok",

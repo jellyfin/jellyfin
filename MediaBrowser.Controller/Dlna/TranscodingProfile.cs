@@ -30,32 +30,13 @@ namespace MediaBrowser.Controller.Dlna
         [XmlAttribute("transcodeSeekInfo")]
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
 
-        public TranscodingSetting[] Settings { get; set; }
-
-        public TranscodingProfile()
-        {
-            Settings = new TranscodingSetting[] { };
-        }
-
+        [XmlAttribute("videoProfile")]
+        public string VideoProfile { get; set; }
 
         public List<string> GetAudioCodecs()
         {
             return (AudioCodec ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
         }
-    }
-
-    public class TranscodingSetting
-    {
-        [XmlAttribute("name")]
-        public TranscodingSettingType Name { get; set; }
-
-        [XmlAttribute("value")]
-        public string Value { get; set; }
-    }
-
-    public enum TranscodingSettingType
-    {
-        VideoProfile = 0
     }
 
     public enum TranscodeSeekInfo

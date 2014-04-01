@@ -235,9 +235,31 @@
                         <input type="text" id="txtTranscodingVideoCodec" data-mini="true" />
                     </div>
 
-                    <div id="fldTranscodingAudioCodec" style="margin: 1em 0 2em;">
+                    <div id="fldTranscodingAudioCodec" style="margin: 1em 0;">
                         <label for="txtTranscodingAudioCodec">Audio codec:</label>
                         <input type="text" id="txtTranscodingAudioCodec" data-mini="true" />
+                    </div>
+
+                    <div id="fldVideoProfile" style="margin: 1em 0;">
+                        <label for="txtTranscodingVideoProfile">Video profile:</label>
+                        <input type="text" id="txtTranscodingVideoProfile" data-mini="true" />
+                    </div>
+
+                    <div id="fldEnableMpegtsM2TsMode" style="margin: 1em 0;">
+                        <label for="chkEnableMpegtsM2TsMode">Enable M2ts mode</label>
+                        <input type="checkbox" id="chkEnableMpegtsM2TsMode" data-mini="true" />
+                        <div class="fieldDescription">Enable m2ts mode when encoding to mpegts.</div>
+                    </div>
+
+                    <div id="fldEstimateContentLength" style="margin: 1em 0;">
+                        <label for="chkEstimateContentLength">Estimate content length when transcoding</label>
+                        <input type="checkbox" id="chkEstimateContentLength" data-mini="true" />
+                    </div>
+
+                    <div id="fldReportByteRangeRequests" style="margin: 1em 0;">
+                        <label for="chkReportByteRangeRequests">Report that the server supports byte seeking when transcoding</label>
+                        <input type="checkbox" id="chkReportByteRangeRequests" data-mini="true" />
+                        <div class="fieldDescription">This is required for some devices that don't time seek very well.</div>
                     </div>
 
                     <p>

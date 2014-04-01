@@ -282,21 +282,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
                 //state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
 
-                foreach (var setting in transcodingProfile.Settings)
+                if (state.VideoRequest != null && string.IsNullOrWhiteSpace(state.VideoRequest.VideoProfile))
                 {
-                    switch (setting.Name)
-                    {
-                        case TranscodingSettingType.VideoProfile:
-                            {
-                                if (state.VideoRequest != null && string.IsNullOrWhiteSpace(state.VideoRequest.VideoProfile))
-                                {
-                                    state.VideoRequest.VideoProfile = setting.Value;
-                                }
-                                break;
-                            }
-                        default:
-                            throw new ArgumentException("Unrecognized TranscodingSettingType");
-                    }
+                    state.VideoRequest.VideoProfile = transcodingProfile.VideoProfile;
                 }
             }
         }
