@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Session;
-using System;
+﻿using System;
 
 namespace MediaBrowser.Model.ApiClient
 {
