@@ -16,7 +16,6 @@
             MediaLibraryPage.reloadVirtualFolders(page, result);
         });
 
-        $('#fldUseDefaultLibrary', page).hide();
         $('#divMediaLibrary', page).show();
         Dashboard.setPageTitle("Media Library");
     },
@@ -245,7 +244,7 @@
 
         $('.collectionTypeFieldDescription').hide();
 
-        MediaLibraryPage.getTextValue(virtualFolder.Name, "Rename " + virtualFolder.Name, virtualFolder.Name, false, function (newName) {
+        MediaLibraryPage.getTextValue("Rename Media Folder", "New name:", virtualFolder.Name, false, function (newName) {
 
             if (virtualFolder.Name != newName) {
 

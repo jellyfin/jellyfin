@@ -676,14 +676,14 @@ a.itemTag:hover {
     }
 }
 
-@media all and (min-width: 800px) {
+@media all and (min-width: 880px) {
 
     .libraryMenuButton {
         display: none;
     }
 }
 
-@media all and (max-width: 800px) {
+@media all and (max-width: 880px) {
 
     .desktopHomeLink {
         display: none;
@@ -1198,4 +1198,22 @@ a.itemTag:hover {
     .viewCollageImage {
         width: 32.95%;
     }
+}
+
+.playerSelectionPanel {
+    width: 250px;
+}
+
+    .playerSelectionPanel + .ui-panel-dismiss {
+        right: 250px;
+    }
+
+@media all and (min-width: 600px) {
+    .playerSelectionPanel {
+        width: 300px;
+    }
+
+        .playerSelectionPanel + .ui-panel-dismiss {
+            right: 300px;
+        }
 }

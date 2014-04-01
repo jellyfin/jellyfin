@@ -29,21 +29,15 @@
 
         var selectmenu = $('#selectVersion', page).html(html);
 
-        var packageVersion;
-
         if (!installedPlugin) {
 
             $('#pCurrentVersion', page).hide().html("");
         }
 
-        // If we don't have a package version to select, pick the first release build
-        if (!packageVersion) {
+        var packageVersion = packageInfo.versions.filter(function (current) {
 
-            packageVersion = packageInfo.versions.filter(function (current) {
-
-                return current.classification == "Release";
-            })[0];
-        }
+            return current.classification == "Release";
+        })[0];
 
         // If we still don't have a package version to select, pick the first Beta build
         if (!packageVersion) {

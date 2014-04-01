@@ -30,7 +30,7 @@ namespace MediaBrowser.Server.Implementations.Roku
 
         public bool SupportsMediaRemoteControl
         {
-            get { return true; }
+            get { return false; }
         }
 
         public bool IsSessionActive
@@ -39,16 +39,6 @@ namespace MediaBrowser.Server.Implementations.Roku
             {
                 return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 10;
             }
-        }
-
-        public Task SendSystemCommand(SystemCommand command, CancellationToken cancellationToken)
-        {
-            return SendCommand(new WebSocketMessage<string>
-            {
-                MessageType = "SystemCommand",
-                Data = command.ToString()
-
-            }, cancellationToken);
         }
 
         public Task SendMessageCommand(MessageCommand command, CancellationToken cancellationToken)
@@ -148,9 +138,9 @@ namespace MediaBrowser.Server.Implementations.Roku
         }
 
 
-        public Task SendGenericCommand(GenericCommand command, CancellationToken cancellationToken)
+        public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
-            return SendCommand(new WebSocketMessage<GenericCommand>
+            return SendCommand(new WebSocketMessage<GeneralCommand>
             {
                 MessageType = "Command",
                 Data = command

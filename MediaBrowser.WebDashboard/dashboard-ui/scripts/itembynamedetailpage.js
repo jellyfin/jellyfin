@@ -81,7 +81,7 @@
 
             Dashboard.getCurrentUser().done(function (user) {
 
-                if (MediaPlayer.canPlay(item, user)) {
+                if (MediaController.canPlay(item)) {
                     $('#playButtonContainer', page).show();
                 } else {
                     $('#playButtonContainer', page).hide();
@@ -518,12 +518,7 @@
 
         $('#btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
-            LibraryBrowser.showPlayMenu(this, currentItem.Name, currentItem.Type, "Audio", userdata.PlaybackPositionTicks);
-        });
-
-        $('#btnRemote', page).on('click', function () {
-
-            RemoteControl.showMenuForItem({ item: currentItem, context: getParameterByName('context') || '' });
+            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, false, "Audio", userdata.PlaybackPositionTicks);
         });
 
     }).on('pageshow', "#itemByNameDetailPage", function () {

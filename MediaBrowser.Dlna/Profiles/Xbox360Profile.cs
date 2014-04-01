@@ -25,7 +25,7 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 ModelName = "Xbox 360",
 
-                Headers = new []
+                Headers = new[]
                 {
                     new HttpHeaderInfo {Name = "User-Agent", Value = "Xbox", Match = HeaderMatchType.Substring},
                     new HttpHeaderInfo {Name = "User-Agent", Value = "Xenon", Match = HeaderMatchType.Substring}
@@ -48,11 +48,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video,
                     TranscodeSeekInfo = TranscodeSeekInfo.Bytes,
                     EstimateContentLength = true,
-
-                    Settings = new []
-                    {
-                        new TranscodingSetting {Name = TranscodingSettingType.VideoProfile, Value = "baseline"}
-                    }
+                    VideoProfile= "baseline"
                 },
                 new TranscodingProfile
                 {
@@ -110,9 +106,9 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
-            MediaProfiles = new[]
+            ResponseProfiles = new[]
             {
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "avi",
                     MimeType = "video/avi",

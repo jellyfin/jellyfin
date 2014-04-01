@@ -12,7 +12,7 @@
             $('#featureAccessFields', page).show();
         }
 
-        Dashboard.setPageTitle(user.Name || "Add User");
+        Dashboard.setPageTitle(user.Name || Globalize.translate("AddUser"));
 
         $('#txtUserName', page).val(user.Name);
 
@@ -40,7 +40,7 @@
         Dashboard.validateCurrentUser(page);
 
         if (userId) {
-            Dashboard.alert("Settings saved.");
+            Dashboard.alert(Globalize.translate("SettingsSaved"));
         } else {
             Dashboard.navigate("userprofiles.html");
         }

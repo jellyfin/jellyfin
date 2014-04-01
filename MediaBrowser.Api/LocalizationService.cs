@@ -32,6 +32,14 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
+    /// Class ParentalRatings
+    /// </summary>
+    [Route("/Localization/Options", "GET", Summary = "Gets localization options")]
+    public class GetLocalizationOptions : IReturn<List<LocalizatonOption>>
+    {
+    }
+
+    /// <summary>
     /// Class CulturesService
     /// </summary>
     public class LocalizationService : BaseApiService
@@ -58,6 +66,13 @@ namespace MediaBrowser.Api
         public object Get(GetParentalRatings request)
         {
             var result = _localization.GetParentalRatings().ToList();
+
+            return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        public object Get(GetLocalizationOptions request)
+        {
+            var result = _localization.GetLocalizationOptions().ToList();
 
             return ToOptimizedSerializedResultUsingCache(result);
         }

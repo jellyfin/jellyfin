@@ -24,18 +24,14 @@
     <DirectPlayProfile container="mp3,wma" type="Audio" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
   </TranscodingProfiles>
   <ContainerProfiles />
   <CodecProfiles />
-  <MediaProfiles>
-    <MediaProfile container="avi" type="Video" mimeType="video/x-msvideo">
+  <ResponseProfiles>
+    <ResponseProfile container="avi" type="Video" mimeType="video/x-msvideo">
       <Conditions />
-    </MediaProfile>
-  </MediaProfiles>
+    </ResponseProfile>
+  </ResponseProfiles>
 </Profile>

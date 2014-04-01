@@ -120,11 +120,15 @@
                     </div>
 
                     <div class="profileTab tabDirectPlayProfiles">
-                        <p>Add direct play profiles to indicate what formats the device can handle natively.</p>
+                        <p>Add direct play profiles to indicate which formats the device can handle natively.</p>
+                        <button class="btnAddDirectPlayProfile" type="button" data-mini="true" data-icon="plus">New</button>
+                        <br />
                         <div class="directPlayProfiles"></div>
                     </div>
                     <div class="profileTab tabTranscodingProfiles">
-                        <p>Add transcoding profiles to indicate what formats should be used when transcoding is required.</p>
+                        <p>Add transcoding profiles to indicate which formats should be used when transcoding is required.</p>
+                        <button class="btnAddTranscodingProfile" type="button" data-mini="true" data-icon="plus">New</button>
+                        <br />
                         <div class="transcodingProfiles"></div>
                     </div>
                     <div class="profileTab tabContainerProfiles">
@@ -155,8 +159,125 @@
 
             </div>
         </div>
+        <div data-role="popup" data-transition="slidefade" id="popupEditDirectPlayProfile" class="popup">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>Direct Play Profile</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="editDirectPlayProfileForm">
+
+                    <div style="margin: 1em 0;">
+                        <label for="selectDirectPlayProfileType">Type:</label>
+                        <select id="selectDirectPlayProfileType" data-mini="true">
+                            <option value="Audio">Audio</option>
+                            <option value="Photo">Photo</option>
+                            <option value="Video">Video</option>
+                        </select>
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtDirectPlayContainer">Container:</label>
+                        <input type="text" id="txtDirectPlayContainer" data-mini="true" />
+                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                    </div>
+
+                    <div id="fldDirectPlayVideoCodec" style="margin: 1em 0;">
+                        <label for="txtDirectPlayVideoCodec">Video codecs:</label>
+                        <input type="text" id="txtDirectPlayVideoCodec" data-mini="true" />
+                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                    </div>
+
+                    <div id="fldDirectPlayAudioCodec" style="margin: 1em 0 2em;">
+                        <label for="txtDirectPlayAudioCodec">Audio codecs:</label>
+                        <input type="text" id="txtDirectPlayAudioCodec" data-mini="true" />
+                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                    </div>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            Ok
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            Cancel
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
+        <div data-role="popup" data-transition="slidefade" id="transcodingProfilePopup" class="popup">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>Transcoding Profile</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="transcodingProfileForm" style="min-width: 250px;">
+
+                    <div style="margin: 1em 0;">
+                        <label for="selectTranscodingProfileType">Type:</label>
+                        <select id="selectTranscodingProfileType" data-mini="true">
+                            <option value="Audio">Audio</option>
+                            <option value="Photo">Photo</option>
+                            <option value="Video">Video</option>
+                        </select>
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtTranscodingContainer">Containers:</label>
+                        <input type="text" id="txtTranscodingContainer" data-mini="true" required="required" />
+                    </div>
+
+                    <div id="fldTranscodingVideoCodec" style="margin: 1em 0;">
+                        <label for="txtTranscodingVideoCodec">Video codec:</label>
+                        <input type="text" id="txtTranscodingVideoCodec" data-mini="true" />
+                    </div>
+
+                    <div id="fldTranscodingAudioCodec" style="margin: 1em 0;">
+                        <label for="txtTranscodingAudioCodec">Audio codec:</label>
+                        <input type="text" id="txtTranscodingAudioCodec" data-mini="true" />
+                    </div>
+
+                    <div id="fldVideoProfile" style="margin: 1em 0;">
+                        <label for="txtTranscodingVideoProfile">Video profile:</label>
+                        <input type="text" id="txtTranscodingVideoProfile" data-mini="true" />
+                    </div>
+
+                    <div id="fldEnableMpegtsM2TsMode" style="margin: 1em 0;">
+                        <label for="chkEnableMpegtsM2TsMode">Enable M2ts mode</label>
+                        <input type="checkbox" id="chkEnableMpegtsM2TsMode" data-mini="true" />
+                        <div class="fieldDescription">Enable m2ts mode when encoding to mpegts.</div>
+                    </div>
+
+                    <div id="fldEstimateContentLength" style="margin: 1em 0;">
+                        <label for="chkEstimateContentLength">Estimate content length when transcoding</label>
+                        <input type="checkbox" id="chkEstimateContentLength" data-mini="true" />
+                    </div>
+
+                    <div id="fldReportByteRangeRequests" style="margin: 1em 0;">
+                        <label for="chkReportByteRangeRequests">Report that the server supports byte seeking when transcoding</label>
+                        <input type="checkbox" id="chkReportByteRangeRequests" data-mini="true" />
+                        <div class="fieldDescription">This is required for some devices that don't time seek very well.</div>
+                    </div>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            Ok
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            Cancel
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
         <script type="text/javascript">
             $('.dlnaProfileForm').off('submit', DlnaProfilePage.onSubmit).on('submit', DlnaProfilePage.onSubmit);
+            $('.editDirectPlayProfileForm').off('submit', DlnaProfilePage.onDirectPlayFormSubmit).on('submit', DlnaProfilePage.onDirectPlayFormSubmit);
+            $('.transcodingProfileForm').off('submit', DlnaProfilePage.onTranscodingProfileFormSubmit).on('submit', DlnaProfilePage.onTranscodingProfileFormSubmit);
         </script>
     </div>
 </body>

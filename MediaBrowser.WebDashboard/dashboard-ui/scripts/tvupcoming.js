@@ -15,9 +15,10 @@
 
             var items = result.Items;
 
-            if (!items.length) {
-                $('#upcomingItems', page).html("<p>Nothing here. Please ensure <a href='metadata.html'>downloading of internet metadata</a> is enabled.</p>").trigger('create');
-                return;
+            if (items.length) {
+                $('.noItemsMessage', page).hide();
+            } else {
+                $('.noItemsMessage', page).show();
             }
 
             $('#upcomingItems', page).html(LibraryBrowser.getPosterViewHtml({

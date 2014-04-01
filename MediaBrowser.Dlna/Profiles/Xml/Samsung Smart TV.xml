@@ -33,15 +33,9 @@
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
-    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
   </TranscodingProfiles>
   <ContainerProfiles>
     <ContainerProfile type="Photo">
@@ -91,12 +85,12 @@
       </Conditions>
     </CodecProfile>
   </CodecProfiles>
-  <MediaProfiles>
-    <MediaProfile container="avi" type="Video" mimeType="video/x-msvideo">
+  <ResponseProfiles>
+    <ResponseProfile container="avi" type="Video" mimeType="video/x-msvideo">
       <Conditions />
-    </MediaProfile>
-    <MediaProfile container="mkv" type="Video" mimeType="video/x-mkv">
+    </ResponseProfile>
+    <ResponseProfile container="mkv" type="Video" mimeType="video/x-mkv">
       <Conditions />
-    </MediaProfile>
-  </MediaProfiles>
+    </ResponseProfile>
+  </ResponseProfiles>
 </Profile>

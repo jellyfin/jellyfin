@@ -146,7 +146,36 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The play command.</value>
         [ApiMember(Name = "Command", Description = "The command to send.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public SystemCommand Command { get; set; }
+        public string Command { get; set; }
+    }
+
+    [Route("/Sessions/{Id}/Command/{Command}", "POST", Summary = "Issues a system command to a client")]
+    public class SendGeneralCommand : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the command.
+        /// </summary>
+        /// <value>The play command.</value>
+        [ApiMember(Name = "Command", Description = "The command to send.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Command { get; set; }
+    }
+
+    [Route("/Sessions/{Id}/Command", "POST", Summary = "Issues a system command to a client")]
+    public class SendFullGeneralCommand : GeneralCommand, IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid Id { get; set; }
     }
 
     [Route("/Sessions/{Id}/Message", "POST", Summary = "Issues a command to a client to display a message to the user")]
@@ -301,9 +330,22 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(SendSystemCommand request)
         {
-            var task = _sessionManager.SendSystemCommand(GetSession().Id, request.Id, request.Command, CancellationToken.None);
+            GeneralCommandType commandType;
 
-            Task.WaitAll(task);
+            if (Enum.TryParse(request.Command, true, out commandType))
+            {
+                var currentSession = GetSession();
+
+                var command = new GeneralCommand
+                {
+                    Name = commandType.ToString(),
+                    ControllingUserId = currentSession.UserId.HasValue ? currentSession.UserId.Value.ToString("N") : null
+                };
+
+                var task = _sessionManager.SendGeneralCommand(currentSession.Id, request.Id, command, CancellationToken.None);
+
+                Task.WaitAll(task);
+            }
         }
 
         /// <summary>
@@ -339,6 +381,32 @@ namespace MediaBrowser.Api
             };
 
             var task = _sessionManager.SendPlayCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+
+            Task.WaitAll(task);
+        }
+
+        public void Post(SendGeneralCommand request)
+        {
+            var currentSession = GetSession();
+
+            var command = new GeneralCommand
+            {
+                Name = request.Command,
+                ControllingUserId = currentSession.UserId.HasValue ? currentSession.UserId.Value.ToString("N") : null
+            };
+
+            var task = _sessionManager.SendGeneralCommand(currentSession.Id, request.Id, command, CancellationToken.None);
+
+            Task.WaitAll(task);
+        }
+
+        public void Post(SendFullGeneralCommand request)
+        {
+            var currentSession = GetSession();
+
+            request.ControllingUserId = currentSession.UserId.HasValue ? currentSession.UserId.Value.ToString("N") : null;
+
+            var task = _sessionManager.SendGeneralCommand(currentSession.Id, request.Id, request, CancellationToken.None);
 
             Task.WaitAll(task);
         }

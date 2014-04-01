@@ -29,7 +29,7 @@
         Dashboard.validateCurrentUser(page);
 
         if (userId) {
-            Dashboard.alert("Settings saved.");
+            Dashboard.alert(Globalize.translate("SettingsSaved"));
         } else {
             Dashboard.navigate("userprofiles.html");
         }

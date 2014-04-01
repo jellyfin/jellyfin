@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Media Browser</title>
+    <title>${LabelMediaBrowser}</title>
 </head>
 <body>
     <div id="wizardSettingsPage" data-role="page" class="page standalonePage wizardPage mediaLibraryPage">
@@ -11,35 +11,35 @@
             <div class="ui-corner-all ui-shadow wizardContent">
                 <form class="wizardSettingsForm">
                     <h2>
-                        <img src="css/images/mblogoicon.png" />Configure settings</h2>
+                        <img src="css/images/mblogoicon.png" />${LabelConfigureSettings}</h2>
 
                     <br />
                     <div style="margin: 1em 0;">
                         <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" checked="checked" />
-                        <label for="chkEnableInternetProviders">Download artwork and metadata from the internet </label>
-                        <div class="fieldDescription">Media Browser can download information about your media to enable rich presentations.</div>
+                        <label for="chkEnableInternetProviders">${LabelDownloadInternetMetadata}</label>
+                        <div class="fieldDescription">${LabelDownloadInternetMetadataHelp}</div>
                     </div>
                     <div style="margin: 2em 0;">
-                        <label for="chkSaveLocalMetadata">Save artwork and metadata into media folders</label>
-                        <input id="chkSaveLocalMetadata" name="chkSaveLocalMetadata" type="checkbox" checked="checked" />
-                        <div class="fieldDescription">Saving artwork and metadata directly into media folders will put them in a place where they can be easily edited.</div>
+                        <label for="chkSaveLocalMetadata">${LabelSaveLocalMetadata}</label>
+                        <input id="chkSaveLocalMetadata" name="chkSaveLocalMetadata" type="checkbox" />
+                        <div class="fieldDescription">${LabelSaveLocalMetadataHelp}</div>
                     </div>
 
-                    <h2 style="margin-top: 1.5em;">Preferred metadata language</h2>
+                    <h2 style="margin-top: 1.5em;">${HeaderPreferredMetadataLanguage}</h2>
 
                     <div style="margin: 2em 0;">
-                        <label for="selectLanguage">Language: </label>
+                        <label for="selectLanguage">${LabelLanguage}</label>
                         <select name="selectLanguage" id="selectLanguage" data-mini="true" required="required"></select>
                     </div>
 
                     <div style="margin: 2em 0;">
-                        <label for="selectCountry">Country: </label>
+                        <label for="selectCountry">${LabelCountry}</label>
                         <select name="selectCountry" id="selectCountry" data-mini="true" required="required"></select>
                     </div>
 
                     <div class="wizardNavigation">
-                        <button type="button" data-iconpos="left" data-icon="arrow-l" data-inline="true" onclick="history.back();">Previous</button>
-                        <button id="btnNextPage" type="submit" data-iconpos="right" data-icon="arrow-r" data-inline="true">Next</button>
+                        <button type="button" data-iconpos="left" data-icon="arrow-l" data-inline="true" onclick="history.back();">${LabelPrevious}</button>
+                        <button id="btnNextPage" type="submit" data-iconpos="right" data-icon="arrow-r" data-inline="true">${LabelNext}</button>
                     </div>
                 </form>
             </div>

@@ -475,7 +475,7 @@ var Dashboard = {
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-theme="a">';
+            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
 
             html += '<h3>';
 
@@ -882,73 +882,15 @@ var Dashboard = {
 
             Dashboard.onBrowseCommand(msg.Data);
         }
-        else if (msg.MessageType === "Play") {
+        else if (msg.MessageType === "GeneralCommand") {
 
-            MediaPlayer.getItemsForPlayback({
+            var cmd = msg.Data;
 
-                Ids: msg.Data.ItemIds.join(',')
-
-            }).done(function (result) {
-
-                if (msg.Data.PlayCommand == "PlayNext") {
-                    MediaPlayer.queueItemsNext(result.Items);
-                }
-                else if (msg.Data.PlayCommand == "PlayLast") {
-                    MediaPlayer.queueItems(result.Items);
-                }
-                else {
-                    MediaPlayer.play(result.Items, msg.Data.StartPositionTicks);
-                }
-
-            });
-
-        }
-        else if (msg.MessageType === "Playstate") {
-
-            if (msg.Data.Command === 'Stop') {
-                MediaPlayer.stop();
-            }
-            else if (msg.Data.Command === 'Pause') {
-                MediaPlayer.pause();
-            }
-            else if (msg.Data.Command === 'Unpause') {
-                MediaPlayer.unpause();
-            }
-            else if (msg.Data.Command === 'Seek') {
-                MediaPlayer.seek(msg.Data.SeekPositionTicks);
-            }
-            else if (msg.Data.Command === 'NextTrack') {
-                MediaPlayer.nextTrack();
-            }
-            else if (msg.Data.Command === 'PreviousTrack') {
-                MediaPlayer.previousTrack();
-            }
-            else if (msg.Data.Command === 'Fullscreen') {
-                MediaPlayer.remoteFullscreen();
-            }
-        }
-        else if (msg.MessageType === "SystemCommand") {
-
-            if (msg.Data === 'GoHome') {
+            if (cmd.Name === 'GoHome') {
                 Dashboard.navigate('index.html');
             }
-            else if (msg.Data === 'GoToSettings') {
+            else if (cmd.Name === 'GoToSettings') {
                 Dashboard.navigate('dashboard.html');
-            }
-            else if (msg.Data === 'Mute') {
-                MediaPlayer.mute();
-            }
-            else if (msg.Data === 'Unmute') {
-                MediaPlayer.unmute();
-            }
-            else if (msg.Data === 'VolumeUp') {
-                MediaPlayer.volumeUp();
-            }
-            else if (msg.Data === 'VolumeDown') {
-                MediaPlayer.volumeDown();
-            }
-            else if (msg.Data === 'ToggleMute') {
-                MediaPlayer.toggleMute();
             }
         }
         else if (msg.MessageType === "MessageCommand") {
@@ -1333,6 +1275,8 @@ $(function () {
     videoPlayerHtml += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
     videoPlayerHtml += '</div>';
 
+    videoPlayerHtml += '<div id="video-basic-controls">';
+
     videoPlayerHtml += '<a id="video-playlistButton" class="mediaButton playlistButton" href="playlist.videoPlayerHtml" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="Playlist">Playlist</a>';
     videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
     videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">Play</button>';
@@ -1351,7 +1295,8 @@ $(function () {
     videoPlayerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
     videoPlayerHtml += '</div>';
 
-    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
+    videoPlayerHtml += '</div>'; // video-basic-controls
+    videoPlayerHtml += '<div id="video-advanced-controls">';
 
     videoPlayerHtml += '<button onclick="MediaPlayer.showQualityFlyout();" id="video-qualityButton" class="mediaButton qualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">Quality</button>';
     videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-qualityFlyout" style="display:none;" class="mediaPlayerFlyout"></div></div>';
@@ -1365,9 +1310,11 @@ $(function () {
     videoPlayerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="video-chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
     videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
 
-    videoPlayerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="video-sendMediaButton" class="mediaButton sendMediaButton" title="Remote" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Remote</button>';
+    videoPlayerHtml += '<button onclick="CastPlayer.initializeLocalPlayer();CastPlayer.playMedia();" id="video-ccastButton" class="mediaButton videoCCastButton" title="Cast" type="button" data-icon="ccast" data-iconpos="notext" data-inline="true" style="display: none;">Cast</button>';
 
-    videoPlayerHtml += '<button onclick="MediaPlayer.toggleVideoPlayerMenu();" id="video-videoPlayerMenuButton" class="mediaButton videoPlayerMenuButton" title="Menu" type="button" data-icon="bars" data-iconpos="notext" data-inline="true">Menu</button>';
+    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
+
+    videoPlayerHtml += '</div>'; // video-advanced-controls
 
     videoPlayerHtml += '</div>'; // videoControls
 
@@ -1422,8 +1369,6 @@ $(function () {
 
     footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
 
-    footerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="sendMediaButton" class="mediaButton sendMediaButton" title="Remote" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Remote</button>';
-
     footerHtml += '</div>';
 
     footerHtml += '<div id="footerNotifications"></div>';
@@ -1434,7 +1379,7 @@ $(function () {
     var footerElem = $('#footer', document.body);
     footerElem.trigger('create');
 
-    $(window).on("beforeunload popstate", function () {
+    $(window).on("beforeunload", function () {
 
         // Close the connection gracefully when possible
         if (ApiClient.isWebSocketOpen() && !MediaPlayer.isPlaying()) {

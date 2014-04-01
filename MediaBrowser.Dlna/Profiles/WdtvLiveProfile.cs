@@ -43,11 +43,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video,
                     VideoCodec = "h264",
                     AudioCodec = "aac",
-
-                    Settings = new []
-                    {
-                        new TranscodingSetting {Name = TranscodingSettingType.VideoProfile, Value = "baseline"}
-                    }
+                    VideoProfile= "baseline"
                 },
                 new TranscodingProfile
                 {
@@ -157,9 +153,9 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
-            MediaProfiles = new[]
+            ResponseProfiles = new[]
             {
-                new MediaProfile
+                new ResponseProfile
                 {
                     Container = "ts",
                     OrgPn = "MPEG_TS_SD_NA",

@@ -24,7 +24,7 @@
 
         html += '<div class="viewMenuSecondary">';
 
-        html += '<button class="btnCast btnDefaultCast" type="button" data-role="none" style="display:none;"></button>';
+        html += '<button id="btnCast" class="btnCast btnDefaultCast" type="button" data-role="none"></button>';
 
         html += '<a class="viewMenuLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
@@ -174,6 +174,20 @@
     window.LibraryMenu = {
         showLibraryMenu: showLibraryMenu
     };
+    
+    function updateCastIcon() {
+        
+        var info = MediaController.getPlayerInfo();
+
+        if (info.isLocalPlayer) {
+
+            $('.btnCast').addClass('btnDefaultCast').removeClass('btnActiveCast');
+
+        } else {
+
+            $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
+        }
+    }
 
     $(document).on('pageinit', ".libraryPage", function () {
 
@@ -210,6 +224,9 @@
                 });
             });
         }
+
+        updateCastIcon();
+
     }).on('pageshow', ".libraryPage", function () {
 
         var page = this;
@@ -223,5 +240,14 @@
             $(document).scrollTop(0);
         }
     });
+
+    $(function() {
+        
+        $(MediaController).on('playerchange', function () {
+            updateCastIcon();
+        });
+
+    });
+
 
 })(window, document, jQuery);

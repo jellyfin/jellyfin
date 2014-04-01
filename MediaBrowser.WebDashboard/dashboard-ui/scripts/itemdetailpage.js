@@ -29,8 +29,6 @@
                 renderDetails(page, item, context);
                 LibraryBrowser.renderDetailPageBackdrop(page, item);
 
-                $("#remoteButtonContainer", page).show();
-
                 if (user.Configuration.IsAdministrator) {
                     $('#editButtonContainer', page).show();
 
@@ -38,21 +36,18 @@
                     $('#editButtonContainer', page).hide();
                 }
 
-                if (MediaPlayer.canPlay(item, user)) {
+                var externalPlayUrl = getExternalPlayUrl(item);
+                $('#btnPlayExternal', page).attr('href', externalPlayUrl || '#');
 
-                    var url = MediaPlayer.getPlayUrl(item);
-
-                    if (url) {
-                        $('#playExternalButtonContainer', page).show();
-                        $('#playButtonContainer', page).hide();
-                    } else {
-                        $('#playButtonContainer', page).show();
-                        $('#playExternalButtonContainer', page).hide();
-                    }
-
-                    $('#btnPlayExternal', page).attr('href', url || '#');
-
-                } else {
+                if (externalPlayUrl) {
+                    $('#playExternalButtonContainer', page).show();
+                    $('#playButtonContainer', page).hide();
+                }
+                else if (MediaController.canPlay(item)) {
+                    $('#playButtonContainer', page).show();
+                    $('#playExternalButtonContainer', page).hide();
+                }
+                else {
                     $('#playButtonContainer', page).hide();
                     $('#playExternalButtonContainer', page).hide();
                 }
@@ -108,8 +103,6 @@
                 $('#missingIndicator', page).hide();
             }
 
-            $(".autoNumeric").autoNumeric('init');
-
             setPeopleHeader(page, item);
 
             if (ApiClient.isWebSocketOpen()) {
@@ -123,6 +116,22 @@
 
         $('#btnEdit', page).attr('href', "edititemmetadata.html?id=" + id);
     }
+
+    function getExternalPlayUrl(item) {
+
+
+        if (item.GameSystem == "Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
+
+            return "http://nesbox.com/game/" + item.ProviderIds.NesBox + '/rom/' + item.ProviderIds.NesBoxRom;
+        }
+
+        if (item.GameSystem == "Super Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
+
+            return "http://snesbox.com/game/" + item.ProviderIds.NesBox + '/rom/' + item.ProviderIds.NesBoxRom;
+        }
+
+        return null;
+    };
 
     function setPeopleHeader(page, item) {
 
@@ -1107,7 +1116,7 @@
                 attributes.push(createAttribute("Layout", stream.ChannelLayout));
             }
             else if (stream.Channels) {
-                attributes.push(createAttribute("Channels",  stream.Channels + ' ch'));
+                attributes.push(createAttribute("Channels", stream.Channels + ' ch'));
             }
 
             if (stream.BitRate && stream.Codec != "mjpeg") {
@@ -1138,7 +1147,7 @@
         if (version.Path) {
             html += '<br/><span class="mediaInfoLabel">Path</span><span class="mediaInfoAttribute">' + version.Path + '</span>';
         }
-        
+
         return html;
     }
 
@@ -1162,7 +1171,7 @@
 
             var href = "itemdetails.html?id=" + item.Id;
 
-            var onclick = item.PlayAccess == 'Full' ? ' onclick="MediaPlayer.playById(\'' + item.Id + '\'); return false;"' : "";
+            var onclick = item.PlayAccess == 'Full' ? ' onclick="MediaController.play(\'' + item.Id + '\'); return false;"' : "";
 
             html += '<a class="' + cssClass + '" href="' + href + '"' + onclick + '>';
 
@@ -1286,7 +1295,10 @@
 
     function play(startPosition) {
 
-        MediaPlayer.play([currentItem], startPosition);
+        MediaController.play({
+            items: [currentItem],
+            startPositionTicks: startPosition
+        });
     }
 
     function splitVersions(page) {
@@ -1317,7 +1329,7 @@
 
         ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).done(function (trailers) {
 
-            MediaPlayer.play(trailers);
+            MediaController.play({ items: trailers });
 
         });
     }
@@ -1335,7 +1347,7 @@
                 mediaType = "Audio";
             }
 
-            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, mediaType, userdata.PlaybackPositionTicks);
+            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
         });
 
         $('#btnPlayTrailer', page).on('click', function () {
@@ -1345,19 +1357,6 @@
         $('#btnPlayExternal', page).on('click', function () {
 
             ApiClient.markPlayed(Dashboard.getCurrentUserId(), currentItem.Id, new Date());
-        });
-
-        $('#btnRemote', page).on('click', function () {
-
-            RemoteControl.showMenuForItem({
-
-                item: currentItem,
-                context: getContext(currentItem),
-
-                themeSongs: $('#themeSongsCollapsible:visible', page).length > 0,
-
-                themeVideos: $('#themeVideosCollapsible:visible', page).length > 0
-            });
         });
 
         $('.btnSplitVersions', page).on('click', function () {

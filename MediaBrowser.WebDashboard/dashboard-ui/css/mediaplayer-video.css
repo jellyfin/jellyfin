@@ -52,8 +52,38 @@
     margin-top: 0px;
 }
 
+#videoControls #video-basic-controls {
+    position: absolute;
+    top: 30px;
+    left: 20px;
+    bottom: 0;
+    width: 600px;
+    display: inline-block;
+}
+
+#videoControls #video-advanced-controls {
+    position: absolute;
+    top: 30px;
+    right: 20px;
+    bottom: 0;
+    width: 400px;
+    display: inline-block;
+}
+
 #videoControls .currentTime {
     margin-top: 25px;
+}
+
+#slider-tooltip {
+    z-index: 99999;
+    position: absolute;
+    top: -30px;
+    left: 0;
+    background-color: #eee;
+    border: 1px solid #333;
+    color: #333;
+    border-radius: 3px;
+    padding: 5px;
 }
 
 /* Fullscreen
@@ -93,6 +123,17 @@
 
 #mediaPlayer #videoControls #video-subtitleButton:disabled, #mediaPlayer #videoControls #video-muteButton:disabled, #mediaPlayer #videoControls #video-unmuteButton:disabled {
     display: none!important
+}
+
+#mediaPlayer #video-advanced-controls {
+    text-align: right;
+}
+
+#mediaPlayer #videoControls .mediaPlayerFlyout {
+    text-align: left;
+    margin-left: 0;
+    right: 0;
+    bottom: 83px;
 }
 
 /* Media queries
@@ -165,87 +206,63 @@
 /****************************************/
 
 @media all and (max-width: 1200px), all and (max-height: 720px) {
-    #mediaPlayer .chaptersButton, #mediaPlayer .audioTracksButton, #mediaPlayer .sendMediaButton {
-        display: none!important;
+    #videoControls .nowPlayingMediaInfo {
+        display: none;
     }
 
-    #mediaPlayer.showVideoMenu .muteButton, #mediaPlayer.showVideoMenu .unmuteButton, #mediaPlayer.showVideoMenu .qualityButton,  #mediaPlayer.showVideoMenu .chaptersButton, #mediaPlayer.showVideoMenu .audioTracksButton, #mediaPlayer.showVideoMenu .subtitleButton {
-        display: initial!important;
+    #videoControls .currentTime {
+        margin-right: 0;
     }
-
-    #mediaPlayer.showVideoMenu .nowPlayingMediaInfo {
-        display: none!important;
+    
+    #videoControls #video-advanced-controls {
+        width: 350px;
     }
 }
 
 @media all and (max-width: 960px), all and (max-height: 550px) {
-    #mediaPlayer .nowPlayingBarImage, #mediaPlayer .qualityButton,  #mediaPlayer .audioTracksButton, #mediaPlayer .chaptersButton, #mediaPlayer .sendMediaButton {
-        display: none!important;
-    }
-
-    #mediaPlayer.showVideoMenu .muteButton, #mediaPlayer.showVideoMenu .unmuteButton, #mediaPlayer.showVideoMenu .qualityButton,  #mediaPlayer.showVideoMenu .chaptersButton, #mediaPlayer.showVideoMenu .audioTracksButton, #mediaPlayer.showVideoMenu .subtitleButton {
-        display: initial!important;
-    }
-
-    #mediaPlayer.showVideoMenu .nowPlayingMediaInfo {
-        display: none!important;
+    #videoControls #video-advanced-controls {
+        width: 275px;
     }
 }
 
 @media all and (max-width: 800px), all and (max-height: 460px) {
-    #mediaPlayer .muteButton, #mediaPlayer .unmuteButton, #mediaPlayer .nowPlayingMediaInfo, #mediaPlayer .sendMediaButton {
-        display: none!important;
-    }
-
-    #mediaPlayer .volumeButton, #mediaPlayer .volumeSliderContainer {
-        display: inline-block!important;
-    }
-
-    #mediaPlayer.showVideoMenu #videoPlayer {
+    #mediaPlayer #videoPlayer {
         margin-top: -180px;
     }
 
-    #mediaPlayer.showVideoMenu .itemVideo {
+    #mediaPlayer .itemVideo {
         margin-bottom: 120px;
     }
 
-    #mediaPlayer.showVideoMenu #videoControls {
+    #mediaPlayer #videoControls {
         height: 120px;
     }
 
-    #mediaPlayer.showVideoMenu .muteButton, #mediaPlayer.showVideoMenu .unmuteButton, #mediaPlayer.showVideoMenu .qualityButton,  #mediaPlayer.showVideoMenu .chaptersButton, #mediaPlayer.showVideoMenu .audioTracksButton, #mediaPlayer.showVideoMenu .subtitleButton {
-        display: initial!important;
+    #mediaPlayer #video-basic-controls {
+        width: 250px;
+    }
+
+    #mediaPlayer #video-basic-controls .volumeSliderContainer {
+        margin-top: 8px;
+    }
+
+    #mediaPlayer #video-basic-controls, #mediaPlayer #video-advanced-controls {
+        width: 200px;
+        height: 120px;
+    }
+
+    #mediaPlayer #videoControls .mediaPlayerFlyout {
+        bottom: 148px;
     }
 }
 
 @media all and (max-width: 640px), all and (max-height: 365px) {
-    #mediaPlayer .fullscreenButton, #mediaPlayer .chaptersButton, #mediaPlayer .audioTracksButton, #mediaPlayer .qualityButton, #mediaPlayer .subtitleButton {
-        display: none!important;
-    }
-
-    #mediaPlayer .currentTime {
-        margin-top: 15px;
-    }
-    
-    #mediaPlayer .volumeSliderContainer {
-        vertical-align: middle;
-        margin-top: -5px;
-    }
-
-    #mediaPlayer.showVideoMenu #videoPlayer {
+    #mediaPlayer #videoPlayer {
         margin-top: -135px;
     }
 
-    #mediaPlayer.showVideoMenu .itemVideo {
-        margin-bottom: 120px;
-    }
-
-    #mediaPlayer.showVideoMenu #videoControls {
-        height: 120px;
-    }
-
-    #mediaPlayer.showVideoMenu .fullscreenButton, #mediaPlayer.showVideoMenu .chaptersButton, #mediaPlayer.showVideoMenu .audioTracksButton, #mediaPlayer.showVideoMenu .qualityButton, #mediaPlayer.showVideoMenu .subtitleButton {
-        display: initial!important;
+    #mediaPlayer #video-advanced-controls {
+        width: 150px;
     }
 }
 

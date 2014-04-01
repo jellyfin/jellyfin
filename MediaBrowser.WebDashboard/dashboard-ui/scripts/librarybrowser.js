@@ -211,7 +211,7 @@
 
                 html += '<td class="detailTableButtonsCell">';
                 html += '<button class="btnPlay" data-icon="play" type="button" data-iconpos="notext" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\', \'Audio\');" data-inline="true" title="Play">Play</button>';
-                html += '<button class="btnQueue" data-icon="plus" type="button" data-iconpos="notext" onclick="MediaPlayer.queue(\'' + item.Id + '\');" data-inline="true" title="Queue">Queue</button>';
+                html += '<button class="btnQueue" data-icon="plus" type="button" data-iconpos="notext" onclick="MediaController.queue(\'' + item.Id + '\');" data-inline="true" title="Queue">Queue</button>';
                 html += '</td>';
 
                 var num = item.IndexNumber;
@@ -287,12 +287,10 @@
             return html;
         },
 
-        showPlayMenu: function (positionTo, itemId, itemType, mediaType, resumePositionTicks) {
+        showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks) {
 
-            var isPlaying = MediaPlayer.isPlaying();
-
-            if (!isPlaying && !resumePositionTicks && mediaType != "Audio") {
-                MediaPlayer.playById(itemId);
+            if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
+                MediaController.play(itemId);
                 return;
             }
 
@@ -303,38 +301,22 @@
             html += '<ul data-role="listview" style="min-width: 150px;">';
             html += '<li data-role="list-divider" data-theme="b">Play Menu</li>';
 
-            if (itemType == "MusicArtist") {
-                html += '<li><a href="#" onclick="MediaPlayer.playArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
-            } else if (itemType != "MusicGenre") {
-                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+            html += '<li><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+
+            if (itemType == "Audio" || itemType == "MusicAlbum" || itemType == "MusicArtist" || itemType == "MusicGenre") {
+                html += '<li><a href="#" onclick="MediaController.instantMix(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
             }
 
-            if (itemType == "Audio") {
-                html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromSong(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
-            }
-            else if (itemType == "MusicAlbum") {
-                html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromAlbum(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
-                html += '<li><a href="#" onclick="MediaPlayer.shuffleFolder(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
-            }
-            else if (itemType == "MusicArtist") {
-                html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
-                html += '<li><a href="#" onclick="MediaPlayer.shuffleArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
-            }
-            else if (itemType == "MusicGenre") {
-                html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromMusicGenre(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
-                html += '<li><a href="#" onclick="MediaPlayer.shuffleMusicGenre(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
+            if (isFolder || itemType == "MusicArtist" || itemType == "MusicGenre") {
+                html += '<li><a href="#" onclick="MediaController.shuffle(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
             }
 
             if (resumePositionTicks) {
-                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', ' + resumePositionTicks + ');LibraryBrowser.closePlayMenu();">Resume</a></li>';
+                html += '<li><a href="#" onclick="MediaController.play({ids:[\'' + itemId + '\'],startPositionTicks:' + resumePositionTicks + '});LibraryBrowser.closePlayMenu();">Resume</a></li>';
             }
 
-            if (isPlaying) {
-                if (itemType == "MusicArtist") {
-                    html += '<li><a href="#" onclick="MediaPlayer.queueArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
-                } else if (itemType != "MusicGenre") {
-                    html += '<li><a href="#" onclick="MediaPlayer.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
-                }
+            if (MediaController.canQueueMediaType(mediaType)) {
+                html += '<li><a href="#" onclick="MediaController.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
             }
 
             html += '</ul>';
@@ -524,6 +506,15 @@
                         type: "Thumb",
                         maxwidth: 576,
                         tag: item.ImageTags.Thumb
+                    });
+
+                }
+                else if (options.preferBanner && item.ImageTags && item.ImageTags.Banner) {
+
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                        type: "Banner",
+                        maxwidth: 1200,
+                        tag: item.ImageTags.Banner
                     });
 
                 }
@@ -1701,7 +1692,7 @@
         renderBudget: function (elem, item) {
             if (item.Budget) {
 
-                elem.show().html('Budget:&nbsp;&nbsp;$<span class="autoNumeric" data-a-pad="false">' + item.Budget + '</span>');
+                elem.show().html('Budget:&nbsp;&nbsp;$<span>' + item.Budget + '</span>');
             } else {
                 elem.hide();
             }
@@ -1710,7 +1701,7 @@
         renderRevenue: function (elem, item) {
             if (item.Revenue) {
 
-                elem.show().html('Revenue:&nbsp;&nbsp;$<span class="autoNumeric" data-a-pad="false">' + item.Revenue + '</span>');
+                elem.show().html('Revenue:&nbsp;&nbsp;$<span>' + item.Revenue + '</span>');
             } else {
                 elem.hide();
             }

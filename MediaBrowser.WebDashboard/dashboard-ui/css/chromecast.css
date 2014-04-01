@@ -7,7 +7,13 @@
     background-size: 100%;
     vertical-align: middle;
     margin: 0 .6em;
+    cursor: pointer;
+    border: 0 !important;
 }
+
+    .btnCast:hover {
+        opacity: .5;
+    }
 
 .btnDefaultCast {
     background-image: url(images/chromecast/ic_media_route_off_holo_dark.png);
@@ -15,4 +21,15 @@
 
 .btnActiveCast {
     background-image: url(images/chromecast/ic_media_route_on_holo_dark.png);
+}
+
+.btnDisabledCast {
+    background-image: url(images/chromecast/ic_media_route_disabled_holo_dark.png);
+}
+
+.ui-icon-ccast {
+    background-image: url(images/chromecast/ic_media_route_off_holo_dark.png);
+    background-position: 5px 5px;
+    background-repeat: no-repeat;
+	background-size: 18px 18px;
 }

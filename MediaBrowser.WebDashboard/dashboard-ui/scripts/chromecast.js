@@ -77,6 +77,13 @@
     };
 
     /**
+     * Initialize local media player 
+     */
+    CastPlayer.prototype.initializeLocalPlayer = function () {
+        this.localPlayer = document.getElementById('itemVideo');
+    };
+
+    /**
      * Initialize Cast media player 
      * Initializes the API. Note that either successCallback and errorCallback will be
      * invoked once the API has finished initialization. The sessionListener and 
@@ -89,6 +96,7 @@
         }
 
         if (!chrome.cast || !chrome.cast.isAvailable) {
+
             setTimeout(this.initializeCastPlayer.bind(this), 1000);
             return;
         }
@@ -118,8 +126,7 @@
      * Generic error callback function 
      */
     CastPlayer.prototype.onError = function () {
-        console.log("error");
-        $('.btnCast').hide();
+        console.log("chromecast error");
     };
 
     /**
@@ -137,6 +144,7 @@
             if (this.session.media[0]) {
                 this.onMediaDiscovered('activeSession', this.session.media[0]);
             }
+            this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
         }
     };
 
@@ -146,15 +154,36 @@
      * does not provide a list of device IDs
      */
     CastPlayer.prototype.receiverListener = function (e) {
+
+        console.log("cast.receiverListener", e);
+
         if (e === 'available') {
-            console.log("receiver found");
-            $('.btnCast').show();
+            console.log("chromecast receiver found");
             this.hasReceivers = true;
+            this.updateMediaControlUI();
         }
         else {
-            console.log("receiver list empty");
-            $('.btnCast').hide();
+            console.log("chromecast receiver list empty");
             this.hasReceivers = false;
+        }
+    };
+
+    /**
+     * session update listener
+     */
+    CastPlayer.prototype.sessionUpdateListener = function (isAlive) {
+        if (!isAlive) {
+            this.session = null;
+            this.deviceState = DEVICE_STATE.IDLE;
+            this.castPlayerState = PLAYER_STATE.IDLE;
+            this.currentMediaSession = null;
+            clearInterval(this.timer);
+            this.updateDisplayMessage();
+
+            //// continue to play media locally
+            //console.log("current time: " + this.currentMediaTime);
+            //this.playMediaLocally(this.currentMediaTime);
+            this.updateMediaControlUI();
         }
     };
 
@@ -180,6 +209,7 @@
         this.session = e;
         this.deviceState = DEVICE_STATE.ACTIVE;
         this.updateMediaControlUI();
+        this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
     };
 
     /**
@@ -216,7 +246,7 @@
         clearInterval(this.timer);
         this.updateDisplayMessage();
 
-        // continue to play media locally
+        //// continue to play media locally
         //console.log("current time: " + this.currentMediaTime);
         //this.playMediaLocally(this.currentMediaTime);
         this.updateMediaControlUI();
@@ -686,7 +716,7 @@
         } else {
         }
 
-        $('.btnCast').attr('title', this.castPlayerState + " on " + this.session.receiver.friendlyName);
+        // this.session.receiver.friendlyName
     };
 
     /**
@@ -695,19 +725,18 @@
     CastPlayer.prototype.updateMediaControlUI = function () {
 
         if (!chrome || !chrome.cast) {
-            $('.btnCast').hide();
             return;
         }
         
+
         if (this.hasReceivers) {
-            $('.btnCast').show();
+            document.getElementById("video-ccastButton").removeAttribute("style");
+            this.initializeLocalPlayer();
         }
 
         if (this.deviceState == DEVICE_STATE.ACTIVE) {
-            $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
             var playerState = this.castPlayerState;
         } else {
-            $('.btnCast').removeClass('btnActiveCast').addClass('btnDefaultCast');
             var playerState = this.localPlayerState;
         }
 
@@ -729,24 +758,15 @@
         }
     };
 
-    window.CastPlayer = CastPlayer;
-
     var castPlayer = new CastPlayer();
+
+    window.CastPlayer = castPlayer;
 
     $(document).on('headercreated', ".libraryPage", function () {
 
         var page = this;
 
-        castPlayer.updateMediaControlUI();
-
-        $('.btnCast', page).on('click', function () {
-
-            if (castPlayer.deviceState == DEVICE_STATE.ACTIVE) {
-                castPlayer.stopApp();
-            } else {
-                castPlayer.launchApp();
-            }
-        });
+        //castPlayer.updateMediaControlUI();
 
     });
 

@@ -593,17 +593,9 @@ namespace MediaBrowser.Model.ApiClient
         /// Sends the command asynchronous.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
-        /// <param name="request">The request.</param>
-        /// <returns>Task.</returns>
-        Task SendCommandAsync(string sessionId, GenericCommand request);
-        
-        /// <summary>
-        /// Sends a system command to the client
-        /// </summary>
-        /// <param name="sessionId">The session id.</param>
         /// <param name="command">The command.</param>
         /// <returns>Task.</returns>
-        Task SendSystemCommandAsync(string sessionId, SystemCommand command);
+        Task SendCommandAsync(string sessionId, GeneralCommand command);
 
         /// <summary>
         /// Instructs the client to display a message to the user

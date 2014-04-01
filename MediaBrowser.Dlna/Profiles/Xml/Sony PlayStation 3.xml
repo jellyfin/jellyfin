@@ -29,15 +29,9 @@
     <DirectPlayProfile container="avi,mp4" type="Video" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
-    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto">
-      <Settings />
-    </TranscodingProfile>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
   </TranscodingProfiles>
   <ContainerProfiles>
     <ContainerProfile type="Photo">
@@ -80,15 +74,15 @@
       </Conditions>
     </CodecProfile>
   </CodecProfiles>
-  <MediaProfiles>
-    <MediaProfile container="mp4,mov" audioCodec="aac" type="Video" mimeType="video/mp4">
+  <ResponseProfiles>
+    <ResponseProfile container="mp4,mov" audioCodec="aac" type="Video" mimeType="video/mp4">
       <Conditions />
-    </MediaProfile>
-    <MediaProfile container="avi" type="Video" orgPn="AVI" mimeType="video/divx">
+    </ResponseProfile>
+    <ResponseProfile container="avi" type="Video" orgPn="AVI" mimeType="video/divx">
       <Conditions />
-    </MediaProfile>
-    <MediaProfile container="wav" type="Audio" mimeType="audio/wav">
+    </ResponseProfile>
+    <ResponseProfile container="wav" type="Audio" mimeType="audio/wav">
       <Conditions />
-    </MediaProfile>
-  </MediaProfiles>
+    </ResponseProfile>
+  </ResponseProfiles>
 </Profile>

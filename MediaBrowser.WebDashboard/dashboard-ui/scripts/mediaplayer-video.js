@@ -140,21 +140,6 @@
             }
         };
 
-        self.toggleVideoPlayerMenu = function () {
-            
-            var mediaPlayer = $("#mediaPlayer");
-
-            if (videoMenuVisible) {
-                $(mediaPlayer).removeClass("showVideoMenu");
-            } else {
-                $(mediaPlayer).addClass("showVideoMenu");
-            }
-
-            videoMenuVisible = !videoMenuVisible;
-
-            console.log("show vid click");
-        };
-
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function (e) {
 
             var videoControls = $('#videoControls');
@@ -226,6 +211,35 @@
 
                 idleHandler(this);
 
+            });
+
+            var trackChange = false;
+
+            var tooltip = $('<div id="slider-tooltip"></div>');
+
+            $("#videoControls .positionSliderContainer .slider").on("change", function (e) {
+                if (!trackChange) return;
+
+                var pct = $(this).val();
+
+                var time = self.currentDurationTicks * (Number(pct) * .01);
+
+                var tooltext = Dashboard.getDisplayTime(time)
+
+                tooltip.text(tooltext);
+
+                console.log("slidin", pct, self.currentDurationTicks, time);
+
+            }).on("slidestart", function (e) {
+                trackChange = true;
+
+                var handle = $("#videoControls .positionSliderContainer .ui-slider-handle");
+
+                handle.after(tooltip);
+            }).on("slidestop", function (e) {
+                trackChange = false;
+
+                tooltip.remove();
             });
         });
 
@@ -453,8 +467,6 @@
                 html += "</div>";
             }
 
-            html += '<div style="padding: 5px;"><a data-role="button" data-icon="gear" href="usersettings.html?userid=' + Dashboard.getCurrentUserId() + '" data-mini="true" data-theme="a">Preferences</a></div>';
-
             return html;
         };
 
@@ -527,8 +539,6 @@
 
                 html += "</div>";
             }
-
-            html += '<div style="padding: 5px;"><a data-role="button" data-icon="gear" href="usersettings.html?userid=' + Dashboard.getCurrentUserId() + '" data-mini="true" data-theme="a">Preferences</a></div>';
 
             return html;
         };
