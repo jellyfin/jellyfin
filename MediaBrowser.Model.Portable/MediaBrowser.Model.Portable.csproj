@@ -101,8 +101,35 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\UserConfiguration.cs">
       <Link>Configuration\UserConfiguration.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\CodecProfile.cs">
+      <Link>Dlna\CodecProfile.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\ContainerProfile.cs">
+      <Link>Dlna\ContainerProfile.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\DeviceIdentification.cs">
+      <Link>Dlna\DeviceIdentification.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\DeviceProfile.cs">
+      <Link>Dlna\DeviceProfile.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\DeviceProfileInfo.cs">
       <Link>Dlna\DeviceProfileInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\DirectPlayProfile.cs">
+      <Link>Dlna\DirectPlayProfile.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\ResponseProfile.cs">
+      <Link>Dlna\ResponseProfile.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\StreamBuilder.cs">
+      <Link>Dlna\StreamBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\StreamInfo.cs">
+      <Link>Dlna\StreamInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\TranscodingProfile.cs">
+      <Link>Dlna\TranscodingProfile.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Drawing\DrawingUtils.cs">
       <Link>Drawing\DrawingUtils.cs</Link>
@@ -223,9 +250,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\VirtualFolderInfo.cs">
       <Link>Entities\VirtualFolderInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Extensions\ModelExtensions.cs">
-      <Link>Extensions\ModelExtensions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\FileOrganization\FileOrganizationQuery.cs">
       <Link>FileOrganization\FileOrganizationQuery.cs</Link>

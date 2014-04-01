@@ -15,7 +15,7 @@
             } else {
                 $('#btnResetPassword', page).hide();
                 $('#fldCurrentPassword', page).hide();
-                $('.formheader', page).html(Globalize.translate("CreatePassword")).show();
+                $('.formheader', page).show();
             }
 
         });

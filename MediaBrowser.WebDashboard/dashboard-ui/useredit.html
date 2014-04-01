@@ -9,11 +9,11 @@
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" style="display: none;" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">Profile</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">Image</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);" id="lnkParentalControl" style="display: none;">Library Access</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">Password</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('usersettings.html', true);">Preferences</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabProfile}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">${TabImage}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);" id="lnkParentalControl" style="display: none;">${TabLibraryAccess}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('usersettings.html', true);">${TabPreferences}</a>
                 </div>
                 <form id="editUserProfileForm">
                     <ul data-role="listview" class="ulForm">
@@ -67,10 +67,10 @@
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                                Save
+                                ${ButtonSave}
                             </button>
                             <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
                     </ul>

@@ -1,11 +1,10 @@
-﻿using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
 
-namespace MediaBrowser.Controller.Dlna
+namespace MediaBrowser.Model.Dlna
 {
     [XmlRoot("Profile")]
     public class DeviceProfile
@@ -89,7 +88,7 @@ namespace MediaBrowser.Controller.Dlna
 
         public List<string> GetSupportedMediaTypes()
         {
-            return (SupportedMediaTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            return (SupportedMediaTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
         }
 
         public TranscodingProfile GetAudioTranscodingProfile(string container, string audioCodec)

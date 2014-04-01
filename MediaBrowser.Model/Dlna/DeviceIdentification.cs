@@ -1,7 +1,6 @@
-﻿
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
-namespace MediaBrowser.Controller.Dlna
+namespace MediaBrowser.Model.Dlna
 {
     public class DeviceIdentification
     {

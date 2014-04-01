@@ -9,43 +9,43 @@
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('useredit.html', true);">Profile</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">Image</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);" id="lnkParentalControl" style="display: none;">Library Access</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">Password</a>
-                    <a href="#" data-role="button" class="ui-btn-active">Preferences</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('useredit.html', true);">${TabProfile}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">${TabImage}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);" id="lnkParentalControl" style="display: none;">${TabLibraryAccess}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabPreferences}</a>
                 </div>
                 <form id="userSettingsForm">
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <input type="checkbox" id="chkDisplayMissingEpisodes" name="chkDisplayMissingEpisodes" />
-                            <label for="chkDisplayMissingEpisodes">Display missing episodes within seasons</label>
+                            <label for="chkDisplayMissingEpisodes">${LabelDisplayMissingEpisodesWithinSeasons}</label>
                         </li>
                         <li>
                             <input type="checkbox" id="chkDisplayUnairedEpisodes" name="chkDisplayUnairedEpisodes" />
-                            <label for="chkDisplayUnairedEpisodes">Display unaired episodes within seasons</label>
+                            <label for="chkDisplayUnairedEpisodes">${LabelUnairedMissingEpisodesWithinSeasons}</label>
                         </li>
                     </ul>
-                    <h2>Video Playback Settings</h2>
+                    <h2>${HeaderVideoPlaybackSettings}</h2>
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="selectAudioLanguage">Audio language preference: </label>
+                            <label for="selectAudioLanguage">${LabelAudioLanguagePreference}</label>
                             <select name="selectAudioLanguage" id="selectAudioLanguage"></select>
                         </li>
                         <li>
-                            <label for="selectSubtitleLanguage">Subtitle language preference: </label>
+                            <label for="selectSubtitleLanguage">${LabelSubtitleLanguagePreference}</label>
                             <select name="selectSubtitleLanguage" id="selectSubtitleLanguage"></select>
                         </li>
                         <li>
                             <input type="checkbox" id="chkForcedSubtitlesOnly" name="chkForcedSubtitlesOnly" />
-                            <label for="chkForcedSubtitlesOnly">Display only forced subtitles</label>
+                            <label for="chkForcedSubtitlesOnly">${LabelDisplayForcedSubtitlesOnly}</label>
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">
-                                Save
+                                ${ButtonOk}
                             </button>
                             <button type="button" onclick="history.back();" data-icon="delete">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
                     </ul>
