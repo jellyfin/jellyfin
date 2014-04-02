@@ -16,6 +16,12 @@ namespace MediaBrowser.Model.Session
         public bool CanSeek { get; set; }
 
         /// <summary>
+        /// Gets or sets the supported commands.
+        /// </summary>
+        /// <value>The supported commands.</value>
+        public List<string> SupportedCommands { get; set; }
+        
+        /// <summary>
         /// Gets or sets the remote end point.
         /// </summary>
         /// <value>The remote end point.</value>
@@ -167,6 +173,7 @@ namespace MediaBrowser.Model.Session
 
             PlayableMediaTypes = new List<string>();
             QueueableMediaTypes = new List<string>();
+            SupportedCommands = new List<string>();
         }
     }
 

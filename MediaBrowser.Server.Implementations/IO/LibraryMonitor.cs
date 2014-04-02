@@ -417,6 +417,11 @@ namespace MediaBrowser.Server.Implementations.IO
                 _affectedPaths.AddOrUpdate(path, path, (key, oldValue) => affectedPath);
             }
 
+            RestartTimer();
+        }
+
+        private void RestartTimer()
+        {
             lock (_timerLock)
             {
                 if (_updateTimer == null)
@@ -436,6 +441,14 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <param name="stateInfo">The state info.</param>
         private async void TimerStopped(object stateInfo)
         {
+            // Extend the timer as long as any of the paths are still being written to.
+            if (_affectedPaths.Any(p => IsFileLocked(p.Key)))
+            {
+                Logger.Info("Timer extended.");
+                RestartTimer();
+                return;
+            }
+
             Logger.Debug("Timer stopped.");
 
             DisposeTimer();
@@ -451,6 +464,70 @@ namespace MediaBrowser.Server.Implementations.IO
             {
                 Logger.ErrorException("Error processing directory changes", ex);
             }
+        }
+
+        private bool IsFileLocked(string path)
+        {
+            try
+            {
+                var data = _fileSystem.GetFileSystemInfo(path);
+
+                if (!data.Exists
+                    || data.Attributes.HasFlag(FileAttributes.Directory)
+
+                    // Opening a writable stream will fail with readonly files
+                    || data.Attributes.HasFlag(FileAttributes.ReadOnly))
+                {
+                    return false;
+                }
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error getting file system info for: {0}", ex, path);
+                return false;
+            }
+
+            try
+            {
+                using (_fileSystem.GetFileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+                {
+                    if (_updateTimer != null)
+                    {
+                        //file is not locked
+                        return false;
+                    }
+                }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // File may have been deleted
+                return false;
+            }
+            catch (FileNotFoundException)
+            {
+                // File may have been deleted
+                return false;
+            }
+            catch (IOException)
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                //or does not exist (has already been processed)
+                Logger.Debug("{0} is locked.", path);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error determining if file is locked: {0}", ex, path);
+                return false;
+            }
+
+            return false;
         }
 
         private void DisposeTimer()

@@ -1,9 +1,10 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Security;
 using System.Text;
 using System.Threading;
 
@@ -32,9 +33,16 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
-            return item is Season && updateType >= ItemUpdateType.MetadataDownload;
+            if (!(item is Season))
+            {
+                return false;
+            }
+
+            return updateType >= ItemUpdateType.MetadataDownload || (updateType >= ItemUpdateType.MetadataImport && File.Exists(GetSavePath(item)));
         }
 
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Saves the specified item.
         /// </summary>
@@ -47,13 +55,23 @@ namespace MediaBrowser.Providers.Savers
 
             builder.Append("<Item>");
 
+            var season = (Season)item;
+
+            if (season.IndexNumber.HasValue)
+            {
+                builder.Append("<SeasonNumber>" + SecurityElement.Escape(season.IndexNumber.Value.ToString(_usCulture)) + "</SeasonNumber>");
+            }
+            
             XmlSaverHelpers.AddCommonNodes((Season)item, builder);
 
             builder.Append("</Item>");
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string> { });
+            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>
+            {
+                "SeasonNumber"
+            });
         }
 
         /// <summary>

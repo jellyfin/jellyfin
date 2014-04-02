@@ -268,9 +268,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 PlayableMediaTypes = session.PlayableMediaTypes,
                 RemoteEndPoint = session.RemoteEndPoint,
                 AdditionalUsers = session.AdditionalUsers,
-                SupportsFullscreenToggle = session.SupportsFullscreenToggle,
-                SupportsNavigationControl = session.SupportsNavigationControl,
-                SupportsOsdToggle = session.SupportsOsdToggle
+                SupportedCommands = session.SupportedCommands
             };
 
             if (session.NowPlayingItem != null)
@@ -1347,7 +1345,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var mediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList();
 
-            return new MediaSourceInfo
+            var info = new MediaSourceInfo
             {
                 Id = i.Id.ToString("N"),
                 IsoType = i.IsoType,
@@ -1359,11 +1357,22 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Video3DFormat = i.Video3DFormat,
                 VideoType = i.VideoType
             };
+
+            if (i.VideoType == VideoType.VideoFile || i.VideoType == VideoType.Iso)
+            {
+                var locationType = i.LocationType;
+                if (!string.IsNullOrWhiteSpace(i.Path) && locationType != LocationType.Remote && locationType != LocationType.Virtual)
+                {
+                    info.Container = Path.GetExtension(i.Path).TrimStart('.');
+                }
+            }
+
+            return info;
         }
 
         private MediaSourceInfo GetVersionInfo(Audio i)
         {
-            return new MediaSourceInfo
+            var info = new MediaSourceInfo
             {
                 Id = i.Id.ToString("N"),
                 LocationType = i.LocationType,
@@ -1372,6 +1381,14 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Path = GetMappedPath(i),
                 RunTimeTicks = i.RunTimeTicks
             };
+
+            var locationType = i.LocationType;
+            if (!string.IsNullOrWhiteSpace(i.Path) && locationType != LocationType.Remote && locationType != LocationType.Virtual)
+            {
+                info.Container = Path.GetExtension(i.Path).TrimStart('.');
+            }
+
+            return info;
         }
 
         private string GetMappedPath(IHasMetadata item)

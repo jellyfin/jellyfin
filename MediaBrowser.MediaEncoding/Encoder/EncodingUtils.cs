@@ -209,7 +209,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (isWebm)
                 {
-                    return Math.Max(Environment.ProcessorCount - 1, 1);
+                    return Math.Max(Environment.ProcessorCount - 1, 2);
                 }
 
                 return 0;
@@ -224,9 +224,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 case EncodingQuality.HighSpeed:
                     return 2;
                 case EncodingQuality.HighQuality:
-                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
+                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 2) : 0;
                 case EncodingQuality.MaxQuality:
-                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
+                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 2) : 0;
                 default:
                     throw new Exception("Unrecognized MediaEncodingQuality value.");
             }

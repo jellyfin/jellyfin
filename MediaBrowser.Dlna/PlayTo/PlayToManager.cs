@@ -146,7 +146,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }, _tokenSource.Token, TaskCreationOptions.LongRunning);
         }
 
-        private void TryCreateController(IDictionary<string,string> headers)
+        private void TryCreateController(IDictionary<string, string> headers)
         {
             string location;
 
@@ -244,9 +244,16 @@ namespace MediaBrowser.Dlna.PlayTo
 
                     _sessionManager.ReportCapabilities(sessionInfo.Id, new SessionCapabilities
                     {
-                        PlayableMediaTypes = profile.GetSupportedMediaTypes().ToArray(),
+                        PlayableMediaTypes = profile.GetSupportedMediaTypes(),
 
-                        SupportsFullscreenToggle = false
+                        SupportedCommands = new List<string>
+                        {
+                            GeneralCommandType.VolumeDown.ToString(),
+                            GeneralCommandType.VolumeUp.ToString(),
+                            GeneralCommandType.Mute.ToString(),
+                            GeneralCommandType.Unmute.ToString(),
+                            GeneralCommandType.ToggleMute.ToString()
+                        }
                     });
 
                     _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);

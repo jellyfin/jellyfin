@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.TV
 
         protected override void Fetch(LocalMetadataResult<Season> result, string path, CancellationToken cancellationToken)
         {
-            new BaseItemXmlParser<Season>(_logger).Fetch(result.Item, path, cancellationToken);
+            new SeasonXmlParser(_logger).Fetch(result.Item, path, cancellationToken);
         }
 
         protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)

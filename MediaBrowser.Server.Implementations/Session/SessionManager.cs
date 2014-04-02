@@ -80,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="userRepository">The user repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager)
+        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager)
         {
             _userDataRepository = userDataRepository;
             _configurationManager = configurationManager;
@@ -88,6 +88,7 @@ namespace MediaBrowser.Server.Implementations.Session
             _userRepository = userRepository;
             _libraryManager = libraryManager;
             _userManager = userManager;
+            _musicManager = musicManager;
         }
 
         /// <summary>
@@ -1013,10 +1014,8 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSession(sessionId);
 
-            session.PlayableMediaTypes = capabilities.PlayableMediaTypes.ToList();
-            session.SupportsFullscreenToggle = capabilities.SupportsFullscreenToggle;
-            session.SupportsOsdToggle = capabilities.SupportsOsdToggle;
-            session.SupportsNavigationControl = capabilities.SupportsNavigationControl;
+            session.PlayableMediaTypes = capabilities.PlayableMediaTypes;
+            session.SupportedCommands = capabilities.SupportedCommands;
         }
     }
 }

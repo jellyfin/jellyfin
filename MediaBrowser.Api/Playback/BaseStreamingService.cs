@@ -328,7 +328,8 @@ namespace MediaBrowser.Api.Playback
         {
             var param = string.Empty;
 
-            var hasFixedResolution = state.VideoRequest.HasFixedResolution;
+            var isVc1 = state.VideoStream != null && 
+                string.Equals(state.VideoStream.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
 
             var qualitySetting = GetQualitySetting();
 
@@ -364,24 +365,36 @@ namespace MediaBrowser.Api.Playback
             // webm
             else if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
             {
-                // http://www.webmproject.org/docs/encoder-parameters/
-                param = "-speed 16 -quality good -profile:v 0 -slices 8";
+                // Values 0-3, 0 being highest quality but slower
+                var profileScore = 0;
 
-                if (!hasFixedResolution)
+                string crf;
+
+                switch (qualitySetting)
                 {
-                    switch (qualitySetting)
-                    {
-                        case EncodingQuality.HighSpeed:
-                            param += " -crf 18";
-                            break;
-                        case EncodingQuality.HighQuality:
-                            param += " -crf 10";
-                            break;
-                        case EncodingQuality.MaxQuality:
-                            param += " -crf 4";
-                            break;
-                    }
+                    case EncodingQuality.HighSpeed:
+                        crf = "18";
+                        profileScore++;
+                        break;
+                    case EncodingQuality.HighQuality:
+                        crf = "10";
+                        break;
+                    case EncodingQuality.MaxQuality:
+                        crf = "4";
+                        break;
+                    default:
+                        throw new ArgumentException("Unrecognized quality setting");
                 }
+
+                if (isVc1)
+                {
+                    profileScore++;
+                }
+
+                // http://www.webmproject.org/docs/encoder-parameters/
+                param = string.Format("-speed 16 -quality good -profile:v {0} -slices 8 -crf {1}",
+                    profileScore.ToString(UsCulture),
+                    crf);
             }
 
             else if (string.Equals(videoCodec, "mpeg4", StringComparison.OrdinalIgnoreCase))
