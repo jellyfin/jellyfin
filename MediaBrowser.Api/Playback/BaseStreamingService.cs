@@ -9,6 +9,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -247,6 +248,11 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
+            if (type == MediaStreamType.Video)
+            {
+                streams = streams.Where(i => !string.Equals(i.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
             if (returnFirstIfNoIndex && type == MediaStreamType.Audio)
             {
                 return streams.FirstOrDefault(i => i.Channels.HasValue && i.Channels.Value > 0) ??
@@ -303,9 +309,9 @@ namespace MediaBrowser.Api.Playback
                 case EncodingQuality.HighSpeed:
                     return 2;
                 case EncodingQuality.HighQuality:
-                    return 2;
+                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
                 case EncodingQuality.MaxQuality:
-                    return isWebm ? 2 : 0;
+                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
                 default:
                     throw new Exception("Unrecognized MediaEncodingQuality value.");
             }
@@ -1018,7 +1024,7 @@ namespace MediaBrowser.Api.Playback
 
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
-                
+
                 return string.Format(" -maxrate {0} -bufsize {1}",
                     bitrate.Value.ToString(UsCulture),
                     (bitrate.Value * 2).ToString(UsCulture));
@@ -1257,6 +1263,69 @@ namespace MediaBrowser.Api.Playback
         }
 
         /// <summary>
+        /// Parses the dlna headers.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        private void ParseDlnaHeaders(StreamRequest request)
+        {
+            if (!request.StartTimeTicks.HasValue)
+            {
+                var timeSeek = GetHeader("TimeSeekRange.dlna.org");
+
+                request.StartTimeTicks = ParseTimeSeekHeader(timeSeek);
+            }
+        }
+
+        /// <summary>
+        /// Parses the time seek header.
+        /// </summary>
+        private long? ParseTimeSeekHeader(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            if (value.IndexOf("npt=", StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                throw new ArgumentException("Invalid timeseek header");
+            }
+            value = value.Substring(4).Split(new[] { '-' }, 2)[0];
+
+            if (value.IndexOf(':') == -1)
+            {
+                // Parses npt times in the format of '417.33'
+                double seconds;
+                if (double.TryParse(value, NumberStyles.Any, UsCulture, out seconds))
+                {
+                    return TimeSpan.FromSeconds(seconds).Ticks;
+                }
+
+                throw new ArgumentException("Invalid timeseek header");
+            }
+
+            // Parses npt times in the format of '10:19:25.7'
+            var tokens = value.Split(new[] { ':' }, 3);
+            double secondsSum = 0;
+            var timeFactor = 3600;
+
+            foreach (var time in tokens)
+            {
+                double digit;
+                if (double.TryParse(time, NumberStyles.Any, UsCulture, out digit))
+                {
+                    secondsSum += (digit * timeFactor);
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid timeseek header");
+                }
+                timeFactor /= 60;
+            }
+            return TimeSpan.FromSeconds(secondsSum).Ticks;
+        }
+
+        /// <summary>
         /// Gets the state.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -1264,6 +1333,8 @@ namespace MediaBrowser.Api.Playback
         /// <returns>StreamState.</returns>
         protected async Task<StreamState> GetState(StreamRequest request, CancellationToken cancellationToken)
         {
+            ParseDlnaHeaders(request);
+
             if (!string.IsNullOrWhiteSpace(request.Params))
             {
                 ParseParams(request);
@@ -1428,7 +1499,110 @@ namespace MediaBrowser.Api.Playback
 
             ApplyDeviceProfileSettings(state);
 
+            if (videoRequest != null && state.VideoStream != null)
+            {
+                if (CanStreamCopyVideo(videoRequest, state.VideoStream, state.VideoType))
+                {
+                    videoRequest.VideoCodec = "copy";
+                }
+            }
+
             return state;
+        }
+
+        private bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream, VideoType videoType)
+        {
+            if (videoStream.IsInterlaced)
+            {
+                return false;
+            }
+
+            // Not going to attempt this with folder rips
+            if (videoType != VideoType.VideoFile)
+            {
+                return false;
+            }
+
+            // Source and target codecs must match
+            if (!string.Equals(request.VideoCodec, videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // If client is requesting a specific video profile, it must match the source
+            if (!string.IsNullOrEmpty(request.Profile) && !string.Equals(request.Profile, videoStream.Profile))
+            {
+                return false;
+            }
+
+            // Video width must fall within requested value
+            if (request.MaxWidth.HasValue)
+            {
+                if (!videoStream.Width.HasValue || videoStream.Width.Value > request.MaxWidth.Value)
+                {
+                    return false;
+                }
+            }
+
+            // Video height must fall within requested value
+            if (request.MaxHeight.HasValue)
+            {
+                if (!videoStream.Height.HasValue || videoStream.Height.Value > request.MaxHeight.Value)
+                {
+                    return false;
+                }
+            }
+
+            // Video framerate must fall within requested value
+            var requestedFramerate = request.MaxFramerate ?? request.Framerate;
+            if (requestedFramerate.HasValue)
+            {
+                var videoFrameRate = videoStream.AverageFrameRate ?? videoStream.RealFrameRate;
+
+                if (!videoFrameRate.HasValue || videoFrameRate.Value > requestedFramerate.Value)
+                {
+                    return false;
+                }
+            }
+
+            // Video bitrate must fall within requested value
+            if (request.VideoBitRate.HasValue)
+            {
+                if (!videoStream.BitRate.HasValue || videoStream.BitRate.Value > request.VideoBitRate.Value)
+                {
+                    return false;
+                }
+            }
+
+            // If a specific level was requested, the source must match or be less than
+            if (!string.IsNullOrEmpty(request.Level))
+            {
+                double requestLevel;
+
+                if (double.TryParse(request.Level, NumberStyles.Any, UsCulture, out requestLevel))
+                {
+                    if (!videoStream.Level.HasValue)
+                    {
+                        return false;
+                    }
+
+                    if (videoStream.Level.Value > requestLevel)
+                    {
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            return SupportsAutomaticVideoStreamCopy;
+        }
+
+        protected virtual bool SupportsAutomaticVideoStreamCopy
+        {
+            get
+            {
+                return false;
+            }
         }
 
         private void ApplyDeviceProfileSettings(StreamState state)
@@ -1509,8 +1683,6 @@ namespace MediaBrowser.Api.Playback
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected void AddDlnaHeaders(StreamState state, IDictionary<string, string> responseHeaders, bool isStaticallyStreamed)
         {
-            var timeSeek = GetHeader("TimeSeekRange.dlna.org");
-
             var transferMode = GetHeader("transferMode.dlna.org");
             responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
             responseHeaders["realTimeInfo.dlna.org"] = "DLNA.ORG_TLAG=*";
@@ -1521,11 +1693,21 @@ namespace MediaBrowser.Api.Playback
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
             var orgOp = ";DLNA.ORG_OP=";
 
-            // Time-based seeking currently only possible when transcoding
-            orgOp += isStaticallyStreamed ? "0" : "1";
+            if (state.RunTimeTicks.HasValue)
+            {
+                // Time-based seeking currently only possible when transcoding
+                orgOp += isStaticallyStreamed ? "0" : "1";
 
-            // Byte-based seeking only possible when not transcoding
-            orgOp += isStaticallyStreamed || state.TranscodeSeekInfo == TranscodeSeekInfo.Bytes ? "1" : "0";
+                // Byte-based seeking only possible when not transcoding
+                orgOp += isStaticallyStreamed || state.TranscodeSeekInfo == TranscodeSeekInfo.Bytes ? "1" : "0";
+
+                AddTimeSeekResponseHeaders(state, responseHeaders);
+            }
+            else
+            {
+                // No seeking is available if we don't know the content runtime
+                orgOp += "00";
+            }
 
             // 0 = native, 1 = transcoded
             var orgCi = isStaticallyStreamed ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
@@ -1568,15 +1750,6 @@ namespace MediaBrowser.Api.Playback
             {
                 contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
             }
-            //else if (string.Equals(extension, ".wmv", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
-            //}
-            //else if (string.Equals(extension, ".asf", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    // ??
-            //    contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
-            //}
 
             if (!string.IsNullOrEmpty(contentFeatures))
             {
@@ -1587,6 +1760,15 @@ namespace MediaBrowser.Api.Playback
             {
                 Request.Response.AddHeader(item.Key, item.Value);
             }
+        }
+
+        private void AddTimeSeekResponseHeaders(StreamState state, IDictionary<string, string> responseHeaders)
+        {
+            var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds.ToString(UsCulture);
+            var startSeconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds.ToString(UsCulture);
+
+            responseHeaders["TimeSeekRange.dlna.org"] = string.Format("npt={0}-{1}/{1}", startSeconds, runtimeSeconds);
+            responseHeaders["X-AvailableSeekRange"] = string.Format("1 npt={0}-{1}", startSeconds, runtimeSeconds);
         }
 
         /// <summary>

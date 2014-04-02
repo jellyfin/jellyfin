@@ -98,6 +98,14 @@ namespace MediaBrowser.Api.Playback.Hls
             ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
         }
 
+        protected override bool SupportsAutomaticVideoStreamCopy
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Dlna.PlayTo
 {

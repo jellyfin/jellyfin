@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
