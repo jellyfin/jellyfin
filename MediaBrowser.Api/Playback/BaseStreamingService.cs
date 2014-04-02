@@ -294,7 +294,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (isWebm)
                 {
-                    return Math.Max(Environment.ProcessorCount - 1, 1);
+                    return Math.Max(Environment.ProcessorCount - 1, 2);
                 }
 
                 return 0;
@@ -309,9 +309,9 @@ namespace MediaBrowser.Api.Playback
                 case EncodingQuality.HighSpeed:
                     return 2;
                 case EncodingQuality.HighQuality:
-                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
+                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 2) : 0;
                 case EncodingQuality.MaxQuality:
-                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
+                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 2) : 0;
                 default:
                     throw new Exception("Unrecognized MediaEncodingQuality value.");
             }
@@ -1005,8 +1005,8 @@ namespace MediaBrowser.Api.Playback
                     }
 
                     // With vpx when crf is used, b:v becomes a max rate
-                    // https://trac.ffmpeg.org/wiki/vpxEncodingGuide
-                    return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                    // https://trac.ffmpeg.org/wiki/vpxEncodingGuide. But higher bitrate source files -b:v causes judder so limite the bitrate but dont allow it to "saturate" the bitrate. So dont contrain it down just up.
+                    return string.Format(" -maxrate:v {0} -bufsize:v ({0}*2) -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
 
                 if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
