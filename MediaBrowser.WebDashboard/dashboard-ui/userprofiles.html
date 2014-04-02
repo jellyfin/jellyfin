@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Users</title>
+    <title>${HeaderUsers}</title>
 </head>
 <body>
     <div id="userProfilesPage" data-role="page" class="page type-interior userProfilesConfigurationPage">
@@ -9,15 +9,15 @@
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="userprofiles.html" data-role="button" class="ui-btn-active">Profiles</a>
-                    <a href="allusersettings.html" data-role="button">Security</a>
+                    <a href="userprofiles.html" data-role="button" class="ui-btn-active">${TabProfiles}</a>
+                    <a href="allusersettings.html" data-role="button">${TabSecurity}</a>
                 </div>
 
 
                 <div class="readOnlyContent">
                     <p id="pAddUser">
                         <button type="button" data-icon="plus" onclick="Dashboard.navigate('useredit.html');">
-                            Add User
+                            ${ButtonAddUser}
                         </button>
                     </p>
 

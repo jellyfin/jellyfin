@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Xml.Serialization;
 
-namespace MediaBrowser.Controller.Dlna
+namespace MediaBrowser.Model.Dlna
 {
     public class ContainerProfile
     {
@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Dlna
 
         public List<string> GetContainers()
         {
-            return (Container ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            return (Container ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
         }
     }
 }

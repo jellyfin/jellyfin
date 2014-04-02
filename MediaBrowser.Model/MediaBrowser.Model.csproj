@@ -66,7 +66,16 @@
     <Compile Include="Configuration\MetadataPlugin.cs" />
     <Compile Include="Configuration\MetadataOptions.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
+    <Compile Include="Dlna\CodecProfile.cs" />
+    <Compile Include="Dlna\ContainerProfile.cs" />
+    <Compile Include="Dlna\DeviceIdentification.cs" />
+    <Compile Include="Dlna\DeviceProfile.cs" />
     <Compile Include="Dlna\DeviceProfileInfo.cs" />
+    <Compile Include="Dlna\DirectPlayProfile.cs" />
+    <Compile Include="Dlna\ResponseProfile.cs" />
+    <Compile Include="Dlna\StreamBuilder.cs" />
+    <Compile Include="Dlna\StreamInfo.cs" />
+    <Compile Include="Dlna\TranscodingProfile.cs" />
     <Compile Include="Drawing\ImageOutputFormat.cs" />
     <Compile Include="Dto\BaseItemPerson.cs" />
     <Compile Include="Dto\ChapterInfoDto.cs" />
@@ -155,7 +164,6 @@
     <Compile Include="Entities\ParentalRating.cs" />
     <Compile Include="Dto\StreamOptions.cs" />
     <Compile Include="Entities\VirtualFolderInfo.cs" />
-    <Compile Include="Extensions\ModelExtensions.cs" />
     <Compile Include="IO\IZipClient.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\LogSeverity.cs" />
@@ -223,6 +231,7 @@
       <HintPath>..\packages\PropertyChanged.Fody.1.41.0.0\Lib\NET35\PropertyChanged.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.XML" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

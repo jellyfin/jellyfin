@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
 
-namespace MediaBrowser.Controller.Dlna
+namespace MediaBrowser.Model.Dlna
 {
     public class CodecProfile
     {
@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Dlna
 
         public List<string> GetCodecs()
         {
-            return (Codec ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            return (Codec ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
         }
 
         public bool ContainsCodec(string codec)
@@ -73,7 +73,6 @@ namespace MediaBrowser.Controller.Dlna
         AudioChannels,
         AudioBitrate,
         AudioProfile,
-        Filesize,
         Width,
         Height,
         Has64BitOffsets,
