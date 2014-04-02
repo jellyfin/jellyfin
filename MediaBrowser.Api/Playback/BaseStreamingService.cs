@@ -309,9 +309,9 @@ namespace MediaBrowser.Api.Playback
                 case EncodingQuality.HighSpeed:
                     return 2;
                 case EncodingQuality.HighQuality:
-                    return 2;
+                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
                 case EncodingQuality.MaxQuality:
-                    return isWebm ? 2 : 0;
+                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
                 default:
                     throw new Exception("Unrecognized MediaEncodingQuality value.");
             }
@@ -1499,7 +1499,110 @@ namespace MediaBrowser.Api.Playback
 
             ApplyDeviceProfileSettings(state);
 
+            if (videoRequest != null && state.VideoStream != null)
+            {
+                if (CanStreamCopyVideo(videoRequest, state.VideoStream, state.VideoType))
+                {
+                    videoRequest.VideoCodec = "copy";
+                }
+            }
+
             return state;
+        }
+
+        private bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream, VideoType videoType)
+        {
+            if (videoStream.IsInterlaced)
+            {
+                return false;
+            }
+
+            // Not going to attempt this with folder rips
+            if (videoType != VideoType.VideoFile)
+            {
+                return false;
+            }
+
+            // Source and target codecs must match
+            if (!string.Equals(request.VideoCodec, videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // If client is requesting a specific video profile, it must match the source
+            if (!string.IsNullOrEmpty(request.Profile) && !string.Equals(request.Profile, videoStream.Profile))
+            {
+                return false;
+            }
+
+            // Video width must fall within requested value
+            if (request.MaxWidth.HasValue)
+            {
+                if (!videoStream.Width.HasValue || videoStream.Width.Value > request.MaxWidth.Value)
+                {
+                    return false;
+                }
+            }
+
+            // Video height must fall within requested value
+            if (request.MaxHeight.HasValue)
+            {
+                if (!videoStream.Height.HasValue || videoStream.Height.Value > request.MaxHeight.Value)
+                {
+                    return false;
+                }
+            }
+
+            // Video framerate must fall within requested value
+            var requestedFramerate = request.MaxFramerate ?? request.Framerate;
+            if (requestedFramerate.HasValue)
+            {
+                var videoFrameRate = videoStream.AverageFrameRate ?? videoStream.RealFrameRate;
+
+                if (!videoFrameRate.HasValue || videoFrameRate.Value > requestedFramerate.Value)
+                {
+                    return false;
+                }
+            }
+
+            // Video bitrate must fall within requested value
+            if (request.VideoBitRate.HasValue)
+            {
+                if (!videoStream.BitRate.HasValue || videoStream.BitRate.Value > request.VideoBitRate.Value)
+                {
+                    return false;
+                }
+            }
+
+            // If a specific level was requested, the source must match or be less than
+            if (!string.IsNullOrEmpty(request.Level))
+            {
+                double requestLevel;
+
+                if (double.TryParse(request.Level, NumberStyles.Any, UsCulture, out requestLevel))
+                {
+                    if (!videoStream.Level.HasValue)
+                    {
+                        return false;
+                    }
+
+                    if (videoStream.Level.Value > requestLevel)
+                    {
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            return SupportsAutomaticVideoStreamCopy;
+        }
+
+        protected virtual bool SupportsAutomaticVideoStreamCopy
+        {
+            get
+            {
+                return false;
+            }
         }
 
         private void ApplyDeviceProfileSettings(StreamState state)

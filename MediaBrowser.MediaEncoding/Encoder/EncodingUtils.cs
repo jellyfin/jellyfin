@@ -224,9 +224,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 case EncodingQuality.HighSpeed:
                     return 2;
                 case EncodingQuality.HighQuality:
-                    return 2;
+                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
                 case EncodingQuality.MaxQuality:
-                    return isWebm ? 2 : 0;
+                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
                 default:
                     throw new Exception("Unrecognized MediaEncodingQuality value.");
             }
