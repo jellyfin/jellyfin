@@ -661,10 +661,6 @@ a.itemTag:hover {
     display: inline-block;
 }
 
-.viewMenuRemoteControlButton {
-    margin-left: .5em;
-}
-
 @media all and (min-width: 600px) {
     .inlineDetailSection:not(.hide) {
         display: inline-block;
@@ -676,20 +672,20 @@ a.itemTag:hover {
     }
 }
 
-@media all and (min-width: 880px) {
+@media all and (min-width: 950px) {
 
     .libraryMenuButton {
         display: none;
     }
 }
 
-@media all and (max-width: 880px) {
+@media all and (max-width: 950px) {
 
     .desktopHomeLink {
         display: none;
     }
 
-    .desktopViewMenuLink:not(.selectedViewLink) {
+    .desktopViewMenuLink {
         display: none;
     }
 

@@ -666,6 +666,8 @@
 
             // Some 1080- videos are reported as 1912?
             if (maxAllowedWidth >= 1910) {
+                options.push({ name: '1080p - 30Mbps', maxWidth: 1920, bitrate: 30000000 });
+                options.push({ name: '1080p - 25Mbps', maxWidth: 1920, bitrate: 25000000 });
                 options.push({ name: '1080p - 20Mbps', maxWidth: 1920, bitrate: 20000000 });
                 options.push({ name: '1080p - 15Mbps', maxWidth: 1920, bitrate: 15000000 });
                 options.push({ name: '1080p - 10Mbps', maxWidth: 1920, bitrate: 10000000 });
@@ -728,7 +730,7 @@
 
             var baseParams = {
                 audioChannels: 2,
-                StartTimeTicks: startPosition || 0,
+                StartTimeTicks: startPosition,
                 SubtitleStreamIndex: getInitialSubtitleStreamIndex(mediaStreams, user),
                 AudioStreamIndex: getInitialAudioStreamIndex(mediaStreams, user),
                 deviceId: ApiClient.deviceId(),

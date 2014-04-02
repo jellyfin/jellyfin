@@ -312,6 +312,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// Modifies the HTML by adding common meta tags, css and js.
         /// </summary>
         /// <param name="sourceStream">The source stream.</param>
+        /// <param name="localizationCulture">The localization culture.</param>
         /// <returns>Task{Stream}.</returns>
         private async Task<Stream> ModifyHtml(Stream sourceStream, string localizationCulture)
         {
@@ -327,7 +328,11 @@ namespace MediaBrowser.WebDashboard.Api
 
                     if (!string.IsNullOrWhiteSpace(localizationCulture))
                     {
+                        var lang = localizationCulture.Split('-').FirstOrDefault();
+
                         html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
+
+                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">");
                     }
 
                     try

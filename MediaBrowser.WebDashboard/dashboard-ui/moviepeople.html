@@ -21,7 +21,7 @@
         <div data-role="content">
             <div class="viewSettings">
                 <div class="viewControls" data-role="controlgroup" data-type="horizontal">
-                    <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="Filter" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
+                    <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="${ButtonFilter}" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
                 </div>
                 <div class="listTopPaging">
                 </div>
@@ -32,32 +32,32 @@
             <form>
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Filters:</strong>
+                        <strong>${HeaderFilters}</strong>
                     </legend>
                     <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavorite">Favorite</label>
+                    <label for="chkIsFavorite">${OptionFavorite}</label>
 
                     <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
-                    <label for="chkLikes">Likes</label>
+                    <label for="chkLikes">${OptionLikes}</label>
 
                     <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikes">Dislikes</label>
+                    <label for="chkDislikes">${OptionDislikes}</label>
                 </fieldset>
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Person Types:</strong>
+                        <strong>${HeaderPersonTypes}</strong>
                     </legend>
                     <input class="chkPersonTypeFilter" type="checkbox" name="chkActor" id="chkActor" data-filter="Actor" data-mini="true">
-                    <label for="chkActor">Actors</label>
+                    <label for="chkActor">${OptionActors}</label>
 
                     <input class="chkPersonTypeFilter" type="checkbox" name="chkDirector" id="chkDirector" data-filter="Director" data-mini="true">
-                    <label for="chkDirector">Directors</label>
+                    <label for="chkDirector">${OptionDirectors}</label>
 
                     <input class="chkPersonTypeFilter" type="checkbox" name="chkProducer" id="chkProducer" data-filter="Producer" data-mini="true">
-                    <label for="chkProducer">Producers</label>
+                    <label for="chkProducer">${OptionProducers}</label>
 
                     <input class="chkPersonTypeFilter" type="checkbox" name="chkWriter" id="chkWriter" data-filter="Writer" data-mini="true">
-                    <label for="chkWriter">Writers</label>
+                    <label for="chkWriter">${OptionWriters}</label>
                 </fieldset>
             </form>
         </div>

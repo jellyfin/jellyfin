@@ -37,7 +37,7 @@
                                 <option value="Audio">Songs</option>
                             </select>
                         </div>
-                        <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
+                        <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
                     </div>
                     <div class="listTopPaging">
                     </div>
@@ -54,7 +54,7 @@
             <form>
 
                 <fieldset data-role="controlgroup" data-type="horizontal" style="margin-bottom: 1em;">
-                    <legend>Filters:</legend>
+                    <legend>${HeaderFilters}</legend>
                     <input type="radio" name="radioFilterTypes" id="radioBasicFilters" value="on" checked="checked" data-mini="true">
                     <label for="radioBasicFilters">Basic</label>
                     <input type="radio" name="radioFilterTypes" id="radioAdvancedFilters" value="off" data-mini="true">

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using MediaBrowser.Model.Dto;
-using System.Collections.Generic;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -453,19 +452,19 @@ namespace MediaBrowser.Model.Dlna
 
                 if (actualValue.HasValue)
                 {
-                    long expected;
-                    if (long.TryParse(condition.Value, NumberStyles.Any, _usCulture, out expected))
+                    double expected;
+                    if (double.TryParse(condition.Value, NumberStyles.Any, _usCulture, out expected))
                     {
                         switch (condition.Condition)
                         {
                             case ProfileConditionType.Equals:
-                                return actualValue.Value == expected;
+                                return actualValue.Value.Equals(expected);
                             case ProfileConditionType.GreaterThanEqual:
                                 return actualValue.Value >= expected;
                             case ProfileConditionType.LessThanEqual:
                                 return actualValue.Value <= expected;
                             case ProfileConditionType.NotEquals:
-                                return actualValue.Value != expected;
+                                return !actualValue.Value.Equals(expected);
                             default:
                                 throw new InvalidOperationException("Unexpected ProfileConditionType");
                         }
@@ -486,7 +485,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="audioStream">The audio stream.</param>
         /// <returns>System.Nullable{System.Int64}.</returns>
         /// <exception cref="System.InvalidOperationException">Unexpected Property</exception>
-        private long? GetConditionValue(ProfileCondition condition, string mediaPath, MediaStream videoStream, MediaStream audioStream)
+        private double? GetConditionValue(ProfileCondition condition, string mediaPath, MediaStream videoStream, MediaStream audioStream)
         {
             switch (condition.Property)
             {
@@ -497,36 +496,16 @@ namespace MediaBrowser.Model.Dlna
                 case ProfileConditionValue.VideoBitrate:
                     return videoStream == null ? null : videoStream.BitRate;
                 case ProfileConditionValue.VideoFramerate:
-                    return videoStream == null ? null : (ConvertToLong(videoStream.AverageFrameRate ?? videoStream.RealFrameRate));
+                    return videoStream == null ? null : (videoStream.AverageFrameRate ?? videoStream.RealFrameRate);
                 case ProfileConditionValue.Height:
                     return videoStream == null ? null : videoStream.Height;
                 case ProfileConditionValue.Width:
                     return videoStream == null ? null : videoStream.Width;
                 case ProfileConditionValue.VideoLevel:
-                    return videoStream == null ? null : ConvertToLong(videoStream.Level);
+                    return videoStream == null ? null : videoStream.Level;
                 default:
                     throw new InvalidOperationException("Unexpected Property");
             }
-        }
-
-        /// <summary>
-        /// Converts to long.
-        /// </summary>
-        /// <param name="val">The value.</param>
-        /// <returns>System.Nullable{System.Int64}.</returns>
-        private long? ConvertToLong(float? val)
-        {
-            return val.HasValue ? Convert.ToInt64(val.Value) : (long?)null;
-        }
-
-        /// <summary>
-        /// Converts to long.
-        /// </summary>
-        /// <param name="val">The value.</param>
-        /// <returns>System.Nullable{System.Int64}.</returns>
-        private long? ConvertToLong(double? val)
-        {
-            return val.HasValue ? Convert.ToInt64(val.Value) : (long?)null;
         }
     }
 

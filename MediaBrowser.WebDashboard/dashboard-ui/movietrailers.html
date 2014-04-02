@@ -21,8 +21,8 @@
         <div data-role="content">
             <div class="viewSettings">
                 <div class="viewControls" data-role="controlgroup" data-type="horizontal">
-                    <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="Sort" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">Sort</button>
-                    <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="Filter" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
+                    <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="${ButtonSort}" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
+                    <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="${ButtonFilter}" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
                 </div>
                 <div class="listTopPaging">
                 </div>
@@ -34,49 +34,49 @@
             <form>
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Sort By:</strong>
+                        <strong>${HeaderSortBy}</strong>
                     </legend>
 
                     <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                    <label for="radioSortName">Name</label>
+                    <label for="radioSortName">${OptionNameSort}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioBudget" value="off" data-sortby="Budget" data-mini="true">
-                    <label for="radioBudget">Budget</label>
+                    <label for="radioBudget">${OptionBudget}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
-                    <label for="radioCommunityRating">Community Rating</label>
+                    <label for="radioCommunityRating">${OptionCommunityRating}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCriticRating" value="off" data-sortby="CriticRating" data-mini="true">
-                    <label for="radioCriticRating">Critic Rating</label>
+                    <label for="radioCriticRating">${OptionCriticRating}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
-                    <label for="radioDateCreated">Date Added</label>
+                    <label for="radioDateCreated">${OptionDateAdded}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDatePlayed" value="off" data-sortby="DatePlayed" data-mini="true">
-                    <label for="radioDatePlayed">Date Played</label>
+                    <label for="radioDatePlayed">${OptionDatePlayed}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPlayCount" value="off" data-sortby="PlayCount" data-mini="true">
-                    <label for="radioPlayCount">Play Count</label>
+                    <label for="radioPlayCount">${OptionPlayCount}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate" data-mini="true">
-                    <label for="radioPremiereDate">Release Date</label>
+                    <label for="radioPremiereDate">${OptionReleaseDate}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRevenue" value="off" data-sortby="Revenue" data-mini="true">
-                    <label for="radioRevenue">Revenue</label>
+                    <label for="radioRevenue">${OptionRevenue}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
-                    <label for="radioRuntime">Runtime</label>
+                    <label for="radioRuntime">${OptionRuntime}</label>
                 </fieldset>
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Sort Order:</strong>
+                        <strong>${HeaderSortOrder}</strong>
                     </legend>
 
                     <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
-                    <label for="radioAscending">Ascending</label>
+                    <label for="radioAscending">${OptionAscending}</label>
 
                     <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
-                    <label for="radioDescending">Descending</label>
+                    <label for="radioDescending">${OptionDescending}</label>
                 </fieldset>
             </form>
         </div>
@@ -84,25 +84,25 @@
             <form>
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Filters:</strong>
+                        <strong>${HeaderFilters}</strong>
                     </legend>
                     <input class="chkStandardFilter" type="checkbox" name="chkPlayed" id="chkPlayed" data-filter="IsPlayed" data-mini="true">
-                    <label for="chkPlayed">Watched</label>
+                    <label for="chkPlayed">${OptionPlayed}</label>
 
                     <input class="chkStandardFilter" type="checkbox" name="chkUnplayed" id="chkUnplayed" data-filter="IsUnPlayed" data-mini="true">
-                    <label for="chkUnplayed">Unwatched</label>
+                    <label for="chkUnplayed">${OptionUnplayed}</label>
 
                     <input class="chkStandardFilter" type="checkbox" name="chkResumable" id="chkResumable" data-filter="IsResumable" data-mini="true">
-                    <label for="chkResumable">Resumable</label>
+                    <label for="chkResumable">${OptionResumable}</label>
 
                     <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavorite">Favorite</label>
+                    <label for="chkIsFavorite">${OptionFavorite}</label>
 
                     <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
-                    <label for="chkLikes">Likes</label>
+                    <label for="chkLikes">${OptionLikes}</label>
 
                     <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikes">Dislikes</label>
+                    <label for="chkDislikes">${OptionDislikes}</label>
                 </fieldset>
             </form>
         </div>

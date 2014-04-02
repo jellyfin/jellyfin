@@ -26,7 +26,6 @@ namespace MediaBrowser.Server.Implementations.Roku
             if (string.Equals(session.Client, "roku", StringComparison.OrdinalIgnoreCase))
             {
                 session.PlayableMediaTypes = new List<string> { MediaType.Video, MediaType.Audio };
-                session.SupportsFullscreenToggle = false;
 
                 return new RokuSessionController(_httpClient, _json, _appHost, session);
             }

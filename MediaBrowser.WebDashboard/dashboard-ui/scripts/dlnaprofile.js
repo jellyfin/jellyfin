@@ -244,6 +244,8 @@
         $('#chkEnableMpegtsM2TsMode', popup).checked(transcodingProfile.EnableMpegtsM2TsMode).checkboxradio('refresh');
         $('#chkEstimateContentLength', popup).checked(transcodingProfile.EstimateContentLength).checkboxradio('refresh');
         $('#chkReportByteRangeRequests', popup).checked(transcodingProfile.TranscodeSeekInfo == 'Bytes').checkboxradio('refresh');
+
+        $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
     }
 
     function deleteTranscodingProfile(page, index) {
@@ -523,11 +525,12 @@
 
         var page = this;
 
-        $('.radioProfileTab', page).on('change', function () {
+        $('.radioTabButton', page).on('change', function () {
 
-            $('.profileTab', page).hide();
-            $('.' + this.value, page).show();
+            var elem = $('.' + this.value, page);
+            elem.siblings('.tabContent').hide();
 
+            elem.show();
         });
 
         $('#selectDirectPlayProfileType', page).on('change', function () {
@@ -595,7 +598,7 @@
 
         var page = this;
 
-        $('.radioSeriesTimerTab', page).checked(false).checkboxradio('refresh');
+        $('.radioTabButton', page).checked(false).checkboxradio('refresh');
         $('#radioInfo', page).checked(true).checkboxradio('refresh').trigger('change');
 
     });

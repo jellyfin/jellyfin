@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Plugins</title>
+    <title>${PluginsTitle}</title>
 </head>
 <body>
     <div id="pluginUpdatesPage" data-role="page" class="page type-interior pluginConfigurationPage">
@@ -9,9 +9,9 @@
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="plugins.html" data-role="button">My Plugins</a>
-                    <a href="plugincatalog.html" data-role="button">Catalog</a>
-                    <a href="pluginupdates.html" data-role="button" class="ui-btn-active">Updates</a>
+                    <a href="plugins.html" data-role="button">${TabMyPlugins}</a>
+                    <a href="plugincatalog.html" data-role="button">${TabCatalog}</a>
+                    <a href="pluginupdates.html" data-role="button" class="ui-btn-active">${TabUpdates}</a>
                 </div>
 
                 <form id="pluginUpdatesForm">
@@ -20,8 +20,8 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                <th data-priority="2">Automatic updates</th>
-                                <th data-priority="3">Update level</th>
+                                <th data-priority="2">${HeaderAutomaticUpdates}</th>
+                                <th data-priority="3">${HeaderUpdateLevel}</th>
                             </tr>
                         </thead>
                         <tbody id="tbodyPluginUpdates"></tbody>
@@ -31,7 +31,7 @@
                     <br />
 
                     <div class="fieldDescription warningFieldDescription">
-                        Dev builds are the bleeding edge. Released often, these build have not been tested. The application may crash and entire features may not work at all.                          
+                        ${DevBuildWarning}                         
                     </div>
 
                 </form>

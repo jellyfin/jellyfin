@@ -452,6 +452,7 @@ namespace MediaBrowser.ServerApplication
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager);
             RegisterSingleInstance(LibraryManager);
 
+            var musicManager = new MusicManager(LibraryManager);
             RegisterSingleInstance<IMusicManager>(new MusicManager(LibraryManager));
 
             LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
@@ -465,7 +466,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager);
+            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager);
             RegisterSingleInstance(SessionManager);
 
             HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", "mediabrowser", "dashboard/index.html");

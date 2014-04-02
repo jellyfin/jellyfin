@@ -7,12 +7,12 @@
     <div id="musicAlbumsPage" data-role="page" class="page libraryPage" data-theme="b" data-view="music">
         <div class="libraryViewNav">
             <a href="musicrecommended.html">${TabSuggested}</a>
-            <a href="songs.html">Songs</a>
-            <a href="musicalbums.html" class="ui-btn-active">Albums</a>
-            <a href="musicalbumartists.html">Album Artists</a>
-            <a href="musicartists.html">Artists</a>
+            <a href="songs.html">${TabSongs}</a>
+            <a href="musicalbums.html" class="ui-btn-active">${TabAlbums}</a>
+            <a href="musicalbumartists.html">${TabAlbumArtists}</a>
+            <a href="musicartists.html">${TabArtists}</a>
             <a href="musicgenres.html">${TabGenres}</a>
-            <a href="musicvideos.html">Music Videos</a>
+            <a href="musicvideos.html">${TabMusicVideos}</a>
         </div>
         <div class="alphabetPicker">
         </div>
@@ -21,14 +21,14 @@
                 <div class="viewControls">
                     <div style="display: inline-block;">
                         <select data-mini="true" data-inline="true" id="selectView" name="selectView">
-                            <option value="Poster">Poster</option>
-                            <option value="Timeline">Timeline</option>
+                            <option value="Poster">${OptionPoster}</option>
+                            <option value="Timeline">${OptionTimeline}</option>
                         </select>
                     </div>
                 </div>
                 <div class="viewControls" data-role="controlgroup" data-type="horizontal">
-                    <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="Sort" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">Sort</button>
-                    <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="Filter" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">Filter</button>
+                    <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="${ButtonSort}" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
+                    <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="${ButtonFilter}" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
                 </div>
                 <div class="listTopPaging">
                 </div>
@@ -40,36 +40,36 @@
             <form>
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Sort By:</strong>
+                        <strong>${HeaderSortBy}</strong>
                     </legend>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                    <label for="radioSortName">Name</label>
+                    <label for="radioSortName">${OptionNameSort}</label>
 
                     <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioAlbumArtist" value="off" data-sortby="AlbumArtist,SortName" data-mini="true">
-                    <label for="radioAlbumArtist">Album Artist</label>
+                    <label for="radioAlbumArtist">${OptionAlbumArtist}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating,SortName" data-mini="true">
-                    <label for="radioCommunityRating">Community Rating</label>
+                    <label for="radioCommunityRating">${OptionCommunityRating}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
-                    <label for="radioDateCreated">Date Added</label>
+                    <label for="radioDateCreated">${OptionDateAdded}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="ProductionYear,PremiereDate" data-mini="true">
-                    <label for="radioPremiereDate">Release Date</label>
+                    <label for="radioPremiereDate">${OptionReleaseDate}</label>
 
                 </fieldset>
 
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Sort Order:</strong>
+                        <strong>${HeaderSortOrder}</strong>
                     </legend>
 
                     <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
-                    <label for="radioAscending">Ascending</label>
+                    <label for="radioAscending">${OptionAscending}</label>
 
                     <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
-                    <label for="radioDescending">Descending</label>
+                    <label for="radioDescending">${OptionDescending}</label>
                 </fieldset>
             </form>
         </div>
@@ -77,16 +77,16 @@
             <form>
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Filters:</strong>
+                        <strong>${HeaderFilters}</strong>
                     </legend>
                     <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavorite">Favorite</label>
+                    <label for="chkIsFavorite">${OptionFavorite}</label>
 
                     <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
-                    <label for="chkLikes">Likes</label>
+                    <label for="chkLikes">${OptionLikes}</label>
 
                     <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikes">Dislikes</label>
+                    <label for="chkDislikes">${OptionDislikes}</label>
                 </fieldset>
             </form>
         </div>

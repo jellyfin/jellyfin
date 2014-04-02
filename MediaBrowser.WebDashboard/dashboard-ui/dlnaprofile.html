@@ -18,23 +18,23 @@
 
                     <p>Profile Information</p>
                     <div data-role="controlgroup" data-type="horizontal" data-mini="true">
-                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioInfo" value="tabInfo">
+                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioInfo" value="tabInfo">
                         <label for="radioInfo">Info</label>
-                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioIdentification" value="tabIdentification">
+                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioIdentification" value="tabIdentification">
                         <label for="radioIdentification">Identification</label>
-                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioDirectPlay" value="tabDirectPlayProfiles">
+                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioDirectPlay" value="tabDirectPlayProfiles">
                         <label for="radioDirectPlay">Direct Play</label>
-                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioTranscoding" value="tabTranscodingProfiles">
+                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioTranscoding" value="tabTranscodingProfiles">
                         <label for="radioTranscoding">Transcoding</label>
-                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioContainers" value="tabContainerProfiles">
+                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioContainers" value="tabContainerProfiles">
                         <label for="radioContainers">Containers</label>
-                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioCodecs" value="tabCodecProfiles">
+                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioCodecs" value="tabCodecProfiles">
                         <label for="radioCodecs">Codecs</label>
-                        <input type="radio" name="radioProfileTab" class="radioProfileTab" id="radioMediaProfiles" value="tabMediaProfiles">
+                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioMediaProfiles" value="tabMediaProfiles">
                         <label for="radioMediaProfiles">Responses</label>
                     </div>
                     <br />
-                    <div class="profileTab tabInfo">
+                    <div class="tabContent tabInfo">
 
                         <ul data-role="listview" class="ulForm">
                             <li>
@@ -65,7 +65,7 @@
                         </ul>
 
                     </div>
-                    <div class="profileTab tabIdentification">
+                    <div class="tabContent tabIdentification">
 
                         <p>Devices have two forms of identification, device properties and HTTP request headers. At least one form should be supplied.</p>
                         <br />
@@ -119,27 +119,27 @@
 
                     </div>
 
-                    <div class="profileTab tabDirectPlayProfiles">
+                    <div class="tabContent tabDirectPlayProfiles">
                         <p>Add direct play profiles to indicate which formats the device can handle natively.</p>
                         <button class="btnAddDirectPlayProfile" type="button" data-mini="true" data-icon="plus">New</button>
                         <br />
                         <div class="directPlayProfiles"></div>
                     </div>
-                    <div class="profileTab tabTranscodingProfiles">
+                    <div class="tabContent tabTranscodingProfiles">
                         <p>Add transcoding profiles to indicate which formats should be used when transcoding is required.</p>
                         <button class="btnAddTranscodingProfile" type="button" data-mini="true" data-icon="plus">New</button>
                         <br />
                         <div class="transcodingProfiles"></div>
                     </div>
-                    <div class="profileTab tabContainerProfiles">
+                    <div class="tabContent tabContainerProfiles">
                         <p>Container profiles indicate the limitations of a device when playing specific formats. If a limitation applies then the media will be transcoded, even if the device supports the container natively.</p>
                         <div class="containerProfiles"></div>
                     </div>
-                    <div class="profileTab tabCodecProfiles">
+                    <div class="tabContent tabCodecProfiles">
                         <p>Codec profiles indicate the limitations of a device when playing specific codecs. If a limitation applies then the media will be transcoded, even if the device supports the codec natively.</p>
                         <div class="codecProfiles"></div>
                     </div>
-                    <div class="profileTab tabMediaProfiles">
+                    <div class="tabContent tabMediaProfiles">
                         <p>Response profiles provide a way to customize responses sent to the device when playing certain kinds of media.</p>
                         <div class="mediaProfiles"></div>
                     </div>
@@ -216,50 +216,61 @@
             <div data-role="content">
                 <form class="transcodingProfileForm" style="min-width: 250px;">
 
-                    <div style="margin: 1em 0;">
-                        <label for="selectTranscodingProfileType">Type:</label>
-                        <select id="selectTranscodingProfileType" data-mini="true">
-                            <option value="Audio">Audio</option>
-                            <option value="Photo">Photo</option>
-                            <option value="Video">Video</option>
-                        </select>
+                    <div data-role="controlgroup" data-type="horizontal" data-mini="true">
+                        <input type="radio" name="radioTranscodingTab" class="radioTabButton" id="radioTranscodingBasics" value="tabTranscodingBasics">
+                        <label for="radioTranscodingBasics">Info</label>
+                        <input type="radio" name="radioTranscodingTab" class="radioTabButton" id="radioTranscodingAdvanced" value="tabTranscodingAdvanced">
+                        <label for="radioTranscodingAdvanced">Advanced</label>
                     </div>
 
-                    <div style="margin: 1em 0;">
-                        <label for="txtTranscodingContainer">Containers:</label>
-                        <input type="text" id="txtTranscodingContainer" data-mini="true" required="required" />
-                    </div>
+                    <div class="tabContent tabTranscodingBasics" style="display: none;">
+                        <div style="margin: 1em 0;">
+                            <label for="selectTranscodingProfileType">Type:</label>
+                            <select id="selectTranscodingProfileType" data-mini="true">
+                                <option value="Audio">Audio</option>
+                                <option value="Photo">Photo</option>
+                                <option value="Video">Video</option>
+                            </select>
+                        </div>
 
-                    <div id="fldTranscodingVideoCodec" style="margin: 1em 0;">
-                        <label for="txtTranscodingVideoCodec">Video codec:</label>
-                        <input type="text" id="txtTranscodingVideoCodec" data-mini="true" />
-                    </div>
+                        <div style="margin: 1em 0;">
+                            <label for="txtTranscodingContainer">Containers:</label>
+                            <input type="text" id="txtTranscodingContainer" data-mini="true" required="required" />
+                        </div>
 
-                    <div id="fldTranscodingAudioCodec" style="margin: 1em 0;">
-                        <label for="txtTranscodingAudioCodec">Audio codec:</label>
-                        <input type="text" id="txtTranscodingAudioCodec" data-mini="true" />
-                    </div>
+                        <div id="fldTranscodingVideoCodec" style="margin: 1em 0;">
+                            <label for="txtTranscodingVideoCodec">Video codec:</label>
+                            <input type="text" id="txtTranscodingVideoCodec" data-mini="true" />
+                        </div>
 
-                    <div id="fldVideoProfile" style="margin: 1em 0;">
-                        <label for="txtTranscodingVideoProfile">Video profile:</label>
-                        <input type="text" id="txtTranscodingVideoProfile" data-mini="true" />
+                        <div id="fldTranscodingAudioCodec" style="margin: 1em 0;">
+                            <label for="txtTranscodingAudioCodec">Audio codec:</label>
+                            <input type="text" id="txtTranscodingAudioCodec" data-mini="true" />
+                        </div>
                     </div>
+                    <div class="tabContent tabTranscodingAdvanced" style="display: none;">
 
-                    <div id="fldEnableMpegtsM2TsMode" style="margin: 1em 0;">
-                        <label for="chkEnableMpegtsM2TsMode">Enable M2ts mode</label>
-                        <input type="checkbox" id="chkEnableMpegtsM2TsMode" data-mini="true" />
-                        <div class="fieldDescription">Enable m2ts mode when encoding to mpegts.</div>
-                    </div>
+                        <div id="fldVideoProfile" style="margin: 1em 0;">
+                            <label for="txtTranscodingVideoProfile">Video profile:</label>
+                            <input type="text" id="txtTranscodingVideoProfile" data-mini="true" />
+                        </div>
 
-                    <div id="fldEstimateContentLength" style="margin: 1em 0;">
-                        <label for="chkEstimateContentLength">Estimate content length when transcoding</label>
-                        <input type="checkbox" id="chkEstimateContentLength" data-mini="true" />
-                    </div>
+                        <div id="fldEnableMpegtsM2TsMode" style="margin: 1em 0;">
+                            <label for="chkEnableMpegtsM2TsMode">Enable M2ts mode</label>
+                            <input type="checkbox" id="chkEnableMpegtsM2TsMode" data-mini="true" />
+                            <div class="fieldDescription">Enable m2ts mode when encoding to mpegts.</div>
+                        </div>
 
-                    <div id="fldReportByteRangeRequests" style="margin: 1em 0;">
-                        <label for="chkReportByteRangeRequests">Report that the server supports byte seeking when transcoding</label>
-                        <input type="checkbox" id="chkReportByteRangeRequests" data-mini="true" />
-                        <div class="fieldDescription">This is required for some devices that don't time seek very well.</div>
+                        <div id="fldEstimateContentLength" style="margin: 1em 0;">
+                            <label for="chkEstimateContentLength">Estimate content length when transcoding</label>
+                            <input type="checkbox" id="chkEstimateContentLength" data-mini="true" />
+                        </div>
+
+                        <div id="fldReportByteRangeRequests" style="margin: 1em 0;">
+                            <label for="chkReportByteRangeRequests">Report that the server supports byte seeking when transcoding</label>
+                            <input type="checkbox" id="chkReportByteRangeRequests" data-mini="true" />
+                            <div class="fieldDescription">This is required for some devices that don't time seek very well.</div>
+                        </div>
                     </div>
 
                     <p>

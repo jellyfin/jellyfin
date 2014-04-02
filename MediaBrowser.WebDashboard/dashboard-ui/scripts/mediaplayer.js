@@ -165,9 +165,13 @@
 
                 if (finalParams.isStatic) {
                     currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
-                    currentSrc = replaceQueryString(currentSrc, 'starttimeticks', '');
                 } else {
                     currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension);
+                }
+
+                if (finalParams.isStatic || !ticks) {
+                    currentSrc = replaceQueryString(currentSrc, 'starttimeticks', '');
+                } else {
                     currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
                 }
 
@@ -219,6 +223,14 @@
 
         self.canPlayVideoDirect = function (mediaSource, videoStream, audioStream, subtitleStream, maxWidth, bitrate) {
 
+            if (!mediaSource) {
+                throw new Error('Null mediaSource');
+            }
+
+            if (!videoStream) {
+                throw new Error('Null videoStream');
+            }
+
             if (mediaSource.VideoType != "VideoFile" || mediaSource.LocationType != "FileSystem") {
                 console.log('Transcoding because the content is not a video file');
                 return false;
@@ -252,13 +264,13 @@
                 return false;
             }
 
-            var extension = mediaSource.Path.substring(mediaSource.Path.lastIndexOf('.') + 1).toLowerCase();
+            var extension = (mediaSource.Container || '').toLowerCase();
 
             if (extension == 'm4v') {
                 return $.browser.chrome;
             }
 
-            return extension.toLowerCase() == 'mp4';
+            return extension == 'mp4';
         };
 
         self.getFinalVideoParams = function (mediaSource, maxWidth, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension) {
@@ -323,7 +335,7 @@
                 });
             }
             else if (firstItem.Type == "MusicArtist") {
-                
+
                 promise = self.getItemsForPlayback({
                     Artists: firstItem.Name,
                     Filters: "IsNotFolder",
@@ -334,7 +346,7 @@
 
             }
             else if (firstItem.Type == "MusicGenre") {
-                
+
                 promise = self.getItemsForPlayback({
                     Genres: firstItem.Name,
                     Filters: "IsNotFolder",
@@ -927,7 +939,7 @@
 
             self.bindVolumeSlider();
             self.bindPositionSlider();
-        };
+        }
 
         function replaceQueryString(url, param, value) {
             var re = new RegExp("([?|&])" + param + "=.*?(&|$)", "i");
@@ -935,12 +947,12 @@
                 return url.replace(re, '$1' + param + "=" + value + '$2');
             else
                 return url + '&' + param + "=" + value;
-        };
+        }
 
         function sendProgressUpdate(itemId, mediaSourceId) {
 
             ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, mediaSourceId, self.getCurrentTicks(), currentMediaElement.paused, currentMediaElement.volume == 0);
-        };
+        }
 
         function clearProgressInterval() {
 
@@ -953,7 +965,7 @@
         function canPlayWebm() {
 
             return testableVideoElement.canPlayType('video/webm').replace(/no/, '');
-        };
+        }
 
         function onPositionSliderChange() {
 
@@ -964,16 +976,7 @@
             var newPositionTicks = (newPercent / 100) * currentMediaSource.RunTimeTicks;
 
             self.changeStream(Math.floor(newPositionTicks));
-        };
-
-        function endsWith(text, pattern) {
-
-            text = text.toLowerCase();
-            pattern = pattern.toLowerCase();
-
-            var d = text.length - pattern.length;
-            return d >= 0 && text.lastIndexOf(pattern) === d;
-        };
+        }
 
         function playAudio(item, mediaSource, startPositionTicks) {
 
@@ -1009,12 +1012,13 @@
 
                 if (stream.Type == "Audio") {
 
+                    var container = (mediaSource.Container || '').toLowerCase();
                     // Stream statically when possible
-                    if (endsWith(mediaSource.Path, ".aac") && stream.BitRate <= 256000) {
+                    if (container == 'aac' && stream.BitRate <= 256000) {
                         aacUrl += "&static=true" + seekParam;
                         isStatic = true;
                     }
-                    else if (endsWith(mediaSource.Path, ".mp3") && stream.BitRate <= 256000) {
+                    else if (container == 'mp3' && stream.BitRate <= 256000) {
                         mp3Url += "&static=true" + seekParam;
                         isStatic = true;
                     }
@@ -1055,7 +1059,7 @@
             $('#subtitleButton', nowPlayingBar).hide();
             $('#chaptersButton', nowPlayingBar).hide();
 
-            $('#mediaElement', nowPlayingBar).html(html);
+            var mediaElement = $('#mediaElement', nowPlayingBar).html(html);
             var audioElement = $("audio", mediaElement);
 
             var initialVolume = localStorage.getItem("volume") || 0.5;

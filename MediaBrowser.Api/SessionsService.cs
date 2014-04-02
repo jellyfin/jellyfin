@@ -231,8 +231,8 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "PlayableMediaTypes", Description = "A list of playable media types, comma delimited. Audio, Video, Book, Game, Photo.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string PlayableMediaTypes { get; set; }
 
-        [ApiMember(Name = "SupportsFullscreenToggle", Description = "Whether or not the session supports fullscreen toggle", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
-        public bool SupportsFullscreenToggle { get; set; }
+        [ApiMember(Name = "SupportedCommands", Description = "A list of supported remote control commands, comma delimited", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string SupportedCommands { get; set; }
     }
 
     /// <summary>
@@ -425,9 +425,9 @@ namespace MediaBrowser.Api
         {
             _sessionManager.ReportCapabilities(request.Id, new SessionCapabilities
             {
-                PlayableMediaTypes = request.PlayableMediaTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
+                PlayableMediaTypes = request.PlayableMediaTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
 
-                SupportsFullscreenToggle = request.SupportsFullscreenToggle
+                SupportedCommands = request.SupportedCommands.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
             });
         }
 

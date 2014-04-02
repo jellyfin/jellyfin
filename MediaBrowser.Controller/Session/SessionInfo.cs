@@ -25,6 +25,7 @@ namespace MediaBrowser.Controller.Session
             };
 
             AdditionalUsers = new List<SessionUserInfo>();
+            SupportedCommands = new List<string>();
         }
 
         public List<SessionUserInfo> AdditionalUsers { get; set; }
@@ -168,23 +169,11 @@ namespace MediaBrowser.Controller.Session
         public ISessionController SessionController { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [supports fullscreen toggle].
+        /// Gets or sets the supported commands.
         /// </summary>
-        /// <value><c>true</c> if [supports fullscreen toggle]; otherwise, <c>false</c>.</value>
-        public bool SupportsFullscreenToggle { get; set; }
+        /// <value>The supported commands.</value>
+        public List<string> SupportedCommands { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports osd toggle].
-        /// </summary>
-        /// <value><c>true</c> if [supports osd toggle]; otherwise, <c>false</c>.</value>
-        public bool SupportsOsdToggle { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports navigation commands].
-        /// </summary>
-        /// <value><c>true</c> if [supports navigation commands]; otherwise, <c>false</c>.</value>
-        public bool SupportsNavigationControl { get; set; }
-        
         /// <summary>
         /// Gets a value indicating whether this instance is active.
         /// </summary>

@@ -50,10 +50,8 @@
         ApiClient.getNextUpEpisodes(options).done(function (result) {
 
             if (result.Items.length) {
-                $('#resumableSection', page).show();
                 $('.noNextUpItems', page).hide();
             } else {
-                $('#resumableSection', page).hide();
                 $('.noNextUpItems', page).show();
             }
 
