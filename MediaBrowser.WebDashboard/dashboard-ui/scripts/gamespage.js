@@ -31,7 +31,6 @@
                 items: result.Items,
                 shape: "auto",
                 context: 'games',
-                useAverageAspectRatio: false,
                 showTitle: true,
                 showParentTitle: true,
                 centerText: true

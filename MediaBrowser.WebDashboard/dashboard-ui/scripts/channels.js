@@ -27,7 +27,6 @@
                 items: result.Items,
                 shape: "square",
                 context: 'channels',
-                useAverageAspectRatio: true,
                 showTitle: true,
                 centerText: true
             });

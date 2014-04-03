@@ -479,12 +479,11 @@ namespace MediaBrowser.Api.Library
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async void Post(RefreshLibrary request)
+        public void Post(RefreshLibrary request)
         {
             try
             {
-                await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None)
-                                   .ConfigureAwait(false);
+                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -513,7 +512,7 @@ namespace MediaBrowser.Api.Library
             {
                 throw new UnauthorizedAccessException("This operation requires a logged in user with delete access.");
             }
-            
+
             return _libraryManager.DeleteItem(item);
         }
 

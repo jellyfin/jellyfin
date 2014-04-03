@@ -35,7 +35,6 @@
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "smallBackdrop",
-                    useAverageAspectRatio: true,
                     showTitle: true,
                     centerText: true,
                     preferBackdrop: true
@@ -45,7 +44,6 @@
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
-                    useAverageAspectRatio: true,
                     showTitle: true,
                     centerText: true
                 });

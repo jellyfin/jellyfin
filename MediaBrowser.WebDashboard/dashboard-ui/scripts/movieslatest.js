@@ -20,8 +20,7 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                useAverageAspectRatio: true
+                items: result.Items
 
             })).createPosterItemMenus();
         });
@@ -47,8 +46,7 @@
             }
 
             $('#trailerItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                useAverageAspectRatio: true
+                items: result.Items
 
             })).createPosterItemMenus();
 

@@ -406,7 +406,7 @@
         return html;
     },
 
-    systemUpdateTaskName: "Check for application updates",
+    systemUpdateTaskKey: "SystemUpdateTask",
 
     renderRunningTasks: function (page, tasks) {
 
@@ -418,7 +418,7 @@
 
         if (tasks.filter(function (t) {
 
-            return t.Name == DashboardPage.systemUpdateTaskName;
+            return t.Key == DashboardPage.systemUpdateTaskKey;
 
         }).length) {
 
@@ -617,8 +617,8 @@
 
             var task = tasks.filter(function (t) {
 
-                return t.Name == DashboardPage.systemUpdateTaskName;
-            });
+                return t.Key == DashboardPage.systemUpdateTaskKey;
+            })[0];
 
             ApiClient.startScheduledTask(task.Id).done(function () {
 

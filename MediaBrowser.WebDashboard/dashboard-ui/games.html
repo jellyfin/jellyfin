@@ -10,7 +10,7 @@
             <a href="games.html" class="ui-btn-active">Games</a>
             <a href="gamesystems.html">Game Systems</a>
             <a href="gamegenres.html">${TabGenres}</a>
-            <a href="gamestudios.html">Studios</a>
+            <a href="gamestudios.html">${TabStudios}</a>
         </div>
         <div class="alphabetPicker">
         </div>
@@ -48,7 +48,7 @@
                     <label for="radioDatePlayed">${OptionDatePlayed}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioContentRating" value="off" data-sortby="OfficialRating" data-mini="true">
-                    <label for="radioContentRating">Parental Rating</label>
+                    <label for="radioContentRating">${OptionParentalRating}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate" data-mini="true">
                     <label for="radioPremiereDate">${OptionReleaseDate}</label>
@@ -109,17 +109,17 @@
 
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Features:</strong>
+                        <strong>${LabelFeatures}</strong>
                     </legend>
 
                     <input class="chkFeatureFilter" type="checkbox" name="chkTrailer" id="chkTrailer" data-mini="true">
-                    <label for="chkTrailer">Trailer</label>
+                    <label for="chkTrailer">${OptionHasTrailer}</label>
 
                     <input class="chkFeatureFilter" type="checkbox" name="chkThemeSong" id="chkThemeSong" data-mini="true">
-                    <label for="chkThemeSong">Theme song</label>
+                    <label for="chkThemeSong">${OptionHasThemeSong}</label>
 
                     <input class="chkFeatureFilter" type="checkbox" name="chkThemeVideo" id="chkThemeVideo" data-mini="true">
-                    <label for="chkThemeVideo">Theme video</label>
+                    <label for="chkThemeVideo">${OptionHasThemeVideo}</label>
 
                 </fieldset>
             </form>

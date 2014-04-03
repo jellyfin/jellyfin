@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Text;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -153,7 +154,7 @@ namespace MediaBrowser.Api.Playback
 
             if (time.HasValue)
             {
-                var seconds = TimeSpan.FromTicks(time.Value).TotalSeconds - FastSeekOffsetSeconds;
+                var seconds = TimeSpan.FromTicks(time.Value).TotalSeconds;
 
                 if (seconds > 0)
                 {
@@ -172,16 +173,6 @@ namespace MediaBrowser.Api.Playback
         /// <value>The slow seek command line parameter.</value>
         protected string GetSlowSeekCommandLineParameter(StreamRequest request)
         {
-            var time = request.StartTimeTicks;
-
-            if (time.HasValue)
-            {
-                if (TimeSpan.FromTicks(time.Value).TotalSeconds - FastSeekOffsetSeconds > 0)
-                {
-                    return string.Format(" -ss {0}", FastSeekOffsetSeconds.ToString(UsCulture));
-                }
-            }
-
             return string.Empty;
         }
 
@@ -922,13 +913,17 @@ namespace MediaBrowser.Api.Playback
 
             ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process, state.IsInputVideo, state.Request.StartTimeTicks, state.MediaPath, state.Request.DeviceId);
 
-            Logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
+            var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
+            Logger.Info(commandLineLogMessage);
 
             var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid() + ".txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             state.LogFileStream = FileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
+
+            var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(commandLineLogMessage + Environment.NewLine + Environment.NewLine);
+            await state.LogFileStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length).ConfigureAwait(false);
 
             process.Exited += (sender, args) => OnFfMpegProcessExited(process, state);
 
@@ -1149,7 +1144,7 @@ namespace MediaBrowser.Api.Playback
                     return state.VideoRequest.Framerate.Value;
                 }
 
-                var maxrate = state.VideoRequest.MaxFramerate ?? 23.976;
+                var maxrate = state.VideoRequest.MaxFramerate ?? 23.97602;
 
                 if (state.VideoStream != null)
                 {
@@ -1628,7 +1623,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             var profile = string.IsNullOrWhiteSpace(state.Request.DeviceProfileId) ?
-                DlnaManager.GetProfile(headers) :
+                null :
                 DlnaManager.GetProfile(state.Request.DeviceProfileId);
 
             if (profile == null)
@@ -1685,7 +1680,6 @@ namespace MediaBrowser.Api.Playback
                 }
             }
         }
-
 
         /// <summary>
         /// Adds the dlna headers.

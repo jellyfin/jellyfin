@@ -42,37 +42,37 @@
     left: 0;
 }
 
-#videoControls .positionSliderContainer .ui-slider-track {
-    margin: 0 !important;
-}
+    #videoControls .positionSliderContainer .ui-slider-track {
+        margin: 0 !important;
+    }
 
-#videoControls .positionSliderContainer {
-    display: block;
-    width: 100%;
-    margin-top: 0px;
-}
+    #videoControls .positionSliderContainer {
+        display: block;
+        width: 100%;
+        margin-top: 0px;
+    }
 
-#videoControls #video-basic-controls {
-    position: absolute;
-    top: 30px;
-    left: 20px;
-    bottom: 0;
-    width: 600px;
-    display: inline-block;
-}
+    #videoControls #video-basic-controls {
+        position: absolute;
+        top: 30px;
+        left: 20px;
+        bottom: 0;
+        width: 600px;
+        display: inline-block;
+    }
 
-#videoControls #video-advanced-controls {
-    position: absolute;
-    top: 30px;
-    right: 20px;
-    bottom: 0;
-    width: 400px;
-    display: inline-block;
-}
+    #videoControls #video-advanced-controls {
+        position: absolute;
+        top: 30px;
+        right: 20px;
+        bottom: 0;
+        width: 400px;
+        display: inline-block;
+    }
 
-#videoControls .currentTime {
-    margin-top: 25px;
-}
+    #videoControls .currentTime {
+        margin-top: 25px;
+    }
 
 #slider-tooltip {
     z-index: 99999;
@@ -104,13 +104,19 @@
     max-height: 100%;
 }
 
-#videoPlayer.fullscreenVideo #videoControls {
-    opacity: 0.3;
-    background-color: #1d1d1d;
+#mediaPlayer .ui-slider-track {
+    border-color: #2ad !important;
+    height: 10px!important;
 }
 
-#videoPlayer.fullscreenVideo #videoControls:hover {
+#mediaPlayer .ui-slider-handle {
+    height: 12px !important;
+    margin-top: -7px !important;   
+}
+
+#videoPlayer.fullscreenVideo #videoControls {
     opacity: 0.8;
+    background-color: #1d1d1d;
 }
 
 #videoPlayer.fullscreenVideo .inactive {
@@ -122,7 +128,7 @@
 }
 
 #mediaPlayer #videoControls #video-subtitleButton:disabled, #mediaPlayer #videoControls #video-muteButton:disabled, #mediaPlayer #videoControls #video-unmuteButton:disabled {
-    display: none!important
+    display: none!important;
 }
 
 #mediaPlayer #video-advanced-controls {
@@ -213,7 +219,7 @@
     #videoControls .currentTime {
         margin-right: 0;
     }
-    
+
     #videoControls #video-advanced-controls {
         width: 350px;
     }
@@ -242,9 +248,9 @@
         width: 250px;
     }
 
-    #mediaPlayer #video-basic-controls .volumeSliderContainer {
-        margin-top: 8px;
-    }
+        #mediaPlayer #video-basic-controls .volumeSliderContainer {
+            margin-top: 8px;
+        }
 
     #mediaPlayer #video-basic-controls, #mediaPlayer #video-advanced-controls {
         width: 200px;

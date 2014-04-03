@@ -33,7 +33,6 @@
                     items: result.Items,
                     shape: "square",
                     context: 'music',
-                    useAverageAspectRatio: true,
                     showTitle: true,
                     showParentTitle: true
                 });
@@ -44,7 +43,6 @@
                     items: result.Items,
                     shape: "square",
                     context: 'music',
-                    useAverageAspectRatio: true,
                     showTitle: true,
                     showParentTitle: true,
                     timeline: true

@@ -33,7 +33,6 @@
                 items: result.Items,
                 shape: "portrait",
                 context: 'channels',
-                useAverageAspectRatio: true,
                 showTitle: true,
                 centerText: true
             });

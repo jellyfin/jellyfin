@@ -438,7 +438,6 @@
 
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
                 shape: item.Type == "MusicAlbum" ? "portrait" : "square"
             });
 
@@ -546,7 +545,6 @@
 
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: item.MediaType != "Game",
                 shape: item.Type == "MusicAlbum" ? "square" : "portrait",
                 showParentTitle: item.Type == "MusicAlbum",
                 centerText: item.Type != "MusicAlbum",
@@ -680,7 +678,6 @@
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "portrait",
-                        useAverageAspectRatio: true,
                         showTitle: true,
                         centerText: true
                     });
@@ -689,7 +686,6 @@
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "smallBackdrop",
-                        useAverageAspectRatio: true,
                         showTitle: true,
                         displayAsSpecial: item.Type == "Season" && item.IndexNumber
                     });
@@ -699,7 +695,6 @@
                         items: result.Items,
                         shape: "auto",
                         context: 'games',
-                        useAverageAspectRatio: false,
                         showTitle: true,
                         centerText: true
                     });
@@ -803,7 +798,6 @@
         html += LibraryBrowser.getPosterViewHtml({
             items: items,
             shape: shape,
-            useAverageAspectRatio: true,
             showTitle: true,
             centerText: true
         });

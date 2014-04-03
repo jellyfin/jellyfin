@@ -26,7 +26,6 @@
 
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
@@ -57,7 +56,6 @@
 
             $('#nextUpItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,

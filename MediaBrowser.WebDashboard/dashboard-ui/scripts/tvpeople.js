@@ -32,7 +32,6 @@
                 items: result.Items,
                 shape: "portrait",
                 context: 'tv',
-                useAverageAspectRatio: true,
                 showTitle: true,
                 showItemCounts: true,
                 coverImage: true

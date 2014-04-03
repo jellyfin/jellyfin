@@ -9,7 +9,6 @@
 
         return LibraryBrowser.getPosterViewHtml({
             items: channels,
-            useAverageAspectRatio: true,
             shape: "smallBackdrop",
             centerText: true
         });

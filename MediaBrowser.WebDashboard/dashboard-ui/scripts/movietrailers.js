@@ -30,7 +30,6 @@
                 items: result.Items,
                 shape: "portrait",
                 context: 'movies',
-                useAverageAspectRatio: true,
                 showTitle: true,
                 centerText: true
             });

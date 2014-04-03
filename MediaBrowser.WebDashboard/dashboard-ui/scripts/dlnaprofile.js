@@ -241,8 +241,8 @@
         $('#txtTranscodingVideoCodec', popup).val(transcodingProfile.VideoCodec || '');
 
         $('#txtTranscodingVideoProfile', popup).val(transcodingProfile.VideoProfile || '');
-        $('#chkEnableMpegtsM2TsMode', popup).checked(transcodingProfile.EnableMpegtsM2TsMode).checkboxradio('refresh');
-        $('#chkEstimateContentLength', popup).checked(transcodingProfile.EstimateContentLength).checkboxradio('refresh');
+        $('#chkEnableMpegtsM2TsMode', popup).checked(transcodingProfile.EnableMpegtsM2TsMode || false).checkboxradio('refresh');
+        $('#chkEstimateContentLength', popup).checked(transcodingProfile.EstimateContentLength || false).checkboxradio('refresh');
         $('#chkReportByteRangeRequests', popup).checked(transcodingProfile.TranscodeSeekInfo == 'Bytes').checkboxradio('refresh');
 
         $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
@@ -328,6 +328,13 @@
             var index = this.getAttribute('data-profileindex');
             deleteContainerProfile(page, index);
         });
+
+        $('.lnkEditSubProfile', elem).on('click', function () {
+
+            var index = parseInt(this.getAttribute('data-profileindex'));
+
+            editContainerProfile(page, currentProfile.ContainerProfiles[index]);
+        });
     }
 
     function deleteContainerProfile(page, index) {
@@ -336,6 +343,35 @@
 
         renderContainerProfiles(page, currentProfile.ContainerProfiles);
 
+    }
+    
+    function editContainerProfile(page, containerProfile) {
+
+        isSubProfileNew = containerProfile == null;
+        containerProfile = containerProfile || {};
+        currentSubProfile = containerProfile;
+
+        var popup = $('#containerProfilePopup', page).popup('open');
+
+        $('#selectContainerProfileType', popup).val(containerProfile.Type || 'Video').selectmenu('refresh').trigger('change');
+        $('#txtContainerProfileContainer', popup).val(containerProfile.Container || '');
+    }
+
+    function saveContainerProfile(page) {
+
+        currentSubProfile.Type = $('#selectContainerProfileType', page).val();
+        currentSubProfile.Container = $('#txtContainerProfileContainer', page).val();
+
+        if (isSubProfileNew) {
+
+            currentProfile.ContainerProfiles.push(currentSubProfile);
+        }
+
+        renderSubProfiles(page, currentProfile);
+
+        currentSubProfile = null;
+
+        $('#containerProfilePopup', page).popup('close');
     }
 
     function renderCodecProfiles(page, profiles) {
@@ -388,6 +424,13 @@
             var index = this.getAttribute('data-profileindex');
             deleteCodecProfile(page, index);
         });
+
+        $('.lnkEditSubProfile', elem).on('click', function () {
+
+            var index = parseInt(this.getAttribute('data-profileindex'));
+
+            editCodecProfile(page, currentProfile.CodecProfiles[index]);
+        });
     }
 
     function deleteCodecProfile(page, index) {
@@ -396,6 +439,35 @@
 
         renderCodecProfiles(page, currentProfile.CodecProfiles);
 
+    }
+
+    function editCodecProfile(page, codecProfile) {
+
+        isSubProfileNew = codecProfile == null;
+        codecProfile = codecProfile || {};
+        currentSubProfile = codecProfile;
+
+        var popup = $('#codecProfilePopup', page).popup('open');
+
+        $('#selectCodecProfileType', popup).val(codecProfile.Type || 'Video').selectmenu('refresh').trigger('change');
+        $('#txtCodecProfileCodec', popup).val(codecProfile.Codec || '');
+    }
+
+    function saveCodecProfile(page) {
+
+        currentSubProfile.Type = $('#selectCodecProfileType', page).val();
+        currentSubProfile.Codec = $('#txtCodecProfileCodec', page).val();
+
+        if (isSubProfileNew) {
+
+            currentProfile.CodecProfiles.push(currentSubProfile);
+        }
+
+        renderSubProfiles(page, currentProfile);
+
+        currentSubProfile = null;
+
+        $('#codecProfilePopup', page).popup('close');
     }
 
     function renderResponseProfiles(page, profiles) {
@@ -587,6 +659,18 @@
             editTranscodingProfile(page);
 
         });
+        
+        $('.btnAddContainerProfile', page).on('click', function () {
+
+            editContainerProfile(page);
+
+        });
+        
+        $('.btnAddCodecProfile', page).on('click', function () {
+
+            editCodecProfile(page);
+
+        });
 
     }).on('pageshow', "#dlnaProfilePage", function () {
 
@@ -635,6 +719,25 @@
 
             return false;
 
+        },
+        
+        onContainerProfileFormSubmit: function() {
+            var form = this;
+            var page = $(form).parents('.page');
+
+            saveContainerProfile(page);
+
+            return false;
+
+        },
+        
+        onCodecProfileFormSubmit: function() {
+            var form = this;
+            var page = $(form).parents('.page');
+
+            saveCodecProfile(page);
+
+            return false;
         }
     };
 

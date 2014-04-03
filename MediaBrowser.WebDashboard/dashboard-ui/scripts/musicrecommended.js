@@ -20,7 +20,6 @@
 
             $('#recentlyAddedAlbums', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
                 showUnplayedIndicator: false,
                 shape: "square",
                 showTitle: true,
@@ -43,7 +42,6 @@
 
             $('#recentlyAddedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
                 showUnplayedIndicator: false,
                 shape: "square",
                 showTitle: true,
@@ -73,7 +71,6 @@
 
             $('#recentlyPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
                 showUnplayedIndicator: false,
                 shape: "square",
                 showTitle: true,
@@ -103,7 +100,6 @@
 
             $('#topPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
                 showUnplayedIndicator: false,
                 shape: "square",
                 showTitle: true,

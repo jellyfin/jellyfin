@@ -230,7 +230,7 @@
             { name: "Photos", value: "photos" },
             { name: "Trailers", value: "trailers" },
             { name: "Adult videos", value: "adultvideos" },
-            { name: "Mixed content", value: "mixed" }
+            { name: "Mixed movies & tv", value: "mixed" }
         ];
 
     },

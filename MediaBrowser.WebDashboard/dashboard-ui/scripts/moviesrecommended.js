@@ -28,8 +28,7 @@
 
         html += '<div>';
         html += LibraryBrowser.getPosterViewHtml({
-            items: recommendation.Items,
-            useAverageAspectRatio: true
+            items: recommendation.Items
         });
         html += '</div>';
 

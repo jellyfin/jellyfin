@@ -450,7 +450,7 @@
 
                 var item = items[i];
 
-                primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio([item]) : null;
+                primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio([item]);
 
                 var futureDateText;
 

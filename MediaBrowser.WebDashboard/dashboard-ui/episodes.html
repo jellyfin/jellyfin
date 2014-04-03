@@ -57,13 +57,13 @@
                     <label for="radioDateCreated">${OptionDateAdded}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate,SeriesSortName,SortName" data-mini="true">
-                    <label for="radioPremiereDate">Date aired</label>
+                    <label for="radioPremiereDate">${OptionPremiereDate}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDatePlayed" value="off" data-sortby="DatePlayed,SeriesSortName,SortName" data-mini="true">
                     <label for="radioDatePlayed">${OptionDatePlayed}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioContentRating" value="off" data-sortby="OfficialRating,SeriesSortName,SortName" data-mini="true">
-                    <label for="radioContentRating">Parental rating</label>
+                    <label for="radioContentRating">${OptionParentalRating}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPlayCount" value="off" data-sortby="PlayCount,SeriesSortName,SortName" data-mini="true">
                     <label for="radioPlayCount">${OptionPlayCount}</label>
@@ -124,17 +124,17 @@
                 </fieldset>
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Type:</strong>
+                        <strong>${LabelVideoType}</strong>
                     </legend>
 
                     <input class="chkVideoTypeFilter" type="checkbox" name="chkBluray" id="chkBluray" data-filter="Bluray" data-mini="true">
-                    <label for="chkBluray">Bluray</label>
+                    <label for="chkBluray">${OptionBluray}</label>
 
                     <input class="chkVideoTypeFilter" type="checkbox" name="chkDvd" id="chkDvd" data-filter="Dvd" data-mini="true">
-                    <label for="chkDvd">Dvd</label>
+                    <label for="chkDvd">${OptionDvd}</label>
 
                     <input class="chkVideoTypeFilter" type="checkbox" name="chkIso" id="chkIso" data-filter="Iso" data-mini="true">
-                    <label for="chkIso">Iso</label>
+                    <label for="chkIso">${OptionIso}</label>
 
                     <input class="chkHDFilter" type="checkbox" name="chkHD" id="chkHD" data-filter="IsHD" data-mini="true">
                     <label for="chkHD">HD</label>
@@ -145,11 +145,11 @@
 
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Features:</strong>
+                        <strong>${LabelFeatures}</strong>
                     </legend>
 
                     <input class="chkFeatureFilter" type="checkbox" name="chkSubtitle" id="chkSubtitle" data-mini="true">
-                    <label for="chkSubtitle">Subtitles</label>
+                    <label for="chkSubtitle">${OptionHasSubtitles}</label>
                 </fieldset>
 
             </form>

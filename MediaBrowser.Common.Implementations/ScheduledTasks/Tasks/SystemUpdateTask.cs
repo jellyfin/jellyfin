@@ -11,7 +11,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
     /// <summary>
     /// Plugin Update Task
     /// </summary>
-    public class SystemUpdateTask : IScheduledTask
+    public class SystemUpdateTask : IScheduledTask, IHasKey
     {
         /// <summary>
         /// The _app host
@@ -139,6 +139,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         public string Category
         {
             get { return "Application"; }
+        }
+
+        public string Key
+        {
+            get { return "SystemUpdateTask"; }
         }
     }
 }

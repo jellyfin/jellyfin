@@ -133,10 +133,14 @@
                     </div>
                     <div class="tabContent tabContainerProfiles">
                         <p>Container profiles indicate the limitations of a device when playing specific formats. If a limitation applies then the media will be transcoded, even if the device supports the container natively.</p>
+                        <button class="btnAddContainerProfile" type="button" data-mini="true" data-icon="plus">New</button>
+                        <br />
                         <div class="containerProfiles"></div>
                     </div>
                     <div class="tabContent tabCodecProfiles">
                         <p>Codec profiles indicate the limitations of a device when playing specific codecs. If a limitation applies then the media will be transcoded, even if the device supports the codec natively.</p>
+                        <button class="btnAddCodecProfile" type="button" data-mini="true" data-icon="plus">New</button>
+                        <br />
                         <div class="codecProfiles"></div>
                     </div>
                     <div class="tabContent tabMediaProfiles">
@@ -220,7 +224,7 @@
                         <input type="radio" name="radioTranscodingTab" class="radioTabButton" id="radioTranscodingBasics" value="tabTranscodingBasics">
                         <label for="radioTranscodingBasics">Info</label>
                         <input type="radio" name="radioTranscodingTab" class="radioTabButton" id="radioTranscodingAdvanced" value="tabTranscodingAdvanced">
-                        <label for="radioTranscodingAdvanced">Advanced</label>
+                        <label for="radioTranscodingAdvanced">${TabAdvanced}</label>
                     </div>
 
                     <div class="tabContent tabTranscodingBasics" style="display: none;">
@@ -285,10 +289,87 @@
             </div>
 
         </div>
+        <div data-role="popup" data-transition="slidefade" id="containerProfilePopup" class="popup">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>Container Profile</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="containerProfileForm" style="min-width: 250px;">
+
+                    <p>Define additional conditions that must be met in order for a file to be direct played.</p>
+
+                    <div style="margin: 1em 0;">
+                        <label for="selectContainerProfileType">Type:</label>
+                        <select id="selectContainerProfileType" data-mini="true">
+                            <option value="Photo">Photo</option>
+                            <option value="Video">Video</option>
+                        </select>
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtContainerProfileContainer">Containers:</label>
+                        <input type="text" id="txtContainerProfileContainer" data-mini="true" />
+                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                    </div>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            Ok
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            Cancel
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
+        <div data-role="popup" data-transition="slidefade" id="codecProfilePopup" class="popup">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>Codec Profile</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="codecProfileForm" style="min-width: 250px;">
+
+                    <p>Define additional conditions that must be met in order for a codec to be direct played.</p>
+
+                    <div style="margin: 1em 0;">
+                        <label for="selectCodecProfileType">Type:</label>
+                        <select id="selectCodecProfileType" data-mini="true">
+                            <option value="Video">Video</option>
+                            <option value="VideoAudio">Video Audio</option>
+                            <option value="Audio">Audio</option>
+                        </select>
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtCodecProfileCodec">Codecs:</label>
+                        <input type="text" id="txtCodecProfileCodec" data-mini="true" />
+                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                    </div>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            Ok
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            Cancel
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
         <script type="text/javascript">
             $('.dlnaProfileForm').off('submit', DlnaProfilePage.onSubmit).on('submit', DlnaProfilePage.onSubmit);
             $('.editDirectPlayProfileForm').off('submit', DlnaProfilePage.onDirectPlayFormSubmit).on('submit', DlnaProfilePage.onDirectPlayFormSubmit);
             $('.transcodingProfileForm').off('submit', DlnaProfilePage.onTranscodingProfileFormSubmit).on('submit', DlnaProfilePage.onTranscodingProfileFormSubmit);
+            $('.containerProfileForm').off('submit', DlnaProfilePage.onContainerProfileFormSubmit).on('submit', DlnaProfilePage.onContainerProfileFormSubmit);
+            $('.codecProfileForm').off('submit', DlnaProfilePage.onCodecProfileFormSubmit).on('submit', DlnaProfilePage.onCodecProfileFormSubmit);
         </script>
     </div>
 </body>

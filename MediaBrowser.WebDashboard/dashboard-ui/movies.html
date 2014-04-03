@@ -9,11 +9,11 @@
         <div class="libraryViewNav">
             <a href="movieslatest.html">${TabLatest}</a>
             <a href="moviesrecommended.html">${TabSuggested}</a>
-            <a href="movies.html" class="ui-btn-active">Movies</a>
-            <a href="movietrailers.html">Trailers</a>
+            <a href="movies.html" class="ui-btn-active">${TabMovies}</a>
+            <a href="movietrailers.html">${TabTrailers}</a>
             <a href="moviegenres.html">${TabGenres}</a>
             <a href="moviepeople.html">${TabPeople}</a>
-            <a href="moviestudios.html">Studios</a>
+            <a href="moviestudios.html">${TabStudios}</a>
         </div>
 
         <div class="alphabetPicker">
@@ -76,7 +76,7 @@
                     <label for="radioMetascore">Metascore</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioContentRating" value="off" data-sortby="OfficialRating,SortName" data-mini="true">
-                    <label for="radioContentRating">Parental rating</label>
+                    <label for="radioContentRating">${OptionParentalRating}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPlayCount" value="off" data-sortby="PlayCount,SortName" data-mini="true">
                     <label for="radioPlayCount">${OptionPlayCount}</label>
@@ -113,9 +113,9 @@
                 <fieldset data-role="controlgroup" data-type="horizontal" style="margin-bottom: 1em;">
                     <legend>${HeaderFilters}</legend>
                     <input type="radio" name="radioFilterTypes" id="radioBasicFilters" value="on" checked="checked" data-mini="true">
-                    <label for="radioBasicFilters">Basic</label>
+                    <label for="radioBasicFilters">${TabBasic}</label>
                     <input type="radio" name="radioFilterTypes" id="radioAdvancedFilters" value="off" data-mini="true">
-                    <label for="radioAdvancedFilters">Advanced</label>
+                    <label for="radioAdvancedFilters">${TabAdvanced}</label>
                 </fieldset>
                 <div class="basicFilters">
                     <fieldset data-role="controlgroup">
@@ -142,17 +142,17 @@
                     </fieldset>
                     <fieldset data-role="controlgroup">
                         <legend>
-                            <strong>Type:</strong>
+                            <strong>${LabelVideoType}</strong>
                         </legend>
 
                         <input class="chkVideoTypeFilter" type="checkbox" name="chkBluray" id="chkBluray" data-filter="Bluray" data-mini="true">
-                        <label for="chkBluray">Bluray</label>
+                        <label for="chkBluray">${OptionBluray}</label>
 
                         <input class="chkVideoTypeFilter" type="checkbox" name="chkDvd" id="chkDvd" data-filter="Dvd" data-mini="true">
-                        <label for="chkDvd">Dvd</label>
+                        <label for="chkDvd">${OptionDvd}</label>
 
                         <input class="chkVideoTypeFilter" type="checkbox" name="chkIso" id="chkIso" data-filter="Iso" data-mini="true">
-                        <label for="chkIso">Iso</label>
+                        <label for="chkIso">${OptionIso}</label>
 
                         <input class="chkHDFilter" type="checkbox" name="chkHD" id="chkHD" data-filter="IsHD" data-mini="true">
                         <label for="chkHD">HD</label>
@@ -161,7 +161,7 @@
                         <label for="chkSD">SD</label>
 
                         <input class="chk3DFilter" type="checkbox" name="chk3D" id="chk3D" data-filter="Digital3D,Sbs3D" data-mini="true">
-                        <label for="chk3D">3D</label>
+                        <label for="chk3D">${Option3D}</label>
                     </fieldset>
                 </div>
 
@@ -169,42 +169,42 @@
 
                     <fieldset data-role="controlgroup">
                         <legend>
-                            <strong>Management:</strong>
+                            <strong>${HeaderManagement}</strong>
                         </legend>
 
                         <input class="chkMissingImdbId" type="checkbox" name="chkMissingImdbId" id="chkMissingImdbId" data-mini="true">
-                        <label for="chkMissingImdbId">Missing IMDb Id</label>
+                        <label for="chkMissingImdbId">${OptionMissingImdbId}</label>
 
                         <input class="chkMissingTmdbId" type="checkbox" name="chkMissingTmdbId" id="chkMissingTmdbId" data-mini="true">
                         <label for="chkMissingTmdbId">Missing Tmdb Id</label>
 
                         <input class="chkMissingOverview" type="checkbox" name="chkMissingOverview" id="chkMissingOverview" data-mini="true">
-                        <label for="chkMissingOverview">Missing Overview</label>
+                        <label for="chkMissingOverview">${OptionMissingOverview}</label>
 
                         <input class="chkYearMismatch" type="checkbox" name="chkYearMismatch" id="chkYearMismatch" data-mini="true">
-                        <label for="chkYearMismatch">File/Metadata Years Mismatched</label>
+                        <label for="chkYearMismatch">${OptionFileMetadataYearMismatch}</label>
 
                     </fieldset>
 
                     <fieldset data-role="controlgroup">
                         <legend>
-                            <strong>Features:</strong>
+                            <strong>${LabelFeatures}</strong>
                         </legend>
 
                         <input class="chkFeatureFilter" type="checkbox" name="chkSubtitle" id="chkSubtitle" data-mini="true">
-                        <label for="chkSubtitle">Subtitles</label>
+                        <label for="chkSubtitle">${OptionHasSubtitles}</label>
 
                         <input class="chkFeatureFilter" type="checkbox" name="chkTrailer" id="chkTrailer" data-mini="true">
-                        <label for="chkTrailer">Trailer</label>
+                        <label for="chkTrailer">${OptionHasTrailer}</label>
 
                         <input class="chkFeatureFilter" type="checkbox" name="chkSpecialFeature" id="chkSpecialFeature" data-mini="true">
-                        <label for="chkSpecialFeature">Special features</label>
+                        <label for="chkSpecialFeature">${OptionHasSpecialFeatures}</label>
 
                         <input class="chkFeatureFilter" type="checkbox" name="chkThemeSong" id="chkThemeSong" data-mini="true">
-                        <label for="chkThemeSong">Theme song</label>
+                        <label for="chkThemeSong">${OptionHasThemeSong}</label>
 
                         <input class="chkFeatureFilter" type="checkbox" name="chkThemeVideo" id="chkThemeVideo" data-mini="true">
-                        <label for="chkThemeVideo">Theme video</label>
+                        <label for="chkThemeVideo">${OptionHasThemeVideo}</label>
 
                     </fieldset>
                 </div>

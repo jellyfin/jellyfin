@@ -436,7 +436,6 @@
                     items: result.Items,
                     shape: "portrait",
                     context: 'movies',
-                    useAverageAspectRatio: true,
                     showTitle: true,
                     centerText: true
                 });
@@ -446,7 +445,6 @@
 
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    useAverageAspectRatio: true,
                     shape: "backdrop",
                     showTitle: true,
                     showParentTitle: true,
@@ -470,7 +468,6 @@
                     items: result.Items,
                     shape: "square",
                     context: 'music',
-                    useAverageAspectRatio: true,
                     showTitle: true,
                     showParentTitle: true
                 });
@@ -481,8 +478,8 @@
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "square",
-                    useAverageAspectRatio: true,
-                    showTitle: true
+                    showTitle: true,
+                    centerText: true
                 });
             }
 

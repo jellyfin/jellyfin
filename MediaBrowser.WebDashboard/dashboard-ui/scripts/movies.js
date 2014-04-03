@@ -54,7 +54,6 @@
                     items: result.Items,
                     shape: "portrait",
                     context: 'movies',
-                    useAverageAspectRatio: true,
                     showTitle: true,
                     centerText: true,
                     selectionPanel: true
@@ -66,7 +65,6 @@
                     items: result.Items,
                     shape: "portrait",
                     context: 'movies',
-                    useAverageAspectRatio: true,
                     showTitle: true,
                     timeline: true,
                     centerText: true,

@@ -56,4 +56,9 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <value><c>true</c> if this instance is enabled; otherwise, <c>false</c>.</value>
         bool IsEnabled { get; }
     }
+
+    public interface IHasKey
+    {
+        string Key { get; }
+    }
 }

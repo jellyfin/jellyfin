@@ -10,14 +10,14 @@
             SortOrder: "Descending",
             MediaTypes: "Game",
             Limit: 10,
-            Recursive: true
+            Recursive: true,
+            Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: false,
                 transparent: true,
                 borderless: true
             }));
@@ -31,7 +31,8 @@
             MediaTypes: "Game",
             Limit: 10,
             Recursive: true,
-            Filters: "IsPlayed"
+            Filters: "IsPlayed",
+            Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -44,7 +45,6 @@
 
             $('#recentlyPlayedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: false,
                 transparent: true,
                 borderless: true
             }));

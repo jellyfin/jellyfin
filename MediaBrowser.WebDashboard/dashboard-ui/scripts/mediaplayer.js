@@ -228,7 +228,7 @@
             }
 
             if (!videoStream) {
-                throw new Error('Null videoStream');
+                return false;
             }
 
             if (mediaSource.VideoType != "VideoFile" || mediaSource.LocationType != "FileSystem") {

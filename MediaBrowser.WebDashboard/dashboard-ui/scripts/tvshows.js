@@ -55,7 +55,6 @@
                     items: result.Items,
                     shape: "portrait",
                     context: 'tv',
-                    useAverageAspectRatio: true,
                     showTitle: true,
                     centerText: true
                 });
@@ -67,7 +66,6 @@
                     items: result.Items,
                     shape: "portrait",
                     context: 'tv',
-                    useAverageAspectRatio: true,
                     timeline: true,
                     showTitle: true
                 });

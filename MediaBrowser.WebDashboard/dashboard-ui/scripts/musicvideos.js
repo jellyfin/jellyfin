@@ -30,7 +30,6 @@
                 items: result.Items,
                 shape: "square",
                 context: 'music',
-                useAverageAspectRatio: true,
                 showTitle: true,
                 centerText: true
             });

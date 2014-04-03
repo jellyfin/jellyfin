@@ -63,6 +63,12 @@ namespace MediaBrowser.Model.Tasks
         public bool IsHidden { get; set; }
 
         /// <summary>
+        /// Gets or sets the key.
+        /// </summary>
+        /// <value>The key.</value>
+        public string Key { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TaskInfo"/> class.
         /// </summary>
         public TaskInfo()
