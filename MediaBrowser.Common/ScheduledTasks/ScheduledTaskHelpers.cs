@@ -25,6 +25,14 @@ namespace MediaBrowser.Common.ScheduledTasks
                 isHidden = configurableTask.IsHidden;
             }
 
+            string key = null;
+
+            var hasKey = task.ScheduledTask as IHasKey;
+
+            if (hasKey != null)
+            {
+                key = hasKey.Key;
+            }
             return new TaskInfo
             {
                 Name = task.Name,
@@ -35,7 +43,8 @@ namespace MediaBrowser.Common.ScheduledTasks
                 Triggers = task.Triggers.Select(GetTriggerInfo).ToList(),
                 Description = task.Description,
                 Category = task.Category,
-                IsHidden = isHidden
+                IsHidden = isHidden,
+                Key = key
             };
         }
 

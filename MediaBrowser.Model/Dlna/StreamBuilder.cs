@@ -14,7 +14,7 @@ namespace MediaBrowser.Model.Dlna
         public StreamInfo BuildAudioItem(AudioOptions options)
         {
             ValidateAudioInput(options);
-            
+
             var mediaSources = options.MediaSources;
 
             // If the client wants a specific media soure, filter now
@@ -201,7 +201,7 @@ namespace MediaBrowser.Model.Dlna
                 return false;
             }
 
-            if (options.AudioStreamIndex.HasValue && 
+            if (options.AudioStreamIndex.HasValue &&
                 item.MediaStreams.Count(i => i.Type == MediaStreamType.Audio) > 1)
             {
                 return false;
@@ -503,9 +503,39 @@ namespace MediaBrowser.Model.Dlna
                     return videoStream == null ? null : videoStream.Width;
                 case ProfileConditionValue.VideoLevel:
                     return videoStream == null ? null : videoStream.Level;
+                case ProfileConditionValue.VideoBitDepth:
+                    return videoStream == null ? null : GetBitDepth(videoStream);
                 default:
                     throw new InvalidOperationException("Unexpected Property");
             }
+        }
+
+        private int? GetBitDepth(MediaStream videoStream)
+        {
+            var eightBit = new List<string>
+            {
+                "yuv420p",
+                "yuv411p",
+                "yuvj420p",
+                "uyyvyy411",
+                "nv12",
+                "nv21",
+                "rgb444le",
+                "rgb444be",
+                "bgr444le",
+                "bgr444be",
+                "yuvj411p"            
+            };
+
+            if (!string.IsNullOrEmpty(videoStream.PixelFormat))
+            {
+                if (eightBit.Contains(videoStream.PixelFormat, StringComparer.OrdinalIgnoreCase))
+                {
+                    return 8;
+                }
+            }
+
+            return null;
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Persistence;
+﻿using System.Text;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -20,7 +21,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _saveStreamCommand;
 
         private SqliteShrinkMemoryTimer _shrinkMemoryTimer;
-        
+
         public SqliteMediaStreamsRepository(IDbConnection connection, ILogManager logManager)
         {
             _connection = connection;
@@ -39,11 +40,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             // Add PixelFormat column
 
-            createTableCommand += "(ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+            createTableCommand += "(ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, PRIMARY KEY (ItemId, StreamIndex))";
 
             string[] queries = {
 
                                 createTableCommand,
+
                                 "create index if not exists idx_mediastreams on mediastreams(ItemId, StreamIndex)",
 
                                 //pragmas
@@ -54,9 +56,42 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _connection.RunQueries(queries, _logger);
 
+            AddPixelFormatColumnCommand();
+
             PrepareStatements();
 
             _shrinkMemoryTimer = new SqliteShrinkMemoryTimer(_connection, _writeLock, _logger);
+        }
+
+        private void AddPixelFormatColumnCommand()
+        {
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(mediastreams)";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(1))
+                        {
+                            var name = reader.GetString(1);
+
+                            if (string.Equals(name, "PixelFormat", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var builder = new StringBuilder();
+
+            builder.AppendLine("alter table mediastreams");
+            builder.AppendLine("add column PixelFormat TEXT");
+
+            _connection.RunQueries(new[] { builder.ToString() }, _logger);
         }
 
         private readonly string[] _saveColumns =
@@ -81,7 +116,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "Width",
             "AverageFrameRate",
             "RealFrameRate",
-            "Level"
+            "Level",
+            "PixelFormat"
         };
 
         /// <summary>
@@ -240,6 +276,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 item.Level = reader.GetFloat(20);
             }
 
+            if (!reader.IsDBNull(21))
+            {
+                item.PixelFormat = reader.GetString(21);
+            }
+
             return item;
         }
 
@@ -301,7 +342,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveStreamCommand.GetParameter(18).Value = stream.AverageFrameRate;
                     _saveStreamCommand.GetParameter(19).Value = stream.RealFrameRate;
                     _saveStreamCommand.GetParameter(20).Value = stream.Level;
-                    
+                    _saveStreamCommand.GetParameter(21).Value = stream.PixelFormat;
+
                     _saveStreamCommand.Transaction = transaction;
                     _saveStreamCommand.ExecuteNonQuery();
                 }

@@ -47,8 +47,7 @@ namespace MediaBrowser.Dlna.Profiles
                     AudioCodec = "wmav2",
                     Type = DlnaProfileType.Video,
                     TranscodeSeekInfo = TranscodeSeekInfo.Bytes,
-                    EstimateContentLength = true,
-                    VideoProfile= "baseline"
+                    EstimateContentLength = true
                 },
                 new TranscodingProfile
                 {

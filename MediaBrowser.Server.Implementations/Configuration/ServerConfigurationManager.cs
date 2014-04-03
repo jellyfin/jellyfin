@@ -63,6 +63,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
         {
             UpdateItemsByNamePath();
             UpdateTranscodingTempPath();
+            UpdateMetadataPath();
 
             base.OnConfigurationUpdated();
         }
