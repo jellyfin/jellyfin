@@ -827,7 +827,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 if (string.Equals(codec, "wmv", StringComparison.OrdinalIgnoreCase))
                 {
-                    return "msmpeg4";
+                    return "wmv2";
                 }
                 if (string.Equals(codec, "theora", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1623,7 +1623,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             var profile = string.IsNullOrWhiteSpace(state.Request.DeviceProfileId) ?
-                null :
+                DlnaManager.GetProfile(headers) :
                 DlnaManager.GetProfile(state.Request.DeviceProfileId);
 
             if (profile == null)
@@ -1708,7 +1708,10 @@ namespace MediaBrowser.Api.Playback
                 // Byte-based seeking only possible when not transcoding
                 orgOp += isStaticallyStreamed || state.TranscodeSeekInfo == TranscodeSeekInfo.Bytes ? "1" : "0";
 
-                AddTimeSeekResponseHeaders(state, responseHeaders);
+                if (!isStaticallyStreamed)
+                {
+                    AddTimeSeekResponseHeaders(state, responseHeaders);
+                }
             }
             else
             {
