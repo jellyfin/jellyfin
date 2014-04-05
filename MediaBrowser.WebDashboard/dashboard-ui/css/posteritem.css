@@ -31,7 +31,7 @@
 .posterItemImage {
     background-size: contain;
     background-repeat: no-repeat;
-    background-position: center bottom;
+    background-position: center top;
     background-color: #000;
     position: relative;
 }
