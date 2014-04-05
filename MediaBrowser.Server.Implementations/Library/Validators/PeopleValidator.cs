@@ -50,7 +50,9 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             var people = _libraryManager.RootFolder.GetRecursiveChildren()
                 .SelectMany(c => c.People)
-                .DistinctBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
+                .Where(i => !string.IsNullOrWhiteSpace(i.Name))
+                .Select(i => i.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
             var numComplete = 0;
@@ -61,13 +63,13 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                 try
                 {
-                    var item = _libraryManager.GetPerson(person.Name);
+                    var item = _libraryManager.GetPerson(person);
 
                     await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error validating IBN entry {0}", ex, person.Name);
+                    _logger.ErrorException("Error validating IBN entry {0}", ex, person);
                 }
 
                 // Update progress
