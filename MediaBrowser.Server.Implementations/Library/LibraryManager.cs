@@ -785,12 +785,12 @@ namespace MediaBrowser.Server.Implementations.Library
         private T GetItemByName<T>(string path, string name)
             where T : BaseItem, new()
         {
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrWhiteSpace(path))
             {
                 throw new ArgumentNullException("path");
             }
 
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentNullException("name");
             }

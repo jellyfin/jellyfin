@@ -7,11 +7,11 @@
     <div id="liveTvProgramPage" data-role="page" class="page libraryPage" data-theme="b" data-view="livetv">
         <div class="libraryViewNav">
             <a href="livetvsuggested.html">${TabSuggested}</a>
-            <a href="livetvguide.html">Guide</a>
-            <a href="livetvchannels.html" class="ui-btn-active">Channels</a>
-            <a href="livetvrecordings.html">Recordings</a>
-            <a href="livetvtimers.html">Scheduled</a>
-            <a href="livetvseriestimers.html">Series</a>
+            <a href="livetvguide.html">${TabGuide}</a>
+            <a href="livetvchannels.html" class="ui-btn-active">${TabChannels}</a>
+            <a href="livetvrecordings.html">${TabRecordings}</a>
+            <a href="livetvtimers.html">${TabScheduled}</a>
+            <a href="livetvseriestimers.html">${TabSeries}</a>
         </div>
         <div id="itemBackdrop" class="itemBackdrop noBackdrop">
             <div class="itemBackdropContent">
@@ -39,13 +39,13 @@
         </div>
         <div class="detailButtonsContainer">
             <span id="playButtonContainer" style="display: none;">
-                <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">Play</button>
+                <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
             </span>
             <span id="cancelRecordingButtonContainer" style="display: none;">
-                <button id="btnCancelRecording" type="button" data-icon="delete" data-inline="true" data-mini="true">Cancel Recording</button>
+                <button id="btnCancelRecording" type="button" data-icon="delete" data-inline="true" data-mini="true">${ButtonCancelRecording}</button>
             </span>
             <span id="recordButtonContainer" style="display: none;">
-                <button id="btnRecord" type="button" data-icon="video" data-inline="true" data-mini="true">Record</button>
+                <button id="btnRecord" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonRecord}</button>
             </span>
         </div>
         <div data-role="content">
@@ -53,7 +53,7 @@
 
                 <div id="detailsSection" class="detailSection">
                     <div class="detailSectionHeader" style="margin-top: 0;">
-                        Details
+                        ${HeaderDetails}
                     </div>
                     <div class="detailSectionContent" style="padding: 0 1em;">
 

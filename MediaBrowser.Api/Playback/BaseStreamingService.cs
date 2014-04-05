@@ -937,8 +937,6 @@ namespace MediaBrowser.Api.Playback
 
                 ApiEntryPoint.Instance.OnTranscodeFailedToStart(outputPath, TranscodingJobType);
 
-                state.LogFileStream.Dispose();
-
                 throw;
             }
 
@@ -1096,22 +1094,11 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="process">The process.</param>
         /// <param name="state">The state.</param>
-        protected async void OnFfMpegProcessExited(Process process, StreamState state)
+        protected void OnFfMpegProcessExited(Process process, StreamState state)
         {
-            if (state.IsoMount != null)
-            {
-                state.IsoMount.Dispose();
-                state.IsoMount = null;
-            }
-
-            if (state.StandardInputCancellationTokenSource != null)
-            {
-                state.StandardInputCancellationTokenSource.Cancel();
-            }
+            state.Dispose();
 
             var outputFilePath = GetOutputFilePath(state);
-
-            state.LogFileStream.Dispose();
 
             try
             {
@@ -1120,18 +1107,6 @@ namespace MediaBrowser.Api.Playback
             catch
             {
                 Logger.Info("FFMpeg exited with an error for {0}", outputFilePath);
-            }
-
-            if (!string.IsNullOrEmpty(state.LiveTvStreamId))
-            {
-                try
-                {
-                    await LiveTvManager.CloseLiveStream(state.LiveTvStreamId, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error closing live tv stream", ex);
-                }
             }
         }
 
@@ -1357,7 +1332,7 @@ namespace MediaBrowser.Api.Playback
                 request.AudioCodec = InferAudioCodec(url);
             }
 
-            var state = new StreamState
+            var state = new StreamState(LiveTvManager, Logger)
             {
                 Request = request,
                 RequestedUrl = url

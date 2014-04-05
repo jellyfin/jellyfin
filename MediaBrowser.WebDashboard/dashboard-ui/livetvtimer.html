@@ -7,11 +7,11 @@
     <div id="liveTvTimerPage" data-role="page" class="page libraryPage" data-theme="b" data-view="livetv">
         <div class="libraryViewNav">
             <a href="livetvsuggested.html">${TabSuggested}</a>
-            <a href="livetvguide.html">Guide</a>
-            <a href="livetvchannels.html">Channels</a>
-            <a href="livetvrecordings.html">Recordings</a>
-            <a href="livetvtimers.html" class="ui-btn-active">Scheduled</a>
-            <a href="livetvseriestimers.html">Series</a>
+            <a href="livetvguide.html">${TabGuide}</a>
+            <a href="livetvchannels.html">${TabChannels}</a>
+            <a href="livetvrecordings.html">${TabRecordings}</a>
+            <a href="livetvtimers.html" class="ui-btn-active">${TabScheduled}</a>
+            <a href="livetvseriestimers.html">${TabSeries}</a>
         </div>
         <div data-role="content">
 
@@ -40,28 +40,28 @@
             <form class="liveTvTimerForm" style="margin: 0 auto;">
 
                 <div data-role="collapsible" data-mini="true">
-                    <h3>Pre/Post Padding</h3>
+                    <h3>${HeaderPrePostPadding}</h3>
                     <div>
                         <br />
                         <ul data-role="listview" class="ulForm">
                             <li>
-                                <label for="txtPrePaddingSeconds">Pre-padding minutes: </label>
+                                <label for="txtPrePaddingSeconds">${LabelPrePaddingMinutes}</label>
                                 <input type="number" id="txtPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" max="30" step="1" />
                             </li>
                             <li>
                                 <input type="checkbox" data-mini="true" id="chkPrePaddingRequired" />
-                                <label for="chkPrePaddingRequired">Pre-padding is required in order to record.</label>
+                                <label for="chkPrePaddingRequired">${OptionPrePaddingRequired}</label>
                             </li>
                             <li>
                                 <div style="height: .5em;"></div>
                             </li>
                             <li>
-                                <label for="txtPostPaddingSeconds">Post-padding minutes: </label>
+                                <label for="txtPostPaddingSeconds">${LabelPostPaddingMinutes}</label>
                                 <input type="number" id="txtPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" max="30" step="1" />
                             </li>
                             <li>
                                 <input type="checkbox" data-mini="true" id="chkPostPaddingRequired" />
-                                <label for="chkPostPaddingRequired">Post-padding is required in order to record.</label>
+                                <label for="chkPostPaddingRequired">${OptionPostPaddingRequired}</label>
                             </li>
                         </ul>
                     </div>
@@ -72,15 +72,15 @@
                 <ul data-role="listview" class="ulForm">
                     <li>
                         <button type="submit" data-theme="a" data-icon="check" data-mini="true">
-                            Save
+                            ${ButtonSave}
                         </button>
                         <button type="button" onclick="Dashboard.navigate('livetvtimers.html');" data-icon="delete" data-mini="true">
-                            Cancel
+                            ${ButtonCancel}
                         </button>
                     </li>
                 </ul>
                 <p style="border-top: 1px solid #444; padding-top: .5em; margin-top: 3em;">
-                    <button id="btnCancelTimer" type="button" data-mini="true" data-icon="delete">Cancel Recording</button>
+                    <button id="btnCancelTimer" type="button" data-mini="true" data-icon="delete">${ButtonCancelRecording}</button>
                 </p>
             </form>
 

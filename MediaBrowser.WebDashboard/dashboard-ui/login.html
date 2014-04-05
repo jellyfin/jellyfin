@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Sign In</title>
+    <title>${TitleSignIn}</title>
 </head>
 <body>
     <div id="loginPage" data-role="page" class="page standalonePage">
@@ -9,17 +9,17 @@
         <div data-role="content">
 
             <form class="manualLoginForm" id="manualLoginForm" style="display: none; text-align: center; margin: 0 auto;">
-                <h2 style="text-align: left;">Please sign in</h2>
+                <h2 style="text-align: left;">${HeaderPleaseSignIn}</h2>
 
-                <label for="txtManualName" style="text-align: left;">User:</label>
+                <label for="txtManualName" style="text-align: left;">${LabelUser}</label>
                 <input type="text" name="txtManualName" id="txtManualName" required="required" />
 
-                <label for="txtManualPassword" style="text-align: left;">Password:</label>
+                <label for="txtManualPassword" style="text-align: left;">${LabelPassword}</label>
                 <input type="password" name="txtManualPassword" id="txtManualPassword" placeholder="password" />
 
                 <p>
                     <button type="submit" data-theme="b" data-icon="check">
-                        Sign in
+                        ${ButtonSignIn}
                     </button>
                 </p>
             </form>
@@ -27,8 +27,8 @@
             <div class="visualLoginForm" style="display: none; text-align: center;">
                 <div id="divUsers"></div>
 
-                <p class="localhostMessage" style="text-align: center; display: none;">Passwords are not required when logging in from localhost.</p>
-                <p style="text-align: center;"><a onclick="$('.manualLoginForm').show();$('.visualLoginForm').hide();$('#txtManualName').focus();" href="#">Manual Login</a></p>
+                <p class="localhostMessage" style="text-align: center; display: none;">${PasswordLocalhostMessage}</p>
+                <p style="text-align: center;"><a onclick="$('.manualLoginForm').show();$('.visualLoginForm').hide();$('#txtManualName').focus();" href="#">${ButtonManualLogin}</a></p>
 
             </div>
         </div>
@@ -36,18 +36,18 @@
         <div data-role="popup" id="popupLogin" class="popup" data-dismissible="false">
             <form class="loginForm">
                 <div class="ui-bar-a" style="text-align: center;">
-                    <h3>Please sign in</h3>
+                    <h3>${HeaderPleaseSignIn}</h3>
                 </div>
                 <div data-role="content">
-                    <label for="pw" class="ui-hidden-accessible">Password:</label>
+                    <label for="pw" class="ui-hidden-accessible">${LabelPassword}</label>
                     <input type="password" name="pw" id="pw" value="" placeholder="password" />
 
                     <p>
                         <button type="submit" data-theme="b" data-icon="check">
-                            Sign in
+                            ${ButtonSignIn}
                         </button>
                         <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
-                            Cancel
+                            ${ButtonCancel}
                         </button>
                     </p>
                 </div>
