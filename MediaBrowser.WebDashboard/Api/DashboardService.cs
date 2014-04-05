@@ -510,10 +510,10 @@ namespace MediaBrowser.WebDashboard.Api
                                 "librarylist.js",
                                 "editorsidebar.js",
                                 "librarymenu.js",
+                                "mediacontroller.js",
                                 "chromecast.js",
                                 "contextmenu.js",
 
-                                "mediacontroller.js",
                                 "mediaplayer.js",
                                 "mediaplayer-video.js",
 

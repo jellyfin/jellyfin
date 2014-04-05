@@ -468,6 +468,22 @@
             return mediaType == 'Audio' || mediaType == 'Video';
         };
 
+        self.stop = function () {
+
+        };
+
+        self.mute = function () {
+
+        };
+
+        self.unMute = function () {
+
+        };
+
+        self.toggleMute = function () {
+
+        };
+
         self.getTargets = function () {
 
             var deferred = $.Deferred();
@@ -489,7 +505,8 @@
                         id: s.Id,
                         playerName: self.name,
                         appName: s.Client,
-                        playableMediaTypes: s.PlayableMediaTypes
+                        playableMediaTypes: s.PlayableMediaTypes,
+                        isLocalPlayer: false
                     };
                 });
 

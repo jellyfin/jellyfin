@@ -44,11 +44,6 @@
         // @type {PLAYER_STATE} A state for Cast media player
         this.castPlayerState = PLAYER_STATE.IDLE;
 
-        /* Local player variables */
-        // @type {PLAYER_STATE} A state for local media player
-        this.localPlayerState = PLAYER_STATE.IDLE;
-        // @type {HTMLElement} local player
-        this.localPlayer = null;
         // @type {Boolean} Fullscreen mode on/off
         this.fullscreen = false;
 
@@ -74,13 +69,6 @@
         this.hasReceivers = false;
 
         this.initializeCastPlayer();
-    };
-
-    /**
-     * Initialize local media player 
-     */
-    CastPlayer.prototype.initializeLocalPlayer = function () {
-        this.localPlayer = document.getElementById('itemVideo');
     };
 
     /**
@@ -119,7 +107,6 @@
      */
     CastPlayer.prototype.onInitSuccess = function () {
         console.log("init success");
-        this.updateMediaControlUI();
     };
 
     /**
@@ -140,10 +127,11 @@
         this.session = e;
         if (this.session) {
             this.deviceState = DEVICE_STATE.ACTIVE;
-            this.updateMediaControlUI();
+            
             if (this.session.media[0]) {
                 this.onMediaDiscovered('activeSession', this.session.media[0]);
             }
+            
             this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
         }
     };
@@ -160,7 +148,6 @@
         if (e === 'available') {
             console.log("chromecast receiver found");
             this.hasReceivers = true;
-            this.updateMediaControlUI();
         }
         else {
             console.log("chromecast receiver list empty");
@@ -178,12 +165,8 @@
             this.castPlayerState = PLAYER_STATE.IDLE;
             this.currentMediaSession = null;
             clearInterval(this.timer);
-            this.updateDisplayMessage();
 
-            //// continue to play media locally
-            //console.log("current time: " + this.currentMediaTime);
-            //this.playMediaLocally(this.currentMediaTime);
-            this.updateMediaControlUI();
+            MediaController.removeActivePlayer('Chromecast');
         }
     };
 
@@ -208,7 +191,6 @@
         console.log("session success: " + e.sessionId);
         this.session = e;
         this.deviceState = DEVICE_STATE.ACTIVE;
-        this.updateMediaControlUI();
         this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
     };
 
@@ -224,6 +206,8 @@
             message: "There was an error launching chromecast. Please ensure your device is connected to your wifi network."
 
         });
+
+        MediaController.removeActivePlayer('Chromecast');
     };
 
     /**
@@ -244,12 +228,10 @@
         this.castPlayerState = PLAYER_STATE.IDLE;
         this.currentMediaSession = null;
         clearInterval(this.timer);
-        this.updateDisplayMessage();
 
         //// continue to play media locally
         //console.log("current time: " + this.currentMediaTime);
         //this.playMediaLocally(this.currentMediaTime);
-        this.updateMediaControlUI();
     };
 
     /**
@@ -365,9 +347,6 @@
     CastPlayer.prototype.onLoadMediaError = function (e) {
         console.log("media error");
         this.castPlayerState = PLAYER_STATE.IDLE;
-        // update UIs
-        this.updateMediaControlUI();
-        this.updateDisplayMessage();
     };
 
     /**
@@ -380,9 +359,7 @@
             this.castPlayerState = PLAYER_STATE.IDLE;
         }
         console.log("updating media");
-        this.updateProgressBar(e);
-        this.updateDisplayMessage();
-        this.updateMediaControlUI();
+        //this.updateProgressBar(e);
     };
 
     /**
@@ -390,7 +367,7 @@
      * Increment media current position by 1 second 
      */
     CastPlayer.prototype.incrementMediaTime = function () {
-        if (this.castPlayerState == PLAYER_STATE.PLAYING || this.localPlayerState == PLAYER_STATE.PLAYING) {
+        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
             if (this.currentMediaTime < this.currentMediaDuration) {
                 this.currentMediaTime += 1;
                 this.updateProgressBarByTimer();
@@ -408,7 +385,6 @@
     CastPlayer.prototype.playMedia = function () {
         
         if (!this.currentMediaSession) {
-            this.playMediaLocally(0);
             return;
         }
 
@@ -433,8 +409,6 @@
             default:
                 break;
         }
-        this.updateMediaControlUI();
-        this.updateDisplayMessage();
     };
 
     /**
@@ -443,7 +417,6 @@
     CastPlayer.prototype.pauseMedia = function () {
         
         if (!this.currentMediaSession) {
-            this.pauseMediaLocally();
             return;
         }
 
@@ -452,30 +425,16 @@
             this.currentMediaSession.pause(null,
               this.mediaCommandSuccessCallback.bind(this, "paused " + this.currentMediaSession.sessionId),
               this.onError.bind(this));
-            this.updateMediaControlUI();
-            this.updateDisplayMessage();
             clearInterval(this.timer);
         }
     };
 
     /**
-     * Pause media playback in local player 
-     */
-    CastPlayer.prototype.pauseMediaLocally = function () {
-        
-        this.localPlayer.pause();
-        this.localPlayerState = PLAYER_STATE.PAUSED;
-        this.updateMediaControlUI();
-        clearInterval(this.timer);
-    };
-
-    /**
-     * Stop meia playback in either Cast or local mode  
+     * Stop CC playback 
      */
     CastPlayer.prototype.stopMedia = function () {
         
         if (!this.currentMediaSession) {
-            this.stopMediaLocally();
             return;
         }
 
@@ -484,22 +443,6 @@
           this.onError.bind(this));
         this.castPlayerState = PLAYER_STATE.STOPPED;
         clearInterval(this.timer);
-
-        this.updateDisplayMessage();
-        this.updateMediaControlUI();
-    };
-
-    /**
-     * Stop media playback in local player
-     */
-    CastPlayer.prototype.stopMediaLocally = function () {
-
-        var vi = document.getElementById('video_image');
-        vi.style.display = 'block';
-        this.localPlayer.style.display = 'none';
-        this.localPlayer.stop();
-        this.localPlayerState = PLAYER_STATE.STOPPED;
-        this.updateMediaControlUI();
     };
 
     /**
@@ -507,38 +450,13 @@
      * @param {Boolean} mute A boolean  
      */
     CastPlayer.prototype.setReceiverVolume = function (mute) {
-        var p = document.getElementById("audio_bg_level");
-        if (event.currentTarget.id == 'audio_bg_track') {
-            var pos = 100 - parseInt(event.offsetY);
-        }
-        else {
-            var pos = parseInt(p.clientHeight) - parseInt(event.offsetY);
-        }
+        
         if (!this.currentMediaSession) {
-            this.localPlayer.volume = pos < 100 ? pos / 100 : 1;
-            p.style.height = pos + 'px';
-            p.style.marginTop = -pos + 'px';
             return;
         }
 
-        if (event.currentTarget.id == 'audio_bg_track' || event.currentTarget.id == 'audio_bg_level') {
-            // add a drag to avoid loud volume
-            if (pos < 100) {
-                var vScale = this.currentVolume * 100;
-                if (pos > vScale) {
-                    pos = vScale + (pos - vScale) / 2;
-                }
-                p.style.height = pos + 'px';
-                p.style.marginTop = -pos + 'px';
-                this.currentVolume = pos / 100;
-            }
-            else {
-                this.currentVolume = 1;
-            }
-        }
-
         if (!mute) {
-            this.session.setReceiverVolumeLevel(this.currentVolume,
+            this.session.setReceiverVolumeLevel(1,
               this.mediaCommandSuccessCallback.bind(this),
               this.onError.bind(this));
         }
@@ -547,36 +465,34 @@
               this.mediaCommandSuccessCallback.bind(this),
               this.onError.bind(this));
         }
-        this.updateMediaControlUI();
     };
 
     /**
-     * Mute media function in either Cast or local mode 
+     * Toggle mute CC
      */
-    CastPlayer.prototype.muteMedia = function () {
+    CastPlayer.prototype.toggleMute = function () {
         if (this.audio == true) {
-            this.audio = false;
-            document.getElementById('audio_on').style.display = 'none';
-            document.getElementById('audio_off').style.display = 'block';
-            if (this.currentMediaSession) {
-                this.setReceiverVolume(true);
-            }
-            else {
-                this.localPlayer.muted = true;
-            }
+            this.mute();
         }
         else {
-            this.audio = true;
-            document.getElementById('audio_on').style.display = 'block';
-            document.getElementById('audio_off').style.display = 'none';
-            if (this.currentMediaSession) {
-                this.setReceiverVolume(false);
-            }
-            else {
-                this.localPlayer.muted = false;
-            }
+            this.unMute();
         }
-        this.updateMediaControlUI();
+    };
+
+    /**
+     * Mute CC
+     */
+    CastPlayer.prototype.mute = function () {
+        this.audio = false;
+        this.setReceiverVolume(true);
+    };
+
+    /**
+     * Unmute CC
+     */
+    CastPlayer.prototype.unMute = function () {
+        this.audio = true;
+        this.setReceiverVolume(false);
     };
 
 
@@ -624,9 +540,6 @@
           this.onSeekSuccess.bind(this, 'media seek done'),
           this.onError.bind(this));
         this.castPlayerState = PLAYER_STATE.SEEKING;
-
-        this.updateDisplayMessage();
-        this.updateMediaControlUI();
     };
 
     /**
@@ -636,8 +549,6 @@
     CastPlayer.prototype.onSeekSuccess = function (info) {
         console.log(info);
         this.castPlayerState = PLAYER_STATE.PLAYING;
-        this.updateDisplayMessage();
-        this.updateMediaControlUI();
     };
 
     /**
@@ -659,7 +570,6 @@
             pi.style.marginLeft = -21 - PROGRESS_BAR_WIDTH + 'px';
             clearInterval(this.timer);
             this.castPlayerState = PLAYER_STATE.STOPPED;
-            this.updateDisplayMessage();
         }
         else {
             p.style.width = Math.ceil(PROGRESS_BAR_WIDTH * e.currentTime / this.currentMediaSession.media.duration + 1) + 'px';
@@ -701,66 +611,86 @@
             clearInterval(this.timer);
             this.deviceState = DEVICE_STATE.IDLE;
             this.castPlayerState = PLAYER_STATE.IDLE;
-            this.updateDisplayMessage();
-            this.updateMediaControlUI();
-        }
-    };
-
-    /**
-     * Update display message depending on cast mode by deviceState 
-     */
-    CastPlayer.prototype.updateDisplayMessage = function () {
-
-        if (this.deviceState != DEVICE_STATE.ACTIVE || this.castPlayerState == PLAYER_STATE.IDLE || this.castPlayerState == PLAYER_STATE.STOPPED) {
-
-        } else {
-        }
-
-        // this.session.receiver.friendlyName
-    };
-
-    /**
-     * Update media control UI components based on localPlayerState or castPlayerState
-     */
-    CastPlayer.prototype.updateMediaControlUI = function () {
-
-        if (!chrome || !chrome.cast) {
-            return;
-        }
-        
-
-        if (this.hasReceivers) {
-            document.getElementById("video-ccastButton").removeAttribute("style");
-            this.initializeLocalPlayer();
-        }
-
-        if (this.deviceState == DEVICE_STATE.ACTIVE) {
-            var playerState = this.castPlayerState;
-        } else {
-            var playerState = this.localPlayerState;
-        }
-
-        switch (playerState) {
-            case PLAYER_STATE.LOADED:
-            case PLAYER_STATE.PLAYING:
-                //document.getElementById("play").style.display = 'none';
-                //document.getElementById("pause").style.display = 'block';
-                break;
-            case PLAYER_STATE.PAUSED:
-            case PLAYER_STATE.IDLE:
-            case PLAYER_STATE.LOADING:
-            case PLAYER_STATE.STOPPED:
-                //document.getElementById("play").style.display = 'block';
-                //document.getElementById("pause").style.display = 'none';
-                break;
-            default:
-                break;
         }
     };
 
     var castPlayer = new CastPlayer();
 
     window.CastPlayer = castPlayer;
+    
+    function chromecastPlayer() {
+
+        var self = this;
+
+        self.name = 'Chromecast';
+
+        self.play = function (options) {
+
+        };
+
+        self.shuffle = function (id) {
+
+        };
+
+        self.instantMix = function (id) {
+
+        };
+
+        self.queue = function (options) {
+
+        };
+
+        self.queueNext = function (options) {
+
+        };
+
+        self.stop = function () {
+            CastPlayer.stop();
+        };
+
+        self.canQueueMediaType = function (mediaType) {
+
+            return false;
+        };
+
+        self.mute = function() {
+            CastPlayer.mute();
+        };
+
+        self.unMute = function () {
+            CastPlayer.unMute();
+        };
+
+        self.toggleMute = function () {
+            CastPlayer.toggleMute();
+        };
+
+        self.getTargets = function () {
+
+            var targets = [];
+
+            var appName = null;
+            
+            //if (CastPlayer.session && CastPlayer.session.receiver && CastPlayer.session.friendlyName) {
+            //    appName = CastPlayer.session.friendlyName;
+            //}
+
+            //if (true) {
+            //    targets.push({
+            //        name: "Chromecast",
+            //        id: "Chromecast",
+            //        playerName: self.name,
+            //        playableMediaTypes: ["Audio", "Video"],
+            //        isLocalPlayer: false,
+            //        appName: appName
+            //    });
+            //}
+
+            return targets;
+        };
+    }
+
+    MediaController.registerPlayer(new chromecastPlayer());
 
     $(document).on('headercreated', ".libraryPage", function () {
 
@@ -768,6 +698,13 @@
 
         //castPlayer.updateMediaControlUI();
 
+    });
+
+    $(MediaController).on('playerchange', function () {
+
+        if (MediaController.getPlayerInfo().name == 'Chromecast') {
+            window.CastPlayer.launchApp();
+        }
     });
 
 })(window, window.chrome, console);

@@ -37,14 +37,22 @@
                 throw new Error('null player');
             }
 
-            if (!targetInfo) {
-                throw new Error('null targetInfo');
-            }
-
             currentPlayer = player;
-            currentTargetInfo = targetInfo;
+            currentTargetInfo = targetInfo || player.getCurrentTargetInfo();
 
             $(self).trigger('playerchange');
+        };
+
+        self.setLocalPlayerActive = function() {
+            self.setActivePlayer(self.getLocalPlayer());
+        };
+
+        self.removeActivePlayer = function (name) {
+            
+            if (self.getPlayerInfo().name == name) {
+                self.setLocalPlayerActive();
+            }
+
         };
 
         self.getTargets = function () {
@@ -69,6 +77,17 @@
                     }
 
                 }
+
+                targets = targets.sort(function(a,b) {
+
+                    var aVal = a.isLocalPlayer ? 0 : 1;
+                    var bVal = b.isLocalPlayer ? 0 : 1;
+
+                    aVal = aVal.toString() + a.name;
+                    bVal = bVal.toString() + b.name;
+
+                    return aVal.localeCompare(bVal);
+                });
 
                 deferred.resolveWith(null, [targets]);
             });
@@ -201,7 +220,7 @@
                 localPlayer.mute();
             }
             else if (cmd.Name === 'Unmute') {
-                localPlayer.unmute();
+                localPlayer.unMute();
             }
             else if (cmd.Name === 'VolumeUp') {
                 localPlayer.volumeUp();

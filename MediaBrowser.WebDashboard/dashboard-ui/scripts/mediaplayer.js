@@ -32,7 +32,8 @@
                 name: 'My Browser',
                 id: ApiClient.deviceId(),
                 playerName: self.name,
-                playableMediaTypes: ['Audio', 'Video']
+                playableMediaTypes: ['Audio', 'Video'],
+                isLocalPlayer: true
             }];
 
             return targets;
@@ -1159,12 +1160,16 @@
         };
 
         var getItemFields = "MediaSources,Chapters";
+
+        self.getCurrentTargetInfo = function() {
+            return self.getTargets()[0];
+        };
     }
 
     window.MediaPlayer = new mediaPlayer();
 
     window.MediaController.registerPlayer(window.MediaPlayer);
-    window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
+    window.MediaController.setActivePlayer(window.MediaPlayer);
 
 
 })(document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window);

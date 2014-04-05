@@ -1289,7 +1289,7 @@ $(function () {
     videoPlayerHtml += '<div class="nowPlayingMediaInfo"></div>';
 
     videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">Mute</button>';
-    videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unmute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">Unmute</button>';
+    videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">Unmute</button>';
 
     videoPlayerHtml += '<div class="volumeSliderContainer sliderContainer">';
     videoPlayerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
@@ -1309,8 +1309,6 @@ $(function () {
 
     videoPlayerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="video-chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
     videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
-
-    videoPlayerHtml += '<button onclick="CastPlayer.initializeLocalPlayer();CastPlayer.playMedia();" id="video-ccastButton" class="mediaButton videoCCastButton" title="Cast" type="button" data-icon="ccast" data-iconpos="notext" data-inline="true" style="display: none;">Cast</button>';
 
     videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
 
@@ -1349,7 +1347,7 @@ $(function () {
     footerHtml += '<div class="nowPlayingMediaInfo"></div>';
 
     footerHtml += '<button id="muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">Mute</button>';
-    footerHtml += '<button id="unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unmute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">Unmute</button>';
+    footerHtml += '<button id="unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">Unmute</button>';
 
     footerHtml += '<div class="volumeSliderContainer sliderContainer">';
     footerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
