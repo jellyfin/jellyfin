@@ -1,9 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
 
@@ -20,13 +18,6 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="user">The user.</param>
         /// <returns>UserDto.</returns>
         UserDto GetUserDto(User user);
-
-        /// <summary>
-        /// Gets the session info dto.
-        /// </summary>
-        /// <param name="session">The session.</param>
-        /// <returns>SessionInfoDto.</returns>
-        SessionInfoDto GetSessionInfoDto(SessionInfo session);
 
         /// <summary>
         /// Gets the dto id.

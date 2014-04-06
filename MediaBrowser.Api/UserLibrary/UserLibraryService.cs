@@ -257,6 +257,12 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The id.</value>
         [ApiMember(Name = "QueueableMediaTypes", Description = "A list of media types that can be queued from this item, comma delimited. Audio,Video,Book,Game", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
         public string QueueableMediaTypes { get; set; }
+
+        [ApiMember(Name = "AudioStreamIndex", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
+        public int? AudioStreamIndex { get; set; }
+
+        [ApiMember(Name = "SubtitleStreamIndex", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
+        public int? SubtitleStreamIndex { get; set; }
     }
 
     /// <summary>
@@ -282,7 +288,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "MediaSourceId", Description = "The id of the MediaSource", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MediaSourceId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the position ticks.
         /// </summary>
@@ -295,6 +301,15 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IsMuted", Description = "Indicates if the player is muted.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
         public bool IsMuted { get; set; }
+
+        [ApiMember(Name = "AudioStreamIndex", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
+        public int? AudioStreamIndex { get; set; }
+
+        [ApiMember(Name = "SubtitleStreamIndex", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
+        public int? SubtitleStreamIndex { get; set; }
+
+        [ApiMember(Name = "VolumeLevel", Description = "Scale of 0-100", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
+        public int? VolumeLevel { get; set; }
     }
 
     /// <summary>
@@ -320,7 +335,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "MediaSourceId", Description = "The id of the MediaSource", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
         public string MediaSourceId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the position ticks.
         /// </summary>
@@ -737,7 +752,9 @@ namespace MediaBrowser.Api.UserLibrary
                 Item = item,
                 SessionId = GetSession(_sessionManager).Id,
                 QueueableMediaTypes = queueableMediaTypes.Split(',').ToList(),
-                MediaSourceId = request.MediaSourceId
+                MediaSourceId = request.MediaSourceId,
+                AudioStreamIndex = request.AudioStreamIndex,
+                SubtitleStreamIndex = request.SubtitleStreamIndex
             };
 
             _sessionManager.OnPlaybackStart(info);
@@ -760,7 +777,10 @@ namespace MediaBrowser.Api.UserLibrary
                 IsMuted = request.IsMuted,
                 IsPaused = request.IsPaused,
                 SessionId = GetSession(_sessionManager).Id,
-                MediaSourceId = request.MediaSourceId
+                MediaSourceId = request.MediaSourceId,
+                AudioStreamIndex = request.AudioStreamIndex,
+                SubtitleStreamIndex = request.SubtitleStreamIndex,
+                VolumeLevel = request.VolumeLevel
             };
 
             var task = _sessionManager.OnPlaybackProgress(info);

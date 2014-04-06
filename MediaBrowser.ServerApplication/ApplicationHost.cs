@@ -466,9 +466,6 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager);
-            RegisterSingleInstance(SessionManager);
-
             HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", "mediabrowser", "dashboard/index.html");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
@@ -487,6 +484,9 @@ namespace MediaBrowser.ServerApplication
 
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager);
             RegisterSingleInstance(DtoService);
+
+            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor);
+            RegisterSingleInstance(SessionManager);
 
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);

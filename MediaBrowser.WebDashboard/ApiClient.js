@@ -78,6 +78,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return name;
         }());
 
+        self.deviceName = function () {
+            return deviceName;
+        };
+
         self.deviceId = function () {
             return deviceId;
         };

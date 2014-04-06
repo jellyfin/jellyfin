@@ -198,5 +198,17 @@ namespace MediaBrowser.Server.Implementations.Session
 
             }, cancellationToken);
         }
+
+        public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+
+            return socket.SendAsync(new WebSocketMessage<SessionInfoDto>
+            {
+                MessageType = "SessionEnded",
+                Data = sessionInfo
+
+            }, cancellationToken);
+        }
     }
 }

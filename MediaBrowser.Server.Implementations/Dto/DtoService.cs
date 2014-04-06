@@ -245,127 +245,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             return dto;
         }
 
-        public SessionInfoDto GetSessionInfoDto(SessionInfo session)
-        {
-            var dto = new SessionInfoDto
-            {
-                Client = session.Client,
-                DeviceId = session.DeviceId,
-                DeviceName = session.DeviceName,
-                Id = session.Id.ToString("N"),
-                LastActivityDate = session.LastActivityDate,
-                NowPlayingPositionTicks = session.NowPlayingPositionTicks,
-                SupportsRemoteControl = session.SupportsRemoteControl,
-                IsPaused = session.IsPaused,
-                IsMuted = session.IsMuted,
-                NowViewingContext = session.NowViewingContext,
-                NowViewingItemId = session.NowViewingItemId,
-                NowViewingItemName = session.NowViewingItemName,
-                NowViewingItemType = session.NowViewingItemType,
-                ApplicationVersion = session.ApplicationVersion,
-                CanSeek = session.CanSeek,
-                QueueableMediaTypes = session.QueueableMediaTypes,
-                PlayableMediaTypes = session.PlayableMediaTypes,
-                RemoteEndPoint = session.RemoteEndPoint,
-                AdditionalUsers = session.AdditionalUsers,
-                SupportedCommands = session.SupportedCommands
-            };
-
-            if (session.NowPlayingItem != null)
-            {
-                dto.NowPlayingItem = GetNowPlayingInfo(session.NowPlayingItem, session.NowPlayingMediaSourceId, session.NowPlayingRunTimeTicks);
-            }
-
-            if (session.UserId.HasValue)
-            {
-                dto.UserId = session.UserId.Value.ToString("N");
-            }
-            dto.UserName = session.UserName;
-
-            return dto;
-        }
-
-        /// <summary>
-        /// Converts a BaseItem to a BaseItemInfo
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="mediaSourceId">The media version identifier.</param>
-        /// <param name="nowPlayingRuntimeTicks">The now playing runtime ticks.</param>
-        /// <returns>BaseItemInfo.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        private BaseItemInfo GetNowPlayingInfo(BaseItem item, string mediaSourceId, long? nowPlayingRuntimeTicks)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            var info = new BaseItemInfo
-            {
-                Id = GetDtoId(item),
-                Name = item.Name,
-                MediaType = item.MediaType,
-                Type = item.GetClientTypeName(),
-                RunTimeTicks = nowPlayingRuntimeTicks,
-                MediaSourceId = mediaSourceId
-            };
-
-            info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary);
-
-            var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;
-
-            var thumbItem = item.HasImage(ImageType.Thumb) ? item : null;
-
-            if (thumbItem == null)
-            {
-                var episode = item as Episode;
-
-                if (episode != null)
-                {
-                    var series = episode.Series;
-
-                    if (series != null && series.HasImage(ImageType.Thumb))
-                    {
-                        thumbItem = series;
-                    }
-                }
-            }
-
-            if (backropItem == null)
-            {
-                var episode = item as Episode;
-
-                if (episode != null)
-                {
-                    var series = episode.Series;
-
-                    if (series != null && series.HasImage(ImageType.Backdrop))
-                    {
-                        backropItem = series;
-                    }
-                }
-            }
-
-            if (thumbItem == null)
-            {
-                thumbItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Thumb));
-            }
-
-            if (thumbItem != null)
-            {
-                info.ThumbImageTag = GetImageCacheTag(thumbItem, ImageType.Thumb);
-                info.ThumbItemId = GetDtoId(thumbItem);
-            }
-
-            if (thumbItem != null)
-            {
-                info.BackdropImageTag = GetImageCacheTag(backropItem, ImageType.Backdrop);
-                info.BackdropItemId = GetDtoId(backropItem);
-            }
-
-            return info;
-        }
-
         /// <summary>
         /// Gets client-side Id of a server-side BaseItem
         /// </summary>
@@ -1367,6 +1246,13 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
+            var bitrate = info.MediaStreams.Where(m => m.Type == MediaStreamType.Audio || m.Type == MediaStreamType.Video).Select(m => m.BitRate ?? 0).Sum();
+
+            if (bitrate > 0)
+            {
+                info.Bitrate = bitrate;
+            }
+
             return info;
         }
 
@@ -1386,6 +1272,13 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (!string.IsNullOrWhiteSpace(i.Path) && locationType != LocationType.Remote && locationType != LocationType.Virtual)
             {
                 info.Container = Path.GetExtension(i.Path).TrimStart('.');
+            }
+
+            var bitrate = info.MediaStreams.Where(m => m.Type == MediaStreamType.Audio).Select(m => m.BitRate ?? 0).Sum();
+
+            if (bitrate > 0)
+            {
+                info.Bitrate = bitrate;
             }
 
             return info;
