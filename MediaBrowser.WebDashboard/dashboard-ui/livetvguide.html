@@ -7,21 +7,20 @@
     <div id="liveTvGuidePage" data-role="page" class="page libraryPage" data-theme="b" data-view="livetv">
         <div class="libraryViewNav">
             <a href="livetvsuggested.html">${TabSuggested}</a>
-            <a href="livetvguide.html" class="ui-btn-active">Guide</a>
-            <a href="livetvchannels.html">Channels</a>
-            <a href="livetvrecordings.html">Recordings</a>
-            <a href="livetvtimers.html">Scheduled</a>
-            <a href="livetvseriestimers.html">Series</a>
+            <a href="livetvguide.html" class="ui-btn-active">${TabGuide}</a>
+            <a href="livetvchannels.html">${TabChannels}</a>
+            <a href="livetvrecordings.html">${TabRecordings}</a>
+            <a href="livetvtimers.html">${TabScheduled}</a>
+            <a href="livetvseriestimers.html">${TabSeries}</a>
         </div>
         <div data-role="content" style="padding-top: 5px;">
 
             <div>
                 <div style="text-align: center;">
                     <select id="selectDate" data-mini="true" data-icon="calendar" data-inline="true">
-                        <option>Today</option>
                     </select>
                     <div style="display: inline-block; vertical-align: middle;">
-                        Channels
+                        ${HeaderChannels}
                     </div>
                     <div style="display: inline-block; vertical-align: middle;" class="channelPaging">
                     </div>

@@ -4,8 +4,11 @@
 
         var page = this;
         
-        apiClient.getSystemInfo().done(function(info) {
-            $('#appVersionNumber', page).html(info.Version);
+        apiClient.getSystemInfo().done(function (info) {
+
+            var elem = $('#appVersionNumber', page);
+            
+            elem.html(elem.html().replace('{0}', info.Version));
         });
     });
 

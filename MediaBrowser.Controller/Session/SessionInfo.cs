@@ -126,7 +126,6 @@ namespace MediaBrowser.Controller.Session
         /// <value>The now playing media version identifier.</value>
         public string NowPlayingMediaSourceId { get; set; }
         
-
         /// <summary>
         /// Gets or sets the now playing run time ticks.
         /// </summary>
@@ -150,6 +149,16 @@ namespace MediaBrowser.Controller.Session
         /// <value><c>true</c> if this instance is muted; otherwise, <c>false</c>.</value>
         public bool IsMuted { get; set; }
 
+        /// <summary>
+        /// Gets or sets the volume level, on a scale of 0-100
+        /// </summary>
+        /// <value>The volume level.</value>
+        public int? VolumeLevel { get; set; }
+
+        public int? NowPlayingAudioStreamIndex { get; set; }
+
+        public int? NowPlayingSubtitleStreamIndex { get; set; }
+        
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>

@@ -424,7 +424,7 @@
 
             PlayCommand: playType
         };
-        
+
         if (options.startPositionTicks) {
             remoteOptions.startPositionTicks = options.startPositionTicks;
         }
@@ -468,6 +468,22 @@
             return mediaType == 'Audio' || mediaType == 'Video';
         };
 
+        self.stop = function () {
+
+        };
+
+        self.mute = function () {
+
+        };
+
+        self.unMute = function () {
+
+        };
+
+        self.toggleMute = function () {
+
+        };
+
         self.getTargets = function () {
 
             var deferred = $.Deferred();
@@ -489,7 +505,8 @@
                         id: s.Id,
                         playerName: self.name,
                         appName: s.Client,
-                        playableMediaTypes: s.PlayableMediaTypes
+                        playableMediaTypes: s.PlayableMediaTypes,
+                        isLocalPlayer: false
                     };
                 });
 
@@ -505,5 +522,19 @@
     }
 
     MediaController.registerPlayer(new remoteControlPlayer());
+
+    function onWebSocketMessageReceived(e, msg) {
+
+        if (msg.MessageType === "SessionEnded") {
+
+            console.log("Server reports another session ended");
+
+            if (MediaController.getPlayerInfo().id == msg.Data.Id) {
+                MediaController.setDefaultPlayerActive();
+            }
+        }
+    }
+
+    $(ApiClient).on("websocketmessage", onWebSocketMessageReceived);
 
 })(window, document, jQuery);

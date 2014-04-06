@@ -75,7 +75,7 @@
         <div id="gameTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav">
                 <a href="gamesrecommended.html">${TabSuggested}</a>
-                <a href="games.html" class="ui-btn-active">Games</a>
+                <a href="games.html" class="ui-btn-active">${TabGames}</a>
                 <a href="gamesystems.html">Game Systems</a>
                 <a href="gamegenres.html">${TabGenres}</a>
                 <a href="gamestudios.html">${TabStudios}</a>
@@ -84,7 +84,7 @@
         <div id="gameSystemTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav">
                 <a href="gamesrecommended.html">${TabSuggested}</a>
-                <a href="games.html">Games</a>
+                <a href="games.html">${TabGames}</a>
                 <a href="gamesystems.html" class="ui-btn-active">Game Systems</a>
                 <a href="gamegenres.html">${TabGenres}</a>
                 <a href="gamestudios.html">${TabStudios}</a>
@@ -109,32 +109,32 @@
                             <p id="artist"></p>
                             <p class="itemGenres desktopGenres"></p>
                             <p class="itemOverview desktopOverview"></p>
+                            <div class="detailButtonsContainer" style="text-align: left;">
+                                <span id="missingIndicator" style="margin-left: .5em; display: none;">
+                                    <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">MISSING</span>
+                                </span>
+                                <span id="offlineIndicator" style="margin-left: .5em; display: none;">
+                                    <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">OFFLINE</span>
+                                </span>
+                                <span id="playButtonContainer" style="display: none;">
+                                    <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+                                </span>
+                                <span id="trailerButtonContainer" style="display: none;">
+                                    <button id="btnPlayTrailer" type="button" data-icon="video" data-inline="true" data-mini="true">Trailer</button>
+                                </span>
+                                <span id="externalTrailerButtonContainer" style="display: none;">
+                                    <a id="btnPlayExternalTrailer" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">Trailer</a>
+                                </span>
+                                <span id="playExternalButtonContainer" style="display: none;">
+                                    <a id="btnPlayExternal" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
+                                </span>
+                                <span id="editButtonContainer" style="display: none;">
+                                    <a id="btnEdit" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">Edit</a>
+                                </span>
+                            </div>
                         </td>
                     </tr>
                 </table>
-                <div class="detailButtonsContainer">
-                    <span id="missingIndicator" style="margin-left: .5em; display: none;">
-                        <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">MISSING</span>
-                    </span>
-                    <span id="offlineIndicator" style="margin-left: .5em; display: none;">
-                        <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">OFFLINE</span>
-                    </span>
-                    <span id="playButtonContainer" style="display: none;">
-                        <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">Play</button>
-                    </span>
-                    <span id="trailerButtonContainer" style="display: none;">
-                        <button id="btnPlayTrailer" type="button" data-icon="video" data-inline="true" data-mini="true">Trailer</button>
-                    </span>
-                    <span id="externalTrailerButtonContainer" style="display: none;">
-                        <a id="btnPlayExternalTrailer" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">Trailer</a>
-                    </span>
-                    <span id="playExternalButtonContainer" style="display: none;">
-                        <a id="btnPlayExternal" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">Play</a>
-                    </span>
-                    <span id="editButtonContainer" style="display: none;">
-                        <a id="btnEdit" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">Edit</a>
-                    </span>
-                </div>
             </div>
             <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide" data-role="button" title="Previous" data-icon="carat-l" data-mini="true" data-inline="true" data-iconpos="notext">Previous</a>
             <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide" data-role="button" title="Next" data-icon="carat-r" data-mini="true" data-inline="true" data-iconpos="notext">Next</a>

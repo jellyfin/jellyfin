@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Metadata</title>
+    <title>${TitleMetadata}</title>
 </head>
 <body>
     <div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior">
@@ -10,12 +10,12 @@
 
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true" style="margin-bottom: 20px!important;">
-                    <a href="metadata.html" data-role="button">Basics</a>
+                    <a href="metadata.html" data-role="button">${TabBasics}</a>
                     <a href="metadataimages.html?type=movies" data-role="button" class="categoryTab moviesTab">${TabMovies}</a>
-                    <a href="metadataimages.html?type=tv" data-role="button" class="categoryTab tvTab">TV</a>
-                    <a href="metadataimages.html?type=games" data-role="button" class="categoryTab gamesTab">Games</a>
-                    <a href="metadataimages.html?type=music" data-role="button" class="categoryTab musicTab">Music</a>
-                    <a href="metadataimages.html?type=others" data-role="button" class="categoryTab othersTab">Others</a>
+                    <a href="metadataimages.html?type=tv" data-role="button" class="categoryTab tvTab">${TabTV}</a>
+                    <a href="metadataimages.html?type=games" data-role="button" class="categoryTab gamesTab">${TabGames}</a>
+                    <a href="metadataimages.html?type=music" data-role="button" class="categoryTab musicTab">${TabMusic}</a>
+                    <a href="metadataimages.html?type=others" data-role="button" class="categoryTab othersTab">${TabOthers}</a>
                     <a href="metadataadvanced.html" data-role="button">${TabAdvanced}</a>
                 </div>
 
@@ -46,7 +46,6 @@
                                     <div>
                                         <label for="txtMaxBackdrops">Maximum number of backdrops per item: </label>
                                         <input type="number" id="txtMaxBackdrops" name="txtMaxBackdrops" pattern="[0-9]*" required="required" min="0" data-mini="true" />
-                                        <div class="fieldDescription">To prevent duplicate backdrop downloading, backdrops are only automatically downloaded when there are no backdrops present. Once an item has a single backdrop, further changes will need to be made manually using the metadata manager.</div>
                                     </div>
                                     <br />
                                     <div>
@@ -123,10 +122,10 @@
                         <ul data-role="listview" class="ulForm">
                             <li>
                                 <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                                    Save
+                                    ${ButtonSave}
                                 </button>
                                 <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
-                                    Cancel
+                                    ${ButtonCancel}
                                 </button>
                             </li>
                         </ul>

@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Advanced</title>
+    <title>${TitleAdvanced}</title>
 </head>
 <body>
     <div id="advancedConfigurationPage" data-role="page" class="page type-interior advancedConfigurationPage">
@@ -11,33 +11,33 @@
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabGeneral}</a>
-                    <a href="advancedpaths.html" data-role="button">Paths</a>
-                    <a href="advancedserversettings.html" data-role="button">Server</a>
-                    <a href="encodingsettings.html" data-role="button">Transcoding</a>
+                    <a href="advancedpaths.html" data-role="button">${TabPaths}</a>
+                    <a href="advancedserversettings.html" data-role="button">${TabServer}</a>
+                    <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
                 </div>
                 <form id="advancedConfigurationForm">
 
                     <ul data-role="listview" class="ulForm">
                         <li id="fldRunAtStartup" style="display: none;">
                             <input type="checkbox" id="chkRunAtStartup" name="chkRunAtStartup" data-mini="true" />
-                            <label for="chkRunAtStartup">Run server at startup</label>
+                            <label for="chkRunAtStartup">${LabelRunServerAtStartup}</label>
                             <div id="windowsStartupDescription" class="fieldDescription warningFieldDescription" style="display: none;">
-                                This will start the tray icon on windows startup. To start the windows service, uncheck this and run the service from the windows control panel. Please note that you cannot run both at the same time, so you will need to exit the tray icon before starting the service.                        
+                                    ${LabelRunServerAtStartupHelp}                    
                             </div>
                         </li>
                         <li>
                             <input type="checkbox" id="chkDebugLog" name="chkDebugLog" data-mini="true" />
-                            <label for="chkDebugLog">Enable debug logging </label>
+                            <label for="chkDebugLog">${LabelEnableDebugLogging}</label>
                         </li>
                     </ul>
                     <h2>Updates</h2>
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="selectAutomaticUpdateLevel">Automatic update level</label>
+                            <label for="selectAutomaticUpdateLevel">${LabelAutomaticUpdateLevel}</label>
                             <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel" data-mini="true">
-                                <option value="Release">Official Release</option>
-                                <option value="Beta">Beta</option>
-                                <option value="Dev">Dev (Unstable)</option>
+                                <option value="Release">${OptionRelease}</option>
+                                <option value="Beta">${OptionBeta}</option>
+                                <option value="Dev">${OptionDev}</option>
                             </select>
                             <div id="devBuildWarning" class="fieldDescription warningFieldDescription" style="display: none;">
                                 ${DevBuildWarning}
@@ -45,9 +45,9 @@
                         </li>
                         <li id="fldEnableAutomaticRestart" style="display: none;">
                             <input type="checkbox" id="chkEnableAutomaticRestart" name="chkEnableAutomaticRestart" data-mini="true" />
-                            <label for="chkEnableAutomaticRestart">Allow the server to restart automatically to apply updates</label>
+                            <label for="chkEnableAutomaticRestart">${LabelAllowServerAutoRestart}</label>
                             <div class="fieldDescription">
-                                The server will only restart during idle periods, when no users are active.                       
+                                ${LabelAllowServerAutoRestartHelp}                   
                             </div>
                         </li>
                     </ul>
@@ -55,10 +55,10 @@
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                                Save
+                                ${ButtonSave}
                             </button>
                             <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
 

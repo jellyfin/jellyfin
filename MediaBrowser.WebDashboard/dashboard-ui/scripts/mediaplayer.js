@@ -24,6 +24,7 @@
         self.playlist = [];
 
         self.isLocalPlayer = true;
+        self.isDefaultPlayer = true;
         self.name = 'Html5 Player';
 
         self.getTargets = function () {
@@ -32,7 +33,8 @@
                 name: 'My Browser',
                 id: ApiClient.deviceId(),
                 playerName: self.name,
-                playableMediaTypes: ['Audio', 'Video']
+                playableMediaTypes: ['Audio', 'Video'],
+                isLocalPlayer: true
             }];
 
             return targets;
@@ -114,7 +116,7 @@
             }
 
             // Chrome or IE with plugin installed
-            if (canPlayWebm() && !$.browser.mozilla) {
+            if (canPlayWebm()) {
                 return '.webm';
             }
 
@@ -231,7 +233,7 @@
                 return false;
             }
 
-            if (mediaSource.VideoType != "VideoFile" || mediaSource.LocationType != "FileSystem") {
+            if (mediaSource.VideoType != "VideoFile") {
                 console.log('Transcoding because the content is not a video file');
                 return false;
             }
@@ -256,10 +258,7 @@
                 return false;
             }
 
-            var videoBitrate = videoStream.BitRate || 0;
-            var audioBitrate = audioStream ? audioStream.BitRate || 0 : null;
-
-            if ((videoBitrate + audioBitrate) > bitrate) {
+            if (!mediaSource.Bitrate || mediaSource.Bitrate > bitrate) {
                 console.log('Transcoding because bitrate is too high');
                 return false;
             }
@@ -1159,12 +1158,16 @@
         };
 
         var getItemFields = "MediaSources,Chapters";
+
+        self.getCurrentTargetInfo = function() {
+            return self.getTargets()[0];
+        };
     }
 
     window.MediaPlayer = new mediaPlayer();
 
     window.MediaController.registerPlayer(window.MediaPlayer);
-    window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
+    window.MediaController.setActivePlayer(window.MediaPlayer);
 
 
 })(document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window);

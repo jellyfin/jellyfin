@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Metadata</title>
+    <title>${TitleMetadata}</title>
 </head>
 <body>
     <div id="advancedMetadataConfigurationPage" data-role="page" class="page type-interior">
@@ -10,55 +10,55 @@
 
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="metadata.html" data-role="button">Basics</a>
+                    <a href="metadata.html" data-role="button">${TabBasics}</a>
                     <a href="metadataimages.html?type=movies" data-role="button">${TabMovies}</a>
-                    <a href="metadataimages.html?type=tv" data-role="button">TV</a>
-                    <a href="metadataimages.html?type=games" data-role="button">Games</a>
-                    <a href="metadataimages.html?type=music" data-role="button">Music</a>
-                    <a href="metadataimages.html?type=others" data-role="button">Others</a>
+                    <a href="metadataimages.html?type=tv" data-role="button">${TabTV}</a>
+                    <a href="metadataimages.html?type=games" data-role="button">${TabGames}</a>
+                    <a href="metadataimages.html?type=music" data-role="button">${TabMusic}</a>
+                    <a href="metadataimages.html?type=others" data-role="button">${TabOthers}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabAdvanced}</a>
                 </div>
 
                 <form id="advancedMetadataConfigurationForm">
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label>Extract chapter images for:</label>
+                            <label>${HeaderExtractChapterImagesFor}</label>
                             <div data-role="controlgroup">
                                 <input type="checkbox" data-mini="true" id="chkMovies" name="chkMovies" />
-                                <label for="chkMovies">Movies</label>
+                                <label for="chkMovies">${OptionMovies}</label>
 
                                 <input type="checkbox" data-mini="true" id="chkEpisodes" name="chkEpisodes" />
-                                <label for="chkEpisodes">Episodes</label>
+                                <label for="chkEpisodes">${OptionEpisodes}</label>
 
                                 <input type="checkbox" data-mini="true" id="chkOtherVideos" name="chkOtherVideos" />
-                                <label for="chkOtherVideos">Other Videos</label>
-                                <div class="fieldDescription">Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs as a nightly scheduled task at 4am, although this is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours.</div>
+                                <label for="chkOtherVideos">${OptionOtherVideos}</label>
+                                <div class="fieldDescription">${ExtractChapterImagesHelp}</div>
                             </div>
                         </li>
                     </ul>
-                    <h2>Automatic Updates</h2>
+                    <h2>${HeaderAutomaticUpdates}</h2>
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <input type="checkbox" id="chkEnableFanartUpdates" name="chkEnableFanartUpdates" data-mini="true" />
-                            <label for="chkEnableFanartUpdates">Enable automatic updates from FanArt.tv</label>
-                            <div class="fieldDescription">If enabled, new images will be downloaded automatically as they're added to fanart.tv. Existing images will not be replaced.</div>
+                            <label for="chkEnableFanartUpdates">${LabelAutomaticUpdatesFanart}</label>
+                            <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
                         </li>
                         <li>
                             <input type="checkbox" id="chkEnableTmdbPersonUpdates" name="chkEnableTmdbPersonUpdates" data-mini="true" />
-                            <label for="chkEnableTmdbPersonUpdates">Enable automatic updates from TheMovieDB.org</label>
-                            <div class="fieldDescription">If enabled, new images will be downloaded automatically as they're added to TheMovieDB.org. Existing images will not be replaced.</div>
+                            <label for="chkEnableTmdbPersonUpdates">${LabelAutomaticUpdatesTmdb}</label>
+                            <div class="fieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
                         </li>
                         <li>
                             <input type="checkbox" id="chkEnableTvdbUpdates" name="chkEnableTvdbUpdates" data-mini="true" />
-                            <label for="chkEnableTvdbUpdates">Enable automatic updates from TheTVDB.com</label>
-                            <div class="fieldDescription">If enabled, new images will be downloaded automatically as they're added to TheTVDB.com. Existing images will not be replaced.</div>
+                            <label for="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</label>
+                            <div class="fieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                                Save
+                                ${ButtonSave}
                             </button>
                             <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
                     </ul>

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,6 +45,8 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        
         public async Task SubscribeAsync(string url, 
             string ip, 
             int port, 
@@ -58,11 +61,13 @@ namespace MediaBrowser.Dlna.PlayTo
                 LogRequest = _config.Configuration.DlnaOptions.EnableDebugLogging
             };
 
-            options.RequestHeaders["HOST"] = ip + ":" + port;
-            options.RequestHeaders["CALLBACK"] = "<" + localIp + ":" + eventport + ">";
+            options.RequestHeaders["HOST"] = ip + ":" + port.ToString(_usCulture);
+            options.RequestHeaders["CALLBACK"] = "<" + localIp + ":" + eventport.ToString(_usCulture) + ">";
             options.RequestHeaders["NT"] = "upnp:event";
-            options.RequestHeaders["TIMEOUT"] = "Second - " + timeOut;
+            options.RequestHeaders["TIMEOUT"] = "Second-" + timeOut.ToString(_usCulture);
 
+            // TODO: Method should be SUBSCRIBE
+            // https://github.com/stormboy/node-upnp-controlpoint/blob/master/lib/upnp-service.js#L106
             using (await _httpClient.Get(options).ConfigureAwait(false))
             {
             }
@@ -71,8 +76,9 @@ namespace MediaBrowser.Dlna.PlayTo
         public async Task RespondAsync(Uri url, 
             string ip, 
             int port, 
-            string localIp, 
-            int eventport)
+            string localIp,
+            int eventport,
+            int timeOut = 3600)
         {
             var options = new HttpRequestOptions
             {
@@ -80,10 +86,10 @@ namespace MediaBrowser.Dlna.PlayTo
                 UserAgent = USERAGENT
             };
 
-            options.RequestHeaders["HOST"] = ip + ":" + port;
-            options.RequestHeaders["CALLBACK"] = "<" + localIp + ":" + eventport + ">";
+            options.RequestHeaders["HOST"] = ip + ":" + port.ToString(_usCulture);
+            options.RequestHeaders["CALLBACK"] = "<" + localIp + ":" + eventport.ToString(_usCulture) + ">";
             options.RequestHeaders["NT"] = "upnp:event";
-            options.RequestHeaders["TIMEOUT"] = "Second - 3600";
+            options.RequestHeaders["TIMEOUT"] = "Second-" + timeOut.ToString(_usCulture);
 
             using (await _httpClient.Get(options).ConfigureAwait(false))
             {
