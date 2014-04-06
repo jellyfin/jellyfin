@@ -167,25 +167,28 @@ namespace MediaBrowser.Dlna.PlayTo
             if (_currentItem == null || _device.IsStopped)
                 return;
 
-            if (!_playbackStarted)
+            var playlistItem = Playlist.FirstOrDefault(p => p.PlayState == 1);
+            
+            if (playlistItem != null)
             {
-                await _sessionManager.OnPlaybackStart(new PlaybackInfo
+                if (!_playbackStarted)
                 {
-                    Item = _currentItem, 
-                    SessionId = _session.Id, 
-                    CanSeek = true,
-                    QueueableMediaTypes = new List<string> { _currentItem.MediaType }
+                    await _sessionManager.OnPlaybackStart(new PlaybackInfo
+                    {
+                        Item = _currentItem,
+                        SessionId = _session.Id,
+                        CanSeek = true,
+                        QueueableMediaTypes = new List<string> { _currentItem.MediaType },
+                        MediaSourceId = playlistItem.MediaSourceId,
+                        AudioStreamIndex = playlistItem.AudioStreamIndex,
+                        SubtitleStreamIndex = playlistItem.SubtitleStreamIndex
 
-                }).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
 
-                _playbackStarted = true;
-            }
+                    _playbackStarted = true;
+                }
 
-            if ((_device.IsPlaying || _device.IsPaused))
-            {
-                var playlistItem = Playlist.FirstOrDefault(p => p.PlayState == 1);
-
-                if (playlistItem != null)
+                if ((_device.IsPlaying || _device.IsPaused))
                 {
                     var ticks = _device.Position.Ticks;
 
@@ -487,7 +490,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
         }
-        
+
         private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaStream> mediaStreams, DeviceProfile profile)
         {
             var video = item as Video;
@@ -563,10 +566,10 @@ namespace MediaBrowser.Dlna.PlayTo
             _logger.Debug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", _device.Properties.Name, nextTrack.StreamUrl, dlnaheaders);
 
             await _device.SetAvTransport(nextTrack.StreamUrl, dlnaheaders, nextTrack.Didl);
-         
+
             if (nextTrack.StartPositionTicks > 0 && !nextTrack.Transcode)
                 await _device.Seek(TimeSpan.FromTicks(nextTrack.StartPositionTicks));
-           
+
             return true;
         }
 
