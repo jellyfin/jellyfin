@@ -43,14 +43,14 @@
             $(self).trigger('playerchange');
         };
 
-        self.setLocalPlayerActive = function() {
-            self.setActivePlayer(self.getLocalPlayer());
+        self.setDefaultPlayerActive = function() {
+            self.setActivePlayer(self.getDefaultPlayer());
         };
 
         self.removeActivePlayer = function (name) {
             
             if (self.getPlayerInfo().name == name) {
-                self.setLocalPlayerActive();
+                self.setDefaultPlayerActive();
             }
 
         };
@@ -163,6 +163,17 @@
                     return p.isLocalPlayer;
                 })[0];
         };
+
+        self.getDefaultPlayer = function () {
+
+            return currentPlayer.isLocalPlayer ?
+
+                currentPlayer :
+
+                players.filter(function (p) {
+                    return p.isDefaultPlayer;
+                })[0];
+        };
     }
 
     window.MediaController = new mediaController();
@@ -187,6 +198,12 @@
                 localPlayer.play({ ids: msg.Data.ItemIds, startPositionTicks: msg.Data.StartPositionTicks });
             }
 
+        }
+        else if (msg.MessageType === "ServerShuttingDown") {
+            MediaController.setDefaultPlayerActive();
+        }
+        else if (msg.MessageType === "ServerRestarting") {
+            MediaController.setDefaultPlayerActive();
         }
         else if (msg.MessageType === "Playstate") {
 

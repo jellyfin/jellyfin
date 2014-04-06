@@ -32,7 +32,7 @@
         self.remoteFullscreen = function () {
 
             var videoControls = $("#videoControls");
-            
+
             if (remoteFullscreen) {
                 exitFullScreenToWindow();
                 videoControls.removeClass("inactive");
@@ -403,7 +403,7 @@
         };
 
         function getAudioTracksHtml() {
-            
+
             var streams = currentMediaSource.MediaStreams.filter(function (currentStream) {
                 return currentStream.Type == "Audio";
             });
@@ -625,9 +625,16 @@
 
         function getInitialAudioStreamIndex(mediaStreams, user) {
 
-            // Find all audio streams with at least one channel
+            // Find all audio streams
             var audioStreams = mediaStreams.filter(function (stream) {
-                return stream.Type == "Audio" && stream.Channels;
+                return stream.Type == "Audio";
+
+            }).sort(function (a, b) {
+
+                var av = a.IsDefault ? 0 : 1;
+                var bv = b.IsDefault ? 0 : 1;
+
+                return av - bv;
             });
 
             if (user.Configuration.AudioLanguagePreference) {
@@ -643,9 +650,9 @@
             }
 
             // Just use the first audio stream
-            return audioStreams.length ? audioStreams[0].Index : null;
+            return audioStreams[0];
         };
-        
+
         function getVideoQualityOptions(mediaStreams) {
 
             var videoStream = mediaStreams.filter(function (stream) {
@@ -753,9 +760,6 @@
             })[0];
             m3U8Quality = $.extend(m3U8Quality, self.getFinalVideoParams(mediaSource, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
 
-            // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
-            var prioritizeWebmOverH264 = $.browser.chrome || $.browser.msie;
-
             var isStatic = mp4Quality.isStatic;
 
             self.startTimeTicksOffset = isStatic ? 0 : startPosition || 0;
@@ -815,17 +819,14 @@
                 html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
             }
 
-            if (prioritizeWebmOverH264 && !isStatic) {
+            // Have to put webm ahead of mp4 because it will play in fast forward in chrome
+            // And firefox doesn't like fragmented mp4
+            if (!isStatic) {
 
                 html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
             }
 
             html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
-
-            if (!prioritizeWebmOverH264 && !isStatic) {
-
-                html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
-            }
 
             html += '</video>';
 
@@ -1016,7 +1017,7 @@
 
                 if (e.keyCode == 27) {
                     self.stop();
-                    $(this).unbind("keyup.enhancePlayer");
+                    $(this).off("keyup.enhancePlayer");
                 }
             });
 

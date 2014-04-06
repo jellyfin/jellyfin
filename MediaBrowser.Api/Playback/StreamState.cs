@@ -115,7 +115,15 @@ namespace MediaBrowser.Api.Playback
         {
             if (LogFileStream != null)
             {
-                LogFileStream.Dispose();
+                try
+                {
+                    LogFileStream.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing log stream", ex);
+                }
+
                 LogFileStream = null;
             }
         }
@@ -124,7 +132,15 @@ namespace MediaBrowser.Api.Playback
         {
             if (IsoMount != null)
             {
-                IsoMount.Dispose();
+                try
+                {
+                    IsoMount.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing iso mount", ex);
+                }
+
                 IsoMount = null;
             }
         }

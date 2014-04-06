@@ -40,6 +40,13 @@ namespace MediaBrowser.Dlna.PlayTo
             return node == null ? null : node.Value;
         }
 
+        public static string GetAttributeValue(this XElement container, XName name)
+        {
+            var node = container.Attribute(name);
+
+            return node == null ? null : node.Value;
+        }
+
         public static string GetDescendantValue(this XElement container, XName name)
         {
             var node = container.Descendants(name)

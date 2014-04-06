@@ -72,6 +72,7 @@
     <Compile Include="Profiles\Foobar2000Profile.cs" />
     <Compile Include="Profiles\Windows81Profile.cs" />
     <Compile Include="Profiles\WindowsMediaCenterProfile.cs" />
+    <Compile Include="Profiles\WindowsPhoneProfile.cs" />
     <Compile Include="Ssdp\SsdpHelper.cs" />
     <Compile Include="PlayTo\SsdpHttpClient.cs" />
     <Compile Include="PlayTo\StateVariable.cs" />

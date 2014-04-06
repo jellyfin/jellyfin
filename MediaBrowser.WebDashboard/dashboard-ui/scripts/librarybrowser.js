@@ -20,14 +20,14 @@
 
         loadSavedQueryValues: function (key, query) {
 
-            //var values = localStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
+            var values = localStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
 
-            //if (values) {
+            if (values) {
 
-            //    values = JSON.parse(values);
+                values = JSON.parse(values);
 
-            //    return $.extend(query, values);
-            //}
+                return $.extend(query, values);
+            }
 
             return query;
         },
@@ -1397,7 +1397,7 @@
 
             var url;
 
-            var imageHeight = 440;
+            var imageHeight = 600;
 
             if (imageTags.Primary) {
 

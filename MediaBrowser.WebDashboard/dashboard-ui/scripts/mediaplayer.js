@@ -24,6 +24,7 @@
         self.playlist = [];
 
         self.isLocalPlayer = true;
+        self.isDefaultPlayer = true;
         self.name = 'Html5 Player';
 
         self.getTargets = function () {
@@ -115,7 +116,7 @@
             }
 
             // Chrome or IE with plugin installed
-            if (canPlayWebm() && !$.browser.mozilla) {
+            if (canPlayWebm()) {
                 return '.webm';
             }
 
@@ -232,7 +233,7 @@
                 return false;
             }
 
-            if (mediaSource.VideoType != "VideoFile" || mediaSource.LocationType != "FileSystem") {
+            if (mediaSource.VideoType != "VideoFile") {
                 console.log('Transcoding because the content is not a video file');
                 return false;
             }
@@ -257,10 +258,7 @@
                 return false;
             }
 
-            var videoBitrate = videoStream.BitRate || 0;
-            var audioBitrate = audioStream ? audioStream.BitRate || 0 : null;
-
-            if ((videoBitrate + audioBitrate) > bitrate) {
+            if (!mediaSource.Bitrate || mediaSource.Bitrate > bitrate) {
                 console.log('Transcoding because bitrate is too high');
                 return false;
             }

@@ -1,8 +1,12 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.IO;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
@@ -42,6 +46,8 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IMusicManager _musicManager;
+        private readonly IDtoService _dtoService;
+        private readonly IImageProcessor _imageProcessor;
 
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -68,6 +74,10 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         public event EventHandler<PlaybackStopEventArgs> PlaybackStopped;
 
+        public event EventHandler<SessionEventArgs> SessionStarted;
+
+        public event EventHandler<SessionEventArgs> SessionEnded;
+
         private IEnumerable<ISessionControllerFactory> _sessionFactories = new List<ISessionControllerFactory>();
 
         private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
@@ -80,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="userRepository">The user repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager)
+        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor)
         {
             _userDataRepository = userDataRepository;
             _configurationManager = configurationManager;
@@ -89,6 +99,8 @@ namespace MediaBrowser.Server.Implementations.Session
             _libraryManager = libraryManager;
             _userManager = userManager;
             _musicManager = musicManager;
+            _dtoService = dtoService;
+            _imageProcessor = imageProcessor;
         }
 
         /// <summary>
@@ -107,6 +119,47 @@ namespace MediaBrowser.Server.Implementations.Session
         public IEnumerable<SessionInfo> Sessions
         {
             get { return _activeConnections.Values.OrderByDescending(c => c.LastActivityDate).ToList(); }
+        }
+
+        private void OnSessionStarted(SessionInfo info)
+        {
+            EventHelper.QueueEventIfNotNull(SessionStarted, this, new SessionEventArgs
+            {
+                SessionInfo = info
+
+            }, _logger);
+        }
+
+        private async void OnSessionEnded(SessionInfo info)
+        {
+            try
+            {
+                await SendSessionEndedNotification(info, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in SendSessionEndedNotification", ex);
+            }
+
+            EventHelper.QueueEventIfNotNull(SessionEnded, this, new SessionEventArgs
+            {
+                SessionInfo = info
+
+            }, _logger);
+
+            var disposable = info.SessionController as IDisposable;
+
+            if (disposable != null)
+            {
+                try
+                {
+                    disposable.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing session controller", ex);
+                }
+            }
         }
 
         /// <summary>
@@ -194,19 +247,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (_activeConnections.TryRemove(key, out removed))
                 {
-                    var disposable = removed.SessionController as IDisposable;
-
-                    if (disposable != null)
-                    {
-                        try
-                        {
-                            disposable.Dispose();
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error disposing session controller", ex);
-                        }
-                    }
+                    OnSessionEnded(removed);
                 }
             }
             finally
@@ -222,11 +263,9 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="item">The item.</param>
         /// <param name="mediaSourceId">The media version identifier.</param>
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
-        /// <param name="isMuted">if set to <c>true</c> [is muted].</param>
         /// <param name="currentPositionTicks">The current position ticks.</param>
-        private void UpdateNowPlayingItem(SessionInfo session, BaseItem item, string mediaSourceId, bool isPaused, bool isMuted, long? currentPositionTicks = null)
+        private void UpdateNowPlayingItem(SessionInfo session, BaseItem item, string mediaSourceId, bool isPaused, long? currentPositionTicks = null)
         {
-            session.IsMuted = isMuted;
             session.IsPaused = isPaused;
             session.NowPlayingPositionTicks = currentPositionTicks;
             session.NowPlayingItem = item;
@@ -291,12 +330,19 @@ namespace MediaBrowser.Server.Implementations.Session
 
             try
             {
-                var connection = _activeConnections.GetOrAdd(key, keyName => new SessionInfo
+                var connection = _activeConnections.GetOrAdd(key, keyName =>
                 {
-                    Client = clientType,
-                    DeviceId = deviceId,
-                    ApplicationVersion = appVersion,
-                    Id = Guid.NewGuid()
+                    var sessionInfo = new SessionInfo
+                    {
+                        Client = clientType,
+                        DeviceId = deviceId,
+                        ApplicationVersion = appVersion,
+                        Id = Guid.NewGuid()
+                    };
+
+                    OnSessionStarted(sessionInfo);
+
+                    return sessionInfo;
                 });
 
                 connection.DeviceName = deviceName;
@@ -372,10 +418,13 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var mediaSourceId = GetMediaSourceId(item, info.MediaSourceId);
 
-            UpdateNowPlayingItem(session, item, mediaSourceId, false, false);
+            UpdateNowPlayingItem(session, item, mediaSourceId, false);
 
             session.CanSeek = info.CanSeek;
             session.QueueableMediaTypes = info.QueueableMediaTypes;
+
+            session.NowPlayingAudioStreamIndex = info.AudioStreamIndex;
+            session.NowPlayingSubtitleStreamIndex = info.SubtitleStreamIndex;
 
             var key = item.GetUserDataKey();
 
@@ -442,7 +491,12 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var mediaSourceId = GetMediaSourceId(info.Item, info.MediaSourceId);
 
-            UpdateNowPlayingItem(session, info.Item, mediaSourceId, info.IsPaused, info.IsMuted, info.PositionTicks);
+            UpdateNowPlayingItem(session, info.Item, mediaSourceId, info.IsPaused, info.PositionTicks);
+
+            session.IsMuted = info.IsMuted;
+            session.VolumeLevel = info.VolumeLevel;
+            session.NowPlayingAudioStreamIndex = info.AudioStreamIndex;
+            session.NowPlayingSubtitleStreamIndex = info.SubtitleStreamIndex;
 
             var key = info.Item.GetUserDataKey();
 
@@ -919,6 +973,27 @@ namespace MediaBrowser.Server.Implementations.Session
         }
 
 
+        public Task SendSessionEndedNotification(SessionInfo sessionInfo, CancellationToken cancellationToken)
+        {
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
+            var dto = GetSessionInfoDto(sessionInfo);
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendSessionEndedNotification(dto, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in SendSessionEndedNotification.", ex);
+                }
+
+            }, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
+
         /// <summary>
         /// Adds the additional user.
         /// </summary>
@@ -1016,6 +1091,148 @@ namespace MediaBrowser.Server.Implementations.Session
 
             session.PlayableMediaTypes = capabilities.PlayableMediaTypes;
             session.SupportedCommands = capabilities.SupportedCommands;
+        }
+
+        public SessionInfoDto GetSessionInfoDto(SessionInfo session)
+        {
+            var dto = new SessionInfoDto
+            {
+                Client = session.Client,
+                DeviceId = session.DeviceId,
+                DeviceName = session.DeviceName,
+                Id = session.Id.ToString("N"),
+                LastActivityDate = session.LastActivityDate,
+                NowPlayingPositionTicks = session.NowPlayingPositionTicks,
+                SupportsRemoteControl = session.SupportsRemoteControl,
+                IsPaused = session.IsPaused,
+                IsMuted = session.IsMuted,
+                NowViewingContext = session.NowViewingContext,
+                NowViewingItemId = session.NowViewingItemId,
+                NowViewingItemName = session.NowViewingItemName,
+                NowViewingItemType = session.NowViewingItemType,
+                ApplicationVersion = session.ApplicationVersion,
+                CanSeek = session.CanSeek,
+                QueueableMediaTypes = session.QueueableMediaTypes,
+                PlayableMediaTypes = session.PlayableMediaTypes,
+                RemoteEndPoint = session.RemoteEndPoint,
+                AdditionalUsers = session.AdditionalUsers,
+                SupportedCommands = session.SupportedCommands,
+                NowPlayingAudioStreamIndex = session.NowPlayingAudioStreamIndex,
+                NowPlayingSubtitleStreamIndex = session.NowPlayingSubtitleStreamIndex,
+                UserName = session.UserName,
+                VolumeLevel = session.VolumeLevel
+            };
+
+            if (session.NowPlayingItem != null)
+            {
+                dto.NowPlayingItem = GetNowPlayingInfo(session.NowPlayingItem, session.NowPlayingMediaSourceId, session.NowPlayingRunTimeTicks);
+            }
+
+            if (session.UserId.HasValue)
+            {
+                dto.UserId = session.UserId.Value.ToString("N");
+            }
+
+            return dto;
+        }
+
+        /// <summary>
+        /// Converts a BaseItem to a BaseItemInfo
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="mediaSourceId">The media version identifier.</param>
+        /// <param name="nowPlayingRuntimeTicks">The now playing runtime ticks.</param>
+        /// <returns>BaseItemInfo.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        private BaseItemInfo GetNowPlayingInfo(BaseItem item, string mediaSourceId, long? nowPlayingRuntimeTicks)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            var info = new BaseItemInfo
+            {
+                Id = GetDtoId(item),
+                Name = item.Name,
+                MediaType = item.MediaType,
+                Type = item.GetClientTypeName(),
+                RunTimeTicks = nowPlayingRuntimeTicks,
+                MediaSourceId = mediaSourceId
+            };
+
+            info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary);
+
+            var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;
+
+            var thumbItem = item.HasImage(ImageType.Thumb) ? item : null;
+
+            if (thumbItem == null)
+            {
+                var episode = item as Episode;
+
+                if (episode != null)
+                {
+                    var series = episode.Series;
+
+                    if (series != null && series.HasImage(ImageType.Thumb))
+                    {
+                        thumbItem = series;
+                    }
+                }
+            }
+
+            if (backropItem == null)
+            {
+                var episode = item as Episode;
+
+                if (episode != null)
+                {
+                    var series = episode.Series;
+
+                    if (series != null && series.HasImage(ImageType.Backdrop))
+                    {
+                        backropItem = series;
+                    }
+                }
+            }
+
+            if (thumbItem == null)
+            {
+                thumbItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Thumb));
+            }
+
+            if (thumbItem != null)
+            {
+                info.ThumbImageTag = GetImageCacheTag(thumbItem, ImageType.Thumb);
+                info.ThumbItemId = GetDtoId(thumbItem);
+            }
+
+            if (thumbItem != null)
+            {
+                info.BackdropImageTag = GetImageCacheTag(backropItem, ImageType.Backdrop);
+                info.BackdropItemId = GetDtoId(backropItem);
+            }
+
+            return info;
+        }
+
+        private Guid? GetImageCacheTag(BaseItem item, ImageType type)
+        {
+            try
+            {
+                return _imageProcessor.GetImageCacheTag(item, type);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting {0} image info", ex, type);
+                return null;
+            }
+        }
+
+        private string GetDtoId(BaseItem item)
+        {
+            return _dtoService.GetDtoId(item);
         }
     }
 }

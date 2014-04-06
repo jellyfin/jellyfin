@@ -40,5 +40,17 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The media version identifier.</value>
         public string MediaSourceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index of the audio stream.
+        /// </summary>
+        /// <value>The index of the audio stream.</value>
+        public int? AudioStreamIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index of the subtitle stream.
+        /// </summary>
+        /// <value>The index of the subtitle stream.</value>
+        public int? SubtitleStreamIndex { get; set; }
     }
 }

@@ -26,6 +26,8 @@
         'ERROR': 'ERROR'
     };
 
+    var PlayerName = 'Chromecast';
+
     var CastPlayer = function () {
 
         /* device variables */
@@ -37,8 +39,7 @@
         this.currentMediaSession = null;
         // @type {Number} volume
         this.currentVolume = 0.5;
-        // @type {Boolean} A flag for autoplay after load
-        this.autoplay = true;
+
         // @type {string} a chrome.cast.Session object
         this.session = null;
         // @type {PLAYER_STATE} A state for Cast media player
@@ -63,9 +64,6 @@
         // @type {Number} A number in milliseconds for minimal progress update
         this.timerStep = 1000;
 
-        /* media contents from JSON */
-        this.mediaContents = null;
-
         this.hasReceivers = false;
 
         this.initializeCastPlayer();
@@ -89,6 +87,8 @@
             return;
         }
 
+        // v1 Id AE4DA10A
+        // v2 Id 472F0435
         var applicationID = 'AE4DA10A';
 
         // request session
@@ -97,7 +97,7 @@
           this.sessionListener.bind(this),
           this.receiverListener.bind(this));
 
-        console.log('chrome.cast.initialize');
+        console.log('chromecast.initialize');
 
         chrome.cast.initialize(apiConfig, this.onInitSuccess.bind(this), this.onError.bind(this));
     };
@@ -106,7 +106,8 @@
      * Callback function for init success 
      */
     CastPlayer.prototype.onInitSuccess = function () {
-        console.log("init success");
+        this.isInitialized = true;
+        console.log("chromecast init success");
     };
 
     /**
@@ -127,11 +128,11 @@
         this.session = e;
         if (this.session) {
             this.deviceState = DEVICE_STATE.ACTIVE;
-            
+            MediaController.setActivePlayer(PlayerName);
             if (this.session.media[0]) {
                 this.onMediaDiscovered('activeSession', this.session.media[0]);
             }
-            
+
             this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
         }
     };
@@ -142,8 +143,6 @@
      * does not provide a list of device IDs
      */
     CastPlayer.prototype.receiverListener = function (e) {
-
-        console.log("cast.receiverListener", e);
 
         if (e === 'available') {
             console.log("chromecast receiver found");
@@ -166,7 +165,7 @@
             this.currentMediaSession = null;
             clearInterval(this.timer);
 
-            MediaController.removeActivePlayer('Chromecast');
+            MediaController.removeActivePlayer(PlayerName);
         }
     };
 
@@ -176,7 +175,7 @@
      * session request in opt_sessionRequest. 
      */
     CastPlayer.prototype.launchApp = function () {
-        console.log("launching app...");
+        console.log("chromecast launching app...");
         chrome.cast.requestSession(this.onRequestSessionSuccess.bind(this), this.onLaunchError.bind(this));
         if (this.timer) {
             clearInterval(this.timer);
@@ -188,7 +187,7 @@
      * @param {Object} e A chrome.cast.Session object
      */
     CastPlayer.prototype.onRequestSessionSuccess = function (e) {
-        console.log("session success: " + e.sessionId);
+        console.log("chromecast session success: " + e.sessionId);
         this.session = e;
         this.deviceState = DEVICE_STATE.ACTIVE;
         this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
@@ -198,7 +197,7 @@
      * Callback function for launch error
      */
     CastPlayer.prototype.onLaunchError = function () {
-        console.log("launch error");
+        console.log("chromecast launch error");
         this.deviceState = DEVICE_STATE.ERROR;
         Dashboard.alert({
 
@@ -207,7 +206,7 @@
 
         });
 
-        MediaController.removeActivePlayer('Chromecast');
+        MediaController.removeActivePlayer(PlayerName);
     };
 
     /**
@@ -228,56 +227,411 @@
         this.castPlayerState = PLAYER_STATE.IDLE;
         this.currentMediaSession = null;
         clearInterval(this.timer);
-
-        //// continue to play media locally
-        //console.log("current time: " + this.currentMediaTime);
-        //this.playMediaLocally(this.currentMediaTime);
     };
+
+    function getMaxVideoAudioChannels() {
+        return 6;
+    }
+
+    function getMaxAudioChannels() {
+        return 2;
+    }
+
+    function getMaxVideoLevel() {
+        return 41;
+    }
+
+    function canDirectStream(mediaType, mediaSource, maxBitrate) {
+
+        // If bitrate is unknown don't direct stream
+        if (!mediaSource.Bitrate || mediaSource.Bitrate > maxBitrate) {
+            return false;
+        }
+
+        if (mediaType == "Audio") {
+
+            return ['mp3', 'aac'].indexOf(mediaSource.Container || '') != -1;
+        }
+        else if (mediaType == "Video") {
+
+            var videoStream = mediaSource.MediaStreams.filter(function (s) {
+
+                return s.Type == 'Video';
+
+            })[0];
+
+            if (!videoStream) {
+                return false;
+            }
+
+            if (['high', 'main', 'baseline'].indexOf((videoStream.Profile || '').toLowerCase()) == -1) {
+                return false;
+            }
+
+            if (!videoStream.Level || videoStream.Level > getMaxVideoLevel()) {
+                return false;
+            }
+
+            if (!videoStream.Width || videoStream.Width > 1920) {
+                return false;
+            }
+
+            if (!videoStream.Height || videoStream.Height > 1080) {
+                return false;
+            }
+
+            return ['mp4'].indexOf(mediaSource.Container || '') != -1;
+        }
+
+        throw new Error('Unrecognized MediaType');
+    }
+
+    function canPlayAudioStreamDirect(audioStream, isVideo) {
+
+        var audioCodec = (audioStream.Codec || '').toLowerCase().replace('-', '');
+
+        if (audioCodec.indexOf('aac') == -1 &&
+            audioCodec.indexOf('mp3') == -1 &&
+            audioCodec.indexOf('mpeg') == -1) {
+
+            return false;
+        }
+
+        var maxChannels = isVideo ? getMaxVideoAudioChannels() : getMaxAudioChannels();
+
+        if (!audioStream.Channels || audioStream.Channels > maxChannels) {
+            return false;
+        }
+
+        return true;
+    }
+
+    function isSupportedCodec(mediaType, mediaSource) {
+
+        if (mediaType == "Audio") {
+            return false;
+        }
+        else if (mediaType == "Video") {
+
+            return mediaSource.MediaStreams.filter(function (m) {
+
+                return m.Type == "Video" && (m.Codec || '').toLowerCase() == 'h264';
+
+            }).length > 0;
+        }
+
+        throw new Error('Unrecognized MediaType');
+    }
+
+    function getStreamByIndex(streams, type, index) {
+        return streams.filter(function (s) {
+
+            return s.Type == type && s.Index == index;
+
+        })[0];
+    }
+
+    function getDefaultAudioStream(mediaStreams, user) {
+
+        // Find all audio streams
+        var audioStreams = mediaStreams.filter(function (stream) {
+            return stream.Type == "Audio";
+
+        }).sort(function (a, b) {
+
+            var av = a.IsDefault ? 0 : 1;
+            var bv = b.IsDefault ? 0 : 1;
+
+            return av - bv;
+        });
+
+        if (user.Configuration.AudioLanguagePreference) {
+
+            for (var i = 0, length = audioStreams.length; i < length; i++) {
+                var mediaStream = audioStreams[i];
+
+                if (mediaStream.Language == user.Configuration.AudioLanguagePreference) {
+                    return mediaStream.Index;
+                }
+
+            }
+        }
+
+        // Just use the first audio stream
+        return audioStreams[0];
+    }
+
+    function getMediaSourceInfo(user, item, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
+
+        var sources = item.MediaSources;
+
+        // If a specific stream was requested, filter the list
+        if (mediaSourceId) {
+            sources = sources.filter(function (m) {
+
+                return m.Id == mediaSourceId;
+
+            });
+        }
+
+        // Find first one that can be direct streamed
+        var source = sources.filter(function (m) {
+
+            var audioStreams = m.MediaStreams.filter(function (s) {
+                return s.Type == 'Audio';
+            });
+
+            var audioStream = mediaSourceId == m.Id && audioStreamIndex != null ? getStreamByIndex(audioStreams, 'Audio', audioStreamIndex) : getDefaultAudioStream(audioStreams, user);
+
+            if (!audioStream || !canPlayAudioStreamDirect(audioStream, item.MediaType == 'Video')) {
+                return false;
+            }
+
+            var subtitleStream = mediaSourceId == m.Id && subtitleStreamIndex != null ? getStreamByIndex(m.MediaStreams, 'Subtitle', subtitleStreamIndex) : null;
+
+            if (subtitleStream) {
+                return false;
+            }
+
+            return canDirectStream(item.MediaType, m, maxBitrate, audioStream);
+
+        })[0];
+
+        if (source) {
+            return {
+                mediaSource: source,
+                isStatic: true,
+                streamContainer: source.Container
+            };
+        }
+
+        // Find first one with supported codec
+        source = sources.filter(function (m) {
+
+            return isSupportedCodec(item.MediaType, m);
+
+        })[0];
+
+        // Default to first one
+        return {
+            mediaSource: source || sources[0],
+            isStatic: false,
+            streamContainer: item.MediaType == 'Audio' ? 'mp3' : 'm3u8'
+        };
+    }
+
+    function getCustomData(item, mediaSourceId, startTimeTicks) {
+
+        return {
+
+            serverAddress: ApiClient.serverAddress(),
+            itemId: item.Id,
+            userId: Dashboard.getCurrentUserId(),
+            deviceName: ApiClient.deviceName(),
+            //deviceId: ApiClient.deviceId(),
+            startTimeTicks: startTimeTicks || 0
+        };
+
+    }
+
+    function getMetadata(item) {
+
+        var metadata = {};
+
+        if (item.Type == 'Episode') {
+            metadata = new chrome.cast.media.TvShowMediaMetadata();
+            metadata.type = chrome.cast.media.MetadataType.TV_SHOW;
+
+            metadata.episodeTitle = item.Name;
+
+            if (item.PremiereDate) {
+                metadata.originalAirdate = parseISO8601Date(item.PremiereDate).toISOString();
+            }
+
+            metadata.seriesTitle = item.SeriesName;
+
+            if (item.IndexNumber != null) {
+                metadata.episode = metadata.episodeNumber = item.IndexNumber;
+            }
+
+            if (item.ParentIndexNumber != null) {
+                metadata.season = metadata.seasonNumber = item.ParentIndexNumber;
+            }
+        }
+
+        else if (item.Type == 'Photo') {
+            metadata = new chrome.cast.media.PhotoMediaMetadata();
+            metadata.type = chrome.cast.media.MetadataType.PHOTO;
+
+            if (item.PremiereDate) {
+                metadata.creationDateTime = parseISO8601Date(item.PremiereDate).toISOString();
+            }
+        }
+
+        else if (item.MediaType == 'Audio') {
+            metadata = new chrome.cast.media.MusicTrackMediaMetadata();
+            metadata.type = chrome.cast.media.MetadataType.MUSIC_TRACK;
+
+            if (item.ProductionYear) {
+                metadata.releaseYear = item.ProductionYear;
+            }
+
+            if (item.PremiereDate) {
+                metadata.releaseDate = parseISO8601Date(item.PremiereDate).toISOString();
+            }
+
+            metadata.songName = item.Name;
+            metadata.artist = item.Artists & item.Artists.length ? item.Artists[0] : '';
+            metadata.albumArtist = item.AlbumArtist;
+
+            if (item.IndexNumber != null) {
+                metadata.trackNumber = item.IndexNumber;
+            }
+
+            if (item.ParentIndexNumber != null) {
+                metadata.discNumber = item.ParentIndexNumber;
+            }
+
+            var composer = (item.People || []).filter(function (p) {
+                return p.PersonType == 'Type';
+            })[0];
+
+            if (composer) {
+                metadata.composer = composer.Name;
+            }
+        }
+
+        else if (item.MediaType == 'Movie') {
+            metadata = new chrome.cast.media.MovieMediaMetadata();
+            metadata.type = chrome.cast.media.MetadataType.MUSIC_TRACK;
+
+            if (item.ProductionYear) {
+                metadata.releaseYear = item.ProductionYear;
+            }
+
+            if (item.PremiereDate) {
+                metadata.releaseDate = parseISO8601Date(item.PremiereDate).toISOString();
+            }
+        }
+
+        else {
+            metadata = new chrome.cast.media.GenericMediaMetadata();
+            metadata.type = chrome.cast.media.MetadataType.GENERIC;
+
+            if (item.ProductionYear) {
+                metadata.releaseYear = item.ProductionYear;
+            }
+
+            if (item.PremiereDate) {
+                metadata.releaseDate = parseISO8601Date(item.PremiereDate).toISOString();
+            }
+        }
+
+        metadata.title = item.Name;
+
+        if (item.Studios && item.Studios.length) {
+            metadata.Studio = item.Studios[0];
+        }
+
+        return metadata;
+    }
+
+    function getStreamUrl(item, mediaSourceInfo, startTimeTicks, maxBitrate) {
+
+        var url;
+
+        if (item.MediaType == 'Audio') {
+
+            url = ApiClient.serverAddress() + '/mediabrowser/audio/' + item.Id + '/stream.' + mediaSourceInfo.streamContainer + '?';
+            url += '&static=' + mediaSourceInfo.isStatic.toString();
+            url += '&maxaudiochannels=' + getMaxAudioChannels();
+
+            if (startTimeTicks) {
+                url += '&startTimeTicks=' + startTimeTicks.toString();
+            }
+
+            if (maxBitrate) {
+                url += '&audiobitrate=' + Math.min(maxBitrate, 320000).toString();
+            }
+
+            url += '&audiosamplerate=44100';
+            url += '&mediasourceid=' + mediaSourceInfo.mediaSource.Id;
+
+            return url;
+
+        }
+        else if (item.MediaType == 'Video') {
+
+            url = ApiClient.serverAddress() + '/mediabrowser/videos/' + item.Id + '/stream.' + mediaSourceInfo.streamContainer + '?';
+            url += 'static=' + mediaSourceInfo.isStatic.toString();
+            url += '&maxaudiochannels=' + getMaxVideoAudioChannels();
+
+            if (startTimeTicks) {
+                url += '&startTimeTicks=' + startTimeTicks.toString();
+            }
+
+            if (maxBitrate) {
+
+                var audioRate = 768000;
+                url += '&audiobitrate=' + audioRate.toString();
+                url += '&videobitrate=' + (maxBitrate - audioRate).toString();
+            }
+
+            url += '&profile=high';
+            url += '&level=' + getMaxVideoLevel();
+
+            url += '&maxwidth=1920';
+            url += '&maxheight=1080';
+
+            url += '&videoCodec=h264';
+            url += '&audioCodec=aac';
+
+            url += '&audiosamplerate=44100';
+            url += '&mediasourceid=' + mediaSourceInfo.mediaSource.Id;
+
+            return url;
+        }
+
+        throw new Error('Unrecognized MediaType');
+    }
 
     /**
      * Loads media into a running receiver application
      * @param {Number} mediaIndex An index number to indicate current media content
      */
-    CastPlayer.prototype.loadMedia = function (mediaIndex) {
-        
+    CastPlayer.prototype.loadMedia = function (user, item, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
+
         if (!this.session) {
             console.log("no session");
             return;
         }
-        
-        //console.log("loading..." + this.mediaContents[mediaIndex]['title']);
-        
-        //var mediaInfo = new chrome.cast.media.MediaInfo(this.mediaContents[mediaIndex]['sources'][0]);
-        
-        //mediaInfo.contentType = 'video/mp4';
-        //var request = new chrome.cast.media.LoadRequest(mediaInfo);
-        //request.autoplay = this.autoplay;
-        //if (this.localPlayerState == PLAYER_STATE.PLAYING) {
-        //    request.currentTime = this.localPlayer.currentTime;
-        //}
-        //else {
-        //    request.currentTime = 0;
-        //}
-        //var payload = {
-        //    "title:": this.mediaContents[0]['title'],
-        //    "thumb": this.mediaContents[0]['thumb']
-        //};
 
-        //var json = {
-        //    "payload": payload
-        //};
+        var maxBitrate = 12000000;
+        var mediaInfo = getMediaSourceInfo(user, item, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
 
-        //request.customData = json;
+        var streamUrl = getStreamUrl(item, mediaInfo, startTimeTicks, maxBitrate);
 
-        //this.castPlayerState = PLAYER_STATE.LOADING;
-        //this.session.loadMedia(request,
-        //  this.onMediaDiscovered.bind(this, 'loadMedia'),
-        //  this.onLoadMediaError.bind(this));
+        var castMediaInfo = new chrome.cast.media.MediaInfo(streamUrl);
 
-        //document.getElementById("media_title").innerHTML = this.mediaContents[this.currentMediaIndex]['title'];
-        //document.getElementById("media_subtitle").innerHTML = this.mediaContents[this.currentMediaIndex]['subtitle'];
-        //document.getElementById("media_desc").innerHTML = this.mediaContents[this.currentMediaIndex]['description'];
+        castMediaInfo.customData = getCustomData(item, mediaInfo.mediaSource.Id, startTimeTicks);
+        castMediaInfo.metadata = getMetadata(item);
 
+        if (mediaInfo.streamContainer == 'm3u8') {
+            castMediaInfo.contentType = 'application/x-mpegURL';
+        } else {
+            castMediaInfo.contentType = item.MediaType.toLowerCase() + '/' + mediaInfo.streamContainer.toLowerCase();
+        }
+
+        castMediaInfo.streamType = mediaInfo.isStatic ? chrome.cast.media.StreamType.BUFFERED : chrome.cast.media.StreamType.LIVE;
+
+        var request = new chrome.cast.media.LoadRequest(castMediaInfo);
+        request.autoplay = true;
+        request.currentTime = 0;
+
+        this.castPlayerState = PLAYER_STATE.LOADING;
+        this.session.loadMedia(request,
+          this.onMediaDiscovered.bind(this, 'loadMedia'),
+          this.onLoadMediaError.bind(this));
     };
 
     /**
@@ -285,16 +639,11 @@
      * @param {Object} mediaSession A new media object.
      */
     CastPlayer.prototype.onMediaDiscovered = function (how, mediaSession) {
-        
-        console.log("new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
+
+        console.log("chromecast new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
         this.currentMediaSession = mediaSession;
         if (how == 'loadMedia') {
-            if (this.autoplay) {
-                this.castPlayerState = PLAYER_STATE.PLAYING;
-            }
-            else {
-                this.castPlayerState = PLAYER_STATE.LOADED;
-            }
+            this.castPlayerState = PLAYER_STATE.PLAYING;
         }
 
         if (how == 'activeSession') {
@@ -327,25 +676,13 @@
         //    }
         //}
         //document.getElementById("duration").innerHTML = duration;
-
-        //if (this.localPlayerState == PLAYER_STATE.PLAYING) {
-        //    this.localPlayerState == PLAYER_STATE.STOPPED;
-        //    var vi = document.getElementById('video_image')
-        //    vi.style.display = 'block';
-        //    this.localPlayer.style.display = 'none';
-        //    // start progress timer
-        //    this.startProgressTimer(this.incrementMediaTime);
-        //}
-        //// update UIs
-        //this.updateMediaControlUI();
-        //this.updateDisplayMessage();
     };
 
     /**
      * Callback function when media load returns error 
      */
     CastPlayer.prototype.onLoadMediaError = function (e) {
-        console.log("media error");
+        console.log("chromecast media error");
         this.castPlayerState = PLAYER_STATE.IDLE;
     };
 
@@ -358,7 +695,7 @@
             this.currentMediaTime = 0;
             this.castPlayerState = PLAYER_STATE.IDLE;
         }
-        console.log("updating media");
+        console.log("chromecast updating media");
         //this.updateProgressBar(e);
     };
 
@@ -383,7 +720,7 @@
      * Play media in Cast mode 
      */
     CastPlayer.prototype.playMedia = function () {
-        
+
         if (!this.currentMediaSession) {
             return;
         }
@@ -415,7 +752,7 @@
      * Pause media playback in Cast mode  
      */
     CastPlayer.prototype.pauseMedia = function () {
-        
+
         if (!this.currentMediaSession) {
             return;
         }
@@ -433,7 +770,7 @@
      * Stop CC playback 
      */
     CastPlayer.prototype.stopMedia = function () {
-        
+
         if (!this.currentMediaSession) {
             return;
         }
@@ -450,7 +787,7 @@
      * @param {Boolean} mute A boolean  
      */
     CastPlayer.prototype.setReceiverVolume = function (mute) {
-        
+
         if (!this.currentMediaSession) {
             return;
         }
@@ -513,18 +850,6 @@
             var curr = parseInt(pos * this.currentMediaDuration / PROGRESS_BAR_WIDTH);
             var pp = pos - 21 - PROGRESS_BAR_WIDTH;
             var pw = pos;
-        }
-
-        if (this.localPlayerState == PLAYER_STATE.PLAYING || this.localPlayerState == PLAYER_STATE.PAUSED) {
-            this.localPlayer.currentTime = curr;
-            this.currentMediaTime = curr;
-            this.localPlayer.play();
-        }
-
-        if (this.localPlayerState == PLAYER_STATE.PLAYING || this.localPlayerState == PLAYER_STATE.PAUSED
-            || this.castPlayerState == PLAYER_STATE.PLAYING || this.castPlayerState == PLAYER_STATE.PAUSED) {
-            p.style.width = pw + 'px';
-            pi.style.marginLeft = pp + 'px';
         }
 
         if (this.castPlayerState != PLAYER_STATE.PLAYING && this.castPlayerState != PLAYER_STATE.PAUSED) {
@@ -616,24 +941,48 @@
 
     var castPlayer = new CastPlayer();
 
-    window.CastPlayer = castPlayer;
-    
     function chromecastPlayer() {
 
         var self = this;
 
-        self.name = 'Chromecast';
+        self.name = PlayerName;
 
         self.play = function (options) {
+
+            if (options.items) {
+
+                Dashboard.getCurrentUser().done(function (user) {
+
+                    castPlayer.loadMedia(user, options.items[0], options.startTimeTicks);
+                });
+
+            } else {
+
+                var userId = Dashboard.getCurrentUserId();
+
+                var query = {};
+                query.Limit = query.Limit || 100;
+                query.Fields = "MediaSources,Chapters";
+                query.ExcludeLocationTypes = "Virtual";
+                query.Ids = options.ids.join(',');
+
+                ApiClient.getItems(userId, query).done(function (result) {
+
+                    options.items = result.Items;
+
+                    self.play(options);
+
+                });
+            }
 
         };
 
         self.shuffle = function (id) {
-
+            self.play({ ids: [id] });
         };
 
         self.instantMix = function (id) {
-
+            self.play({ ids: [id] });
         };
 
         self.queue = function (options) {
@@ -645,7 +994,7 @@
         };
 
         self.stop = function () {
-            CastPlayer.stop();
+            castPlayer.stop();
         };
 
         self.canQueueMediaType = function (mediaType) {
@@ -653,57 +1002,55 @@
             return false;
         };
 
-        self.mute = function() {
-            CastPlayer.mute();
+        self.mute = function () {
+            castPlayer.mute();
         };
 
         self.unMute = function () {
-            CastPlayer.unMute();
+            castPlayer.unMute();
         };
 
         self.toggleMute = function () {
-            CastPlayer.toggleMute();
+            castPlayer.toggleMute();
         };
 
         self.getTargets = function () {
 
             var targets = [];
 
-            var appName = null;
-            
-            //if (CastPlayer.session && CastPlayer.session.receiver && CastPlayer.session.friendlyName) {
-            //    appName = CastPlayer.session.friendlyName;
-            //}
-
-            //if (true) {
-            //    targets.push({
-            //        name: "Chromecast",
-            //        id: "Chromecast",
-            //        playerName: self.name,
-            //        playableMediaTypes: ["Audio", "Video"],
-            //        isLocalPlayer: false,
-            //        appName: appName
-            //    });
-            //}
+            targets.push(self.getCurrentTargetInfo());
 
             return targets;
+        };
+
+        self.getCurrentTargetInfo = function () {
+
+            var appName = null;
+
+            if (castPlayer.session && castPlayer.session.receiver && castPlayer.session.friendlyName) {
+                appName = castPlayer.session.friendlyName;
+            }
+
+            return {
+                name: PlayerName,
+                id: PlayerName,
+                playerName: self.name,
+                playableMediaTypes: ["Audio", "Video"],
+                isLocalPlayer: false,
+                appName: appName
+            };
         };
     }
 
     MediaController.registerPlayer(new chromecastPlayer());
 
-    $(document).on('headercreated', ".libraryPage", function () {
-
-        var page = this;
-
-        //castPlayer.updateMediaControlUI();
-
-    });
-
     $(MediaController).on('playerchange', function () {
 
-        if (MediaController.getPlayerInfo().name == 'Chromecast') {
-            window.CastPlayer.launchApp();
+        if (MediaController.getPlayerInfo().name == PlayerName) {
+
+            if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
+                castPlayer.launchApp();
+            }
         }
     });
 

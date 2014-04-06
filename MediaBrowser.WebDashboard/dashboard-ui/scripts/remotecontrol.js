@@ -424,7 +424,7 @@
 
             PlayCommand: playType
         };
-        
+
         if (options.startPositionTicks) {
             remoteOptions.startPositionTicks = options.startPositionTicks;
         }
@@ -522,5 +522,19 @@
     }
 
     MediaController.registerPlayer(new remoteControlPlayer());
+
+    function onWebSocketMessageReceived(e, msg) {
+
+        if (msg.MessageType === "SessionEnded") {
+
+            console.log("Server reports another session ended");
+
+            if (MediaController.getPlayerInfo().id == msg.Data.Id) {
+                MediaController.setDefaultPlayerActive();
+            }
+        }
+    }
+
+    $(ApiClient).on("websocketmessage", onWebSocketMessageReceived);
 
 })(window, document, jQuery);

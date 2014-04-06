@@ -427,7 +427,7 @@ a.itemTag:hover {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 550px;
+    height: 570px;
     position: relative;
 }
 
@@ -482,13 +482,14 @@ a.itemTag:hover {
 }
 
 .itemDetailImage {
-    max-height: 220px;
+    max-height: 280px;
     max-width: 320px;
     -moz-box-shadow: 0px 0 20px #000;
     -webkit-box-shadow: 0px 0 20px #000;
     box-shadow: 0px 0 20px #000;
     border: solid 1px #222;
     margin-top: -20px;
+    margin-bottom: 10px;
 }
 
 .noBackdrop .itemDetailImage {
@@ -645,7 +646,7 @@ a.itemTag:hover {
 
 .detailImageProgressContainer {
     position: absolute;
-    bottom: 3px;
+    bottom: 10px;
     right: 0;
     left: 0;
     text-align: center;
