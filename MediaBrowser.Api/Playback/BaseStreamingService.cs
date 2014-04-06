@@ -1749,11 +1749,11 @@ namespace MediaBrowser.Api.Playback
 
             if (isStaticallyStreamed)
             {
-                flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_BYTE_BASED_SEEK;
+                //flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_BYTE_BASED_SEEK;
             }
             else if (state.RunTimeTicks.HasValue)
             {
-                flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_TIME_BASED_SEEK;
+                //flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_TIME_BASED_SEEK;
             }
 
             var dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}000000000000000000000000",
