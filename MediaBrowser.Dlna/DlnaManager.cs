@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Text;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Dlna;
@@ -128,9 +129,27 @@ namespace MediaBrowser.Dlna
             else
             {
                 _logger.Debug("No matching device profile found. The default will need to be used.");
+                LogUnmatchedProfile(deviceInfo);
             }
 
             return profile;
+        }
+
+        private void LogUnmatchedProfile(DeviceIdentification profile)
+        {
+            var builder = new StringBuilder();
+
+            builder.AppendLine(string.Format("DeviceDescription:{0}", profile.DeviceDescription ?? string.Empty));
+            builder.AppendLine(string.Format("FriendlyName:{0}", profile.FriendlyName ?? string.Empty));
+            builder.AppendLine(string.Format("Manufacturer:{0}", profile.Manufacturer ?? string.Empty));
+            builder.AppendLine(string.Format("ManufacturerUrl:{0}", profile.ManufacturerUrl ?? string.Empty));
+            builder.AppendLine(string.Format("ModelDescription:{0}", profile.ModelDescription ?? string.Empty));
+            builder.AppendLine(string.Format("ModelName:{0}", profile.ModelName ?? string.Empty));
+            builder.AppendLine(string.Format("ModelNumber:{0}", profile.ModelNumber ?? string.Empty));
+            builder.AppendLine(string.Format("ModelUrl:{0}", profile.ModelUrl ?? string.Empty));
+            builder.AppendLine(string.Format("SerialNumber:{0}", profile.SerialNumber ?? string.Empty));
+
+            _logger.LogMultiline("No matching device profile found. The default will need to be used.", LogSeverity.Info, builder);
         }
 
         private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)

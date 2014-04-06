@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
@@ -14,8 +13,6 @@ namespace MediaBrowser.Api.WebSocket
     /// </summary>
     class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfoDto>, object>
     {
-        private readonly IDtoService _dtoService;
-
         /// <summary>
         /// Gets the name.
         /// </summary>
@@ -35,11 +32,10 @@ namespace MediaBrowser.Api.WebSocket
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
-        public SessionInfoWebSocketListener(ILogger logger, ISessionManager sessionManager, IDtoService dtoService)
+        public SessionInfoWebSocketListener(ILogger logger, ISessionManager sessionManager)
             : base(logger)
         {
             _sessionManager = sessionManager;
-            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -49,7 +45,7 @@ namespace MediaBrowser.Api.WebSocket
         /// <returns>Task{SystemInfo}.</returns>
         protected override Task<IEnumerable<SessionInfoDto>> GetDataToSend(object state)
         {
-            return Task.FromResult(_sessionManager.Sessions.Where(i => i.IsActive).Select(_dtoService.GetSessionInfoDto));
+            return Task.FromResult(_sessionManager.Sessions.Where(i => i.IsActive).Select(_sessionManager.GetSessionInfoDto));
         }
     }
 }

@@ -512,17 +512,15 @@ namespace MediaBrowser.Dlna.PlayTo
             if (result == null || result.Document == null)
                 return;
 
-            var track = result.Document.Descendants("CurrentURIMetaData").Select(i => i.Value).FirstOrDefault();
+            var track = result.Document.Descendants("CurrentURIMetaData").FirstOrDefault();
 
-            if (String.IsNullOrEmpty(track))
+            if (track == null)
             {
                 CurrentId = null;
                 return;
             }
 
-            var uPnpResponse = XElement.Parse(track);
-
-            var e = uPnpResponse.Element(uPnpNamespaces.items) ?? uPnpResponse;
+            var e = track.Element(uPnpNamespaces.items) ?? track;
 
             var uTrack = uParser.CreateObjectFromXML(new uParserObject
             {
@@ -556,7 +554,7 @@ namespace MediaBrowser.Dlna.PlayTo
             var durationElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i != null);
             var duration = durationElem == null ? null : durationElem.Value;
 
-            if (!string.IsNullOrWhiteSpace(duration))
+            if (!string.IsNullOrWhiteSpace(duration) && !string.Equals(duration, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
                 Duration = TimeSpan.Parse(duration, UsCulture);
             }
@@ -564,25 +562,22 @@ namespace MediaBrowser.Dlna.PlayTo
             var positionElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("RelTime")).FirstOrDefault(i => i != null);
             var position = positionElem == null ? null : positionElem.Value;
 
-            if (!string.IsNullOrWhiteSpace(position))
+            if (!string.IsNullOrWhiteSpace(position) && !string.Equals(position, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
                 Position = TimeSpan.Parse(position, UsCulture);
             }
 
-            var track = result.Document.Descendants("TrackMetaData").Select(i => i.Value)
-                .FirstOrDefault();
+            var track = result.Document.Descendants("TrackMetaData").FirstOrDefault();
 
-            if (String.IsNullOrEmpty(track))
+            if (track == null)
             {
                 //If track is null, some vendors do this, use GetMediaInfo instead                    
                 return false;
             }
 
-            var uPnpResponse = XElement.Parse(track);
+            var e = track.Element(uPnpNamespaces.items) ?? track;
 
-            var e = uPnpResponse.Element(uPnpNamespaces.items) ?? uPnpResponse;
-
-            var uTrack = uBaseObject.Create(e);
+            var uTrack = CreateUBaseObject(e);
 
             if (uTrack == null)
                 return true;
@@ -590,6 +585,48 @@ namespace MediaBrowser.Dlna.PlayTo
             CurrentId = uTrack.Id;
 
             return true;
+        }
+
+        private static uBaseObject CreateUBaseObject(XElement container)
+        {
+            if (container == null)
+            {
+                throw new ArgumentNullException("container");
+            }
+
+            return new uBaseObject
+            {
+                Id = container.GetAttributeValue(uPnpNamespaces.Id),
+                ParentId = container.GetAttributeValue(uPnpNamespaces.ParentId),
+                Title = container.GetValue(uPnpNamespaces.title),
+                IconUrl = container.GetValue(uPnpNamespaces.Artwork),
+                SecondText = "",
+                Url = container.GetValue(uPnpNamespaces.Res),
+                ProtocolInfo = GetProtocolInfo(container),
+                MetaData = container.ToString()
+            };
+        }
+
+        private static string[] GetProtocolInfo(XElement container)
+        {
+            if (container == null)
+            {
+                throw new ArgumentNullException("container");
+            }
+
+            var resElement = container.Element(uPnpNamespaces.Res);
+
+            if (resElement != null)
+            {
+                var info = resElement.Attribute(uPnpNamespaces.ProtocolInfo);
+
+                if (info != null && !string.IsNullOrWhiteSpace(info.Value))
+                {
+                    return info.Value.Split(':');
+                }
+            }
+
+            return new string[4];
         }
 
         #endregion

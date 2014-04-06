@@ -1,5 +1,4 @@
-﻿using System.Text;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -22,6 +21,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -1490,6 +1490,14 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
+            if (state.AudioStream != null)
+            {
+                //if (CanStreamCopyAudio(request, state.AudioStream))
+                //{
+                //    request.AudioCodec = "copy";
+                //}
+            }
+
             return state;
         }
 
@@ -1513,7 +1521,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             // If client is requesting a specific video profile, it must match the source
-            if (!string.IsNullOrEmpty(request.Profile) && !string.Equals(request.Profile, videoStream.Profile))
+            if (!string.IsNullOrEmpty(request.Profile) && !string.Equals(request.Profile, videoStream.Profile, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -1574,12 +1582,50 @@ namespace MediaBrowser.Api.Playback
                         return false;
                     }
                 }
-                return false;
             }
 
             return SupportsAutomaticVideoStreamCopy;
         }
 
+        private bool CanStreamCopyAudio(StreamRequest request, MediaStream audioStream)
+        {
+            // Source and target codecs must match
+            if (string.IsNullOrEmpty(request.AudioCodec) || !string.Equals(request.AudioCodec, audioStream.Codec, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // Video bitrate must fall within requested value
+            if (request.AudioBitRate.HasValue)
+            {
+                if (!audioStream.BitRate.HasValue || audioStream.BitRate.Value > request.AudioBitRate.Value)
+                {
+                    return false;
+                }
+            }
+
+            // Channels must fall within requested value
+            var channels = request.AudioChannels ?? request.MaxAudioChannels;
+            if (channels.HasValue)
+            {
+                if (!audioStream.Channels.HasValue || audioStream.Channels.Value > channels.Value)
+                {
+                    return false;
+                }
+            }
+
+            // Sample rate must fall within requested value
+            if (request.AudioSampleRate.HasValue)
+            {
+                if (!audioStream.SampleRate.HasValue || audioStream.SampleRate.Value > request.AudioSampleRate.Value)
+                {
+                    return false;
+                }
+            }
+
+            return SupportsAutomaticVideoStreamCopy;
+        }
+        
         protected virtual bool SupportsAutomaticVideoStreamCopy
         {
             get
@@ -1697,7 +1743,21 @@ namespace MediaBrowser.Api.Playback
             // 0 = native, 1 = transcoded
             var orgCi = isStaticallyStreamed ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            const string dlnaflags = ";DLNA.ORG_FLAGS=01500000000000000000000000000000";
+            var flagValue = DlnaFlags.DLNA_ORG_FLAG_STREAMING_TRANSFER_MODE |
+                            DlnaFlags.DLNA_ORG_FLAG_BACKGROUND_TRANSFERT_MODE |
+                            DlnaFlags.DLNA_ORG_FLAG_DLNA_V15;
+
+            if (isStaticallyStreamed)
+            {
+                flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_BYTE_BASED_SEEK;
+            }
+            else if (state.RunTimeTicks.HasValue)
+            {
+                flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_TIME_BASED_SEEK;
+            }
+
+            var dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}000000000000000000000000",
+                Enum.Format(typeof(DlnaFlags), flagValue, "x"));
 
             if (!string.IsNullOrWhiteSpace(state.OrgPn))
             {
@@ -1746,6 +1806,23 @@ namespace MediaBrowser.Api.Playback
                 Request.Response.AddHeader(item.Key, item.Value);
             }
         }
+
+        [Flags]
+        private enum DlnaFlags
+        {
+            DLNA_ORG_FLAG_SENDER_PACED = (1 << 31),
+            DLNA_ORG_FLAG_TIME_BASED_SEEK = (1 << 30),
+            DLNA_ORG_FLAG_BYTE_BASED_SEEK = (1 << 29),
+            DLNA_ORG_FLAG_PLAY_CONTAINER = (1 << 28),
+            DLNA_ORG_FLAG_S0_INCREASE = (1 << 27),
+            DLNA_ORG_FLAG_SN_INCREASE = (1 << 26),
+            DLNA_ORG_FLAG_RTSP_PAUSE = (1 << 25),
+            DLNA_ORG_FLAG_STREAMING_TRANSFER_MODE = (1 << 24),
+            DLNA_ORG_FLAG_INTERACTIVE_TRANSFERT_MODE = (1 << 23),
+            DLNA_ORG_FLAG_BACKGROUND_TRANSFERT_MODE = (1 << 22),
+            DLNA_ORG_FLAG_CONNECTION_STALL = (1 << 21),
+            DLNA_ORG_FLAG_DLNA_V15 = (1 << 20),
+        };
 
         private void AddTimeSeekResponseHeaders(StreamState state, IDictionary<string, string> responseHeaders)
         {

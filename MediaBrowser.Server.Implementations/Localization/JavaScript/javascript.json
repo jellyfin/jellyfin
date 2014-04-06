@@ -7,7 +7,7 @@
 	"Password": "Password",
 	"DeleteImage": "Delete Image",
 	"DeleteImageConfirmation": "Are you sure you wish to delete this image?",
-	"FileReadCancelled": "The file read has been cancelled.",
+	"FileReadCancelled": "The file read has been canceled.",
 	"FileNotFound": "File not found.",
 	"FileReadError": "An error occurred while reading the file.",
 	"DeleteUser": "Delete User",

@@ -90,6 +90,14 @@ namespace MediaBrowser.Controller.Session
         Task SendServerShutdownNotification(CancellationToken cancellationToken);
 
         /// <summary>
+        /// Sends the session ended notification.
+        /// </summary>
+        /// <param name="sessionInfo">The session information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Sends the server restart notification.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>

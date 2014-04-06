@@ -16,6 +16,10 @@ namespace MediaBrowser.Model.Session
 
         public string[] QueueableMediaTypes { get; set; }
 
+        public int? AudioStreamIndex { get; set; }
+
+        public int? SubtitleStreamIndex { get; set; }
+
         public PlaybackStartInfo()
         {
             QueueableMediaTypes = new string[] { };
@@ -38,6 +42,12 @@ namespace MediaBrowser.Model.Session
         public bool IsPaused { get; set; }
 
         public bool IsMuted { get; set; }
+
+        public int? AudioStreamIndex { get; set; }
+
+        public int? SubtitleStreamIndex { get; set; }
+
+        public int? VolumeLevel { get; set; }
     }
 
     /// <summary>
