@@ -921,6 +921,11 @@
                     $("#pause", videoElement).hide().removeClass("fadeOut");
                 }, 300);
 
+                // Pause stop timer
+                this.pauseStop = setTimeout(function () {
+                    self.stop();
+                }, 5 * 60 * 1000); // 5 minutes
+
             }).on("playing", function (e) {
 
                 $('#video-playButton', videoControls).hide();
@@ -929,6 +934,10 @@
                 setTimeout(function () {
                     $("#play", videoElement).hide().removeClass("fadeOut");
                 }, 300);
+
+                // Remove pause setop timer
+                window.clearTimeout(this.pauseStop);
+                delete this.pauseStop;
 
             }).on("timeupdate", function () {
 
