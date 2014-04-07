@@ -31,6 +31,23 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        [IgnoreDataMember]
+        public List<string> AllArtists
+        {
+            get
+            {
+                var list = new List<string>();
+
+                if (!string.IsNullOrEmpty(AlbumArtist))
+                {
+                    list.Add(AlbumArtist);
+                }
+                list.AddRange(Artists);
+
+                return list;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>
