@@ -22,7 +22,6 @@
         var fullscreenExited = false;
         var idleState = true;
         var remoteFullscreen = false;
-        var videoMenuVisible = false;
 
         self.initVideoPlayer = function () {
             video = playVideo(item, mediaSource, startPosition, user);
@@ -263,7 +262,7 @@
                 video.removeClass("cursor-active").addClass("cursor-inactive");
                 videoControls.removeClass("active").addClass("inactive");
             }, 4000);
-        };
+        }
 
         function requestFullScreen(element) {
 
@@ -276,7 +275,7 @@
                 enterFullScreen();
             }
 
-        };
+        }
 
         function changeHandler(event) {
 
@@ -284,7 +283,7 @@
                 fullscreenExited = self.isFullScreen() == false;
             });
 
-        };
+        }
 
         function enterFullScreen() {
 
@@ -294,7 +293,7 @@
 
             remoteFullscreen = true;
 
-        };
+        }
 
         function exitFullScreenToWindow() {
 
@@ -304,7 +303,7 @@
 
             remoteFullscreen = false;
 
-        };
+        }
 
         function toggleFlyout(flyout, button) {
 
@@ -334,14 +333,14 @@
 
                 hideFlyout(flyout);
             }
-        };
+        }
 
         function hideFlyout(flyout) {
 
             flyout.slideUp().empty();
 
             $(document.body).off("mousedown.hidesearchhints");
-        };
+        }
 
         function getChaptersFlyoutHtml() {
 
@@ -400,7 +399,7 @@
             }
 
             return html;
-        };
+        }
 
         function getAudioTracksHtml() {
 
@@ -468,7 +467,7 @@
             }
 
             return html;
-        };
+        }
 
         function getSubtitleTracksHtml() {
 
@@ -541,7 +540,7 @@
             }
 
             return html;
-        };
+        }
 
         function getQualityFlyoutHtml() {
 
@@ -582,7 +581,7 @@
             }
 
             return html;
-        };
+        }
 
         function getInitialSubtitleStreamIndex(mediaStreams, user) {
 
@@ -621,7 +620,7 @@
             }
 
             return null;
-        };
+        }
 
         function getInitialAudioStreamIndex(mediaStreams, user) {
 
@@ -651,7 +650,7 @@
 
             // Just use the first audio stream
             return audioStreams[0];
-        };
+        }
 
         function getVideoQualityOptions(mediaStreams) {
 
@@ -729,8 +728,8 @@
             options[selectedIndex].selected = true;
 
             return options;
-        };
-
+        }
+        
         function playVideo(item, mediaSource, startPosition, user) {
 
             var mediaStreams = mediaSource.MediaStreams || [];
@@ -922,7 +921,7 @@
                 }, 300);
 
                 // Pause stop timer
-                this.pauseStop = setTimeout(function () {
+                self.pauseStop = setTimeout(function () {
                     self.stop();
                 }, 5 * 60 * 1000); // 5 minutes
 
@@ -936,8 +935,7 @@
                 }, 300);
 
                 // Remove pause setop timer
-                window.clearTimeout(this.pauseStop);
-                delete this.pauseStop;
+                self.clearPauseStop();
 
             }).on("timeupdate", function () {
 
@@ -947,6 +945,8 @@
                 }
 
             }).on("error", function () {
+
+                self.clearPauseStop();
 
                 $("html").css("cursor", "default");
                 $(".ui-loader").hide();
@@ -1038,6 +1038,6 @@
             currentMediaSource = mediaSource;
 
             return videoElement[0];
-        };
+        }
     };
 })();
