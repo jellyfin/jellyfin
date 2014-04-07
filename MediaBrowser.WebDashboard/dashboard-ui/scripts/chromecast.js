@@ -89,7 +89,7 @@
 
         // v1 Id AE4DA10A
         // v2 Id 472F0435
-        var applicationID = 'AE4DA10A';
+        var applicationID = '472F0435';
 
         // request session
         var sessionRequest = new chrome.cast.SessionRequest(applicationID);
@@ -420,7 +420,7 @@
         };
     }
 
-    function getCustomData(item, mediaSourceId, startTimeTicks) {
+    function getCustomData(item, mediaSourceId, startTimeTicks, audioStreamIndex, subtitleStreamIndex) {
 
         return {
 
@@ -429,7 +429,9 @@
             userId: Dashboard.getCurrentUserId(),
             deviceName: ApiClient.deviceName(),
             //deviceId: ApiClient.deviceId(),
-            startTimeTicks: startTimeTicks || 0
+            startTimeTicks: startTimeTicks || 0,
+            audioStreamIndex: audioStreamIndex,
+            subtitleStreamIndex: subtitleStreamIndex
         };
 
     }
@@ -613,7 +615,7 @@
 
         var castMediaInfo = new chrome.cast.media.MediaInfo(streamUrl);
 
-        castMediaInfo.customData = getCustomData(item, mediaInfo.mediaSource.Id, startTimeTicks);
+        castMediaInfo.customData = getCustomData(item, mediaInfo.mediaSource.Id, startTimeTicks, audioStreamIndex, subtitleStreamIndex);
         castMediaInfo.metadata = getMetadata(item);
 
         if (mediaInfo.streamContainer == 'm3u8') {
@@ -630,8 +632,8 @@
 
         this.castPlayerState = PLAYER_STATE.LOADING;
         this.session.loadMedia(request,
-          this.onMediaDiscovered.bind(this, 'loadMedia'),
-          this.onLoadMediaError.bind(this));
+        this.onMediaDiscovered.bind(this, 'loadMedia'),
+        this.onLoadMediaError.bind(this));
     };
 
     /**

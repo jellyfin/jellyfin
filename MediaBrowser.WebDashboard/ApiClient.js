@@ -3846,7 +3846,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackProgress = function (userId, itemId, mediaSourceId, positionTicks, isPaused, isMuted) {
+        self.reportPlaybackProgress = function (userId, itemId, mediaSourceId, params) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3862,10 +3862,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
                 var msgData = itemId;
 
-                msgData += "|" + (positionTicks == null ? "" : positionTicks);
-                msgData += "|" + (isPaused == null ? "" : isPaused);
-                msgData += "|" + (isMuted == null ? "" : isMuted);
+                msgData += "|" + (params.positionTicks == null ? "" : params.positionTicks);
+                msgData += "|" + (params.isPaused == null ? "" : params.isPaused);
+                msgData += "|" + (params.isMuted == null ? "" : params.isMuted);
                 msgData += "|" + (mediaSourceId == null ? "" : mediaSourceId);
+
+                msgData += "|" + (params.audioStreamIndex == null ? "" : params.audioStreamIndex);
+                msgData += "|" + (params.subtitleStreamIndex == null ? "" : params.subtitleStreamIndex);
+                msgData += "|" + (params.volumeLevel == null ? "" : params.volumeLevel);
 
                 self.sendWebSocketMessage("PlaybackProgress", msgData);
 
@@ -3873,14 +3877,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 return deferred.promise();
             }
 
-            var params = {
-                isPaused: isPaused,
-                isMuted: isMuted
-            };
+            ////var params = {
+            ////    isPaused: isPaused,
+            ////    isMuted: isMuted
+            ////};
 
-            if (positionTicks) {
-                params.positionTicks = positionTicks;
-            }
+            ////if (positionTicks) {
+            ////    params.positionTicks = positionTicks;
+            ////}
 
             if (mediaSourceId) {
                 params.mediaSourceId = mediaSourceId;

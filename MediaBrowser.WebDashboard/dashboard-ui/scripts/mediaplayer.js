@@ -950,7 +950,7 @@
 
         function sendProgressUpdate(itemId, mediaSourceId) {
 
-            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, mediaSourceId, self.getCurrentTicks(), currentMediaElement.paused, currentMediaElement.volume == 0);
+            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, mediaSourceId, { positionTicks: self.getCurrentTicks(), isPaused: currentMediaElement.paused, isMuted: currentMediaElement.volume == 0 });
         }
 
         function clearProgressInterval() {

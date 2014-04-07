@@ -349,7 +349,7 @@
 
         // don't display the current session
         sessions = sessions.filter(function (s) {
-            return s.DeviceId != deviceId && s.SupportsRemoteControl;
+            return s.DeviceId != deviceId && (s.SupportsRemoteControl || s.Client == "Chromecast");
         });
 
         var elem = $('#selectSession', popup);
@@ -402,6 +402,8 @@
 
         self.showMenu = function (options) {
             ApiClient.getSessions(sessionQuery).done(function (sessions) {
+
+                console.log("showMenu", sessions);
 
                 showMenu(sessions, options);
 
