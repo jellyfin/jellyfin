@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Globalization;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Session;
@@ -187,6 +188,8 @@ namespace MediaBrowser.Server.Implementations.Session
             return result;
         }
 
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Reports the playback start.
         /// </summary>
@@ -226,6 +229,16 @@ namespace MediaBrowser.Server.Implementations.Session
                 if (vals.Length > 3)
                 {
                     info.MediaSourceId = vals[3];
+                }
+
+                if (vals.Length > 4 && !string.IsNullOrWhiteSpace(vals[4]))
+                {
+                    info.AudioStreamIndex = int.Parse(vals[4], _usCulture);
+                }
+
+                if (vals.Length > 5 && !string.IsNullOrWhiteSpace(vals[5]))
+                {
+                    info.SubtitleStreamIndex = int.Parse(vals[5], _usCulture);
                 }
 
                 _sessionManager.OnPlaybackStart(info);
@@ -273,6 +286,21 @@ namespace MediaBrowser.Server.Implementations.Session
                 if (vals.Length > 4)
                 {
                     info.MediaSourceId = vals[4];
+                }
+
+                if (vals.Length > 5 && !string.IsNullOrWhiteSpace(vals[5]))
+                {
+                    info.VolumeLevel = int.Parse(vals[5], _usCulture);
+                }
+
+                if (vals.Length > 5 && !string.IsNullOrWhiteSpace(vals[6]))
+                {
+                    info.AudioStreamIndex = int.Parse(vals[6], _usCulture);
+                }
+
+                if (vals.Length > 7 && !string.IsNullOrWhiteSpace(vals[7]))
+                {
+                    info.SubtitleStreamIndex = int.Parse(vals[7], _usCulture);
                 }
 
                 _sessionManager.OnPlaybackProgress(info);

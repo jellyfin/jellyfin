@@ -29,6 +29,16 @@ namespace MediaBrowser.Controller.Session
         event EventHandler<PlaybackStopEventArgs> PlaybackStopped;
 
         /// <summary>
+        /// Occurs when [session started].
+        /// </summary>
+        event EventHandler<SessionEventArgs> SessionStarted;
+
+        /// <summary>
+        /// Occurs when [session ended].
+        /// </summary>
+        event EventHandler<SessionEventArgs> SessionEnded;
+        
+        /// <summary>
         /// Gets the sessions.
         /// </summary>
         /// <value>The sessions.</value>
@@ -82,6 +92,13 @@ namespace MediaBrowser.Controller.Session
         /// <param name="sessionId">The session identifier.</param>
         /// <returns>Task.</returns>
         Task ReportSessionEnded(Guid sessionId);
+
+        /// <summary>
+        /// Gets the session info dto.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <returns>SessionInfoDto.</returns>
+        SessionInfoDto GetSessionInfoDto(SessionInfo session);
 
         /// <summary>
         /// Sends the general command.

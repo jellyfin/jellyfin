@@ -333,11 +333,14 @@ namespace MediaBrowser.Server.Implementations.Localization
         {
             return new List<LocalizatonOption>
             {
+                new LocalizatonOption{ Name="Arabic", Value="ar"},
+                new LocalizatonOption{ Name="English (United Kingdom)", Value="en-GB"},
                 new LocalizatonOption{ Name="English (United States)", Value="en-us"},
                 new LocalizatonOption{ Name="Chinese Traditional", Value="zh-TW"},
                 new LocalizatonOption{ Name="Dutch", Value="nl"},
                 new LocalizatonOption{ Name="French", Value="fr"},
                 new LocalizatonOption{ Name="German", Value="de"},
+                new LocalizatonOption{ Name="Greek", Value="el"},
                 new LocalizatonOption{ Name="Hebrew", Value="he"},
                 new LocalizatonOption{ Name="Italian", Value="it"},
                 new LocalizatonOption{ Name="Norwegian Bokmål", Value="nb"},

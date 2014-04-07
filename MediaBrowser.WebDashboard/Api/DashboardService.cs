@@ -14,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using WebMarkupMin.Core.Minifiers;
@@ -335,16 +334,16 @@ namespace MediaBrowser.WebDashboard.Api
                         html = html.Replace("<html>", "<html lang=\"" + lang + "\">");
                     }
 
-                    try
-                    {
-                        var minifier = new HtmlMinifier(new HtmlMinificationSettings(true));
+                    //try
+                    //{
+                    //    var minifier = new HtmlMinifier(new HtmlMinificationSettings(true));
 
-                        html = minifier.Minify(html).MinifiedContent;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error minifying html", ex);
-                    }
+                    //    html = minifier.Minify(html).MinifiedContent;
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    Logger.ErrorException("Error minifying html", ex);
+                    //}
                 }
 
                 var version = GetType().Assembly.GetName().Version;
@@ -510,10 +509,10 @@ namespace MediaBrowser.WebDashboard.Api
                                 "librarylist.js",
                                 "editorsidebar.js",
                                 "librarymenu.js",
+                                "mediacontroller.js",
                                 "chromecast.js",
                                 "contextmenu.js",
 
-                                "mediacontroller.js",
                                 "mediaplayer.js",
                                 "mediaplayer-video.js",
 

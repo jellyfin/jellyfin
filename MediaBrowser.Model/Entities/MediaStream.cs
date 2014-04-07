@@ -152,7 +152,11 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The subtitle
         /// </summary>
-        Subtitle
+        Subtitle,
+        /// <summary>
+        /// The embedded image
+        /// </summary>
+        EmbeddedImage
     }
 
     public class MediaInfo

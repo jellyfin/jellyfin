@@ -323,7 +323,7 @@ namespace MediaBrowser.Api
             var result = new AuthenticationResult
             {
                 User = _dtoService.GetUserDto(user),
-                SessionInfo = _dtoService.GetSessionInfoDto(session)
+                SessionInfo = _sessionMananger.GetSessionInfoDto(session)
             };
 
             return result;

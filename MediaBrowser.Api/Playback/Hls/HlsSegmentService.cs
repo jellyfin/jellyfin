@@ -103,7 +103,10 @@ namespace MediaBrowser.Api.Playback.Hls
                 .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
                 .ToList())
             {
-                ExtendPlaylistTimer(playlist);
+                if (!string.IsNullOrEmpty(playlist))
+                {
+                    ExtendPlaylistTimer(playlist);
+                }
             }
         }
 

@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.Dlna
                     .ToList();
             }
 
-            var streams = mediaSources.Select(i => BuildAudioItem(options.ItemId, i, options.Profile)).ToList();
+            var streams = mediaSources.Select(i => BuildAudioItem(i, options)).ToList();
 
             foreach (var stream in streams)
             {
@@ -75,36 +75,40 @@ namespace MediaBrowser.Model.Dlna
                 streams.FirstOrDefault();
         }
 
-        private StreamInfo BuildAudioItem(string itemId, MediaSourceInfo item, DeviceProfile profile)
+        private StreamInfo BuildAudioItem(MediaSourceInfo item, AudioOptions options)
         {
             var playlistItem = new StreamInfo
             {
-                ItemId = itemId,
+                ItemId = options.ItemId,
                 MediaType = DlnaProfileType.Audio,
                 MediaSourceId = item.Id
             };
 
             var audioStream = item.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
-            var directPlay = profile.DirectPlayProfiles
-                .FirstOrDefault(i => i.Type == playlistItem.MediaType && IsAudioProfileSupported(i, item, audioStream));
-
-            if (directPlay != null)
+            // Honor the max bitrate setting
+            if (IsAudioEligibleForDirectPlay(item, options))
             {
-                var audioCodec = audioStream == null ? null : audioStream.Codec;
+                var directPlay = options.Profile.DirectPlayProfiles
+                    .FirstOrDefault(i => i.Type == playlistItem.MediaType && IsAudioDirectPlaySupported(i, item, audioStream));
 
-                // Make sure audio codec profiles are satisfied
-                if (!string.IsNullOrEmpty(audioCodec) && profile.CodecProfiles.Where(i => i.Type == CodecType.Audio && i.ContainsCodec(audioCodec))
-                    .All(i => AreConditionsSatisfied(i.Conditions, item.Path, null, audioStream)))
+                if (directPlay != null)
                 {
-                    playlistItem.IsDirectStream = true;
-                    playlistItem.Container = item.Container;
+                    var audioCodec = audioStream == null ? null : audioStream.Codec;
 
-                    return playlistItem;
+                    // Make sure audio codec profiles are satisfied
+                    if (!string.IsNullOrEmpty(audioCodec) && options.Profile.CodecProfiles.Where(i => i.Type == CodecType.Audio && i.ContainsCodec(audioCodec))
+                        .All(i => AreConditionsSatisfied(i.Conditions, item.Path, null, audioStream)))
+                    {
+                        playlistItem.IsDirectStream = true;
+                        playlistItem.Container = item.Container;
+
+                        return playlistItem;
+                    }
                 }
             }
 
-            var transcodingProfile = profile.TranscodingProfiles
+            var transcodingProfile = options.Profile.TranscodingProfiles
                 .FirstOrDefault(i => i.Type == playlistItem.MediaType);
 
             if (transcodingProfile != null)
@@ -113,12 +117,28 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.Container = transcodingProfile.Container;
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec;
 
-                var audioTranscodingConditions = profile.CodecProfiles
+                var audioTranscodingConditions = options.Profile.CodecProfiles
                     .Where(i => i.Type == CodecType.Audio && i.ContainsCodec(transcodingProfile.AudioCodec))
                     .Take(1)
                     .SelectMany(i => i.Conditions);
 
                 ApplyTranscodingConditions(playlistItem, audioTranscodingConditions);
+
+                // Honor requested max channels
+                if (options.MaxAudioChannels.HasValue)
+                {
+                    var currentValue = playlistItem.MaxAudioChannels ?? options.MaxAudioChannels.Value;
+
+                    playlistItem.MaxAudioChannels = Math.Min(options.MaxAudioChannels.Value, currentValue);
+                }
+
+                // Honor requested max bitrate
+                if (options.MaxBitrate.HasValue)
+                {
+                    var currentValue = playlistItem.AudioBitrate ?? options.MaxBitrate.Value;
+
+                    playlistItem.AudioBitrate = Math.Min(options.MaxBitrate.Value, currentValue);
+                }
             }
 
             return playlistItem;
@@ -140,7 +160,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 // See if it can be direct played
                 var directPlay = options.Profile.DirectPlayProfiles
-                    .FirstOrDefault(i => i.Type == playlistItem.MediaType && IsVideoProfileSupported(i, item, videoStream, audioStream));
+                    .FirstOrDefault(i => i.Type == playlistItem.MediaType && IsVideoDirectPlaySupported(i, item, videoStream, audioStream));
 
                 if (directPlay != null)
                 {
@@ -189,6 +209,37 @@ namespace MediaBrowser.Model.Dlna
                     .SelectMany(i => i.Conditions);
 
                 ApplyTranscodingConditions(playlistItem, audioTranscodingConditions);
+
+                // Honor requested max channels
+                if (options.MaxAudioChannels.HasValue)
+                {
+                    var currentValue = playlistItem.MaxAudioChannels ?? options.MaxAudioChannels.Value;
+
+                    playlistItem.MaxAudioChannels = Math.Min(options.MaxAudioChannels.Value, currentValue);
+                }
+
+                // Honor requested max bitrate
+                if (options.MaxAudioTranscodingBitrate.HasValue)
+                {
+                    var currentValue = playlistItem.AudioBitrate ?? options.MaxAudioTranscodingBitrate.Value;
+
+                    playlistItem.AudioBitrate = Math.Min(options.MaxAudioTranscodingBitrate.Value, currentValue);
+                }
+
+                // Honor max rate
+                if (options.MaxBitrate.HasValue)
+                {
+                    var videoBitrate = options.MaxBitrate.Value;
+
+                    if (playlistItem.AudioBitrate.HasValue)
+                    {
+                        videoBitrate -= playlistItem.AudioBitrate.Value;
+                    }
+
+                    var currentValue = playlistItem.VideoBitrate ?? videoBitrate;
+
+                    playlistItem.VideoBitrate = Math.Min(videoBitrate, currentValue);
+                }
             }
 
             return playlistItem;
@@ -207,7 +258,13 @@ namespace MediaBrowser.Model.Dlna
                 return false;
             }
 
-            return true;
+            return IsAudioEligibleForDirectPlay(item, options);
+        }
+
+        private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, AudioOptions options)
+        {
+            // Honor the max bitrate setting
+            return !options.MaxBitrate.HasValue || (item.Bitrate.HasValue && item.Bitrate.Value <= options.MaxBitrate.Value);
         }
 
         private void ValidateInput(VideoOptions options)
@@ -331,7 +388,7 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        private bool IsAudioProfileSupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream audioStream)
+        private bool IsAudioDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream audioStream)
         {
             if (profile.Container.Length > 0)
             {
@@ -346,7 +403,7 @@ namespace MediaBrowser.Model.Dlna
             return true;
         }
 
-        private bool IsVideoProfileSupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream videoStream, MediaStream audioStream)
+        private bool IsVideoDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream videoStream, MediaStream audioStream)
         {
             // Only plain video files can be direct played
             if (item.VideoType != VideoType.VideoFile)

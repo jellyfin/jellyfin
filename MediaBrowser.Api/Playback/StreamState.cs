@@ -1,15 +1,21 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
 namespace MediaBrowser.Api.Playback
 {
-    public class StreamState
+    public class StreamState : IDisposable
     {
+        private readonly ILogger _logger;
+        private readonly ILiveTvManager _liveTvManager;
+
         public string RequestedUrl { get; set; }
 
         public StreamRequest Request { get; set; }
@@ -51,8 +57,6 @@ namespace MediaBrowser.Api.Playback
 
         public bool HasMediaStreams { get; set; }
 
-        public CancellationTokenSource StandardInputCancellationTokenSource { get; set; }
-
         public string LiveTvStreamId { get; set; }
 
         public int SegmentLength = 10;
@@ -62,6 +66,12 @@ namespace MediaBrowser.Api.Playback
 
         public string AudioSync = "1";
         public string VideoSync = "vfr";
+
+        public StreamState(ILiveTvManager liveTvManager, ILogger logger)
+        {
+            _liveTvManager = liveTvManager;
+            _logger = logger;
+        }
 
         public string InputAudioSync { get; set; }
         public string InputVideoSync { get; set; }
@@ -92,6 +102,62 @@ namespace MediaBrowser.Api.Playback
             }
 
             return MimeTypes.GetMimeType(outputPath);
+        }
+
+        public void Dispose()
+        {
+            DisposeLiveStream();
+            DisposeLogStream();
+            DisposeIsoMount();
+        }
+
+        private void DisposeLogStream()
+        {
+            if (LogFileStream != null)
+            {
+                try
+                {
+                    LogFileStream.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing log stream", ex);
+                }
+
+                LogFileStream = null;
+            }
+        }
+
+        private void DisposeIsoMount()
+        {
+            if (IsoMount != null)
+            {
+                try
+                {
+                    IsoMount.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing iso mount", ex);
+                }
+
+                IsoMount = null;
+            }
+        }
+
+        private async void DisposeLiveStream()
+        {
+            if (!string.IsNullOrEmpty(LiveTvStreamId))
+            {
+                try
+                {
+                    await _liveTvManager.CloseLiveStream(LiveTvStreamId, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error closing live tv stream", ex);
+                }
+            }
         }
     }
 }
