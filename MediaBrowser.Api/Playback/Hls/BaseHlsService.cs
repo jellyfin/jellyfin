@@ -93,10 +93,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (!state.VideoRequest.VideoBitRate.HasValue && (string.IsNullOrEmpty(state.VideoRequest.VideoCodec) || !string.Equals(state.VideoRequest.VideoCodec, "copy", StringComparison.OrdinalIgnoreCase)))
             {
+                state.Dispose();
                 throw new ArgumentException("A video bitrate is required");
             }
             if (!state.Request.AudioBitRate.HasValue && (string.IsNullOrEmpty(state.Request.AudioCodec) || !string.Equals(state.Request.AudioCodec, "copy", StringComparison.OrdinalIgnoreCase)))
             {
+                state.Dispose();
                 throw new ArgumentException("An audio bitrate is required");
             }
 
@@ -107,7 +109,16 @@ namespace MediaBrowser.Api.Playback.Hls
             if (!File.Exists(playlist))
             {
                 isPlaylistNewlyCreated = true;
-                await StartFfMpeg(state, playlist).ConfigureAwait(false);
+
+                try
+                {
+                    await StartFfMpeg(state, playlist).ConfigureAwait(false);
+                }
+                catch
+                {
+                    state.Dispose();
+                    throw;
+                }
             }
             else
             {

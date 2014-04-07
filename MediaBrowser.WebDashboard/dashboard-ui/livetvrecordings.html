@@ -7,28 +7,28 @@
     <div id="liveTvRecordingsPage" data-role="page" class="page libraryPage" data-theme="b" data-view="livetv">
         <div class="libraryViewNav">
             <a href="livetvsuggested.html">${TabSuggested}</a>
-            <a href="livetvguide.html">Guide</a>
-            <a href="livetvchannels.html">Channels</a>
-            <a href="livetvrecordings.html" class="ui-btn-active">Recordings</a>
-            <a href="livetvtimers.html">Scheduled</a>
-            <a href="livetvseriestimers.html">Series</a>
+            <a href="livetvguide.html">${TabGuide}</a>
+            <a href="livetvchannels.html">${TabChannels}</a>
+            <a href="livetvrecordings.html" class="ui-btn-active">${TabRecordings}</a>
+            <a href="livetvtimers.html">${TabScheduled}</a>
+            <a href="livetvseriestimers.html">${TabSeries}</a>
         </div>
         <div data-role="content">
             <table class="ehsContent">
                 <tr>
                     <td>
                         <div id="activeRecordings" style="display: none;">
-                            <h1 class="listHeader">Active Recordings</h1>
+                            <h1 class="listHeader">${HeaderActiveRecordings}</h1>
                             <div class="recordingItems"></div>
                             <br />
                         </div>
                         <div id="latestRecordings" style="display: none;">
-                            <h1 class="listHeader">Latest Recordings</h1>
+                            <h1 class="listHeader">${HeaderLatestRecordings}</h1>
                             <div class="recordingItems"></div>
                             <br />
                         </div>
                         <div id="recordingGroups" style="display: none;">
-                            <h1 class="listHeader"><a href="livetvrecordinglist.html">All Recordings<img src="css/images/rightarrow.png" class="headerArrowImage" /></a></h1>
+                            <h1 class="listHeader"><a href="livetvrecordinglist.html">${HeaderAllRecordings}<img src="css/images/rightarrow.png" class="headerArrowImage" /></a></h1>
                             <div id="recordingGroupItems"></div>
                         </div>
                     </td>

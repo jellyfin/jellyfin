@@ -7,11 +7,11 @@
     <div id="liveTvSeriesTimersPage" data-role="page" class="page libraryPage" data-theme="b" data-view="livetv">
         <div class="libraryViewNav">
             <a href="livetvsuggested.html">${TabSuggested}</a>
-            <a href="livetvguide.html">Guide</a>
-            <a href="livetvchannels.html">Channels</a>
-            <a href="livetvrecordings.html">Recordings</a>
-            <a href="livetvtimers.html">Scheduled</a>
-            <a href="livetvseriestimers.html" class="ui-btn-active">Series</a>
+            <a href="livetvguide.html">${TabGuide}</a>
+            <a href="livetvchannels.html">${TabChannels}</a>
+            <a href="livetvrecordings.html">${TabRecordings}</a>
+            <a href="livetvtimers.html">${TabScheduled}</a>
+            <a href="livetvseriestimers.html" class="ui-btn-active">${TabSeries}</a>
         </div>
         <div data-role="content">
             <div style="max-width: 600px; margin: 0 auto;">
@@ -32,10 +32,10 @@
                     </legend>
 
                     <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                    <label for="radioSortName">Name</label>
+                    <label for="radioSortName">${OptionNameSort}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPriority" value="off" data-sortby="Priority" data-mini="true">
-                    <label for="radioPriority">Priority</label>
+                    <label for="radioPriority">${OptionPriority}</label>
                 </fieldset>
 
                 <fieldset data-role="controlgroup">

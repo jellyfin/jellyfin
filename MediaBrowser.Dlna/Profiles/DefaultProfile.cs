@@ -1,6 +1,5 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using MediaBrowser.Model.Dlna;
 using System.Xml.Serialization;
-using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Dlna.Profiles
 {
@@ -32,7 +31,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new TranscodingProfile
                 {
-                    Container = "ts",
+                    Container = "mp4",
                     Type = DlnaProfileType.Video,
                     AudioCodec = "aac",
                     VideoCodec = "h264",

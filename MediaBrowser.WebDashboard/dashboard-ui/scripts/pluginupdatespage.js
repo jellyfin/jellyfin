@@ -34,8 +34,8 @@
         var fieldId = "liPluginUpdateFielda" + fieldIndex;
 
         var enabledOptions = [
-            Globalize.translate('OptionOff'),
-            Globalize.translate('OptionOn')
+            { name: Globalize.translate('OptionOff'), value: 'Off' },
+            { name: Globalize.translate('OptionOn'), value: 'On' }
         ];
         var options = PluginUpdatesPage.getHtmlOptions(enabledOptions, (plugin.EnableAutoUpdate ? "On" : "Off"));
 
@@ -46,9 +46,9 @@
         fieldId = "liPluginUpdateFieldb" + fieldIndex;
 
         var updateOptions = [
-            Globalize.translate('OptionRelease'),
-            Globalize.translate('OptionBeta'),
-            Globalize.translate('OptionDev')
+            { name: Globalize.translate('OptionRelease'), value: 'Release' },
+            { name: Globalize.translate('OptionBeta'), value: 'Beta' },
+            { name: Globalize.translate('OptionDev'), value: 'Dev' }
         ];
         options = PluginUpdatesPage.getHtmlOptions(updateOptions, plugin.UpdateClass);
 
@@ -61,18 +61,20 @@
         elem.append(html).trigger('create');
     },
 
-    getHtmlOptions: function (names, selectedValue) {
+    getHtmlOptions: function (options, selectedValue) {
 
         var html = "";
 
-        for (var i = 0, length = names.length; i < length; i++) {
+        for (var i = 0, length = options.length; i < length; i++) {
 
-            var name = names[i];
+            var option = options[i];
+            var name = option.name;
+            var value = option.value;
 
-            if (name == selectedValue) {
-                html += '<option value="' + name + '" selected="selected">' + name + '</option>';
+            if (value == selectedValue) {
+                html += '<option value="' + value + '" selected="selected">' + name + '</option>';
             } else {
-                html += '<option value="' + name + '">' + name + '</option>';
+                html += '<option value="' + value + '">' + name + '</option>';
             }
         }
 

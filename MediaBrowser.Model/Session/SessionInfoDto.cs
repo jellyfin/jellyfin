@@ -112,6 +112,24 @@ namespace MediaBrowser.Model.Session
         public string DeviceName { get; set; }
 
         /// <summary>
+        /// Gets or sets the volume level.
+        /// </summary>
+        /// <value>The volume level.</value>
+        public int? VolumeLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index of the now playing audio stream.
+        /// </summary>
+        /// <value>The index of the now playing audio stream.</value>
+        public int? NowPlayingAudioStreamIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index of the now playing subtitle stream.
+        /// </summary>
+        /// <value>The index of the now playing subtitle stream.</value>
+        public int? NowPlayingSubtitleStreamIndex { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is paused.
         /// </summary>
         /// <value><c>true</c> if this instance is paused; otherwise, <c>false</c>.</value>
@@ -140,24 +158,12 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The device id.</value>
         public string DeviceId { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports fullscreen toggle].
-        /// </summary>
-        /// <value><c>true</c> if [supports fullscreen toggle]; otherwise, <c>false</c>.</value>
-        public bool SupportsFullscreenToggle { get; set; }
         
         /// <summary>
         /// Gets or sets a value indicating whether [supports remote control].
         /// </summary>
         /// <value><c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>
         public bool SupportsRemoteControl { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports osd toggle].
-        /// </summary>
-        /// <value><c>true</c> if [supports osd toggle]; otherwise, <c>false</c>.</value>
-        public bool SupportsOsdToggle { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [supports navigation commands].

@@ -217,7 +217,7 @@
 
             html += '<td>';
 
-            html += '<div>';
+            html += '<div style="max-width:200px;">';
             if (deviceId == connection.DeviceId) {
                 html += connection.DeviceName;
             } else {

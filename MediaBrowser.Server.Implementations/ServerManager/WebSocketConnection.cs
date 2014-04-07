@@ -157,10 +157,9 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 var info = new WebSocketMessageInfo
                 {
                     MessageType = stub.MessageType,
-                    Data = stub.Data == null ? null : stub.Data.ToString()
+                    Data = stub.Data == null ? null : stub.Data.ToString(),
+                    Connection = this
                 };
-
-                info.Connection = this;
 
                 OnReceive(info);
             }

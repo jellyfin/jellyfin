@@ -41,6 +41,11 @@ namespace MediaBrowser.Server.Implementations.Roku
             }
         }
 
+        public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
+        }
+
         public Task SendMessageCommand(MessageCommand command, CancellationToken cancellationToken)
         {
             return SendCommand(new WebSocketMessage<MessageCommand>
@@ -81,11 +86,10 @@ namespace MediaBrowser.Server.Implementations.Roku
             }, cancellationToken);
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
         public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)
         {
             // Roku probably won't care about this
-            return _cachedTask;
+            return Task.FromResult(true);
         }
 
         public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
@@ -101,7 +105,7 @@ namespace MediaBrowser.Server.Implementations.Roku
         public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
         {
             // Roku probably won't care about this
-            return _cachedTask;
+            return Task.FromResult(true);
         }
 
         public Task SendServerShutdownNotification(CancellationToken cancellationToken)
@@ -136,7 +140,6 @@ namespace MediaBrowser.Server.Implementations.Roku
                 RequestContentType = "application/json"
             });
         }
-
 
         public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {

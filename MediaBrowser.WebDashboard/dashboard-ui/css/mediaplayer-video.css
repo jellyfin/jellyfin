@@ -218,6 +218,7 @@
 
     #videoControls .currentTime {
         margin-right: 0;
+        min-width: 120px;
     }
 
     #videoControls #video-advanced-controls {

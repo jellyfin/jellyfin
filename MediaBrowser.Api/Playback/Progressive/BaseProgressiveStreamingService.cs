@@ -121,11 +121,19 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var responseHeaders = new Dictionary<string, string>();
 
+            // Static remote stream
             if (request.Static && state.IsRemote)
             {
                 AddDlnaHeaders(state, responseHeaders, true);
 
-                return GetStaticRemoteStreamResult(state.MediaPath, responseHeaders, isHeadRequest).Result;
+                try
+                {
+                    return GetStaticRemoteStreamResult(state.MediaPath, responseHeaders, isHeadRequest).Result;
+                }
+                finally
+                {
+                    state.Dispose();
+                }
             }
 
             var outputPath = GetOutputFilePath(state);
@@ -136,21 +144,47 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             AddDlnaHeaders(state, responseHeaders, isStatic);
 
+            // Static stream
             if (request.Static)
             {
                 var contentType = state.GetMimeType(state.MediaPath);
 
-                return ResultFactory.GetStaticFileResult(Request, state.MediaPath, contentType, FileShare.Read, responseHeaders, isHeadRequest);
+                try
+                {
+                    return ResultFactory.GetStaticFileResult(Request, state.MediaPath, contentType, FileShare.Read, responseHeaders, isHeadRequest);
+                }
+                finally
+                {
+                    state.Dispose();
+                }
             }
 
+            // Not static but transcode cache file exists
             if (outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive))
             {
                 var contentType = state.GetMimeType(outputPath);
 
-                return ResultFactory.GetStaticFileResult(Request, outputPath, contentType, FileShare.Read, responseHeaders, isHeadRequest);
+                try
+                {
+                    return ResultFactory.GetStaticFileResult(Request, outputPath, contentType, FileShare.Read, responseHeaders, isHeadRequest);
+                }
+                finally
+                {
+                    state.Dispose();
+                }
             }
 
-            return GetStreamResult(state, responseHeaders, isHeadRequest).Result;
+            // Need to start ffmpeg
+            try
+            {
+                return GetStreamResult(state, responseHeaders, isHeadRequest).Result;
+            }
+            catch
+            {
+                state.Dispose();
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -251,6 +285,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             else
             {
                 ApiEntryPoint.Instance.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
+                state.Dispose();
             }
 
             var result = new ProgressiveStreamWriter(outputPath, Logger, FileSystem);

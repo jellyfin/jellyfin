@@ -22,7 +22,6 @@
         var fullscreenExited = false;
         var idleState = true;
         var remoteFullscreen = false;
-        var videoMenuVisible = false;
 
         self.initVideoPlayer = function () {
             video = playVideo(item, mediaSource, startPosition, user);
@@ -32,7 +31,7 @@
         self.remoteFullscreen = function () {
 
             var videoControls = $("#videoControls");
-            
+
             if (remoteFullscreen) {
                 exitFullScreenToWindow();
                 videoControls.removeClass("inactive");
@@ -263,7 +262,7 @@
                 video.removeClass("cursor-active").addClass("cursor-inactive");
                 videoControls.removeClass("active").addClass("inactive");
             }, 4000);
-        };
+        }
 
         function requestFullScreen(element) {
 
@@ -276,7 +275,7 @@
                 enterFullScreen();
             }
 
-        };
+        }
 
         function changeHandler(event) {
 
@@ -284,7 +283,7 @@
                 fullscreenExited = self.isFullScreen() == false;
             });
 
-        };
+        }
 
         function enterFullScreen() {
 
@@ -294,7 +293,7 @@
 
             remoteFullscreen = true;
 
-        };
+        }
 
         function exitFullScreenToWindow() {
 
@@ -304,7 +303,7 @@
 
             remoteFullscreen = false;
 
-        };
+        }
 
         function toggleFlyout(flyout, button) {
 
@@ -334,14 +333,14 @@
 
                 hideFlyout(flyout);
             }
-        };
+        }
 
         function hideFlyout(flyout) {
 
             flyout.slideUp().empty();
 
             $(document.body).off("mousedown.hidesearchhints");
-        };
+        }
 
         function getChaptersFlyoutHtml() {
 
@@ -400,10 +399,10 @@
             }
 
             return html;
-        };
+        }
 
         function getAudioTracksHtml() {
-            
+
             var streams = currentMediaSource.MediaStreams.filter(function (currentStream) {
                 return currentStream.Type == "Audio";
             });
@@ -468,7 +467,7 @@
             }
 
             return html;
-        };
+        }
 
         function getSubtitleTracksHtml() {
 
@@ -541,7 +540,7 @@
             }
 
             return html;
-        };
+        }
 
         function getQualityFlyoutHtml() {
 
@@ -582,7 +581,7 @@
             }
 
             return html;
-        };
+        }
 
         function getInitialSubtitleStreamIndex(mediaStreams, user) {
 
@@ -621,13 +620,20 @@
             }
 
             return null;
-        };
+        }
 
         function getInitialAudioStreamIndex(mediaStreams, user) {
 
-            // Find all audio streams with at least one channel
+            // Find all audio streams
             var audioStreams = mediaStreams.filter(function (stream) {
-                return stream.Type == "Audio" && stream.Channels;
+                return stream.Type == "Audio";
+
+            }).sort(function (a, b) {
+
+                var av = a.IsDefault ? 0 : 1;
+                var bv = b.IsDefault ? 0 : 1;
+
+                return av - bv;
             });
 
             if (user.Configuration.AudioLanguagePreference) {
@@ -643,9 +649,9 @@
             }
 
             // Just use the first audio stream
-            return audioStreams.length ? audioStreams[0].Index : null;
-        };
-        
+            return audioStreams[0];
+        }
+
         function getVideoQualityOptions(mediaStreams) {
 
             var videoStream = mediaStreams.filter(function (stream) {
@@ -722,8 +728,8 @@
             options[selectedIndex].selected = true;
 
             return options;
-        };
-
+        }
+        
         function playVideo(item, mediaSource, startPosition, user) {
 
             var mediaStreams = mediaSource.MediaStreams || [];
@@ -752,9 +758,6 @@
                 return opt.selected;
             })[0];
             m3U8Quality = $.extend(m3U8Quality, self.getFinalVideoParams(mediaSource, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
-
-            // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
-            var prioritizeWebmOverH264 = $.browser.chrome || $.browser.msie;
 
             var isStatic = mp4Quality.isStatic;
 
@@ -815,17 +818,14 @@
                 html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
             }
 
-            if (prioritizeWebmOverH264 && !isStatic) {
+            // Have to put webm ahead of mp4 because it will play in fast forward in chrome
+            // And firefox doesn't like fragmented mp4
+            if (!isStatic) {
 
                 html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
             }
 
             html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
-
-            if (!prioritizeWebmOverH264 && !isStatic) {
-
-                html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
-            }
 
             html += '</video>';
 
@@ -920,6 +920,11 @@
                     $("#pause", videoElement).hide().removeClass("fadeOut");
                 }, 300);
 
+                // Pause stop timer
+                self.pauseStop = setTimeout(function () {
+                    self.stop();
+                }, 5 * 60 * 1000); // 5 minutes
+
             }).on("playing", function (e) {
 
                 $('#video-playButton', videoControls).hide();
@@ -929,6 +934,9 @@
                     $("#play", videoElement).hide().removeClass("fadeOut");
                 }, 300);
 
+                // Remove pause setop timer
+                self.clearPauseStop();
+
             }).on("timeupdate", function () {
 
                 if (!self.isPositionSliderActive) {
@@ -937,6 +945,8 @@
                 }
 
             }).on("error", function () {
+
+                self.clearPauseStop();
 
                 $("html").css("cursor", "default");
                 $(".ui-loader").hide();
@@ -1016,7 +1026,7 @@
 
                 if (e.keyCode == 27) {
                     self.stop();
-                    $(this).unbind("keyup.enhancePlayer");
+                    $(this).off("keyup.enhancePlayer");
                 }
             });
 
@@ -1028,6 +1038,6 @@
             currentMediaSource = mediaSource;
 
             return videoElement[0];
-        };
+        }
     };
 })();

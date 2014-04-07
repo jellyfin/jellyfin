@@ -245,18 +245,16 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly ISessionManager _sessionManager;
 
-        private readonly IDtoService _dtoService;
         private readonly IUserManager _userManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionsService" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
-        /// <param name="dtoService">The dto service.</param>
-        public SessionsService(ISessionManager sessionManager, IDtoService dtoService, IUserManager userManager)
+        /// <param name="userManager">The user manager.</param>
+        public SessionsService(ISessionManager sessionManager, IUserManager userManager)
         {
             _sessionManager = sessionManager;
-            _dtoService = dtoService;
             _userManager = userManager;
         }
 
@@ -289,7 +287,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            return ToOptimizedResult(result.Select(_dtoService.GetSessionInfoDto).ToList());
+            return ToOptimizedResult(result.Select(_sessionManager.GetSessionInfoDto).ToList());
         }
 
         public void Post(SendPlaystateCommand request)

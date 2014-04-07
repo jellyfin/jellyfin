@@ -37,14 +37,22 @@
                 throw new Error('null player');
             }
 
-            if (!targetInfo) {
-                throw new Error('null targetInfo');
-            }
-
             currentPlayer = player;
-            currentTargetInfo = targetInfo;
+            currentTargetInfo = targetInfo || player.getCurrentTargetInfo();
 
             $(self).trigger('playerchange');
+        };
+
+        self.setDefaultPlayerActive = function() {
+            self.setActivePlayer(self.getDefaultPlayer());
+        };
+
+        self.removeActivePlayer = function (name) {
+            
+            if (self.getPlayerInfo().name == name) {
+                self.setDefaultPlayerActive();
+            }
+
         };
 
         self.getTargets = function () {
@@ -69,6 +77,17 @@
                     }
 
                 }
+
+                targets = targets.sort(function(a,b) {
+
+                    var aVal = a.isLocalPlayer ? 0 : 1;
+                    var bVal = b.isLocalPlayer ? 0 : 1;
+
+                    aVal = aVal.toString() + a.name;
+                    bVal = bVal.toString() + b.name;
+
+                    return aVal.localeCompare(bVal);
+                });
 
                 deferred.resolveWith(null, [targets]);
             });
@@ -144,6 +163,17 @@
                     return p.isLocalPlayer;
                 })[0];
         };
+
+        self.getDefaultPlayer = function () {
+
+            return currentPlayer.isLocalPlayer ?
+
+                currentPlayer :
+
+                players.filter(function (p) {
+                    return p.isDefaultPlayer;
+                })[0];
+        };
     }
 
     window.MediaController = new mediaController();
@@ -168,6 +198,12 @@
                 localPlayer.play({ ids: msg.Data.ItemIds, startPositionTicks: msg.Data.StartPositionTicks });
             }
 
+        }
+        else if (msg.MessageType === "ServerShuttingDown") {
+            MediaController.setDefaultPlayerActive();
+        }
+        else if (msg.MessageType === "ServerRestarting") {
+            MediaController.setDefaultPlayerActive();
         }
         else if (msg.MessageType === "Playstate") {
 
@@ -201,7 +237,7 @@
                 localPlayer.mute();
             }
             else if (cmd.Name === 'Unmute') {
-                localPlayer.unmute();
+                localPlayer.unMute();
             }
             else if (cmd.Name === 'VolumeUp') {
                 localPlayer.volumeUp();

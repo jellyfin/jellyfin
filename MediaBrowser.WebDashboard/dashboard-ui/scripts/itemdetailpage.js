@@ -2,6 +2,22 @@
 
     var currentItem;
 
+    function getExternalPlayUrl(item) {
+
+        var providerIds = item.ProviderIds || {};
+        if (item.GameSystem == "Nintendo" && item.MediaType == "Game" && providerIds.NesBox && providerIds.NesBoxRom) {
+
+            return "http://nesbox.com/game/" + providerIds.NesBox + '/rom/' + providerIds.NesBoxRom;
+        }
+
+        if (item.GameSystem == "Super Nintendo" && item.MediaType == "Game" && providerIds.NesBox && providerIds.NesBoxRom) {
+
+            return "http://snesbox.com/game/" + providerIds.NesBox + '/rom/' + providerIds.NesBoxRom;
+        }
+
+        return null;
+    }
+
     function reload(page) {
 
         var id = getParameterByName('id');
@@ -116,22 +132,6 @@
 
         $('#btnEdit', page).attr('href', "edititemmetadata.html?id=" + id);
     }
-
-    function getExternalPlayUrl(item) {
-
-
-        if (item.GameSystem == "Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
-
-            return "http://nesbox.com/game/" + item.ProviderIds.NesBox + '/rom/' + item.ProviderIds.NesBoxRom;
-        }
-
-        if (item.GameSystem == "Super Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
-
-            return "http://snesbox.com/game/" + item.ProviderIds.NesBox + '/rom/' + item.ProviderIds.NesBoxRom;
-        }
-
-        return null;
-    };
 
     function setPeopleHeader(page, item) {
 

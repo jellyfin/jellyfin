@@ -10,8 +10,8 @@
             <div class="content-primary">
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">Status</a>
-                    <a href="livetvsettings.html" data-role="button">Settings</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabStatus}</a>
+                    <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
                 </div>
 
                 <div style="margin-top: 2em;">
@@ -26,7 +26,7 @@
                         <br />
 
                         <div class="readOnlyContent refreshGuidePanel hide">
-                            <button type="button" class="btnRefreshGuide" data-icon="refresh" data-mini="true">Refresh Guide Data</button>
+                            <button type="button" class="btnRefreshGuide" data-icon="refresh" data-mini="true">${ButtonRefreshGuideData}</button>
                             <progress max="100" min="0" style="width: 100%;" class="refreshGuideProgress"></progress>
                             <div style="margin-top: 5px;">Last Result: <span class="lastRefreshGuideResult"></span></div>
                         </div>
@@ -54,7 +54,7 @@
 
                         <p>A Live TV service provider plugin is required in order to continue.</p>
 
-                        <p>Please <a href="plugincatalog.html">install</a> one of our available plugins, such as ServerWmc.</p>
+                        <p><a href="plugincatalog.html">Please install one of our available plugins, such as ServerWmc.</a></p>
                     </div>
                 </div>
             </div>

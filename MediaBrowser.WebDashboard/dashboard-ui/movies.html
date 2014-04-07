@@ -23,24 +23,24 @@
                 <div class="viewControls">
                     <div style="display: inline-block;">
                         <select data-mini="true" data-inline="true" id="selectView" name="selectView">
-                            <option value="Thumb">Thumb</option>
-                            <option value="Poster">Poster</option>
-                            <option value="Banner">Banner</option>
-                            <option value="Timeline">Timeline</option>
+                            <option value="Thumb">${OptionThumb}</option>
+                            <option value="Poster">${OptionPoster}</option>
+                            <option value="Banner">${OptionBanner}</option>
+                            <option value="Timeline">${OptionTimeline}</option>
                         </select>
                     </div>
                 </div>
                 <div class="viewControls" data-role="controlgroup" data-type="horizontal">
                     <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="${ButtonSort}" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
                     <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="${ButtonFilter}" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
-                    <button data-mini="true" data-icon="check" data-inline="true" data-iconpos="notext" title="Select" class="btnToggleSelections">Select</button>
+                    <button data-mini="true" data-icon="check" data-inline="true" data-iconpos="notext" title="${ButtonSelect}" class="btnToggleSelections">${ButtonSelect}</button>
                 </div>
                 <div class="listTopPaging">
                 </div>
 
                 <div class="selectionCommands" style="display: none;">
                     <div data-role="controlgroup" data-type="horizontal" class="selectionCommandsControlGroup">
-                        <button class="btnMergeVersions" data-mini="true" data-icon="recycle" data-inline="true" title="Combine Versions">Group Versions</button>
+                        <button class="btnMergeVersions" data-mini="true" data-icon="recycle" data-inline="true" title="${ButtonGroupVersions}">${ButtonGroupVersions}</button>
                     </div>
                 </div>
             </div>
@@ -61,7 +61,7 @@
                     <label for="radioBudget">${OptionBudget}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating,SortName" data-mini="true">
-                    <label for="radioCommunityRating">IMDb rating</label>
+                    <label for="radioCommunityRating">${OptionImdbRating}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCriticRating" value="off" data-sortby="CriticRating,SortName" data-mini="true">
                     <label for="radioCriticRating">${OptionCriticRating}</label>
@@ -73,7 +73,7 @@
                     <label for="radioDatePlayed">${OptionDatePlayed}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioMetascore" value="off" data-sortby="Metascore,SortName" data-mini="true">
-                    <label for="radioMetascore">Metascore</label>
+                    <label for="radioMetascore">${OptionMetascore}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioContentRating" value="off" data-sortby="OfficialRating,SortName" data-mini="true">
                     <label for="radioContentRating">${OptionParentalRating}</label>
@@ -120,7 +120,7 @@
                 <div class="basicFilters">
                     <fieldset data-role="controlgroup">
                         <legend>
-                            <strong>User Data:</strong>
+                            <strong>${HeaderFilters}</strong>
                         </legend>
                         <input class="chkStandardFilter" type="checkbox" name="chkPlayed" id="chkPlayed" data-filter="IsPlayed" data-mini="true">
                         <label for="chkPlayed">${OptionPlayed}</label>
@@ -155,10 +155,10 @@
                         <label for="chkIso">${OptionIso}</label>
 
                         <input class="chkHDFilter" type="checkbox" name="chkHD" id="chkHD" data-filter="IsHD" data-mini="true">
-                        <label for="chkHD">HD</label>
+                        <label for="chkHD">${OptionIsHD}</label>
 
                         <input class="chkSDFilter" type="checkbox" name="chkSD" id="chkSD" data-filter="IsHD" data-mini="true">
-                        <label for="chkSD">SD</label>
+                        <label for="chkSD">${OptionIsSD}</label>
 
                         <input class="chk3DFilter" type="checkbox" name="chk3D" id="chk3D" data-filter="Digital3D,Sbs3D" data-mini="true">
                         <label for="chk3D">${Option3D}</label>
@@ -176,7 +176,7 @@
                         <label for="chkMissingImdbId">${OptionMissingImdbId}</label>
 
                         <input class="chkMissingTmdbId" type="checkbox" name="chkMissingTmdbId" id="chkMissingTmdbId" data-mini="true">
-                        <label for="chkMissingTmdbId">Missing Tmdb Id</label>
+                        <label for="chkMissingTmdbId">${OptionMissingTmdbId}</label>
 
                         <input class="chkMissingOverview" type="checkbox" name="chkMissingOverview" id="chkMissingOverview" data-mini="true">
                         <label for="chkMissingOverview">${OptionMissingOverview}</label>
