@@ -1368,7 +1368,7 @@ namespace MediaBrowser.Api.Playback
                     mediaUrl = streamInfo.Url;
                 }
 
-                if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                if (!string.IsNullOrEmpty(path))
                 {
                     state.MediaPath = path;
                     state.IsRemote = false;
@@ -1381,7 +1381,7 @@ namespace MediaBrowser.Api.Playback
 
                 state.RunTimeTicks = recording.RunTimeTicks;
 
-                if (recording.RecordingInfo.Status == RecordingStatus.InProgress && !state.IsRemote)
+                if (recording.RecordingInfo.Status == RecordingStatus.InProgress)
                 {
                     await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
                 }
@@ -1404,7 +1404,7 @@ namespace MediaBrowser.Api.Playback
 
                 state.LiveTvStreamId = streamInfo.Id;
 
-                if (!string.IsNullOrEmpty(streamInfo.Path) && File.Exists(streamInfo.Path))
+                if (!string.IsNullOrEmpty(streamInfo.Path))
                 {
                     state.MediaPath = streamInfo.Path;
                     state.IsRemote = false;
