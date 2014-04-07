@@ -111,6 +111,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             return items
                 .OfType<IHasArtist>()
+                .Where(i => !(i is MusicAlbum))
                 .SelectMany(i => i.AllArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name =>
