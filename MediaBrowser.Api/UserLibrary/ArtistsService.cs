@@ -15,14 +15,12 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetArtists
     /// </summary>
-    [Route("/Artists", "GET")]
-    [Api(Description = "Gets all artists from a given item, folder, or the entire library")]
+    [Route("/Artists", "GET", Summary = "Gets all artists from a given item, folder, or the entire library")]
     public class GetArtists : GetItemsByName
     {
     }
 
-    [Route("/Artists/{Name}", "GET")]
-    [Api(Description = "Gets an artist, by name")]
+    [Route("/Artists/{Name}", "GET", Summary = "Gets an artist, by name")]
     public class GetArtist : IReturn<BaseItemDto>
     {
         /// <summary>
@@ -112,7 +110,8 @@ namespace MediaBrowser.Api.UserLibrary
         protected override IEnumerable<MusicArtist> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             return items
-                .OfType<Audio>()
+                .OfType<IHasArtist>()
+                .Where(i => !(i is MusicAlbum))
                 .SelectMany(i => i.AllArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name =>
