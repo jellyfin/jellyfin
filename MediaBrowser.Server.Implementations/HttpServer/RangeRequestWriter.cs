@@ -1,4 +1,5 @@
-﻿using ServiceStack.Web;
+﻿using System.Threading;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -178,8 +179,35 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             using (var source = SourceStream)
             {
-                //Since we've already set the postion of the sourcestream, just copy the remains to the output
-                await source.CopyToAsync(responseStream).ConfigureAwait(false);
+                // If the requested range is "0-", we can optimize by just doing a stream copy
+                if (RangeEnd >= TotalContentLength - 1)
+                {
+                    await source.CopyToAsync(responseStream).ConfigureAwait(false);
+                }
+                else
+                {
+                    await CopyToAsyncInternal(source, responseStream, Convert.ToInt32(RangeLength), CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private async Task CopyToAsyncInternal(Stream source, Stream destination, int copyLength, CancellationToken cancellationToken)
+        {
+            const int bufferSize = 81920;
+            var array = new byte[bufferSize];
+            int count;
+            while ((count = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            {
+                var bytesToCopy = Math.Min(count, copyLength);
+
+                await destination.WriteAsync(array, 0, bytesToCopy, cancellationToken).ConfigureAwait(false);
+
+                copyLength -= bytesToCopy;
+
+                if (copyLength <= 0)
+                {
+                    break;
+                }
             }
         }
 
