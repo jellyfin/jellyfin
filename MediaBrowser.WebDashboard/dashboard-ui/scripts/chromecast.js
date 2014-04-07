@@ -643,8 +643,9 @@
 
         this.castPlayerState = PLAYER_STATE.LOADING;
         this.session.loadMedia(request,
-        this.onMediaDiscovered.bind(this, 'loadMedia'),
-        this.onLoadMediaError.bind(this));
+            this.onMediaDiscovered.bind(this, 'loadMedia'),
+            this.onLoadMediaError.bind(this)
+        );
     };
 
     /**
