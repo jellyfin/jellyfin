@@ -229,16 +229,17 @@
         clearInterval(this.timer);
     };
 
-    function getMaxVideoAudioChannels() {
-        return 6;
-    }
+    function getCodecLimits() {
+        return {
 
-    function getMaxAudioChannels() {
-        return 2;
-    }
+            maxVideoAudioChannels: 6,
+            maxAudioChannels: 2,
+            maxVideoLevel: 41,
+            maxWidth: 1920,
+            maxHeight: 1080,
+            maxSampleRate: 44100
 
-    function getMaxVideoLevel() {
-        return 41;
+        };
     }
 
     function canDirectStream(mediaType, mediaSource, maxBitrate) {
@@ -247,6 +248,8 @@
         if (!mediaSource.Bitrate || mediaSource.Bitrate > maxBitrate) {
             return false;
         }
+
+        var codecLimits = getCodecLimits();
 
         if (mediaType == "Audio") {
 
@@ -268,15 +271,15 @@
                 return false;
             }
 
-            if (!videoStream.Level || videoStream.Level > getMaxVideoLevel()) {
+            if (!videoStream.Level || videoStream.Level > codecLimits.maxVideoLevel) {
                 return false;
             }
 
-            if (!videoStream.Width || videoStream.Width > 1920) {
+            if (!videoStream.Width || videoStream.Width > codecLimits.maxWidth) {
                 return false;
             }
 
-            if (!videoStream.Height || videoStream.Height > 1080) {
+            if (!videoStream.Height || videoStream.Height > codecLimits.maxHeight) {
                 return false;
             }
 
@@ -297,9 +300,15 @@
             return false;
         }
 
-        var maxChannels = isVideo ? getMaxVideoAudioChannels() : getMaxAudioChannels();
+        var codecLimits = getCodecLimits();
+
+        var maxChannels = isVideo ? codecLimits.maxVideoAudioChannels : codecLimits.maxAudioChannels;
 
         if (!audioStream.Channels || audioStream.Channels > maxChannels) {
+            return false;
+        }
+
+        if (!audioStream.SampleRate || audioStream.SampleRate > codecLimits.maxSampleRate) {
             return false;
         }
 
@@ -542,11 +551,13 @@
 
         var url;
 
+        var codecLimits = getCodecLimits();
+
         if (item.MediaType == 'Audio') {
 
             url = ApiClient.serverAddress() + '/mediabrowser/audio/' + item.Id + '/stream.' + mediaSourceInfo.streamContainer + '?';
             url += '&static=' + mediaSourceInfo.isStatic.toString();
-            url += '&maxaudiochannels=' + getMaxAudioChannels();
+            url += '&maxaudiochannels=' + codecLimits.maxAudioChannels;
 
             if (startTimeTicks) {
                 url += '&startTimeTicks=' + startTimeTicks.toString();
@@ -556,7 +567,7 @@
                 url += '&audiobitrate=' + Math.min(maxBitrate, 320000).toString();
             }
 
-            url += '&audiosamplerate=44100';
+            url += '&audiosamplerate=' + codecLimits.maxSampleRate;
             url += '&mediasourceid=' + mediaSourceInfo.mediaSource.Id;
 
             return url;
@@ -566,7 +577,7 @@
 
             url = ApiClient.serverAddress() + '/mediabrowser/videos/' + item.Id + '/stream.' + mediaSourceInfo.streamContainer + '?';
             url += 'static=' + mediaSourceInfo.isStatic.toString();
-            url += '&maxaudiochannels=' + getMaxVideoAudioChannels();
+            url += '&maxaudiochannels=' + codecLimits.maxVideoAudioChannels;
 
             if (startTimeTicks) {
                 url += '&startTimeTicks=' + startTimeTicks.toString();
@@ -580,15 +591,15 @@
             }
 
             url += '&profile=high';
-            url += '&level=' + getMaxVideoLevel();
+            url += '&level=' + codecLimits.maxVideoLevel;
 
-            url += '&maxwidth=1920';
-            url += '&maxheight=1080';
+            url += '&maxwidth=' + codecLimits.maxWidth;
+            url += '&maxheight=' + codecLimits.maxHeight;
 
             url += '&videoCodec=h264';
             url += '&audioCodec=aac';
 
-            url += '&audiosamplerate=44100';
+            url += '&audiosamplerate=' + codecLimits.maxSampleRate;
             url += '&mediasourceid=' + mediaSourceInfo.mediaSource.Id;
 
             return url;

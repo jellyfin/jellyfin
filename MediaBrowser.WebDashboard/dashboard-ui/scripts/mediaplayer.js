@@ -60,7 +60,18 @@
             return Math.floor(10000000 * (mediaElement || currentMediaElement).currentTime) + self.startTimeTicksOffset;
         };
 
+        self.clearPauseStop = function() {
+
+            if (self.pauseStop) {
+                console.log('clearing pause stop timer');
+                window.clearTimeout(self.pauseStop);
+                self.pauseStop = null;
+            }
+        };
+
         self.onPlaybackStopped = function () {
+
+            self.clearPauseStop();
 
             $(this).off('ended.playbackstopped');
 
@@ -1159,7 +1170,7 @@
 
         var getItemFields = "MediaSources,Chapters";
 
-        self.getCurrentTargetInfo = function() {
+        self.getCurrentTargetInfo = function () {
             return self.getTargets()[0];
         };
     }
