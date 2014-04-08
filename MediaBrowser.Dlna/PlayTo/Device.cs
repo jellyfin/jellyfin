@@ -575,7 +575,21 @@ namespace MediaBrowser.Dlna.PlayTo
                 return false;
             }
 
-            var e = track.Element(uPnpNamespaces.items) ?? track;
+            var trackString = (string) track;
+
+            XElement uPnpResponse;
+            
+            try
+            {
+                uPnpResponse = XElement.Parse(trackString);
+            }
+            catch
+            {
+                _logger.Error("Unable to parse xml {0}", trackString);
+                throw;
+            }
+
+            var e = uPnpResponse.Element(uPnpNamespaces.items);
 
             var uTrack = CreateUBaseObject(e);
 

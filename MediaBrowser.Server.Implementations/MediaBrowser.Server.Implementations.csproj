@@ -315,6 +315,8 @@
     <EmbeddedResource Include="Localization\Server\nb.json" />
     <EmbeddedResource Include="Localization\JavaScript\el.json" />
     <EmbeddedResource Include="Localization\Server\en_GB.json" />
+    <EmbeddedResource Include="Localization\JavaScript\sv.json" />
+    <EmbeddedResource Include="Localization\Server\sv.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
