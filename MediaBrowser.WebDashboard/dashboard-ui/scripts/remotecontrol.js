@@ -349,7 +349,7 @@
 
         // don't display the current session
         sessions = sessions.filter(function (s) {
-            return s.DeviceId != deviceId && (s.SupportsRemoteControl);
+            return s.DeviceId != deviceId && s.SupportsRemoteControl;
         });
 
         var elem = $('#selectSession', popup);
