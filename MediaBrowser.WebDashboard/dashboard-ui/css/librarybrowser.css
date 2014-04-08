@@ -1144,6 +1144,11 @@ a.itemTag:hover {
     margin-left: .5em;
 }
 
+.lazy {
+    opacity: 0;
+    transition: opacity .3s ease-in;
+}
+
 @media all and (min-height: 500px) {
 
     .alphabetPicker {

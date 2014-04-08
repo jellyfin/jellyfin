@@ -56,7 +56,8 @@
                     context: 'movies',
                     showTitle: true,
                     centerText: true,
-                    selectionPanel: true
+                    selectionPanel: true,
+                    lazy: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -381,6 +382,14 @@
     }).on('pageshow', "#moviesPage", function () {
 
         updateFilterControls(this);
+    });
+
+    $(function () {
+        $("body").on("create", function () {
+            $(".lazy").unveil(200, function () {
+                this.style.opacity = 1;
+            });
+        });
     });
 
 })(jQuery, document);
