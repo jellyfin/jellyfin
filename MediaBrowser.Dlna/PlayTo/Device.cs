@@ -577,6 +577,11 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var trackString = (string) track;
 
+            if (string.IsNullOrWhiteSpace(trackString) || string.Equals(trackString, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             XElement uPnpResponse;
             
             try
@@ -586,7 +591,7 @@ namespace MediaBrowser.Dlna.PlayTo
             catch
             {
                 _logger.Error("Unable to parse xml {0}", trackString);
-                throw;
+                return false;
             }
 
             var e = uPnpResponse.Element(uPnpNamespaces.items);
