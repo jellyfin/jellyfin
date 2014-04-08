@@ -476,7 +476,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (service == null)
                 return;
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType))
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
@@ -575,7 +575,26 @@ namespace MediaBrowser.Dlna.PlayTo
                 return false;
             }
 
-            var e = track.Element(uPnpNamespaces.items) ?? track;
+            var trackString = (string) track;
+
+            if (string.IsNullOrWhiteSpace(trackString) || string.Equals(trackString, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            XElement uPnpResponse;
+            
+            try
+            {
+                uPnpResponse = XElement.Parse(trackString);
+            }
+            catch
+            {
+                _logger.Error("Unable to parse xml {0}", trackString);
+                return false;
+            }
+
+            var e = uPnpResponse.Element(uPnpNamespaces.items);
 
             var uTrack = CreateUBaseObject(e);
 

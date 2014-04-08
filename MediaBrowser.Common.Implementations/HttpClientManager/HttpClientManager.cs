@@ -113,11 +113,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             AddRequestHeaders(request, options);
 
             request.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
-            
+
             request.CachePolicy = options.CachePolicy == Net.HttpRequestCachePolicy.None ?
                 new RequestCachePolicy(RequestCacheLevel.BypassCache) :
                 new RequestCachePolicy(RequestCacheLevel.Revalidate);
-            
+
             request.ConnectionGroupName = GetHostFromUrl(options.Url);
             request.KeepAlive = true;
             request.Method = method;
@@ -162,8 +162,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
-        /// <exception cref="HttpException">
-        /// </exception>
         public Task<HttpResponseInfo> GetResponse(HttpRequestOptions options)
         {
             return SendAsync(options, "GET");
@@ -174,8 +172,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task{Stream}.</returns>
-        /// <exception cref="HttpException"></exception>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<Stream> Get(HttpRequestOptions options)
         {
             var response = await GetResponse(options).ConfigureAwait(false);
@@ -274,18 +270,18 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                     var httpResponse = (HttpWebResponse)response;
 
-                    EnsureSuccessStatusCode(httpResponse);
+                    EnsureSuccessStatusCode(httpResponse, options);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
                     return GetResponseInfo(httpResponse, httpResponse.GetResponseStream(), GetContentLength(httpResponse));
                 }
-                
+
                 using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
                 {
                     var httpResponse = (HttpWebResponse)response;
 
-                    EnsureSuccessStatusCode(httpResponse);
+                    EnsureSuccessStatusCode(httpResponse, options);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -322,9 +318,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
             catch (WebException ex)
             {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw new HttpException(ex.Message, ex);
+                throw GetException(ex, options);
             }
             catch (Exception ex)
             {
@@ -339,6 +333,19 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     options.ResourcePool.Release();
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>HttpException.</returns>
+        private HttpException GetException(WebException ex, HttpRequestOptions options)
+        {
+            _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+            return new HttpException(ex.Message, ex);
         }
 
         private HttpResponseInfo GetResponseInfo(HttpWebResponse httpResponse, Stream content, long? contentLength)
@@ -384,10 +391,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <param name="options">The options.</param>
         /// <param name="postData">Params to add to the POST data.</param>
         /// <returns>stream on success, null on failure</returns>
-        /// <exception cref="HttpException">
-        /// </exception>
-        /// <exception cref="System.ArgumentNullException">postData</exception>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<Stream> Post(HttpRequestOptions options, Dictionary<string, string> postData)
         {
             var strings = postData.Keys.Select(key => string.Format("{0}={1}", key, postData[key]));
@@ -426,8 +429,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <param name="options">The options.</param>
         /// <returns>Task{System.String}.</returns>
         /// <exception cref="System.ArgumentNullException">progress</exception>
-        /// <exception cref="HttpException"></exception>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<string> GetTempFile(HttpRequestOptions options)
         {
             var response = await GetTempFileResponse(options).ConfigureAwait(false);
@@ -472,7 +473,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 {
                     var httpResponse = (HttpWebResponse)response;
 
-                    EnsureSuccessStatusCode(httpResponse);
+                    EnsureSuccessStatusCode(httpResponse, options);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -580,7 +581,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             if (webException != null)
             {
-                return new HttpException(ex.Message, ex);
+                throw GetException(webException, options);
             }
 
             return ex;
@@ -662,13 +663,35 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             return exception;
         }
 
-        private void EnsureSuccessStatusCode(HttpWebResponse response)
+        private void EnsureSuccessStatusCode(HttpWebResponse response, HttpRequestOptions options)
         {
             var statusCode = response.StatusCode;
             var isSuccessful = statusCode >= HttpStatusCode.OK && statusCode <= (HttpStatusCode)299;
 
             if (!isSuccessful)
             {
+                if (options.LogErrorResponseBody)
+                {
+                    try
+                    {
+                        using (var stream = response.GetResponseStream())
+                        {
+                            if (stream != null)
+                            {
+                                using (var reader = new StreamReader(stream))
+                                {
+                                    var msg = reader.ReadToEnd();
+
+                                    _logger.Error(msg);
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+
+                    }
+                }
                 throw new HttpException(response.StatusDescription) { StatusCode = response.StatusCode };
             }
         }

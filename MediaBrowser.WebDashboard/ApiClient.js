@@ -223,6 +223,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             if (!userId) {
                 throw new Error("null userId");
             }
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
 
             var url = self.getUrl("Users/" + userId + "/Items/" + itemId);
 
