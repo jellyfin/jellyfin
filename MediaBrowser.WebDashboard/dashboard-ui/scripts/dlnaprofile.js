@@ -75,20 +75,6 @@
         renderResponseProfiles(page, profile.ResponseProfiles);
     }
 
-    function editDirectPlayProfile(page, directPlayProfile) {
-
-        isSubProfileNew = directPlayProfile == null;
-        directPlayProfile = directPlayProfile || {};
-        currentSubProfile = directPlayProfile;
-
-        var popup = $('#popupEditDirectPlayProfile', page).popup('open');
-
-        $('#selectDirectPlayProfileType', popup).val(directPlayProfile.Type || 'Video').selectmenu('refresh').trigger('change');
-        $('#txtDirectPlayContainer', popup).val(directPlayProfile.Container || '');
-        $('#txtDirectPlayAudioCodec', popup).val(directPlayProfile.AudioCodec || '');
-        $('#txtDirectPlayVideoCodec', popup).val(directPlayProfile.VideoCodec || '');
-    }
-
     function saveDirectPlayProfile(page) {
 
         currentSubProfile.Type = $('#selectDirectPlayProfileType', page).val();
@@ -171,6 +157,22 @@
 
     }
 
+    function editDirectPlayProfile(page, directPlayProfile) {
+
+        isSubProfileNew = directPlayProfile == null;
+        directPlayProfile = directPlayProfile || {};
+        currentSubProfile = directPlayProfile;
+
+        var popup = $('#popupEditDirectPlayProfile', page);
+
+        $('#selectDirectPlayProfileType', popup).val(directPlayProfile.Type || 'Video').selectmenu('refresh').trigger('change');
+        $('#txtDirectPlayContainer', popup).val(directPlayProfile.Container || '');
+        $('#txtDirectPlayAudioCodec', popup).val(directPlayProfile.AudioCodec || '');
+        $('#txtDirectPlayVideoCodec', popup).val(directPlayProfile.VideoCodec || '');
+        
+        popup.popup('open');
+    }
+
     function renderTranscodingProfiles(page, profiles) {
 
         var html = '';
@@ -233,7 +235,7 @@
         transcodingProfile = transcodingProfile || {};
         currentSubProfile = transcodingProfile;
 
-        var popup = $('#transcodingProfilePopup', page).popup('open');
+        var popup = $('#transcodingProfilePopup', page);
 
         $('#selectTranscodingProfileType', popup).val(transcodingProfile.Type || 'Video').selectmenu('refresh').trigger('change');
         $('#txtTranscodingContainer', popup).val(transcodingProfile.Container || '');
@@ -246,6 +248,8 @@
         $('#chkReportByteRangeRequests', popup).checked(transcodingProfile.TranscodeSeekInfo == 'Bytes').checkboxradio('refresh');
 
         $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
+        
+        popup.popup('open');
     }
 
     function deleteTranscodingProfile(page, index) {
@@ -351,10 +355,14 @@
         containerProfile = containerProfile || {};
         currentSubProfile = containerProfile;
 
-        var popup = $('#containerProfilePopup', page).popup('open');
+        var popup = $('#containerProfilePopup', page);
 
         $('#selectContainerProfileType', popup).val(containerProfile.Type || 'Video').selectmenu('refresh').trigger('change');
         $('#txtContainerProfileContainer', popup).val(containerProfile.Container || '');
+
+        $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
+        
+        popup.popup('open');
     }
 
     function saveContainerProfile(page) {
@@ -447,10 +455,14 @@
         codecProfile = codecProfile || {};
         currentSubProfile = codecProfile;
 
-        var popup = $('#codecProfilePopup', page).popup('open');
+        var popup = $('#codecProfilePopup', page);
 
         $('#selectCodecProfileType', popup).val(codecProfile.Type || 'Video').selectmenu('refresh').trigger('change');
         $('#txtCodecProfileCodec', popup).val(codecProfile.Codec || '');
+
+        $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
+        
+        popup.popup('open');
     }
 
     function saveCodecProfile(page) {
@@ -525,6 +537,13 @@
             var index = this.getAttribute('data-profileindex');
             deleteResponseProfile(page, index);
         });
+
+        $('.lnkEditSubProfile', elem).on('click', function () {
+
+            var index = parseInt(this.getAttribute('data-profileindex'));
+            
+            editResponseProfile(page, currentProfile.ResponseProfiles[index]);
+        });
     }
 
     function deleteResponseProfile(page, index) {
@@ -532,7 +551,43 @@
         currentProfile.ResponseProfiles.splice(index, 1);
 
         renderResponseProfiles(page, currentProfile.ResponseProfiles);
+    }
 
+    function editResponseProfile(page, responseProfile) {
+
+        isSubProfileNew = responseProfile == null;
+        responseProfile = responseProfile || {};
+        currentSubProfile = responseProfile;
+
+        var popup = $('#responseProfilePopup', page);
+
+        $('#selectResponseProfileType', popup).val(responseProfile.Type || 'Video').selectmenu('refresh').trigger('change');
+        $('#txtResponseProfileContainer', popup).val(responseProfile.Container || '');
+        $('#txtResponseProfileAudioCodec', popup).val(responseProfile.AudioCodec || '');
+        $('#txtResponseProfileVideoCodec', popup).val(responseProfile.VideoCodec || '');
+
+        $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
+
+        popup.popup('open');
+    }
+
+    function saveResponseProfile(page) {
+
+        currentSubProfile.Type = $('#selectResponseProfileType', page).val();
+        currentSubProfile.Container = $('#txtResponseProfileContainer', page).val();
+        currentSubProfile.AudioCodec = $('#txtResponseProfileAudioCodec', page).val();
+        currentSubProfile.VideoCodec = $('#txtResponseProfileVideoCodec', page).val();
+
+        if (isSubProfileNew) {
+
+            currentProfile.ResponseProfiles.push(currentSubProfile);
+        }
+
+        renderSubProfiles(page, currentProfile);
+
+        currentSubProfile = null;
+
+        $('#responseProfilePopup', page).popup('close');
     }
 
     function saveProfile(page, profile) {
@@ -648,6 +703,22 @@
 
         });
 
+        $('#selectResponseProfileType', page).on('change', function () {
+
+            if (this.value == 'Video') {
+                $('#fldResponseProfileVideoCodec', page).show();
+            } else {
+                $('#fldResponseProfileVideoCodec', page).hide();
+            }
+
+            if (this.value == 'Photo') {
+                $('#fldResponseProfileAudioCodec', page).hide();
+            } else {
+                $('#fldResponseProfileAudioCodec', page).show();
+            }
+
+        });
+
         $('.btnAddDirectPlayProfile', page).on('click', function () {
 
             editDirectPlayProfile(page);
@@ -669,6 +740,12 @@
         $('.btnAddCodecProfile', page).on('click', function () {
 
             editCodecProfile(page);
+
+        });
+
+        $('.btnAddResponseProfile', page).on('click', function () {
+
+            editResponseProfile(page);
 
         });
 
@@ -736,6 +813,15 @@
             var page = $(form).parents('.page');
 
             saveCodecProfile(page);
+
+            return false;
+        },
+        
+        onResponseProfileFormSubmit: function() {
+            var form = this;
+            var page = $(form).parents('.page');
+
+            saveResponseProfile(page);
 
             return false;
         }

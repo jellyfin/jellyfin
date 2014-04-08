@@ -46,42 +46,41 @@
                 LibraryBrowser.renderDetailPageBackdrop(page, item);
 
                 if (user.Configuration.IsAdministrator) {
-                    $('#editButtonContainer', page).show();
+                    $('.btnEdit', page).removeClass('hide');
 
                 } else {
-                    $('#editButtonContainer', page).hide();
+                    $('.btnEdit', page).addClass('hide');
                 }
 
                 var externalPlayUrl = getExternalPlayUrl(item);
-                $('#btnPlayExternal', page).attr('href', externalPlayUrl || '#');
+                $('.btnPlayExternal', page).attr('href', externalPlayUrl || '#');
 
                 if (externalPlayUrl) {
-                    $('#playExternalButtonContainer', page).show();
-                    $('#playButtonContainer', page).hide();
+                    $('.btnPlayExternal', page).removeClass('hide');
+                    $('.btnPlay', page).addClass('hide');
                 }
                 else if (MediaController.canPlay(item)) {
-                    $('#playButtonContainer', page).show();
-                    $('#playExternalButtonContainer', page).hide();
+                    $('.btnPlay', page).removeClass('hide');
+                    $('.btnPlayExternal', page).addClass('hide');
                 }
                 else {
-                    $('#playButtonContainer', page).hide();
-                    $('#playExternalButtonContainer', page).hide();
+                    $('.btnPlay', page).addClass('hide');
+                    $('.btnPlayExternal', page).addClass('hide');
                 }
 
                 if (item.LocalTrailerCount && item.PlayAccess == 'Full') {
-                    $('#trailerButtonContainer', page).show();
+                    $('.btnPlayTrailer', page).removeClass('hide');
                 } else {
-                    $('#trailerButtonContainer', page).hide();
+                    $('.btnPlayTrailer', page).addClass('hide');
                 }
 
                 if (!item.LocalTrailerCount && item.RemoteTrailers.length && item.PlayAccess == 'Full') {
-                    $('#externalTrailerButtonContainer', page).show();
-
-                    $('#btnPlayExternalTrailer', page).attr('href', item.RemoteTrailers[0].Url);
+                    
+                    $('.btnPlayExternalTrailer', page).removeClass('hide').attr('href', item.RemoteTrailers[0].Url);
 
                 } else {
-                    $('#externalTrailerButtonContainer', page).hide();
-                    $('#btnPlayExternalTrailer', page).attr('href', '#');
+                    
+                    $('.btnPlayExternalTrailer', page).addClass('hide').attr('href', '#');
                 }
 
                 if (user.Configuration.IsAdministrator && item.MediaSources && item.MediaSources.length > 1) {
@@ -93,10 +92,10 @@
 
             if (item.LocationType == "Offline") {
 
-                $('#offlineIndicator', page).show();
+                $('.offlineIndicator', page).show();
             }
             else {
-                $('#offlineIndicator', page).hide();
+                $('.offlineIndicator', page).hide();
             }
 
             var isMissingEpisode = false;
@@ -113,10 +112,10 @@
 
             if (isMissingEpisode) {
 
-                $('#missingIndicator', page).show();
+                $('.missingIndicator', page).show();
             }
             else {
-                $('#missingIndicator', page).hide();
+                $('.missingIndicator', page).hide();
             }
 
             setPeopleHeader(page, item);
@@ -128,9 +127,7 @@
             Dashboard.hideLoadingMsg();
         });
 
-
-
-        $('#btnEdit', page).attr('href', "edititemmetadata.html?id=" + id);
+        $('.btnEdit', page).attr('href', "edititemmetadata.html?id=" + id);
     }
 
     function setPeopleHeader(page, item) {
@@ -1332,7 +1329,7 @@
 
         var page = this;
 
-        $('#btnPlay', page).on('click', function () {
+        $('.btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
 
             var mediaType = currentItem.MediaType;
@@ -1344,11 +1341,11 @@
             LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
         });
 
-        $('#btnPlayTrailer', page).on('click', function () {
+        $('.btnPlayTrailer', page).on('click', function () {
             playTrailer(page);
         });
 
-        $('#btnPlayExternal', page).on('click', function () {
+        $('.btnPlayExternal', page).on('click', function () {
 
             ApiClient.markPlayed(Dashboard.getCurrentUserId(), currentItem.Id, new Date());
         });

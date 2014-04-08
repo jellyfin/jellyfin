@@ -18,6 +18,7 @@
                     </div>
 
                     <form id="supporterKeyForm">
+					
                         <div style="margin: 1em 0;">
                             <label for="txtSupporterKey">MB3 Supporter Key (paste from email)</label>
                             <input type="password" id="txtSupporterKey" name="txtSupporterKey" data-inline="true" />
@@ -33,8 +34,9 @@
 
                         </div>
                         <div style="margin: 2em 0;">
+						
                             <label for="txtLegacyKey">MB2 Supporter Key</label>
-                            <input type="password" id="txtLegacyKey" name="txtLegacyKey" data-inline="true" />
+                            <input type="password" id="txtLegacyKey" name="txtLegacyKey" />
                             <div class="fieldDescription">
                                 Some premium plugins may give credit for registrations with previous versions in MB2.
                             </div>
@@ -42,7 +44,6 @@
                         </div>
                         <p>
                             <button type="submit" id="mbLegacyKeyBtn" data-theme="b" data-icon="check">Save</button>
-
                         </p>
                     </form>
                     <br />
@@ -52,7 +53,7 @@
                             <form id="lostKeyForm">
                                 <div style="margin: 1em 0;">
                                     <label for="txtEmail">Email Address</label>
-                                    <input type="email" required id="txtEmail" name="txtEmail" data-inline="true" />
+                                    <input type="email" required id="txtEmail" name="txtEmail" />
                                     <div class="fieldDescription">The email address that was used to purchase the key.</div>
                                 </div>
                                 <p>
@@ -73,19 +74,19 @@
                                 </p>
                                 <div style="margin: 1em 0;">
                                     <label for="txtEmail">Current Email Address</label>
-                                    <input type="email" required id="txtNewEmail" name="txtNewEmail" data-inline="true" />
+                                    <input type="email" required id="txtNewEmail" name="txtNewEmail" />
                                     <div class="fieldDescription">
                                         The current email address to which your new key was sent.
                                     </div>
                                 </div>
                                 <p>
                                     <label for="txtNewKey">New Supporter Key</label>
-                                    <input type="password" required="required" id="txtNewKey" name="txtNewKey" data-inline="true" />
+                                    <input type="password" required="required" id="txtNewKey" name="txtNewKey" />
                                 </p>
                                 <p>
 
                                     <label for="txtOldKey">Old Supporter Key</label>
-                                    <input type="password" required="required" id="txtOldKey" name="txtOldKey" data-inline="true" />
+                                    <input type="password" required="required" id="txtOldKey" name="txtOldKey" />
                                 </p>
                                 <p>
                                     <button type="submit" id="mbLinkKeysBtn" data-icon="check" data-theme="b">Link Keys</button>

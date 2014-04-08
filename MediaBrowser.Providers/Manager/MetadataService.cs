@@ -174,7 +174,7 @@ namespace MediaBrowser.Providers.Manager
             if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(item.Path))
             {
                 item.Name = Path.GetFileNameWithoutExtension(item.Path);
-                updateType = updateType | ItemUpdateType.MetadataEdit;
+                updateType = updateType | ItemUpdateType.MetadataDownload;
             }
 
             return updateType;

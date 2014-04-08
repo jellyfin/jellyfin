@@ -8,7 +8,7 @@
         <div class="libraryViewNav">
             <a href="gamesrecommended.html">${TabSuggested}</a>
             <a href="games.html" class="ui-btn-active">${TabGames}</a>
-            <a href="gamesystems.html">Game Systems</a>
+            <a href="gamesystems.html">${TabGameSystems}</a>
             <a href="gamegenres.html">${TabGenres}</a>
             <a href="gamestudios.html">${TabStudios}</a>
         </div>
@@ -36,7 +36,7 @@
                     </legend>
 
                     <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                    <label for="radioSortName">Name</label>
+                    <label for="radioSortName">${OptionNameSort}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
                     <label for="radioCommunityRating">${OptionCommunityRating}</label>
@@ -91,20 +91,20 @@
 
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>Players:</strong>
+                        <strong>${HeaderNumberOfPlayers}</strong>
                     </legend>
 
                     <input class="radioPlayers" type="radio" name="radioPlayers" id="radioAll" value="on" checked="checked" data-value="all" data-mini="true">
-                    <label for="radioAll">Any</label>
+                    <label for="radioAll">${OptionAnyNumberOfPlayers}</label>
 
                     <input class="radioPlayers" type="radio" name="radioPlayers" id="radioTwo" value="off" data-value="2" data-mini="true">
-                    <label for="radioTwo">2+</label>
+                    <label for="radioTwo">${Option2Player}</label>
 
                     <input class="radioPlayers" type="radio" name="radioPlayers" id="radioThree" value="off" data-value="3" data-mini="true">
-                    <label for="radioThree">3+</label>
+                    <label for="radioThree">${Option3Player}</label>
 
                     <input class="radioPlayers" type="radio" name="radioPlayers" id="radioFour" value="off" data-value="4" data-mini="true">
-                    <label for="radioFour">4+</label>
+                    <label for="radioFour">${Option4Player}</label>
                 </fieldset>
 
                 <fieldset data-role="controlgroup">

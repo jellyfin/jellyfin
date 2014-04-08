@@ -31,7 +31,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new TranscodingProfile
                 {
-                    Container = "mp4",
+                    Container = "ts",
                     Type = DlnaProfileType.Video,
                     AudioCodec = "aac",
                     VideoCodec = "h264",

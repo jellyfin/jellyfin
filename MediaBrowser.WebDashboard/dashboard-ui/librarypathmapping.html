@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Media Library</title>
+    <title>${TitleMediaLibrary}</title>
 </head>
 <body>
     <div id="libraryPathMappingPage" data-role="page" class="page type-interior mediaLibraryPage">
@@ -9,21 +9,21 @@
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="library.html" data-role="button">Folders</a>
-                    <a href="#" data-role="button" class="ui-btn-active">Path Substitution</a>
+                    <a href="library.html" data-role="button">${TabFolders}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabPathSubstitution}</a>
                     <a href="librarysettings.html" data-role="button">${TabAdvanced}</a>
                 </div>
 
                 <div class="readOnlyContent">
-                    <p>Path substitutions are used for mapping a path on the server to a path that clients are able to access. By allowing clients direct access to media on the server they may be able to play them directly over the network and avoid using server resources to stream and transcode them.</p>
+                    <p>${PathSubstitutionHelp}</p>
                 </div>
 
                 <table id="tblPaths" data-role="table" data-mode="reflow" class="ui-responsive">
                     <thead>
                         <tr>
                             <th></th>
-                            <th>From</th>
-                            <th>To</th>
+                            <th>${HeaderFrom}</th>
+                            <th>${HeaderTo}</th>
                         </tr>
                     </thead>
                     <tbody class="tbodyPathSubstitutions">
@@ -35,21 +35,21 @@
                 <form class="libraryPathMappingForm">
 
                     <div>
-                        <h3 class="ui-bar-a" style="padding: .7em 1em;">Add Substitution</h3>
+                        <h3 class="ui-bar-a" style="padding: .7em 1em;">${ButtonAddPathSubstitution}</h3>
                         <div>
-                            <label for="txtFrom">From:</label>
+                            <label for="txtFrom">${LabelFrom}</label>
                             <input id="txtFrom" type="text" required="required" data-mini="true" />
-                            <div class="fieldDescription">Example: D:\Movies (on the server)</div>
+                            <div class="fieldDescription">${LabelFromHelp}</div>
                         </div>
                         <br />
                         <div>
-                            <label for="txtTo">To:</label>
+                            <label for="txtTo">${LabelTo}</label>
                             <input id="txtTo" type="text" required="required" data-mini="true" />
-                            <div class="fieldDescription">Example: \\MyServer\Movies (a path clients can access)</div>
+                            <div class="fieldDescription">${LabelToHelp}</div>
                         </div>
                         <br />
                         <p>
-                            <button type="submit" data-mini="true" data-icon="plus">Add</button>
+                            <button type="submit" data-mini="true" data-icon="plus">${ButtonAdd}</button>
                         </p>
                     </div>
 

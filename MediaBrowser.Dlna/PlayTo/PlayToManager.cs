@@ -59,7 +59,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             _locations = new ConcurrentDictionary<string, DateTime>();
 
-            foreach (var network in NetworkInterface.GetAllNetworkInterfaces())
+            foreach (var network in GetNetworkInterfaces())
             {
                 _logger.Debug("Found interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
 
@@ -94,6 +94,19 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     _logger.ErrorException("Failed to Initilize Socket", e);
                 }
+            }
+        }
+
+        private IEnumerable<NetworkInterface> GetNetworkInterfaces()
+        {
+            try
+            {
+                return NetworkInterface.GetAllNetworkInterfaces();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in GetAllNetworkInterfaces", ex);
+                return new List<NetworkInterface>();
             }
         }
 

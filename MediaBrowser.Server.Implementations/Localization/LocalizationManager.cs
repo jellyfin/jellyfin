@@ -348,7 +348,8 @@ namespace MediaBrowser.Server.Implementations.Localization
                 new LocalizatonOption{ Name="Portuguese (Portugal)", Value="pt-PT"},
                 new LocalizatonOption{ Name="Russian", Value="ru"},
                 new LocalizatonOption{ Name="Spanish", Value="es"},
-                new LocalizatonOption{ Name="Spanish (Mexico)", Value="es-MX"}
+                new LocalizatonOption{ Name="Spanish (Mexico)", Value="es-MX"},
+                new LocalizatonOption{ Name="Swedish", Value="sv"}
 
             }.OrderBy(i => i.Name);
         }

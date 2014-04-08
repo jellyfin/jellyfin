@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Live TV</title>
+    <title>${TitleLiveTV}</title>
 </head>
 <body>
     <div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage">
@@ -32,7 +32,7 @@
                         </div>
 
                         <br />
-                        <h2>Tuners</h2>
+                        <h2>${HeaderTvTuners}</h2>
 
                         <table data-role="table" data-mode="reflow" class="tblTuners stripedTable ui-responsive table-stroke">
                             <thead>
@@ -52,9 +52,9 @@
 
                     <div class="noLiveTvServices" style="display: none;">
 
-                        <p>A Live TV service provider plugin is required in order to continue.</p>
+                        <p>${LiveTvPluginRequired}</p>
 
-                        <p><a href="plugincatalog.html">Please install one of our available plugins, such as ServerWmc.</a></p>
+                        <p><a href="plugincatalog.html">${LiveTvPluginRequiredHelp}</a></p>
                     </div>
                 </div>
             </div>
