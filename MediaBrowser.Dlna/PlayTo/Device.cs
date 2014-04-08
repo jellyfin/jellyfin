@@ -476,7 +476,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (service == null)
                 return;
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType))
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
