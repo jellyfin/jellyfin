@@ -3865,14 +3865,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
                 var msgData = itemId;
 
-                msgData += "|" + (params.positionTicks == null ? "" : params.positionTicks);
-                msgData += "|" + (params.isPaused == null ? "" : params.isPaused);
-                msgData += "|" + (params.isMuted == null ? "" : params.isMuted);
+                msgData += "|" + (positionTicks == null ? "" : params.positionTicks);
+                msgData += "|" + (isPaused == null ? "" : params.isPaused);
+                msgData += "|" + (isMuted == null ? "" : params.isMuted);
                 msgData += "|" + (mediaSourceId == null ? "" : mediaSourceId);
-
-                ////msgData += "|" + (params.audioStreamIndex == null ? "" : params.audioStreamIndex);
-                ////msgData += "|" + (params.subtitleStreamIndex == null ? "" : params.subtitleStreamIndex);
-                ////msgData += "|" + (params.volumeLevel == null ? "" : params.volumeLevel);
 
                 self.sendWebSocketMessage("PlaybackProgress", msgData);
 
