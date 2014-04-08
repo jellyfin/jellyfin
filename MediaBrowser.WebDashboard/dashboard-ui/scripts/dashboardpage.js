@@ -11,7 +11,7 @@
         Dashboard.showLoadingMsg();
         DashboardPage.pollForInfo(page);
         DashboardPage.startInterval();
-        
+
         $(ApiClient).on("websocketmessage", DashboardPage.onWebSocketMessage)
             .on("websocketopen", DashboardPage.onWebSocketConnectionChange)
             .on("websocketerror", DashboardPage.onWebSocketConnectionChange)
@@ -173,7 +173,7 @@
     pollForInfo: function (page) {
 
         ApiClient.getSessions().done(function (sessions) {
-            
+
             DashboardPage.renderInfo(page, sessions);
         });
     },
@@ -360,9 +360,13 @@
             return "<img src='css/images/clients/mbkinect.png' alt='MB Kinect' />";
         }
         if (clientLowered == "xbmc") {
-
             return "<img src='css/images/clients/xbmc.png' alt='Xbmc' />";
         }
+        if (clientLowered == "chromecast") {
+
+            return "<img src='css/images/chromecast/ic_media_route_on_holo_light.png' alt='Chromecast' />";
+        }
+
 
         return connection.Client;
     },

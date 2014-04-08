@@ -24,13 +24,13 @@
                 <div class="viewControls" data-role="controlgroup" data-type="horizontal">
                     <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="${ButtonSort}" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
                     <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="${ButtonFilter}" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
-                    <button data-mini="true" data-icon="check" data-inline="true" data-iconpos="notext" title="Select" class="btnToggleSelections">Select</button>
+                    <button data-mini="true" data-icon="check" data-inline="true" data-iconpos="notext" title="${ButtonSelect}" class="btnToggleSelections">${ButtonSelect}</button>
                 </div>
                 <div class="listTopPaging">
                 </div>
                 <div class="selectionCommands" style="display: none;">
                     <div data-role="controlgroup" data-type="horizontal" class="selectionCommandsControlGroup">
-                        <button class="btnMergeVersions" data-mini="true" data-icon="recycle" data-inline="true" title="Combine Versions">Group Versions</button>
+                        <button class="btnMergeVersions" data-mini="true" data-icon="recycle" data-inline="true" title="${ButtonGroupVersions}">${ButtonGroupVersions}</button>
                     </div>
                 </div>
             </div>
@@ -45,13 +45,13 @@
                     </legend>
 
                     <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSeriesSortName" value="on" checked="checked" data-sortby="SeriesSortName,SortName" data-mini="true">
-                    <label for="radioSeriesSortName">Series name</label>
+                    <label for="radioSeriesSortName">${OptionSeriesSortName}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                    <label for="radioSortName">Episode sort name</label>
+                    <label for="radioSortName">${OptionEpisodeSortName}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating,SeriesSortName,SortName" data-mini="true">
-                    <label for="radioCommunityRating">Tvdb rating</label>
+                    <label for="radioCommunityRating">${OptionTvdbRating}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated,SeriesSortName,SortName" data-mini="true">
                     <label for="radioDateCreated">${OptionDateAdded}</label>
@@ -113,13 +113,13 @@
                     <label for="chkDislikes">${OptionDislikes}</label>
 
                     <input type="checkbox" name="chkSpecialFeature" id="chkSpecialFeature" data-mini="true">
-                    <label for="chkSpecialFeature">Season 0</label>
+                    <label for="chkSpecialFeature">${OptionSpecialEpisode}</label>
 
                     <input type="checkbox" name="chkMissingEpisode" id="chkMissingEpisode" data-mini="true">
-                    <label for="chkMissingEpisode">Missing Episode</label>
+                    <label for="chkMissingEpisode">${OptionMissingEpisode}</label>
 
                     <input type="checkbox" name="chkFutureEpisode" id="chkFutureEpisode" data-mini="true">
-                    <label for="chkFutureEpisode">Unaired Episode</label>
+                    <label for="chkFutureEpisode">${OptionUnairedEpisode}</label>
 
                 </fieldset>
                 <fieldset data-role="controlgroup">

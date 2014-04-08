@@ -613,14 +613,30 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (!includeDisabled)
                 {
-                    if (!item.IsSaveLocalMetadataEnabled())
-                    {
-                        return false;
-                    }
-
                     if (options.DisabledMetadataSavers.Contains(saver.Name, StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
+                    }
+                    
+                    if (!item.IsSaveLocalMetadataEnabled())
+                    {
+                        if (updateType >= ItemUpdateType.MetadataEdit)
+                        {
+                            var fileSaver = saver as IMetadataFileSaver;
+
+                            // Manual edit occurred
+                            // Even if save local is off, save locally anyway if the metadata file already exists
+                            if (fileSaver == null || !File.Exists(fileSaver.GetSavePath(item)))
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            // Manual edit did not occur
+                            // Since local metadata saving is disabled, consider it disabled
+                            return false;
+                        }
                     }
                 }
 

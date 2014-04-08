@@ -338,6 +338,10 @@
 
         getHref: function (item, itemByNameContext) {
 
+            if (!item) {
+                throw new Error('item cannot be null');
+            }
+            
             if (item.url) {
                 return item.url;
             }

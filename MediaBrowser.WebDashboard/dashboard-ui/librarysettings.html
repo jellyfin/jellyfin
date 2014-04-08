@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Media Library</title>
+    <title>${TitleMediaLibrary}</title>
 </head>
 <body>
     <div id="librarySettingsPage" data-role="page" class="page type-interior mediaLibraryPage">
@@ -9,8 +9,8 @@
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="library.html" data-role="button">Folders</a>
-                    <a href="librarypathmapping.html" data-role="button">Path Substitution</a>
+                    <a href="library.html" data-role="button">${TabFolders}</a>
+                    <a href="librarypathmapping.html" data-role="button">${TabPathSubstitution}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabAdvanced}</a>
                 </div>
 
@@ -19,21 +19,21 @@
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <input type="checkbox" id="chkEnableRealtimeMonitor" name="chkEnableRealtimeMonitor" />
-                            <label for="chkEnableRealtimeMonitor">Enable real time monitoring</label>
+                            <label for="chkEnableRealtimeMonitor">${LabelEnableRealtimeMonitor}</label>
                             <div class="fieldDescription">
-                                Changes will be processed immediately, on supported file systems.
+                                ${LabelEnableRealtimeMonitorHelp}
                             </div>
                         </li>
                         <li>
-                            <label for="txtSeasonZeroName">Season 0 display name: </label>
+                            <label for="txtSeasonZeroName">${LabelSeasonZeroDisplayName}</label>
                             <input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" required="required" />
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">
-                                Save
+                                ${ButtonSave}
                             </button>
                             <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
                     </ul>

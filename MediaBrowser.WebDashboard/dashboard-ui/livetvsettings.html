@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Live TV</title>
+    <title>${TitleLiveTV}</title>
 </head>
 <body>
     <div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvSettingsPage">
@@ -18,16 +18,16 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="selectActiveService">Active service: </label>
+                            <label for="selectActiveService">${LabelActiveService}</label>
                             <select id="selectActiveService" data-mini="true">
                             </select>
-                            <div class="fieldDescription">Multiple tv plugins can be installed but only one can be active at a time.</div>
+                            <div class="fieldDescription">${LabelActiveServiceHelp}</div>
                         </li>
 
                         <li>
-                            <label for="selectGuideDays">Number of days of guide data to download: </label>
+                            <label for="selectGuideDays">${LabelNumberOfGuideDays}</label>
                             <select id="selectGuideDays" data-mini="true">
-                                <option value="">Auto</option>
+                                <option value="">${OptionAutomatic}</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                                 <option value="3">3</option>
@@ -36,17 +36,17 @@
                                 <option value="6">6</option>
                                 <option value="7">7</option>
                             </select>
-                            <div class="fieldDescription">Downloading more days worth of guide data provides the ability to schedule out further in advance and view more listings, but it will also take longer to download. Auto will choose based on the number of channels.</div>
+                            <div class="fieldDescription">${LabelNumberOfGuideDaysHelp}</div>
                         </li>
                     </ul>
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">
-                                Save
+                                ${ButtonSave}
                             </button>
                             <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
                     </ul>
@@ -54,9 +54,9 @@
                 </form>
                 <div class="noLiveTvServices" style="display: none;">
                     <div class="readOnlyContent" style="margin-top: 2em;">
-                        <p>A Live TV service provider plugin is required in order to continue.</p>
+                        <p>${LiveTvPluginRequired}</p>
 
-                        <p>Please <a href="plugincatalog.html">install</a> one of our available plugins, such as ServerWmc.</p>
+                        <p><a href="plugincatalog.html">${LiveTvPluginRequiredHelp}</a></p>
                     </div>
                 </div>
             </div>
