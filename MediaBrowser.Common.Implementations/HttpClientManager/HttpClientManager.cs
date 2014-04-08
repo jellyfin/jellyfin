@@ -113,11 +113,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             AddRequestHeaders(request, options);
 
             request.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
-            
+
             request.CachePolicy = options.CachePolicy == Net.HttpRequestCachePolicy.None ?
                 new RequestCachePolicy(RequestCacheLevel.BypassCache) :
                 new RequestCachePolicy(RequestCacheLevel.Revalidate);
-            
+
             request.ConnectionGroupName = GetHostFromUrl(options.Url);
             request.KeepAlive = true;
             request.Method = method;
@@ -270,18 +270,18 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                     var httpResponse = (HttpWebResponse)response;
 
-                    EnsureSuccessStatusCode(httpResponse);
+                    EnsureSuccessStatusCode(httpResponse, options);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
                     return GetResponseInfo(httpResponse, httpResponse.GetResponseStream(), GetContentLength(httpResponse));
                 }
-                
+
                 using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
                 {
                     var httpResponse = (HttpWebResponse)response;
 
-                    EnsureSuccessStatusCode(httpResponse);
+                    EnsureSuccessStatusCode(httpResponse, options);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -344,29 +344,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         private HttpException GetException(WebException ex, HttpRequestOptions options)
         {
             _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-            if (options.LogErrorResponseBody)
-            {
-                try
-                {
-                    using (var stream = ex.Response.GetResponseStream())
-                    {
-                        if (stream != null)
-                        {
-                            using (var reader = new StreamReader(stream))
-                            {
-                                var msg = reader.ReadToEnd();
-
-                                _logger.Error(msg);
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    
-                }
-            }
 
             return new HttpException(ex.Message, ex);
         }
@@ -496,7 +473,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 {
                     var httpResponse = (HttpWebResponse)response;
 
-                    EnsureSuccessStatusCode(httpResponse);
+                    EnsureSuccessStatusCode(httpResponse, options);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -686,13 +663,35 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             return exception;
         }
 
-        private void EnsureSuccessStatusCode(HttpWebResponse response)
+        private void EnsureSuccessStatusCode(HttpWebResponse response, HttpRequestOptions options)
         {
             var statusCode = response.StatusCode;
             var isSuccessful = statusCode >= HttpStatusCode.OK && statusCode <= (HttpStatusCode)299;
 
             if (!isSuccessful)
             {
+                if (options.LogErrorResponseBody)
+                {
+                    try
+                    {
+                        using (var stream = response.GetResponseStream())
+                        {
+                            if (stream != null)
+                            {
+                                using (var reader = new StreamReader(stream))
+                                {
+                                    var msg = reader.ReadToEnd();
+
+                                    _logger.Error(msg);
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+
+                    }
+                }
                 throw new HttpException(response.StatusDescription) { StatusCode = response.StatusCode };
             }
         }
