@@ -537,6 +537,10 @@ a.itemTag:hover {
     padding: 0 1em;
 }
 
+.mobileDetailButtons {
+    display: none;
+}
+
 .libraryPage ::-webkit-scrollbar {
     width: 12px;
     height: 12px;
@@ -598,7 +602,7 @@ a.itemTag:hover {
 }
 
 .libraryPanelHeader {
-    margin: 10px 0 20px 0;
+    margin: 5px 0 25px 0;
 }
 
     .libraryPanelHeader a {
@@ -722,11 +726,11 @@ a.itemTag:hover {
         margin-top: 0;
     }
 
-    .mobileOverview, .mobileGenres {
+    .mobileOverview, .mobileGenres, .mobileDetailButtons {
         display: block;
     }
 
-    .desktopOverview, .desktopGenres {
+    .desktopOverview, .desktopGenres, .desktopDetailButtons {
         display: none;
     }
 

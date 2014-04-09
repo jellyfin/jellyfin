@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard</title>
+    <title>${TitleDashboard}</title>
 </head>
 <body>
     <div id="dashboardInfoPage" data-role="page" class="page type-interior adminPage dashboardHomePage">
@@ -11,22 +11,22 @@
                 <div class="readOnlyContent">
 
                     <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                        <a href="dashboard.html" data-role="button">Home</a>
+                        <a href="dashboard.html" data-role="button">${TabHome}</a>
                         <a href="dashboardgeneral.html" data-role="button">${TabGeneral}</a>
-                        <a href="#" data-role="button" class="ui-btn-active">Info</a>
+                        <a href="#" data-role="button" class="ui-btn-active">${TabInfo}</a>
                     </div>
 
                     <div data-role="collapsible" data-collapsed="false" style="margin-top: 1em;">
-                        <h3>Links</h3>
+                        <h3>${HeaderLinks}</h3>
                         <div>
-                            <p><a href="http://mediabrowser3.com/community" target="_blank">Community</a> - Join us!</p>
-                            <p><a href="https://github.com/MediaBrowser/MediaBrowser" target="_blank">Github</a></p>
-                            <p><a href="../swagger-ui/index.html" target="_blank">Api Documentation</a></p>
+                            <p><a href="http://mediabrowser3.com/community" target="_blank">${LinkCommunity}</a></p>
+                            <p><a href="https://github.com/MediaBrowser/MediaBrowser" target="_blank">${LinkGithub}</a></p>
+                            <p><a href="../swagger-ui/index.html" target="_blank">${LinkApiDocumentation}</a></p>
                         </div>
                     </div>
 
                     <div data-role="collapsible" data-collapsed="false" style="margin-top: 1em;">
-                        <h3>System Paths</h3>
+                        <h3>${HeaderSystemPaths}</h3>
                         <div>
                             <p><b>Cache:</b> <span id="cachePath"></span></p>
                             <p><b>Images by name:</b> <span id="imagesByNamePath"></span></p>

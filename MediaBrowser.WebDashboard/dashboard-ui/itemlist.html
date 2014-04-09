@@ -11,15 +11,15 @@
 
             <h1 class="listHeader" style="margin: 0; text-align: center;"><span id="itemName"></span>
                 <span id="editButtonContainer" style="display: none; margin-left: .5em;">
-                    <button id="btnEdit" type="button" data-icon="edit" data-inline="true" data-mini="true">Edit</button>
+                    <button id="btnEdit" type="button" data-icon="edit" data-inline="true" data-mini="true">${ButtonEdit}</button>
                 </span>
             </h1>
             <div class="viewSettings">
                 <div class="viewControls">
                     <div style="display: inline-block;">
                         <select data-mini="true" data-inline="true" id="selectView" name="selectView">
-                            <option value="Backdrop">Backdrop</option>
-                            <option value="Poster">Poster</option>
+                            <option value="Backdrop">${OptionBackdrop}</option>
+                            <option value="Poster">${OptionPoster}</option>
                         </select>
                     </div>
                 </div>
@@ -41,7 +41,7 @@
                     </legend>
 
                     <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                    <label for="radioSortName">Name</label>
+                    <label for="radioSortName">${OptionNameSort}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
                     <label for="radioCommunityRating">${OptionCommunityRating}</label>
@@ -62,7 +62,7 @@
                     <label for="radioRuntime">${OptionRuntime}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioIsFolder" value="off" data-sortby="IsFolder,SortName" data-mini="true">
-                    <label for="radioIsFolder">Folders</label>
+                    <label for="radioIsFolder">${OptionFolderSort}</label>
                 </fieldset>
 
                 <fieldset data-role="controlgroup">

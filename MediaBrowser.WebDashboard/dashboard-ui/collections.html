@@ -16,30 +16,30 @@
                 </div>
                 <div class="listTopPaging">
                 </div>
-                <button id="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" class="hide">New</button>
+                <button id="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" class="hide">${ButtonNew}</button>
             </div>
             <div id="items" class="itemsContainer"></div>
         </div>
         <div data-role="panel" id="newCollectionPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
             <form class="newCollectionForm">
 
-                <h3>New Collection</h3>
+                <h3>${HeaderNewCollection}</h3>
 
                 <br />
                 <div>
-                    <label for="txtNewCollectionName">Name:</label>
+                    <label for="txtNewCollectionName">${LabelName}</label>
                     <input type="text" id="txtNewCollectionName" required="required" />
-                    <div class="fieldDescription">Example: Star Wars Collection</div>
+                    <div class="fieldDescription">${NewCollectionNameExample}</div>
                 </div>
 
                 <br />
                 <div>
-                    <label for="chkEnableInternetMetadata">Search the internet for artwork and metadata</label>
+                    <label for="chkEnableInternetMetadata">${OptionSearchForInternetMetadata}</label>
                     <input type="checkbox" id="chkEnableInternetMetadata" data-mini="true" />
                 </div>
                 <br />
                 <p>
-                    <button id="btnSubmitNewCollection" type="submit" data-icon="plus" data-mini="true" data-theme="b">Create</button>
+                    <button id="btnSubmitNewCollection" type="submit" data-icon="plus" data-mini="true" data-theme="b">${ButtonCreate}</button>
                 </p>
             </form>
         </div>
@@ -49,11 +49,12 @@
             <form>
                 <div id="sortpanel">
                     <fieldset data-role="controlgroup">
-                        <legend>Sort By:
+                        <legend>
+                            <strong>${HeaderSortBy}</strong>
                         </legend>
 
                         <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                        <label for="radioSortName">Name</label>
+                        <label for="radioSortName">${OptionNameSort}</label>
 
                         <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
                         <label for="radioCommunityRating">${OptionCommunityRating}</label>
@@ -63,7 +64,8 @@
                     </fieldset>
 
                     <fieldset data-role="controlgroup">
-                        <legend>Sort Order:
+                        <legend>
+                            <strong>${HeaderSortOrder}</strong>
                         </legend>
 
                         <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">

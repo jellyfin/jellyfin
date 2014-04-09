@@ -85,7 +85,7 @@
             <div class="libraryViewNav">
                 <a href="gamesrecommended.html">${TabSuggested}</a>
                 <a href="games.html">${TabGames}</a>
-                <a href="gamesystems.html" class="ui-btn-active">Game Systems</a>
+                <a href="gamesystems.html" class="ui-btn-active">${TabGameSystems}</a>
                 <a href="gamegenres.html">${TabGenres}</a>
                 <a href="gamestudios.html">${TabStudios}</a>
             </div>
@@ -109,35 +109,38 @@
                             <p id="artist"></p>
                             <p class="itemGenres desktopGenres"></p>
                             <p class="itemOverview desktopOverview"></p>
-                            <div class="detailButtonsContainer" style="text-align: left;">
-                                <span id="missingIndicator" style="margin-left: .5em; display: none;">
-                                    <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">MISSING</span>
+                            <div class="detailButtonsContainer desktopDetailButtons" style="text-align: left;">
+                                <span class="missingIndicator" style="margin-left: .5em; display: none;">
+                                    <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelMissing}</span>
                                 </span>
-                                <span id="offlineIndicator" style="margin-left: .5em; display: none;">
-                                    <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">OFFLINE</span>
+                                <span class="offlineIndicator" style="margin-left: .5em; display: none;">
+                                    <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelOffline}</span>
                                 </span>
-                                <span id="playButtonContainer" style="display: none;">
-                                    <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
-                                </span>
-                                <span id="trailerButtonContainer" style="display: none;">
-                                    <button id="btnPlayTrailer" type="button" data-icon="video" data-inline="true" data-mini="true">Trailer</button>
-                                </span>
-                                <span id="externalTrailerButtonContainer" style="display: none;">
-                                    <a id="btnPlayExternalTrailer" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">Trailer</a>
-                                </span>
-                                <span id="playExternalButtonContainer" style="display: none;">
-                                    <a id="btnPlayExternal" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
-                                </span>
-                                <span id="editButtonContainer" style="display: none;">
-                                    <a id="btnEdit" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">Edit</a>
-                                </span>
+                                <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+                                <button class="btnPlayTrailer hide" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonPlayTrailer}</button>
+                                <a class="btnPlayExternalTrailer hide" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlayTrailer}</a>
+                                <a class="btnPlayExternal hide" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
+                                <a class="btnEdit hide" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">${ButtonEdit}</a>
                             </div>
                         </td>
                     </tr>
                 </table>
+                <div class="detailButtonsContainer mobileDetailButtons">
+                    <span class="missingIndicator" style="margin-left: .5em; display: none;">
+                        <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelMissing}</span>
+                    </span>
+                    <span class="offlineIndicator" style="margin-left: .5em; display: none;">
+                        <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelOffline}</span>
+                    </span>
+                    <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+                    <button class="btnPlayTrailer hide" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonPlayTrailer}</button>
+                    <a class="btnPlayExternalTrailer hide" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlayTrailer}</a>
+                    <a class="btnPlayExternal hide" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
+                    <a class="btnEdit hide" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">${ButtonEdit}</a>
+                </div>
             </div>
-            <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide" data-role="button" title="Previous" data-icon="carat-l" data-mini="true" data-inline="true" data-iconpos="notext">Previous</a>
-            <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide" data-role="button" title="Next" data-icon="carat-r" data-mini="true" data-inline="true" data-iconpos="notext">Next</a>
+            <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide" data-role="button" title="${ButtonPrevious}" data-icon="carat-l" data-mini="true" data-inline="true" data-iconpos="notext">${ButtonPrevious}</a>
+            <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide" data-role="button" title="${ButtonNext}" data-icon="carat-r" data-mini="true" data-inline="true" data-iconpos="notext">${ButtonNext}</a>
             <p class="itemGenres mobileGenres"></p>
             <p class="itemOverview mobileOverview"></p>
         </div>
@@ -162,7 +165,7 @@
                         <div class="detailTab tabMediaInfo">
 
                             <div class="splitVersionContainer" style="border-bottom: 1px solid #444;">
-                                <button type="button" class="btnSplitVersions" data-mini="true" data-inline="true" data-icon="delete" title="Split Versions Apart">Split Versions Apart</button>
+                                <button type="button" class="btnSplitVersions" data-mini="true" data-inline="true" data-icon="delete" title="${ButtonSplitVersionsApart}">${ButtonSplitVersionsApart}</button>
                             </div>
                             <div id="mediaInfoContent"></div>
 
@@ -184,43 +187,42 @@
                 </div>
                 <div id="additionalPartsCollapsible" class="detailSection hide">
                     <div class="detailSectionHeader">
-                        Additional Parts
+                        ${HeaderAdditionalParts}
                     </div>
                     <div id="additionalPartsContent" class="detailSectionContent"></div>
                 </div>
                 <div id="castCollapsible" style="display: none;" class="detailSection">
                     <div id="peopleHeader" class="detailSectionHeader">
-                        Cast & Crew
+                        ${HeaderCastCrew}
                     </div>
                     <div id="castContent" class="detailSectionContent"></div>
                 </div>
                 <div id="specialsCollapsible" class="detailSection hide">
                     <div class="detailSectionHeader">
-                        Special Features
+                        ${HeaderSpecialFeatures}
                     </div>
                     <div id="specialsContent" class="detailSectionContent"></div>
                 </div>
                 <div id="musicVideosCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
-                        Music Videos
+                        ${HeaderMusicVideos}
                     </div>
                     <div id="musicVideosContent" class="detailSectionContent"></div>
                 </div>
                 <div id="soundtracksCollapsible" style="display: none;" class="detailSection">
                     <div id="soundtracksHeader" class="detailSectionHeader">
-                        Soundtracks
+                        ${HeaderSoundtracks}
                     </div>
                     <div id="soundtracksContent" class="detailSectionContent"></div>
                 </div>
                 <div id="similarCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
-                        Similar
                     </div>
                     <div id="similarContent" class="detailSectionContent"></div>
                 </div>
                 <div id="criticReviewsCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
-                        Awards and Reviews
+                        ${HeaderAwardsAndReviews}
                     </div>
                     <div style="padding: 0 .5em;">
                         <p id="awardSummary"></p>
@@ -237,20 +239,20 @@
                 </div>
                 <div id="scenesCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
-                        Scenes
+                        ${HeaderScenes}
                     </div>
                     <div id="scenesContent" class="detailSectionContent"></div>
                 </div>
                 <div id="themeSongsCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
-                        Theme Songs
+                        ${HeaderThemeSongs}
                     </div>
                     <div id="themeSongsContent" class="detailSectionContent"></div>
                 </div>
 
                 <div id="themeVideosCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
-                        Theme Videos
+                        ${HeaderThemeVideos}
                     </div>
                     <div id="themeVideosContent" class="detailSectionContent"></div>
                 </div>

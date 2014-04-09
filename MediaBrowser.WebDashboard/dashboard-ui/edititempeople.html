@@ -16,13 +16,13 @@
                 <h1 class="itemName editPageName">&nbsp;</h1>
                 <br />
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" id="btnEditMetadata">Metadata</a>
+                    <a href="#" data-role="button" id="btnEditMetadata">${TabMetadata}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabPeople}</a>
-                    <a id="btnEditCollectionTitles" style="display: none;" href="#" data-role="button">Titles</a>
-                    <a href="#" data-role="button" id="btnEditImages">Images</a>
+                    <a id="btnEditCollectionTitles" style="display: none;" href="#" data-role="button">${TabCollectionTitles}</a>
+                    <a href="#" data-role="button" id="btnEditImages">${TabImages}</a>
                 </div>
                 <div id="divAddPerson" style="display: none;">
-                    <button type="button" data-icon="plus" data-inline="true" data-mini="true" onclick="EditItemPeoplePage.addPerson();">Add Person</button>
+                    <button type="button" data-icon="plus" data-inline="true" data-mini="true" onclick="EditItemPeoplePage.addPerson();">${ButtonAdd}</button>
                 </div>
                 <div class="itemsContainer" id="peopleContainer" style="text-align: left;"></div>
             </div>

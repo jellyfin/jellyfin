@@ -299,7 +299,6 @@ h1 .imageLink {
     padding: .75em .5em .75em 1.25em;
     display: block;
     text-decoration: none;
-    font-size: 14px;
     color: #fff!important;
     font-weight: normal !important;
 }
@@ -327,7 +326,7 @@ h1 .imageLink {
 }
 
 .appLinks img {
-    height: 30px;
+    height: 32px;
 }
 
 .activeDevicesCollapsible .ui-collapsible-content {

@@ -17,19 +17,19 @@
                 <h1 class="itemName editPageName">&nbsp;</h1>
                 <br />
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" id="btnEditMetadata">Metadata</a>
+                    <a href="#" data-role="button" id="btnEditMetadata">${TabMetadata}</a>
                     <a id="btnEditPeople" style="display: none;" href="#" data-role="button">${TabPeople}</a>
-                    <a href="#" data-role="button" class="ui-btn-active">Titles</a>
-                    <a id="btnEditImages" href="#" data-role="button">Images</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabCollectionTitles}</a>
+                    <a id="btnEditImages" href="#" data-role="button">${TabImages}</a>
                 </div>
 
                 <p style="margin-top: -20px;">
-                    Add or remove any movies, series, albums, books or games you wish to group within this collection.
+                    ${EditCollectionItemsHelp}
                 </p>
 
                 <div>
-                    <button type="button" id="btnAddItem" data-icon="plus" data-inline="true" data-mini="true">Add</button>
-                    <button type="button" id="btnRemoveItems" data-icon="delete" data-inline="true" data-mini="true" disabled="disabled">Remove</button>
+                    <button type="button" id="btnAddItem" data-icon="plus" data-inline="true" data-mini="true">${ButtonAdd}</button>
+                    <button type="button" id="btnRemoveItems" data-icon="delete" data-inline="true" data-mini="true" disabled="disabled">${ButtonRemove}</button>
                 </div>
                 <br />
                 <div class="collectionItems"></div>
@@ -39,7 +39,7 @@
         <div data-role="popup" data-transition="slidefade" class="popupIdentify popup" data-theme="a">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>Add Titles
+                <h3>${HeaderAddTitles}
                 </h3>
             </div>
 
@@ -48,14 +48,14 @@
                 <form class="collectionItemSearchForm" style="max-width: initial;">
 
                     <div>
-                        <label for="txtLookupName">Name:</label>
+                        <label for="txtLookupName">${LabelName}</label>
 
                         <div style="display: inline-block; width: 75%;">
                             <input type="text" id="txtLookupName" data-mini="true" required="required" />
                         </div>
 
                         <button type="submit" data-icon="search" data-mini="true" data-inline="true" data-iconpos="notext">
-                            Search
+                            ${ButtonSearch}
                         </button>
                     </div>
 
@@ -63,7 +63,7 @@
                     </div>
 
                     <button id="btnAddItems" type="button" data-icon="plus" data-mini="true">
-                        Add
+                        ${ButtonAdd}
                     </button>
                 </form>
             </div>

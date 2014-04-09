@@ -91,6 +91,8 @@ namespace MediaBrowser.Providers.TV
                 .Where(i => i.Item1 != -1 && i.Item2 != -1)
                 .ToList();
 
+            var hasBadData = HasInvalidContent(group);
+
             var anySeasonsRemoved = await RemoveObsoleteOrMissingSeasons(group, episodeLookup, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -105,7 +107,7 @@ namespace MediaBrowser.Providers.TV
                 hasNewSeasons = await AddDummySeasonFolders(series, cancellationToken).ConfigureAwait(false);
             }
 
-            if (_config.Configuration.EnableInternetProviders)
+            if (!hasBadData && _config.Configuration.EnableInternetProviders)
             {
                 var seriesConfig = _config.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, typeof(Series).Name, StringComparison.OrdinalIgnoreCase));
 
@@ -128,6 +130,20 @@ namespace MediaBrowser.Providers.TV
                         .ConfigureAwait(false);
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns true if a series has any seasons or episodes without season or episode numbers
+        /// If this data is missing no virtual items will be added in order to prevent possible duplicates
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        private bool HasInvalidContent(IEnumerable<Series> group)
+        {
+            var allItems = group.ToList().SelectMany(i => i.RecursiveChildren).ToList();
+
+            return allItems.OfType<Season>().Any(i => !i.IndexNumber.HasValue) ||
+                   allItems.OfType<Episode>().Any(i => !i.IndexNumber.HasValue || !i.ParentIndexNumber.HasValue);
         }
 
         /// <summary>
