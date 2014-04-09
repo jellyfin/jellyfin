@@ -220,11 +220,31 @@ function humane_elapsed(firstDateStr, secondDateStr) {
 
 }
 
+function getWindowUrl(win) {
+    return (win || window).location.href;
+}
+
+function getWindowLocationSearch(win) {
+
+    var search = (win || window).location.search;
+
+    if (!search) {
+
+        var index = window.location.href.indexOf('?');
+        if (index != -1) {
+            search = window.location.href.substring(index);
+        }
+    }
+    alert();
+    return search || '';
+}
+
 function getParameterByName(name, url) {
     name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
     var regexS = "[\\?&]" + name + "=([^&#]*)";
     var regex = new RegExp(regexS, "i");
-    var results = regex.exec(url || window.location.search);
+
+    var results = regex.exec(url || getWindowLocationSearch());
     if (results == null)
         return "";
     else

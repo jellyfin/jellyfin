@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard</title>
+    <title>${TitleDashboard}</title>
 </head>
 <body>
     <div id="dashboardGeneralPage" data-role="page" class="page type-interior adminPage dashboardHomePage">
@@ -10,33 +10,38 @@
             <div class="content-primary">
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="dashboard.html" data-role="button">Home</a>
+                    <a href="dashboard.html" data-role="button">${TabHome}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabGeneral}</a>
-                    <a href="dashboardinfopage.html" data-role="button">Info</a>
+                    <a href="dashboardinfopage.html" data-role="button">${TabInfo}</a>
                 </div>
 
                 <form class="dashboardGeneralForm">
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="txtServerName">Friendly server name:</label>
+                            <label for="txtServerName">${LabelFriendlyServerName}</label>
                             <input id="txtServerName" data-mini="true" />
-                            <div class="fieldDescription">This name will be used to identify this server. If left blank, the computer name will be used.</div>
+                            <div class="fieldDescription">${LabelFriendlyServerNameHelp}</div>
                         </li>
                         <li>
-                            <label for="selectLocalizationLanguage">Preferred display language</label>
+                            <label for="selectLocalizationLanguage">${LabelPreferredDisplayLanguage}</label>
                             <select id="selectLocalizationLanguage" data-mini="true">
                             </select>
-                            <div class="fieldDescription">Translating Media Browser is an ongoing project and is not yet complete. <a href="http://mediabrowser3.com/community/index.php?/topic/5727-join-our-translation-team/" target="_blank">Read about how you can contribute</a>.</div>
+                            <div class="fieldDescription">
+                                <div>${LabelPreferredDisplayLanguageHelp}</div>
+                                <div>
+                                    <a href="http://mediabrowser3.com/community/index.php?/topic/5727-join-our-translation-team/" target="_blank">${LabelReadHowYouCanContribute}</a>
+                                </div>
+                            </div>
                         </li>
                     </ul>
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                                Save
+                                ${ButtonSave}
                             </button>
                             <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
 

@@ -11,33 +11,33 @@
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabSettings}</a>
-                    <a href="dlnaprofiles.html" data-role="button">Profiles</a>
+                    <a href="dlnaprofiles.html" data-role="button">${TabProfiles}</a>
                 </div>
 
                 <form class="dlnaSettingsForm">
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="chkEnablePlayTo">Enable DLNA Play To</label>
+                            <label for="chkEnablePlayTo">${LabelEnableDlnaPlayTo}</label>
                             <input type="checkbox" id="chkEnablePlayTo" data-mini="true" />
-                            <div class="fieldDescription">Media Browser can detect devices within your network and offer the ability to remote control them.</div>
+                            <div class="fieldDescription">${LabelEnableDlnaPlayToHelp}</div>
                         </li>
                         <li>
-                            <label for="chkEnableDlnaDebugLogging">Enable DLNA debug logging</label>
+                            <label for="chkEnableDlnaDebugLogging">${LabelEnableDlnaDebugLogging}</label>
                             <input type="checkbox" id="chkEnableDlnaDebugLogging" data-mini="true" />
-                            <div class="fieldDescription">This will create large log files and should only be used as needed for troubleshooting purposes.</div>
+                            <div class="fieldDescription">${LabelEnableDlnaDebugLoggingHelp}</div>
                         </li>
                         <li>
-                            <label for="txtClientDiscoveryInterval">Client discovery interval (seconds)</label>
+                            <label for="txtClientDiscoveryInterval">${LabelEnableDlnaClientDiscoveryInterval}</label>
                             <input type="number" id="txtClientDiscoveryInterval" data-mini="true" min="1" max="300" />
-                            <div class="fieldDescription">Determines the duration in seconds of the interval between SSDP searches performed by Media Browser.</div>
+                            <div class="fieldDescription">${LabelEnableDlnaClientDiscoveryIntervalHelp}</div>
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">
-                                Save
+                                ${ButtonSave}
                             </button>
                             <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
                     </ul>

@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>App Settings</title>
+    <title>${TitleAppSettings}</title>
 </head>
 <body>
     <div id="appsWeatherPage" data-role="page" class="page appsPage type-interior">
@@ -9,8 +9,8 @@
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="appsplayback.html" data-role="button">Resume</a>
-                    <a href="#" data-role="button" class="ui-btn-active">Weather</a>
+                    <a href="appsplayback.html" data-role="button">${TabResume}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabWeather}</a>
                 </div>
                 <form class="appsWeatherForm">
 
@@ -31,10 +31,10 @@
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">
-                                Save
+                                ${ButtonSave}
                             </button>
                             <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
                     </ul>
