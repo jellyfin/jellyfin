@@ -235,7 +235,7 @@ function getWindowLocationSearch(win) {
             search = window.location.href.substring(index);
         }
     }
-    alert();
+
     return search || '';
 }
 
