@@ -174,6 +174,22 @@
                     return p.isDefaultPlayer;
                 })[0];
         };
+
+        self.pause = function () {
+            currentPlayer.pause();
+        };
+
+        self.stop = function () {
+            currentPlayer.stop();
+        };
+
+        self.unpause = function () {
+            currentPlayer.unpause();
+        };
+
+        self.seek = function (position) {
+            self.changeStream(position);
+        };
     }
 
     window.MediaController = new mediaController();

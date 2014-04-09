@@ -66,6 +66,17 @@
 
         this.hasReceivers = false;
 
+        this.currentMediaOffset = 0;
+
+        // Progress bar element id
+        this.progressBar = "positionSlider";
+
+        // Timec display element id
+        this.duration = "currentTime";
+
+        // Playback display element id
+        this.playback = "playTime";
+
         this.initializeCastPlayer();
     };
 
@@ -617,6 +628,8 @@
             return;
         }
 
+        this.currentMediaOffset = startTimeTicks;
+
         var maxBitrate = 12000000;
         var mediaInfo = getMediaSourceInfo(user, item, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
 
@@ -653,40 +666,62 @@
 
         console.log("chromecast new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
         this.currentMediaSession = mediaSession;
+        this.currentMediaTime = this.session.media[0].currentTime;
+
         if (how == 'loadMedia') {
             this.castPlayerState = PLAYER_STATE.PLAYING;
+            clearInterval(this.timer);
+            this.startProgressTimer(this.incrementMediaTime);
         }
 
         if (how == 'activeSession') {
             this.castPlayerState = this.session.media[0].playerState;
-            this.currentMediaTime = this.session.media[0].currentTime;
         }
 
         if (this.castPlayerState == PLAYER_STATE.PLAYING) {
             // start progress timer
-            //this.startProgressTimer(this.incrementMediaTime);
+            this.startProgressTimer(this.incrementMediaTime);
         }
 
         this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
+        this.currentMediaDuration = this.currentMediaSession.media.duration;
 
-        //this.currentMediaDuration = this.currentMediaSession.media.duration;
-        //var duration = this.currentMediaDuration;
-        //var hr = parseInt(duration / 3600);
-        //duration -= hr * 3600;
-        //var min = parseInt(duration / 60);
-        //var sec = parseInt(duration % 60);
-        //if (hr > 0) {
-        //    duration = hr + ":" + min + ":" + sec;
-        //}
-        //else {
-        //    if (min > 0) {
-        //        duration = min + ":" + sec;
-        //    }
-        //    else {
-        //        duration = sec;
-        //    }
-        //}
-        //document.getElementById("duration").innerHTML = duration;
+        var playTime = document.getElementById(this.playback);
+        if (!playTime) {
+            // Set duration time
+            var totalTime = document.getElementById(this.duration);
+            totalTime.innerHTML = " / " + formatTime(this.currentMediaDuration);
+
+            // Set play time
+            playTime = document.createElement("div");
+            playTime.id = this.playback;
+            playTime.className = "currentTime";
+            playTime.style.marginRight = "5px";
+            totalTime.parentNode.insertBefore(playTime, totalTime);
+            playTime.innerHTML = formatTime(this.currentMediaTime);
+        }
+    };
+
+    function formatTime(duration) {
+        var hr = parseInt(duration / 3600);
+        duration -= hr * 3600;
+        var min = parseInt(duration / 60);
+        var sec = parseInt(duration % 60);
+
+        hr = "" + hr;
+        min = "" + min;
+        sec = "" + sec;
+        var hh = pad(hr);
+        var mm = pad(min);
+        var ss = pad(sec);
+
+        duration = hh + ":" + mm + ":" + ss;
+
+        return duration;
+    };
+
+    function pad(s) {
+        return "00".substring(0, 2 - s.length) + s;
     };
 
     /**
@@ -707,7 +742,7 @@
             this.castPlayerState = PLAYER_STATE.IDLE;
         }
         console.log("chromecast updating media");
-        //this.updateProgressBar(e);
+        this.updateProgressBarByTimer();
     };
 
     /**
@@ -745,6 +780,7 @@
                 this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
                 this.castPlayerState = PLAYER_STATE.PLAYING;
                 // start progress timer
+                clearInterval(this.timer);
                 this.startProgressTimer(this.incrementMediaTime);
                 break;
             case PLAYER_STATE.IDLE:
@@ -850,18 +886,9 @@
      */
     CastPlayer.prototype.seekMedia = function (event) {
         var pos = parseInt(event.offsetX);
-        var pi = document.getElementById("progress_indicator");
-        var p = document.getElementById("progress");
-        if (event.currentTarget.id == 'progress_indicator') {
-            var curr = parseInt(this.currentMediaTime + this.currentMediaDuration * pos / PROGRESS_BAR_WIDTH);
-            var pp = parseInt(pi.style.marginLeft) + pos;
-            var pw = parseInt(p.style.width) + pos;
-        }
-        else {
-            var curr = parseInt(pos * this.currentMediaDuration / PROGRESS_BAR_WIDTH);
-            var pp = pos - 21 - PROGRESS_BAR_WIDTH;
-            var pw = pos;
-        }
+        var p = document.getElementById(this.progressBar);
+        var curr = parseInt(this.currentMediaTime + this.currentMediaDuration * pos);
+        var pw = parseInt(p.value) + pos;
 
         if (this.castPlayerState != PLAYER_STATE.PLAYING && this.castPlayerState != PLAYER_STATE.PAUSED) {
             return;
@@ -899,20 +926,16 @@
      * @param {Object} e An media status update object 
      */
     CastPlayer.prototype.updateProgressBar = function (e) {
-        var p = document.getElementById("progress");
-        var pi = document.getElementById("progress_indicator");
+        var p = document.getElementById(this.progressBar);
         if (e.idleReason == 'FINISHED' && e.playerState == 'IDLE') {
-            p.style.width = '0px';
-            pi.style.marginLeft = -21 - PROGRESS_BAR_WIDTH + 'px';
+            p.value = 0;
             clearInterval(this.timer);
             this.castPlayerState = PLAYER_STATE.STOPPED;
         }
         else {
-            p.style.width = Math.ceil(PROGRESS_BAR_WIDTH * e.currentTime / this.currentMediaSession.media.duration + 1) + 'px';
+            p.value = Number(e.currentTime / this.currentMediaSession.media.duration + 1).toFixed(3);
             this.progressFlag = false;
             setTimeout(this.setProgressFlag.bind(this), 1000); // don't update progress in 1 second
-            var pp = Math.ceil(PROGRESS_BAR_WIDTH * e.currentTime / this.currentMediaSession.media.duration);
-            pi.style.marginLeft = -21 - PROGRESS_BAR_WIDTH + pp + 'px';
         }
     };
 
@@ -928,47 +951,73 @@
      * Update progress bar based on timer  
      */
     CastPlayer.prototype.updateProgressBarByTimer = function () {
-        var p = document.getElementById("progress");
-        if (isNaN(parseInt(p.style.width))) {
-            p.style.width = 0;
+        var p = document.getElementById(this.progressBar);
+        if (isNaN(parseInt(p.value))) {
+            p.value = 0;
         }
+
         if (this.currentMediaDuration > 0) {
-            var pp = Math.floor(PROGRESS_BAR_WIDTH * this.currentMediaTime / this.currentMediaDuration);
+            var pp = Number(this.currentMediaTime / this.currentMediaDuration).toFixed(3);
+            var startTime = this.currentMediaOffset / 10000000;
+            document.getElementById(this.playback).innerHTML = formatTime(startTime + this.currentMediaTime);
         }
 
         if (this.progressFlag) {
             // don't update progress if it's been updated on media status update event
-            p.style.width = pp + 'px';
-            var pi = document.getElementById("progress_indicator");
-            pi.style.marginLeft = -21 - PROGRESS_BAR_WIDTH + pp + 'px';
+            p.value = pp;
         }
 
-        if (pp > PROGRESS_BAR_WIDTH) {
+        if (pp > 100) {
             clearInterval(this.timer);
             this.deviceState = DEVICE_STATE.IDLE;
             this.castPlayerState = PLAYER_STATE.IDLE;
         }
     };
 
+    /**
+    * @param {function} A callback function for the fucntion to start timer 
+    */
+    CastPlayer.prototype.startProgressTimer = function(callback) {
+        if(this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+
+        // start progress timer
+        this.timer = setInterval(callback.bind(this), this.timerStep);
+    };
+
     var castPlayer = new CastPlayer();
 
-    function chromecastPlayer() {
+    function chromecastPlayer(castPlayer) {
 
         var self = this;
 
         self.name = PlayerName;
 
+        self.isPaused = false;
+
         self.play = function (options) {
 
-            if (options.items) {
+            $("#nowPlayingBar", "#footer").show();
 
+            if (self.isPaused) {
+
+                console.log("unpause");
+                self.isPaused = !self.isPaused;
+                castPlayer.playMedia();
+
+            } else if (options.items) {
+
+                console.log("play1", options);
                 Dashboard.getCurrentUser().done(function (user) {
 
-                    castPlayer.loadMedia(user, options.items[0], options.startTimeTicks);
+                    castPlayer.loadMedia(user, options.items[0], options.startPositionTicks);
                 });
 
             } else {
 
+                console.log("play2");
                 var userId = Dashboard.getCurrentUserId();
 
                 var query = {};
@@ -988,6 +1037,18 @@
 
         };
 
+        self.unpause = function () {
+            console.log("unpause");
+            self.isPaused = !self.isPaused;
+            castPlayer.playMedia();
+        };
+
+        self.pause = function () {
+            console.log("pause");
+            self.isPaused = true;
+            castPlayer.pauseMedia();
+        };
+
         self.shuffle = function (id) {
             self.play({ ids: [id] });
         };
@@ -1005,7 +1066,9 @@
         };
 
         self.stop = function () {
-            castPlayer.stop();
+            console.log("stop");
+            $("#nowPlayingBar", "#footer").hide();
+            castPlayer.stopMedia();
         };
 
         self.canQueueMediaType = function (mediaType) {
@@ -1051,9 +1114,37 @@
                 appName: appName
             };
         };
+
+        self.setCurrentTime = function (ticks, item, updateSlider) {
+
+            // Convert to ticks
+            ticks = Math.floor(ticks);
+
+            var timeText = Dashboard.getDisplayTime(ticks);
+
+            if (self.currentDurationTicks) {
+
+                timeText += " / " + Dashboard.getDisplayTime(self.currentDurationTicks);
+
+                if (updateSlider) {
+                    var percent = ticks / self.currentDurationTicks;
+                    percent *= 100;
+
+                    self.positionSlider.val(percent).slider('enable').slider('refresh');
+                }
+            } else {
+                self.positionSlider.slider('disable').slider('refresh');
+            }
+
+            self.currentTimeElement.html(timeText);
+        };
+
+        self.changeStream = function (position) {
+            console.log("seek", position);
+        };
     }
 
-    MediaController.registerPlayer(new chromecastPlayer());
+    MediaController.registerPlayer(new chromecastPlayer(castPlayer));
 
     $(MediaController).on('playerchange', function () {
 
