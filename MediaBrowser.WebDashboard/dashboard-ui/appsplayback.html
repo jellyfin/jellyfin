@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>App Settings</title>
+    <title>${TitleAppSettings}</title>
 </head>
 <body>
     <div id="appsPlaybackPage" data-role="page" class="page appsPage type-interior">
@@ -9,39 +9,39 @@
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">Resume</a>
-                    <a href="appsweather.html" data-role="button">Weather</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabResume}</a>
+                    <a href="appsweather.html" data-role="button">${TabWeather}</a>
                 </div>
                 <form class="appsPlaybackForm">
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="txtMinResumePct">Min resume percentage: </label>
+                            <label for="txtMinResumePct">${LabelMinResumePercentage}</label>
                             <input type="number" id="txtMinResumePct" name="txtMinResumePct" pattern="[0-9]*" required="required" min="0" max="100" />
                             <div class="fieldDescription">
-                                Titles are assumed unplayed if stopped before this time
+                                ${LabelMinResumePercentageHelp}
                             </div>
                         </li>
                         <li>
-                            <label for="txtMaxResumePct">Max resume percentage: </label>
+                            <label for="txtMaxResumePct">${LabelMaxResumePercentage}</label>
                             <input type="number" id="txtMaxResumePct" name="txtMaxResumePct" pattern="[0-9]*" required="required" min="1" max="100" />
                             <div class="fieldDescription">
-                                Titles are assumed fully played if stopped after this time
+                                ${LabelMaxResumePercentageHelp}
                             </div>
                         </li>
                         <li>
-                            <label for="txtMinResumeDuration">Min resume duration (seconds): </label>
+                            <label for="txtMinResumeDuration">${LabelMinResumeDuration}</label>
                             <input type="number" id="txtMinResumeDuration" name="txtMinResumeDuration" pattern="[0-9]*" required="required" min="0" />
                             <div class="fieldDescription">
-                                Titles shorter than this will not be resumable
+                                ${LabelMinResumeDurationHelp}
                             </div>
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">
-                                Save
+                                ${ButtonSave}
                             </button>
                             <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
                     </ul>

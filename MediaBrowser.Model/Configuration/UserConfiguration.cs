@@ -66,7 +66,6 @@ namespace MediaBrowser.Model.Configuration
             IsAdministrator = true;
 
             EnableRemoteControlOfOtherUsers = true;
-            EnableContentDeletion = true;
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;

@@ -344,7 +344,7 @@ var Dashboard = {
 
     navigate: function (url, preserveQueryString) {
 
-        var queryString = window.location.search;
+        var queryString = getWindowLocationSearch();
         if (preserveQueryString && queryString) {
             url += queryString;
         }

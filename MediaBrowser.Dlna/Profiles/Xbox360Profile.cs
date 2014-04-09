@@ -126,7 +126,7 @@ namespace MediaBrowser.Dlna.Profiles
                     {
                         new ProfileCondition
                         {
-                            Condition = ProfileConditionType.LessThanEqual,
+                            Condition = ProfileConditionType.Equals,
                             Property = ProfileConditionValue.Has64BitOffsets,
                             Value = "false",
                             IsRequired = false

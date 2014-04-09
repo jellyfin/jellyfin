@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
@@ -16,15 +17,17 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly ILogger _logger;
         private readonly ITaskManager _iTaskManager;
         private readonly ISessionManager _sessionManager;
+        private readonly IServerConfigurationManager _config;
 
         private Timer _timer;
 
-        public AutomaticRestartEntryPoint(IServerApplicationHost appHost, ILogger logger, ITaskManager iTaskManager, ISessionManager sessionManager)
+        public AutomaticRestartEntryPoint(IServerApplicationHost appHost, ILogger logger, ITaskManager iTaskManager, ISessionManager sessionManager, IServerConfigurationManager config)
         {
             _appHost = appHost;
             _logger = logger;
             _iTaskManager = iTaskManager;
             _sessionManager = sessionManager;
+            _config = config;
         }
 
         public void Run()
@@ -47,7 +50,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private void TimerCallback(object state)
         {
-            if (IsIdle())
+            if (_config.Configuration.EnableAutomaticRestart && IsIdle())
             {
                 DisposeTimer();
 
@@ -70,12 +73,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             }
 
             var now = DateTime.UtcNow;
-            if (_sessionManager.Sessions.Any(i => !string.IsNullOrEmpty(i.NowViewingItemName) || (now - i.LastActivityDate).TotalMinutes < 30))
-            {
-                return false;
-            }
 
-            return true;
+            return !_sessionManager.Sessions.Any(i => !string.IsNullOrEmpty(i.NowViewingItemName) || (now - i.LastActivityDate).TotalMinutes < 30);
         }
 
         public void Dispose()

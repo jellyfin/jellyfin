@@ -649,7 +649,7 @@
             }
 
             // Just use the first audio stream
-            return audioStreams[0];
+            return audioStreams[0].Index;
         }
 
         function getVideoQualityOptions(mediaStreams) {

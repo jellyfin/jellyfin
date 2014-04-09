@@ -87,7 +87,7 @@
                     $('#playButtonContainer', page).hide();
                 }
 
-                var editImagesHref = user.Configuration.IsAdministrator ? 'edititemimages.html' + window.location.search : null;
+                var editImagesHref = user.Configuration.IsAdministrator ? 'edititemimages.html' + getWindowLocationSearch() : null;
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref));
 
                 if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
@@ -524,7 +524,7 @@
 
         reload(page);
 
-        $('#btnEdit', page).attr('href', 'edititemmetadata.html' + window.location.search);
+        $('#btnEdit', page).attr('href', 'edititemmetadata.html' + getWindowLocationSearch());
 
     }).on('pagehide', "#itemByNameDetailPage", function () {
 

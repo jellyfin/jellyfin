@@ -105,7 +105,12 @@ namespace MediaBrowser.Dlna.PlayTo
                 return string.Empty;
             }
 
-            return string.Format(DIDL_VIDEO_RES, videostream.BitRate.HasValue ? videostream.BitRate.Value / 10 : 0, GetDurationString(dto), videostream.Width ?? 0, videostream.Height ?? 0, streamUrl);
+            return string.Format(DIDL_VIDEO_RES, 
+                videostream.BitRate.HasValue ? videostream.BitRate.Value / 10 : 0, 
+                GetDurationString(dto), 
+                videostream.Width ?? 0, 
+                videostream.Height ?? 0, 
+                streamUrl);
         }
 
         private static string GetAudioDIDL(BaseItem dto, string streamUrl, IEnumerable<MediaStream> streams)
@@ -118,7 +123,11 @@ namespace MediaBrowser.Dlna.PlayTo
                 return string.Empty;
             }
 
-            return string.Format(DIDL_AUDIO_RES, audiostream.BitRate.HasValue ? audiostream.BitRate.Value / 10 : 16000, GetDurationString(dto), audiostream.SampleRate ?? 0, streamUrl);
+            return string.Format(DIDL_AUDIO_RES, 
+                audiostream.BitRate.HasValue ? audiostream.BitRate.Value / 10 : 16000, 
+                GetDurationString(dto), 
+                audiostream.SampleRate ?? 0, 
+                streamUrl);
         }
 
         private static string GetImageUrl(BaseItem dto, string serverAddress)
