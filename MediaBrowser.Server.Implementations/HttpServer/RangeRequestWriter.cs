@@ -1,4 +1,5 @@
-﻿using ServiceStack.Web;
+﻿using System.Threading;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -64,7 +65,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 throw new ArgumentNullException("contentType");
             }
-            
+
             RangeHeader = rangeHeader;
             SourceStream = source;
             IsHeadRequest = isHeadRequest;
@@ -98,11 +99,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             RangeStart = requestedRange.Key;
             RangeLength = 1 + RangeEnd - RangeStart;
-            
+
             // Content-Length is the length of what we're serving, not the original content
             Options["Content-Length"] = RangeLength.ToString(UsCulture);
             Options["Content-Range"] = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
-            
+
             if (RangeStart > 0)
             {
                 SourceStream.Position = RangeStart;
@@ -179,17 +180,33 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             using (var source = SourceStream)
             {
                 // If the requested range is "0-", we can optimize by just doing a stream copy
-                if (RangeEnd == TotalContentLength - 1)
+                if (RangeEnd >= TotalContentLength - 1)
                 {
                     await source.CopyToAsync(responseStream).ConfigureAwait(false);
                 }
                 else
                 {
-                    // Read the bytes we need
-                    var buffer = new byte[Convert.ToInt32(RangeLength)];
-                    await source.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                    await CopyToAsyncInternal(source, responseStream, Convert.ToInt32(RangeLength), CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+        }
 
-                    await responseStream.WriteAsync(buffer, 0, Convert.ToInt32(RangeLength)).ConfigureAwait(false);
+        private async Task CopyToAsyncInternal(Stream source, Stream destination, int copyLength, CancellationToken cancellationToken)
+        {
+            const int bufferSize = 81920;
+            var array = new byte[bufferSize];
+            int count;
+            while ((count = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            {
+                var bytesToCopy = Math.Min(count, copyLength);
+
+                await destination.WriteAsync(array, 0, bytesToCopy, cancellationToken).ConfigureAwait(false);
+
+                copyLength -= bytesToCopy;
+
+                if (copyLength <= 0)
+                {
+                    break;
                 }
             }
         }

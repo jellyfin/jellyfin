@@ -110,11 +110,11 @@ namespace MediaBrowser.Api
             {
                 link.PrimaryVersionId = null;
 
-                await link.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                await link.UpdateToRepository(ItemUpdateType.MetadataDownload, CancellationToken.None).ConfigureAwait(false);
             }
 
             video.LinkedAlternateVersions.Clear();
-            await video.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await video.UpdateToRepository(ItemUpdateType.MetadataDownload, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(MergeVersions request)
@@ -182,7 +182,7 @@ namespace MediaBrowser.Api
             {
                 item.PrimaryVersionId = primaryVersion.Id;
 
-                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                await item.UpdateToRepository(ItemUpdateType.MetadataDownload, CancellationToken.None).ConfigureAwait(false);
 
                 primaryVersion.LinkedAlternateVersions.Add(new LinkedChild
                 {
@@ -191,7 +191,7 @@ namespace MediaBrowser.Api
                 });
             }
 
-            await primaryVersion.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await primaryVersion.UpdateToRepository(ItemUpdateType.MetadataDownload, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

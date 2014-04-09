@@ -319,7 +319,7 @@ namespace MediaBrowser.Api.Playback
         {
             var param = string.Empty;
 
-            var isVc1 = state.VideoStream != null && 
+            var isVc1 = state.VideoStream != null &&
                 string.Equals(state.VideoStream.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
 
             var qualitySetting = GetQualitySetting();
@@ -438,9 +438,12 @@ namespace MediaBrowser.Api.Playback
             var channels = GetNumAudioChannelsParam(state.Request, state.AudioStream);
 
             // Boost volume to 200% when downsampling from 6ch to 2ch
-            if (channels.HasValue && channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
+            if (channels.HasValue && channels.Value <= 2)
             {
-                volParam = ",volume=2.000000";
+                if (state.AudioStream != null && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
+                {
+                    volParam = ",volume=2.000000";
+                }
             }
 
             if (state.Request.AudioSampleRate.HasValue)
@@ -916,7 +919,7 @@ namespace MediaBrowser.Api.Playback
             var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
             Logger.Info(commandLineLogMessage);
 
-            var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid() + ".txt");
+            var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, "transcode-" + Guid.NewGuid() + ".txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
@@ -1482,17 +1485,14 @@ namespace MediaBrowser.Api.Playback
 
             ApplyDeviceProfileSettings(state);
 
-            if (videoRequest != null && state.VideoStream != null)
+            if (videoRequest != null)
             {
-                if (CanStreamCopyVideo(videoRequest, state.VideoStream, state.VideoType))
+                if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream, state.VideoType))
                 {
                     videoRequest.VideoCodec = "copy";
                 }
-            }
 
-            if (state.AudioStream != null)
-            {
-                //if (CanStreamCopyAudio(request, state.AudioStream))
+                //if (state.AudioStream != null && CanStreamCopyAudio(request, state.AudioStream))
                 //{
                 //    request.AudioCodec = "copy";
                 //}
@@ -1625,7 +1625,7 @@ namespace MediaBrowser.Api.Playback
 
             return SupportsAutomaticVideoStreamCopy;
         }
-        
+
         protected virtual bool SupportsAutomaticVideoStreamCopy
         {
             get

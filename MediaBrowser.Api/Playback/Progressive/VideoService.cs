@@ -186,7 +186,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         private string GetAudioArguments(StreamState state)
         {
             // If the video doesn't have an audio stream, return a default.
-            if (state.AudioStream == null)
+            if (state.AudioStream == null && state.HasMediaStreams)
             {
                 return string.Empty;
             }

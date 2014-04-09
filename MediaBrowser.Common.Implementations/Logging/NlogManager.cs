@@ -184,7 +184,7 @@ namespace MediaBrowser.Common.Implementations.Logging
         /// <param name="level">The level.</param>
         public void ReloadLogger(LogSeverity level)
         {
-            LogFilePath = Path.Combine(LogDirectory, LogFilePrefix + "-" + decimal.Round(DateTime.Now.Ticks / 10000000) + ".log");
+            LogFilePath = Path.Combine(LogDirectory, LogFilePrefix + "-" + decimal.Round(DateTime.Now.Ticks / 10000000) + ".txt");
 
             Directory.CreateDirectory(Path.GetDirectoryName(LogFilePath));
 

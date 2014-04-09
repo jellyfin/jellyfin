@@ -40,7 +40,7 @@
   <ContainerProfiles>
     <ContainerProfile type="Video" container="mp4,mov">
       <Conditions>
-        <ProfileCondition condition="LessThanEqual" property="Has64BitOffsets" value="false" isRequired="false" />
+        <ProfileCondition condition="Equals" property="Has64BitOffsets" value="false" isRequired="false" />
       </Conditions>
     </ContainerProfile>
     <ContainerProfile type="Photo">
