@@ -337,7 +337,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
 
             _lapsCount = GetLapsCount();
@@ -352,7 +352,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
             await Task.Delay(50).ConfigureAwait(false);
             return true;
@@ -366,7 +366,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
 
             await Task.Delay(50).ConfigureAwait(false);
