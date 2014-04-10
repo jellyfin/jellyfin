@@ -628,7 +628,7 @@
             return;
         }
 
-        this.currentMediaOffset = startTimeTicks;
+        this.currentMediaOffset = startTimeTicks || 0;
 
         var maxBitrate = 12000000;
         var mediaInfo = getMediaSourceInfo(user, item, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
@@ -827,6 +827,10 @@
           this.onError.bind(this));
         this.castPlayerState = PLAYER_STATE.STOPPED;
         clearInterval(this.timer);
+        var playTime = document.getElementById(this.playback);
+        if (playTime) {
+            playTime.parentNode.removeChild(playTime);
+        }
     };
 
     /**
@@ -958,8 +962,12 @@
 
         if (this.currentMediaDuration > 0) {
             var pp = Number(this.currentMediaTime / this.currentMediaDuration).toFixed(3);
+
             var startTime = this.currentMediaOffset / 10000000;
-            document.getElementById(this.playback).innerHTML = formatTime(startTime + this.currentMediaTime);
+            var playTime = document.getElementById(this.playback);
+            if (playTime) {
+                playTime.innerHTML = formatTime(startTime + this.currentMediaTime);
+            }
         }
 
         if (this.progressFlag) {
