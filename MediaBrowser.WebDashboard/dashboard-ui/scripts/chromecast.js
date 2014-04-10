@@ -688,20 +688,20 @@
         this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
         this.currentMediaDuration = this.currentMediaSession.media.duration;
 
-        var playTime = document.getElementById(this.playback);
-        if (!playTime) {
-            // Set duration time
-            var totalTime = document.getElementById(this.duration);
-            totalTime.innerHTML = " / " + formatTime(this.currentMediaDuration);
+        //var playTime = document.getElementById(this.playback);
+        //if (!playTime) {
+        //    // Set duration time
+        //    var totalTime = document.getElementById(this.duration);
+        //    totalTime.innerHTML = " / " + formatTime(this.currentMediaDuration);
 
-            // Set play time
-            playTime = document.createElement("div");
-            playTime.id = this.playback;
-            playTime.className = "currentTime";
-            playTime.style.marginRight = "5px";
-            totalTime.parentNode.insertBefore(playTime, totalTime);
-            playTime.innerHTML = formatTime(this.currentMediaTime);
-        }
+        //    // Set play time
+        //    playTime = document.createElement("div");
+        //    playTime.id = this.playback;
+        //    playTime.className = "currentTime";
+        //    playTime.style.marginRight = "5px";
+        //    totalTime.parentNode.insertBefore(playTime, totalTime);
+        //    playTime.innerHTML = formatTime(this.currentMediaTime);
+        //}
     };
 
     function formatTime(duration) {
@@ -829,10 +829,10 @@
           this.onError.bind(this));
         this.castPlayerState = PLAYER_STATE.STOPPED;
         clearInterval(this.timer);
-        var playTime = document.getElementById(this.playback);
-        if (playTime) {
-            playTime.parentNode.removeChild(playTime);
-        }
+        //var playTime = document.getElementById(this.playback);
+        //if (playTime) {
+        //    playTime.parentNode.removeChild(playTime);
+        //}
     };
 
     /**
@@ -892,9 +892,8 @@
      */
     CastPlayer.prototype.seekMedia = function (event) {
         var pos = parseInt(event);
-        var p = document.getElementById(this.progressBar);
+
         var curr = parseInt(this.currentMediaTime + this.currentMediaDuration * pos);
-        var pw = parseInt(p.value) + pos;
 
         if (this.castPlayerState != PLAYER_STATE.PLAYING && this.castPlayerState != PLAYER_STATE.PAUSED) {
             return;
@@ -932,21 +931,21 @@
      * @param {Object} e An media status update object 
      */
     CastPlayer.prototype.updateProgressBar = function (e) {
-        var p = document.getElementById(this.progressBar);
-        if (e.idleReason == 'FINISHED' && e.playerState == 'IDLE') {
-            p.value = 0;
-            clearInterval(this.timer);
-            this.castPlayerState = PLAYER_STATE.STOPPED;
-            if (e.idleReason == 'FINISHED') {
-                $.publish("/playback/complete", e);
-                console.log("playback complete", e);
-            }
-        }
-        else {
-            p.value = Number(e.currentTime / this.currentMediaSession.media.duration + 1).toFixed(3);
-            this.progressFlag = false;
-            setTimeout(this.setProgressFlag.bind(this), 1000); // don't update progress in 1 second
-        }
+        //var p = document.getElementById(this.progressBar);
+        //if (e.idleReason == 'FINISHED' && e.playerState == 'IDLE') {
+        //    p.value = 0;
+        //    clearInterval(this.timer);
+        //    this.castPlayerState = PLAYER_STATE.STOPPED;
+        //    if (e.idleReason == 'FINISHED') {
+        //        $.publish("/playback/complete", e);
+        //        console.log("playback complete", e);
+        //    }
+        //}
+        //else {
+        //    p.value = Number(e.currentTime / this.currentMediaSession.media.duration + 1).toFixed(3);
+        //    this.progressFlag = false;
+        //    setTimeout(this.setProgressFlag.bind(this), 1000); // don't update progress in 1 second
+        //}
     };
 
     /**
@@ -961,33 +960,33 @@
      * Update progress bar based on timer  
      */
     CastPlayer.prototype.updateProgressBarByTimer = function () {
-        var p = document.getElementById(this.progressBar);
-        if (isNaN(parseInt(p.value))) {
-            p.value = 0;
-        }
+        //var p = document.getElementById(this.progressBar);
+        //if (isNaN(parseInt(p.value))) {
+        //    p.value = 0;
+        //}
 
-        if (this.currentMediaDuration > 0) {
-            var pp = Number(this.currentMediaTime / this.currentMediaDuration).toFixed(3);
+        //if (this.currentMediaDuration > 0) {
+        //    var pp = Number(this.currentMediaTime / this.currentMediaDuration).toFixed(3);
 
-            var startTime = this.currentMediaOffset / 10000000;
-            var playTime = document.getElementById(this.playback);
-            if (playTime) {
-                playTime.innerHTML = formatTime(startTime + this.currentMediaTime);
-            }
-        }
+        //    var startTime = this.currentMediaOffset / 10000000;
+        //    var playTime = document.getElementById(this.playback);
+        //    if (playTime) {
+        //        playTime.innerHTML = formatTime(startTime + this.currentMediaTime);
+        //    }
+        //}
 
-        if (this.progressFlag) {
-            // don't update progress if it's been updated on media status update event
-            p.value = pp;
-        }
+        //if (this.progressFlag) {
+        //    // don't update progress if it's been updated on media status update event
+        //    p.value = pp;
+        //}
 
-        if (pp > 100 || this.castPlayerState == PLAYER_STATE.IDLE) {
-            clearInterval(this.timer);
-            this.deviceState = DEVICE_STATE.IDLE;
-            this.castPlayerState = PLAYER_STATE.IDLE;
-            $.publish("/playback/complete", true);
-            console.log("playback complete");
-        }
+        //if (pp > 100 || this.castPlayerState == PLAYER_STATE.IDLE) {
+        //    clearInterval(this.timer);
+        //    this.deviceState = DEVICE_STATE.IDLE;
+        //    this.castPlayerState = PLAYER_STATE.IDLE;
+        //    $.publish("/playback/complete", true);
+        //    console.log("playback complete");
+        //}
     };
 
     /**

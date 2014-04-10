@@ -139,7 +139,7 @@
     text-align: left;
     margin-left: 0;
     right: 0;
-    bottom: 85px;
+    bottom: 83px;
 }
 
 /* Media queries
@@ -259,7 +259,7 @@
     }
 
     #mediaPlayer #videoControls .mediaPlayerFlyout {
-        bottom: 150px;
+        bottom: 148px;
     }
 }
 
