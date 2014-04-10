@@ -100,7 +100,7 @@
 
         // v1 Id AE4DA10A
         // v2 Id 472F0435
-        var applicationID = 'AE4DA10A';
+        var applicationID = '472F0435';
 
         // request session
         var sessionRequest = new chrome.cast.SessionRequest(applicationID);
@@ -456,6 +456,8 @@
 
     function getMetadata(item) {
 
+        console.log("md item", item);
+
         var metadata = {};
 
         if (item.Type == 'Episode') {
@@ -523,7 +525,7 @@
 
         else if (item.MediaType == 'Movie') {
             metadata = new chrome.cast.media.MovieMediaMetadata();
-            metadata.type = chrome.cast.media.MetadataType.MUSIC_TRACK;
+            metadata.type = chrome.cast.media.MetadataType.MOVIE;
 
             if (item.ProductionYear) {
                 metadata.releaseYear = item.ProductionYear;
@@ -889,7 +891,7 @@
      * @param {Event} e An event object from seek 
      */
     CastPlayer.prototype.seekMedia = function (event) {
-        var pos = parseInt(event.offsetX);
+        var pos = parseInt(event);
         var p = document.getElementById(this.progressBar);
         var curr = parseInt(this.currentMediaTime + this.currentMediaDuration * pos);
         var pw = parseInt(p.value) + pos;
@@ -935,6 +937,10 @@
             p.value = 0;
             clearInterval(this.timer);
             this.castPlayerState = PLAYER_STATE.STOPPED;
+            if (e.idleReason == 'FINISHED') {
+                $.publish("/playback/complete", e);
+                console.log("playback complete", e);
+            }
         }
         else {
             p.value = Number(e.currentTime / this.currentMediaSession.media.duration + 1).toFixed(3);
@@ -975,10 +981,12 @@
             p.value = pp;
         }
 
-        if (pp > 100) {
+        if (pp > 100 || this.castPlayerState == PLAYER_STATE.IDLE) {
             clearInterval(this.timer);
             this.deviceState = DEVICE_STATE.IDLE;
             this.castPlayerState = PLAYER_STATE.IDLE;
+            $.publish("/playback/complete", true);
+            console.log("playback complete");
         }
     };
 
@@ -1001,31 +1009,111 @@
 
         var self = this;
 
+        var isPositionSliderActive = false;
+
         self.name = PlayerName;
 
         self.isPaused = false;
 
+        self.playlist = [];
+
+        self.playlistIndex = 0;
+
+        $.subscribe("/playback/complete", function (e) {
+            if (self.playlistIndex < (self.playlist.items || []).length) {
+                self.play(self.playlist);
+            }
+        });
+
+        ////$(".positionSlider", "#footer").off("slidestart slidestop")
+        ////  .on('slidestart', function (e) {
+        ////    isPositionSliderActive = true;
+        ////}).on('slidestop', positionSliderChange);
+
+        ////function positionSliderChange() {
+        ////    isPositionSliderActive = false;
+        ////    var newPercent = parseInt(this.value);
+        ////    self.changeStream(newPercent);
+        ////}
+
+        function getItemsForPlayback(query) {
+            var userId = Dashboard.getCurrentUserId();
+
+            query.Limit = query.Limit || 100;
+            query.Fields = getItemFields;
+            query.ExcludeLocationTypes = "Virtual";
+
+            return ApiClient.getItems(userId, query);
+        };
+
+        function queueItems (items) {
+            for (var i = 0, length = items.length; i < length; i++) {
+                self.playlist.push(items[i]);
+            }
+        };
+
+        function queueItemsNext(items) {
+            var insertIndex = 1;
+            for (var i = 0, length = items.length; i < length; i++) {
+                self.playlist.splice(insertIndex, 0, items[i]);
+                insertIndex++;
+            }
+        };
+
+        function translateItemsForPlayback(items) {
+            var deferred = $.Deferred();
+            var firstItem = items[0];
+            var promise;
+            if (firstItem.IsFolder) {
+                promise = self.getItemsForPlayback({
+                    ParentId: firstItem.Id,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio,Video"
+                });
+            }
+            else if (firstItem.Type == "MusicArtist") {
+                promise = self.getItemsForPlayback({
+                    Artists: firstItem.Name,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio"
+                });
+            }
+            else if (firstItem.Type == "MusicGenre") {
+                promise = self.getItemsForPlayback({
+                    Genres: firstItem.Name,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio"
+                });
+            }
+
+            if (promise) {
+                promise.done(function (result) {
+                    deferred.resolveWith(null, [result.Items]);
+                });
+            } else {
+                deferred.resolveWith(null, [items]);
+            }
+
+            return deferred.promise();
+        };
+
         self.play = function (options) {
-
+            console.log("play", options);
             $("#nowPlayingBar", "#footer").show();
-
             if (self.isPaused) {
-
-                console.log("unpause");
                 self.isPaused = !self.isPaused;
                 castPlayer.playMedia();
-
             } else if (options.items) {
-
-                console.log("play1", options);
                 Dashboard.getCurrentUser().done(function (user) {
-
-                    castPlayer.loadMedia(user, options.items[0], options.startPositionTicks);
+                    castPlayer.loadMedia(user, options.items[self.playlistIndex++], options.startPositionTicks);
                 });
-
             } else {
-
-                console.log("play2");
                 var userId = Dashboard.getCurrentUserId();
 
                 var query = {};
@@ -1035,14 +1123,10 @@
                 query.Ids = options.ids.join(',');
 
                 ApiClient.getItems(userId, query).done(function (result) {
-
                     options.items = result.Items;
-
                     self.play(options);
-
                 });
             }
-
         };
 
         self.unpause = function () {
@@ -1058,37 +1142,135 @@
         };
 
         self.shuffle = function (id) {
-            self.play({ ids: [id] });
+            var userId = Dashboard.getCurrentUserId();
+            ApiClient.getItem(userId, id).done(function (item) {
+                var query = {
+                    UserId: userId,
+                    Fields: getItemFields,
+                    Limit: 50,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "Random"
+                };
+
+                if (item.IsFolder) {
+                    query.ParentId = id;
+                }
+                else if (item.Type == "MusicArtist") {
+                    query.MediaTypes = "Audio";
+                    query.Artists = item.Name;
+                }
+                else if (item.Type == "MusicGenre") {
+                    query.MediaTypes = "Audio";
+                    query.Genres = item.Name;
+                } else {
+                    return;
+                }
+
+                self.getItemsForPlayback(query).done(function (result) {
+                    self.playlist = { items: result.Items };
+                    console.log("shuffle items", result.Items);
+                    self.play(self.playlist);
+                });
+            });
         };
 
         self.instantMix = function (id) {
-            self.play({ ids: [id] });
-        };
+            var userId = Dashboard.getCurrentUserId();
+            ApiClient.getItem(userId, id).done(function (item) {
+                var promise;
+                var getItemFields = "MediaSources,Chapters";
+                var mixLimit = 3;
 
-        self.queue = function (options) {
+                if (item.Type == "MusicArtist") {
+                    promise = ApiClient.getInstantMixFromArtist(name, {
+                        UserId: userId,
+                        Fields: getItemFields,
+                        Limit: mixLimit
+                    });
+                }
+                else if (item.Type == "MusicGenre") {
+                    promise = ApiClient.getInstantMixFromMusicGenre(name, {
+                        UserId: userId,
+                        Fields: getItemFields,
+                        Limit: mixLimit
+                    });
+                }
+                else if (item.Type == "MusicAlbum") {
+                    promise = ApiClient.getInstantMixFromAlbum(id, {
+                        UserId: userId,
+                        Fields: getItemFields,
+                        Limit: mixLimit
+                    });
+                }
+                else if (item.Type == "Audio") {
+                    promise = ApiClient.getInstantMixFromSong(id, {
+                        UserId: userId,
+                        Fields: getItemFields,
+                        Limit: mixLimit
+                    });
+                }
+                else {
+                    return;
+                }
 
-        };
-
-        self.queueNext = function (options) {
-
-        };
-
-        self.stop = function () {
-            console.log("stop");
-            $("#nowPlayingBar", "#footer").hide();
-            castPlayer.stopMedia();
+                promise.done(function (result) {
+                    self.playlist = { items: result.Items };
+                    console.log("instant mix items", result.Items);
+                    self.play(self.playlist);
+                });
+            });
         };
 
         self.canQueueMediaType = function (mediaType) {
+            return mediaType == "Audio";
+        };
 
-            return false;
+        self.queue = function (options) {
+            Dashboard.getCurrentUser().done(function (user) {
+                if (options.items) {
+                    translateItemsForPlayback(options.items).done(function (items) {
+                        queueItems(items);
+                    });
+                } else {
+                    getItemsForPlayback({
+                        Ids: options.ids.join(',')
+                    }).done(function (result) {
+                        translateItemsForPlayback(result.Items).done(function (items) {
+                            queueItems(items);
+                        });
+                    });
+                }
+            });
+        };
+
+        self.queueNext = function (options) {
+            Dashboard.getCurrentUser().done(function (user) {
+                if (options.items) {
+                    queueItemsNext(options.items);
+                } else {
+                    self.getItemsForPlayback({
+                        Ids: options.ids.join(',')
+                    }).done(function (result) {
+                        options.items = result.Items;
+                        queueItemsNext(options.items);
+                    });
+                }
+            });
+        };
+
+        self.stop = function () {
+            $("#nowPlayingBar", "#footer").hide();
+            self.playlist = [];
+            self.playlistIndex = 0;
+            castPlayer.stopMedia();
         };
 
         self.mute = function () {
             castPlayer.mute();
         };
 
-        self.unMute = function () {
+        self.unmute = function () {
             castPlayer.unMute();
         };
 
@@ -1097,18 +1279,13 @@
         };
 
         self.getTargets = function () {
-
             var targets = [];
-
             targets.push(self.getCurrentTargetInfo());
-
             return targets;
         };
 
         self.getCurrentTargetInfo = function () {
-
             var appName = null;
-
             if (castPlayer.session && castPlayer.session.receiver && castPlayer.session.friendlyName) {
                 appName = castPlayer.session.friendlyName;
             }
@@ -1124,20 +1301,14 @@
         };
 
         self.setCurrentTime = function (ticks, item, updateSlider) {
-
             // Convert to ticks
             ticks = Math.floor(ticks);
-
             var timeText = Dashboard.getDisplayTime(ticks);
-
             if (self.currentDurationTicks) {
-
                 timeText += " / " + Dashboard.getDisplayTime(self.currentDurationTicks);
-
                 if (updateSlider) {
                     var percent = ticks / self.currentDurationTicks;
                     percent *= 100;
-
                     self.positionSlider.val(percent).slider('enable').slider('refresh');
                 }
             } else {
@@ -1149,6 +1320,55 @@
 
         self.changeStream = function (position) {
             console.log("seek", position);
+            ////castPlayer.seekMedia(position);
+        };
+
+        self.removeFromPlaylist = function (i) {
+            self.playlist.remove(i);
+        };
+
+        self.currentPlaylistIndex = function (i) {
+            if (i == null) {
+                return currentPlaylistIndex;
+            }
+
+            var newItem = self.playlist[i];
+
+            Dashboard.getCurrentUser().done(function (user) {
+                self.playInternal(newItem, 0, user);
+                currentPlaylistIndex = i;
+            });
+        };
+
+        self.nextTrack = function () {
+            var newIndex = currentPlaylistIndex + 1;
+            var newItem = self.playlist[newIndex];
+
+            if (newItem) {
+                Dashboard.getCurrentUser().done(function (user) {
+                    self.playInternal(newItem, 0, user);
+                    currentPlaylistIndex = newIndex;
+                });
+            }
+        };
+
+        self.previousTrack = function () {
+            var newIndex = currentPlaylistIndex - 1;
+            if (newIndex >= 0) {
+                var newItem = self.playlist[newIndex];
+                if (newItem) {
+                    Dashboard.getCurrentUser().done(function (user) {
+                        self.playInternal(newItem, 0, user);
+                        currentPlaylistIndex = newIndex;
+                    });
+                }
+            }
+        };
+
+        self.volumeDown = function () {
+        };
+
+        self.volumeUp = function () {
         };
     }
 

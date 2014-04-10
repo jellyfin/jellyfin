@@ -188,15 +188,47 @@
         };
 
         self.seek = function (position) {
-            self.changeStream(position);
+            currentPlayer.changeStream(position);
         };
 
         self.currentPlaylistIndex = function (i) {
-            self.currentPlaylistIndex(i);
+            currentPlayer.currentPlaylistIndex(i);
         };
 
         self.removeFromPlaylist = function (i) {
-            self.removeFromPlaylist(i);
+            currentPlayer.removeFromPlaylist(i);
+        };
+
+        self.nextTrack = function () {
+            currentPlayer.nextTrack();
+        };
+
+        self.previousTrack = function () {
+            currentPlayer.previousTrack();
+        };
+
+        self.mute = function () {
+            currentPlayer.mute();
+        };
+
+        self.unmute = function () {
+            currentPlayer.unmute();
+        };
+
+        self.toggleMute = function () {
+            currentPlayer.toggleMute();
+        };
+
+        self.volumeDown = function () {
+            currentPlayer.volumeDown();
+        };
+
+        self.volumeUp = function () {
+            currentPlayer.volumeUp();
+        };
+
+        self.shuffle = function (id) {
+            currentPlayer.shuffle(id);
         };
     }
 

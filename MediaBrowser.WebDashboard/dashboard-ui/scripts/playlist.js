@@ -17,7 +17,7 @@
 
         html += '<tbody>';
 
-        $.each(MediaPlayer.playlist, function (i, item) {
+        $.each(MediaController.playlist, function (i, item) {
 
             var name = LibraryBrowser.getPosterViewDisplayName(item);
 
