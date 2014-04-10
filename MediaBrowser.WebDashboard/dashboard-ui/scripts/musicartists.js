@@ -31,7 +31,8 @@
                 context: 'music',
                 showTitle: true,
                 coverImage: true,
-                centerText: true
+                centerText: true,
+                lazy: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
@@ -117,6 +118,12 @@
     }).on('pageshow', "#musicArtistsPage", function () {
 
         updateFilterControls(this);
+    });
+
+    $(function () {
+        $("body").on("create", function () {
+            $(".lazy").unveil(200);
+        });
     });
 
 })(jQuery, document);

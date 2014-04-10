@@ -32,7 +32,8 @@
                 preferThumb: true,
                 context: 'music',
                 showItemCounts: true,
-                centerText: true
+                centerText: true,
+                lazy: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
@@ -55,8 +56,8 @@
                 reloadItems(page);
             });
 
-			LibraryBrowser.saveQueryValues('musicgenres', query);
-			
+            LibraryBrowser.saveQueryValues('musicgenres', query);
+            
             Dashboard.hideLoadingMsg();
         });
     }

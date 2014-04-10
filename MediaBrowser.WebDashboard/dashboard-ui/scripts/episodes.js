@@ -34,7 +34,8 @@
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: true,
-                selectionPanel: true
+                selectionPanel: true,
+                lazy: true
             });
 
             $('.itemsContainer', page).removeClass('timelineItemsContainer');

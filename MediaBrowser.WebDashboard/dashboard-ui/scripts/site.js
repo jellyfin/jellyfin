@@ -1386,6 +1386,10 @@ $(function () {
             ApiClient.closeWebSocket();
         }
     });
+
+    $("body").on("create", function () {
+        $(".lazy").unveil(200);
+    });
 });
 
 Dashboard.jQueryMobileInit();
@@ -1428,4 +1432,3 @@ $(document).on('pagebeforeshow', ".page", function () {
         Dashboard.refreshSystemInfoFromServer();
     }
 });
-
