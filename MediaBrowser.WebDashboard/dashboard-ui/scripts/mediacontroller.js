@@ -190,6 +190,14 @@
         self.seek = function (position) {
             self.changeStream(position);
         };
+
+        self.currentPlaylistIndex = function (i) {
+            self.currentPlaylistIndex(i);
+        };
+
+        self.removeFromPlaylist = function (i) {
+            self.removeFromPlaylist(i);
+        };
     }
 
     window.MediaController = new mediaController();

@@ -65,14 +65,14 @@
 
             var index = parseInt(this.getAttribute('data-index'));
 
-            MediaPlayer.currentPlaylistIndex(index);
+            MediaController.currentPlaylistIndex(index);
             reloadPlaylist(page);
 
         }).on('click', '.lnkRemove', function () {
 
             var index = parseInt(this.getAttribute('data-index'));
 
-            MediaPlayer.removeFromPlaylist(index);
+            MediaController.removeFromPlaylist(index);
             reloadPlaylist(page);
         });
 
