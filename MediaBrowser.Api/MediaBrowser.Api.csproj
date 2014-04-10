@@ -66,7 +66,8 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="ChannelService.cs" />
-    <Compile Include="DlnaService.cs" />
+    <Compile Include="Dlna\DlnaServerService.cs" />
+    <Compile Include="Dlna\DlnaService.cs" />
     <Compile Include="Movies\CollectionService.cs" />
     <Compile Include="Music\AlbumsService.cs" />
     <Compile Include="AppThemeService.cs" />

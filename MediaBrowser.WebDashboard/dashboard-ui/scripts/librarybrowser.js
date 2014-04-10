@@ -185,14 +185,17 @@
             html += '<tr>';
 
             html += LibraryBrowser.getSongHeaderCellHtml('', '', options.enableColumnSorting);
-            html += LibraryBrowser.getSongHeaderCellHtml('', '', options.enableColumnSorting);
+            html += LibraryBrowser.getSongHeaderCellHtml('Disc', 'desktopColumn', options.enableColumnSorting);
+            html += LibraryBrowser.getSongHeaderCellHtml('#', 'desktopColumn', options.enableColumnSorting);
             html += LibraryBrowser.getSongHeaderCellHtml('Track', '', options.enableColumnSorting, 'Name', options.sortBy, options.sortOrder);
 
             if (options.showAlbum) {
                 html += LibraryBrowser.getSongHeaderCellHtml('Album', '', options.enableColumnSorting, 'Album,SortName', options.sortBy, options.sortOrder);
             }
             if (options.showArtist) {
-                html += LibraryBrowser.getSongHeaderCellHtml('Artist', '', options.enableColumnSorting, 'Artist,Album,SortName', options.sortBy, options.sortOrder);
+                html += LibraryBrowser.getSongHeaderCellHtml('Artist', 'tabletColumn', options.enableColumnSorting, 'Artist,Album,SortName', options.sortBy, options.sortOrder);
+            }
+            if (options.showAlbumArtist) {
                 html += LibraryBrowser.getSongHeaderCellHtml('Album Artist', 'tabletColumn', options.enableColumnSorting, 'AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
             }
 
@@ -214,12 +217,8 @@
                 html += '<button class="btnQueue" data-icon="plus" type="button" data-iconpos="notext" onclick="MediaController.queue(\'' + item.Id + '\');" data-inline="true" title="Queue">Queue</button>';
                 html += '</td>';
 
-                var num = item.IndexNumber;
-
-                if (num && item.ParentIndexNumber) {
-                    num = item.ParentIndexNumber + "." + num;
-                }
-                html += '<td>' + (num || "") + '</td>';
+                html += '<td class="desktopColumn">' + (item.ParentIndexNumber || "") + '</td>';
+                html += '<td class="desktopColumn">' + (item.IndexNumber || "") + '</td>';
 
                 html += '<td><a href="' + LibraryBrowser.getHref(item, "music") + '">' + (item.Name || "") + '</a></td>';
 
@@ -237,14 +236,14 @@
 
                         var artistLinksHtml = LibraryBrowser.getArtistLinksHtml(item.Artists);
 
-                        html += '<td>' + artistLinksHtml + '</td>';
+                        html += '<td class="tabletColumn">' + artistLinksHtml + '</td>';
                     }
                     else {
-                        html += '<td></td>';
+                        html += '<td class="tabletColumn"></td>';
                     }
                 }
 
-                if (options.showArtist) {
+                if (options.showAlbumArtist) {
 
                     if (item.AlbumArtist) {
 

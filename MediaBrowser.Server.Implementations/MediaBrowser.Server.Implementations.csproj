@@ -319,6 +319,10 @@
     <EmbeddedResource Include="Localization\Server\sv.json" />
     <EmbeddedResource Include="Localization\JavaScript\cs.json" />
     <EmbeddedResource Include="Localization\Server\cs.json" />
+    <EmbeddedResource Include="Localization\JavaScript\ca.json" />
+    <EmbeddedResource Include="Localization\JavaScript\ms.json" />
+    <EmbeddedResource Include="Localization\Server\ca.json" />
+    <EmbeddedResource Include="Localization\Server\ms.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -56,6 +56,11 @@
     white-space: nowrap;
 }
 
+.detailTableButtonsCell button {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
     .detailTableButtonsCell button + button {
         margin-left: .5em;
     }

@@ -156,6 +156,11 @@
             Provide a catch-all handler that doesn't match any routes
             </summary>
         </member>
+        <member name="P:ServiceStack.IAppHost.GlobalHtmlErrorHttpHandler">
+            <summary>
+            Use a fall-back Error Handler for handling global errors
+            </summary>
+        </member>
         <member name="P:ServiceStack.IAppHost.CustomErrorHttpHandlers">
             <summary>
             Use a Custom Error Handler for handling specific error HttpStatusCodes
@@ -249,7 +254,7 @@
             <summary>
             Starts the Web Service
             </summary>
-            <param name="listeningAtUrlBase">
+            <param name="urlBase">
             A Uri that acts as the base that the server is listening on.
             Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
             Note: the trailing slash is required! For more info see the
@@ -277,6 +282,28 @@
         <member name="M:ServiceStack.Auth.UserAuthRepositoryExtensions.InitSchema(ServiceStack.Auth.IAuthRepository)">
             <summary>
             Creates the required missing tables or DB schema 
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Service">
+            <summary>
+            Generic + Useful IService base class
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IServiceBase.ResolveService``1">
+            <summary>
+            Resolve an alternate Web Service from ServiceStack's IOC container.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="F:ServiceStack.Service.session">
+            <summary>
+            Dynamic Session Bag
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Service.SessionAs``1">
+            <summary>
+            Typed UserSession
             </summary>
         </member>
         <member name="T:ServiceStack.EnsureHttpsAttribute">
@@ -354,6 +381,20 @@
             A convenient base class for your injected service dependencies that reduces the boilerplate
             with managed access to ServiceStack's built-in providers
             </summary>
+        </member>
+        <member name="M:ServiceStack.RequestContext.TrackDisposable(System.IDisposable)">
+            <summary>
+            Track any IDisposable's to dispose of at the end of the request in IAppHost.OnEndRequest()
+            </summary>
+            <param name="instance"></param>
+        </member>
+        <member name="P:ServiceStack.RequestContext.Items">
+            <summary>
+            Gets a list of items for this request. 
+            </summary>
+            <remarks>This list will be cleared on every request and is specific to the original thread that is handling the request.
+            If a handler uses additional threads, this data will not be available on those threads.
+            </remarks>
         </member>
         <member name="T:Amib.Threading.Internal.CallerThreadContext">
             <summary>
@@ -2643,28 +2684,6 @@
             By default Auth and Registration requests are hidden.
             </summary>
         </member>
-        <member name="T:ServiceStack.Service">
-            <summary>
-            Generic + Useful IService base class
-            </summary>
-        </member>
-        <member name="M:ServiceStack.IServiceBase.ResolveService``1">
-            <summary>
-            Resolve an alternate Web Service from ServiceStack's IOC container.
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="F:ServiceStack.Service.session">
-            <summary>
-            Dynamic Session Bag
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Service.SessionAs``1">
-            <summary>
-            Typed UserSession
-            </summary>
-        </member>
         <member name="T:ServiceStack.AuthenticateAttribute">
             <summary>
             Indicates that the request dto, which is associated with this attribute,
@@ -2966,6 +2985,11 @@
         <member name="M:ServiceStack.Auth.IRequiresSchema.InitSchema">
             <summary>
             Creates the required missing tables or DB schema 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Auth.RegisterService`1.Put(ServiceStack.Register)">
+            <summary>
+            Update an existing registraiton
             </summary>
         </member>
         <member name="M:ServiceStack.Auth.RegisterService`1.Post(ServiceStack.Register)">

@@ -1,9 +1,9 @@
-﻿using System.Text;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Dlna.Profiles;
+using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Dlna
@@ -475,6 +476,27 @@ namespace MediaBrowser.Dlna
         {
             internal DeviceProfileInfo Info { get; set; }
             internal string Path { get; set; }
+        }
+
+        public string GetServerDescriptionXml(IDictionary<string, string> headers, string serverUuId)
+        {
+            var profile = GetProfile(headers) ??
+                          GetDefaultProfile();
+
+            return new DescriptionXmlBuilder(profile, serverUuId).GetXml();
+        }
+
+        public string GetContentDirectoryXml(IDictionary<string, string> headers)
+        {
+            var profile = GetProfile(headers) ??
+                          GetDefaultProfile();
+
+            return new ContentDirectoryXmlBuilder(profile).GetXml();
+        }
+
+        public ControlResponse ProcessControlRequest(ControlRequest request)
+        {
+            return new ControlHandler(_logger).ProcessControlRequest(request);
         }
     }
 }

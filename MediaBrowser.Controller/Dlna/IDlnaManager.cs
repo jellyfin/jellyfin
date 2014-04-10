@@ -55,5 +55,27 @@ namespace MediaBrowser.Controller.Dlna
         /// <param name="deviceInfo">The device information.</param>
         /// <returns>DeviceProfile.</returns>
         DeviceProfile GetProfile(DeviceIdentification deviceInfo);
+
+        /// <summary>
+        /// Gets the server description XML.
+        /// </summary>
+        /// <param name="headers">The headers.</param>
+        /// <param name="serverUuId">The server uu identifier.</param>
+        /// <returns>System.String.</returns>
+        string GetServerDescriptionXml(IDictionary<string, string> headers, string serverUuId);
+
+        /// <summary>
+        /// Gets the content directory XML.
+        /// </summary>
+        /// <param name="headers">The headers.</param>
+        /// <returns>System.String.</returns>
+        string GetContentDirectoryXml(IDictionary<string, string> headers);
+
+        /// <summary>
+        /// Processes the control request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>ControlResponse.</returns>
+        ControlResponse ProcessControlRequest(ControlRequest request);
     }
 }

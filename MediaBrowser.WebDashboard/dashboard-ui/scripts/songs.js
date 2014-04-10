@@ -50,6 +50,7 @@
             html += LibraryBrowser.getSongTableHtml(result.Items, {
                 showAlbum: true,
                 showArtist: true,
+                showAlbumArtist: true,
                 enableColumnSorting: true,
                 sortBy: query.SortBy,
                 sortOrder: query.SortOrder

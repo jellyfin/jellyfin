@@ -426,7 +426,8 @@
 
                 html += LibraryBrowser.getSongTableHtml(result.Items, {
                     showAlbum: true,
-                    showArtist: true
+                    showArtist: true,
+                    showAlbumArtist: true
                 });
 
             }

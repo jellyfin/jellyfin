@@ -912,7 +912,7 @@
 
                 $('#themeSongsCollapsible', page).show();
 
-                $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true, showAlbum: true })).trigger('create');
+                $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true, showAlbum: true, showAlbumArtist: true })).trigger('create');
             } else {
                 $('#themeSongsCollapsible', page).hide();
             }

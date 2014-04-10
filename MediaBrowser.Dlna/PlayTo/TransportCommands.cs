@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using MediaBrowser.Dlna.Common;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -40,7 +42,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             foreach (var container in actionList.Descendants(uPnpNamespaces.svc + "action"))
             {
-                command.ServiceActions.Add(ServiceAction.FromXml(container));
+                command.ServiceActions.Add(ServiceActionFromXml(container));
             }
 
             var stateValues = document.Descendants(uPnpNamespaces.ServiceStateTable).FirstOrDefault();
@@ -49,11 +51,64 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 foreach (var container in stateValues.Elements(uPnpNamespaces.svc + "stateVariable"))
                 {
-                    command.StateVariables.Add(StateVariable.FromXml(container));
+                    command.StateVariables.Add(FromXml(container));
                 }
             }
 
             return command;
+        }
+
+        private static ServiceAction ServiceActionFromXml(XElement container)
+        {
+            var argumentList = new List<Argument>();
+
+            foreach (var arg in container.Descendants(uPnpNamespaces.svc + "argument"))
+            {
+                argumentList.Add(ArgumentFromXml(arg));
+            }
+
+            return new ServiceAction
+            {
+                Name = container.GetValue(uPnpNamespaces.svc + "name"),
+
+                ArgumentList = argumentList
+            };
+        }
+
+        private static Argument ArgumentFromXml(XElement container)
+        {
+            if (container == null)
+            {
+                throw new ArgumentNullException("container");
+            }
+
+            return new Argument
+            {
+                Name = container.GetValue(uPnpNamespaces.svc + "name"),
+                Direction = container.GetValue(uPnpNamespaces.svc + "direction"),
+                RelatedStateVariable = container.GetValue(uPnpNamespaces.svc + "relatedStateVariable")
+            };
+        }
+
+        public static StateVariable FromXml(XElement container)
+        {
+            var allowedValues = new List<string>();
+            var element = container.Descendants(uPnpNamespaces.svc + "allowedValueList")
+                .FirstOrDefault();
+
+            if (element != null)
+            {
+                var values = element.Descendants(uPnpNamespaces.svc + "allowedValue");
+
+                allowedValues.AddRange(values.Select(child => child.Value));
+            }
+
+            return new StateVariable
+            {
+                Name = container.GetValue(uPnpNamespaces.svc + "name"),
+                DataType = container.GetValue(uPnpNamespaces.svc + "dataType"),
+                AllowedValues = allowedValues
+            };
         }
 
         public string BuildPost(ServiceAction action, string xmlNamespace)
