@@ -765,6 +765,10 @@
 
                     var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
 
+                    if (item.Type == "Person" && !itemCountHtml) {
+                        itemCountHtml = "&nbsp;";
+                    }
+
                     if (itemCountHtml) {
                         html += "<div class='" + cssClass + "'>";
                         html += itemCountHtml;
