@@ -872,18 +872,18 @@
                 $('#video-fullscreenButton', videoControls).show();
             }
 
-            var videoElement = $("video", videoElement);
+            var video = $("video", videoElement);
 
             initialVolume = localStorage.getItem("volume") || 0.5;
 
-            videoElement.each(function () {
+            video.each(function () {
                 this.volume = initialVolume;
             });
 
             self.volumeSlider.val(initialVolume).slider('refresh');
             self.updateVolumeButtons(initialVolume);
 
-            videoElement.on("volumechange", function (e) {
+            video.on("volumechange", function (e) {
 
                 var muted = this.muted;
 
@@ -899,13 +899,13 @@
 
             }).on("play.once", function () {
 
-                videoElement.off("play.once");
+                video.off("play.once");
 
             }).on("playing.once", function () {
 
                 self.updateCanClientSeek(this);
 
-                videoElement.off("playing.once");
+                video.off("playing.once");
 
                 ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, mediaSource.Id, true, item.MediaType);
 
@@ -1037,7 +1037,7 @@
             currentItem = item;
             currentMediaSource = mediaSource;
 
-            return videoElement[0];
+            return video[0];
         }
     };
 })();

@@ -34,7 +34,8 @@
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
-                    context: 'tv'
+                    context: 'tv',
+                    lazy: true
                 });
                 
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
@@ -45,7 +46,8 @@
                     items: result.Items,
                     shape: "banner",
                     preferBanner: true,
-                    context: 'tv'
+                    context: 'tv',
+                    lazy: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -56,7 +58,8 @@
                     shape: "portrait",
                     context: 'tv',
                     showTitle: true,
-                    centerText: true
+                    centerText: true,
+                    lazy: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -67,7 +70,8 @@
                     shape: "portrait",
                     context: 'tv',
                     timeline: true,
-                    showTitle: true
+                    showTitle: true,
+                    lazy: true
                 });
 
                 $('.itemsContainer', page).addClass('timelineItemsContainer');

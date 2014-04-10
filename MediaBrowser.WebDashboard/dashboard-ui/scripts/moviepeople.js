@@ -34,7 +34,8 @@
                 context: 'movies',
                 showTitle: true,
                 showItemCounts: true,
-                coverImage: true
+                coverImage: true,
+                lazy: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, [], false);

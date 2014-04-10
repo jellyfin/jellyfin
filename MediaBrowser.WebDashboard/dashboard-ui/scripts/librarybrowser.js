@@ -432,6 +432,8 @@
 
             options.shape = options.shape || "portrait";
 
+            options.lazy = options.lazy || false;
+
             var html = "";
 
             var primaryImageAspectRatio = options.shape == 'auto' ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
@@ -667,7 +669,7 @@
 
                 var style = "";
 
-                if (imgUrl) {
+                if (imgUrl && !options.lazy) {
                     style += 'background-image:url(\'' + imgUrl + '\');';
                 }
 
@@ -680,9 +682,16 @@
                     imageCssClass += " coveredPosterItemImage";
                 }
 
+                var dataSrc = "";
+
+                if (options.lazy) {
+                    imageCssClass += " lazy";
+                    dataSrc = ' data-src="' + imgUrl + '"';
+                }
+
                 var progressHtml = options.showProgress === false ? '' : LibraryBrowser.getItemProgressBarHtml(item);
 
-                html += '<div class="' + imageCssClass + '" style="' + style + '">';
+                html += '<div class="' + imageCssClass + '" style="' + style + '"' + dataSrc + '>';
 
                 html += '<div class="posterItemOverlayTarget"></div>';
 
@@ -754,6 +763,10 @@
                 if (options.showItemCounts) {
 
                     var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
+
+                    if (item.Type == "Person" && !itemCountHtml) {
+                        itemCountHtml = "&nbsp;";
+                    }
 
                     if (itemCountHtml) {
                         html += "<div class='" + cssClass + "'>";

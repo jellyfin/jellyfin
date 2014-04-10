@@ -34,7 +34,8 @@
                     shape: "square",
                     context: 'music',
                     showTitle: true,
-                    showParentTitle: true
+                    showParentTitle: true,
+                    lazy: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -45,7 +46,8 @@
                     context: 'music',
                     showTitle: true,
                     showParentTitle: true,
-                    timeline: true
+                    timeline: true,
+                    lazy: true
                 });
                 $('.itemsContainer', page).addClass('timelineItemsContainer');
             }

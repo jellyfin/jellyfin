@@ -174,6 +174,62 @@
                     return p.isDefaultPlayer;
                 })[0];
         };
+
+        self.pause = function () {
+            currentPlayer.pause();
+        };
+
+        self.stop = function () {
+            currentPlayer.stop();
+        };
+
+        self.unpause = function () {
+            currentPlayer.unpause();
+        };
+
+        self.seek = function (position) {
+            currentPlayer.changeStream(position);
+        };
+
+        self.currentPlaylistIndex = function (i) {
+            currentPlayer.currentPlaylistIndex(i);
+        };
+
+        self.removeFromPlaylist = function (i) {
+            currentPlayer.removeFromPlaylist(i);
+        };
+
+        self.nextTrack = function () {
+            currentPlayer.nextTrack();
+        };
+
+        self.previousTrack = function () {
+            currentPlayer.previousTrack();
+        };
+
+        self.mute = function () {
+            currentPlayer.mute();
+        };
+
+        self.unmute = function () {
+            currentPlayer.unmute();
+        };
+
+        self.toggleMute = function () {
+            currentPlayer.toggleMute();
+        };
+
+        self.volumeDown = function () {
+            currentPlayer.volumeDown();
+        };
+
+        self.volumeUp = function () {
+            currentPlayer.volumeUp();
+        };
+
+        self.shuffle = function (id) {
+            currentPlayer.shuffle(id);
+        };
     }
 
     window.MediaController = new mediaController();

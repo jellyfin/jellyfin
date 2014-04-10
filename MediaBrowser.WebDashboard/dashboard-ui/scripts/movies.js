@@ -35,7 +35,8 @@
                     shape: "backdrop",
                     preferThumb: true,
                     context: 'movies',
-                    selectionPanel: true
+                    selectionPanel: true,
+                    lazy: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -45,7 +46,8 @@
                     items: result.Items,
                     shape: "banner",
                     preferBanner: true,
-                    context: 'movies'
+                    context: 'movies',
+                    lazy: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -56,7 +58,8 @@
                     context: 'movies',
                     showTitle: true,
                     centerText: true,
-                    selectionPanel: true
+                    selectionPanel: true,
+                    lazy: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -68,7 +71,8 @@
                     showTitle: true,
                     timeline: true,
                     centerText: true,
-                    selectionPanel: true
+                    selectionPanel: true,
+                    lazy: true
                 });
                 $('.itemsContainer', page).addClass('timelineItemsContainer');
             }
