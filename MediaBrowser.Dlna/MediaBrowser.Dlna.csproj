@@ -52,13 +52,13 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="DlnaManager.cs" />
-    <Compile Include="PlayTo\Argument.cs" />
+    <Compile Include="Common\Argument.cs" />
     <Compile Include="PlayTo\CurrentIdEventArgs.cs" />
     <Compile Include="PlayTo\Device.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlayTo\DeviceInfo.cs" />
-    <Compile Include="PlayTo\DeviceService.cs" />
+    <Compile Include="Common\DeviceService.cs" />
     <Compile Include="PlayTo\DidlBuilder.cs" />
     <Compile Include="PlayTo\DlnaController.cs" />
     <Compile Include="PlayTo\Extensions.cs" />
@@ -68,20 +68,25 @@
     <Compile Include="PlayTo\PlaylistItemFactory.cs" />
     <Compile Include="PlayTo\PlayToManager.cs" />
     <Compile Include="PlayTo\PlayToServerEntryPoint.cs" />
-    <Compile Include="PlayTo\ServiceAction.cs" />
+    <Compile Include="Common\ServiceAction.cs" />
     <Compile Include="Profiles\Foobar2000Profile.cs" />
     <Compile Include="Profiles\Windows81Profile.cs" />
     <Compile Include="Profiles\WindowsMediaCenterProfile.cs" />
     <Compile Include="Profiles\WindowsPhoneProfile.cs" />
+    <Compile Include="Server\ControlHandler.cs" />
+    <Compile Include="Server\ServiceActionListBuilder.cs" />
+    <Compile Include="Server\ContentDirectoryXmlBuilder.cs" />
+    <Compile Include="Server\Datagram.cs" />
+    <Compile Include="Server\DescriptionXmlBuilder.cs" />
     <Compile Include="Ssdp\SsdpHelper.cs" />
     <Compile Include="PlayTo\SsdpHttpClient.cs" />
-    <Compile Include="PlayTo\StateVariable.cs" />
+    <Compile Include="Common\StateVariable.cs" />
     <Compile Include="PlayTo\StreamHelper.cs" />
     <Compile Include="PlayTo\TransportCommands.cs" />
     <Compile Include="PlayTo\TransportStateEventArgs.cs" />
     <Compile Include="PlayTo\uBaseObject.cs" />
     <Compile Include="PlayTo\uContainer.cs" />
-    <Compile Include="PlayTo\DeviceIcon.cs" />
+    <Compile Include="Common\DeviceIcon.cs" />
     <Compile Include="PlayTo\uParser.cs" />
     <Compile Include="PlayTo\uPnpNamespaces.cs" />
     <Compile Include="Profiles\DefaultProfile.cs" />
@@ -140,6 +145,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\Default.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\logo-120.jpg" />
+    <EmbeddedResource Include="Images\logo-120.png" />
+    <EmbeddedResource Include="Images\logo-48.jpg" />
+    <EmbeddedResource Include="Images\logo-48.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

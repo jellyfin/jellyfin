@@ -4,7 +4,7 @@ using ServiceStack;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Api
+namespace MediaBrowser.Api.Dlna
 {
     [Route("/Dlna/ProfileInfos", "GET", Summary = "Gets a list of profiles")]
     public class GetProfileInfos : IReturn<List<DeviceProfileInfo>>

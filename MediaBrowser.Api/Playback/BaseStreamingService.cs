@@ -1341,6 +1341,12 @@ namespace MediaBrowser.Api.Playback
                 RequestedUrl = url
             };
 
+            if (!string.IsNullOrWhiteSpace(request.AudioCodec))
+            {
+                state.SupportedAudioCodecs = request.AudioCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault();
+            }
+
             var item = string.IsNullOrEmpty(request.MediaSourceId) ?
                 DtoService.GetItemByDtoId(request.Id) :
                 DtoService.GetItemByDtoId(request.MediaSourceId);
@@ -1492,10 +1498,10 @@ namespace MediaBrowser.Api.Playback
                     videoRequest.VideoCodec = "copy";
                 }
 
-                //if (state.AudioStream != null && CanStreamCopyAudio(request, state.AudioStream))
-                //{
-                //    request.AudioCodec = "copy";
-                //}
+                if (state.AudioStream != null && CanStreamCopyAudio(request, state.AudioStream, state.SupportedAudioCodecs))
+                {
+                    request.AudioCodec = "copy";
+                }
             }
 
             return state;
@@ -1587,10 +1593,10 @@ namespace MediaBrowser.Api.Playback
             return SupportsAutomaticVideoStreamCopy;
         }
 
-        private bool CanStreamCopyAudio(StreamRequest request, MediaStream audioStream)
+        private bool CanStreamCopyAudio(StreamRequest request, MediaStream audioStream, List<string> supportedAudioCodecs)
         {
             // Source and target codecs must match
-            if (string.IsNullOrEmpty(request.AudioCodec) || !string.Equals(request.AudioCodec, audioStream.Codec, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(audioStream.Codec) || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparer.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -1623,7 +1629,7 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return SupportsAutomaticVideoStreamCopy;
+            return true;
         }
 
         protected virtual bool SupportsAutomaticVideoStreamCopy
