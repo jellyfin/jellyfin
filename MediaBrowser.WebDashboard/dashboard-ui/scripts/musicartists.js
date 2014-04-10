@@ -120,10 +120,4 @@
         updateFilterControls(this);
     });
 
-    $(function () {
-        $("body").on("create", function () {
-            $(".lazy").unveil(200);
-        });
-    });
-
 })(jQuery, document);

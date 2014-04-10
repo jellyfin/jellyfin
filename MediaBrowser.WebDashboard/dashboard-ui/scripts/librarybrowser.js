@@ -1,5 +1,11 @@
 ﻿var LibraryBrowser = (function (window, document, $, screen, localStorage) {
 
+    $(function() {
+        $("body").on("create", function () {
+            $(".lazy").unveil(200);
+        });
+    });
+    
     var defaultBackground = "#333";
 
     return {
@@ -431,8 +437,6 @@
             var currentIndexValue;
 
             options.shape = options.shape || "portrait";
-
-            options.lazy = options.lazy || false;
 
             var html = "";
 
