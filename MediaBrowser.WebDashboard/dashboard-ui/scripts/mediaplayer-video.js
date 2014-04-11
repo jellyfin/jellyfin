@@ -23,6 +23,13 @@
         var idleState = true;
         var remoteFullscreen = false;
 
+        var muteButton = null;
+        var unmuteButton = null;
+        var volumeSlider = null;
+        var positionSlider;
+        var isPositionSliderActive;
+        var currentTimeElement;
+
         self.initVideoPlayer = function () {
             video = playVideo(item, mediaSource, startPosition, user);
             return video;
@@ -66,7 +73,7 @@
         self.resetEnhancements = function () {
             $("#mediaPlayer").hide();
             $('#videoPlayer').removeClass('fullscreenVideo');
-            $("#videoControls").removeClass("inactive")
+            $("#videoControls").removeClass("inactive");
             $("video").remove();
             $("html").css("cursor", "default");
             $(".ui-loader").hide();
@@ -155,7 +162,38 @@
             }
         });
 
+        function onPositionSliderChange() {
+
+            isPositionSliderActive = false;
+
+            var newPercent = parseInt(this.value);
+
+            var newPositionTicks = (newPercent / 100) * currentMediaSource.RunTimeTicks;
+
+            self.changeStream(Math.floor(newPositionTicks));
+        }
+
         $(function () {
+
+            var parent = $("#mediaPlayer");
+            muteButton = $('.muteButton', parent);
+            unmuteButton = $('.unmuteButton', parent);
+            currentTimeElement = $('.currentTime', parent);
+
+            positionSlider = $(".positionSlider", parent).on('slidestart', function (e) {
+
+                isPositionSliderActive = true;
+
+            }).on('slidestop', onPositionSliderChange);
+
+            volumeSlider = $('.volumeSlider', parent).on('slidestop', function () {
+
+                var vol = this.value;
+
+                updateVolumeButtons(vol);
+                self.setVolume(vol * 100);
+            });
+
             $('#video-chaptersFlyout').on('click', '.mediaFlyoutOption', function () {
 
                 var ticks = parseInt(this.getAttribute('data-positionticks'));
@@ -262,6 +300,17 @@
                 video.removeClass("cursor-active").addClass("cursor-inactive");
                 videoControls.removeClass("active").addClass("inactive");
             }, 4000);
+        }
+
+        function updateVolumeButtons(vol) {
+
+            if (vol) {
+                muteButton.show();
+                unmuteButton.hide();
+            } else {
+                muteButton.hide();
+                unmuteButton.show();
+            }
         }
 
         function requestFullScreen(element) {
@@ -729,7 +778,7 @@
 
             return options;
         }
-        
+
         function playVideo(item, mediaSource, startPosition, user) {
 
             var mediaStreams = mediaSource.MediaStreams || [];
@@ -771,7 +820,10 @@
                 videoBitrate: mp4Quality.videoBitrate,
                 audioBitrate: mp4Quality.audioBitrate,
                 VideoCodec: mp4Quality.videoCodec,
-                AudioCodec: mp4Quality.audioCodec
+                AudioCodec: mp4Quality.audioCodec,
+                
+                // None of the browsers seem to like this
+                EnableAutoStreamCopy: false
 
             })) + seekParam;
 
@@ -781,7 +833,8 @@
                 AudioCodec: 'Vorbis',
                 maxWidth: webmQuality.maxWidth,
                 videoBitrate: webmQuality.videoBitrate,
-                audioBitrate: webmQuality.audioBitrate
+                audioBitrate: webmQuality.audioBitrate,
+                EnableAutoStreamCopy: false
 
             })) + seekParam;
 
@@ -874,42 +927,26 @@
 
             var video = $("video", videoElement);
 
-            initialVolume = localStorage.getItem("volume") || 0.5;
+            initialVolume = self.getSavedVolume();
 
             video.each(function () {
                 this.volume = initialVolume;
             });
 
-            self.volumeSlider.val(initialVolume).slider('refresh');
-            self.updateVolumeButtons(initialVolume);
+            volumeSlider.val(initialVolume).slider('refresh');
+            updateVolumeButtons(initialVolume);
 
             video.on("volumechange", function (e) {
 
-                var muted = this.muted;
-
                 var vol = this.volume;
 
-                if (!muted && this.volume > 0) {
-                    localStorage.setItem("volume", vol);
-                }
-
-                this.muted = this.volume == 0;
-
-                self.updateVolumeButtons(vol);
-
-            }).on("play.once", function () {
-
-                video.off("play.once");
+                updateVolumeButtons(vol);
 
             }).on("playing.once", function () {
 
-                self.updateCanClientSeek(this);
-
                 video.off("playing.once");
 
-                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, mediaSource.Id, true, item.MediaType);
-
-                self.startProgressInterval(item.Id, mediaSource.Id);
+                self.onPlaybackStart(this, item, mediaSource);
 
             }).on("pause", function (e) {
 
@@ -939,9 +976,9 @@
 
             }).on("timeupdate", function () {
 
-                if (!self.isPositionSliderActive) {
+                if (!isPositionSliderActive) {
 
-                    self.setCurrentTime(self.getCurrentTicks(this), item, true);
+                    self.setCurrentTime(self.getCurrentTicks(this), positionSlider, currentTimeElement);
                 }
 
             }).on("error", function () {
@@ -995,8 +1032,13 @@
                 $(".ui-loader").hide();
                 $("html").css("cursor", "default");
 
-            }).on("ended.playbackstopped", self.onPlaybackStopped)
-                .on('ended.playnext', self.playNextAfterEnded);
+            }).on("ended.playbackstopped", function () {
+
+                currentTimeElement.empty();
+
+                self.onPlaybackStopped.call(this);
+
+            }).on('ended.playnext', self.playNextAfterEnded);
 
             // Stop playback on browser back button nav
             $(window).on("popstate", function () {

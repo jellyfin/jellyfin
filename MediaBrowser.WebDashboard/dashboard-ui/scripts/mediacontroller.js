@@ -175,6 +175,11 @@
                 })[0];
         };
 
+        self.getCurrentPlayer = function () {
+
+            return currentPlayer;
+        };
+
         self.pause = function () {
             currentPlayer.pause();
         };
@@ -188,7 +193,7 @@
         };
 
         self.seek = function (position) {
-            currentPlayer.changeStream(position);
+            currentPlayer.seek(position);
         };
 
         self.currentPlaylistIndex = function (i) {

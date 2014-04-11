@@ -2197,6 +2197,28 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 dataType: "json"
             });
         };
+        
+        function normalizeImageOptions(options) {
+
+            var ratio = window.devicePixelRatio;
+            
+            if (ratio) {
+                
+                if (options.width) {
+                    options.width = options.width * ratio;
+                }
+                if (options.height) {
+                    options.height = options.height * ratio;
+                }
+                if (options.maxWidth) {
+                    options.maxWidth = options.maxWidth * ratio;
+                }
+                if (options.maxHeight) {
+                    options.maxHeight = options.maxHeight * ratio;
+                }
+            }
+
+        }
 
         /**
          * Constructs a url for a user image
@@ -2230,6 +2252,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             delete options.type;
             delete options.index;
 
+            normalizeImageOptions(options);
+            
             return self.getUrl(url, options);
         };
 
@@ -2265,215 +2289,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             delete options.type;
             delete options.index;
 
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a year image
-         * @param {String} year
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getYearImageUrl = function (year, options) {
-
-            if (!year) {
-                throw new Error("null year");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "Years/" + year + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a genre image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getGenreImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "Genres/" + self.encodeName(name) + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a genre image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getMusicGenreImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "MusicGenres/" + self.encodeName(name) + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a genre image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getGameGenreImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "GameGenres/" + self.encodeName(name) + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a artist image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getArtistImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "Artists/" + self.encodeName(name) + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a studio image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getStudioImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "Studios/" + self.encodeName(name) + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
+            normalizeImageOptions(options);
 
             return self.getUrl(url, options);
         };

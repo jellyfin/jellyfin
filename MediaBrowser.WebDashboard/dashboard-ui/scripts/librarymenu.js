@@ -31,7 +31,7 @@
         if (user.PrimaryImageTag) {
 
             var url = ApiClient.getUserImageUrl(user.Id, {
-                height: 40,
+                height: 24,
                 tag: user.PrimaryImageTag,
                 type: "Primary"
             });

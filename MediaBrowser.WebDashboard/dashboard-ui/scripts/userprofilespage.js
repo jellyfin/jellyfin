@@ -27,7 +27,7 @@
             if (user.PrimaryImageTag) {
 
                 var url = ApiClient.getUserImageUrl(user.Id, {
-                    width: 225,
+                    width: 80,
                     tag: user.PrimaryImageTag,
                     type: "Primary"
                 });

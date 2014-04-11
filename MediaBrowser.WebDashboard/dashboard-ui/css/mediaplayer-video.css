@@ -111,7 +111,7 @@
 
 #mediaPlayer .ui-slider-handle {
     height: 12px !important;
-    margin-top: -7px !important;   
+    margin-top: -7px !important;
 }
 
 #videoPlayer.fullscreenVideo #videoControls {
@@ -212,10 +212,6 @@
 /****************************************/
 
 @media all and (max-width: 1200px), all and (max-height: 720px) {
-    #videoControls .nowPlayingMediaInfo {
-        display: none;
-    }
-
     #videoControls .currentTime {
         margin-right: 0;
         min-width: 120px;
@@ -370,4 +366,87 @@
 
 .cursor-inactive {
     cursor: none;
+}
+
+.mediaFlyoutContainer {
+    display: inline-block;
+}
+
+.mediaPlayerFlyout {
+    width: 200px;
+    color: #000;
+    background-color: #fff;
+    border: 1px solid #999;
+    position: absolute;
+    z-index: 99999;
+    bottom: 78px;
+    margin-left: -125px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 13px;
+}
+
+.chaptersFlyout, .audioTracksFlyout {
+    width: 250px;
+    margin-left: -150px;
+}
+
+.mediaFlyoutOption {
+    display: block;
+    text-decoration: none;
+    color: #000;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+    .mediaFlyoutOption:hover, .mediaFlyoutOption:focus {
+        background-color: #eee;
+    }
+
+.selectedMediaFlyoutOption {
+    background-color: #d9F4FF;
+    background-image: url(images/media/selected.png);
+    background-repeat: no-repeat;
+    background-position: right top;
+    background-size: 16px 16px;
+}
+
+.mediaFlyoutOptionImage {
+    display: inline-block;
+    width: 15%;
+    vertical-align: middle;
+}
+
+    .mediaFlyoutOptionImage + .mediaFlyoutOptionContent {
+        vertical-align: top;
+        display: inline-block;
+        width: 85%;
+    }
+
+.chaptersFlyout .mediaFlyoutOptionImage {
+    width: 40%;
+}
+
+    .chaptersFlyout .mediaFlyoutOptionImage + .mediaFlyoutOptionContent {
+        width: 60%;
+    }
+
+.mediaFlyoutOptionName {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding-left: 5px;
+    font-size: 13px;
+    font-weight: normal;
+}
+
+.mediaFlyoutOptionSecondaryText {
+    font-size: 13px;
+    color: #333;
+    font-weight: normal;
+    margin-top: 3px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding-left: 5px;
 }

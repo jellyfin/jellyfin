@@ -1590,7 +1590,7 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return SupportsAutomaticVideoStreamCopy;
+            return request.EnableAutoStreamCopy;
         }
 
         private bool CanStreamCopyAudio(StreamRequest request, MediaStream audioStream, List<string> supportedAudioCodecs)
@@ -1630,14 +1630,6 @@ namespace MediaBrowser.Api.Playback
             }
 
             return true;
-        }
-
-        protected virtual bool SupportsAutomaticVideoStreamCopy
-        {
-            get
-            {
-                return false;
-            }
         }
 
         private void ApplyDeviceProfileSettings(StreamState state)

@@ -241,6 +241,7 @@
     };
 
     function getCodecLimits() {
+        
         return {
 
             maxVideoAudioChannels: 6,
@@ -608,7 +609,7 @@
             url += '&maxheight=' + codecLimits.maxHeight;
 
             url += '&videoCodec=h264';
-            url += '&audioCodec=aac';
+            url += '&audioCodec=aac,mp3';
 
             url += '&audiosamplerate=' + codecLimits.maxSampleRate;
             url += '&mediasourceid=' + mediaSourceInfo.mediaSource.Id;
@@ -1004,7 +1005,7 @@
 
     var castPlayer = new CastPlayer();
 
-    function chromecastPlayer(castPlayer) {
+    function chromecastPlayer() {
 
         var self = this;
 
@@ -1018,11 +1019,11 @@
 
         self.playlistIndex = 0;
 
-        $.subscribe("/playback/complete", function (e) {
-            if (self.playlistIndex < (self.playlist.items || []).length) {
-                self.play(self.playlist);
-            }
-        });
+        //$.subscribe("/playback/complete", function (e) {
+        //    if (self.playlistIndex < (self.playlist.items || []).length) {
+        //        self.play(self.playlist);
+        //    }
+        //});
 
         ////$(".positionSlider", "#footer").off("slidestart slidestop")
         ////  .on('slidestart', function (e) {
@@ -1043,13 +1044,13 @@
             query.ExcludeLocationTypes = "Virtual";
 
             return ApiClient.getItems(userId, query);
-        };
+        }
 
         function queueItems (items) {
             for (var i = 0, length = items.length; i < length; i++) {
                 self.playlist.push(items[i]);
             }
-        };
+        }
 
         function queueItemsNext(items) {
             var insertIndex = 1;
@@ -1057,7 +1058,7 @@
                 self.playlist.splice(insertIndex, 0, items[i]);
                 insertIndex++;
             }
-        };
+        }
 
         function translateItemsForPlayback(items) {
             var deferred = $.Deferred();
@@ -1100,7 +1101,7 @@
             }
 
             return deferred.promise();
-        };
+        }
 
         self.play = function (options) {
             console.log("play", options);
@@ -1371,7 +1372,7 @@
         };
     }
 
-    MediaController.registerPlayer(new chromecastPlayer(castPlayer));
+    MediaController.registerPlayer(new chromecastPlayer());
 
     $(MediaController).on('playerchange', function () {
 
