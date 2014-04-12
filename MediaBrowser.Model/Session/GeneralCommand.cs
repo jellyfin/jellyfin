@@ -46,6 +46,7 @@ namespace MediaBrowser.Model.Session
         ToggleMute = 21,
         SetVolume = 22,
         SetAudioStreamIndex = 23,
-        SetSubtitleStreamIndex = 24
+        SetSubtitleStreamIndex = 24,
+        ToggleFullscreen = 25
     }
 }

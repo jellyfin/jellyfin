@@ -1010,6 +1010,7 @@
         var self = this;
 
         var isPositionSliderActive = false;
+        var currentPlaylistIndex;
 
         self.name = PlayerName;
 
@@ -1365,10 +1366,34 @@
             }
         };
 
+        self.beginPlayerUpdates = function () {
+            // Setup polling here
+        };
+
+        self.endPlayerUpdates = function () {
+            // Stop polling here
+        };
+
         self.volumeDown = function () {
         };
 
         self.volumeUp = function () {
+        };
+
+        self.getPlayerState = function () {
+
+            var deferred = $.Deferred();
+
+            var result = self.getPlayerStateInternal();
+
+            deferred.resolveWith(null, [result]);
+
+            return deferred.promise();
+        };
+
+        self.getPlayerStateInternal = function () {
+
+            return {};
         };
     }
 

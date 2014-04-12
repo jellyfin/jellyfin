@@ -169,7 +169,7 @@
                 });
 
                 if (currentItem.MediaType == "Video") {
-                    ApiClient.stopActiveEncodings().done(function() {
+                    ApiClient.stopActiveEncodings().done(function () {
 
                         self.startTimeTicksOffset = ticks;
                         element.src = currentSrc;
@@ -213,7 +213,7 @@
                 currentTimeElement.html(timeText);
             }
 
-            var state = self.getPlayerState(currentMediaElement, currentItem, currentMediaSource);
+            var state = self.getPlayerStateInternal(currentMediaElement, currentItem, currentMediaSource);
 
             $(self).trigger('positionchange', [state]);
         };
@@ -481,7 +481,7 @@
 
             var mediaControls = $("#videoControls");
 
-            var state = self.getPlayerState(currentMediaElement, item, currentMediaSource);
+            var state = self.getPlayerStateInternal(currentMediaElement, item, currentMediaSource);
 
             var url = "";
 
@@ -865,6 +865,8 @@
 
             elem.pause();
 
+            var isVideo = currentItem.MediaType == "Video";
+
             $(elem).off("ended.playnext").on("ended", function () {
 
                 $(this).off();
@@ -875,10 +877,12 @@
 
                 elem.src = "";
                 currentMediaElement = null;
+                currentItem = null;
+                currentMediaSource = null;
 
             }).trigger("ended");
 
-            if (currentItem.MediaType == "Video") {
+            if (isVideo) {
                 if (self.isFullScreen()) {
                     self.exitFullScreen();
                 }
@@ -890,12 +894,45 @@
             return currentMediaElement;
         };
 
-        self.getPlayerState = function (playerElement, item, mediaSource) {
+        self.getPlayerState = function() {
 
-            var itemName = '';
-            var itemSubName = '';
+            var deferred = $.Deferred();
+
+            var result = self.getPlayerStateInternal(currentMediaElement, currentItem, currentMediaSource);
+
+            deferred.resolveWith(null, [result]);
+
+            return deferred.promise();
+        };
+
+        self.getPlayerStateInternal = function (playerElement, item, mediaSource) {
+
+            var state = {};
+
+            if (playerElement) {
+
+                state.volumeLevel = playerElement.volume * 100;
+                state.isMuted = playerElement.volume == 0;
+                state.isPaused = playerElement.paused;
+                state.positionTicks = self.getCurrentTicks(playerElement);
+            }
+
+            if (mediaSource) {
+
+                state.mediaSourceId = mediaSource.Id;
+                state.runtimeTicks = mediaSource.RunTimeTicks;
+
+                state.canSeek = mediaSource.RunTimeTicks && mediaSource.RunTimeTicks > 0;
+            }
 
             if (item) {
+
+                state.itemId = item.Id;
+                state.mediaType = item.MediaType;
+                state.itemType = item.Type;
+
+                var itemName = '';
+                var itemSubName = '';
 
                 var name = item.Name;
                 var seriesName = '';
@@ -928,44 +965,40 @@
                 if (!itemSubName && item.ProductionYear) {
                     itemSubName = item.ProductionYear;
                 }
-            }
 
-            var state = {
-                itemId: item.Id,
-                mediaSourceId: mediaSource.Id,
-                volumeLevel: playerElement.volume * 100,
-                isMuted: playerElement.volume == 0,
-                isPaused: playerElement.paused,
-                runtimeTicks: mediaSource.RunTimeTicks,
-                positionTicks: self.getCurrentTicks(playerElement),
-                canSeek: mediaSource.RunTimeTicks && mediaSource.RunTimeTicks > 0,
-                mediaType: item.MediaType,
-                itemName: itemName,
-                itemSubName: itemSubName,
-                itemType: item.Type
-            };
+                var imageTags = item.ImageTags || {};
 
-            var imageTags = item.ImageTags || {};
+                if (imageTags.Primary) {
 
-            if (imageTags.Primary) {
+                    state.primaryImageItemId = item.Id;
+                    state.primaryImageTag = imageTags.Primary;
+                }
 
-                state.primaryImageItemId = item.Id;
-                state.primaryImageTag = imageTags.Primary;
-            }
+                if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
-            if (item.BackdropImageTags && item.BackdropImageTags.length) {
+                    state.backdropItemId = item.Id;
+                    state.backdropImageTag = item.BackdropImageTags[0];
+                }
 
-                state.backdropItemId = item.Id;
-                state.backdropImageTag = item.BackdropImageTags[0];
-            }
+                if (imageTags.Thumb) {
 
-            if (imageTags.Thumb) {
+                    state.thumbItemId = item.Id;
+                    state.thumbImageTag = imageTags.Thumb;
+                }
 
-                state.thumbItemId = item.Id;
-                state.thumbImageTag = imageTags.Thumb;
+                state.itemName = itemName;
+                state.itemSubName = itemSubName;
             }
 
             return state;
+        };
+
+        self.beginPlayerUpdates = function () {
+            // Nothing to setup here
+        };
+
+        self.endPlayerUpdates = function () {
+            // Nothing to setup here
         };
 
         self.onPlaybackStart = function (playerElement, item, mediaSource) {
@@ -976,7 +1009,7 @@
 
             self.startProgressInterval(item.Id, mediaSource.Id);
 
-            var state = self.getPlayerState(playerElement, item, mediaSource);
+            var state = self.getPlayerStateInternal(playerElement, item, mediaSource);
 
             $(self).trigger('playbackstart', [state]);
         };
@@ -985,7 +1018,7 @@
 
             self.saveVolume(playerElement.volume);
 
-            var state = self.getPlayerState(playerElement, currentItem, currentMediaSource);
+            var state = self.getPlayerStateInternal(playerElement, currentItem, currentMediaSource);
 
             $(self).trigger('volumechange', [state]);
         };
@@ -1017,14 +1050,14 @@
                 self.resetEnhancements();
             }
 
-            var state = self.getPlayerState(playerElement, item, mediaSource);
+            var state = self.getPlayerStateInternal(playerElement, item, mediaSource);
 
             $(self).trigger('playbackstop', [state]);
         };
 
         self.onPlaystateChange = function (playerElement) {
 
-            var state = self.getPlayerState(playerElement, currentItem, currentMediaSource);
+            var state = self.getPlayerStateInternal(playerElement, currentItem, currentMediaSource);
 
             $(self).trigger('playstatechange', [state]);
         };

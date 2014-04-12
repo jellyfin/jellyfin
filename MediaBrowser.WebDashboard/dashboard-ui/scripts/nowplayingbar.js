@@ -154,6 +154,13 @@
 
     function updatePlayerState(state) {
 
+        if (state.itemName) {
+            showNowPlayingBar();
+        } else {
+            hideNowPlayingBar();
+            return;
+        }
+
         lastPlayerState = state;
 
         if (!muteButton) {
@@ -211,6 +218,8 @@
         }
 
         currentTimeElement.html(timeText);
+
+        updateNowPlayingInfo(state);
     }
 
     function updateNowPlayingInfo(state) {
@@ -271,23 +280,12 @@
 
         var player = this;
 
-        if (player.isDefaultPlayer && state.mediaType == 'Video') {
-            return;
-        }
+        player.beginPlayerUpdates();
 
-        showNowPlayingBar();
-
-        updatePlayerState(state);
-        updateNowPlayingInfo(state);
+        onStateChanged.call(player, e, state);
     }
 
-    var nowPlayingBarTimeout;
     function showNowPlayingBar() {
-
-        if (nowPlayingBarTimeout) {
-            clearTimeout(nowPlayingBarTimeout);
-            nowPlayingBarTimeout = null;
-        }
 
         var nowPlayingBar = getNowPlayingBar();
 
@@ -296,24 +294,21 @@
 
     function hideNowPlayingBar() {
 
-        if (nowPlayingBarTimeout) {
-            clearTimeout(nowPlayingBarTimeout);
-            nowPlayingBarTimeout = null;
-        }
-
         // Use a timeout to prevent the bar from hiding and showing quickly
         // in the event of a stop->play command
-        nowPlayingBarTimeout = setTimeout(function () {
-            getNowPlayingBar().hide();
-        }, 500);
+        getNowPlayingBar().hide();
     }
 
     function onPlaybackStopped(e, state) {
 
+        var player = this;
+
+        player.endPlayerUpdates();
+
         hideNowPlayingBar();
     }
 
-    function onVolumeChanged(e, state) {
+    function onStateChanged(e, state) {
 
         var player = this;
 
@@ -329,7 +324,10 @@
         if (currentPlayer) {
 
             $(currentPlayer).off('.nowplayingbar');
+            currentPlayer.endPlayerUpdates();
             currentPlayer = null;
+
+            hideNowPlayingBar();
         }
     }
 
@@ -339,11 +337,20 @@
 
         currentPlayer = player;
 
+        player.getPlayerState().done(function (state) {
+
+            if (state.itemName) {
+                player.beginPlayerUpdates();
+            }
+
+            onStateChanged.call(player, null, state);
+        });
+
         $(player).on('playbackstart.nowplayingbar', onPlaybackStart)
             .on('playbackstop.nowplayingbar', onPlaybackStopped)
-            .on('volumechange.nowplayingbar', onVolumeChanged)
-            .on('playstatechange.nowplayingbar', onVolumeChanged)
-            .on('positionchange.nowplayingbar', onVolumeChanged);
+            .on('volumechange.nowplayingbar', onStateChanged)
+            .on('playstatechange.nowplayingbar', onStateChanged)
+            .on('positionchange.nowplayingbar', onStateChanged);
     }
 
     $(function () {

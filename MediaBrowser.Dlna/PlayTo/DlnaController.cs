@@ -331,6 +331,16 @@ namespace MediaBrowser.Dlna.PlayTo
             return Task.FromResult(true);
         }
 
+        public Task SendPlaybackStartNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
+        }
+
+        public Task SendPlaybackStoppedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
+        }
+
         public Task SendServerShutdownNotification(CancellationToken cancellationToken)
         {
             return Task.FromResult(true);

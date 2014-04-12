@@ -43,12 +43,12 @@
             $(self).trigger('playerchange');
         };
 
-        self.setDefaultPlayerActive = function() {
+        self.setDefaultPlayerActive = function () {
             self.setActivePlayer(self.getDefaultPlayer());
         };
 
         self.removeActivePlayer = function (name) {
-            
+
             if (self.getPlayerInfo().name == name) {
                 self.setDefaultPlayerActive();
             }
@@ -78,7 +78,7 @@
 
                 }
 
-                targets = targets.sort(function(a,b) {
+                targets = targets.sort(function (a, b) {
 
                     var aVal = a.isLocalPlayer ? 0 : 1;
                     var bVal = b.isLocalPlayer ? 0 : 1;
@@ -241,13 +241,11 @@
 
     function onWebSocketMessageReceived(e, msg) {
 
-        var localPlayer = msg.MessageType === "Play" ||
-            msg.MessageType === "Playstate" ||
-            msg.MessageType === "GeneralCommand" ?
-            MediaController.getLocalPlayer() :
-            null;
+        var localPlayer;
 
         if (msg.MessageType === "Play") {
+
+            localPlayer = MediaController.getLocalPlayer();
 
             if (msg.Data.PlayCommand == "PlayNext") {
                 localPlayer.queueNext({ ids: msg.Data.ItemIds });
@@ -268,6 +266,8 @@
         }
         else if (msg.MessageType === "Playstate") {
 
+            localPlayer = MediaController.getLocalPlayer();
+
             if (msg.Data.Command === 'Stop') {
                 localPlayer.stop();
             }
@@ -286,13 +286,12 @@
             else if (msg.Data.Command === 'PreviousTrack') {
                 localPlayer.previousTrack();
             }
-            else if (msg.Data.Command === 'Fullscreen') {
-                localPlayer.remoteFullscreen();
-            }
         }
         else if (msg.MessageType === "GeneralCommand") {
 
             var cmd = msg.Data;
+
+            localPlayer = MediaController.getLocalPlayer();
 
             if (cmd.Name === 'Mute') {
                 localPlayer.mute();
@@ -308,6 +307,12 @@
             }
             else if (cmd.Name === 'ToggleMute') {
                 localPlayer.toggleMute();
+            }
+            else if (msg.Data.Command === 'Fullscreen') {
+                localPlayer.remoteFullscreen();
+            }
+            else if (msg.Data.Command === 'SetVolume') {
+                localPlayer.setVolume(cmd.Arguments.Volume);
             }
         }
     }

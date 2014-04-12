@@ -2197,13 +2197,13 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 dataType: "json"
             });
         };
-        
+
         function normalizeImageOptions(options) {
 
             var ratio = window.devicePixelRatio;
-            
+
             if (ratio) {
-                
+
                 if (options.width) {
                     options.width = options.width * ratio;
                 }
@@ -2253,7 +2253,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             delete options.index;
 
             normalizeImageOptions(options);
-            
+
             return self.getUrl(url, options);
         };
 
@@ -3794,7 +3794,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.sendSystemCommand = function (sessionId, command) {
+        self.sendCommand = function (sessionId, command, options) {
 
             if (!sessionId) {
                 throw new Error("null sessionId");
@@ -3804,12 +3804,22 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null command");
             }
 
-            var url = self.getUrl("Sessions/" + sessionId + "/System/" + command);
+            var url = self.getUrl("Sessions/" + sessionId + "/Command");
 
-            return self.ajax({
+            var ajaxOptions = {
                 type: "POST",
                 url: url
-            });
+            };
+
+            options = {
+                Arguments: options || {},
+                Name: command
+            };
+
+            ajaxOptions.data = JSON.stringify(options);
+            ajaxOptions.contentType = "application/json";
+
+            return self.ajax(ajaxOptions);
         };
 
         self.sendMessageCommand = function (sessionId, options) {
