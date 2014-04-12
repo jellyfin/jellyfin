@@ -2314,9 +2314,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("itemId cannot be empty");
             }
 
-            options = options || {
-
-            };
+            options = options || {};
 
             var url = "Items/" + itemId + "/Images/" + options.type;
 

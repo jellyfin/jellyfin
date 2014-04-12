@@ -106,11 +106,13 @@
 
                 var currentSrc = element.currentSrc;
 
-                if (params.AudioStreamIndex != null) {
-                    currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
-                }
-                if (params.SubtitleStreamIndex != null) {
-                    currentSrc = replaceQueryString(currentSrc, 'SubtitleStreamIndex', (params.SubtitleStreamIndex == -1 ? '' : params.SubtitleStreamIndex));
+                if (currentItem.MediaType == "Video") {
+                    if (params.AudioStreamIndex != null) {
+                        currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
+                    }
+                    if (params.SubtitleStreamIndex != null) {
+                        currentSrc = replaceQueryString(currentSrc, 'SubtitleStreamIndex', (params.SubtitleStreamIndex == -1 ? '' : params.SubtitleStreamIndex));
+                    }
                 }
 
                 var maxWidth = params.MaxWidth || getParameterByName('MaxWidth', currentSrc);
@@ -122,25 +124,32 @@
 
                 var transcodingExtension = self.getTranscodingExtension();
 
-                var finalParams = self.getFinalVideoParams(currentMediaSource, maxWidth, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension);
-                currentSrc = replaceQueryString(currentSrc, 'MaxWidth', finalParams.maxWidth);
-                currentSrc = replaceQueryString(currentSrc, 'VideoBitrate', finalParams.videoBitrate);
-                currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
-                currentSrc = replaceQueryString(currentSrc, 'Static', finalParams.isStatic);
+                var isStatic;
+                if (currentItem.MediaType == "Video") {
 
-                currentSrc = replaceQueryString(currentSrc, 'AudioCodec', finalParams.audioCodec);
-                currentSrc = replaceQueryString(currentSrc, 'VideoCodec', finalParams.videoCodec);
+                    var finalParams = self.getFinalVideoParams(currentMediaSource, maxWidth, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension);
 
-                currentSrc = replaceQueryString(currentSrc, 'profile', finalParams.profile || '');
-                currentSrc = replaceQueryString(currentSrc, 'level', finalParams.level || '');
+                    currentSrc = replaceQueryString(currentSrc, 'MaxWidth', finalParams.maxWidth);
+                    currentSrc = replaceQueryString(currentSrc, 'VideoBitrate', finalParams.videoBitrate);
 
-                if (finalParams.isStatic) {
-                    currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
-                } else {
-                    currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension);
+                    currentSrc = replaceQueryString(currentSrc, 'VideoCodec', finalParams.videoCodec);
+
+                    currentSrc = replaceQueryString(currentSrc, 'profile', finalParams.profile || '');
+                    currentSrc = replaceQueryString(currentSrc, 'level', finalParams.level || '');
+
+                    if (finalParams.isStatic) {
+                        currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
+                    } else {
+                        currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension);
+                    }
+
+                    currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
+                    currentSrc = replaceQueryString(currentSrc, 'Static', finalParams.isStatic);
+                    currentSrc = replaceQueryString(currentSrc, 'AudioCodec', finalParams.audioCodec);
+                    isStatic = finalParams.isStatic;
                 }
 
-                if (finalParams.isStatic || !ticks) {
+                if (isStatic || !ticks) {
                     currentSrc = replaceQueryString(currentSrc, 'starttimeticks', '');
                 } else {
                     currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
@@ -148,23 +157,29 @@
 
                 clearProgressInterval();
 
-                $(element).off('ended.playbackstopped').off('ended.playnext').on("play.onceafterseek", function () {
+                $(element).off('ended.playbackstopped').off('ended.playnext').one("play", function () {
 
                     self.updateCanClientSeek(this);
 
-                    $(this).off('play.onceafterseek').on('ended.playbackstopped', self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded);
+                    $(this).on('ended.playbackstopped', self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded);
 
                     self.startProgressInterval(currentItem.Id, currentMediaSource.Id);
                     sendProgressUpdate(currentItem.Id, currentMediaSource.Id);
 
                 });
 
-                ApiClient.stopActiveEncodings().done(function () {
+                if (currentItem.MediaType == "Video") {
+                    ApiClient.stopActiveEncodings().done(function() {
 
+                        self.startTimeTicksOffset = ticks;
+                        element.src = currentSrc;
+
+                    });
+                } else {
                     self.startTimeTicksOffset = ticks;
                     element.src = currentSrc;
-
-                });
+                    element.play();
+                }
             }
         };
 
@@ -463,7 +478,7 @@
             if (!item) {
                 throw new Error('item cannot be null');
             }
-            
+
             var mediaControls = $("#videoControls");
 
             var state = self.getPlayerState(currentMediaElement, item, currentMediaSource);
@@ -679,7 +694,6 @@
         self.seek = function (position) {
 
             self.changeStream(position);
-
         };
 
         self.mute = function () {
@@ -900,15 +914,19 @@
                 if (item.CurrentProgram) {
                     seriesName = item.CurrentProgram.Name;
                 }
-                else if (item.SeriesName || item.Album || item.ProductionYear) {
-                    seriesName = item.SeriesName || item.Album || item.ProductionYear;
+                else if (item.SeriesName || item.Album) {
+                    seriesName = item.SeriesName || item.Album;
                 }
 
                 if (seriesName) {
-                    itemName = item.SeriesName || item.Album || item.CurrentProgram;
+                    itemName = seriesName;
                     itemSubName = name;
                 } else {
                     itemName = name;
+                }
+
+                if (!itemSubName && item.ProductionYear) {
+                    itemSubName = item.ProductionYear;
                 }
             }
 
@@ -1122,11 +1140,9 @@
 
                 self.onVolumeChanged(this);
 
-            }).on("playing.once", function () {
+            }).one("playing", function () {
 
                 $('.mediaPlayerAudioContainer').hide();
-
-                $(this).off("playing.once");
 
                 self.onPlaybackStart(this, item, mediaSource);
 

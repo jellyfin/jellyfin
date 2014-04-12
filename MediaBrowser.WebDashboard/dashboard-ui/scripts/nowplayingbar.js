@@ -130,9 +130,9 @@
 
             if (currentPlayer && lastPlayerState) {
 
-                var ticks = lastPlayerState.runtimeTicks * this.value / 100;
-
-                currentPlayer.seek(ticks);
+                var newPercent = parseFloat(this.value);
+                var newPositionTicks = (newPercent / 100) * lastPlayerState.runtimeTicks;
+                currentPlayer.seek(Math.floor(newPositionTicks));
             }
         });
     }
@@ -254,10 +254,10 @@
             });
         }
 
-        else if (item.Type == "TvChannel" || item.Type == "Recording") {
+        else if (state.itemType == "TvChannel" || state.itemType == "Recording") {
             url = "css/images/items/detail/tv.png";
         }
-        else if (item.MediaType == "Audio") {
+        else if (state.mediaType == "Audio") {
             url = "css/images/items/detail/audio.png";
         }
         else {
@@ -305,7 +305,7 @@
         // in the event of a stop->play command
         nowPlayingBarTimeout = setTimeout(function () {
             getNowPlayingBar().hide();
-        }, 200);
+        }, 500);
     }
 
     function onPlaybackStopped(e, state) {

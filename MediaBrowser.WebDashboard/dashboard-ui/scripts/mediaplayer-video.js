@@ -821,7 +821,7 @@
                 audioBitrate: mp4Quality.audioBitrate,
                 VideoCodec: mp4Quality.videoCodec,
                 AudioCodec: mp4Quality.audioCodec,
-                
+
                 // None of the browsers seem to like this
                 EnableAutoStreamCopy: false
 
@@ -942,9 +942,7 @@
 
                 updateVolumeButtons(vol);
 
-            }).on("playing.once", function () {
-
-                video.off("playing.once");
+            }).one("playing", function () {
 
                 self.onPlaybackStart(this, item, mediaSource);
 

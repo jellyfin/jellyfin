@@ -56,6 +56,10 @@
     font-weight: normal;
 }
 
+.nowPlayingBar .currentTime {
+    top: -12px;
+}
+
 .mediaSlider {
     position: relative;
     top: -10px;
@@ -72,7 +76,7 @@
 }
 
 #nowPlayingBar .positionSliderContainer {
-    margin-top: 8px;
+    margin-top: 10px;
 }
 
 .volumeSliderContainer {

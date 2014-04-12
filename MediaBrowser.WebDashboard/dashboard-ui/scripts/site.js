@@ -1311,7 +1311,7 @@ $(function () {
     videoPlayerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="video-chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
     videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
 
-    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
+    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="expand" data-iconpos="notext" data-inline="true">Fullscreen</button>';
 
     videoPlayerHtml += '</div>'; // video-advanced-controls
 

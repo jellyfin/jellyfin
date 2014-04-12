@@ -104,14 +104,14 @@
     max-height: 100%;
 }
 
-#mediaPlayer .ui-slider-track {
+#mediaPlayer .ui-slider-track, .nowPlayingBar .ui-slider-track {
     border-color: #2ad !important;
-    height: 10px!important;
+    height: 8px!important;
 }
 
-#mediaPlayer .ui-slider-handle {
-    height: 12px !important;
-    margin-top: -7px !important;
+#mediaPlayer .ui-slider-handle, .nowPlayingBar .ui-slider-handle {
+    height: 10px !important;
+    margin-top: -6px !important;
 }
 
 #videoPlayer.fullscreenVideo #videoControls {
@@ -139,7 +139,7 @@
     text-align: left;
     margin-left: 0;
     right: 0;
-    bottom: 83px;
+    bottom: 85px;
 }
 
 /* Media queries
@@ -255,7 +255,7 @@
     }
 
     #mediaPlayer #videoControls .mediaPlayerFlyout {
-        bottom: 148px;
+        bottom: 150px;
     }
 }
 
