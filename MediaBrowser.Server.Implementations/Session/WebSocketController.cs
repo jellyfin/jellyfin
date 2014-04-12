@@ -210,5 +210,29 @@ namespace MediaBrowser.Server.Implementations.Session
 
             }, cancellationToken);
         }
+
+        public Task SendPlaybackStartNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+
+            return socket.SendAsync(new WebSocketMessage<SessionInfoDto>
+            {
+                MessageType = "PlaybackStart",
+                Data = sessionInfo
+
+            }, cancellationToken);
+        }
+
+        public Task SendPlaybackStoppedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+
+            return socket.SendAsync(new WebSocketMessage<SessionInfoDto>
+            {
+                MessageType = "PlaybackStopped",
+                Data = sessionInfo
+
+            }, cancellationToken);
+        }
     }
 }

@@ -444,6 +444,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 MediaSourceId = info.MediaSourceId
 
             }, _logger);
+
+            await SendPlaybackStartNotification(session, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -583,6 +585,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 MediaSourceId = mediaSourceId
 
             }, _logger);
+
+            await SendPlaybackStoppedNotification(session, CancellationToken.None).ConfigureAwait(false);
         }
 
         private string GetMediaSourceId(BaseItem item, string reportedMediaSourceId)
@@ -972,7 +976,6 @@ namespace MediaBrowser.Server.Implementations.Session
             return Task.WhenAll(tasks);
         }
 
-
         public Task SendSessionEndedNotification(SessionInfo sessionInfo, CancellationToken cancellationToken)
         {
             var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
@@ -987,6 +990,48 @@ namespace MediaBrowser.Server.Implementations.Session
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error in SendSessionEndedNotification.", ex);
+                }
+
+            }, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
+
+        public Task SendPlaybackStartNotification(SessionInfo sessionInfo, CancellationToken cancellationToken)
+        {
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
+            var dto = GetSessionInfoDto(sessionInfo);
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendPlaybackStartNotification(dto, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in SendPlaybackStartNotification.", ex);
+                }
+
+            }, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
+
+        public Task SendPlaybackStoppedNotification(SessionInfo sessionInfo, CancellationToken cancellationToken)
+        {
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
+            var dto = GetSessionInfoDto(sessionInfo);
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendPlaybackStoppedNotification(dto, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in SendPlaybackStoppedNotification.", ex);
                 }
 
             }, cancellationToken));
@@ -1162,6 +1207,11 @@ namespace MediaBrowser.Server.Implementations.Session
             };
 
             info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary);
+
+            if (info.PrimaryImageTag.HasValue)
+            {
+                info.PrimaryImageItemId = GetDtoId(item);
+            }
 
             var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;
 

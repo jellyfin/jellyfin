@@ -46,6 +46,16 @@ namespace MediaBrowser.Server.Implementations.Roku
             return Task.FromResult(true);
         }
 
+        public Task SendPlaybackStartNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
+        }
+
+        public Task SendPlaybackStoppedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
+        }
+
         public Task SendMessageCommand(MessageCommand command, CancellationToken cancellationToken)
         {
             return SendCommand(new WebSocketMessage<MessageCommand>
