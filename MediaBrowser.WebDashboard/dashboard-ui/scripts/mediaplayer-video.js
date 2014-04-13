@@ -32,6 +32,7 @@
 
         self.initVideoPlayer = function () {
             video = playVideo(item, mediaSource, startPosition, user);
+
             return video;
         };
 
@@ -861,9 +862,9 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresControls) {
-                html += '<video class="itemVideo" id="itemVideo" autoplay controls preload="none">';
+                html += '<video class="itemVideo" id="itemVideo" autoplay controls>';
             } else {
-                html += '<video class="itemVideo" id="itemVideo" autoplay preload="none">';
+                html += '<video class="itemVideo" id="itemVideo" autoplay>';
             }
 
             if (!isStatic) {
@@ -890,7 +891,6 @@
             $('#video-stopButton', videoControls).show();
             $('#video-playButton', videoControls).hide();
             $('#video-pauseButton', videoControls).show();
-            $('#video-playlistButton', videoControls).hide();
             $('#video-previousTrackButton', videoControls).hide();
             $('#video-nextTrackButton', videoControls).hide();
             var videoElement = $('#videoElement', mediaPlayer).prepend(html);

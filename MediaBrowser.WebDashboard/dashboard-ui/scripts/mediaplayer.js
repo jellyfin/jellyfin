@@ -726,6 +726,7 @@
         };
 
         self.pause = function () {
+
             currentMediaElement.pause();
         };
 
@@ -1138,7 +1139,7 @@
                 html += '<div class="mediaPlayerAudioContainer" style="display:none;"><div class="mediaPlayerAudioContainerInner">';;
             }
 
-            html += '<audio class="mediaPlayerAudio" preload="auto" controls>';
+            html += '<audio class="mediaPlayerAudio" controls>';
             html += '</audio></div></div>';
 
             $(document.body).append(html);

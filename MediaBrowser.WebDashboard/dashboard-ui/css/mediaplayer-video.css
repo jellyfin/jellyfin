@@ -26,15 +26,15 @@
 
 .itemVideo {
     background-color: #000;
-    margin: 20px 20px 80px;
+    margin: 5px 5px 75px;
     width: 320px;
     height: 181px;
 }
 
 #videoControls {
     z-index: 99999;
-    padding: 0 20px 5px;
-    height: 80px;
+    padding: 0 5px 5px;
+    height: 75px;
     position: absolute;
     top: auto;
     right: 0;
@@ -54,7 +54,7 @@
 
     #videoControls #video-basic-controls {
         position: absolute;
-        top: 30px;
+        top: 25px;
         left: 20px;
         bottom: 0;
         width: 600px;
@@ -63,7 +63,7 @@
 
     #videoControls #video-advanced-controls {
         position: absolute;
-        top: 30px;
+        top: 25px;
         right: 20px;
         bottom: 0;
         width: 400px;
@@ -142,6 +142,11 @@
     bottom: 85px;
 }
 
+#mediaPlayer .volumeSliderContainer {
+    position: relative;
+    top: 5px;
+}
+
 /* Media queries
     ***************************************/
 
@@ -190,10 +195,6 @@
     #videoPlayer {
         margin-left: -550px;
         margin-top: -329px;
-    }
-
-    #video-videoPlayerMenuButton {
-        display: none;
     }
 }
 
@@ -245,10 +246,6 @@
         width: 250px;
     }
 
-        #mediaPlayer #video-basic-controls .volumeSliderContainer {
-            margin-top: 8px;
-        }
-
     #mediaPlayer #video-basic-controls, #mediaPlayer #video-advanced-controls {
         width: 200px;
         height: 120px;
@@ -269,14 +266,18 @@
     }
 }
 
-@media all and (max-width: 500px) {
-    #mediaPlayer .previousTrackButton, #mediaPlayer .nextTrackButton {
+@media all and (max-width: 600px) {
+    #mediaPlayer .volumeSliderContainer, #mediaPlayer .muteButton, #mediaPlayer .unmuteButton {
+        display: none!important;
+    }
+
+    #mediaPlayer .nowPlayingImage, #mediaPlayer .nowPlayingText {
         display: none!important;
     }
 }
 
-@media all and (max-width: 400px) {
-    #mediaPlayer .playlistButton {
+@media all and (max-width: 500px) {
+    #mediaPlayer .previousTrackButton, #mediaPlayer .nextTrackButton {
         display: none!important;
     }
 }
