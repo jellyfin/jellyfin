@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
@@ -862,12 +863,17 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendBrowseCommand(Guid controllingSessionId, Guid sessionId, BrowseRequest command, CancellationToken cancellationToken)
         {
-            var session = GetSessionForRemoteControl(sessionId);
+            var generalCommand = new GeneralCommand
+            {
+                Name = GeneralCommandType.DisplayContent.ToString()
+            };
 
-            var controllingSession = GetSession(controllingSessionId);
-            AssertCanControl(session, controllingSession);
+            generalCommand.Arguments["Context"] = command.Context;
+            generalCommand.Arguments["ItemId"] = command.ItemId;
+            generalCommand.Arguments["ItemName"] = command.ItemName;
+            generalCommand.Arguments["ItemType"] = command.ItemType;
 
-            return session.SessionController.SendBrowseCommand(command, cancellationToken);
+            return SendGeneralCommand(controllingSessionId, sessionId, generalCommand, cancellationToken);
         }
 
         public Task SendPlaystateCommand(Guid controllingSessionId, Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken)
@@ -1203,24 +1209,84 @@ namespace MediaBrowser.Server.Implementations.Session
                 MediaType = item.MediaType,
                 Type = item.GetClientTypeName(),
                 RunTimeTicks = nowPlayingRuntimeTicks,
-                MediaSourceId = mediaSourceId
+                MediaSourceId = mediaSourceId,
+                IndexNumber = item.IndexNumber,
+                ParentIndexNumber = item.ParentIndexNumber,
+                PremiereDate = item.PremiereDate,
+                ProductionYear = item.ProductionYear
             };
 
             info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary);
-
             if (info.PrimaryImageTag.HasValue)
             {
                 info.PrimaryImageItemId = GetDtoId(item);
             }
 
+            var episode = item as Episode;
+            if (episode != null)
+            {
+                info.IndexNumberEnd = episode.IndexNumberEnd;
+            }
+
+            var hasSeries = item as IHasSeries;
+            if (hasSeries != null)
+            {
+                info.SeriesName = hasSeries.SeriesName;
+            }
+
+            var recording = item as ILiveTvRecording;
+            if (recording != null && recording.RecordingInfo != null)
+            {
+                if (recording.RecordingInfo.IsSeries)
+                {
+                    info.Name = recording.RecordingInfo.EpisodeTitle;
+                    info.SeriesName = recording.RecordingInfo.Name;
+
+                    if (string.IsNullOrWhiteSpace(info.Name))
+                    {
+                        info.Name = recording.RecordingInfo.Name;
+                    }
+                }
+            }
+
+            var audio = item as Audio;
+            if (audio != null)
+            {
+                info.Album = audio.Album;
+                info.Artists = audio.Artists;
+
+                if (!info.PrimaryImageTag.HasValue)
+                {
+                    var album = audio.Parents.OfType<MusicAlbum>().FirstOrDefault();
+
+                    if (album != null && album.HasImage(ImageType.Primary))
+                    {
+                        info.PrimaryImageTag = GetImageCacheTag(album, ImageType.Primary);
+                        if (info.PrimaryImageTag.HasValue)
+                        {
+                            info.PrimaryImageItemId = GetDtoId(album);
+                        }
+                    }
+                }
+            }
+
+            var musicVideo = item as MusicVideo;
+            if (musicVideo != null)
+            {
+                info.Album = musicVideo.Album;
+
+                if (!string.IsNullOrWhiteSpace(musicVideo.Artist))
+                {
+                    info.Artists.Add(musicVideo.Artist);
+                }
+            }
+            
             var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;
 
             var thumbItem = item.HasImage(ImageType.Thumb) ? item : null;
 
             if (thumbItem == null)
             {
-                var episode = item as Episode;
-
                 if (episode != null)
                 {
                     var series = episode.Series;
@@ -1234,8 +1300,6 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (backropItem == null)
             {
-                var episode = item as Episode;
-
                 if (episode != null)
                 {
                     var series = episode.Series;

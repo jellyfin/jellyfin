@@ -164,12 +164,6 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value><c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>
         public bool SupportsRemoteControl { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports navigation commands].
-        /// </summary>
-        /// <value><c>true</c> if [supports navigation commands]; otherwise, <c>false</c>.</value>
-        public bool SupportsNavigationControl { get; set; }
         
         public event PropertyChangedEventHandler PropertyChanged;
 

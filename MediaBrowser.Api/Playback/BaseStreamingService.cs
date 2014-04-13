@@ -185,9 +185,9 @@ namespace MediaBrowser.Api.Playback
         {
             var args = string.Empty;
 
-            if (state.IsRemote || !state.HasMediaStreams)
+            if (!state.HasMediaStreams)
             {
-                return string.Empty;
+                return state.IsInputVideo ? "-map -0:s" : string.Empty;
             }
 
             if (state.VideoStream != null)

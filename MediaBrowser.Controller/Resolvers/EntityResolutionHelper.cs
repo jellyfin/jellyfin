@@ -103,8 +103,9 @@ namespace MediaBrowser.Controller.Resolvers
             ".wav",
             ".ape",
             ".ogg",
-            ".oga"
-
+            ".oga",
+            ".asf",
+            ".mp4"
         };
 
         private static readonly Dictionary<string, string> AudioFileExtensionsDictionary = AudioFileExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);

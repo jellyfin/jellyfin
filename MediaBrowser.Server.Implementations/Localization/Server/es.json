@@ -415,7 +415,7 @@
 	"LabelEnableDlnaClientDiscoveryIntervalHelp": "Determina la duraci\u00f3n en segundos del intervalo entre las b\u00fasquedas SSDP realizadas por Media Browser.",
 	"HeaderCustomDlnaProfiles": "Perfiles personalizados",
 	"HeaderSystemDlnaProfiles": "Perfiles del sistema",
-	"CustomDlnaProfilesHelp": "Crear un perfil personalizado para un nuevo dispositivo o anular un perfil del sistema.",
+	"CustomDlnaProfilesHelp": "Crear un perfil personalizado para un nuevo dispositivo o reemplazar un perfil del sistema.",
 	"SystemDlnaProfilesHelp": "Los perfiles del sistema son de s\u00f3lo lectura. Para anular un perfil del sistema, crear un perfil personalizado del mismo dispositivo.",
 	"TitleDashboard": "Panel de control",
 	"TabHome": "Inicio",
