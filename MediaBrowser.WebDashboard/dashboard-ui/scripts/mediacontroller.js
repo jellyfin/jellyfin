@@ -1,11 +1,26 @@
 ﻿(function ($, window) {
 
+    var enableMirrorMode;
+    var currentDisplayInfo;
+    
+    function mirrorItem(info) {
+
+        var item = info.item;
+        
+        MediaController.getCurrentPlayer().displayContent({
+
+            itemName: item.Name,
+            itemId: item.Id,
+            itemType: item.Type,
+            context: info.context
+        });
+    }
+
     function mediaController() {
 
         var self = this;
         var currentPlayer;
         var currentTargetInfo;
-
         var players = [];
 
         self.registerPlayer = function (player) {
@@ -308,11 +323,11 @@
             else if (cmd.Name === 'ToggleMute') {
                 localPlayer.toggleMute();
             }
-            else if (msg.Data.Command === 'Fullscreen') {
+            else if (cmd.Name === 'Fullscreen') {
                 localPlayer.remoteFullscreen();
             }
-            else if (msg.Data.Command === 'SetVolume') {
-                localPlayer.setVolume(cmd.Arguments.Volume);
+            else if (cmd.Name === 'SetVolume') {
+                localPlayer.setVolume(parseFloat(cmd.Arguments.Volume));
             }
         }
     }
@@ -324,7 +339,9 @@
         var playerInfo = MediaController.getPlayerInfo();
 
         var html = '';
-        html += '<h3>Select Player:</h3>';
+        html += '<form>';
+
+        html += '<form><h3>Select Player:</h3>';
         html += '<fieldset data-role="controlgroup" data-mini="true">';
 
         for (var i = 0, length = targets.length; i < length; i++) {
@@ -336,7 +353,9 @@
             var isChecked = target.id == playerInfo.id;
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            html += '<input type="radio" class="radioSelectPlayerTarget" name="radioSelectPlayerTarget" data-mediatypes="' + target.playableMediaTypes.join(',') + '" data-playername="' + target.playerName + '" data-targetid="' + target.id + '" data-targetname="' + target.name + '" id="' + id + '" value="' + target.id + '"' + checkedHtml + '>';
+            var mirror = (!target.isLocalPlayer && target.supportedCommands.indexOf('DisplayContent') != -1) ? 'true' : 'false';
+
+            html += '<input type="radio" class="radioSelectPlayerTarget" name="radioSelectPlayerTarget" data-mirror="' + mirror + '" data-mediatypes="' + target.playableMediaTypes.join(',') + '" data-playername="' + target.playerName + '" data-targetid="' + target.id + '" data-targetname="' + target.name + '" id="' + id + '" value="' + target.id + '"' + checkedHtml + '>';
             html += '<label for="' + id + '" style="font-weight:normal;">' + target.name;
 
             if (target.appName) {
@@ -349,6 +368,11 @@
         html += '</fieldset>';
 
         html += '<p class="fieldDescription">All plays will be sent to the selected player.</p>';
+
+        var checkedHtml = enableMirrorMode ? ' checked="checked"' : '';
+        html += '<div style="margin-top:1.5em;" class="fldMirrorMode"><label for="chkEnableMirrorMode">Enable Mirror Mode</label><input type="checkbox" class="chkEnableMirrorMode" id="chkEnableMirrorMode" data-mini="true"' + checkedHtml + ' /></div>';
+
+        html += '</form>';
 
         return html;
     }
@@ -374,7 +398,35 @@
 
             $('.players', elem).html(getTargetsHtml(targets)).trigger('create');
 
+            $('.chkEnableMirrorMode', elem).on().on('change', function () {
+                enableMirrorMode = this.checked;
+                
+                if (this.checked && currentDisplayInfo) {
+
+                    mirrorItem(currentDisplayInfo);
+
+                }
+
+            });
+
             $('.radioSelectPlayerTarget', elem).on('change', function () {
+
+                var supportsMirror = this.getAttribute('data-mirror') == 'true';
+
+                if (supportsMirror) {
+                    $('.fldMirrorMode', elem).show();
+                } else {
+                    $('.fldMirrorMode', elem).hide();
+                    $('.chkEnableMirrorMode', elem).checked(false).trigger('change').checkboxradio('refresh');
+                }
+
+            }).each(function () {
+
+                if (this.checked) {
+                    $(this).trigger('change');
+                }
+
+            }).on('change', function () {
 
                 var playerName = this.getAttribute('data-playername');
                 var targetId = this.getAttribute('data-targetid');
@@ -399,6 +451,23 @@
 
             showPlayerSelection(page);
         });
+    });
+
+    $(document).on('pagebeforeshow', ".page", function () {
+
+        var page = this;
+
+        currentDisplayInfo = null;
+
+    }).on('displayingitem', ".libraryPage", function (e, info) {
+
+        var page = this;
+
+        currentDisplayInfo = info;
+
+        if (enableMirrorMode) {
+            mirrorItem(info);
+        }
     });
 
 })(jQuery, window);

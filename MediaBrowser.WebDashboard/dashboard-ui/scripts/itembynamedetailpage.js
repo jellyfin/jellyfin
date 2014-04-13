@@ -66,18 +66,11 @@
             renderDetails(page, item);
             renderTabs(page, item);
 
-            if (ApiClient.isWebSocketOpen()) {
+            $(page).trigger('displayingitem', [{
 
-                var vals = [item.Type, item.Id, item.Name];
-
-                var context = getParameterByName('context');
-
-                if (context) {
-                    vals.push(vals);
-                }
-
-                ApiClient.sendWebSocketMessage("Context", vals.join('|'));
-            }
+                item: item,
+                context: getParameterByName('context')
+            }]);
 
             Dashboard.getCurrentUser().done(function (user) {
 
@@ -403,7 +396,7 @@
         };
 
         query = $.extend(query, options || {});
-        
+
         if (query.IncludeItemTypes == "Audio") {
             query.SortBy = "Album,SortName";
         }

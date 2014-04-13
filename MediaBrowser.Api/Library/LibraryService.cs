@@ -36,7 +36,7 @@ namespace MediaBrowser.Api.Library
         public string Id { get; set; }
     }
 
-    [Route("/Videos/{Id}/Subtitle/{Index}", "GET")]
+    [Route("/Videos/{Id}/Subtitles/{Index}", "GET")]
     [Api(Description = "Gets an external subtitle file")]
     public class GetSubtitle
     {

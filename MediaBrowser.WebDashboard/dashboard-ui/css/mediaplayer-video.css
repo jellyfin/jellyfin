@@ -106,7 +106,7 @@
 
 #mediaPlayer .ui-slider-track, .nowPlayingBar .ui-slider-track {
     border-color: #2ad !important;
-    height: 8px!important;
+    height: 2px!important;
 }
 
 #mediaPlayer .ui-slider-handle, .nowPlayingBar .ui-slider-handle {

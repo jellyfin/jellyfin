@@ -529,6 +529,18 @@
             });
         };
 
+        self.displayContent = function (options) {
+
+            sendCommand('DisplayContent', {
+
+                ItemName: options.itemName,
+                ItemType: options.itemType,
+                ItemId: options.itemId,
+                Context: options.context
+
+            });
+        };
+
         self.getPlayerState = function () {
 
             var deferred = $.Deferred();
@@ -615,7 +627,8 @@
                         playerName: self.name,
                         appName: s.Client,
                         playableMediaTypes: s.PlayableMediaTypes,
-                        isLocalPlayer: false
+                        isLocalPlayer: false,
+                        supportedCommands: s.SupportedCommands
                     };
                 });
 
@@ -648,13 +661,17 @@
         if (item) {
 
             state.itemId = item.Id;
-            state.itemType = item.Type;
             state.mediaType = item.MediaType;
-            state.runtimeTicks = item.RunTimeTicks;
-            state.mediaSource = item.MediaSourceId;
-            state.positionTicks = session.NowPlayingPositionTicks || 0;
-
+            state.itemType = item.Type;
+            state.indexNumber = item.IndexNumber;
+            state.indexNumberEnd = item.IndexNumberEnd;
+            state.parentIndexNumber = item.ParentIndexNumber;
+            state.productionYear = item.ProductionYear;
+            state.premiereDate = item.PremiereDate;
+            state.seriesName = item.SeriesName;
+            state.album = item.Album;
             state.itemName = item.Name;
+            state.artists = item.Artists;
 
             state.primaryImageItemId = item.PrimaryImageItemId;
             state.primaryImageTag = item.PrimaryImageTag;
@@ -664,6 +681,10 @@
 
             state.thumbItemId = item.ThumbItemId;
             state.thumbImageTag = item.ThumbImageTag;
+
+            state.mediaSource = item.MediaSourceId;
+            state.positionTicks = session.NowPlayingPositionTicks || 0;
+            state.runtimeTicks = item.RunTimeTicks;
         }
 
         return state;

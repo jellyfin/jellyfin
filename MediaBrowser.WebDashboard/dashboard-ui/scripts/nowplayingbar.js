@@ -222,18 +222,18 @@
         updateNowPlayingInfo(state);
     }
 
+    var currentImgUrl;
     function updateNowPlayingInfo(state) {
 
-        var name = state.itemName;
+        var nameHtml = MediaPlayer.getNowPlayingNameHtml(state);
 
-        if (state.itemSubName) {
-            name += '<br/>' + state.itemSubName;
+        if (nameHtml.indexOf('<br/>') != -1) {
             nowPlayingTextElement.addClass('nowPlayingDoubleText');
         } else {
             nowPlayingTextElement.removeClass('nowPlayingDoubleText');
         }
 
-        nowPlayingTextElement.html(name);
+        nowPlayingTextElement.html(nameHtml);
 
         var url;
 
@@ -273,6 +273,12 @@
             url = "css/images/items/detail/video.png";
         }
 
+        if (url == currentImgUrl) {
+            return;
+        }
+
+        currentImgUrl = url;
+        
         nowPlayingImageElement.html('<img src="' + url + '" />');
     }
 

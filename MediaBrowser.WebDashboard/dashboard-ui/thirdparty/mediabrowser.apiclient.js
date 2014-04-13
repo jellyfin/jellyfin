@@ -1728,6 +1728,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.reportCapabilities = function (options) {
+
+            var url = self.getUrl("Sessions/Capabilities", options);
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
         self.updateItemImageIndex = function (itemId, itemType, itemName, imageType, imageIndex, newIndex) {
 
             if (!imageType) {
@@ -3754,24 +3764,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             return self.ajax({
                 type: "DELETE",
-                url: url
-            });
-        };
-
-        self.sendBrowseCommand = function (sessionId, options) {
-
-            if (!sessionId) {
-                throw new Error("null sessionId");
-            }
-
-            if (!options) {
-                throw new Error("null options");
-            }
-
-            var url = self.getUrl("Sessions/" + sessionId + "/Viewing", options);
-
-            return self.ajax({
-                type: "POST",
                 url: url
             });
         };

@@ -263,6 +263,8 @@ var Dashboard = {
 
         var html = '<span style="margin-right: 1em;">Please refresh this page to receive new updates from the server.</span>';
 
+        html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.reloadPage();" data-theme="b" data-inline="true" data-mini="true">Refresh</button>';
+
         Dashboard.showFooterNotification({ id: "dashboardVersionWarning", html: html, forceShow: true, allowHide: false });
     },
 
@@ -801,6 +803,16 @@ var Dashboard = {
         ApiClient.openWebSocket(webSocketUrl);
     },
 
+    onWebSocketOpened: function () {
+
+        ApiClient.reportCapabilities({
+            PlayableMediaTypes: "Audio,Video",
+
+            SupportedCommands: Dashboard.getSupportedRemoteCommands().join(',')
+        });
+
+    },
+
     onWebSocketMessageReceived: function (e, data) {
 
         var msg = data;
@@ -878,10 +890,6 @@ var Dashboard = {
                 }
             });
         }
-        else if (msg.MessageType === "Browse") {
-
-            Dashboard.onBrowseCommand(msg.Data);
-        }
         else if (msg.MessageType === "GeneralCommand") {
 
             var cmd = msg.Data;
@@ -891,6 +899,9 @@ var Dashboard = {
             }
             else if (cmd.Name === 'GoToSettings') {
                 Dashboard.navigate('dashboard.html');
+            }
+            else if (cmd.Name === 'DisplayContent') {
+                Dashboard.onBrowseCommand(cmd.Arguments);
             }
         }
         else if (msg.MessageType === "MessageCommand") {
@@ -1237,6 +1248,27 @@ var Dashboard = {
         }
 
         $(select).html(html).selectmenu("refresh");
+    },
+
+    getSupportedRemoteCommands: function () {
+
+        // Full list
+        // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs
+        return [
+            "GoHome",
+            "GoToSettings",
+            "VolumeUp",
+            "VolumeDown",
+            "Mute",
+            "Unmute",
+            "ToggleMute",
+            "SetVolume",
+            "ToggleFullscreen",
+            "SetAudioStreamIndex",
+            "SetSubtitleStreamIndex",
+            "DisplayContent"
+        ];
+
     }
 };
 
@@ -1252,7 +1284,7 @@ else if (!IsStorageEnabled()) {
 
 var ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
 
-$(ApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
+$(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
 
 
 $(function () {
@@ -1327,7 +1359,7 @@ $(function () {
     mediaPlayerElem.trigger('create');
 
     var footerHtml = '<div id="footer" data-theme="b" class="ui-bar-b">';
-    
+
     footerHtml += '<div id="footerNotifications"></div>';
     footerHtml += '</div>';
 
@@ -1335,7 +1367,7 @@ $(function () {
 
     var footerElem = $('#footer', document.body);
     footerElem.trigger('create');
-    
+
     $(window).on("beforeunload", function () {
 
         // Close the connection gracefully when possible

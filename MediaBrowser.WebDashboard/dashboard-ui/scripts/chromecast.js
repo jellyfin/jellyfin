@@ -1267,6 +1267,10 @@
             castPlayer.stopMedia();
         };
 
+        self.displayContent = function (options) {
+
+        };
+
         self.mute = function () {
             castPlayer.mute();
         };
@@ -1280,12 +1284,19 @@
         };
 
         self.getTargets = function () {
+            
             var targets = [];
-            targets.push(self.getCurrentTargetInfo());
+
+            if (castPlayer.hasReceivers) {
+                targets.push(self.getCurrentTargetInfo());
+            }
+            
             return targets;
+            
         };
 
         self.getCurrentTargetInfo = function () {
+            
             var appName = null;
             if (castPlayer.session && castPlayer.session.receiver && castPlayer.session.friendlyName) {
                 appName = castPlayer.session.friendlyName;
@@ -1297,7 +1308,8 @@
                 playerName: self.name,
                 playableMediaTypes: ["Audio", "Video"],
                 isLocalPlayer: false,
-                appName: appName
+                appName: appName,
+                supportedCommands: []
             };
         };
 

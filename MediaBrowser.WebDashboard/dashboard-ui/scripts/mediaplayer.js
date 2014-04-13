@@ -28,7 +28,8 @@
                 id: ApiClient.deviceId(),
                 playerName: self.name,
                 playableMediaTypes: ['Audio', 'Video'],
-                isLocalPlayer: true
+                isLocalPlayer: true,
+                supportedCommands: Dashboard.getSupportedRemoteCommands()
             }];
 
             return targets;
@@ -521,19 +522,60 @@
                 url = "css/images/items/detail/video.png";
             }
 
-            var name = state.itemName;
-
             var nowPlayingTextElement = $('.nowPlayingText', mediaControls);
+            var nameHtml = self.getNowPlayingNameHtml(state);
 
-            if (state.itemSubName) {
-                name += '<br/>' + state.itemSubName;
+            if (nameHtml.indexOf('<br/>') != -1) {
                 nowPlayingTextElement.addClass('nowPlayingDoubleText');
             } else {
                 nowPlayingTextElement.removeClass('nowPlayingDoubleText');
             }
 
             $('.nowPlayingImage', mediaControls).html('<img src="' + url + '" />');
-            nowPlayingTextElement.html(name);
+            nowPlayingTextElement.html(nameHtml);
+        };
+
+        self.getNowPlayingNameHtml = function (playerState) {
+
+            var topText = playerState.itemName;
+
+            if (playerState.mediaType == 'Video') {
+                if (playerState.indexNumber != null) {
+                    topText = playerState.indexNumber + " - " + topText;
+                }
+                if (playerState.parentIndexNumber != null) {
+                    topText = playerState.parentIndexNumber + "." + topText;
+                }
+            }
+
+            var bottomText = '';
+
+            if (playerState.artists && playerState.artists.length) {
+                bottomText = topText;
+                topText = playerState.artists[0];
+            }
+            else if (playerState.seriesName || playerState.album) {
+                bottomText = topText;
+                topText = playerState.seriesName || playerState.album;
+            }
+            else if (playerState.productionYear) {
+                bottomText = playerState.productionYear;
+            }
+
+            return bottomText ? topText + '<br/>' + bottomText : topText;
+        };
+
+        self.displayContent = function (options) {
+            
+            // Handle it the same as a remote control command
+            Dashboard.onBrowseCommand({
+
+                ItemName: options.itemName,
+                ItemType: options.itemType,
+                ItemId: options.itemId,
+                Context: options.context
+
+            });
         };
 
         self.getItemsForPlayback = function (query) {
@@ -894,7 +936,7 @@
             return currentMediaElement;
         };
 
-        self.getPlayerState = function() {
+        self.getPlayerState = function () {
 
             var deferred = $.Deferred();
 
@@ -930,41 +972,15 @@
                 state.itemId = item.Id;
                 state.mediaType = item.MediaType;
                 state.itemType = item.Type;
-
-                var itemName = '';
-                var itemSubName = '';
-
-                var name = item.Name;
-                var seriesName = '';
-
-                // Channel number
-                if (item.Number) {
-                    name = item.Number + ' ' + name;
-                }
-                if (item.IndexNumber != null) {
-                    name = item.IndexNumber + " - " + name;
-                }
-                if (item.ParentIndexNumber != null) {
-                    name = item.ParentIndexNumber + "." + name;
-                }
-
-                if (item.CurrentProgram) {
-                    seriesName = item.CurrentProgram.Name;
-                }
-                else if (item.SeriesName || item.Album) {
-                    seriesName = item.SeriesName || item.Album;
-                }
-
-                if (seriesName) {
-                    itemName = seriesName;
-                    itemSubName = name;
-                } else {
-                    itemName = name;
-                }
-
-                if (!itemSubName && item.ProductionYear) {
-                    itemSubName = item.ProductionYear;
-                }
+                state.indexNumber = item.IndexNumber;
+                state.indexNumberEnd = item.IndexNumberEnd;
+                state.parentIndexNumber = item.ParentIndexNumber;
+                state.productionYear = item.ProductionYear;
+                state.premiereDate = item.PremiereDate;
+                state.seriesName = item.SeriesName;
+                state.album = item.Album;
+                state.itemName = item.Name;
+                state.artists = item.Artists;
 
                 var imageTags = item.ImageTags || {};
 
@@ -972,6 +988,16 @@
 
                     state.primaryImageItemId = item.Id;
                     state.primaryImageTag = imageTags.Primary;
+                }
+                else if (item.AlbumPrimaryImageTag) {
+
+                    state.primaryImageItemId = item.AlbumId;
+                    state.primaryImageTag = item.AlbumPrimaryImageTag;
+                }
+                else if (item.SeriesPrimaryImageTag) {
+
+                    state.primaryImageItemId = item.SeriesId;
+                    state.primaryImageTag = item.SeriesPrimaryImageTag;
                 }
 
                 if (item.BackdropImageTags && item.BackdropImageTags.length) {
@@ -985,9 +1011,6 @@
                     state.thumbItemId = item.Id;
                     state.thumbImageTag = imageTags.Thumb;
                 }
-
-                state.itemName = itemName;
-                state.itemSubName = itemSubName;
             }
 
             return state;
@@ -1123,6 +1146,7 @@
             return $('.mediaPlayerAudio');
         }
 
+        var supportsAac = document.createElement('audio').canPlayType('audio/aac').replace(/no/, '');
         function playAudio(item, mediaSource, startPositionTicks) {
 
             startPositionTicks = startPositionTicks || 0;
@@ -1134,29 +1158,35 @@
                 mediaSourceId: mediaSource.Id
             };
 
-            var mp3Url = ApiClient.getUrl('Audio/' + item.Id + '/stream.mp3', $.extend({}, baseParams, {
-                audioCodec: 'mp3'
+            var sourceContainer = (mediaSource.Container || '').toLowerCase();
+            var isStatic = false;
+
+            if (sourceContainer == 'mp3' ||
+                (sourceContainer == 'aac' && supportsAac)) {
+
+                for (var i = 0, length = mediaSource.MediaStreams.length; i < length; i++) {
+
+                    var stream = mediaSource.MediaStreams[i];
+
+                    if (stream.Type == "Audio") {
+
+                        // Stream statically when possible
+                        if (stream.BitRate <= 256000) {
+                            isStatic = true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            var outputContainer = isStatic ? sourceContainer : 'mp3';
+            var audioUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.' + outputContainer, $.extend({}, baseParams, {
+                audioCodec: outputContainer
             }));
 
-            var mediaStreams = mediaSource.MediaStreams;
-
-            var isStatic = false;
-            var seekParam = startPositionTicks ? '#t=' + (startPositionTicks / 10000000) : '';
-
-            for (var i = 0, length = mediaStreams.length; i < length; i++) {
-
-                var stream = mediaStreams[i];
-
-                if (stream.Type == "Audio") {
-
-                    var container = (mediaSource.Container || '').toLowerCase();
-                    // Stream statically when possible
-                    if (container == 'mp3' && stream.BitRate <= 256000) {
-                        mp3Url += "&static=true" + seekParam;
-                        isStatic = true;
-                    }
-                    break;
-                }
+            if (isStatic) {
+                var seekParam = startPositionTicks ? '#t=' + (startPositionTicks / 10000000) : '';
+                audioUrl += "&static=true" + seekParam;
             }
 
             self.startTimeTicksOffset = isStatic ? 0 : startPositionTicks;
@@ -1165,7 +1195,7 @@
 
             return getAudioElement().each(function () {
 
-                this.src = mp3Url;
+                this.src = audioUrl;
                 this.volume = initialVolume;
                 this.play();
 

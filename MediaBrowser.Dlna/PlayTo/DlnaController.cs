@@ -346,11 +346,6 @@ namespace MediaBrowser.Dlna.PlayTo
             return Task.FromResult(true);
         }
 
-        public Task SendBrowseCommand(BrowseRequest command, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(true);
-        }
-
         public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);

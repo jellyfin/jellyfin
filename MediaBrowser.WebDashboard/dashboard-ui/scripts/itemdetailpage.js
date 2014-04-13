@@ -75,11 +75,11 @@
                 }
 
                 if (!item.LocalTrailerCount && item.RemoteTrailers.length && item.PlayAccess == 'Full') {
-                    
+
                     $('.btnPlayExternalTrailer', page).removeClass('hide').attr('href', item.RemoteTrailers[0].Url);
 
                 } else {
-                    
+
                     $('.btnPlayExternalTrailer', page).addClass('hide').attr('href', '#');
                 }
 
@@ -120,9 +120,11 @@
 
             setPeopleHeader(page, item);
 
-            if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("Context", [item.Type, item.Id, item.Name, context].join('|'));
-            }
+            $(page).trigger('displayingitem', [{
+
+                item: item,
+                context: context
+            }]);
 
             Dashboard.hideLoadingMsg();
         });

@@ -1,6 +1,6 @@
 ﻿/* Now playing bar */
 .nowPlayingBar {
-    padding: 10px 0 14px 0;
+    padding: 6px 0 14px 0;
     border-top: 2px solid green;
 }
 
@@ -30,7 +30,7 @@
 }
 
 .nowPlayingDoubleText {
-    top: 0;
+    top: -3px;
 }
 
 .nowPlayingImage {
@@ -57,7 +57,7 @@
 }
 
 .nowPlayingBar .currentTime {
-    top: -12px;
+    top: -15px;
 }
 
 .mediaSlider {
@@ -75,8 +75,8 @@
     width: 130px;
 }
 
-#nowPlayingBar .positionSliderContainer {
-    margin-top: 10px;
+#nowPlayingBar .sliderContainer {
+    margin-top: 14px;
 }
 
 .volumeSliderContainer {

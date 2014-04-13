@@ -50,14 +50,11 @@
 
             LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), item);
 
-            if (ApiClient.isWebSocketOpen()) {
+            $(page).trigger('displayingitem', [{
 
-                var vals = [item.Type, item.Id, item.Name];
-
-                vals.push('livetv');
-
-                ApiClient.sendWebSocketMessage("Context", vals.join('|'));
-            }
+                item: item,
+                context: 'livetv'
+            }]);
 
             if (item.TimerId) {
                 $('#cancelRecordingButtonContainer', page).show();

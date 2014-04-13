@@ -36,14 +36,6 @@ namespace MediaBrowser.Controller.Session
         Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sends the browse command.
-        /// </summary>
-        /// <param name="command">The command.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SendBrowseCommand(BrowseRequest command, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Sends the playstate command.
         /// </summary>
         /// <param name="command">The command.</param>
