@@ -613,7 +613,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             GeneralCommandType commandType;
 
-            if (!Enum.TryParse(command.Name, true, out commandType))
+            if (Enum.TryParse(command.Name, true, out commandType))
             {
                 switch (commandType)
                 {
