@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.TV
                 try
                 {
                     var seriesOffset = TvdbSeriesProvider.GetSeriesOffset(series.ProviderIds);
-                    if (seriesOffset != null)
+                    if (seriesOffset != null && seriesOffset.Value != 0)
                         return TvdbSeasonImageProvider.GetImages(path, language, seriesOffset.Value + 1, cancellationToken);
                     
                     return GetImages(path, language, cancellationToken);
