@@ -57,8 +57,17 @@ namespace MediaBrowser.Dlna.Server
         {
             builder.Append("<UDN>" + SecurityElement.Escape(_serverUdn) + "</UDN>");
             builder.Append("<dlna:X_DLNACAP>" + SecurityElement.Escape(_profile.XDlnaCap ?? string.Empty) + "</dlna:X_DLNACAP>");
-            builder.Append("<dlna:X_DLNADOC>M-DMS-1.50</dlna:X_DLNADOC>");
-            builder.Append("<dlna:X_DLNADOC>" + SecurityElement.Escape(_profile.XDlnaDoc ?? string.Empty) + "</dlna:X_DLNADOC>");
+
+            if (!string.IsNullOrWhiteSpace(_profile.XDlnaDoc))
+            {
+                builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" +
+                               SecurityElement.Escape(_profile.XDlnaDoc) + "</dlna:X_DLNADOC>");
+            }
+            else
+            {
+                builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">DMS-1.50</dlna:X_DLNADOC>");
+            }
+
             builder.Append("<friendlyName>" + SecurityElement.Escape(_profile.FriendlyName ?? string.Empty) + "</friendlyName>");
             builder.Append("<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>");
             builder.Append("<manufacturer>" + SecurityElement.Escape(_profile.Manufacturer ?? string.Empty) + "</manufacturer>");
@@ -99,7 +108,7 @@ namespace MediaBrowser.Dlna.Server
 
             foreach (var service in GetServices())
             {
-                builder.Append("<icon>");
+                builder.Append("<service>");
 
                 builder.Append("<serviceType>" + SecurityElement.Escape(service.ServiceType ?? string.Empty) + "</serviceType>");
                 builder.Append("<serviceId>" + SecurityElement.Escape(service.ServiceId ?? string.Empty) + "</serviceId>");
@@ -107,7 +116,7 @@ namespace MediaBrowser.Dlna.Server
                 builder.Append("<controlURL>" + SecurityElement.Escape(service.ControlUrl ?? string.Empty) + "</controlURL>");
                 builder.Append("<eventSubURL>" + SecurityElement.Escape(service.EventSubUrl ?? string.Empty) + "</eventSubURL>");
 
-                builder.Append("</icon>");
+                builder.Append("</service>");
             }
 
             builder.Append("</serviceList>");

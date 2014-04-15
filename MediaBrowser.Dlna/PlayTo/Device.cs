@@ -210,6 +210,9 @@ namespace MediaBrowser.Dlna.PlayTo
             return SetVolume(tmp);
         }
 
+        /// <summary>
+        /// Sets volume on a scale of 0-100
+        /// </summary>
         public async Task<bool> SetVolume(int value)
         {
             var command = RendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetVolume");
