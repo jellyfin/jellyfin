@@ -47,10 +47,12 @@ namespace MediaBrowser.Dlna.Server
 
         private void AppendDeviceInfo(StringBuilder builder)
         {
+            builder.Append("<device>");
             AppendDeviceProperties(builder);
 
             AppendIconList(builder);
             AppendServiceList(builder);
+            builder.Append("</device>");
         }
 
         private void AppendDeviceProperties(StringBuilder builder)
@@ -132,7 +134,7 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 48,
                 Height = 48,
-                Url = "/icons/small.jpg"
+                Url = "/mediabrowser/dlna/icons/small.jpg"
             });
 
             list.Add(new DeviceIcon
@@ -141,7 +143,7 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 120,
                 Height = 120,
-                Url = "/icons/large.jpg"
+                Url = "/mediabrowser/dlna/icons/large.jpg"
             });
 
             list.Add(new DeviceIcon
@@ -150,7 +152,7 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 48,
                 Height = 48,
-                Url = "/icons/small.png"
+                Url = "/mediabrowser/dlna/icons/small.png"
             });
 
             list.Add(new DeviceIcon
@@ -159,7 +161,7 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 120,
                 Height = 120,
-                Url = "/icons/large.png"
+                Url = "/mediabrowser/dlna/icons/large.png"
             });
             
             return list;
@@ -173,7 +175,7 @@ namespace MediaBrowser.Dlna.Server
             {
                 ServiceType = "urn:schemas-upnp-org:service:ContentDirectory:1",
                 ServiceId = "urn:upnp-org:serviceId:ContentDirectory",
-                ScpdUrl = "/contentdirectory.xml",
+                ScpdUrl = "/mediabrowser/dlna/contentdirectory.xml",
                 ControlUrl = "/servicecontrol"
             });
 
