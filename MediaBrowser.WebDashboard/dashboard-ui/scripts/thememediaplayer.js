@@ -1,4 +1,4 @@
-﻿(function (document, $) {
+﻿(function (document, $, localStorage) {
 
     var currentOwnerId;
     var currentThemeIds = [];
@@ -46,15 +46,14 @@
 
         var key = userId + '-themesongs';
 
-        if (isEnabled != null) {
-
-            var val = isEnabled ? '1' : '0';
-
-            localStorage.setItem(key, val);
-
-            return;
+        if (isEnabled == null) {
+            return localStorage.getItem(key) == '1';
         }
-        return localStorage.getItem(key);
+        
+
+        var val = isEnabled ? '1' : '0';
+
+        localStorage.setItem(key, val);
     }
 
     function getPlayer() {
@@ -75,7 +74,9 @@
     });
 
     window.ThemeSongManager = {
-        enabled: enabled
+        enabled: function (isEnabled) {
+            return enabled(isEnabled);
+        }
     };
 
-})(document, jQuery);
+})(document, jQuery, window.localStorage);

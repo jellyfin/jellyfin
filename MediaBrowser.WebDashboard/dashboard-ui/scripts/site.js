@@ -492,7 +492,6 @@ var Dashboard = {
 
                 html += '<img style="max-width:28px;vertical-align:middle;margin-right:5px;" src="' + imageUrl + '" />';
             }
-
             html += user.Name;
             html += '</h3>';
 
@@ -513,7 +512,7 @@ var Dashboard = {
                 $(this).off("panelafterclose").remove();
             });
 
-            $('#chkEnableThemeSongs', elem).checked(ThemeSongManager.enabled()).checkboxradio('refresh');
+            $('#chkEnableThemeSongs', elem).checked(window.ThemeSongManager.enabled()).checkboxradio('refresh');
         });
     },
 
