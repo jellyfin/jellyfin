@@ -477,7 +477,7 @@ var Dashboard = {
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
+            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="b">';
 
             html += '<h3>';
 
@@ -496,17 +496,24 @@ var Dashboard = {
             html += user.Name;
             html += '</h3>';
 
+            html += '<form>';
+
+            html += '<p><label for="chkEnableThemeSongs">Play theme songs</label><input onchange="ThemeSongManager.enabled(this.checked);" type="checkbox" id="chkEnableThemeSongs" data-mini="true" /></a>';
+
             html += '<p><a data-mini="true" data-role="button" href="useredit.html?userId=' + user.Id + '" data-icon="user">Preferences</button></a>';
             html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">Sign Out</button></p>';
 
+            html += '</form>';
             html += '</div>';
 
             $(document.body).append(html);
 
-            $('#userFlyout').panel({}).trigger('create').panel("open").on("panelafterclose", function () {
+            var elem = $('#userFlyout').panel({}).trigger('create').panel("open").on("panelafterclose", function () {
 
                 $(this).off("panelafterclose").remove();
             });
+
+            $('#chkEnableThemeSongs', elem).checked(ThemeSongManager.enabled()).checkboxradio('refresh');
         });
     },
 

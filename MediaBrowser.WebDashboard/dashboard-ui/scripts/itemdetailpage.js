@@ -267,8 +267,7 @@
             $('#musicVideosCollapsible', page).hide();
         }
 
-        renderThemeSongs(page, item, user);
-        renderThemeVideos(page, item, user);
+        renderThemeMedia(page, item, user);
         renderCriticReviews(page, item, 1);
     }
 
@@ -906,20 +905,49 @@
 
         $('#criticReviewsContent', page).html(html).trigger('create');
     }
+    
+    function renderThemeMedia(page, item) {
+        
+        ApiClient.getThemeMedia(Dashboard.getCurrentUserId(), item.Id, true).done(function (result) {
 
-    function renderThemeSongs(page, item) {
+            var themeSongs = result.ThemeSongsResult.OwnerId == item.Id ?
+                result.ThemeSongsResult.Items :
+                [];
+            
+            var themeVideos = result.ThemeVideosResult.OwnerId == item.Id ?
+                result.ThemeVideosResult.Items :
+                [];
 
-        ApiClient.getThemeSongs(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
-            if (result.Items.length) {
+            renderThemeSongs(page, themeSongs);
+            renderThemeVideos(page, themeVideos);
 
-                $('#themeSongsCollapsible', page).show();
-
-                $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true, showAlbum: true, showAlbumArtist: true })).trigger('create');
-            } else {
-                $('#themeSongsCollapsible', page).hide();
-            }
+            $(page).trigger('thememediadownload', [result]);
         });
 
+    }
+
+    function renderThemeSongs(page, items) {
+
+        if (items.length) {
+
+            $('#themeSongsCollapsible', page).show();
+
+            $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(items, { showArtist: true, showAlbum: true, showAlbumArtist: true })).trigger('create');
+        } else {
+            $('#themeSongsCollapsible', page).hide();
+        }
+    }
+
+    function renderThemeVideos(page, items, user) {
+
+        if (items.length) {
+
+            $('#themeVideosCollapsible', page).show();
+
+            $('#themeVideosContent', page).html(getVideosHtml(items, user)).trigger('create');
+        } else {
+            $('#themeVideosCollapsible', page).hide();
+        }
     }
 
     function renderMusicVideos(page, item, user) {
@@ -941,21 +969,6 @@
                 $('#musicVideosContent', page).html(getVideosHtml(result.Items, user)).trigger('create');
             } else {
                 $('#musicVideosCollapsible', page).hide();
-            }
-        });
-
-    }
-
-    function renderThemeVideos(page, item, user) {
-
-        ApiClient.getThemeVideos(user.Id, item.Id).done(function (result) {
-            if (result.Items.length) {
-
-                $('#themeVideosCollapsible', page).show();
-
-                $('#themeVideosContent', page).html(getVideosHtml(result.Items, user)).trigger('create');
-            } else {
-                $('#themeVideosCollapsible', page).hide();
             }
         });
 

@@ -187,7 +187,7 @@ namespace MediaBrowser.Api.Playback
 
             if (!state.HasMediaStreams)
             {
-                return state.IsInputVideo ? "-map -0:s" : string.Empty;
+                return state.IsInputVideo ? "-sn" : string.Empty;
             }
 
             if (state.VideoStream != null)
@@ -1493,7 +1493,7 @@ namespace MediaBrowser.Api.Playback
 
             if (videoRequest != null)
             {
-                if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream, state.VideoType))
+                if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream))
                 {
                     videoRequest.VideoCodec = "copy";
                 }
@@ -1507,15 +1507,9 @@ namespace MediaBrowser.Api.Playback
             return state;
         }
 
-        private bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream, VideoType videoType)
+        private bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
         {
             if (videoStream.IsInterlaced)
-            {
-                return false;
-            }
-
-            // Not going to attempt this with folder rips
-            if (videoType != VideoType.VideoFile)
             {
                 return false;
             }

@@ -16,17 +16,14 @@
                         <a href="supporterkey.html" data-role="button">${TabSupporterKey}</a>
                         <a href="about.html" data-role="button">${TabAbout}</a>
                     </div>
-                    <h3>Support the Media Browser Team</h3>
-                    <p>
-                        Help ensure the continued development of this project by donating. A portion of all donations will be contributed to other <a href="about.html">free tools</a> we depend on.
-                    </p>
+                    <h3>${HeaderSupportTheTeam}</h3>
+                    <p>${HeaderSupportTheTeamHelp}</p>
 
                     <br />
                     <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr"
                         method="post">
-                        <label for="donateAmt">Amount (USD)</label>
+                        <label for="donateAmt">${LabelSupportAmount}</label>
                         <select id="donateAmt" name="amount">
-                            <option value="10">$10</option>
                             <option value="15" selected="selected">$15</option>
                             <option value="20">$20</option>
                             <option value="30">$30</option>
@@ -40,10 +37,11 @@
                         <input type="hidden" name="item_number" value="MBSupporter">
                         <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
                         <input type="hidden" name="return" id="paypalReturnUrl" value="#">
-                        <a data-role="button" onclick="$(this).parents('form')[0].submit();">
+                        <a data-role="button" data-icon="arrow-r" data-iconpos="right" onclick="$(this).parents('form')[0].submit();">
                             <img src="css/images/supporter/donatepaypal.png" /></a>
                     </form>
-                    <p>Once complete, please return and <a href="supporterkey.html">enter your supporter key</a>, which you will receive by email.</p>
+                    <p>${DonationNextStep}</p>
+                    <p><a href="supporterkey.html">Enter supporter key</a></p>
                 </div>
             </div>
         </div>

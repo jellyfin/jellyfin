@@ -36,7 +36,8 @@
                 isLocalPlayer: currentPlayer.isLocalPlayer,
                 id: currentTargetInfo.id,
                 deviceName: currentTargetInfo.deviceName,
-                playableMediaTypes: currentTargetInfo.playableMediaTypes
+                playableMediaTypes: currentTargetInfo.playableMediaTypes,
+                supportedCommands: currentTargetInfo.supportedCommands
             };
         };
 
@@ -355,7 +356,7 @@
 
             var mirror = (!target.isLocalPlayer && target.supportedCommands.indexOf('DisplayContent') != -1) ? 'true' : 'false';
 
-            html += '<input type="radio" class="radioSelectPlayerTarget" name="radioSelectPlayerTarget" data-mirror="' + mirror + '" data-mediatypes="' + target.playableMediaTypes.join(',') + '" data-playername="' + target.playerName + '" data-targetid="' + target.id + '" data-targetname="' + target.name + '" id="' + id + '" value="' + target.id + '"' + checkedHtml + '>';
+            html += '<input type="radio" class="radioSelectPlayerTarget" name="radioSelectPlayerTarget" data-mirror="' + mirror + '" data-commands="' + target.supportedCommands.join(',') + '" data-mediatypes="' + target.playableMediaTypes.join(',') + '" data-playername="' + target.playerName + '" data-targetid="' + target.id + '" data-targetname="' + target.name + '" id="' + id + '" value="' + target.id + '"' + checkedHtml + '>';
             html += '<label for="' + id + '" style="font-weight:normal;">' + target.name;
 
             if (target.appName) {
@@ -432,11 +433,13 @@
                 var targetId = this.getAttribute('data-targetid');
                 var targetName = this.getAttribute('data-targetname');
                 var playableMediaTypes = this.getAttribute('data-mediatypes').split(',');
+                var supportedCommands = this.getAttribute('data-commands').split(',');
 
                 MediaController.setActivePlayer(playerName, {
                     id: targetId,
                     name: targetName,
-                    playableMediaTypes: playableMediaTypes
+                    playableMediaTypes: playableMediaTypes,
+                    supportedCommands: supportedCommands
 
                 });
             });

@@ -40,7 +40,7 @@
 
             Dashboard.updateSystemInfo(systemInfo);
 
-            $('#appVersionNumber', page).html(systemInfo.Version);
+            $('#appVersionNumber', page).html('Version ' + systemInfo.Version);
 
             var port = systemInfo.HttpServerPortNumber;
 
@@ -190,17 +190,15 @@
 
         var html = '';
 
-        var table = $('.tblConnections', page);
+        var parentElement = $('.activeDevices', page);
 
-        $('.trSession', table).addClass('deadSession');
-
-        var deviceId = ApiClient.deviceId();
+        $('.activeSession', parentElement).addClass('deadSession');
 
         for (var i = 0, length = sessions.length; i < length; i++) {
 
             var connection = sessions[i];
 
-            var rowId = 'trSession' + connection.Id;
+            var rowId = 'session' + connection.Id;
 
             var elem = $('#' + rowId, page);
 
@@ -209,93 +207,184 @@
                 continue;
             }
 
-            html += '<tr class="trSession" id="' + rowId + '">';
+            var nowPlayingItem = connection.NowPlayingItem;
 
-            html += '<td class="clientType" style="text-align:center;">';
-            html += DashboardPage.getClientType(connection);
-            html += '</td>';
+            var className = nowPlayingItem ? 'activeSession' : 'notPlayingSession activeSession';
 
-            html += '<td>';
+            html += '<a class="' + className + '" id="' + rowId + '" href="nowplaying.html">';
 
-            html += '<div style="max-width:200px;">';
-            if (deviceId == connection.DeviceId) {
-                html += connection.DeviceName;
+            html += '<div class="sessionNowPlayingContent"';
+
+            var imgUrl = DashboardPage.getNowPlayingImageUrl(nowPlayingItem);
+
+            if (imgUrl) {
+                html += ' data-src="' + imgUrl + '" style="display:inline-block;background-image:url(\'' + imgUrl + '\');"';
+            }
+
+            html += '></div>';
+
+            html += '<div class="sessionNowPlayingInnerContent">';
+
+            html += '<div class="sessionAppInfo">';
+
+            var clientImage = DashboardPage.getClientImage(connection);
+
+            if (clientImage) {
+                html += clientImage;
+            }
+
+            html += '<div class="sessionAppName" style="display:inline-block;">' + connection.DeviceName;
+            html += '<br/>' + connection.ApplicationVersion;
+            html += '</div>';
+
+            html += '</div>';
+
+            html += '<div class="sessionUserInfo">';
+
+            var userImage = DashboardPage.getUserImage(connection);
+            if (userImage) {
+                html += '<div class="sessionUserImage" data-src="' + userImage + '">';
+                html += '<img src="' + userImage + '" />';
             } else {
-                html += '<a href="#" onclick="RemoteControl.showMenu({sessionId:\'' + connection.Id + '\'});">' + connection.DeviceName + '</a>';
+                html += '<div class="sessionUserImage">';
             }
             html += '</div>';
 
-            html += '<div>' + connection.ApplicationVersion + '</div>';
-
-            html += '<div class="username">';
+            html += '<div class="sessionUserName">';
             html += DashboardPage.getUsersHtml(connection);
             html += '</div>';
 
-            html += '</td>';
-
-            var nowPlayingItem = connection.NowPlayingItem;
-
-            html += '<td>';
-
-            html += '<div class="nowPlayingImage">';
-            html += DashboardPage.getNowPlayingImage(nowPlayingItem);
             html += '</div>';
 
-            html += '<div class="clientNowPlayingText">';
-            html += DashboardPage.getNowPlayingText(connection, nowPlayingItem);
+            html += '<div class="sessionNowPlayingInfo">';
+            if (nowPlayingItem) {
+                html += DashboardPage.getNowPlayingName(connection);
+            }
             html += '</div>';
 
-            html += '</td>';
+            if (nowPlayingItem) {
 
+                var value = (100 * connection.NowPlayingPositionTicks) / nowPlayingItem.RunTimeTicks;
 
-            html += '</tr>';
+                html += '<progress class="itemProgressBar" min="0" max="100" value="' + value + '"></progress>';
+            } else {
+                html += '<progress class="itemProgressBar" min="0" max="100" style="display:none;"></progress>';
+            }
+
+            html += '</div>';
+            html += '</a>';
 
         }
 
-        table.append(html).trigger('create');
+        parentElement.append(html).trigger('create');
 
-        $('.deadSession', table).remove();
+        $('.deadSession', parentElement).remove();
+    },
+
+    getNowPlayingName: function (session) {
+
+        var nowPlayingItem = session.NowPlayingItem;
+        
+        if (!nowPlayingItem) {
+
+            return 'Last seen ' + humane_date(session.LastActivityDate);
+        }
+        
+        var topText = nowPlayingItem.Name;
+
+        if (nowPlayingItem.MediaType == 'Video') {
+            if (nowPlayingItem.IndexNumber != null) {
+                topText = nowPlayingItem.IndexNumber + " - " + topText;
+            }
+            if (nowPlayingItem.ParentIndexNumber != null) {
+                topText = nowPlayingItem.ParentIndexNumber + "." + topText;
+            }
+        }
+
+        var bottomText = '';
+
+        if (nowPlayingItem.Artists && nowPlayingItem.Artists.length) {
+            bottomText = topText;
+            topText = nowPlayingItem.Artists[0];
+        }
+        else if (nowPlayingItem.SeriesName || nowPlayingItem.Album) {
+            bottomText = topText;
+            topText = nowPlayingItem.SeriesName || nowPlayingItem.Album;
+        }
+        else if (nowPlayingItem.ProductionYear) {
+            bottomText = nowPlayingItem.ProductionYear;
+        }
+
+        return bottomText ? topText + '<br/>' + bottomText : topText;
+
     },
 
     getUsersHtml: function (session) {
 
-        var html = '';
+        var html = [];
 
         if (session.UserId) {
-            html += '<div>' + session.UserName + '</div>';
+            html.push(session.UserName);
         }
 
-        html += session.AdditionalUsers.map(function (currentSession) {
+        for (var i = 0, length = session.AdditionalUsers.length; i < length; i++) {
 
-            return '<div>' + currentSession.UserName + '</div>';
-        });
+            html.push(session.AdditionalUsers[i].UserName);
+        }
 
-        return html;
+        return html.join(', ');
+    },
+
+    getUserImage: function (session) {
+
+        if (session.UserId && session.UserPrimaryImageTag) {
+            return ApiClient.getUserImageUrl(session.UserId, {
+                
+                tag: session.UserPrimaryImageTag,
+                height: 24,
+                type: 'Primary'
+
+            });
+        }
+
+        return null;
     },
 
     updateSession: function (row, session) {
 
         row.removeClass('deadSession');
 
-        $('.username', row).html(DashboardPage.getUsersHtml(session));
-
         var nowPlayingItem = session.NowPlayingItem;
 
-        $('.clientNowPlayingText', row).html(DashboardPage.getNowPlayingText(session, nowPlayingItem)).trigger('create');
+        if (nowPlayingItem) {
+            row.removeClass('notPlayingSession');
+        } else {
+            row.addClass('notPlayingSession');
+        }
 
-        var imageRow = $('.nowPlayingImage', row);
+        $('.sessionUserName', row).html(DashboardPage.getUsersHtml(session));
 
-        var image = $('img', imageRow)[0];
+        $('.sessionNowPlayingInfo', row).html(DashboardPage.getNowPlayingName(session));
 
-        var nowPlayingItemId = nowPlayingItem ? nowPlayingItem.Id : null;
-        var nowPlayingItemImageTag = nowPlayingItem ? nowPlayingItem.PrimaryImageTag : null;
+        if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
 
-        if (!image || image.getAttribute('data-itemid') != nowPlayingItemId || image.getAttribute('data-tag') != nowPlayingItemImageTag) {
-            imageRow.html(DashboardPage.getNowPlayingImage(nowPlayingItem));
+            var value = (100 * session.NowPlayingPositionTicks) / nowPlayingItem.RunTimeTicks;
+
+            $('progress', row).show().val(value);
+        } else {
+            $('progress', row).hide();
+        }
+
+        var imgUrl = DashboardPage.getNowPlayingImageUrl(nowPlayingItem) || '';
+        var imgElem = $('.sessionNowPlayingContent', row)[0];
+
+        if (imgUrl != imgElem.getAttribute('data-src')) {
+            imgElem.style.backgroundImage = imgUrl ? 'url(\'' + imgUrl + '\')' : '';
+            imgElem.setAttribute('data-src', imgUrl);
         }
     },
 
-    getClientType: function (connection) {
+    getClientImage: function (connection) {
 
         var clientLowered = connection.Client.toLowerCase();
 
@@ -325,89 +414,81 @@
         }
         if (clientLowered == "mb-classic") {
 
-            return "<img src='css/images/clients/mbc.png' alt='Media Browser Classic' />";
+            return "<img src='css/images/clients/mbc.png' />";
         }
         if (clientLowered == "media browser theater") {
 
-            return "<img src='css/images/clients/mb.png' alt='Media Browser Theater' />";
+            return "<img src='css/images/clients/mb.png' />";
         }
         if (clientLowered == "android") {
 
-            return "<img src='css/images/clients/android.png' alt='Android' />";
+            return "<img src='css/images/clients/android.png' />";
         }
         if (clientLowered == "roku") {
 
-            return "<img src='css/images/clients/roku.jpg' alt='Roku' />";
+            return "<img src='css/images/clients/roku.jpg' />";
         }
         if (clientLowered == "ios") {
 
-            return "<img src='css/images/clients/ios.png' alt='iOS' />";
+            return "<img src='css/images/clients/ios.png' />";
         }
         if (clientLowered == "windows rt") {
 
-            return "<img src='css/images/clients/windowsrt.png' alt='Windows RT' />";
+            return "<img src='css/images/clients/windowsrt.png' />";
         }
         if (clientLowered == "windows phone") {
 
-            return "<img src='css/images/clients/windowsphone.png' alt='Windows Phone' />";
+            return "<img src='css/images/clients/windowsphone.png' />";
         }
         if (clientLowered == "dlna") {
 
-            return "<img src='css/images/clients/dlna.png' alt='Dlna' />";
+            return "<img src='css/images/clients/dlna.png' />";
         }
         if (clientLowered == "mbkinect") {
 
-            return "<img src='css/images/clients/mbkinect.png' alt='MB Kinect' />";
+            return "<img src='css/images/clients/mbkinect.png' />";
         }
         if (clientLowered == "xbmc") {
-            return "<img src='css/images/clients/xbmc.png' alt='Xbmc' />";
+            return "<img src='css/images/clients/xbmc.png' />";
         }
         if (clientLowered == "chromecast") {
 
-            return "<img src='css/images/chromecast/ic_media_route_on_holo_light.png' alt='Chromecast' />";
+            return "<img src='css/images/chromecast/ic_media_route_on_holo_light.png' />";
         }
 
-
-        return connection.Client;
+        return null;
     },
 
-    getNowPlayingImage: function (item) {
+    getNowPlayingImageUrl: function (item) {
+
+        if (item && item.BackdropImageTag) {
+
+            return ApiClient.getImageUrl(item.BackdropItemId, {
+                type: "Backdrop",
+                width: 810,
+                tag: item.BackdropImageTag
+            });
+        }
+
+        if (item && item.ThumbImageTag) {
+
+            return ApiClient.getImageUrl(item.ThumbItemId, {
+                type: "Thumb",
+                width: 810,
+                tag: item.ThumbImageTag
+            });
+        }
 
         if (item && item.PrimaryImageTag) {
-            var url = ApiClient.getImageUrl(item.Id, {
+
+            return ApiClient.getImageUrl(item.PrimaryImageItemId, {
                 type: "Primary",
-                height: 100,
+                width: 810,
                 tag: item.PrimaryImageTag
             });
-
-            url += "&xxx=" + new Date().getTime();
-
-            return "<img data-itemid='" + item.Id + "' data-tag='" + item.PrimaryImageTag + "' class='clientNowPlayingImage' src='" + url + "' alt='" + item.Name + "' title='" + item.Name + "' />";
         }
 
-        return "";
-    },
-
-    getNowPlayingText: function (connection, item) {
-
-        var html = "";
-
-        if (item) {
-
-            html += "<div><a href='itemdetails.html?id=" + item.Id + "'>" + item.Name + "</a></div>";
-
-            html += "<div>";
-
-            if (item.RunTimeTicks) {
-                html += Dashboard.getDisplayTime(connection.NowPlayingPositionTicks || 0) + " / ";
-
-                html += Dashboard.getDisplayTime(item.RunTimeTicks);
-            }
-
-            html += "</div>";
-        }
-
-        return html;
+        return null;
     },
 
     systemUpdateTaskKey: "SystemUpdateTask",

@@ -3007,10 +3007,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        /**
-         * Gets theme songs for an item
-         */
-        self.getThemeSongs = function (userId, itemId) {
+        self.getThemeMedia = function (userId, itemId, inherit) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -3022,28 +3019,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 options.userId = userId;
             }
 
-            var url = self.getUrl("Items/" + itemId + "/ThemeSongs", options);
+            options.InheritFromParent = inherit || false;
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getThemeVideos = function (userId, itemId) {
-
-            if (!itemId) {
-                throw new Error("null itemId");
-            }
-
-            var options = {};
-
-            if (userId) {
-                options.userId = userId;
-            }
-
-            var url = self.getUrl("Items/" + itemId + "/ThemeVideos", options);
+            var url = self.getUrl("Items/" + itemId + "/ThemeMedia", options);
 
             return self.ajax({
                 type: "GET",

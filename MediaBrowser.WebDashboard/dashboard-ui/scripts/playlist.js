@@ -80,7 +80,7 @@
 
         var page = this;
 
-        reloadPlaylist(page);
+        //reloadPlaylist(page);
     });
 
 

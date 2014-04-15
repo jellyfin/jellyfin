@@ -167,6 +167,28 @@
             getNowPlayingBar();
         }
 
+        var playerInfo = MediaController.getPlayerInfo();
+
+        var supportedCommands = playerInfo.supportedCommands;
+        
+        if (supportedCommands.indexOf('SetVolume') == -1) {
+            volumeSlider.prop('disabled', 'disabled');
+        } else {
+            volumeSlider.prop('disabled', '');
+        }
+
+        if (supportedCommands.indexOf('Mute') == -1) {
+            muteButton.prop('disabled', 'disabled');
+        } else {
+            muteButton.prop('disabled', '');
+        }
+
+        if (supportedCommands.indexOf('Unmute') == -1) {
+            unmuteButton.prop('disabled', 'disabled');
+        } else {
+            unmuteButton.prop('disabled', '');
+        }
+
         if (state.isMuted) {
 
             muteButton.hide();
@@ -190,8 +212,10 @@
         }
 
         if (!isVolumeSliderActive) {
-            volumeSlider.val(state.volumeLevel || 0).slider('refresh');
+            volumeSlider.val(state.volumeLevel || 0);
         }
+
+        volumeSlider.slider('refresh');
 
         if (!isPositionSliderActive) {
             if (state.canSeek) {

@@ -862,9 +862,13 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresControls) {
-                html += '<video class="itemVideo" id="itemVideo" autoplay controls>';
+                
+
+                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay controls>';
             } else {
-                html += '<video class="itemVideo" id="itemVideo" autoplay>';
+                
+                // Chrome 35 won't play with preload none
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay>';
             }
 
             if (!isStatic) {

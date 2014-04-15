@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Auto-Organize</title>
+    <title>${TitleAutoOrganize}</title>
 </head>
 <body>
     <div id="libraryFileOrganizerPage" data-role="page" class="page type-interior organizePage">
@@ -9,70 +9,70 @@
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="autoorganizelog.html" data-role="button">Activity Log</a>
-                    <a href="#" data-role="button" class="ui-btn-active">TV Settings</a>
+                    <a href="autoorganizelog.html" data-role="button">${TabActivityLog}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabTV}</a>
                 </div>
 
                 <form class="libraryFileOrganizerForm">
 
-                    <p>Auto-organize monitors your download folders for new files and moves them to your media directories.</p>
+                    <p>${AutoOrganizeHelp}</p>
 
-                    <p>TV file organizing will only add episodes to existing series. It will not create new series folders.</p>
+                    <p>${AutoOrganizeTvHelp}</p>
                     <ul data-role="listview" class="ulForm" style="margin-bottom: 0!important;">
                         <li>
                             <input type="checkbox" id="chkEnableTvSorting" name="chkEnableTvSorting" />
-                            <label for="chkEnableTvSorting">Enable new episode organization</label>
+                            <label for="chkEnableTvSorting">${OptionEnableEpisodeOrganization}</label>
                         </li>
                         <li>
-                            <label for="txtWatchFolder">Watch folder: </label>
+                            <label for="txtWatchFolder">${LabelWatchFolder}</label>
                             <div style="display: inline-block; width: 92%;">
                                 <input type="text" id="txtWatchFolder" name="txtWatchFolder" />
                             </div>
                             <button id="btnSelectWatchFolder" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
                             <div class="fieldDescription">
-                                The server will poll this folder during the "Organize new media files" <a href="scheduledtasks.html">scheduled task</a>.
+                                <div>${LabelWatchFolderHelp}</div>
                             </div>
                         </li>
                         <li>
-                            <label for="txtMinFileSize">Minimum file size (MB): </label>
+                            <label for="txtMinFileSize">${LabelMinFileSizeForOrganize}</label>
                             <input type="number" id="txtMinFileSize" name="txtMinFileSize" pattern="[0-9]*" required="required" min="0" data-mini="true" />
-                            <div class="fieldDescription">Files under this size will be ignored.</div>
+                            <div class="fieldDescription">${LabelMinFileSizeForOrganizeHelp}</div>
                         </li>
                         <li>
-                            <label for="txtSeasonFolderPattern">Season folder pattern: </label>
+                            <label for="txtSeasonFolderPattern">${LabelSeasonFolderPattern}</label>
                             <input type="text" id="txtSeasonFolderPattern" name="txtSeasonFolderPattern" required="required" data-mini="true" />
                             <div class="fieldDescription seasonFolderFieldDescription"></div>
                         </li>
                         <li>
-                            <label for="txtSeasonZeroName">Season zero folder name: </label>
+                            <label for="txtSeasonZeroName">${LabelSeasonZeroFolderName}</label>
                             <input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" required="required" data-mini="true" />
                         </li>
                     </ul>
                     <div data-role="collapsible">
-                        <h3>Episode file pattern</h3>
+                        <h3>${HeaderEpisodeFilePattern}</h3>
                         <div>
                             <br />
                             <div>
-                                <label for="txtEpisodePattern">Episode pattern: </label>
+                                <label for="txtEpisodePattern">${LabelEpisodePattern}</label>
                                 <input type="text" id="txtEpisodePattern" name="txtEpisodePattern" required="required" data-mini="true" />
                                 <div class="fieldDescription episodePatternDescription"></div>
                             </div>
                             <br />
                             <div>
-                                <label for="txtMultiEpisodePattern">Multi-Episode pattern: </label>
+                                <label for="txtMultiEpisodePattern">${LabelMultiEpisodePattern}</label>
                                 <input type="text" id="txtMultiEpisodePattern" name="txtMultiEpisodePattern" required="required" data-mini="true" />
                                 <div class="fieldDescription multiEpisodePatternDescription"></div>
                             </div>
 
                             <br />
-                            <p>Supported Patterns</p>
+                            <p>${HeaderSupportedPatterns}</p>
 
                             <table data-role="table" id="movie-table" data-mode="reflow" class="ui-responsive">
                                 <thead>
                                     <tr>
-                                        <th>Term</th>
-                                        <th>Pattern</th>
-                                        <th>Result</th>
+                                        <th>${HeaderTerm}</th>
+                                        <th>${HeaderPattern}</th>
+                                        <th>${HeaderResult}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -144,36 +144,36 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="copyOrMoveFile">Transfer Method</label>
+                            <label for="copyOrMoveFile">${LabelTransferMethod}</label>
                             <select id="copyOrMoveFile" data-mini="true">
-                                <option value="true">Copy</option>
-                                <option value="false">Move</option>
+                                <option value="true">${OptionCopy}</option>
+                                <option value="false">${OptionMove}</option>
                             </select>
-                            <div class="fieldDescription">Copy or move files from the watch folder</div>
+                            <div class="fieldDescription">${LabelTransferMethodHelp}</div>
                         </li>
                         <li>
                             <input type="checkbox" id="chkOverwriteExistingEpisodes" name="chkOverwriteExistingEpisodes" />
-                            <label for="chkOverwriteExistingEpisodes">Overwrite existing episodes</label>
+                            <label for="chkOverwriteExistingEpisodes">${OptionOverwriteExistingEpisodes}</label>
                         </li>
                         <li>
-                            <label for="txtDeleteLeftOverFiles">Delete left over files with the following extensions: </label>
+                            <label for="txtDeleteLeftOverFiles">${LabelDeleteLeftOverFiles}</label>
                             <input type="text" id="txtDeleteLeftOverFiles" name="txtDeleteLeftOverFiles" data-mini="true" />
-                            <div class="fieldDescription">Separate with ;. For example: .nfo;.txt</div>
+                            <div class="fieldDescription">${LabelDeleteLeftOverFilesHelp}</div>
                         </li>
                         <li>
                             <input type="checkbox" id="chkDeleteEmptyFolders" name="chkDeleteEmptyFolders" data-mini="true" />
-                            <label for="chkDeleteEmptyFolders">Delete empty folders after organizing</label>
-                            <div class="fieldDescription">Enable this to keep the download directory clean.</div>
+                            <label for="chkDeleteEmptyFolders">${LabelDeleteEmptyFolders}</label>
+                            <div class="fieldDescription">${LabelDeleteEmptyFoldersHelp}</div>
                         </li>
                     </ul>
 
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                                Save
+                                ${ButtonSave}
                             </button>
                             <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
 

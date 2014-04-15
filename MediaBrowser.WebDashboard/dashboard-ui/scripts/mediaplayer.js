@@ -566,7 +566,7 @@
         };
 
         self.displayContent = function (options) {
-            
+
             // Handle it the same as a remote control command
             Dashboard.onBrowseCommand({
 
@@ -934,7 +934,7 @@
         };
 
         self.isPlaying = function () {
-            return currentMediaElement;
+            return currentMediaElement != null;
         };
 
         self.getPlayerState = function () {
@@ -1121,6 +1121,15 @@
             return testableVideoElement.canPlayType('video/webm').replace(/no/, '');
         }
 
+        self.canAutoPlayAudio = function () {
+
+            if ($.browser.android || ($.browser.webkit && !$.browser.chrome)) {
+                return false;
+            }
+
+            return true;
+        };
+
         function getAudioElement() {
 
             var elem = $('.mediaPlayerAudio');
@@ -1131,7 +1140,7 @@
 
             var html = '';
 
-            var requiresControls = $.browser.android || ($.browser.webkit && !$.browser.chrome);
+            var requiresControls = !self.canAutoPlayAudio();
 
             if (requiresControls) {
                 html += '<div class="mediaPlayerAudioContainer"><div class="mediaPlayerAudioContainerInner">';;

@@ -265,7 +265,8 @@ namespace MediaBrowser.Dlna.PlayTo
                             GeneralCommandType.VolumeUp.ToString(),
                             GeneralCommandType.Mute.ToString(),
                             GeneralCommandType.Unmute.ToString(),
-                            GeneralCommandType.ToggleMute.ToString()
+                            GeneralCommandType.ToggleMute.ToString(),
+                            GeneralCommandType.SetVolume.ToString()
                         }
                     });
 

@@ -1182,6 +1182,13 @@ namespace MediaBrowser.Server.Implementations.Session
             if (session.UserId.HasValue)
             {
                 dto.UserId = session.UserId.Value.ToString("N");
+
+                var user = _userManager.GetUserById(session.UserId.Value);
+
+                if (user != null)
+                {
+                    dto.UserPrimaryImageTag = GetImageCacheTag(user, ImageType.Primary);
+                }
             }
 
             return dto;
@@ -1311,6 +1318,11 @@ namespace MediaBrowser.Server.Implementations.Session
                 }
             }
 
+            if (backropItem == null)
+            {
+                backropItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Backdrop));
+            }
+
             if (thumbItem == null)
             {
                 thumbItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Thumb));
@@ -1322,7 +1334,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 info.ThumbItemId = GetDtoId(thumbItem);
             }
 
-            if (thumbItem != null)
+            if (backropItem != null)
             {
                 info.BackdropImageTag = GetImageCacheTag(backropItem, ImageType.Backdrop);
                 info.BackdropItemId = GetDtoId(backropItem);

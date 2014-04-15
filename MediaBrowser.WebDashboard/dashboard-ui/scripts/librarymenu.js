@@ -16,7 +16,7 @@
 
         html += '<a class="desktopHomeLink" href="index.html"><img src="css/images/mblogoicon.png" /></a>';
 
-        html += '<button class="viewMenuRemoteControlButton" onclick="RemoteControl.showMenu();" type="button" data-icon="wireless" data-inline="true" data-iconpos="notext" title="Remote Control">Remote Control</button>';
+        html += '<a class="viewMenuRemoteControlButton" href="nowplaying.html" data-role="button" data-icon="wireless" data-inline="true" data-iconpos="notext" title="Now Playing">Remote Control</a>';
 
         if (user.Configuration.IsAdministrator) {
             html += '<a class="editorMenuLink" href="edititemmetadata.html" data-role="button" data-icon="edit" data-inline="true" data-iconpos="notext" title="Metadata Manager">Metadata Manager</a>';

@@ -147,7 +147,7 @@ namespace MediaBrowser.Dlna.Server
 
             foreach (var d in Devices)
             {
-                if (!string.IsNullOrEmpty(req) && req != d.Type)
+                if (!string.IsNullOrEmpty(req) && !string.Equals(req, d.Type, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -263,13 +263,19 @@ namespace MediaBrowser.Dlna.Server
                 }
             }
 
-            foreach (var t in new[] { "upnp:rootdevice", "urn:schemas-upnp-org:device:MediaServer:1", "urn:schemas-upnp-org:service:ContentDirectory:1", "uuid:" + uuid })
+            foreach (var t in new[]
+            {
+                "upnp:rootdevice", 
+                "urn:schemas-upnp-org:device:MediaServer:1", 
+                "urn:schemas-upnp-org:service:ContentDirectory:1", 
+                "uuid:" + uuid
+            })
             {
                 list.Add(new UpnpDevice(uuid, t, descriptor, address));
             }
 
             NotifyAll();
-            _logger.Debug("Registered mount {0}", uuid);
+            _logger.Debug("Registered mount {0} at {1}", uuid, descriptor);
         }
 
         private void UnregisterNotification(Guid uuid)
