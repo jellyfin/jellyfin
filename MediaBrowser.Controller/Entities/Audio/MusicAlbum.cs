@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicAlbum
     /// </summary>
-    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasTags, IHasLookupInfo<AlbumInfo>, IHasSeries
+    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasTags, IHasLookupInfo<AlbumInfo>
     {
         public List<Guid> SoundtrackIds { get; set; }
 
@@ -64,15 +64,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             get
             {
                 return false;
-            }
-        }
-
-        [IgnoreDataMember]
-        public string SeriesName
-        {
-            get
-            {
-                return AlbumArtist;
             }
         }
 

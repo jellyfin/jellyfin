@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
 using ServiceStack;
@@ -32,10 +31,10 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class BrowseTo
+    /// Class DisplayContent
     /// </summary>
     [Route("/Sessions/{Id}/Viewing", "POST", Summary = "Instructs a session to browse to an item or view")]
-    public class BrowseTo : IReturnVoid
+    public class DisplayContent : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
@@ -218,6 +217,7 @@ namespace MediaBrowser.Api
         public Guid UserId { get; set; }
     }
 
+    [Route("/Sessions/Capabilities", "POST", Summary = "Updates capabilities for a device")]
     [Route("/Sessions/{Id}/Capabilities", "POST", Summary = "Updates capabilities for a device")]
     public class PostCapabilities : IReturnVoid
     {
@@ -226,7 +226,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         [ApiMember(Name = "PlayableMediaTypes", Description = "A list of playable media types, comma delimited. Audio, Video, Book, Game, Photo.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string PlayableMediaTypes { get; set; }
@@ -307,7 +307,7 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(BrowseTo request)
+        public void Post(DisplayContent request)
         {
             var command = new BrowseRequest
             {
@@ -421,7 +421,11 @@ namespace MediaBrowser.Api
 
         public void Post(PostCapabilities request)
         {
-            _sessionManager.ReportCapabilities(request.Id, new SessionCapabilities
+            if (string.IsNullOrWhiteSpace(request.Id))
+            {
+                request.Id = GetSession().Id.ToString("N");
+            }
+            _sessionManager.ReportCapabilities(new Guid(request.Id), new SessionCapabilities
             {
                 PlayableMediaTypes = request.PlayableMediaTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
 

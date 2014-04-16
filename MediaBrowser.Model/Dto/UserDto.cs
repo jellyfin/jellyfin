@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Model.Configuration;
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Dto

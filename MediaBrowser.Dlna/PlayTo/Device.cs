@@ -1,9 +1,10 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Dlna.Common;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -209,6 +210,9 @@ namespace MediaBrowser.Dlna.PlayTo
             return SetVolume(tmp);
         }
 
+        /// <summary>
+        /// Sets volume on a scale of 0-100
+        /// </summary>
         public async Task<bool> SetVolume(int value)
         {
             var command = RendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetVolume");
@@ -337,7 +341,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
 
             _lapsCount = GetLapsCount();
@@ -352,7 +356,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
             await Task.Delay(50).ConfigureAwait(false);
             return true;
@@ -366,7 +370,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType, 1))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
 
             await Task.Delay(50).ConfigureAwait(false);
@@ -575,7 +579,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 return false;
             }
 
-            var trackString = (string) track;
+            var trackString = (string)track;
 
             if (string.IsNullOrWhiteSpace(trackString) || string.Equals(trackString, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
@@ -583,7 +587,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
 
             XElement uPnpResponse;
-            
+
             try
             {
                 uPnpResponse = XElement.Parse(trackString);
@@ -838,7 +842,14 @@ namespace MediaBrowser.Dlna.PlayTo
             var controlURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("controlURL"));
             var eventSubURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("eventSubURL"));
 
-            return new DeviceService(type, id, scpdUrl, controlURL, eventSubURL);
+            return new DeviceService
+            {
+                ControlUrl = controlURL,
+                EventSubUrl = eventSubURL,
+                ScpdUrl = scpdUrl,
+                ServiceId = id,
+                ServiceType = type
+            };
         }
 
         #region Events

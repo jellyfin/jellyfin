@@ -16,6 +16,44 @@ namespace MediaBrowser.Common.Implementations.Networking
         /// <returns>IPAddress.</returns>
         public IEnumerable<string> GetLocalIpAddresses()
         {
+            var list = GetIPsDefault().Where(i => !IPAddress.IsLoopback(i)).Select(i => i.ToString()).ToList();
+
+            if (list.Count > 0)
+            {
+                return list;
+            }
+
+            return GetLocalIpAddressesFallback();
+        }
+
+        private IEnumerable<IPAddress> GetIPsDefault()
+        {
+            foreach (var adapter in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                var props = adapter.GetIPProperties();
+                var gateways = from ga in props.GatewayAddresses
+                               where !ga.Address.Equals(IPAddress.Any)
+                               select true;
+
+                if (!gateways.Any())
+                {
+                    continue;
+                }
+
+                foreach (var uni in props.UnicastAddresses)
+                {
+                    var address = uni.Address;
+                    if (address.AddressFamily != AddressFamily.InterNetwork)
+                    {
+                        continue;
+                    }
+                    yield return address;
+                }
+            }
+        }
+
+        private IEnumerable<string> GetLocalIpAddressesFallback()
+        {
             var host = Dns.GetHostEntry(Dns.GetHostName());
 
             // Reverse them because the last one is usually the correct one
@@ -25,7 +63,7 @@ namespace MediaBrowser.Common.Implementations.Networking
                 .Select(i => i.ToString())
                 .Reverse();
         }
-
+        
         /// <summary>
         /// Gets a random port number that is currently available
         /// </summary>
@@ -50,6 +88,7 @@ namespace MediaBrowser.Common.Implementations.Networking
                 .Select(i => BitConverter.ToString(i.GetPhysicalAddress().GetAddressBytes()))
                 .FirstOrDefault();
         }
+
         /// <summary>
         /// Parses the specified endpointstring.
         /// </summary>

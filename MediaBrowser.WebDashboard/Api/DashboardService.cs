@@ -372,8 +372,11 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");
             sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\">");
             sb.Append("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">");
+            sb.Append("<meta name=\"mobile-web-app-capable\" content=\"yes\">");
             //sb.Append("<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">");
 
+            sb.Append("<link rel=\"icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\" />");
+            
             // http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
             sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
             sb.Append("<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"css/images/touchicon72.png\" />");
@@ -419,6 +422,7 @@ namespace MediaBrowser.WebDashboard.Api
                             {
                                 "scripts/all.js" + versionString,
                                 "thirdparty/jstree1.0/jquery.jstree.min.js",
+                                "thirdparty/jquery.unveil-custom.js",
                                 "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"
             };
 
@@ -453,17 +457,17 @@ namespace MediaBrowser.WebDashboard.Api
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
             var builder = new StringBuilder();
-            var assembly = GetType().Assembly;
-            using (var stream = assembly.GetManifestResourceStream("MediaBrowser.WebDashboard.ApiClient.js"))
+
+            using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath("thirdparty/mediabrowser.apiclient.js"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
             {
-                using (var streamReader = new StreamReader(stream))
+                using (var streamReader = new StreamReader(fs))
                 {
                     var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
                     builder.Append(text);
                     builder.Append(Environment.NewLine);
                 }
             }
-
+            
             foreach (var file in GetScriptFiles())
             {
                 var path = GetDashboardResourcePath("scripts/" + file);
@@ -515,6 +519,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                                 "mediaplayer.js",
                                 "mediaplayer-video.js",
+                                "nowplayingbar.js",
 
                                 "ratingdialog.js",
                                 "aboutpage.js",
@@ -603,6 +608,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "supporterkeypage.js",
                                 "supporterpage.js",
                                 "episodes.js",
+                                "thememediaplayer.js",
                                 "tvgenres.js",
                                 "tvlatest.js",
                                 "tvpeople.js",

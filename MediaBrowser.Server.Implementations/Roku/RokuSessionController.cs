@@ -46,6 +46,16 @@ namespace MediaBrowser.Server.Implementations.Roku
             return Task.FromResult(true);
         }
 
+        public Task SendPlaybackStartNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
+        }
+
+        public Task SendPlaybackStoppedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
+        }
+
         public Task SendMessageCommand(MessageCommand command, CancellationToken cancellationToken)
         {
             return SendCommand(new WebSocketMessage<MessageCommand>
@@ -61,16 +71,6 @@ namespace MediaBrowser.Server.Implementations.Roku
             return SendCommand(new WebSocketMessage<PlayRequest>
             {
                 MessageType = "Play",
-                Data = command
-
-            }, cancellationToken);
-        }
-
-        public Task SendBrowseCommand(BrowseRequest command, CancellationToken cancellationToken)
-        {
-            return SendCommand(new WebSocketMessage<BrowseRequest>
-            {
-                MessageType = "Browse",
                 Data = command
 
             }, cancellationToken);

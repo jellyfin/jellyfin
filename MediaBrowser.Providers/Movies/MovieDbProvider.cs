@@ -139,8 +139,6 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         private TmdbSettingsResult _tmdbSettings;
 
-        private readonly SemaphoreSlim _tmdbSettingsSemaphore = new SemaphoreSlim(1, 1);
-
         /// <summary>
         /// Gets the TMDB settings.
         /// </summary>
@@ -152,32 +150,17 @@ namespace MediaBrowser.Providers.Movies
                 return _tmdbSettings;
             }
 
-            await _tmdbSettingsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (var json = await GetMovieDbResponse(new HttpRequestOptions
             {
-                // Check again in case it got populated while we were waiting.
-                if (_tmdbSettings != null)
-                {
-                    return _tmdbSettings;
-                }
+                Url = string.Format(TmdbConfigUrl, ApiKey),
+                CancellationToken = cancellationToken,
+                AcceptHeader = AcceptHeader
 
-                using (var json = await GetMovieDbResponse(new HttpRequestOptions
-                {
-                    Url = string.Format(TmdbConfigUrl, ApiKey),
-                    CancellationToken = cancellationToken,
-                    AcceptHeader = AcceptHeader
-
-                }).ConfigureAwait(false))
-                {
-                    _tmdbSettings = _jsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
-
-                    return _tmdbSettings;
-                }
-            }
-            finally
+            }).ConfigureAwait(false))
             {
-                _tmdbSettingsSemaphore.Release();
+                _tmdbSettings = _jsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
+
+                return _tmdbSettings;
             }
         }
 

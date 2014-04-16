@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Globalization;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
@@ -206,7 +207,8 @@ namespace MediaBrowser.Dlna.PlayTo
                         IsPaused = _device.IsPaused,
                         MediaSourceId = playlistItem.MediaSourceId,
                         AudioStreamIndex = playlistItem.AudioStreamIndex,
-                        SubtitleStreamIndex = playlistItem.SubtitleStreamIndex
+                        SubtitleStreamIndex = playlistItem.SubtitleStreamIndex,
+                        VolumeLevel = _device.Volume
 
                     }).ConfigureAwait(false);
                 }
@@ -331,12 +333,17 @@ namespace MediaBrowser.Dlna.PlayTo
             return Task.FromResult(true);
         }
 
-        public Task SendServerShutdownNotification(CancellationToken cancellationToken)
+        public Task SendPlaybackStartNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }
 
-        public Task SendBrowseCommand(BrowseRequest command, CancellationToken cancellationToken)
+        public Task SendPlaybackStoppedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
+        }
+
+        public Task SendServerShutdownNotification(CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }
@@ -609,11 +616,13 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        
         public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
             GeneralCommandType commandType;
 
-            if (!Enum.TryParse(command.Name, true, out commandType))
+            if (Enum.TryParse(command.Name, true, out commandType))
             {
                 switch (commandType)
                 {
@@ -627,6 +636,24 @@ namespace MediaBrowser.Dlna.PlayTo
                         return _device.VolumeUp(true);
                     case GeneralCommandType.ToggleMute:
                         return _device.ToggleMute();
+                    case GeneralCommandType.SetVolume:
+                    {
+                        string volumeArg;
+
+                        if (command.Arguments.TryGetValue("Volume", out volumeArg))
+                        {
+                            int volume;
+
+                            if (int.TryParse(volumeArg, NumberStyles.Any, _usCulture, out volume))
+                            {
+                                return _device.SetVolume(volume);
+                            }
+
+                            throw new ArgumentException("Unsupported volume value supplied.");
+                        }
+
+                        throw new ArgumentException("Volume argument cannot be null");
+                    }
                     default:
                         return Task.FromResult(true);
                 }

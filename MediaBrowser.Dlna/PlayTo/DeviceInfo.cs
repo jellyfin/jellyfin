@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Controller.Dlna;
-using System.Collections.Generic;
+﻿using MediaBrowser.Dlna.Common;
 using MediaBrowser.Model.Dlna;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Dlna.PlayTo
 {

@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Dlna.PlayTo
+namespace MediaBrowser.Dlna.Common
 {
     public class DeviceIcon
     {

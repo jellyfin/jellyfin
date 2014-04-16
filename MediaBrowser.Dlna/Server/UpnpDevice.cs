@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 
 namespace MediaBrowser.Dlna.Server
 {
@@ -8,12 +9,15 @@ namespace MediaBrowser.Dlna.Server
         public readonly string Type;
         public readonly string USN;
         public readonly Guid Uuid;
+        public readonly IPAddress Address;
 
-        public UpnpDevice(Guid aUuid, string aType, Uri aDescriptor)
+        public UpnpDevice(Guid aUuid, string aType, Uri aDescriptor, IPAddress address)
         {
             Uuid = aUuid;
             Type = aType;
             Descriptor = aDescriptor;
+
+            Address = address;
 
             if (Type.StartsWith("uuid:"))
             {

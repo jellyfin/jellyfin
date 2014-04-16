@@ -71,9 +71,17 @@ namespace MediaBrowser.Providers.Manager
 
             var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.IsOwnedItem && !(item is Audio);
 
-            if (item is IItemByName || item is User)
+            if (item is User)
             {
                 saveLocally = true;
+            }
+            if (item is IItemByName)
+            {
+                var hasDualAccess = item as IHasDualAccess;
+                if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
+                {
+                    saveLocally = true;
+                }
             }
 
             if (type != ImageType.Primary && item is Episode)
