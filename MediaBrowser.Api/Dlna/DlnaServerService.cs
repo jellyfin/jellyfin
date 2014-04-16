@@ -15,21 +15,23 @@ namespace MediaBrowser.Api.Dlna
         public string UuId { get; set; }
     }
 
-    [Route("/Dlna/{UuId}/contentdirectory.xml", "GET", Summary = "Gets dlna content directory xml")]
-    [Route("/Dlna/{UuId}/contentdirectory", "GET", Summary = "Gets the content directory xml")]
+    [Route("/Dlna/contentdirectory.xml", "GET", Summary = "Gets dlna content directory xml")]
+    [Route("/Dlna/contentdirectory", "GET", Summary = "Gets dlna content directory xml")]
     public class GetContentDirectory
     {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
     }
 
-    [Route("/Dlna/{UuId}/control", "POST", Summary = "Processes a control request")]
+    [Route("/Dlna/control", "POST", Summary = "Processes a control request")]
     public class ProcessControlRequest : IRequiresRequestStream
     {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
-
         public Stream RequestStream { get; set; }
+    }
+
+    [Route("/Dlna/icons/{Filename}", "GET", Summary = "Gets a server icon")]
+    public class GetIcon
+    {
+        [ApiMember(Name = "Filename", Description = "The icon filename", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Filename { get; set; }
     }
 
     public class DlnaServerService : BaseApiService
@@ -72,7 +74,7 @@ namespace MediaBrowser.Api.Dlna
                     InputXml = await reader.ReadToEndAsync().ConfigureAwait(false)
                 });
             }
-        } 
+        }
 
         private IDictionary<string, string> GetRequestHeaders()
         {
@@ -84,6 +86,21 @@ namespace MediaBrowser.Api.Dlna
             }
 
             return headers;
+        }
+
+        public object Get(GetIcon request)
+        {
+            using (var response = _dlnaManager.GetIcon(request.Filename))
+            {
+                using (var ms = new MemoryStream())
+                {
+                    response.Stream.CopyTo(ms);
+
+                    ms.Position = 0;
+                    var bytes = ms.ToArray();
+                    return ResultFactory.GetResult(bytes, "image/" + response.Format.ToString().ToLower());
+                }
+            }
         }
     }
 }

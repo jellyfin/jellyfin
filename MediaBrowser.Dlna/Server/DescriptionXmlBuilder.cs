@@ -130,11 +130,11 @@ namespace MediaBrowser.Dlna.Server
 
             list.Add(new DeviceIcon
             {
-                MimeType = "image/jpeg",
+                MimeType = "image/png",
                 Depth = "24",
-                Width = 48,
-                Height = 48,
-                Url = "/mediabrowser/dlna/icons/small.jpg"
+                Width = 120,
+                Height = 120,
+                Url = "/mediabrowser/dlna/icons/logo120.png"
             });
 
             list.Add(new DeviceIcon
@@ -143,7 +143,7 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 120,
                 Height = 120,
-                Url = "/mediabrowser/dlna/icons/large.jpg"
+                Url = "/mediabrowser/dlna/icons/logo120.jpg"
             });
 
             list.Add(new DeviceIcon
@@ -152,16 +152,16 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 48,
                 Height = 48,
-                Url = "/mediabrowser/dlna/icons/small.png"
+                Url = "/mediabrowser/dlna/icons/logo48.png"
             });
 
             list.Add(new DeviceIcon
             {
-                MimeType = "image/png",
+                MimeType = "image/jpeg",
                 Depth = "24",
-                Width = 120,
-                Height = 120,
-                Url = "/mediabrowser/dlna/icons/large.png"
+                Width = 48,
+                Height = 48,
+                Url = "/mediabrowser/dlna/icons/logo48.jpg"
             });
             
             return list;
@@ -176,7 +176,7 @@ namespace MediaBrowser.Dlna.Server
                 ServiceType = "urn:schemas-upnp-org:service:ContentDirectory:1",
                 ServiceId = "urn:upnp-org:serviceId:ContentDirectory",
                 ScpdUrl = "/mediabrowser/dlna/contentdirectory.xml",
-                ControlUrl = "/servicecontrol"
+                ControlUrl = "/mediabrowser/dlna/control"
             });
 
             return list;
