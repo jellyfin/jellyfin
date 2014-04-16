@@ -55,8 +55,7 @@
     #videoControls #video-basic-controls {
         position: absolute;
         top: 25px;
-        left: 20px;
-        bottom: 0;
+        left: 10px;
         width: 600px;
         display: inline-block;
     }
@@ -64,8 +63,7 @@
     #videoControls #video-advanced-controls {
         position: absolute;
         top: 25px;
-        right: 20px;
-        bottom: 0;
+        right: 10px;
         width: 400px;
         display: inline-block;
     }
@@ -254,6 +252,14 @@
     #mediaPlayer #videoControls .mediaPlayerFlyout {
         bottom: 150px;
     }
+
+    #mediaPlayer .nowPlayingImage, #mediaPlayer .nowPlayingText {
+        display: none;
+    }
+
+    #mediaPlayer .volumeSliderContainer {
+        margin-top: 8px;
+    }
 }
 
 @media all and (max-width: 640px), all and (max-height: 365px) {
@@ -263,16 +269,6 @@
 
     #mediaPlayer #video-advanced-controls {
         width: 150px;
-    }
-}
-
-@media all and (max-width: 600px) {
-    #mediaPlayer .volumeSliderContainer, #mediaPlayer .muteButton, #mediaPlayer .unmuteButton {
-        display: none!important;
-    }
-
-    #mediaPlayer .nowPlayingImage, #mediaPlayer .nowPlayingText {
-        display: none!important;
     }
 }
 
