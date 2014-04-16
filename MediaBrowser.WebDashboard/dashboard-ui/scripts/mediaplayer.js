@@ -1029,7 +1029,15 @@
 
             self.updateCanClientSeek(playerElement);
 
-            ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, mediaSource.Id, true, item.MediaType);
+            ApiClient.reportPlaybackStart({
+                itemId: item.Id,
+                QueueableMediaTypes: item.MediaType,
+                CanSeek: mediaSource.RunTimeTicks != null,
+                MediaSourceId: mediaSource.Id,
+                IsPaused: playerElement.paused,
+                IsMuted: playerElement.volume == 0,
+                VolumeLevel: playerElement.volume * 100
+            });
 
             self.startProgressInterval(item.Id, mediaSource.Id);
 
@@ -1064,7 +1072,13 @@
             var item = currentItem;
             var mediaSource = currentMediaSource;
 
-            ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), item.Id, mediaSource.Id, position);
+            ApiClient.reportPlaybackStopped({
+                
+                itemId: item.Id,
+                mediaSourceId: mediaSource.Id,
+                positionTicks: position
+
+            });
 
             if (item.MediaType == "Video") {
                 ApiClient.stopActiveEncodings();
@@ -1105,7 +1119,14 @@
 
         function sendProgressUpdate(itemId, mediaSourceId) {
 
-            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, mediaSourceId, self.getCurrentTicks(), currentMediaElement.paused, currentMediaElement.volume == 0);
+            ApiClient.reportPlaybackProgress({
+                itemId: itemId,
+                MediaSourceId: mediaSourceId,
+                IsPaused: currentMediaElement.paused,
+                IsMuted: currentMediaElement.volume == 0,
+                VolumeLevel: currentMediaElement.volume * 100,
+                PositionTicks: self.getCurrentTicks()
+            });
         }
 
         function clearProgressInterval() {

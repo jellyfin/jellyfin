@@ -74,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             var now = DateTime.UtcNow;
 
-            return !_sessionManager.Sessions.Any(i => !string.IsNullOrEmpty(i.NowViewingItemName) || (now - i.LastActivityDate).TotalMinutes < 30);
+            return !_sessionManager.Sessions.Any(i => (now - i.LastActivityDate).TotalMinutes < 30);
         }
 
         public void Dispose()

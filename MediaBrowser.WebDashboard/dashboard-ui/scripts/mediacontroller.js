@@ -2,11 +2,11 @@
 
     var enableMirrorMode;
     var currentDisplayInfo;
-    
+
     function mirrorItem(info) {
 
         var item = info.item;
-        
+
         MediaController.getCurrentPlayer().displayContent({
 
             itemName: item.Name,
@@ -345,6 +345,8 @@
         html += '<form><h3>Select Player:</h3>';
         html += '<fieldset data-role="controlgroup" data-mini="true">';
 
+        var checkedHtml;
+
         for (var i = 0, length = targets.length; i < length; i++) {
 
             var target = targets[i];
@@ -352,7 +354,7 @@
             var id = 'radioPlayerTarget' + i;
 
             var isChecked = target.id == playerInfo.id;
-            var checkedHtml = isChecked ? ' checked="checked"' : '';
+            checkedHtml = isChecked ? ' checked="checked"' : '';
 
             var mirror = (!target.isLocalPlayer && target.supportedCommands.indexOf('DisplayContent') != -1) ? 'true' : 'false';
 
@@ -370,7 +372,7 @@
 
         html += '<p class="fieldDescription">All plays will be sent to the selected player.</p>';
 
-        var checkedHtml = enableMirrorMode ? ' checked="checked"' : '';
+        checkedHtml = enableMirrorMode ? ' checked="checked"' : '';
         html += '<div style="margin-top:1.5em;" class="fldMirrorMode"><label for="chkEnableMirrorMode">Enable Mirror Mode</label><input type="checkbox" class="chkEnableMirrorMode" id="chkEnableMirrorMode" data-mini="true"' + checkedHtml + ' /></div>';
 
         html += '</form>';
@@ -401,7 +403,7 @@
 
             $('.chkEnableMirrorMode', elem).on().on('change', function () {
                 enableMirrorMode = this.checked;
-                
+
                 if (this.checked && currentDisplayInfo) {
 
                     mirrorItem(currentDisplayInfo);

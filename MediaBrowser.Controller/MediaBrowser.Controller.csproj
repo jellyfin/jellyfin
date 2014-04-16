@@ -251,9 +251,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Session\ISessionController.cs" />
     <Compile Include="Session\ISessionControllerFactory.cs" />
-    <Compile Include="Session\PlaybackInfo.cs" />
-    <Compile Include="Session\PlaybackProgressInfo.cs" />
-    <Compile Include="Session\PlaybackStopInfo.cs" />
     <Compile Include="Session\SessionEventArgs.cs" />
     <Compile Include="Session\SessionInfo.cs" />
     <Compile Include="Sorting\IBaseItemComparer.cs" />

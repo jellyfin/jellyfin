@@ -3600,48 +3600,30 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackStart = function (userId, itemId, mediaSourceId, canSeek, queueableMediaTypes) {
+        self.reportPlaybackStart = function (options) {
 
-            if (!userId) {
-                throw new Error("null userId");
+            if (!options) {
+                throw new Error("null options");
             }
-
-            if (!itemId) {
-                throw new Error("null itemId");
-            }
-
-            canSeek = canSeek || false;
-            queueableMediaTypes = queueableMediaTypes || '';
 
             if (self.isWebSocketOpen()) {
 
                 var deferred = $.Deferred();
 
-                var msg = [itemId, canSeek, queueableMediaTypes];
+                var msg = JSON.stringify(options);
 
-                if (mediaSourceId) {
-                    msg.push(mediaSourceId);
-                }
-
-                self.sendWebSocketMessage("PlaybackStart", msg.join('|'));
+                self.sendWebSocketMessage("ReportPlaybackStart", msg);
 
                 deferred.resolveWith(null, []);
                 return deferred.promise();
             }
 
-            var params = {
-                CanSeek: canSeek,
-                QueueableMediaTypes: queueableMediaTypes
-            };
-
-            if (mediaSourceId) {
-                params.mediaSourceId = mediaSourceId;
-            }
-
-            var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId, params);
+            var url = self.getUrl("Sessions/Playing");
 
             return self.ajax({
                 type: "POST",
+                data: JSON.stringify(options),
+                contentType: "application/json",
                 url: url
             });
         };
@@ -3651,50 +3633,30 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackProgress = function (userId, itemId, mediaSourceId, positionTicks, isPaused, isMuted) {
+        self.reportPlaybackProgress = function (options) {
 
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!itemId) {
-                throw new Error("null itemId");
+            if (!options) {
+                throw new Error("null options");
             }
 
             if (self.isWebSocketOpen()) {
 
                 var deferred = $.Deferred();
 
-                var msgData = itemId;
+                var msg = JSON.stringify(options);
 
-                msgData += "|" + (positionTicks == null ? "" : positionTicks);
-                msgData += "|" + (isPaused == null ? "" : isPaused);
-                msgData += "|" + (isMuted == null ? "" : isMuted);
-                msgData += "|" + (mediaSourceId == null ? "" : mediaSourceId);
-
-                self.sendWebSocketMessage("PlaybackProgress", msgData);
+                self.sendWebSocketMessage("ReportPlaybackProgress", msg);
 
                 deferred.resolveWith(null, []);
                 return deferred.promise();
             }
 
-            var params = {
-                isPaused: isPaused,
-                isMuted: isMuted
-            };
-
-            if (positionTicks) {
-                params.positionTicks = positionTicks;
-            }
-
-            if (mediaSourceId) {
-                params.mediaSourceId = mediaSourceId;
-            }
-
-            var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId + "/Progress", params);
+            var url = self.getUrl("Sessions/Playing/Progress");
 
             return self.ajax({
                 type: "POST",
+                data: JSON.stringify(options),
+                contentType: "application/json",
                 url: url
             });
         };
@@ -3704,44 +3666,30 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackStopped = function (userId, itemId, mediaSourceId, positionTicks) {
+        self.reportPlaybackStopped = function (options) {
 
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!itemId) {
-                throw new Error("null itemId");
+            if (!options) {
+                throw new Error("null options");
             }
 
             if (self.isWebSocketOpen()) {
 
                 var deferred = $.Deferred();
 
-                var msg = itemId;
-                msg += "|" + (positionTicks == null ? "" : positionTicks);
-                msg += "|" + (mediaSourceId == null ? "" : mediaSourceId);
+                var msg = JSON.stringify(options);
 
-                self.sendWebSocketMessage("PlaybackStopped", msg);
+                self.sendWebSocketMessage("ReportPlaybackStopped", msg);
 
                 deferred.resolveWith(null, []);
                 return deferred.promise();
             }
 
-            var params = {};
-
-            if (positionTicks) {
-                params.positionTicks = positionTicks;
-            }
-
-            if (mediaSourceId) {
-                params.mediaSourceId = mediaSourceId;
-            }
-
-            var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId, params);
+            var url = self.getUrl("Sessions/Playing/Stopped");
 
             return self.ajax({
-                type: "DELETE",
+                type: "POST",
+                data: JSON.stringify(options),
+                contentType: "application/json",
                 url: url
             });
         };

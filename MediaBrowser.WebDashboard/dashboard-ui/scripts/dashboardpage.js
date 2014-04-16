@@ -211,7 +211,7 @@
 
             var className = nowPlayingItem ? 'activeSession' : 'notPlayingSession activeSession';
 
-            html += '<a class="' + className + '" id="' + rowId + '" href="nowplaying.html">';
+            html += '<a class="' + className + '" id="' + rowId + '" href="nowplaying.html?id=' + connection.Id + '">';
 
             html += '<div class="sessionNowPlayingContent"';
 
@@ -262,9 +262,10 @@
             }
             html += '</div>';
 
-            if (nowPlayingItem) {
+            if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
 
-                var value = (100 * connection.NowPlayingPositionTicks) / nowPlayingItem.RunTimeTicks;
+                var position = connection.PlayState.PositionTicks || 0;
+                var value = (100 * position) / nowPlayingItem.RunTimeTicks;
 
                 html += '<progress class="itemProgressBar" min="0" max="100" value="' + value + '"></progress>';
             } else {
@@ -284,12 +285,12 @@
     getNowPlayingName: function (session) {
 
         var nowPlayingItem = session.NowPlayingItem;
-        
+
         if (!nowPlayingItem) {
 
             return 'Last seen ' + humane_date(session.LastActivityDate);
         }
-        
+
         var topText = nowPlayingItem.Name;
 
         if (nowPlayingItem.MediaType == 'Video') {
@@ -339,7 +340,7 @@
 
         if (session.UserId && session.UserPrimaryImageTag) {
             return ApiClient.getUserImageUrl(session.UserId, {
-                
+
                 tag: session.UserPrimaryImageTag,
                 height: 24,
                 type: 'Primary'
@@ -368,7 +369,8 @@
 
         if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
 
-            var value = (100 * session.NowPlayingPositionTicks) / nowPlayingItem.RunTimeTicks;
+            var position = session.PlayState.PositionTicks || 0;
+            var value = (100 * position) / nowPlayingItem.RunTimeTicks;
 
             $('progress', row).show().val(value);
         } else {
