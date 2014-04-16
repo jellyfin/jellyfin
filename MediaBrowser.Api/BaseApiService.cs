@@ -105,7 +105,7 @@ namespace MediaBrowser.Api
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="System.ArgumentNullException">cacheKey</exception>
-        protected object ToCachedResult<T>(Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string,string> responseHeaders = null)
+        protected object ToCachedResult<T>(Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string,string> responseHeaders = null)
           where T : class
         {
             return ResultFactory.GetCachedResult(Request, cacheKey, lastDateModified, cacheDuration, factoryFn, contentType, responseHeaders);

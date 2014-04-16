@@ -79,6 +79,7 @@
     <Compile Include="Collections\CollectionCreationOptions.cs" />
     <Compile Include="Collections\ICollectionManager.cs" />
     <Compile Include="Dlna\ControlRequest.cs" />
+    <Compile Include="Dlna\DlnaIconResponse.cs" />
     <Compile Include="Dlna\IDlnaManager.cs" />
     <Compile Include="Drawing\IImageProcessor.cs" />
     <Compile Include="Drawing\ImageFormat.cs" />

@@ -2,6 +2,8 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Dlna.Profiles;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Dlna;
@@ -23,14 +25,18 @@ namespace MediaBrowser.Dlna
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IUserManager _userManager;
+        private readonly ILibraryManager _libraryManager;
 
-        public DlnaManager(IXmlSerializer xmlSerializer, IFileSystem fileSystem, IApplicationPaths appPaths, ILogger logger, IJsonSerializer jsonSerializer)
+        public DlnaManager(IXmlSerializer xmlSerializer, IFileSystem fileSystem, IApplicationPaths appPaths, ILogger logger, IJsonSerializer jsonSerializer, IUserManager userManager, ILibraryManager libraryManager)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
             _logger = logger;
             _jsonSerializer = jsonSerializer;
+            _userManager = userManager;
+            _libraryManager = libraryManager;
 
             //DumpProfiles();
         }
@@ -496,7 +502,21 @@ namespace MediaBrowser.Dlna
 
         public ControlResponse ProcessControlRequest(ControlRequest request)
         {
-            return new ControlHandler(_logger).ProcessControlRequest(request);
+            return new ControlHandler(_logger, _userManager, _libraryManager)
+                .ProcessControlRequest(request);
+        }
+
+        public DlnaIconResponse GetIcon(string filename)
+        {
+            var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                ? ImageFormat.Png
+                : ImageFormat.Jpg;
+
+            return new DlnaIconResponse
+            {
+                Format = format,
+                Stream = GetType().Assembly.GetManifestResourceStream("MediaBrowser.Dlna.Images." + filename.ToLower())
+            };
         }
     }
 }

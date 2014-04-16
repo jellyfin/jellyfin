@@ -20,7 +20,7 @@ namespace MediaBrowser.Dlna.Server
             var builder = new StringBuilder();
 
             builder.Append("<?xml version=\"1.0\"?>");
-            builder.Append("scpd xmlns=\"urn:schemas-upnp-org:service-1-0\"");
+            builder.Append("<scpd xmlns=\"urn:schemas-upnp-org:service-1-0\">");
 
             builder.Append("<specVersion>");
             builder.Append("<major>1</major>");

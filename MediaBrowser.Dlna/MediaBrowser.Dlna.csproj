@@ -147,10 +147,10 @@
     <EmbeddedResource Include="Profiles\Xml\Default.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Images\logo-120.jpg" />
-    <EmbeddedResource Include="Images\logo-120.png" />
-    <EmbeddedResource Include="Images\logo-48.jpg" />
-    <EmbeddedResource Include="Images\logo-48.png" />
+    <EmbeddedResource Include="Images\logo120.jpg" />
+    <EmbeddedResource Include="Images\logo120.png" />
+    <EmbeddedResource Include="Images\logo48.jpg" />
+    <EmbeddedResource Include="Images\logo48.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

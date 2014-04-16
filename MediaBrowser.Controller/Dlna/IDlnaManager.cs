@@ -77,5 +77,12 @@ namespace MediaBrowser.Controller.Dlna
         /// <param name="request">The request.</param>
         /// <returns>ControlResponse.</returns>
         ControlResponse ProcessControlRequest(ControlRequest request);
+
+        /// <summary>
+        /// Gets the icon.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns>DlnaIconResponse.</returns>
+        DlnaIconResponse GetIcon(string filename);
     }
 }
