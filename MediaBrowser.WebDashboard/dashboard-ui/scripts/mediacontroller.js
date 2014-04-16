@@ -232,8 +232,8 @@
             currentPlayer.mute();
         };
 
-        self.unmute = function () {
-            currentPlayer.unmute();
+        self.unMute = function () {
+            currentPlayer.unMute();
         };
 
         self.toggleMute = function () {

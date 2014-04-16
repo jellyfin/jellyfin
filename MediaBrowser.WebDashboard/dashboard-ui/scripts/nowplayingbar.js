@@ -62,6 +62,9 @@
 
             if (currentPlayer) {
                 currentPlayer.unMute();
+
+                $(this).hide();
+                $('.muteButton', elem).show();
             }
         });
 
@@ -69,6 +72,9 @@
 
             if (currentPlayer) {
                 currentPlayer.mute();
+
+                $(this).hide();
+                $('.unmuteButton', elem).show();
             }
         });
 
@@ -83,6 +89,9 @@
 
             if (currentPlayer) {
                 currentPlayer.pause();
+
+                $(this).hide();
+                $('.unpauseButton', elem).show();
             }
         });
 
@@ -90,6 +99,9 @@
 
             if (currentPlayer) {
                 currentPlayer.unpause();
+
+                $(this).hide();
+                $('.pauseButton', elem).show();
             }
         });
 

@@ -38,7 +38,7 @@
         // @type {Object} a chrome.cast.media.Media object
         this.currentMediaSession = null;
         // @type {Number} volume
-        this.currentVolume = 0.5;
+        this.currentVolume = 1;
 
         // @type {string} a chrome.cast.Session object
         this.session = null;
@@ -240,8 +240,343 @@
         clearInterval(this.timer);
     };
 
+    /**
+     * Loads media into a running receiver application
+     * @param {Number} mediaIndex An index number to indicate current media content
+     */
+    CastPlayer.prototype.loadMedia = function (user, item, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
+
+        if (!this.session) {
+            console.log("no session");
+            return;
+        }
+
+        this.currentMediaOffset = startTimeTicks || 0;
+
+        var maxBitrate = 12000000;
+        var mediaInfo = getMediaSourceInfo(user, item, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
+
+        var streamUrl = getStreamUrl(item, mediaInfo, startTimeTicks, maxBitrate);
+
+        var castMediaInfo = new chrome.cast.media.MediaInfo(streamUrl);
+
+        castMediaInfo.customData = getCustomData(item, mediaInfo.mediaSource.Id, startTimeTicks);
+        castMediaInfo.metadata = getMetadata(item);
+
+        if (mediaInfo.streamContainer == 'm3u8') {
+            castMediaInfo.contentType = 'application/x-mpegURL';
+        } else {
+            castMediaInfo.contentType = item.MediaType.toLowerCase() + '/' + mediaInfo.streamContainer.toLowerCase();
+        }
+
+        castMediaInfo.streamType = mediaInfo.isStatic ? chrome.cast.media.StreamType.BUFFERED : chrome.cast.media.StreamType.LIVE;
+
+        var request = new chrome.cast.media.LoadRequest(castMediaInfo);
+        request.autoplay = true;
+        request.currentTime = 0;
+
+        this.castPlayerState = PLAYER_STATE.LOADING;
+        this.session.loadMedia(request,
+          this.onMediaDiscovered.bind(this, 'loadMedia'),
+          this.onLoadMediaError.bind(this));
+    };
+
+    /**
+     * Callback function for loadMedia success
+     * @param {Object} mediaSession A new media object.
+     */
+    CastPlayer.prototype.onMediaDiscovered = function (how, mediaSession) {
+
+        console.log("chromecast new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
+        this.currentMediaSession = mediaSession;
+        this.currentMediaTime = this.session.media[0].currentTime;
+
+        if (how == 'loadMedia') {
+            this.castPlayerState = PLAYER_STATE.PLAYING;
+            clearInterval(this.timer);
+            this.startProgressTimer(this.incrementMediaTime);
+        }
+
+        if (how == 'activeSession') {
+            this.castPlayerState = this.session.media[0].playerState;
+        }
+
+        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
+            // start progress timer
+            this.startProgressTimer(this.incrementMediaTime);
+        }
+
+        this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
+        this.currentMediaDuration = this.currentMediaSession.media.duration;
+    };
+
+    /**
+     * Callback function when media load returns error 
+     */
+    CastPlayer.prototype.onLoadMediaError = function (e) {
+        console.log("chromecast media error");
+        this.castPlayerState = PLAYER_STATE.IDLE;
+    };
+
+    /**
+     * Callback function for media status update from receiver
+     * @param {!Boolean} e true/false
+     */
+    CastPlayer.prototype.onMediaStatusUpdate = function (e) {
+        if (e == false) {
+            this.currentMediaTime = 0;
+            this.castPlayerState = PLAYER_STATE.IDLE;
+        }
+        console.log("chromecast updating media");
+        this.updateProgressBarByTimer();
+    };
+
+    /**
+     * Helper function
+     * Increment media current position by 1 second 
+     */
+    CastPlayer.prototype.incrementMediaTime = function () {
+        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
+            if (this.currentMediaTime < this.currentMediaDuration) {
+                this.currentMediaTime += 1;
+                this.updateProgressBarByTimer();
+            }
+            else {
+                this.currentMediaTime = 0;
+                clearInterval(this.timer);
+            }
+        }
+    };
+
+    /**
+     * Play media in Cast mode 
+     */
+    CastPlayer.prototype.playMedia = function () {
+
+        if (!this.currentMediaSession) {
+            return;
+        }
+
+        switch (this.castPlayerState) {
+            case PLAYER_STATE.LOADED:
+            case PLAYER_STATE.PAUSED:
+                this.currentMediaSession.play(null,
+                  this.mediaCommandSuccessCallback.bind(this, "playing started for " + this.currentMediaSession.sessionId),
+                  this.onError.bind(this));
+                this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
+                this.castPlayerState = PLAYER_STATE.PLAYING;
+                // start progress timer
+                clearInterval(this.timer);
+                this.startProgressTimer(this.incrementMediaTime);
+                break;
+            case PLAYER_STATE.IDLE:
+            case PLAYER_STATE.LOADING:
+            case PLAYER_STATE.STOPPED:
+                this.loadMedia(this.currentMediaIndex);
+                this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
+                this.castPlayerState = PLAYER_STATE.PLAYING;
+                break;
+            default:
+                break;
+        }
+    };
+
+    /**
+     * Pause media playback in Cast mode  
+     */
+    CastPlayer.prototype.pauseMedia = function () {
+
+        if (!this.currentMediaSession) {
+            return;
+        }
+
+        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
+            this.castPlayerState = PLAYER_STATE.PAUSED;
+            this.currentMediaSession.pause(null,
+              this.mediaCommandSuccessCallback.bind(this, "paused " + this.currentMediaSession.sessionId),
+              this.onError.bind(this));
+            clearInterval(this.timer);
+        }
+    };
+
+    /**
+     * Stop CC playback 
+     */
+    CastPlayer.prototype.stopMedia = function () {
+
+        if (!this.currentMediaSession) {
+            return;
+        }
+
+        this.currentMediaSession.stop(null,
+          this.mediaCommandSuccessCallback.bind(this, "stopped " + this.currentMediaSession.sessionId),
+          this.onError.bind(this));
+        this.castPlayerState = PLAYER_STATE.STOPPED;
+        clearInterval(this.timer);
+    };
+
+    /**
+     * Set media volume in Cast mode
+     * @param {Boolean} mute A boolean  
+     */
+    CastPlayer.prototype.setReceiverVolume = function (mute, vol) {
+
+        if (!this.currentMediaSession) {
+            return;
+        }
+
+        if (!mute) {
+            this.currentVolume = vol || 1;
+            this.session.setReceiverVolumeLevel(this.currentVolume,
+              this.mediaCommandSuccessCallback.bind(this),
+              this.onError.bind(this));
+        }
+        else {
+            this.session.setReceiverMuted(true,
+              this.mediaCommandSuccessCallback.bind(this),
+              this.onError.bind(this));
+        }
+    };
+
+    /**
+     * Toggle mute CC
+     */
+    CastPlayer.prototype.toggleMute = function () {
+        if (this.audio == true) {
+            this.mute();
+        }
+        else {
+            this.unMute();
+        }
+    };
+
+    /**
+     * Mute CC
+     */
+    CastPlayer.prototype.mute = function () {
+        this.audio = false;
+        this.setReceiverVolume(true);
+    };
+
+    /**
+     * Unmute CC
+     */
+    CastPlayer.prototype.unMute = function () {
+        this.audio = true;
+        this.setReceiverVolume(false);
+    };
+
+
+    /**
+     * media seek function in either Cast or local mode
+     * @param {Event} e An event object from seek 
+     */
+    CastPlayer.prototype.seekMedia = function (event) {
+        var pos = parseInt(event);
+
+        var curr = parseInt(this.currentMediaTime + this.currentMediaDuration * pos);
+
+        if (this.castPlayerState != PLAYER_STATE.PLAYING && this.castPlayerState != PLAYER_STATE.PAUSED) {
+            return;
+        }
+
+        this.currentMediaTime = curr;
+        console.log('Seeking ' + this.currentMediaSession.sessionId + ':' +
+          this.currentMediaSession.mediaSessionId + ' to ' + pos + "%");
+        var request = new chrome.cast.media.SeekRequest();
+        request.currentTime = this.currentMediaTime;
+        this.currentMediaSession.seek(request,
+          this.onSeekSuccess.bind(this, 'media seek done'),
+          this.onError.bind(this));
+        this.castPlayerState = PLAYER_STATE.SEEKING;
+    };
+
+    /**
+     * Callback function for seek success
+     * @param {String} info A string that describe seek event
+     */
+    CastPlayer.prototype.onSeekSuccess = function (info) {
+        console.log(info);
+        this.castPlayerState = PLAYER_STATE.PLAYING;
+    };
+
+    /**
+     * Callback function for media command success 
+     */
+    CastPlayer.prototype.mediaCommandSuccessCallback = function (info, e) {
+        console.log(info);
+    };
+
+    /**
+     * Update progress bar when there is a media status update
+     * @param {Object} e An media status update object 
+     */
+    CastPlayer.prototype.updateProgressBar = function (e) {
+        if (e.idleReason == 'FINISHED' && e.playerState == 'IDLE') {
+            clearInterval(this.timer);
+            this.castPlayerState = PLAYER_STATE.STOPPED;
+            if (e.idleReason == 'FINISHED') {
+                $(this).trigger("/playback/complete", e);
+            }
+        }
+        else {
+            var p = Number(e.currentTime / this.currentMediaSession.media.duration + 1).toFixed(3);
+            this.progressFlag = false;
+            setTimeout(this.setProgressFlag.bind(this), 1000); // don't update progress in 1 second
+        }
+    };
+
+    /**
+     * Set progressFlag with a timeout of 1 second to avoid UI update
+     * until a media status update from receiver 
+     */
+    CastPlayer.prototype.setProgressFlag = function () {
+        this.progressFlag = true;
+    };
+
+    /**
+     * Update progress bar based on timer  
+     */
+    CastPlayer.prototype.updateProgressBarByTimer = function () {
+        var pp = 0;
+        if (this.currentMediaDuration > 0) {
+            pp = Number(this.currentMediaTime / this.currentMediaDuration).toFixed(3);
+        }
+
+        if (this.progressFlag) {
+            // don't update progress if it's been updated on media status update event
+            $(this).trigger("/playback/update",
+            [{
+                positionTicks: this.currentMediaTime * 10000000,
+                runtimeTicks: this.currentMediaDuration * 10000000
+            }]);
+        }
+
+        if (pp > 100 || this.castPlayerState == PLAYER_STATE.IDLE) {
+            clearInterval(this.timer);
+            this.deviceState = DEVICE_STATE.IDLE;
+            this.castPlayerState = PLAYER_STATE.IDLE;
+            $(this).trigger("/playback/complete", true);
+        }
+    };
+
+    /**
+    * @param {function} A callback function for the fucntion to start timer 
+    */
+    CastPlayer.prototype.startProgressTimer = function(callback) {
+        if(this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+
+        // start progress timer
+        this.timer = setInterval(callback.bind(this), this.timerStep);
+    };
+
+    var castPlayer = new CastPlayer();
+
     function getCodecLimits() {
-        
+
         return {
 
             maxVideoAudioChannels: 6,
@@ -384,7 +719,7 @@
 
     function getMediaSourceInfo(user, item, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
 
-        var sources = item.MediaSources;
+        var sources = item.MediaSources || [];
 
         // If a specific stream was requested, filter the list
         if (mediaSourceId) {
@@ -456,8 +791,6 @@
     }
 
     function getMetadata(item) {
-
-        console.log("md item", item);
 
         var metadata = {};
 
@@ -620,422 +953,44 @@
         throw new Error('Unrecognized MediaType');
     }
 
-    /**
-     * Loads media into a running receiver application
-     * @param {Number} mediaIndex An index number to indicate current media content
-     */
-    CastPlayer.prototype.loadMedia = function (user, item, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
-
-        if (!this.session) {
-            console.log("no session");
-            return;
-        }
-
-        this.currentMediaOffset = startTimeTicks || 0;
-
-        var maxBitrate = 12000000;
-        var mediaInfo = getMediaSourceInfo(user, item, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
-
-        var streamUrl = getStreamUrl(item, mediaInfo, startTimeTicks, maxBitrate);
-
-        var castMediaInfo = new chrome.cast.media.MediaInfo(streamUrl);
-
-        castMediaInfo.customData = getCustomData(item, mediaInfo.mediaSource.Id, startTimeTicks);
-        castMediaInfo.metadata = getMetadata(item);
-
-        if (mediaInfo.streamContainer == 'm3u8') {
-            castMediaInfo.contentType = 'application/x-mpegURL';
-        } else {
-            castMediaInfo.contentType = item.MediaType.toLowerCase() + '/' + mediaInfo.streamContainer.toLowerCase();
-        }
-
-        castMediaInfo.streamType = mediaInfo.isStatic ? chrome.cast.media.StreamType.BUFFERED : chrome.cast.media.StreamType.LIVE;
-
-        var request = new chrome.cast.media.LoadRequest(castMediaInfo);
-        request.autoplay = true;
-        request.currentTime = 0;
-
-        this.castPlayerState = PLAYER_STATE.LOADING;
-        this.session.loadMedia(request,
-          this.onMediaDiscovered.bind(this, 'loadMedia'),
-          this.onLoadMediaError.bind(this));
-    };
-
-    /**
-     * Callback function for loadMedia success
-     * @param {Object} mediaSession A new media object.
-     */
-    CastPlayer.prototype.onMediaDiscovered = function (how, mediaSession) {
-
-        console.log("chromecast new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
-        this.currentMediaSession = mediaSession;
-        this.currentMediaTime = this.session.media[0].currentTime;
-
-        if (how == 'loadMedia') {
-            this.castPlayerState = PLAYER_STATE.PLAYING;
-            clearInterval(this.timer);
-            this.startProgressTimer(this.incrementMediaTime);
-        }
-
-        if (how == 'activeSession') {
-            this.castPlayerState = this.session.media[0].playerState;
-        }
-
-        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
-            // start progress timer
-            this.startProgressTimer(this.incrementMediaTime);
-        }
-
-        this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
-        this.currentMediaDuration = this.currentMediaSession.media.duration;
-
-        //var playTime = document.getElementById(this.playback);
-        //if (!playTime) {
-        //    // Set duration time
-        //    var totalTime = document.getElementById(this.duration);
-        //    totalTime.innerHTML = " / " + formatTime(this.currentMediaDuration);
-
-        //    // Set play time
-        //    playTime = document.createElement("div");
-        //    playTime.id = this.playback;
-        //    playTime.className = "currentTime";
-        //    playTime.style.marginRight = "5px";
-        //    totalTime.parentNode.insertBefore(playTime, totalTime);
-        //    playTime.innerHTML = formatTime(this.currentMediaTime);
-        //}
-    };
-
-    function formatTime(duration) {
-        var hr = parseInt(duration / 3600);
-        duration -= hr * 3600;
-        var min = parseInt(duration / 60);
-        var sec = parseInt(duration % 60);
-
-        hr = "" + hr;
-        min = "" + min;
-        sec = "" + sec;
-        var hh = pad(hr);
-        var mm = pad(min);
-        var ss = pad(sec);
-
-        duration = hh + ":" + mm + ":" + ss;
-
-        return duration;
-    };
-
-    function pad(s) {
-        return "00".substring(0, 2 - s.length) + s;
-    };
-
-    /**
-     * Callback function when media load returns error 
-     */
-    CastPlayer.prototype.onLoadMediaError = function (e) {
-        console.log("chromecast media error");
-        this.castPlayerState = PLAYER_STATE.IDLE;
-    };
-
-    /**
-     * Callback function for media status update from receiver
-     * @param {!Boolean} e true/false
-     */
-    CastPlayer.prototype.onMediaStatusUpdate = function (e) {
-        if (e == false) {
-            this.currentMediaTime = 0;
-            this.castPlayerState = PLAYER_STATE.IDLE;
-        }
-        console.log("chromecast updating media");
-        this.updateProgressBarByTimer();
-    };
-
-    /**
-     * Helper function
-     * Increment media current position by 1 second 
-     */
-    CastPlayer.prototype.incrementMediaTime = function () {
-        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
-            if (this.currentMediaTime < this.currentMediaDuration) {
-                this.currentMediaTime += 1;
-                this.updateProgressBarByTimer();
-            }
-            else {
-                this.currentMediaTime = 0;
-                clearInterval(this.timer);
-            }
-        }
-    };
-
-    /**
-     * Play media in Cast mode 
-     */
-    CastPlayer.prototype.playMedia = function () {
-
-        if (!this.currentMediaSession) {
-            return;
-        }
-
-        switch (this.castPlayerState) {
-            case PLAYER_STATE.LOADED:
-            case PLAYER_STATE.PAUSED:
-                this.currentMediaSession.play(null,
-                  this.mediaCommandSuccessCallback.bind(this, "playing started for " + this.currentMediaSession.sessionId),
-                  this.onError.bind(this));
-                this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
-                this.castPlayerState = PLAYER_STATE.PLAYING;
-                // start progress timer
-                clearInterval(this.timer);
-                this.startProgressTimer(this.incrementMediaTime);
-                break;
-            case PLAYER_STATE.IDLE:
-            case PLAYER_STATE.LOADING:
-            case PLAYER_STATE.STOPPED:
-                this.loadMedia(this.currentMediaIndex);
-                this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
-                this.castPlayerState = PLAYER_STATE.PLAYING;
-                break;
-            default:
-                break;
-        }
-    };
-
-    /**
-     * Pause media playback in Cast mode  
-     */
-    CastPlayer.prototype.pauseMedia = function () {
-
-        if (!this.currentMediaSession) {
-            return;
-        }
-
-        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
-            this.castPlayerState = PLAYER_STATE.PAUSED;
-            this.currentMediaSession.pause(null,
-              this.mediaCommandSuccessCallback.bind(this, "paused " + this.currentMediaSession.sessionId),
-              this.onError.bind(this));
-            clearInterval(this.timer);
-        }
-    };
-
-    /**
-     * Stop CC playback 
-     */
-    CastPlayer.prototype.stopMedia = function () {
-
-        if (!this.currentMediaSession) {
-            return;
-        }
-
-        this.currentMediaSession.stop(null,
-          this.mediaCommandSuccessCallback.bind(this, "stopped " + this.currentMediaSession.sessionId),
-          this.onError.bind(this));
-        this.castPlayerState = PLAYER_STATE.STOPPED;
-        clearInterval(this.timer);
-        //var playTime = document.getElementById(this.playback);
-        //if (playTime) {
-        //    playTime.parentNode.removeChild(playTime);
-        //}
-    };
-
-    /**
-     * Set media volume in Cast mode
-     * @param {Boolean} mute A boolean  
-     */
-    CastPlayer.prototype.setReceiverVolume = function (mute) {
-
-        if (!this.currentMediaSession) {
-            return;
-        }
-
-        if (!mute) {
-            this.session.setReceiverVolumeLevel(1,
-              this.mediaCommandSuccessCallback.bind(this),
-              this.onError.bind(this));
-        }
-        else {
-            this.session.setReceiverMuted(true,
-              this.mediaCommandSuccessCallback.bind(this),
-              this.onError.bind(this));
-        }
-    };
-
-    /**
-     * Toggle mute CC
-     */
-    CastPlayer.prototype.toggleMute = function () {
-        if (this.audio == true) {
-            this.mute();
-        }
-        else {
-            this.unMute();
-        }
-    };
-
-    /**
-     * Mute CC
-     */
-    CastPlayer.prototype.mute = function () {
-        this.audio = false;
-        this.setReceiverVolume(true);
-    };
-
-    /**
-     * Unmute CC
-     */
-    CastPlayer.prototype.unMute = function () {
-        this.audio = true;
-        this.setReceiverVolume(false);
-    };
-
-
-    /**
-     * media seek function in either Cast or local mode
-     * @param {Event} e An event object from seek 
-     */
-    CastPlayer.prototype.seekMedia = function (event) {
-        var pos = parseInt(event);
-
-        var curr = parseInt(this.currentMediaTime + this.currentMediaDuration * pos);
-
-        if (this.castPlayerState != PLAYER_STATE.PLAYING && this.castPlayerState != PLAYER_STATE.PAUSED) {
-            return;
-        }
-
-        this.currentMediaTime = curr;
-        console.log('Seeking ' + this.currentMediaSession.sessionId + ':' +
-          this.currentMediaSession.mediaSessionId + ' to ' + pos + "%");
-        var request = new chrome.cast.media.SeekRequest();
-        request.currentTime = this.currentMediaTime;
-        this.currentMediaSession.seek(request,
-          this.onSeekSuccess.bind(this, 'media seek done'),
-          this.onError.bind(this));
-        this.castPlayerState = PLAYER_STATE.SEEKING;
-    };
-
-    /**
-     * Callback function for seek success
-     * @param {String} info A string that describe seek event
-     */
-    CastPlayer.prototype.onSeekSuccess = function (info) {
-        console.log(info);
-        this.castPlayerState = PLAYER_STATE.PLAYING;
-    };
-
-    /**
-     * Callback function for media command success 
-     */
-    CastPlayer.prototype.mediaCommandSuccessCallback = function (info, e) {
-        console.log(info);
-    };
-
-    /**
-     * Update progress bar when there is a media status update
-     * @param {Object} e An media status update object 
-     */
-    CastPlayer.prototype.updateProgressBar = function (e) {
-        //var p = document.getElementById(this.progressBar);
-        //if (e.idleReason == 'FINISHED' && e.playerState == 'IDLE') {
-        //    p.value = 0;
-        //    clearInterval(this.timer);
-        //    this.castPlayerState = PLAYER_STATE.STOPPED;
-        //    if (e.idleReason == 'FINISHED') {
-        //        $.publish("/playback/complete", e);
-        //        console.log("playback complete", e);
-        //    }
-        //}
-        //else {
-        //    p.value = Number(e.currentTime / this.currentMediaSession.media.duration + 1).toFixed(3);
-        //    this.progressFlag = false;
-        //    setTimeout(this.setProgressFlag.bind(this), 1000); // don't update progress in 1 second
-        //}
-    };
-
-    /**
-     * Set progressFlag with a timeout of 1 second to avoid UI update
-     * until a media status update from receiver 
-     */
-    CastPlayer.prototype.setProgressFlag = function () {
-        this.progressFlag = true;
-    };
-
-    /**
-     * Update progress bar based on timer  
-     */
-    CastPlayer.prototype.updateProgressBarByTimer = function () {
-        //var p = document.getElementById(this.progressBar);
-        //if (isNaN(parseInt(p.value))) {
-        //    p.value = 0;
-        //}
-
-        //if (this.currentMediaDuration > 0) {
-        //    var pp = Number(this.currentMediaTime / this.currentMediaDuration).toFixed(3);
-
-        //    var startTime = this.currentMediaOffset / 10000000;
-        //    var playTime = document.getElementById(this.playback);
-        //    if (playTime) {
-        //        playTime.innerHTML = formatTime(startTime + this.currentMediaTime);
-        //    }
-        //}
-
-        //if (this.progressFlag) {
-        //    // don't update progress if it's been updated on media status update event
-        //    p.value = pp;
-        //}
-
-        //if (pp > 100 || this.castPlayerState == PLAYER_STATE.IDLE) {
-        //    clearInterval(this.timer);
-        //    this.deviceState = DEVICE_STATE.IDLE;
-        //    this.castPlayerState = PLAYER_STATE.IDLE;
-        //    $.publish("/playback/complete", true);
-        //    console.log("playback complete");
-        //}
-    };
-
-    /**
-    * @param {function} A callback function for the fucntion to start timer 
-    */
-    CastPlayer.prototype.startProgressTimer = function(callback) {
-        if(this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
-
-        // start progress timer
-        this.timer = setInterval(callback.bind(this), this.timerStep);
-    };
-
-    var castPlayer = new CastPlayer();
-
     function chromecastPlayer() {
 
         var self = this;
 
-        var isPositionSliderActive = false;
         var currentPlaylistIndex;
+
+        var getItemFields = "MediaSources,Chapters";
 
         self.name = PlayerName;
 
         self.isPaused = false;
 
+        self.isMuted = false;
+
         self.playlist = [];
 
         self.playlistIndex = 0;
 
-        //$.subscribe("/playback/complete", function (e) {
-        //    if (self.playlistIndex < (self.playlist.items || []).length) {
-        //        self.play(self.playlist);
-        //    }
-        //});
+        self.positionTicks = 0;
 
-        ////$(".positionSlider", "#footer").off("slidestart slidestop")
-        ////  .on('slidestart', function (e) {
-        ////    isPositionSliderActive = true;
-        ////}).on('slidestop', positionSliderChange);
+        self.runtimeTicks = 0;
 
-        ////function positionSliderChange() {
-        ////    isPositionSliderActive = false;
-        ////    var newPercent = parseInt(this.value);
-        ////    self.changeStream(newPercent);
-        ////}
+        $(castPlayer).on("/playback/complete", function (e) {
+            if (self.playlistIndex < (self.playlist.items || []).length) {
+                self.play(self.playlist);
+            } else {
+                $(self).trigger("playbackstop.nowplayingbar");
+            }
+        });
+
+        $(castPlayer).on("/playback/update", function (e, data) {
+            self.positionTicks = data.positionTicks;
+            self.runtimeTicks = data.runtimeTicks;
+
+            var state = self.getPlayerStateInternal();
+
+            $(self).trigger("positionchange.nowplayingbar", [ state ]);
+        });
 
         function getItemsForPlayback(query) {
             var userId = Dashboard.getCurrentUserId();
@@ -1105,8 +1060,6 @@
         }
 
         self.play = function (options) {
-            console.log("play", options);
-            $("#nowPlayingBar", "#footer").show();
             if (self.isPaused) {
                 self.isPaused = !self.isPaused;
                 castPlayer.playMedia();
@@ -1119,7 +1072,7 @@
 
                 var query = {};
                 query.Limit = query.Limit || 100;
-                query.Fields = "MediaSources,Chapters";
+                query.Fields = getItemFields;
                 query.ExcludeLocationTypes = "Virtual";
                 query.Ids = options.ids.join(',');
 
@@ -1131,13 +1084,11 @@
         };
 
         self.unpause = function () {
-            console.log("unpause");
             self.isPaused = !self.isPaused;
             castPlayer.playMedia();
         };
 
         self.pause = function () {
-            console.log("pause");
             self.isPaused = true;
             castPlayer.pauseMedia();
         };
@@ -1170,7 +1121,6 @@
 
                 self.getItemsForPlayback(query).done(function (result) {
                     self.playlist = { items: result.Items };
-                    console.log("shuffle items", result.Items);
                     self.play(self.playlist);
                 });
             });
@@ -1180,7 +1130,6 @@
             var userId = Dashboard.getCurrentUserId();
             ApiClient.getItem(userId, id).done(function (item) {
                 var promise;
-                var getItemFields = "MediaSources,Chapters";
                 var mixLimit = 3;
 
                 if (item.Type == "MusicArtist") {
@@ -1217,7 +1166,6 @@
 
                 promise.done(function (result) {
                     self.playlist = { items: result.Items };
-                    console.log("instant mix items", result.Items);
                     self.play(self.playlist);
                 });
             });
@@ -1261,7 +1209,6 @@
         };
 
         self.stop = function () {
-            $("#nowPlayingBar", "#footer").hide();
             self.playlist = [];
             self.playlistIndex = 0;
             castPlayer.stopMedia();
@@ -1272,10 +1219,12 @@
         };
 
         self.mute = function () {
+            self.isMuted = true;
             castPlayer.mute();
         };
 
-        self.unmute = function () {
+        self.unMute = function () {
+            self.isMuted = false;
             castPlayer.unMute();
         };
 
@@ -1309,7 +1258,13 @@
                 playableMediaTypes: ["Audio", "Video"],
                 isLocalPlayer: false,
                 appName: appName,
-                supportedCommands: []
+                supportedCommands: ["VolumeUp",
+                                    "VolumeDown",
+                                    "Mute",
+                                    "Unmute",
+                                    "ToggleMute",
+                                    "SetVolume",
+                                    "DisplayContent"]
             };
         };
 
@@ -1387,9 +1342,17 @@
         };
 
         self.volumeDown = function () {
+            var vol = castPlayer.volumeLevel - 0.02;
+            castPlayer.setReceiverVolume(false, vol / 100);
         };
 
         self.volumeUp = function () {
+            var vol = castPlayer.volumeLevel + 0.02;
+            castPlayer.setReceiverVolume(false, vol / 100);
+        };
+
+        self.setVolume = function (vol) {
+            castPlayer.setReceiverVolume(false, vol / 100);
         };
 
         self.getPlayerState = function () {
@@ -1405,7 +1368,13 @@
 
         self.getPlayerStateInternal = function () {
 
-            return {};
+            return {
+                itemName: "Chromecast",
+                canSeek: self.positionTicks < self.runtimeTicks,
+                positionTicks: self.positionTicks,
+                runtimeTicks: self.runtimeTicks,
+                volumeLevel: castPlayer.currentVolume
+            };
         };
     }
 
