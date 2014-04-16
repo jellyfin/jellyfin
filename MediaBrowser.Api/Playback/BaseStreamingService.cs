@@ -300,7 +300,7 @@ namespace MediaBrowser.Api.Playback
                 case EncodingQuality.HighSpeed:
                     return 2;
                 case EncodingQuality.HighQuality:
-                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 2) : 0;
+                    return isWebm ? Math.Max((int)((Environment.ProcessorCount -1) / 2) , 2) : 0;
                 case EncodingQuality.MaxQuality:
                     return isWebm ? Math.Max(Environment.ProcessorCount - 1, 2) : 0;
                 default:
@@ -364,14 +364,16 @@ namespace MediaBrowser.Api.Playback
                 switch (qualitySetting)
                 {
                     case EncodingQuality.HighSpeed:
-                        crf = "18";
-                        profileScore++;
+                        crf = "12";
+                        profileScore = 2;
                         break;
                     case EncodingQuality.HighQuality:
-                        crf = "10";
+                        crf = "8";
+                        profileScore = 1;
                         break;
                     case EncodingQuality.MaxQuality:
                         crf = "4";
+                        //profilescore aready set to 0
                         break;
                     default:
                         throw new ArgumentException("Unrecognized quality setting");
@@ -379,7 +381,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (isVc1)
                 {
-                    profileScore++;
+                    profileScore = 1;
                 }
 
                 // http://www.webmproject.org/docs/encoder-parameters/
