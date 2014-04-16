@@ -78,12 +78,6 @@ namespace MediaBrowser.Model.Entities
         public string BackdropItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the media version identifier.
-        /// </summary>
-        /// <value>The media version identifier.</value>
-        public string MediaSourceId { get; set; }
-
-        /// <summary>
         /// Gets or sets the premiere date.
         /// </summary>
         /// <value>The premiere date.</value>

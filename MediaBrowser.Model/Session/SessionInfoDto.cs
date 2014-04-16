@@ -94,46 +94,16 @@ namespace MediaBrowser.Model.Session
         public string NowViewingContext { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the now viewing item.
+        /// Gets or sets the now viewing item.
         /// </summary>
-        /// <value>The type of the now viewing item.</value>
-        public string NowViewingItemType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the now viewing item identifier.
-        /// </summary>
-        /// <value>The now viewing item identifier.</value>
-        public string NowViewingItemId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the now viewing item.
-        /// </summary>
-        /// <value>The name of the now viewing item.</value>
-        public string NowViewingItemName { get; set; }
+        /// <value>The now viewing item.</value>
+        public BaseItemInfo NowViewingItem { get; set; }
         
         /// <summary>
         /// Gets or sets the name of the device.
         /// </summary>
         /// <value>The name of the device.</value>
         public string DeviceName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the volume level.
-        /// </summary>
-        /// <value>The volume level.</value>
-        public int? VolumeLevel { get; set; }
-
-        /// <summary>
-        /// Gets or sets the index of the now playing audio stream.
-        /// </summary>
-        /// <value>The index of the now playing audio stream.</value>
-        public int? NowPlayingAudioStreamIndex { get; set; }
-
-        /// <summary>
-        /// Gets or sets the index of the now playing subtitle stream.
-        /// </summary>
-        /// <value>The index of the now playing subtitle stream.</value>
-        public int? NowPlayingSubtitleStreamIndex { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is paused.
@@ -170,7 +140,9 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value><c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>
         public bool SupportsRemoteControl { get; set; }
-        
+
+        public PlayerStateInfo PlayState { get; set; }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public SessionInfoDto()
@@ -210,5 +182,56 @@ namespace MediaBrowser.Model.Session
             PlayableMediaTypes = new List<string>();
             SupportedCommands = new List<string>();
         }
+    }
+
+    public class PlayerStateInfo
+    {
+        /// <summary>
+        /// Gets or sets the now playing position ticks.
+        /// </summary>
+        /// <value>The now playing position ticks.</value>
+        public long? PositionTicks { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can seek.
+        /// </summary>
+        /// <value><c>true</c> if this instance can seek; otherwise, <c>false</c>.</value>
+        public bool CanSeek { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is paused.
+        /// </summary>
+        /// <value><c>true</c> if this instance is paused; otherwise, <c>false</c>.</value>
+        public bool IsPaused { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is muted.
+        /// </summary>
+        /// <value><c>true</c> if this instance is muted; otherwise, <c>false</c>.</value>
+        public bool IsMuted { get; set; }
+
+        /// <summary>
+        /// Gets or sets the volume level.
+        /// </summary>
+        /// <value>The volume level.</value>
+        public int? VolumeLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index of the now playing audio stream.
+        /// </summary>
+        /// <value>The index of the now playing audio stream.</value>
+        public int? AudioStreamIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index of the now playing subtitle stream.
+        /// </summary>
+        /// <value>The index of the now playing subtitle stream.</value>
+        public int? SubtitleStreamIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the now playing media version identifier.
+        /// </summary>
+        /// <value>The now playing media version identifier.</value>
+        public string MediaSourceId { get; set; }
     }
 }

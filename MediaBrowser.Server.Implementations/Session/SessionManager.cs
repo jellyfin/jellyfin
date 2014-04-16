@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -229,7 +228,7 @@ namespace MediaBrowser.Server.Implementations.Session
             return session;
         }
 
-        public async Task ReportSessionEnded(Guid sessionId)
+        public async Task ReportSessionEnded(string sessionId)
         {
             await _sessionLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 
@@ -261,50 +260,51 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Updates the now playing item id.
         /// </summary>
         /// <param name="session">The session.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="mediaSourceId">The media version identifier.</param>
-        /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
-        /// <param name="currentPositionTicks">The current position ticks.</param>
-        private void UpdateNowPlayingItem(SessionInfo session, BaseItem item, string mediaSourceId, bool isPaused, long? currentPositionTicks = null)
+        /// <param name="info">The information.</param>
+        /// <param name="libraryItem">The library item.</param>
+        private void UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem)
         {
-            session.IsPaused = isPaused;
-            session.NowPlayingPositionTicks = currentPositionTicks;
-            session.NowPlayingItem = item;
+            var runtimeTicks = libraryItem.RunTimeTicks;
+
+            if (string.IsNullOrWhiteSpace(info.MediaSourceId))
+            {
+                info.MediaSourceId = info.ItemId;
+            }
+
+            if (!string.Equals(info.ItemId, info.MediaSourceId) &&
+                !string.IsNullOrWhiteSpace(info.MediaSourceId))
+            {
+                runtimeTicks = _libraryManager.GetItemById(new Guid(info.MediaSourceId)).RunTimeTicks;
+            }
+
+            if (!string.IsNullOrWhiteSpace(info.ItemId))
+            {
+                info.Item = GetItemInfo(libraryItem, runtimeTicks);
+            }
+
+            session.PlayState.IsPaused = info.IsPaused;
+            session.PlayState.PositionTicks = info.PositionTicks;
+            session.NowPlayingItem = info.Item;
             session.LastActivityDate = DateTime.UtcNow;
-            session.NowPlayingMediaSourceId = mediaSourceId;
+            session.PlayState.MediaSourceId = info.MediaSourceId;
 
-            if (string.IsNullOrWhiteSpace(mediaSourceId))
-            {
-                session.NowPlayingRunTimeTicks = item.RunTimeTicks;
-            }
-            else
-            {
-                var version = _libraryManager.GetItemById(new Guid(mediaSourceId));
+            session.PlayState.CanSeek = info.CanSeek;
 
-                session.NowPlayingRunTimeTicks = version.RunTimeTicks;
-            }
+            session.PlayState.IsMuted = info.IsMuted;
+            session.PlayState.VolumeLevel = info.VolumeLevel;
+            session.PlayState.AudioStreamIndex = info.AudioStreamIndex;
+            session.PlayState.SubtitleStreamIndex = info.SubtitleStreamIndex;
         }
 
         /// <summary>
         /// Removes the now playing item id.
         /// </summary>
         /// <param name="session">The session.</param>
-        /// <param name="item">The item.</param>
-        private void RemoveNowPlayingItem(SessionInfo session, BaseItem item)
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        private void RemoveNowPlayingItem(SessionInfo session)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (session.NowPlayingItem != null && session.NowPlayingItem.Id == item.Id)
-            {
-                session.NowPlayingItem = null;
-                session.NowPlayingPositionTicks = null;
-                session.IsPaused = false;
-                session.NowPlayingRunTimeTicks = null;
-                session.NowPlayingMediaSourceId = null;
-            }
+            session.NowPlayingItem = null;
+            session.PlayState = new PlayerStateInfo();
         }
 
         private string GetSessionKey(string clientType, string appVersion, string deviceId)
@@ -338,7 +338,7 @@ namespace MediaBrowser.Server.Implementations.Session
                         Client = clientType,
                         DeviceId = deviceId,
                         ApplicationVersion = appVersion,
-                        Id = Guid.NewGuid()
+                        Id = Guid.NewGuid().ToString("N")
                     };
 
                     OnSessionStarted(sessionInfo);
@@ -402,45 +402,40 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">info</exception>
-        public async Task OnPlaybackStart(PlaybackInfo info)
+        public async Task OnPlaybackStart(PlaybackStartInfo info)
         {
             if (info == null)
             {
                 throw new ArgumentNullException("info");
             }
-            if (info.SessionId == Guid.Empty)
-            {
-                throw new ArgumentNullException("info");
-            }
 
-            var session = Sessions.First(i => i.Id.Equals(info.SessionId));
+            var session = GetSession(info.SessionId);
 
-            var item = info.Item;
+            var libraryItem = string.IsNullOrWhiteSpace(info.ItemId)
+                ? null
+                : _libraryManager.GetItemById(new Guid(info.ItemId));
 
-            var mediaSourceId = GetMediaSourceId(item, info.MediaSourceId);
+            UpdateNowPlayingItem(session, info, libraryItem);
 
-            UpdateNowPlayingItem(session, item, mediaSourceId, false);
-
-            session.CanSeek = info.CanSeek;
             session.QueueableMediaTypes = info.QueueableMediaTypes;
-
-            session.NowPlayingAudioStreamIndex = info.AudioStreamIndex;
-            session.NowPlayingSubtitleStreamIndex = info.SubtitleStreamIndex;
-
-            var key = item.GetUserDataKey();
 
             var users = GetUsers(session);
 
-            foreach (var user in users)
+            if (libraryItem != null)
             {
-                await OnPlaybackStart(user.Id, key, item).ConfigureAwait(false);
+                var key = libraryItem.GetUserDataKey();
+
+                foreach (var user in users)
+                {
+                    await OnPlaybackStart(user.Id, key, libraryItem).ConfigureAwait(false);
+                }
             }
 
             // Nothing to save here
             // Fire events to inform plugins
             EventHelper.QueueEventIfNotNull(PlaybackStart, this, new PlaybackProgressEventArgs
             {
-                Item = item,
+                Item = libraryItem,
                 Users = users,
                 MediaSourceId = info.MediaSourceId
 
@@ -478,44 +473,39 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         /// <exception cref="System.ArgumentOutOfRangeException">positionTicks</exception>
-        public async Task OnPlaybackProgress(Controller.Session.PlaybackProgressInfo info)
+        public async Task OnPlaybackProgress(PlaybackProgressInfo info)
         {
             if (info == null)
             {
                 throw new ArgumentNullException("info");
             }
 
-            if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
-            {
-                throw new ArgumentOutOfRangeException("positionTicks");
-            }
+            var session = GetSession(info.SessionId);
 
-            var session = Sessions.First(i => i.Id.Equals(info.SessionId));
+            var libraryItem = string.IsNullOrWhiteSpace(info.ItemId)
+                ? null
+                : _libraryManager.GetItemById(new Guid(info.ItemId));
 
-            var mediaSourceId = GetMediaSourceId(info.Item, info.MediaSourceId);
-
-            UpdateNowPlayingItem(session, info.Item, mediaSourceId, info.IsPaused, info.PositionTicks);
-
-            session.IsMuted = info.IsMuted;
-            session.VolumeLevel = info.VolumeLevel;
-            session.NowPlayingAudioStreamIndex = info.AudioStreamIndex;
-            session.NowPlayingSubtitleStreamIndex = info.SubtitleStreamIndex;
-
-            var key = info.Item.GetUserDataKey();
+            UpdateNowPlayingItem(session, info, libraryItem);
 
             var users = GetUsers(session);
 
-            foreach (var user in users)
+            if (libraryItem != null)
             {
-                await OnPlaybackProgress(user.Id, key, info.Item, info.PositionTicks).ConfigureAwait(false);
+                var key = libraryItem.GetUserDataKey();
+
+                foreach (var user in users)
+                {
+                    await OnPlaybackProgress(user.Id, key, libraryItem, info.PositionTicks).ConfigureAwait(false);
+                }
             }
 
             EventHelper.QueueEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
             {
-                Item = info.Item,
+                Item = libraryItem,
                 Users = users,
-                PlaybackPositionTicks = info.PositionTicks,
-                MediaSourceId = mediaSourceId
+                PlaybackPositionTicks = session.PlayState.PositionTicks,
+                MediaSourceId = session.PlayState.MediaSourceId
 
             }, _logger);
         }
@@ -539,21 +529,11 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">info</exception>
         /// <exception cref="System.ArgumentOutOfRangeException">positionTicks</exception>
-        public async Task OnPlaybackStopped(Controller.Session.PlaybackStopInfo info)
+        public async Task OnPlaybackStopped(PlaybackStopInfo info)
         {
             if (info == null)
             {
                 throw new ArgumentNullException("info");
-            }
-
-            if (info.Item == null)
-            {
-                throw new ArgumentException("PlaybackStopInfo.Item cannot be null");
-            }
-
-            if (info.SessionId == Guid.Empty)
-            {
-                throw new ArgumentException("PlaybackStopInfo.SessionId cannot be Guid.Empty");
             }
 
             if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
@@ -561,46 +541,44 @@ namespace MediaBrowser.Server.Implementations.Session
                 throw new ArgumentOutOfRangeException("positionTicks");
             }
 
-            var session = Sessions.First(i => i.Id.Equals(info.SessionId));
+            var session = GetSession(info.SessionId);
 
-            RemoveNowPlayingItem(session, info.Item);
+            var libraryItem = string.IsNullOrWhiteSpace(info.ItemId)
+                ? null
+                : _libraryManager.GetItemById(new Guid(info.ItemId));
 
-            var key = info.Item.GetUserDataKey();
-
-            var users = GetUsers(session);
-
-            var playedToCompletion = false;
-            foreach (var user in users)
+            // Normalize
+            if (string.IsNullOrWhiteSpace(info.MediaSourceId))
             {
-                playedToCompletion = await OnPlaybackStopped(user.Id, key, info.Item, info.PositionTicks).ConfigureAwait(false);
+                info.MediaSourceId = info.ItemId;
             }
 
-            var mediaSourceId = GetMediaSourceId(info.Item, info.MediaSourceId);
+            RemoveNowPlayingItem(session);
+
+            var users = GetUsers(session);
+            var playedToCompletion = false;
+
+            if (libraryItem != null)
+            {
+                var key = libraryItem.GetUserDataKey();
+
+                foreach (var user in users)
+                {
+                    playedToCompletion = await OnPlaybackStopped(user.Id, key, libraryItem, info.PositionTicks).ConfigureAwait(false);
+                }
+            }
 
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackStopEventArgs
             {
-                Item = info.Item,
+                Item = libraryItem,
                 Users = users,
                 PlaybackPositionTicks = info.PositionTicks,
                 PlayedToCompletion = playedToCompletion,
-                MediaSourceId = mediaSourceId
+                MediaSourceId = info.MediaSourceId
 
             }, _logger);
 
             await SendPlaybackStoppedNotification(session, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        private string GetMediaSourceId(BaseItem item, string reportedMediaSourceId)
-        {
-            if (string.IsNullOrWhiteSpace(reportedMediaSourceId))
-            {
-                if (item is Video || item is Audio)
-                {
-                    reportedMediaSourceId = item.Id.ToString("N");
-                }
-            }
-
-            return reportedMediaSourceId;
         }
 
         private async Task<bool> OnPlaybackStopped(Guid userId, string userDataKey, BaseItem item, long? positionTicks)
@@ -691,9 +669,9 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="sessionId">The session identifier.</param>
         /// <returns>SessionInfo.</returns>
         /// <exception cref="ResourceNotFoundException"></exception>
-        private SessionInfo GetSession(Guid sessionId)
+        private SessionInfo GetSession(string sessionId)
         {
-            var session = Sessions.First(i => i.Id.Equals(sessionId));
+            var session = Sessions.First(i => string.Equals(i.Id, sessionId));
 
             if (session == null)
             {
@@ -709,7 +687,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="sessionId">The session id.</param>
         /// <returns>SessionInfo.</returns>
         /// <exception cref="ResourceNotFoundException"></exception>
-        private SessionInfo GetSessionForRemoteControl(Guid sessionId)
+        private SessionInfo GetSessionForRemoteControl(string sessionId)
         {
             var session = GetSession(sessionId);
 
@@ -721,7 +699,7 @@ namespace MediaBrowser.Server.Implementations.Session
             return session;
         }
 
-        public Task SendMessageCommand(Guid controllingSessionId, Guid sessionId, MessageCommand command, CancellationToken cancellationToken)
+        public Task SendMessageCommand(string controllingSessionId, string sessionId, MessageCommand command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
@@ -731,7 +709,7 @@ namespace MediaBrowser.Server.Implementations.Session
             return session.SessionController.SendMessageCommand(command, cancellationToken);
         }
 
-        public Task SendGeneralCommand(Guid controllingSessionId, Guid sessionId, GeneralCommand command, CancellationToken cancellationToken)
+        public Task SendGeneralCommand(string controllingSessionId, string sessionId, GeneralCommand command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
@@ -741,7 +719,7 @@ namespace MediaBrowser.Server.Implementations.Session
             return session.SessionController.SendGeneralCommand(command, cancellationToken);
         }
 
-        public Task SendPlayCommand(Guid controllingSessionId, Guid sessionId, PlayRequest command, CancellationToken cancellationToken)
+        public Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
 
@@ -861,7 +839,7 @@ namespace MediaBrowser.Server.Implementations.Session
             return new BaseItem[] { };
         }
 
-        public Task SendBrowseCommand(Guid controllingSessionId, Guid sessionId, BrowseRequest command, CancellationToken cancellationToken)
+        public Task SendBrowseCommand(string controllingSessionId, string sessionId, BrowseRequest command, CancellationToken cancellationToken)
         {
             var generalCommand = new GeneralCommand
             {
@@ -876,14 +854,9 @@ namespace MediaBrowser.Server.Implementations.Session
             return SendGeneralCommand(controllingSessionId, sessionId, generalCommand, cancellationToken);
         }
 
-        public Task SendPlaystateCommand(Guid controllingSessionId, Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken)
+        public Task SendPlaystateCommand(string controllingSessionId, string sessionId, PlaystateRequest command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
-
-            if (command.Command == PlaystateCommand.Seek && !session.CanSeek)
-            {
-                throw new ArgumentException(string.Format("Session {0} is unable to seek.", session.Id));
-            }
 
             var controllingSession = GetSession(controllingSessionId);
             AssertCanControl(session, controllingSession);
@@ -1052,7 +1025,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="userId">The user identifier.</param>
         /// <exception cref="System.UnauthorizedAccessException">Cannot modify additional users without authenticating first.</exception>
         /// <exception cref="System.ArgumentException">The requested user is already the primary user of the session.</exception>
-        public void AddAdditionalUser(Guid sessionId, Guid userId)
+        public void AddAdditionalUser(string sessionId, Guid userId)
         {
             var session = GetSession(sessionId);
 
@@ -1085,7 +1058,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="userId">The user identifier.</param>
         /// <exception cref="System.UnauthorizedAccessException">Cannot modify additional users without authenticating first.</exception>
         /// <exception cref="System.ArgumentException">The requested user is already the primary user of the session.</exception>
-        public void RemoveAdditionalUser(Guid sessionId, Guid userId)
+        public void RemoveAdditionalUser(string sessionId, Guid userId)
         {
             var session = GetSession(sessionId);
 
@@ -1136,7 +1109,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="capabilities">The capabilities.</param>
-        public void ReportCapabilities(Guid sessionId, SessionCapabilities capabilities)
+        public void ReportCapabilities(string sessionId, SessionCapabilities capabilities)
         {
             var session = GetSession(sessionId);
 
@@ -1151,33 +1124,26 @@ namespace MediaBrowser.Server.Implementations.Session
                 Client = session.Client,
                 DeviceId = session.DeviceId,
                 DeviceName = session.DeviceName,
-                Id = session.Id.ToString("N"),
+                Id = session.Id,
                 LastActivityDate = session.LastActivityDate,
-                NowPlayingPositionTicks = session.NowPlayingPositionTicks,
+                NowPlayingPositionTicks = session.PlayState.PositionTicks,
                 SupportsRemoteControl = session.SupportsRemoteControl,
-                IsPaused = session.IsPaused,
-                IsMuted = session.IsMuted,
+                IsPaused = session.PlayState.IsPaused,
+                IsMuted = session.PlayState.IsMuted,
                 NowViewingContext = session.NowViewingContext,
-                NowViewingItemId = session.NowViewingItemId,
-                NowViewingItemName = session.NowViewingItemName,
-                NowViewingItemType = session.NowViewingItemType,
+                NowViewingItem = session.NowViewingItem,
                 ApplicationVersion = session.ApplicationVersion,
-                CanSeek = session.CanSeek,
+                CanSeek = session.PlayState.CanSeek,
                 QueueableMediaTypes = session.QueueableMediaTypes,
                 PlayableMediaTypes = session.PlayableMediaTypes,
                 RemoteEndPoint = session.RemoteEndPoint,
                 AdditionalUsers = session.AdditionalUsers,
                 SupportedCommands = session.SupportedCommands,
-                NowPlayingAudioStreamIndex = session.NowPlayingAudioStreamIndex,
-                NowPlayingSubtitleStreamIndex = session.NowPlayingSubtitleStreamIndex,
                 UserName = session.UserName,
-                VolumeLevel = session.VolumeLevel
-            };
+                NowPlayingItem = session.NowPlayingItem,
 
-            if (session.NowPlayingItem != null)
-            {
-                dto.NowPlayingItem = GetNowPlayingInfo(session.NowPlayingItem, session.NowPlayingMediaSourceId, session.NowPlayingRunTimeTicks);
-            }
+                PlayState = session.PlayState
+            };
 
             if (session.UserId.HasValue)
             {
@@ -1198,11 +1164,10 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Converts a BaseItem to a BaseItemInfo
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="mediaSourceId">The media version identifier.</param>
-        /// <param name="nowPlayingRuntimeTicks">The now playing runtime ticks.</param>
+        /// <param name="runtimeTicks">The now playing runtime ticks.</param>
         /// <returns>BaseItemInfo.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        private BaseItemInfo GetNowPlayingInfo(BaseItem item, string mediaSourceId, long? nowPlayingRuntimeTicks)
+        private BaseItemInfo GetItemInfo(BaseItem item, long? runtimeTicks)
         {
             if (item == null)
             {
@@ -1215,8 +1180,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 Name = item.Name,
                 MediaType = item.MediaType,
                 Type = item.GetClientTypeName(),
-                RunTimeTicks = nowPlayingRuntimeTicks,
-                MediaSourceId = mediaSourceId,
+                RunTimeTicks = runtimeTicks,
                 IndexNumber = item.IndexNumber,
                 ParentIndexNumber = item.ParentIndexNumber,
                 PremiereDate = item.PremiereDate,
@@ -1287,7 +1251,7 @@ namespace MediaBrowser.Server.Implementations.Session
                     info.Artists.Add(musicVideo.Artist);
                 }
             }
-            
+
             var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;
 
             var thumbItem = item.HasImage(ImageType.Thumb) ? item : null;
@@ -1359,6 +1323,23 @@ namespace MediaBrowser.Server.Implementations.Session
         private string GetDtoId(BaseItem item)
         {
             return _dtoService.GetDtoId(item);
+        }
+
+        public void ReportNowViewingItem(string sessionId, string itemId, string context)
+        {
+            var item = _libraryManager.GetItemById(new Guid(itemId));
+
+            var info = GetItemInfo(item, item.RunTimeTicks);
+
+            ReportNowViewingItem(sessionId, info, context);
+        }
+
+        public void ReportNowViewingItem(string sessionId, BaseItemInfo item, string context)
+        {
+            var session = GetSession(sessionId);
+
+            session.NowViewingItem = item;
+            session.NowViewingContext = context;
         }
     }
 }

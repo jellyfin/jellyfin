@@ -1,10 +1,11 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Session;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// The _dto service
         /// </summary>
-        private readonly IDtoService _dtoService;
+        private readonly IJsonSerializer _json;
         private readonly IServerApplicationHost _appHost;
 
         /// <summary>
@@ -41,13 +42,13 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="logManager">The log manager.</param>
-        /// <param name="dtoService">The dto service.</param>
-        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, IDtoService dtoService, IServerApplicationHost appHost)
+        /// <param name="appHost">The application host.</param>
+        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, IServerApplicationHost appHost, IJsonSerializer json)
         {
             _sessionManager = sessionManager;
             _logger = logManager.GetLogger(GetType().Name);
-            _dtoService = dtoService;
             _appHost = appHost;
+            _json = json;
         }
 
         /// <summary>
@@ -67,13 +68,25 @@ namespace MediaBrowser.Server.Implementations.Session
             }
             else if (string.Equals(message.MessageType, "PlaybackStart", StringComparison.OrdinalIgnoreCase))
             {
-                ReportPlaybackStart(message);
+                OnPlaybackStart(message);
             }
             else if (string.Equals(message.MessageType, "PlaybackProgress", StringComparison.OrdinalIgnoreCase))
             {
-                ReportPlaybackProgress(message);
+                OnPlaybackProgress(message);
             }
             else if (string.Equals(message.MessageType, "PlaybackStopped", StringComparison.OrdinalIgnoreCase))
+            {
+                OnPlaybackStopped(message);
+            }
+            else if (string.Equals(message.MessageType, "ReportPlaybackStart", StringComparison.OrdinalIgnoreCase))
+            {
+                ReportPlaybackStart(message);
+            }
+            else if (string.Equals(message.MessageType, "ReportPlaybackProgress", StringComparison.OrdinalIgnoreCase))
+            {
+                ReportPlaybackProgress(message);
+            }
+            else if (string.Equals(message.MessageType, "ReportPlaybackStopped", StringComparison.OrdinalIgnoreCase))
             {
                 ReportPlaybackStopped(message);
             }
@@ -150,10 +163,8 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var vals = message.Data.Split('|');
 
-                session.NowViewingItemType = vals[0];
-                session.NowViewingItemId = vals[1];
-                session.NowViewingItemName = vals[2];
-                session.NowViewingContext = vals.Length > 3 ? vals[3] : null;
+                var context = vals.Length > 3 ? vals[3] : null;
+                _sessionManager.ReportNowViewingItem(session.Id, vals[1], context);
             }
         }
 
@@ -194,7 +205,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Reports the playback start.
         /// </summary>
         /// <param name="message">The message.</param>
-        private void ReportPlaybackStart(WebSocketMessageInfo message)
+        private void OnPlaybackStart(WebSocketMessageInfo message)
         {
             _logger.Debug("Received PlaybackStart message");
 
@@ -204,7 +215,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var vals = message.Data.Split('|');
 
-                var item = _dtoService.GetItemByDtoId(vals[0]);
+                var itemId = vals[0];
 
                 var queueableMediaTypes = string.Empty;
                 var canSeek = true;
@@ -218,10 +229,10 @@ namespace MediaBrowser.Server.Implementations.Session
                     queueableMediaTypes = vals[2];
                 }
 
-                var info = new PlaybackInfo
+                var info = new PlaybackStartInfo
                 {
                     CanSeek = canSeek,
-                    Item = item,
+                    ItemId = itemId,
                     SessionId = session.Id,
                     QueueableMediaTypes = queueableMediaTypes.Split(',').ToList()
                 };
@@ -245,11 +256,43 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
+        private void ReportPlaybackStart(WebSocketMessageInfo message)
+        {
+            _logger.Debug("Received ReportPlaybackStart message");
+
+            var session = GetSessionFromMessage(message);
+
+            if (session != null && session.UserId.HasValue)
+            {
+                var info = _json.DeserializeFromString<PlaybackStartInfo>(message.Data);
+
+                info.SessionId = session.Id;
+
+                _sessionManager.OnPlaybackStart(info);
+            }
+        }
+
+        private void ReportPlaybackProgress(WebSocketMessageInfo message)
+        {
+            //_logger.Debug("Received ReportPlaybackProgress message");
+
+            var session = GetSessionFromMessage(message);
+
+            if (session != null && session.UserId.HasValue)
+            {
+                var info = _json.DeserializeFromString<PlaybackProgressInfo>(message.Data);
+
+                info.SessionId = session.Id;
+
+                _sessionManager.OnPlaybackProgress(info);
+            }
+        }
+        
         /// <summary>
         /// Reports the playback progress.
         /// </summary>
         /// <param name="message">The message.</param>
-        private void ReportPlaybackProgress(WebSocketMessageInfo message)
+        private void OnPlaybackProgress(WebSocketMessageInfo message)
         {
             var session = GetSessionFromMessage(message);
 
@@ -257,7 +300,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var vals = message.Data.Split('|');
 
-                var item = _dtoService.GetItemByDtoId(vals[0]);
+                var itemId = vals[0];
 
                 long? positionTicks = null;
 
@@ -276,7 +319,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 var info = new PlaybackProgressInfo
                 {
-                    Item = item,
+                    ItemId = itemId,
                     PositionTicks = positionTicks,
                     IsMuted = isMuted,
                     IsPaused = isPaused,
@@ -307,11 +350,27 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
+        private void ReportPlaybackStopped(WebSocketMessageInfo message)
+        {
+            _logger.Debug("Received ReportPlaybackStopped message");
+
+            var session = GetSessionFromMessage(message);
+
+            if (session != null && session.UserId.HasValue)
+            {
+                var info = _json.DeserializeFromString<PlaybackStopInfo>(message.Data);
+
+                info.SessionId = session.Id;
+
+                _sessionManager.OnPlaybackStopped(info);
+            }
+        }
+        
         /// <summary>
         /// Reports the playback stopped.
         /// </summary>
         /// <param name="message">The message.</param>
-        private void ReportPlaybackStopped(WebSocketMessageInfo message)
+        private void OnPlaybackStopped(WebSocketMessageInfo message)
         {
             _logger.Debug("Received PlaybackStopped message");
 
@@ -321,7 +380,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var vals = message.Data.Split('|');
 
-                var item = _dtoService.GetItemByDtoId(vals[0]);
+                var itemId = vals[0];
 
                 long? positionTicks = null;
 
@@ -337,7 +396,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 var info = new PlaybackStopInfo
                 {
-                    Item = item,
+                    ItemId = itemId,
                     PositionTicks = positionTicks,
                     SessionId = session.Id
                 };

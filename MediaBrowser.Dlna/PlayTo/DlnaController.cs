@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
@@ -13,6 +12,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -91,9 +91,9 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 _playbackStarted = false;
 
-                await _sessionManager.OnPlaybackStopped(new Controller.Session.PlaybackStopInfo
+                await _sessionManager.OnPlaybackStopped(new PlaybackStopInfo
                 {
-                    Item = _currentItem,
+                    ItemId = _currentItem.Id.ToString("N"),
                     SessionId = _session.Id,
                     PositionTicks = _device.Position.Ticks
 
@@ -169,20 +169,23 @@ namespace MediaBrowser.Dlna.PlayTo
                 return;
 
             var playlistItem = Playlist.FirstOrDefault(p => p.PlayState == 1);
-            
+
             if (playlistItem != null)
             {
                 if (!_playbackStarted)
                 {
-                    await _sessionManager.OnPlaybackStart(new PlaybackInfo
+                    await _sessionManager.OnPlaybackStart(new PlaybackStartInfo
                     {
-                        Item = _currentItem,
+                        ItemId = _currentItem.Id.ToString("N"),
                         SessionId = _session.Id,
                         CanSeek = true,
                         QueueableMediaTypes = new List<string> { _currentItem.MediaType },
                         MediaSourceId = playlistItem.MediaSourceId,
                         AudioStreamIndex = playlistItem.AudioStreamIndex,
-                        SubtitleStreamIndex = playlistItem.SubtitleStreamIndex
+                        SubtitleStreamIndex = playlistItem.SubtitleStreamIndex,
+                        IsMuted = _device.IsMuted,
+                        IsPaused = _device.IsPaused,
+                        VolumeLevel = _device.Volume
 
                     }).ConfigureAwait(false);
 
@@ -198,9 +201,9 @@ namespace MediaBrowser.Dlna.PlayTo
                         ticks += playlistItem.StartPositionTicks;
                     }
 
-                    await _sessionManager.OnPlaybackProgress(new Controller.Session.PlaybackProgressInfo
+                    await _sessionManager.OnPlaybackProgress(new PlaybackProgressInfo
                     {
-                        Item = _currentItem,
+                        ItemId = _currentItem.Id.ToString("N"),
                         SessionId = _session.Id,
                         PositionTicks = ticks,
                         IsMuted = _device.IsMuted,
@@ -208,7 +211,8 @@ namespace MediaBrowser.Dlna.PlayTo
                         MediaSourceId = playlistItem.MediaSourceId,
                         AudioStreamIndex = playlistItem.AudioStreamIndex,
                         SubtitleStreamIndex = playlistItem.SubtitleStreamIndex,
-                        VolumeLevel = _device.Volume
+                        VolumeLevel = _device.Volume,
+                        CanSeek = true
 
                     }).ConfigureAwait(false);
                 }
@@ -617,7 +621,7 @@ namespace MediaBrowser.Dlna.PlayTo
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        
+
         public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
             GeneralCommandType commandType;
@@ -637,23 +641,23 @@ namespace MediaBrowser.Dlna.PlayTo
                     case GeneralCommandType.ToggleMute:
                         return _device.ToggleMute();
                     case GeneralCommandType.SetVolume:
-                    {
-                        string volumeArg;
-
-                        if (command.Arguments.TryGetValue("Volume", out volumeArg))
                         {
-                            int volume;
+                            string volumeArg;
 
-                            if (int.TryParse(volumeArg, NumberStyles.Any, _usCulture, out volume))
+                            if (command.Arguments.TryGetValue("Volume", out volumeArg))
                             {
-                                return _device.SetVolume(volume);
+                                int volume;
+
+                                if (int.TryParse(volumeArg, NumberStyles.Any, _usCulture, out volume))
+                                {
+                                    return _device.SetVolume(volume);
+                                }
+
+                                throw new ArgumentException("Unsupported volume value supplied.");
                             }
 
-                            throw new ArgumentException("Unsupported volume value supplied.");
+                            throw new ArgumentException("Volume argument cannot be null");
                         }
-
-                        throw new ArgumentException("Volume argument cannot be null");
-                    }
                     default:
                         return Task.FromResult(true);
                 }

@@ -9,6 +9,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Session;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -220,6 +221,24 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
     }
 
+    [Route("/Sessions/Playing", "POST")]
+    [Api(Description = "Reports playback has started within a session")]
+    public class ReportPlaybackStart : PlaybackStartInfo, IReturnVoid
+    {
+    }
+
+    [Route("/Sessions/Playing/Progress", "POST")]
+    [Api(Description = "Reports playback progress within a session")]
+    public class ReportPlaybackProgress : PlaybackProgressInfo, IReturnVoid
+    {
+    }
+
+    [Route("/Sessions/Playing/Stopped", "POST")]
+    [Api(Description = "Reports playback has stopped within a session")]
+    public class ReportPlaybackStopped : PlaybackStopInfo, IReturnVoid
+    {
+    }
+    
     /// <summary>
     /// Class OnPlaybackStart
     /// </summary>
@@ -740,24 +759,26 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public void Post(OnPlaybackStart request)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var item = _dtoService.GetItemByDtoId(request.Id, user.Id);
-
             var queueableMediaTypes = (request.QueueableMediaTypes ?? string.Empty);
 
-            var info = new PlaybackInfo
+            Post(new ReportPlaybackStart
             {
                 CanSeek = request.CanSeek,
-                Item = item,
-                SessionId = GetSession(_sessionManager).Id,
+                ItemId = request.Id,
                 QueueableMediaTypes = queueableMediaTypes.Split(',').ToList(),
                 MediaSourceId = request.MediaSourceId,
                 AudioStreamIndex = request.AudioStreamIndex,
                 SubtitleStreamIndex = request.SubtitleStreamIndex
-            };
+            });
+        }
 
-            _sessionManager.OnPlaybackStart(info);
+        public void Post(ReportPlaybackStart request)
+        {
+            request.SessionId = GetSession(_sessionManager).Id;
+
+            var task = _sessionManager.OnPlaybackStart(request);
+
+            Task.WaitAll(task);
         }
 
         /// <summary>
@@ -766,24 +787,24 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public void Post(OnPlaybackProgress request)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var item = _dtoService.GetItemByDtoId(request.Id, user.Id);
-
-            var info = new PlaybackProgressInfo
+            Post(new ReportPlaybackProgress
             {
-                Item = item,
+                ItemId = request.Id,
                 PositionTicks = request.PositionTicks,
                 IsMuted = request.IsMuted,
                 IsPaused = request.IsPaused,
-                SessionId = GetSession(_sessionManager).Id,
                 MediaSourceId = request.MediaSourceId,
                 AudioStreamIndex = request.AudioStreamIndex,
                 SubtitleStreamIndex = request.SubtitleStreamIndex,
                 VolumeLevel = request.VolumeLevel
-            };
+            });
+        }
 
-            var task = _sessionManager.OnPlaybackProgress(info);
+        public void Post(ReportPlaybackProgress request)
+        {
+            request.SessionId = GetSession(_sessionManager).Id;
+
+            var task = _sessionManager.OnPlaybackProgress(request);
 
             Task.WaitAll(task);
         }
@@ -794,21 +815,19 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public void Delete(OnPlaybackStopped request)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var item = _dtoService.GetItemByDtoId(request.Id, user.Id);
-
-            var session = GetSession(_sessionManager);
-
-            var info = new PlaybackStopInfo
+            Post(new ReportPlaybackStopped
             {
-                Item = item,
+                ItemId = request.Id,
                 PositionTicks = request.PositionTicks,
-                SessionId = session.Id,
                 MediaSourceId = request.MediaSourceId
-            };
+            });
+        }
 
-            var task = _sessionManager.OnPlaybackStopped(info);
+        public void Post(ReportPlaybackStopped request)
+        {
+            request.SessionId = GetSession(_sessionManager).Id;
+
+            var task = _sessionManager.OnPlaybackStopped(request);
 
             Task.WaitAll(task);
         }

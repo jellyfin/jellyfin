@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
@@ -26,8 +25,11 @@ namespace MediaBrowser.Controller.Session
 
             AdditionalUsers = new List<SessionUserInfo>();
             SupportedCommands = new List<string>();
+            PlayState = new PlayerStateInfo();
         }
 
+        public PlayerStateInfo PlayState { get; set; }
+        
         public List<SessionUserInfo> AdditionalUsers { get; set; }
 
         /// <summary>
@@ -35,12 +37,6 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The remote end point.</value>
         public string RemoteEndPoint { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can seek.
-        /// </summary>
-        /// <value><c>true</c> if this instance can seek; otherwise, <c>false</c>.</value>
-        public bool CanSeek { get; set; }
 
         /// <summary>
         /// Gets or sets the queueable media types.
@@ -58,7 +54,7 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the user id.
@@ -97,67 +93,16 @@ namespace MediaBrowser.Controller.Session
         public string NowViewingContext { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the now viewing item.
-        /// </summary>
-        /// <value>The type of the now viewing item.</value>
-        public string NowViewingItemType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the now viewing item identifier.
-        /// </summary>
-        /// <value>The now viewing item identifier.</value>
-        public string NowViewingItemId { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the now viewing item.
         /// </summary>
         /// <value>The name of the now viewing item.</value>
-        public string NowViewingItemName { get; set; }
+        public BaseItemInfo NowViewingItem { get; set; }
 
         /// <summary>
         /// Gets or sets the now playing item.
         /// </summary>
         /// <value>The now playing item.</value>
-        public BaseItem NowPlayingItem { get; set; }
-
-        /// <summary>
-        /// Gets or sets the now playing media version identifier.
-        /// </summary>
-        /// <value>The now playing media version identifier.</value>
-        public string NowPlayingMediaSourceId { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the now playing run time ticks.
-        /// </summary>
-        /// <value>The now playing run time ticks.</value>
-        public long? NowPlayingRunTimeTicks { get; set; }
-
-        /// <summary>
-        /// Gets or sets the now playing position ticks.
-        /// </summary>
-        /// <value>The now playing position ticks.</value>
-        public long? NowPlayingPositionTicks { get; set; }
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is paused.
-        /// </summary>
-        /// <value><c>true</c> if this instance is paused; otherwise, <c>false</c>.</value>
-        public bool IsPaused { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is muted.
-        /// </summary>
-        /// <value><c>true</c> if this instance is muted; otherwise, <c>false</c>.</value>
-        public bool IsMuted { get; set; }
-
-        /// <summary>
-        /// Gets or sets the volume level, on a scale of 0-100
-        /// </summary>
-        /// <value>The volume level.</value>
-        public int? VolumeLevel { get; set; }
-
-        public int? NowPlayingAudioStreamIndex { get; set; }
-
-        public int? NowPlayingSubtitleStreamIndex { get; set; }
+        public BaseItemInfo NowPlayingItem { get; set; }
         
         /// <summary>
         /// Gets or sets the device id.

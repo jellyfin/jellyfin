@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
@@ -68,7 +69,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        Task OnPlaybackStart(PlaybackInfo info);
+        Task OnPlaybackStart(PlaybackStartInfo info);
 
         /// <summary>
         /// Used to report playback progress for an item
@@ -91,7 +92,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <returns>Task.</returns>
-        Task ReportSessionEnded(Guid sessionId);
+        Task ReportSessionEnded(string sessionId);
 
         /// <summary>
         /// Gets the session info dto.
@@ -108,7 +109,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendGeneralCommand(Guid controllingSessionId, Guid sessionId, GeneralCommand command, CancellationToken cancellationToken);
+        Task SendGeneralCommand(string controllingSessionId, string sessionId, GeneralCommand command, CancellationToken cancellationToken);
         
         /// <summary>
         /// Sends the message command.
@@ -118,7 +119,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageCommand(Guid controllingSessionId, Guid sessionId, MessageCommand command, CancellationToken cancellationToken);
+        Task SendMessageCommand(string controllingSessionId, string sessionId, MessageCommand command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the play command.
@@ -128,7 +129,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendPlayCommand(Guid controllingSessionId, Guid sessionId, PlayRequest command, CancellationToken cancellationToken);
+        Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the browse command.
@@ -138,7 +139,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendBrowseCommand(Guid controllingSessionId, Guid sessionId, BrowseRequest command, CancellationToken cancellationToken);
+        Task SendBrowseCommand(string controllingSessionId, string sessionId, BrowseRequest command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the playstate command.
@@ -148,7 +149,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendPlaystateCommand(Guid controllingSessionId, Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken);
+        Task SendPlaystateCommand(string controllingSessionId, string sessionId, PlaystateRequest command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the restart required message.
@@ -176,15 +177,31 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        void AddAdditionalUser(Guid sessionId, Guid userId);
+        void AddAdditionalUser(string sessionId, Guid userId);
 
         /// <summary>
         /// Removes the additional user.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        void RemoveAdditionalUser(Guid sessionId, Guid userId);
+        void RemoveAdditionalUser(string sessionId, Guid userId);
 
+        /// <summary>
+        /// Reports the now viewing item.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="context">The context.</param>
+        void ReportNowViewingItem(string sessionId, string itemId, string context);
+
+        /// <summary>
+        /// Reports the now viewing item.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="context">The context.</param>
+        void ReportNowViewingItem(string sessionId, BaseItemInfo item, string context);
+        
         /// <summary>
         /// Authenticates the new session.
         /// </summary>
@@ -203,6 +220,6 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="capabilities">The capabilities.</param>
-        void ReportCapabilities(Guid sessionId, SessionCapabilities capabilities);
+        void ReportCapabilities(string sessionId, SessionCapabilities capabilities);
     }
 }
