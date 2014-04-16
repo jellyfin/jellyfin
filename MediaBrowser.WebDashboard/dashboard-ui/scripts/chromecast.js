@@ -965,6 +965,8 @@
 
         self.isPaused = false;
 
+        self.isMuted = false;
+
         self.playlist = [];
 
         self.playlistIndex = 0;
