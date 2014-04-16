@@ -52,6 +52,12 @@ namespace MediaBrowser.Model.Session
         public string UserId { get; set; }
 
         /// <summary>
+        /// Gets or sets the user primary image tag.
+        /// </summary>
+        /// <value>The user primary image tag.</value>
+        public Guid? UserPrimaryImageTag { get; set; }
+        
+        /// <summary>
         /// Gets or sets the name of the user.
         /// </summary>
         /// <value>The name of the user.</value>
@@ -164,12 +170,6 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value><c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>
         public bool SupportsRemoteControl { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports navigation commands].
-        /// </summary>
-        /// <value><c>true</c> if [supports navigation commands]; otherwise, <c>false</c>.</value>
-        public bool SupportsNavigationControl { get; set; }
         
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -203,10 +203,12 @@ namespace MediaBrowser.Model.Session
     public class ClientCapabilities
     {
         public List<string> PlayableMediaTypes { get; set; }
+        public List<string> SupportedCommands { get; set; }
 
         public ClientCapabilities()
         {
             PlayableMediaTypes = new List<string>();
+            SupportedCommands = new List<string>();
         }
     }
 }

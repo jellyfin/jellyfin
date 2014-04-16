@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
@@ -444,6 +445,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 MediaSourceId = info.MediaSourceId
 
             }, _logger);
+
+            await SendPlaybackStartNotification(session, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -583,6 +586,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 MediaSourceId = mediaSourceId
 
             }, _logger);
+
+            await SendPlaybackStoppedNotification(session, CancellationToken.None).ConfigureAwait(false);
         }
 
         private string GetMediaSourceId(BaseItem item, string reportedMediaSourceId)
@@ -858,12 +863,17 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendBrowseCommand(Guid controllingSessionId, Guid sessionId, BrowseRequest command, CancellationToken cancellationToken)
         {
-            var session = GetSessionForRemoteControl(sessionId);
+            var generalCommand = new GeneralCommand
+            {
+                Name = GeneralCommandType.DisplayContent.ToString()
+            };
 
-            var controllingSession = GetSession(controllingSessionId);
-            AssertCanControl(session, controllingSession);
+            generalCommand.Arguments["Context"] = command.Context;
+            generalCommand.Arguments["ItemId"] = command.ItemId;
+            generalCommand.Arguments["ItemName"] = command.ItemName;
+            generalCommand.Arguments["ItemType"] = command.ItemType;
 
-            return session.SessionController.SendBrowseCommand(command, cancellationToken);
+            return SendGeneralCommand(controllingSessionId, sessionId, generalCommand, cancellationToken);
         }
 
         public Task SendPlaystateCommand(Guid controllingSessionId, Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken)
@@ -972,7 +982,6 @@ namespace MediaBrowser.Server.Implementations.Session
             return Task.WhenAll(tasks);
         }
 
-
         public Task SendSessionEndedNotification(SessionInfo sessionInfo, CancellationToken cancellationToken)
         {
             var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
@@ -987,6 +996,48 @@ namespace MediaBrowser.Server.Implementations.Session
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error in SendSessionEndedNotification.", ex);
+                }
+
+            }, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
+
+        public Task SendPlaybackStartNotification(SessionInfo sessionInfo, CancellationToken cancellationToken)
+        {
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
+            var dto = GetSessionInfoDto(sessionInfo);
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendPlaybackStartNotification(dto, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in SendPlaybackStartNotification.", ex);
+                }
+
+            }, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
+
+        public Task SendPlaybackStoppedNotification(SessionInfo sessionInfo, CancellationToken cancellationToken)
+        {
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
+            var dto = GetSessionInfoDto(sessionInfo);
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendPlaybackStoppedNotification(dto, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in SendPlaybackStoppedNotification.", ex);
                 }
 
             }, cancellationToken));
@@ -1131,6 +1182,13 @@ namespace MediaBrowser.Server.Implementations.Session
             if (session.UserId.HasValue)
             {
                 dto.UserId = session.UserId.Value.ToString("N");
+
+                var user = _userManager.GetUserById(session.UserId.Value);
+
+                if (user != null)
+                {
+                    dto.UserPrimaryImageTag = GetImageCacheTag(user, ImageType.Primary);
+                }
             }
 
             return dto;
@@ -1158,19 +1216,84 @@ namespace MediaBrowser.Server.Implementations.Session
                 MediaType = item.MediaType,
                 Type = item.GetClientTypeName(),
                 RunTimeTicks = nowPlayingRuntimeTicks,
-                MediaSourceId = mediaSourceId
+                MediaSourceId = mediaSourceId,
+                IndexNumber = item.IndexNumber,
+                ParentIndexNumber = item.ParentIndexNumber,
+                PremiereDate = item.PremiereDate,
+                ProductionYear = item.ProductionYear
             };
 
             info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary);
+            if (info.PrimaryImageTag.HasValue)
+            {
+                info.PrimaryImageItemId = GetDtoId(item);
+            }
 
+            var episode = item as Episode;
+            if (episode != null)
+            {
+                info.IndexNumberEnd = episode.IndexNumberEnd;
+            }
+
+            var hasSeries = item as IHasSeries;
+            if (hasSeries != null)
+            {
+                info.SeriesName = hasSeries.SeriesName;
+            }
+
+            var recording = item as ILiveTvRecording;
+            if (recording != null && recording.RecordingInfo != null)
+            {
+                if (recording.RecordingInfo.IsSeries)
+                {
+                    info.Name = recording.RecordingInfo.EpisodeTitle;
+                    info.SeriesName = recording.RecordingInfo.Name;
+
+                    if (string.IsNullOrWhiteSpace(info.Name))
+                    {
+                        info.Name = recording.RecordingInfo.Name;
+                    }
+                }
+            }
+
+            var audio = item as Audio;
+            if (audio != null)
+            {
+                info.Album = audio.Album;
+                info.Artists = audio.Artists;
+
+                if (!info.PrimaryImageTag.HasValue)
+                {
+                    var album = audio.Parents.OfType<MusicAlbum>().FirstOrDefault();
+
+                    if (album != null && album.HasImage(ImageType.Primary))
+                    {
+                        info.PrimaryImageTag = GetImageCacheTag(album, ImageType.Primary);
+                        if (info.PrimaryImageTag.HasValue)
+                        {
+                            info.PrimaryImageItemId = GetDtoId(album);
+                        }
+                    }
+                }
+            }
+
+            var musicVideo = item as MusicVideo;
+            if (musicVideo != null)
+            {
+                info.Album = musicVideo.Album;
+
+                if (!string.IsNullOrWhiteSpace(musicVideo.Artist))
+                {
+                    info.Artists.Add(musicVideo.Artist);
+                }
+            }
+            
             var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;
 
             var thumbItem = item.HasImage(ImageType.Thumb) ? item : null;
 
             if (thumbItem == null)
             {
-                var episode = item as Episode;
-
                 if (episode != null)
                 {
                     var series = episode.Series;
@@ -1184,8 +1307,6 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (backropItem == null)
             {
-                var episode = item as Episode;
-
                 if (episode != null)
                 {
                     var series = episode.Series;
@@ -1195,6 +1316,11 @@ namespace MediaBrowser.Server.Implementations.Session
                         backropItem = series;
                     }
                 }
+            }
+
+            if (backropItem == null)
+            {
+                backropItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Backdrop));
             }
 
             if (thumbItem == null)
@@ -1208,7 +1334,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 info.ThumbItemId = GetDtoId(thumbItem);
             }
 
-            if (thumbItem != null)
+            if (backropItem != null)
             {
                 info.BackdropImageTag = GetImageCacheTag(backropItem, ImageType.Backdrop);
                 info.BackdropItemId = GetDtoId(backropItem);

@@ -9,11 +9,8 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -64,7 +61,7 @@ namespace MediaBrowser.Providers.Music
             return result;
         }
 
-        protected virtual async Task FetchLastfmData(MusicArtist item, string musicBrainzId, CancellationToken cancellationToken)
+        protected async Task FetchLastfmData(MusicArtist item, string musicBrainzId, CancellationToken cancellationToken)
         {
             // Get artist info with provided id
             var url = RootUrl + String.Format("method=artist.getInfo&mbid={0}&api_key={1}&format=json", UrlEncode(musicBrainzId), ApiKey);

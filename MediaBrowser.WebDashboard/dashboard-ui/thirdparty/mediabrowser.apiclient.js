@@ -1728,6 +1728,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.reportCapabilities = function (options) {
+
+            var url = self.getUrl("Sessions/Capabilities", options);
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
         self.updateItemImageIndex = function (itemId, itemType, itemName, imageType, imageIndex, newIndex) {
 
             if (!imageType) {
@@ -2198,6 +2208,28 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        function normalizeImageOptions(options) {
+
+            var ratio = window.devicePixelRatio;
+
+            if (ratio) {
+
+                if (options.width) {
+                    options.width = options.width * ratio;
+                }
+                if (options.height) {
+                    options.height = options.height * ratio;
+                }
+                if (options.maxWidth) {
+                    options.maxWidth = options.maxWidth * ratio;
+                }
+                if (options.maxHeight) {
+                    options.maxHeight = options.maxHeight * ratio;
+                }
+            }
+
+        }
+
         /**
          * Constructs a url for a user image
          * @param {String} userId
@@ -2229,6 +2261,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             // Don't put these on the query string
             delete options.type;
             delete options.index;
+
+            normalizeImageOptions(options);
 
             return self.getUrl(url, options);
         };
@@ -2265,215 +2299,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             delete options.type;
             delete options.index;
 
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a year image
-         * @param {String} year
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getYearImageUrl = function (year, options) {
-
-            if (!year) {
-                throw new Error("null year");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "Years/" + year + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a genre image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getGenreImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "Genres/" + self.encodeName(name) + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a genre image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getMusicGenreImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "MusicGenres/" + self.encodeName(name) + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a genre image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getGameGenreImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "GameGenres/" + self.encodeName(name) + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a artist image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getArtistImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "Artists/" + self.encodeName(name) + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a studio image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getStudioImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "Studios/" + self.encodeName(name) + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
+            normalizeImageOptions(options);
 
             return self.getUrl(url, options);
         };
@@ -2498,9 +2324,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("itemId cannot be empty");
             }
 
-            options = options || {
-
-            };
+            options = options || {};
 
             var url = "Items/" + itemId + "/Images/" + options.type;
 
@@ -3183,10 +3007,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        /**
-         * Gets theme songs for an item
-         */
-        self.getThemeSongs = function (userId, itemId) {
+        self.getThemeMedia = function (userId, itemId, inherit) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -3198,28 +3019,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 options.userId = userId;
             }
 
-            var url = self.getUrl("Items/" + itemId + "/ThemeSongs", options);
+            options.InheritFromParent = inherit || false;
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getThemeVideos = function (userId, itemId) {
-
-            if (!itemId) {
-                throw new Error("null itemId");
-            }
-
-            var options = {};
-
-            if (userId) {
-                options.userId = userId;
-            }
-
-            var url = self.getUrl("Items/" + itemId + "/ThemeVideos", options);
+            var url = self.getUrl("Items/" + itemId + "/ThemeMedia", options);
 
             return self.ajax({
                 type: "GET",
@@ -3944,24 +3746,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.sendBrowseCommand = function (sessionId, options) {
-
-            if (!sessionId) {
-                throw new Error("null sessionId");
-            }
-
-            if (!options) {
-                throw new Error("null options");
-            }
-
-            var url = self.getUrl("Sessions/" + sessionId + "/Viewing", options);
-
-            return self.ajax({
-                type: "POST",
-                url: url
-            });
-        };
-
         self.sendPlayCommand = function (sessionId, options) {
 
             if (!sessionId) {
@@ -3980,7 +3764,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.sendSystemCommand = function (sessionId, command) {
+        self.sendCommand = function (sessionId, command, options) {
 
             if (!sessionId) {
                 throw new Error("null sessionId");
@@ -3990,12 +3774,22 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null command");
             }
 
-            var url = self.getUrl("Sessions/" + sessionId + "/System/" + command);
+            var url = self.getUrl("Sessions/" + sessionId + "/Command");
 
-            return self.ajax({
+            var ajaxOptions = {
                 type: "POST",
                 url: url
-            });
+            };
+
+            options = {
+                Arguments: options || {},
+                Name: command
+            };
+
+            ajaxOptions.data = JSON.stringify(options);
+            ajaxOptions.contentType = "application/json";
+
+            return self.ajax(ajaxOptions);
         };
 
         self.sendMessageCommand = function (sessionId, options) {

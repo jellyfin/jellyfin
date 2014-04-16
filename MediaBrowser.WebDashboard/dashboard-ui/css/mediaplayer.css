@@ -1,20 +1,8 @@
 ﻿/* Now playing bar */
 .nowPlayingBar {
-    padding: 6px 0 20px 0;
+    padding: 6px 0 14px 0;
     border-top: 2px solid green;
 }
-
-    .nowPlayingBar .barBackground {
-        border-top: 2px solid green;
-        position: absolute;
-        margin: -8px -0.5em -22px !important;
-        width: 100%;
-        height: 100%;
-    }
-
-    .nowPlayingBar > *:not(#mediaElement):not(.mediaFlyoutContainer):not(.barBackground ) {
-        position: relative;
-    }
 
 .nowPlayingBarImage {
     vertical-align: bottom;
@@ -29,26 +17,31 @@
     position: relative;
 }
 
-.nowPlayingMediaInfo div {
-    display: inline-block;
-}
-
-.nowPlayingMediaInfo a {
-    margin-right: .25em;
-}
-
-
-.nowPlayingMediaInfo {
-    display: inline-block;
-}
-
 .nowPlayingText {
-    position: relative;
-    top: -3px;
-    margin-left: 3px;
-    margin-right: 2em;
+    display: inline-block;
     font-weight: normal;
+    position: relative;
+    top: -7px;
+    margin-left: 3px;
+    max-width: 200px;
+    overflow: hidden;
+    margin-right: 2em;
+    white-space: nowrap;
 }
+
+.nowPlayingDoubleText {
+    top: -3px;
+}
+
+.nowPlayingImage {
+    display: inline-block;
+}
+
+    .nowPlayingImage img {
+        height: 40px;
+        margin-right: .5em;
+        vertical-align: bottom;
+    }
 
 .mediaButton img {
     height: 24px;
@@ -60,8 +53,11 @@
     top: -10px;
     max-width: 110px;
     margin-right: 2em;
-    font-size: 14px;
     font-weight: normal;
+}
+
+.nowPlayingBar .currentTime {
+    top: -15px;
 }
 
 .mediaSlider {
@@ -79,8 +75,8 @@
     width: 130px;
 }
 
-#nowPlayingBar .positionSliderContainer {
-    margin-top: 8px;
+#nowPlayingBar .sliderContainer {
+    margin-top: 14px;
 }
 
 .volumeSliderContainer {
@@ -127,129 +123,44 @@ input[type="range"]::-ms-fill-upper {
 }
 
 @media all and (max-width: 800px) {
-    #nowPlayingBar .volumeButton, #nowPlayingBar .volumeSliderContainer, #nowPlayingBar .muteButton, #nowPlayingBar .unmuteButton, #nowPlayingBar .nowPlayingMediaInfo {
-        display: none; /*!important;*/
-    }
-}
 
-@media all and (max-width: 650px) {
-    #nowPlayingBar .nowPlayingMediaInfo {
-        display: none;
-    }
-}
-
-@media all and (max-width: 600px) {
-    #nowPlayingBar .chaptersButton, #nowPlayingBar .audioTracksButton {
-        display: none; /*!important;*/
+    #nowPlayingBar .mediaButton {
+        margin-top: 0;
+        margin-bottom: 0;
     }
 
-    #nowPlayingBar .positionSliderContainer, #nowPlayingBar .currentTime {
-        top: 0!important;
-        position: relative!important;
-    }
-}
+        #nowPlayingBar .mediaButton:not(#playButton):not(#pauseButton) {
+            display: none;
+        }
 
-@media all and (max-width: 500px) {
-    #nowPlayingBar .positionSliderContainer {
-        width: 80px;
+    #nowPlayingBar #playButton, #nowPlayingBar #pauseButton {
+        float: right;
     }
 
-    #nowPlayingBar .previousTrackButton, #nowPlayingBar .nextTrackButton {
-        display: none; /*!important;*/
-    }
-}
-
-@media all and (max-width: 400px) {
-    #nowPlayingBar .playlistButton {
-        display: none; /*!important;*/
-    }
-}
-
-.mediaFlyoutContainer {
-    display: inline-block;
-}
-
-.mediaPlayerFlyout {
-    width: 200px;
-    color: #000;
-    background-color: #fff;
-    border: 1px solid #999;
-    position: absolute;
-    z-index: 99999;
-    bottom: 78px;
-    margin-left: -125px;
-    max-height: 300px;
-    overflow-y: auto;
-    font-size: 13px;
-}
-
-.chaptersFlyout,.audioTracksFlyout {
-    width: 250px;
-    margin-left: -150px;
-}
-
-.mediaFlyoutOption {
-    display: block;
-    text-decoration: none;
-    color: #000;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-}
-
-    .mediaFlyoutOption:hover, .mediaFlyoutOption:focus {
-        background-color: #eee;
+    #nowPlayingBar .currentTime, #nowPlayingBar .positionSliderContainer, #nowPlayingBar .volumeSliderContainer, #nowPlayingBar .muteButton, #nowPlayingBar .unmuteButton {
+        display: none !important;
     }
 
-.selectedMediaFlyoutOption {
-    background-color: #d9F4FF;
-    background-image: url(images/media/selected.png);
-    background-repeat: no-repeat;
-    background-position: right top;
-    background-size: 16px 16px;
-}
-
-.mediaFlyoutOptionImage {
-    display: inline-block;
-    width: 15%;
-    vertical-align: middle;
-}
-
-    .mediaFlyoutOptionImage + .mediaFlyoutOptionContent {
-        vertical-align: top;
-        display: inline-block;
-        width: 85%;
+    .nowPlayingBar {
+        padding: 10px 5px 10px 0;
     }
-
-.chaptersFlyout .mediaFlyoutOptionImage {
-    width: 40%;
-}
-
-    .chaptersFlyout .mediaFlyoutOptionImage + .mediaFlyoutOptionContent {
-        width: 60%;
-    }
-
-.mediaFlyoutOptionName {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    padding-left: 5px;
-    font-size: 13px;
-    font-weight: normal;
-}
-
-.mediaFlyoutOptionSecondaryText {
-    font-size: 13px;
-    color: #333;
-    font-weight: normal;
-    margin-top: 3px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    padding-left: 5px;
 }
 
 @media (min-width: 1440px) {
     #nowPlayingBar .positionSliderContainer {
         width: 300px;
     }
+}
+
+.mediaPlayerAudioContainer {
+    position: fixed;
+    top: 40%;
+    text-align: center;
+    left: 0;
+    right: 0;
+}
+
+.mediaPlayerAudioContainerInner {
+    padding: 1em;
+    background: #222;
 }

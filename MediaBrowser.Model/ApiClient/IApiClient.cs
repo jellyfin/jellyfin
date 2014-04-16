@@ -62,11 +62,10 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Reports the capabilities.
         /// </summary>
-        /// <param name="sessionId">The session identifier.</param>
         /// <param name="capabilities">The capabilities.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ReportCapabilities(string sessionId, ClientCapabilities capabilities, CancellationToken cancellationToken);
+        Task ReportCapabilities(ClientCapabilities capabilities, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the index of the game players.
@@ -771,6 +770,13 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>System.String.</returns>
         string GetImageUrl(ProgramInfoDto item, ImageOptions options);
 
+        /// <summary>
+        /// Gets the subtitle URL.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        string GetSubtitleUrl(SubtitleOptions options);
+        
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>

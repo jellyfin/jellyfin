@@ -96,14 +96,14 @@
 
             var id = $('#selectSession', popup).val();
 
-            ApiClient.sendSystemCommand(id, 'GoHome');
+            ApiClient.sendCommand(id, 'GoHome');
         });
 
         $('.btnGoToSettings', popup).on('click', function () {
 
             var id = $('#selectSession', popup).val();
 
-            ApiClient.sendSystemCommand(id, 'GoToSettings');
+            ApiClient.sendCommand(id, 'GoToSettings');
         });
 
         $('.btnSendMessage', popup).on('click', function () {
@@ -129,21 +129,21 @@
 
             var id = $('#selectSession', popup).val();
 
-            ApiClient.sendSystemCommand(id, 'VolumeDown');
+            ApiClient.sendCommand(id, 'VolumeDown');
         });
 
         $('.btnVolumeUp', popup).on('click', function () {
 
             var id = $('#selectSession', popup).val();
 
-            ApiClient.sendSystemCommand(id, 'VolumeUp');
+            ApiClient.sendCommand(id, 'VolumeUp');
         });
 
         $('.btnToggleMute', popup).on('click', function () {
 
             var id = $('#selectSession', popup).val();
 
-            ApiClient.sendSystemCommand(id, 'ToggleMute');
+            ApiClient.sendCommand(id, 'ToggleMute');
         });
 
         $('.btnStop', popup).on('click', function () {
@@ -432,6 +432,20 @@
         ApiClient.sendPlayCommand(sessionId, remoteOptions);
     }
 
+    function sendPlayStateCommand(command, options) {
+
+        var sessionId = MediaController.getPlayerInfo().id;
+
+        ApiClient.sendPlayStateCommand(sessionId, command, options);
+    }
+
+    function sendCommand(command, options) {
+
+        var sessionId = MediaController.getPlayerInfo().id;
+
+        ApiClient.sendCommand(sessionId, command, options);
+    }
+
     function remoteControlPlayer() {
 
         var self = this;
@@ -469,19 +483,126 @@
         };
 
         self.stop = function () {
+            sendPlayStateCommand('stop');
+        };
 
+        self.nextTrack = function () {
+            sendPlayStateCommand('nextTrack');
+        };
+
+        self.previousTrack = function () {
+            sendPlayStateCommand('previousTrack');
+        };
+
+        self.seek = function (positionTicks) {
+            sendPlayStateCommand('seek',
+                {
+                    SeekPositionTicks: positionTicks
+                });
+        };
+
+        self.pause = function () {
+            sendPlayStateCommand('Pause');
+        };
+
+        self.unpause = function () {
+            sendPlayStateCommand('Unpause');
         };
 
         self.mute = function () {
-
+            sendCommand('Mute');
         };
 
         self.unMute = function () {
-
+            sendCommand('Unmnute');
         };
 
         self.toggleMute = function () {
+            sendCommand('ToggleMute');
+        };
 
+        self.setVolume = function (vol) {
+            sendCommand('SetVolume', {
+
+                Volume: vol
+
+            });
+        };
+
+        self.displayContent = function (options) {
+
+            sendCommand('DisplayContent', {
+
+                ItemName: options.itemName,
+                ItemType: options.itemType,
+                ItemId: options.itemId,
+                Context: options.context
+
+            });
+        };
+
+        self.getPlayerState = function () {
+
+            var deferred = $.Deferred();
+
+            ApiClient.getSessions().done(function (sessions) {
+
+                var currentTargetId = MediaController.getPlayerInfo().id;
+
+                // Update existing data
+                //updateSessionInfo(popup, msg.Data);
+                var session = sessions.filter(function (s) {
+                    return s.Id == currentTargetId;
+                })[0];
+                
+                if (session) {
+                    session = getPlayerState(session);
+                }
+
+                deferred.resolveWith(null, [session]);
+            });
+
+            return deferred.promise();
+        };
+
+        function subscribeToPlayerUpdates() {
+
+            if (ApiClient.isWebSocketOpen()) {
+
+                ApiClient.sendWebSocketMessage("SessionsStart", "100,700");
+            }
+        }
+
+        function unsubscribeFromPlayerUpdates() {
+
+            if (ApiClient.isWebSocketOpen()) {
+
+                ApiClient.sendWebSocketMessage("SessionsStop");
+            }
+        }
+
+        var playerListenerCount = 0;
+        self.beginPlayerUpdates = function () {
+
+            if (playerListenerCount <= 0) {
+
+                playerListenerCount = 0;
+
+                subscribeToPlayerUpdates();
+            }
+
+            playerListenerCount++;
+        };
+
+        self.endPlayerUpdates = function () {
+
+            playerListenerCount--;
+
+            if (playerListenerCount <= 0) {
+
+                unsubscribeFromPlayerUpdates();
+                playerListenerCount = 0;
+            }
         };
 
         self.getTargets = function () {
@@ -506,7 +627,8 @@
                         playerName: self.name,
                         appName: s.Client,
                         playableMediaTypes: s.PlayableMediaTypes,
-                        isLocalPlayer: false
+                        isLocalPlayer: false,
+                        supportedCommands: s.SupportedCommands
                     };
                 });
 
@@ -521,17 +643,87 @@
         };
     }
 
-    MediaController.registerPlayer(new remoteControlPlayer());
+    var player = new remoteControlPlayer();
+
+    MediaController.registerPlayer(player);
+
+    function getPlayerState(session) {
+
+        var state = {
+            volumeLevel: session.VolumeLevel,
+            isMuted: session.IsMuted,
+            isPaused: session.IsPaused,
+            canSeek: session.CanSeek
+        };
+
+        var item = session.NowPlayingItem;
+
+        if (item) {
+
+            state.itemId = item.Id;
+            state.mediaType = item.MediaType;
+            state.itemType = item.Type;
+            state.indexNumber = item.IndexNumber;
+            state.indexNumberEnd = item.IndexNumberEnd;
+            state.parentIndexNumber = item.ParentIndexNumber;
+            state.productionYear = item.ProductionYear;
+            state.premiereDate = item.PremiereDate;
+            state.seriesName = item.SeriesName;
+            state.album = item.Album;
+            state.itemName = item.Name;
+            state.artists = item.Artists;
+
+            state.primaryImageItemId = item.PrimaryImageItemId;
+            state.primaryImageTag = item.PrimaryImageTag;
+
+            state.backdropItemId = item.BackdropItemId;
+            state.backdropImageTag = item.BackdropImageTag;
+
+            state.thumbItemId = item.ThumbItemId;
+            state.thumbImageTag = item.ThumbImageTag;
+
+            state.mediaSource = item.MediaSourceId;
+            state.positionTicks = session.NowPlayingPositionTicks || 0;
+            state.runtimeTicks = item.RunTimeTicks;
+        }
+
+        return state;
+    }
+
+    function firePlaybackEvent(name, session) {
+
+        $(player).trigger(name, [getPlayerState(session)]);
+    }
 
     function onWebSocketMessageReceived(e, msg) {
 
-        if (msg.MessageType === "SessionEnded") {
+        if (msg.MessageType === "Sessions") {
+
+            var currentTargetId = MediaController.getPlayerInfo().id;
+
+            // Update existing data
+            //updateSessionInfo(popup, msg.Data);
+            var session = msg.Data.filter(function (s) {
+                return s.Id == currentTargetId;
+            })[0];
+
+            if (session) {
+                firePlaybackEvent('playstatechange', session);
+            }
+        }
+        else if (msg.MessageType === "SessionEnded") {
 
             console.log("Server reports another session ended");
 
             if (MediaController.getPlayerInfo().id == msg.Data.Id) {
                 MediaController.setDefaultPlayerActive();
             }
+        }
+        else if (msg.MessageType === "PlaybackStart") {
+            firePlaybackEvent('playbackstart', msg.Data);
+        }
+        else if (msg.MessageType === "PlaybackStopped") {
+            firePlaybackEvent('playbackstop', msg.Data);
         }
     }
 

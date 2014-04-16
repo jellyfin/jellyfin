@@ -101,7 +101,7 @@
       <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Dlna\MediaBrowser.Dlna.csproj">
-      <Project>{734098eb-6dc1-4dd0-a1ca-3140dcd2737c}</Project>
+      <Project>{734098EB-6DC1-4DD0-A1CA-3140DCD2737C}</Project>
       <Name>MediaBrowser.Dlna</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
@@ -123,6 +123,10 @@
     <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">
       <Project>{4FD51AC5-2C16-4308-A993-C3A84F3B4582}</Project>
       <Name>MediaBrowser.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj">
+      <Project>{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}</Project>
+      <Name>MediaBrowser.MediaEncoding</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

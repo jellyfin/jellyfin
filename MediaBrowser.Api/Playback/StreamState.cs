@@ -67,10 +67,13 @@ namespace MediaBrowser.Api.Playback
         public string AudioSync = "1";
         public string VideoSync = "vfr";
 
+        public List<string> SupportedAudioCodecs { get; set; }
+
         public StreamState(ILiveTvManager liveTvManager, ILogger logger)
         {
             _liveTvManager = liveTvManager;
             _logger = logger;
+            SupportedAudioCodecs = new List<string>();
         }
 
         public string InputAudioSync { get; set; }

@@ -16,6 +16,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Reflection;
+using System.Linq;
 // MONOMKBUNDLE: For the embedded version, mkbundle tool
 #if MONOMKBUNDLE
 using Mono.Unix;
@@ -39,8 +40,13 @@ namespace MediaBrowser.Server.Mono
 			#else
 			var applicationPath = Assembly.GetEntryAssembly ().Location;
 			#endif
+			
+			var commandArgs = Environment.GetCommandLineArgs();
+			
+			// Allow this to be specified on the command line.
+			var customProgramDataPath = commandArgs.ElementAtOrDefault(1);
 
-			var appPaths = CreateApplicationPaths(applicationPath);
+			var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
 
 			var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
 			logManager.ReloadLogger(LogSeverity.Info);
@@ -70,9 +76,14 @@ namespace MediaBrowser.Server.Mono
 			}
 		}
 
-		private static ServerApplicationPaths CreateApplicationPaths(string applicationPath)
+		private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)
 		{
-			return new ServerApplicationPaths(applicationPath);
+			if (string.IsNullOrEmpty(programDataPath))
+			{
+				return new ServerApplicationPaths(applicationPath);
+			}
+			
+			return new ServerApplicationPaths(programDataPath, applicationPath);
 		}
 
 		/// <summary>

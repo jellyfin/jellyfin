@@ -10,7 +10,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class Audio
     /// </summary>
-    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<SongInfo>, IHasSeries
+    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<SongInfo>
     {
         public Audio()
         {
@@ -48,15 +48,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             get
             {
                 return Parents.OfType<MusicAlbum>().FirstOrDefault() ?? new MusicAlbum { Name = "<Unknown>" };
-            }
-        }
-
-        [IgnoreDataMember]
-        public string SeriesName
-        {
-            get
-            {
-                return Album;
             }
         }
 

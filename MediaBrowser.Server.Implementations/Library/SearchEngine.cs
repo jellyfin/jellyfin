@@ -31,9 +31,21 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public async Task<QueryResult<SearchHintInfo>> GetSearchHints(SearchQuery query)
         {
-            var user = _userManager.GetUserById(new Guid(query.UserId));
+            IEnumerable<BaseItem> inputItems;
 
-            var inputItems = user.RootFolder.GetRecursiveChildren(user, null).Where(i => !(i is ICollectionFolder));
+            if (string.IsNullOrEmpty(query.UserId))
+            {
+                inputItems = _libraryManager.RootFolder.RecursiveChildren;
+            }
+            else
+            {
+                var user = _userManager.GetUserById(new Guid(query.UserId));
+
+                inputItems = user.RootFolder.GetRecursiveChildren(user, null);
+            }
+
+
+            inputItems = inputItems.Where(i => !(i is ICollectionFolder));
 
             inputItems = _libraryManager.ReplaceVideosWithPrimaryVersions(inputItems);
 

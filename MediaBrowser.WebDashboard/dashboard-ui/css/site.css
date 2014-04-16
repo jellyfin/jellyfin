@@ -655,24 +655,6 @@ h1 .imageLink {
     top: -3px;
 }
 
-/* Dashboard home */
-.tblConnections td {
-    padding: 1em 0 1em .75em;
-    vertical-align: top;
-}
-
-    .tblConnections td:first-child {
-        padding-left: 0;
-    }
-
-.tblConnections img:not(.clientNowPlayingImage) {
-    height: 28px;
-}
-
-.clientNowPlayingImage {
-    height: 52px;
-}
-
 /* Footer */
 #footer {
     position: fixed;
@@ -870,3 +852,142 @@ progress {
     .btnShowStatusMessage:hover {
         text-decoration: underline;
     }
+
+.activeSession {
+    display: inline-block;
+    position: relative;
+    margin: 5px;
+    width: 250px;
+    height: 140.625px;
+}
+
+.sessionNowPlayingContent {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 3px;
+}
+
+.sessionNowPlayingInnerContent {
+    background-color: rgba(0, 0, 0, .6);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color: #fff;
+    font-weight: 400;
+    border-radius: 3px;
+}
+
+.sessionAppInfo {
+    padding: .5em;
+    overflow: hidden;
+}
+
+.sessionAppName {
+    vertical-align: top;
+    max-width: 200px;
+}
+
+.sessionUserInfo {
+    position: absolute;
+    right: 0;
+    bottom: 7px;
+    padding: .5em;
+    text-align: right;
+}
+
+    .sessionUserInfo img {
+        height: 24px;
+    }
+
+.sessionNowPlayingInfo {
+    position: absolute;
+    left: 0;
+    bottom: 7px;
+    padding: .5em;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sessionAppInfo img {
+    max-width: 32px;
+    max-height: 32px;
+    margin-right: 5px;
+}
+
+.activeSession progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 7px;
+    width: 100%;
+    opacity: .95;
+}
+
+.notPlayingSession .sessionNowPlayingContent {
+    display: none;
+}
+
+.notPlayingSession .sessionNowPlayingInnerContent {
+    background-color: #f0f0f0;
+    color: #000;
+}
+
+.notPlayingSession .sessionUserInfo, .notPlayingSession .sessionNowPlayingInfo {
+    bottom: 0;
+}
+
+.activeSession:hover {
+    -moz-box-shadow: 0 0 20px 1px #38c;
+    -webkit-box-shadow: 0 0 20px 1px #38c;
+    box-shadow: 0 0 20px 1px #38c;
+}
+
+@media all and (max-width: 1000px) {
+
+    .activeSession {
+        width: 230px;
+        height: 129.375px;
+    }
+}
+
+@media all and (max-width: 550px) {
+
+    .activeSession {
+        width: 210px;
+        height: 118.125px;
+    }
+
+    .sessionAppName {
+        max-width: 160px;
+    }
+}
+
+@media all and (max-width: 500px) {
+
+    .activeSession {
+        width: 200px;
+        height: 112.5px;
+    }
+
+    .sessionAppName {
+        max-width: 150px;
+    }
+}
+
+@media all and (max-width: 400px) {
+
+    .activeSession {
+        width: 250px;
+        height: 140.625px;
+    }
+}

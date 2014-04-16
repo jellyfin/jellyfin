@@ -1,29 +1,11 @@
-﻿var SupporterPage = {
+﻿(function () {
 
-    onPageShow: function () {
-        SupporterPage.load();
-    },
+    $(document).on('pageshow', "#supporterPage", function () {
 
-    onPageHide: function () {
+        var page = this;
+        
+        $('#paypalReturnUrl', page).val(ApiClient.getUrl("supporterkey.html"));
 
-    },
+    });
 
-    load: function() {
-        Dashboard.showLoadingMsg();
-        var page = $.mobile.activePage;
-
-        ApiClient.getPluginSecurityInfo().done(function (info) {
-            $('#txtSupporterKey', page).val(info.SupporterKey);
-            if (info.IsMBSupporter) {
-                $('.supporterOnly', page).show();
-            } else {
-                $('.supporterOnly', page).hide();
-            }
-            $('#paypalReturnUrl', page).val(ApiClient.getUrl("supporterkey.html"));
-            Dashboard.hideLoadingMsg();
-        });
-    }
-};
-
-$(document).on('pageshow', "#supporterPage", SupporterPage.onPageShow)
-    .on('pagehide', "#supporterPage", SupporterPage.onPageHide);
+})();

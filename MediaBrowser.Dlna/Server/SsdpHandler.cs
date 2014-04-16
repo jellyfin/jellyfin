@@ -1,21 +1,26 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace MediaBrowser.Dlna.Server
 {
     public class SsdpHandler : IDisposable
     {
+        private readonly AutoResetEvent _datagramPosted = new AutoResetEvent(false);
+        private readonly ConcurrentQueue<Datagram> _messageQueue = new ConcurrentQueue<Datagram>();
+
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly string _serverSignature;
-        private bool _isDisposed = false;
+        private bool _isDisposed;
 
         const string SSDPAddr = "239.255.255.250";
         const int SSDPPort = 1900;
@@ -26,6 +31,9 @@ namespace MediaBrowser.Dlna.Server
         private UdpClient _udpClient;
 
         private readonly Dictionary<Guid, List<UpnpDevice>> _devices = new Dictionary<Guid, List<UpnpDevice>>();
+
+        private Timer _queueTimer;
+        private Timer _notificationTimer;
 
         public SsdpHandler(ILogger logger, IServerConfigurationManager config, string serverSignature)
         {
@@ -59,6 +67,8 @@ namespace MediaBrowser.Dlna.Server
             _udpClient.JoinMulticastGroup(_ssdpIp, 2);
             _logger.Info("SSDP service started");
             Receive();
+
+            StartNotificationTimer();
         }
 
         private void Receive()
@@ -137,7 +147,7 @@ namespace MediaBrowser.Dlna.Server
 
             foreach (var d in Devices)
             {
-                if (!string.IsNullOrEmpty(req) && req != d.Type)
+                if (!string.IsNullOrEmpty(req) && !string.Equals(req, d.Type, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -157,28 +167,67 @@ namespace MediaBrowser.Dlna.Server
             headers.Add("ST", dev.Type);
             headers.Add("USN", dev.USN);
 
-            SendDatagram(endpoint, String.Format("HTTP/1.1 200 OK\r\n{0}\r\n", headers.HeaderBlock), false);
+            var msg = String.Format("HTTP/1.1 200 OK\r\n{0}\r\n", headers.HeaderBlock);
+
+            SendDatagram(endpoint, dev.Address, msg, false);
+
             _logger.Info("{1} - Responded to a {0} request", dev.Type, endpoint);
         }
 
-        private void SendDatagram(IPEndPoint endpoint, string msg, bool sticky)
+        private void SendDatagram(IPEndPoint endpoint, IPAddress localAddress, string msg, bool sticky)
         {
             if (_isDisposed)
             {
                 return;
             }
-            //var dgram = new Datagram(endpoint, msg, sticky);
-            //if (messageQueue.Count == 0)
-            //{
-            //    dgram.Send();
-            //}
-            //messageQueue.Enqueue(dgram);
-            //queueTimer.Enabled = true;
+
+            var dgram = new Datagram(endpoint, localAddress, _logger, msg, sticky);
+            if (_messageQueue.Count == 0)
+            {
+                dgram.Send();
+            }
+            _messageQueue.Enqueue(dgram);
+            StartQueueTimer();
+        }
+
+        private void QueueTimerCallback(object state)
+        {
+            while (_messageQueue.Count != 0)
+            {
+                Datagram msg;
+                if (!_messageQueue.TryPeek(out msg))
+                {
+                    continue;
+                }
+
+                if (msg != null && (!_isDisposed || msg.Sticky))
+                {
+                    msg.Send();
+                    if (msg.SendCount > 2)
+                    {
+                        _messageQueue.TryDequeue(out msg);
+                    }
+                    break;
+                }
+
+                _messageQueue.TryDequeue(out msg);
+            }
+
+            _datagramPosted.Set();
+
+            if (_messageQueue.Count > 0)
+            {
+                StartQueueTimer();
+            }
+            else
+            {
+                DisposeQueueTimer();
+            }
         }
 
         private void NotifyAll()
         {
-            _logger.Debug("NotifyAll");
+            _logger.Debug("Sending alive notifications");
             foreach (var d in Devices)
             {
                 NotifyDevice(d, "alive", false);
@@ -197,64 +246,128 @@ namespace MediaBrowser.Dlna.Server
             headers.Add("NT", dev.Type);
             headers.Add("USN", dev.USN);
 
-            SendDatagram(_ssdpEndp, String.Format("NOTIFY * HTTP/1.1\r\n{0}\r\n", headers.HeaderBlock), sticky);
+            var msg = String.Format("NOTIFY * HTTP/1.1\r\n{0}\r\n", headers.HeaderBlock);
+
             _logger.Debug("{0} said {1}", dev.USN, type);
+            SendDatagram(_ssdpEndp, dev.Address, msg, sticky);
         }
 
-        private void RegisterNotification(Guid UUID, Uri Descriptor)
+        public void RegisterNotification(Guid uuid, Uri descriptor, IPAddress address)
         {
             List<UpnpDevice> list;
             lock (_devices)
             {
-                if (!_devices.TryGetValue(UUID, out list))
+                if (!_devices.TryGetValue(uuid, out list))
                 {
-                    _devices.Add(UUID, list = new List<UpnpDevice>());
+                    _devices.Add(uuid, list = new List<UpnpDevice>());
                 }
             }
 
-            foreach (var t in new[] { "upnp:rootdevice", "urn:schemas-upnp-org:device:MediaServer:1", "urn:schemas-upnp-org:service:ContentDirectory:1", "uuid:" + UUID })
+            foreach (var t in new[]
             {
-                list.Add(new UpnpDevice(UUID, t, Descriptor));
+                "upnp:rootdevice", 
+                "urn:schemas-upnp-org:device:MediaServer:1", 
+                "urn:schemas-upnp-org:service:ContentDirectory:1", 
+                "uuid:" + uuid
+            })
+            {
+                list.Add(new UpnpDevice(uuid, t, descriptor, address));
             }
 
             NotifyAll();
-            _logger.Debug("Registered mount {0}", UUID);
+            _logger.Debug("Registered mount {0} at {1}", uuid, descriptor);
         }
 
-        internal void UnregisterNotification(Guid UUID)
+        private void UnregisterNotification(Guid uuid)
         {
             List<UpnpDevice> dl;
             lock (_devices)
             {
-                if (!_devices.TryGetValue(UUID, out dl))
+                if (!_devices.TryGetValue(uuid, out dl))
                 {
                     return;
                 }
-                _devices.Remove(UUID);
+                _devices.Remove(uuid);
             }
             foreach (var d in dl)
             {
                 NotifyDevice(d, "byebye", true);
             }
-            _logger.Debug("Unregistered mount {0}", UUID);
+            _logger.Debug("Unregistered mount {0}", uuid);
         }
 
         public void Dispose()
         {
             _isDisposed = true;
-            //while (messageQueue.Count != 0)
-            //{
-            //    datagramPosted.WaitOne();
-            //}
+            while (_messageQueue.Count != 0)
+            {
+                _datagramPosted.WaitOne();
+            }
 
             _udpClient.DropMulticastGroup(_ssdpIp);
             _udpClient.Close();
 
-            //notificationTimer.Enabled = false;
-            //queueTimer.Enabled = false;
-            //notificationTimer.Dispose();
-            //queueTimer.Dispose();
-            //datagramPosted.Dispose();
+            DisposeNotificationTimer();
+            DisposeQueueTimer();
+            _datagramPosted.Dispose();
+        }
+
+        private readonly object _queueTimerSyncLock = new object();
+        private void StartQueueTimer()
+        {
+            lock (_queueTimerSyncLock)
+            {
+                if (_queueTimer == null)
+                {
+                    _queueTimer = new Timer(QueueTimerCallback, null, 1000, Timeout.Infinite);
+                }
+                else
+                {
+                    _queueTimer.Change(1000, Timeout.Infinite);
+                }
+            }
+        }
+
+        private void DisposeQueueTimer()
+        {
+            lock (_queueTimerSyncLock)
+            {
+                if (_queueTimer != null)
+                {
+                    _queueTimer.Dispose();
+                    _queueTimer = null;
+                }
+            }
+        }
+
+        private readonly object _notificationTimerSyncLock = new object();
+        private void StartNotificationTimer()
+        {
+            const int intervalMs = 60000;
+
+            lock (_notificationTimerSyncLock)
+            {
+                if (_notificationTimer == null)
+                {
+                    _notificationTimer = new Timer(state => NotifyAll(), null, intervalMs, intervalMs);
+                }
+                else
+                {
+                    _notificationTimer.Change(intervalMs, intervalMs);
+                }
+            }
+        }
+
+        private void DisposeNotificationTimer()
+        {
+            lock (_notificationTimerSyncLock)
+            {
+                if (_notificationTimer != null)
+                {
+                    _notificationTimer.Dispose();
+                    _notificationTimer = null;
+                }
+            }
         }
     }
 }

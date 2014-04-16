@@ -81,18 +81,6 @@ namespace MediaBrowser.Server.Implementations.Session
             }, cancellationToken);
         }
 
-        public Task SendBrowseCommand(BrowseRequest command, CancellationToken cancellationToken)
-        {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<BrowseRequest>
-            {
-                MessageType = "Browse",
-                Data = command
-
-            }, cancellationToken);
-        }
-
         public Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken)
         {
             var socket = GetActiveSocket();
@@ -206,6 +194,30 @@ namespace MediaBrowser.Server.Implementations.Session
             return socket.SendAsync(new WebSocketMessage<SessionInfoDto>
             {
                 MessageType = "SessionEnded",
+                Data = sessionInfo
+
+            }, cancellationToken);
+        }
+
+        public Task SendPlaybackStartNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+
+            return socket.SendAsync(new WebSocketMessage<SessionInfoDto>
+            {
+                MessageType = "PlaybackStart",
+                Data = sessionInfo
+
+            }, cancellationToken);
+        }
+
+        public Task SendPlaybackStoppedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+
+            return socket.SendAsync(new WebSocketMessage<SessionInfoDto>
+            {
+                MessageType = "PlaybackStopped",
                 Data = sessionInfo
 
             }, cancellationToken);

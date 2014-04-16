@@ -202,5 +202,25 @@
             <param name="action">The action.</param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.PerfUtils.MeasureFor(System.Action,System.Int32)">
+            <summary>
+            Runs an action for a minimum of runForMs
+            </summary>
+            <param name="fn">What to run</param>
+            <param name="runForMs">Minimum ms to run for</param>
+            <returns>time elapsed in micro seconds</returns>
+        </member>
+        <member name="M:ServiceStack.PerfUtils.Measure(System.Action,System.Int32,System.Int32,System.Action,System.Action,System.Action)">
+            <summary>
+            Returns average microseconds an action takes when run for the specified runForMs
+            </summary>
+            <param name="fn">What to run</param>
+            <param name="times">How many times to run for each iteration</param>
+            <param name="runForMs">Minimum ms to run for</param>
+            <param name="setup"></param>
+            <param name="warmup"></param>
+            <param name="teardown"></param>
+            <returns></returns>
+        </member>
     </members>
 </doc>

@@ -590,7 +590,7 @@ a.itemTag:hover {
 }
 
 .lblDetailTab {
-    font-size: 16px!important;
+    font-size: 15px!important;
     font-weight: 400!important;
     font-family: 'Open Sans';
     padding: .5em 1em;
@@ -710,14 +710,12 @@ a.itemTag:hover {
     }
 
     .itemBackdrop {
-        background-image: none!important;
         height: auto;
     }
 
     .itemBackdropContent {
         position: static;
-        padding: 1em 1em 0;
-        background-color: transparent;
+        padding: 1em 1em .5em;
     }
 
     .itemDetailImage {

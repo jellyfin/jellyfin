@@ -360,7 +360,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 return _imageProcessor.GetImageCacheTag(item, type);
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
                 _logger.ErrorException("Error getting {0} image info", ex, type);
                 return null;
@@ -373,7 +373,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 return _imageProcessor.GetImageCacheTag(item, image);
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
                 _logger.ErrorException("Error getting {0} image info for {1}", ex, image.Type, image.Path);
                 return null;

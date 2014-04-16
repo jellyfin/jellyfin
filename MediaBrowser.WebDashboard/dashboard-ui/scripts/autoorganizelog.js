@@ -80,14 +80,6 @@
 
         $('#hfResultId', popup).val(item.Id);
 
-        if (item.ExtractedName) {
-            $('#fldRememberCorrection', popup).hide();
-        } else {
-            $('#fldRememberCorrection', popup).hide();
-        }
-
-        $('#chkRememberEpisodeCorrection', popup).checked(false).checkboxradio('refresh');
-
         var seriesHtml = allSeries.map(function (s) {
 
             return '<option value="' + s.Id + '">' + s.Name + '</option>';
@@ -157,8 +149,7 @@
             SeriesId: $('#selectSeries', form).val(),
             SeasonNumber: $('#txtSeason', form).val(),
             EpisodeNumber: $('#txtEpisode', form).val(),
-            EndingEpisodeNumber: $('#txtEndingEpisode', form).val(),
-            RememberCorrection: $('#chkRememberEpisodeCorrection', form).checked()
+            EndingEpisodeNumber: $('#txtEndingEpisode', form).val()
         };
 
         ApiClient.performEpisodeOrganization(resultId, options).done(function () {

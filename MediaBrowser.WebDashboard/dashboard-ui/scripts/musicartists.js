@@ -31,7 +31,8 @@
                 context: 'music',
                 showTitle: true,
                 coverImage: true,
-                centerText: true
+                centerText: true,
+                lazy: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

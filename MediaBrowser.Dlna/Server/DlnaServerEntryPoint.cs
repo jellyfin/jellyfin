@@ -1,8 +1,11 @@
 ﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Net;
 
 namespace MediaBrowser.Dlna.Server
 {
@@ -13,11 +16,13 @@ namespace MediaBrowser.Dlna.Server
 
         private SsdpHandler _ssdpHandler;
         private readonly IApplicationHost _appHost;
+        private readonly INetworkManager _network;
 
-        public DlnaServerEntryPoint(IServerConfigurationManager config, ILogManager logManager, IApplicationHost appHost)
+        public DlnaServerEntryPoint(IServerConfigurationManager config, ILogManager logManager, IApplicationHost appHost, INetworkManager network)
         {
             _config = config;
             _appHost = appHost;
+            _network = network;
             _logger = logManager.GetLogger("DlnaServer");
         }
 
@@ -25,12 +30,12 @@ namespace MediaBrowser.Dlna.Server
         {
             _config.ConfigurationUpdated += ConfigurationUpdated;
 
-            //ReloadServer();
+            ReloadServer();
         }
 
         void ConfigurationUpdated(object sender, EventArgs e)
         {
-            //ReloadServer();
+            ReloadServer();
         }
 
         private void ReloadServer()
@@ -57,11 +62,27 @@ namespace MediaBrowser.Dlna.Server
                 try
                 {
                     _ssdpHandler = new SsdpHandler(_logger, _config, signature);
+
+                    RegisterEndpoints();
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error starting Dlna server", ex);
                 }
+            }
+        }
+
+        private void RegisterEndpoints()
+        {
+            foreach (var address in _network.GetLocalIpAddresses())
+            {
+                var guid = address.GetMD5();
+
+                var descriptorURI = "/mediabrowser/dlna/" + guid.ToString("N") + "/description.xml";
+
+                var uri = new Uri(string.Format("http://{0}:{1}{2}", address, _config.Configuration.HttpServerPortNumber, descriptorURI));
+
+                _ssdpHandler.RegisterNotification(guid, uri, IPAddress.Parse(address));
             }
         }
 

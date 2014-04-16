@@ -185,9 +185,9 @@ namespace MediaBrowser.Api.Playback
         {
             var args = string.Empty;
 
-            if (state.IsRemote || !state.HasMediaStreams)
+            if (!state.HasMediaStreams)
             {
-                return string.Empty;
+                return state.IsInputVideo ? "-sn" : string.Empty;
             }
 
             if (state.VideoStream != null)
@@ -1341,6 +1341,12 @@ namespace MediaBrowser.Api.Playback
                 RequestedUrl = url
             };
 
+            if (!string.IsNullOrWhiteSpace(request.AudioCodec))
+            {
+                state.SupportedAudioCodecs = request.AudioCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault();
+            }
+
             var item = string.IsNullOrEmpty(request.MediaSourceId) ?
                 DtoService.GetItemByDtoId(request.Id) :
                 DtoService.GetItemByDtoId(request.MediaSourceId);
@@ -1487,29 +1493,23 @@ namespace MediaBrowser.Api.Playback
 
             if (videoRequest != null)
             {
-                if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream, state.VideoType))
+                if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream))
                 {
                     videoRequest.VideoCodec = "copy";
                 }
 
-                //if (state.AudioStream != null && CanStreamCopyAudio(request, state.AudioStream))
-                //{
-                //    request.AudioCodec = "copy";
-                //}
+                if (state.AudioStream != null && CanStreamCopyAudio(request, state.AudioStream, state.SupportedAudioCodecs))
+                {
+                    request.AudioCodec = "copy";
+                }
             }
 
             return state;
         }
 
-        private bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream, VideoType videoType)
+        private bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
         {
             if (videoStream.IsInterlaced)
-            {
-                return false;
-            }
-
-            // Not going to attempt this with folder rips
-            if (videoType != VideoType.VideoFile)
             {
                 return false;
             }
@@ -1584,13 +1584,13 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return SupportsAutomaticVideoStreamCopy;
+            return request.EnableAutoStreamCopy;
         }
 
-        private bool CanStreamCopyAudio(StreamRequest request, MediaStream audioStream)
+        private bool CanStreamCopyAudio(StreamRequest request, MediaStream audioStream, List<string> supportedAudioCodecs)
         {
             // Source and target codecs must match
-            if (string.IsNullOrEmpty(request.AudioCodec) || !string.Equals(request.AudioCodec, audioStream.Codec, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(audioStream.Codec) || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparer.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -1623,15 +1623,7 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return SupportsAutomaticVideoStreamCopy;
-        }
-
-        protected virtual bool SupportsAutomaticVideoStreamCopy
-        {
-            get
-            {
-                return false;
-            }
+            return true;
         }
 
         private void ApplyDeviceProfileSettings(StreamState state)

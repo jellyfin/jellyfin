@@ -66,6 +66,17 @@
 
         this.hasReceivers = false;
 
+        this.currentMediaOffset = 0;
+
+        // Progress bar element id
+        this.progressBar = "positionSlider";
+
+        // Timec display element id
+        this.duration = "currentTime";
+
+        // Playback display element id
+        this.playback = "playTime";
+
         this.initializeCastPlayer();
     };
 
@@ -89,7 +100,7 @@
 
         // v1 Id AE4DA10A
         // v2 Id 472F0435
-        var applicationID = 'AE4DA10A';
+        var applicationID = '472F0435';
 
         // request session
         var sessionRequest = new chrome.cast.SessionRequest(applicationID);
@@ -230,6 +241,7 @@
     };
 
     function getCodecLimits() {
+        
         return {
 
             maxVideoAudioChannels: 6,
@@ -445,6 +457,8 @@
 
     function getMetadata(item) {
 
+        console.log("md item", item);
+
         var metadata = {};
 
         if (item.Type == 'Episode') {
@@ -512,7 +526,7 @@
 
         else if (item.MediaType == 'Movie') {
             metadata = new chrome.cast.media.MovieMediaMetadata();
-            metadata.type = chrome.cast.media.MetadataType.MUSIC_TRACK;
+            metadata.type = chrome.cast.media.MetadataType.MOVIE;
 
             if (item.ProductionYear) {
                 metadata.releaseYear = item.ProductionYear;
@@ -595,7 +609,7 @@
             url += '&maxheight=' + codecLimits.maxHeight;
 
             url += '&videoCodec=h264';
-            url += '&audioCodec=aac';
+            url += '&audioCodec=aac,mp3';
 
             url += '&audiosamplerate=' + codecLimits.maxSampleRate;
             url += '&mediasourceid=' + mediaSourceInfo.mediaSource.Id;
@@ -616,6 +630,8 @@
             console.log("no session");
             return;
         }
+
+        this.currentMediaOffset = startTimeTicks || 0;
 
         var maxBitrate = 12000000;
         var mediaInfo = getMediaSourceInfo(user, item, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
@@ -653,40 +669,62 @@
 
         console.log("chromecast new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
         this.currentMediaSession = mediaSession;
+        this.currentMediaTime = this.session.media[0].currentTime;
+
         if (how == 'loadMedia') {
             this.castPlayerState = PLAYER_STATE.PLAYING;
+            clearInterval(this.timer);
+            this.startProgressTimer(this.incrementMediaTime);
         }
 
         if (how == 'activeSession') {
             this.castPlayerState = this.session.media[0].playerState;
-            this.currentMediaTime = this.session.media[0].currentTime;
         }
 
         if (this.castPlayerState == PLAYER_STATE.PLAYING) {
             // start progress timer
-            //this.startProgressTimer(this.incrementMediaTime);
+            this.startProgressTimer(this.incrementMediaTime);
         }
 
         this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
+        this.currentMediaDuration = this.currentMediaSession.media.duration;
 
-        //this.currentMediaDuration = this.currentMediaSession.media.duration;
-        //var duration = this.currentMediaDuration;
-        //var hr = parseInt(duration / 3600);
-        //duration -= hr * 3600;
-        //var min = parseInt(duration / 60);
-        //var sec = parseInt(duration % 60);
-        //if (hr > 0) {
-        //    duration = hr + ":" + min + ":" + sec;
+        //var playTime = document.getElementById(this.playback);
+        //if (!playTime) {
+        //    // Set duration time
+        //    var totalTime = document.getElementById(this.duration);
+        //    totalTime.innerHTML = " / " + formatTime(this.currentMediaDuration);
+
+        //    // Set play time
+        //    playTime = document.createElement("div");
+        //    playTime.id = this.playback;
+        //    playTime.className = "currentTime";
+        //    playTime.style.marginRight = "5px";
+        //    totalTime.parentNode.insertBefore(playTime, totalTime);
+        //    playTime.innerHTML = formatTime(this.currentMediaTime);
         //}
-        //else {
-        //    if (min > 0) {
-        //        duration = min + ":" + sec;
-        //    }
-        //    else {
-        //        duration = sec;
-        //    }
-        //}
-        //document.getElementById("duration").innerHTML = duration;
+    };
+
+    function formatTime(duration) {
+        var hr = parseInt(duration / 3600);
+        duration -= hr * 3600;
+        var min = parseInt(duration / 60);
+        var sec = parseInt(duration % 60);
+
+        hr = "" + hr;
+        min = "" + min;
+        sec = "" + sec;
+        var hh = pad(hr);
+        var mm = pad(min);
+        var ss = pad(sec);
+
+        duration = hh + ":" + mm + ":" + ss;
+
+        return duration;
+    };
+
+    function pad(s) {
+        return "00".substring(0, 2 - s.length) + s;
     };
 
     /**
@@ -707,7 +745,7 @@
             this.castPlayerState = PLAYER_STATE.IDLE;
         }
         console.log("chromecast updating media");
-        //this.updateProgressBar(e);
+        this.updateProgressBarByTimer();
     };
 
     /**
@@ -745,6 +783,7 @@
                 this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
                 this.castPlayerState = PLAYER_STATE.PLAYING;
                 // start progress timer
+                clearInterval(this.timer);
                 this.startProgressTimer(this.incrementMediaTime);
                 break;
             case PLAYER_STATE.IDLE:
@@ -791,6 +830,10 @@
           this.onError.bind(this));
         this.castPlayerState = PLAYER_STATE.STOPPED;
         clearInterval(this.timer);
+        //var playTime = document.getElementById(this.playback);
+        //if (playTime) {
+        //    playTime.parentNode.removeChild(playTime);
+        //}
     };
 
     /**
@@ -849,19 +892,9 @@
      * @param {Event} e An event object from seek 
      */
     CastPlayer.prototype.seekMedia = function (event) {
-        var pos = parseInt(event.offsetX);
-        var pi = document.getElementById("progress_indicator");
-        var p = document.getElementById("progress");
-        if (event.currentTarget.id == 'progress_indicator') {
-            var curr = parseInt(this.currentMediaTime + this.currentMediaDuration * pos / PROGRESS_BAR_WIDTH);
-            var pp = parseInt(pi.style.marginLeft) + pos;
-            var pw = parseInt(p.style.width) + pos;
-        }
-        else {
-            var curr = parseInt(pos * this.currentMediaDuration / PROGRESS_BAR_WIDTH);
-            var pp = pos - 21 - PROGRESS_BAR_WIDTH;
-            var pw = pos;
-        }
+        var pos = parseInt(event);
+
+        var curr = parseInt(this.currentMediaTime + this.currentMediaDuration * pos);
 
         if (this.castPlayerState != PLAYER_STATE.PLAYING && this.castPlayerState != PLAYER_STATE.PAUSED) {
             return;
@@ -899,21 +932,21 @@
      * @param {Object} e An media status update object 
      */
     CastPlayer.prototype.updateProgressBar = function (e) {
-        var p = document.getElementById("progress");
-        var pi = document.getElementById("progress_indicator");
-        if (e.idleReason == 'FINISHED' && e.playerState == 'IDLE') {
-            p.style.width = '0px';
-            pi.style.marginLeft = -21 - PROGRESS_BAR_WIDTH + 'px';
-            clearInterval(this.timer);
-            this.castPlayerState = PLAYER_STATE.STOPPED;
-        }
-        else {
-            p.style.width = Math.ceil(PROGRESS_BAR_WIDTH * e.currentTime / this.currentMediaSession.media.duration + 1) + 'px';
-            this.progressFlag = false;
-            setTimeout(this.setProgressFlag.bind(this), 1000); // don't update progress in 1 second
-            var pp = Math.ceil(PROGRESS_BAR_WIDTH * e.currentTime / this.currentMediaSession.media.duration);
-            pi.style.marginLeft = -21 - PROGRESS_BAR_WIDTH + pp + 'px';
-        }
+        //var p = document.getElementById(this.progressBar);
+        //if (e.idleReason == 'FINISHED' && e.playerState == 'IDLE') {
+        //    p.value = 0;
+        //    clearInterval(this.timer);
+        //    this.castPlayerState = PLAYER_STATE.STOPPED;
+        //    if (e.idleReason == 'FINISHED') {
+        //        $.publish("/playback/complete", e);
+        //        console.log("playback complete", e);
+        //    }
+        //}
+        //else {
+        //    p.value = Number(e.currentTime / this.currentMediaSession.media.duration + 1).toFixed(3);
+        //    this.progressFlag = false;
+        //    setTimeout(this.setProgressFlag.bind(this), 1000); // don't update progress in 1 second
+        //}
     };
 
     /**
@@ -928,26 +961,46 @@
      * Update progress bar based on timer  
      */
     CastPlayer.prototype.updateProgressBarByTimer = function () {
-        var p = document.getElementById("progress");
-        if (isNaN(parseInt(p.style.width))) {
-            p.style.width = 0;
-        }
-        if (this.currentMediaDuration > 0) {
-            var pp = Math.floor(PROGRESS_BAR_WIDTH * this.currentMediaTime / this.currentMediaDuration);
-        }
+        //var p = document.getElementById(this.progressBar);
+        //if (isNaN(parseInt(p.value))) {
+        //    p.value = 0;
+        //}
 
-        if (this.progressFlag) {
-            // don't update progress if it's been updated on media status update event
-            p.style.width = pp + 'px';
-            var pi = document.getElementById("progress_indicator");
-            pi.style.marginLeft = -21 - PROGRESS_BAR_WIDTH + pp + 'px';
-        }
+        //if (this.currentMediaDuration > 0) {
+        //    var pp = Number(this.currentMediaTime / this.currentMediaDuration).toFixed(3);
 
-        if (pp > PROGRESS_BAR_WIDTH) {
+        //    var startTime = this.currentMediaOffset / 10000000;
+        //    var playTime = document.getElementById(this.playback);
+        //    if (playTime) {
+        //        playTime.innerHTML = formatTime(startTime + this.currentMediaTime);
+        //    }
+        //}
+
+        //if (this.progressFlag) {
+        //    // don't update progress if it's been updated on media status update event
+        //    p.value = pp;
+        //}
+
+        //if (pp > 100 || this.castPlayerState == PLAYER_STATE.IDLE) {
+        //    clearInterval(this.timer);
+        //    this.deviceState = DEVICE_STATE.IDLE;
+        //    this.castPlayerState = PLAYER_STATE.IDLE;
+        //    $.publish("/playback/complete", true);
+        //    console.log("playback complete");
+        //}
+    };
+
+    /**
+    * @param {function} A callback function for the fucntion to start timer 
+    */
+    CastPlayer.prototype.startProgressTimer = function(callback) {
+        if(this.timer) {
             clearInterval(this.timer);
-            this.deviceState = DEVICE_STATE.IDLE;
-            this.castPlayerState = PLAYER_STATE.IDLE;
+            this.timer = null;
         }
+
+        // start progress timer
+        this.timer = setInterval(callback.bind(this), this.timerStep);
     };
 
     var castPlayer = new CastPlayer();
@@ -956,19 +1009,112 @@
 
         var self = this;
 
+        var isPositionSliderActive = false;
+        var currentPlaylistIndex;
+
         self.name = PlayerName;
 
-        self.play = function (options) {
+        self.isPaused = false;
 
-            if (options.items) {
+        self.playlist = [];
 
-                Dashboard.getCurrentUser().done(function (user) {
+        self.playlistIndex = 0;
 
-                    castPlayer.loadMedia(user, options.items[0], options.startTimeTicks);
+        //$.subscribe("/playback/complete", function (e) {
+        //    if (self.playlistIndex < (self.playlist.items || []).length) {
+        //        self.play(self.playlist);
+        //    }
+        //});
+
+        ////$(".positionSlider", "#footer").off("slidestart slidestop")
+        ////  .on('slidestart', function (e) {
+        ////    isPositionSliderActive = true;
+        ////}).on('slidestop', positionSliderChange);
+
+        ////function positionSliderChange() {
+        ////    isPositionSliderActive = false;
+        ////    var newPercent = parseInt(this.value);
+        ////    self.changeStream(newPercent);
+        ////}
+
+        function getItemsForPlayback(query) {
+            var userId = Dashboard.getCurrentUserId();
+
+            query.Limit = query.Limit || 100;
+            query.Fields = getItemFields;
+            query.ExcludeLocationTypes = "Virtual";
+
+            return ApiClient.getItems(userId, query);
+        }
+
+        function queueItems (items) {
+            for (var i = 0, length = items.length; i < length; i++) {
+                self.playlist.push(items[i]);
+            }
+        }
+
+        function queueItemsNext(items) {
+            var insertIndex = 1;
+            for (var i = 0, length = items.length; i < length; i++) {
+                self.playlist.splice(insertIndex, 0, items[i]);
+                insertIndex++;
+            }
+        }
+
+        function translateItemsForPlayback(items) {
+            var deferred = $.Deferred();
+            var firstItem = items[0];
+            var promise;
+            if (firstItem.IsFolder) {
+                promise = self.getItemsForPlayback({
+                    ParentId: firstItem.Id,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio,Video"
                 });
+            }
+            else if (firstItem.Type == "MusicArtist") {
+                promise = self.getItemsForPlayback({
+                    Artists: firstItem.Name,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio"
+                });
+            }
+            else if (firstItem.Type == "MusicGenre") {
+                promise = self.getItemsForPlayback({
+                    Genres: firstItem.Name,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio"
+                });
+            }
 
+            if (promise) {
+                promise.done(function (result) {
+                    deferred.resolveWith(null, [result.Items]);
+                });
             } else {
+                deferred.resolveWith(null, [items]);
+            }
 
+            return deferred.promise();
+        }
+
+        self.play = function (options) {
+            console.log("play", options);
+            $("#nowPlayingBar", "#footer").show();
+            if (self.isPaused) {
+                self.isPaused = !self.isPaused;
+                castPlayer.playMedia();
+            } else if (options.items) {
+                Dashboard.getCurrentUser().done(function (user) {
+                    castPlayer.loadMedia(user, options.items[self.playlistIndex++], options.startPositionTicks);
+                });
+            } else {
                 var userId = Dashboard.getCurrentUserId();
 
                 var query = {};
@@ -978,46 +1124,158 @@
                 query.Ids = options.ids.join(',');
 
                 ApiClient.getItems(userId, query).done(function (result) {
-
                     options.items = result.Items;
-
                     self.play(options);
-
                 });
             }
+        };
 
+        self.unpause = function () {
+            console.log("unpause");
+            self.isPaused = !self.isPaused;
+            castPlayer.playMedia();
+        };
+
+        self.pause = function () {
+            console.log("pause");
+            self.isPaused = true;
+            castPlayer.pauseMedia();
         };
 
         self.shuffle = function (id) {
-            self.play({ ids: [id] });
+            var userId = Dashboard.getCurrentUserId();
+            ApiClient.getItem(userId, id).done(function (item) {
+                var query = {
+                    UserId: userId,
+                    Fields: getItemFields,
+                    Limit: 50,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "Random"
+                };
+
+                if (item.IsFolder) {
+                    query.ParentId = id;
+                }
+                else if (item.Type == "MusicArtist") {
+                    query.MediaTypes = "Audio";
+                    query.Artists = item.Name;
+                }
+                else if (item.Type == "MusicGenre") {
+                    query.MediaTypes = "Audio";
+                    query.Genres = item.Name;
+                } else {
+                    return;
+                }
+
+                self.getItemsForPlayback(query).done(function (result) {
+                    self.playlist = { items: result.Items };
+                    console.log("shuffle items", result.Items);
+                    self.play(self.playlist);
+                });
+            });
         };
 
         self.instantMix = function (id) {
-            self.play({ ids: [id] });
-        };
+            var userId = Dashboard.getCurrentUserId();
+            ApiClient.getItem(userId, id).done(function (item) {
+                var promise;
+                var getItemFields = "MediaSources,Chapters";
+                var mixLimit = 3;
 
-        self.queue = function (options) {
+                if (item.Type == "MusicArtist") {
+                    promise = ApiClient.getInstantMixFromArtist(name, {
+                        UserId: userId,
+                        Fields: getItemFields,
+                        Limit: mixLimit
+                    });
+                }
+                else if (item.Type == "MusicGenre") {
+                    promise = ApiClient.getInstantMixFromMusicGenre(name, {
+                        UserId: userId,
+                        Fields: getItemFields,
+                        Limit: mixLimit
+                    });
+                }
+                else if (item.Type == "MusicAlbum") {
+                    promise = ApiClient.getInstantMixFromAlbum(id, {
+                        UserId: userId,
+                        Fields: getItemFields,
+                        Limit: mixLimit
+                    });
+                }
+                else if (item.Type == "Audio") {
+                    promise = ApiClient.getInstantMixFromSong(id, {
+                        UserId: userId,
+                        Fields: getItemFields,
+                        Limit: mixLimit
+                    });
+                }
+                else {
+                    return;
+                }
 
-        };
-
-        self.queueNext = function (options) {
-
-        };
-
-        self.stop = function () {
-            castPlayer.stop();
+                promise.done(function (result) {
+                    self.playlist = { items: result.Items };
+                    console.log("instant mix items", result.Items);
+                    self.play(self.playlist);
+                });
+            });
         };
 
         self.canQueueMediaType = function (mediaType) {
+            return mediaType == "Audio";
+        };
 
-            return false;
+        self.queue = function (options) {
+            Dashboard.getCurrentUser().done(function (user) {
+                if (options.items) {
+                    translateItemsForPlayback(options.items).done(function (items) {
+                        queueItems(items);
+                    });
+                } else {
+                    getItemsForPlayback({
+                        Ids: options.ids.join(',')
+                    }).done(function (result) {
+                        translateItemsForPlayback(result.Items).done(function (items) {
+                            queueItems(items);
+                        });
+                    });
+                }
+            });
+        };
+
+        self.queueNext = function (options) {
+            Dashboard.getCurrentUser().done(function (user) {
+                if (options.items) {
+                    queueItemsNext(options.items);
+                } else {
+                    self.getItemsForPlayback({
+                        Ids: options.ids.join(',')
+                    }).done(function (result) {
+                        options.items = result.Items;
+                        queueItemsNext(options.items);
+                    });
+                }
+            });
+        };
+
+        self.stop = function () {
+            $("#nowPlayingBar", "#footer").hide();
+            self.playlist = [];
+            self.playlistIndex = 0;
+            castPlayer.stopMedia();
+        };
+
+        self.displayContent = function (options) {
+
         };
 
         self.mute = function () {
             castPlayer.mute();
         };
 
-        self.unMute = function () {
+        self.unmute = function () {
             castPlayer.unMute();
         };
 
@@ -1026,18 +1284,20 @@
         };
 
         self.getTargets = function () {
-
+            
             var targets = [];
 
-            targets.push(self.getCurrentTargetInfo());
-
+            if (castPlayer.hasReceivers) {
+                targets.push(self.getCurrentTargetInfo());
+            }
+            
             return targets;
+            
         };
 
         self.getCurrentTargetInfo = function () {
-
+            
             var appName = null;
-
             if (castPlayer.session && castPlayer.session.receiver && castPlayer.session.friendlyName) {
                 appName = castPlayer.session.friendlyName;
             }
@@ -1048,8 +1308,104 @@
                 playerName: self.name,
                 playableMediaTypes: ["Audio", "Video"],
                 isLocalPlayer: false,
-                appName: appName
+                appName: appName,
+                supportedCommands: []
             };
+        };
+
+        self.setCurrentTime = function (ticks, item, updateSlider) {
+            // Convert to ticks
+            ticks = Math.floor(ticks);
+            var timeText = Dashboard.getDisplayTime(ticks);
+            if (self.currentDurationTicks) {
+                timeText += " / " + Dashboard.getDisplayTime(self.currentDurationTicks);
+                if (updateSlider) {
+                    var percent = ticks / self.currentDurationTicks;
+                    percent *= 100;
+                    self.positionSlider.val(percent).slider('enable').slider('refresh');
+                }
+            } else {
+                self.positionSlider.slider('disable').slider('refresh');
+            }
+
+            self.currentTimeElement.html(timeText);
+        };
+
+        self.changeStream = function (position) {
+            console.log("seek", position);
+            ////castPlayer.seekMedia(position);
+        };
+
+        self.removeFromPlaylist = function (i) {
+            self.playlist.remove(i);
+        };
+
+        self.currentPlaylistIndex = function (i) {
+            if (i == null) {
+                return currentPlaylistIndex;
+            }
+
+            var newItem = self.playlist[i];
+
+            Dashboard.getCurrentUser().done(function (user) {
+                self.playInternal(newItem, 0, user);
+                currentPlaylistIndex = i;
+            });
+        };
+
+        self.nextTrack = function () {
+            var newIndex = currentPlaylistIndex + 1;
+            var newItem = self.playlist[newIndex];
+
+            if (newItem) {
+                Dashboard.getCurrentUser().done(function (user) {
+                    self.playInternal(newItem, 0, user);
+                    currentPlaylistIndex = newIndex;
+                });
+            }
+        };
+
+        self.previousTrack = function () {
+            var newIndex = currentPlaylistIndex - 1;
+            if (newIndex >= 0) {
+                var newItem = self.playlist[newIndex];
+                if (newItem) {
+                    Dashboard.getCurrentUser().done(function (user) {
+                        self.playInternal(newItem, 0, user);
+                        currentPlaylistIndex = newIndex;
+                    });
+                }
+            }
+        };
+
+        self.beginPlayerUpdates = function () {
+            // Setup polling here
+        };
+
+        self.endPlayerUpdates = function () {
+            // Stop polling here
+        };
+
+        self.volumeDown = function () {
+        };
+
+        self.volumeUp = function () {
+        };
+
+        self.getPlayerState = function () {
+
+            var deferred = $.Deferred();
+
+            var result = self.getPlayerStateInternal();
+
+            deferred.resolveWith(null, [result]);
+
+            return deferred.promise();
+        };
+
+        self.getPlayerStateInternal = function () {
+
+            return {};
         };
     }
 

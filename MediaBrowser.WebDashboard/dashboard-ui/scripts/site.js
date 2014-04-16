@@ -263,6 +263,8 @@ var Dashboard = {
 
         var html = '<span style="margin-right: 1em;">Please refresh this page to receive new updates from the server.</span>';
 
+        html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.reloadPage();" data-theme="b" data-inline="true" data-mini="true">Refresh</button>';
+
         Dashboard.showFooterNotification({ id: "dashboardVersionWarning", html: html, forceShow: true, allowHide: false });
     },
 
@@ -475,14 +477,14 @@ var Dashboard = {
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
+            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="b">';
 
             html += '<h3>';
 
             if (user.PrimaryImageTag) {
                 var imageUrl = ApiClient.getUserImageUrl(user.Id, {
 
-                    width: 60,
+                    width: 28,
                     tag: user.PrimaryImageTag,
                     type: "Primary"
 
@@ -490,21 +492,27 @@ var Dashboard = {
 
                 html += '<img style="max-width:28px;vertical-align:middle;margin-right:5px;" src="' + imageUrl + '" />';
             }
-
             html += user.Name;
             html += '</h3>';
+
+            html += '<form>';
+
+            html += '<p><label for="chkEnableThemeSongs">Play theme songs</label><input onchange="ThemeSongManager.enabled(this.checked);" type="checkbox" id="chkEnableThemeSongs" data-mini="true" /></a>';
 
             html += '<p><a data-mini="true" data-role="button" href="useredit.html?userId=' + user.Id + '" data-icon="user">Preferences</button></a>';
             html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">Sign Out</button></p>';
 
+            html += '</form>';
             html += '</div>';
 
             $(document.body).append(html);
 
-            $('#userFlyout').panel({}).trigger('create').panel("open").on("panelafterclose", function () {
+            var elem = $('#userFlyout').panel({}).trigger('create').panel("open").on("panelafterclose", function () {
 
                 $(this).off("panelafterclose").remove();
             });
+
+            $('#chkEnableThemeSongs', elem).checked(window.ThemeSongManager.enabled()).checkboxradio('refresh');
         });
     },
 
@@ -589,7 +597,7 @@ var Dashboard = {
             if (user.PrimaryImageTag) {
 
                 var url = ApiClient.getUserImageUrl(user.Id, {
-                    width: 225,
+                    width: 28,
                     tag: user.PrimaryImageTag,
                     type: "Primary"
                 });
@@ -801,6 +809,16 @@ var Dashboard = {
         ApiClient.openWebSocket(webSocketUrl);
     },
 
+    onWebSocketOpened: function () {
+
+        ApiClient.reportCapabilities({
+            PlayableMediaTypes: "Audio,Video",
+
+            SupportedCommands: Dashboard.getSupportedRemoteCommands().join(',')
+        });
+
+    },
+
     onWebSocketMessageReceived: function (e, data) {
 
         var msg = data;
@@ -878,10 +896,6 @@ var Dashboard = {
                 }
             });
         }
-        else if (msg.MessageType === "Browse") {
-
-            Dashboard.onBrowseCommand(msg.Data);
-        }
         else if (msg.MessageType === "GeneralCommand") {
 
             var cmd = msg.Data;
@@ -891,6 +905,9 @@ var Dashboard = {
             }
             else if (cmd.Name === 'GoToSettings') {
                 Dashboard.navigate('dashboard.html');
+            }
+            else if (cmd.Name === 'DisplayContent') {
+                Dashboard.onBrowseCommand(cmd.Arguments);
             }
         }
         else if (msg.MessageType === "MessageCommand") {
@@ -1237,6 +1254,27 @@ var Dashboard = {
         }
 
         $(select).html(html).selectmenu("refresh");
+    },
+
+    getSupportedRemoteCommands: function () {
+
+        // Full list
+        // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs
+        return [
+            "GoHome",
+            "GoToSettings",
+            "VolumeUp",
+            "VolumeDown",
+            "Mute",
+            "Unmute",
+            "ToggleMute",
+            "SetVolume",
+            "ToggleFullscreen",
+            "SetAudioStreamIndex",
+            "SetSubtitleStreamIndex",
+            "DisplayContent"
+        ];
+
     }
 };
 
@@ -1252,7 +1290,7 @@ else if (!IsStorageEnabled()) {
 
 var ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
 
-$(ApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
+$(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
 
 
 $(function () {
@@ -1277,7 +1315,6 @@ $(function () {
 
     videoPlayerHtml += '<div id="video-basic-controls">';
 
-    videoPlayerHtml += '<a id="video-playlistButton" class="mediaButton playlistButton" href="playlist.videoPlayerHtml" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="Playlist">Playlist</a>';
     videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
     videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">Play</button>';
     videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">Pause</button>';
@@ -1286,7 +1323,8 @@ $(function () {
     videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">Next Track</button>';
 
     videoPlayerHtml += '<div class="currentTime"></div>';
-    videoPlayerHtml += '<div class="nowPlayingMediaInfo"></div>';
+    videoPlayerHtml += '<div class="nowPlayingImage"></div>';
+    videoPlayerHtml += '<div class="nowPlayingText"></div>';
 
     videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">Mute</button>';
     videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">Unmute</button>';
@@ -1310,7 +1348,7 @@ $(function () {
     videoPlayerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="video-chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
     videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
 
-    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
+    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="expand" data-iconpos="notext" data-inline="true">Fullscreen</button>';
 
     videoPlayerHtml += '</div>'; // video-advanced-controls
 
@@ -1326,48 +1364,6 @@ $(function () {
     mediaPlayerElem.trigger('create');
 
     var footerHtml = '<div id="footer" data-theme="b" class="ui-bar-b">';
-    footerHtml += '<div id="nowPlayingBar" class="nowPlayingBar" style="display:none;">';
-    footerHtml += '<div class="barBackground ui-bar-b"></div>';
-    footerHtml += '<div style="display:inline-block;width:12px;"></div>';
-    footerHtml += '<a id="playlistButton" class="mediaButton playlistButton" href="playlist.html" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="Playlist">Playlist</a>';
-    footerHtml += '<button id="previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
-    footerHtml += '<button id="playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">Play</button>';
-    footerHtml += '<button id="pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">Pause</button>';
-
-    footerHtml += '<div id="mediaElement"></div>';
-
-    footerHtml += '<button id="stopButton" class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="stop" data-iconpos="notext" data-inline="true">Stop</button>';
-    footerHtml += '<button id="nextTrackButton" class="mediaButton nextTrackButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">Next Track</button>';
-
-    footerHtml += '<div class="positionSliderContainer sliderContainer">';
-    footerHtml += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
-    footerHtml += '</div>';
-
-    footerHtml += '<div class="currentTime"></div>';
-    footerHtml += '<div class="nowPlayingMediaInfo"></div>';
-
-    footerHtml += '<button id="muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">Mute</button>';
-    footerHtml += '<button id="unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">Unmute</button>';
-
-    footerHtml += '<div class="volumeSliderContainer sliderContainer">';
-    footerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
-    footerHtml += '</div>';
-
-    footerHtml += '<button onclick="MediaPlayer.showQualityFlyout();" id="qualityButton" class="mediaButton qualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">Quality</button>';
-    footerHtml += '<div class="mediaFlyoutContainer"><div id="qualityFlyout" style="display:none;" class="mediaPlayerFlyout"></div></div>';
-
-    footerHtml += '<button onclick="MediaPlayer.showAudioTracksFlyout();" id="audioTracksButton" class="imageButton mediaButton audioTracksButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">Audio Tracks</button>';
-    footerHtml += '<div class="mediaFlyoutContainer"><div id="audioTracksFlyout" style="display:none;" class="mediaPlayerFlyout audioTracksFlyout"></div></div>';
-
-    footerHtml += '<button onclick="MediaPlayer.showSubtitleMenu();" id="subtitleButton" class="imageButton mediaButton subtitleButton" title="Subtitles" type="button" data-icon="subtitles" data-iconpos="notext" data-inline="true">Subtitles</button>';
-    footerHtml += '<div class="mediaFlyoutContainer"><div id="subtitleFlyout" style="display:none;" class="mediaPlayerFlyout subtitleFlyout"></div></div>';
-
-    footerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
-    footerHtml += '<div class="mediaFlyoutContainer"><div id="chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
-
-    footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
-
-    footerHtml += '</div>';
 
     footerHtml += '<div id="footerNotifications"></div>';
     footerHtml += '</div>';
@@ -1428,4 +1424,3 @@ $(document).on('pagebeforeshow', ".page", function () {
         Dashboard.refreshSystemInfoFromServer();
     }
 });
-

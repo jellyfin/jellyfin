@@ -125,7 +125,18 @@ namespace MediaBrowser.Server.Implementations.Localization
         public IEnumerable<CountryInfo> GetCountries()
         {
             return CultureInfo.GetCultures(CultureTypes.SpecificCultures)
-                .Select(c => new RegionInfo(c.LCID))
+                .Select(c =>
+                {
+                    try
+                    {
+                        return new RegionInfo(c.LCID);
+                    }
+                    catch (CultureNotFoundException)
+                    {
+                        return null;
+                    }
+                })
+                .Where(i => i != null)
                 .OrderBy(c => c.DisplayName)
                 .DistinctBy(c => c.TwoLetterISORegionName)
                 .Select(c => new CountryInfo
@@ -356,7 +367,7 @@ namespace MediaBrowser.Server.Implementations.Localization
             }.OrderBy(i => i.Name);
         }
 
-        public string LocalizeDocument(string document, string culture, Func<string,string> tokenBuilder)
+        public string LocalizeDocument(string document, string culture, Func<string, string> tokenBuilder)
         {
             foreach (var pair in GetLocalizationDictionary(culture).ToList())
             {

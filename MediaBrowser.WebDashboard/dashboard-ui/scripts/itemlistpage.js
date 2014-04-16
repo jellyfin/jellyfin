@@ -93,9 +93,10 @@
 
             Dashboard.setPageTitle(name);
 
-            if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("Context", [item.Type, item.Id, item.Name].join('|'));
-            }
+            $(page).trigger('displayingitem', [{
+
+                item: item
+            }]);
 
         });
 
@@ -203,7 +204,7 @@
     }).on('pageshow', "#itemListPage", function () {
 
         var page = this;
-        
+
         query.Limit = LibraryBrowser.getDefaultPageSize();
         query.ParentId = getParameterByName('parentId');
         query.Filters = "";

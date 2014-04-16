@@ -36,14 +36,6 @@ namespace MediaBrowser.Controller.Session
         Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sends the browse command.
-        /// </summary>
-        /// <param name="command">The command.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SendBrowseCommand(BrowseRequest command, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Sends the playstate command.
         /// </summary>
         /// <param name="command">The command.</param>
@@ -96,6 +88,22 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the playback start notification.
+        /// </summary>
+        /// <param name="sessionInfo">The session information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendPlaybackStartNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the playback start notification.
+        /// </summary>
+        /// <param name="sessionInfo">The session information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendPlaybackStoppedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken);
         
         /// <summary>
         /// Sends the server restart notification.

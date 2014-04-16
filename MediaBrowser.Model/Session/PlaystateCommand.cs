@@ -31,10 +31,6 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         Seek,
         /// <summary>
-        /// The fullscreen
-        /// </summary>
-        Fullscreen,
-        /// <summary>
         /// The rewind
         /// </summary>
         Rewind,

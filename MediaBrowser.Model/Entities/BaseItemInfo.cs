@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 
@@ -47,6 +48,12 @@ namespace MediaBrowser.Model.Entities
         public Guid? PrimaryImageTag { get; set; }
 
         /// <summary>
+        /// Gets or sets the primary image item identifier.
+        /// </summary>
+        /// <value>The primary image item identifier.</value>
+        public string PrimaryImageItemId { get; set; }
+        
+        /// <summary>
         /// Gets or sets the thumb image tag.
         /// </summary>
         /// <value>The thumb image tag.</value>
@@ -75,6 +82,54 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The media version identifier.</value>
         public string MediaSourceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the premiere date.
+        /// </summary>
+        /// <value>The premiere date.</value>
+        public DateTime? PremiereDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the production year.
+        /// </summary>
+        /// <value>The production year.</value>
+        public int? ProductionYear { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index number.
+        /// </summary>
+        /// <value>The index number.</value>
+        public int? IndexNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index number end.
+        /// </summary>
+        /// <value>The index number end.</value>
+        public int? IndexNumberEnd { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent index number.
+        /// </summary>
+        /// <value>The parent index number.</value>
+        public int? ParentIndexNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the series.
+        /// </summary>
+        /// <value>The name of the series.</value>
+        public string SeriesName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the album.
+        /// </summary>
+        /// <value>The album.</value>
+        public string Album { get; set; }
+
+        /// <summary>
+        /// Gets or sets the artists.
+        /// </summary>
+        /// <value>The artists.</value>
+        public List<string> Artists { get; set; }
         
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.
@@ -84,6 +139,11 @@ namespace MediaBrowser.Model.Entities
         public bool HasPrimaryImage
         {
             get { return PrimaryImageTag.HasValue; }
+        }
+
+        public BaseItemInfo()
+        {
+            Artists = new List<string>();
         }
     }
 }

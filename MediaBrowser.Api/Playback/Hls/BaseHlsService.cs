@@ -24,7 +24,8 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
-        protected BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager)
+        protected BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager)
         {
         }
 
@@ -77,6 +78,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return ProcessRequestAsync(request).Result;
         }
 
+        private static readonly SemaphoreSlim FfmpegStartLock = new SemaphoreSlim(1, 1);
         /// <summary>
         /// Processes the request async.
         /// </summary>
@@ -103,31 +105,40 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             var playlist = GetOutputFilePath(state);
-            var isPlaylistNewlyCreated = false;
 
-            // If the playlist doesn't already exist, startup ffmpeg
-            if (!File.Exists(playlist))
-            {
-                isPlaylistNewlyCreated = true;
-
-                try
-                {
-                    await StartFfMpeg(state, playlist).ConfigureAwait(false);
-                }
-                catch
-                {
-                    state.Dispose();
-                    throw;
-                }
-            }
-            else
+            if (File.Exists(playlist))
             {
                 ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
             }
-
-            if (isPlaylistNewlyCreated)
+            else
             {
-                await WaitForMinimumSegmentCount(playlist, GetSegmentWait()).ConfigureAwait(false);
+                await FfmpegStartLock.WaitAsync().ConfigureAwait(false);
+                try
+                {
+                    if (File.Exists(playlist))
+                    {
+                        ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
+                    }
+                    else
+                    {
+                        // If the playlist doesn't already exist, startup ffmpeg
+                        try
+                        {
+                            await StartFfMpeg(state, playlist).ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            state.Dispose();
+                            throw;
+                        }
+                    }
+
+                    await WaitForMinimumSegmentCount(playlist, GetSegmentWait()).ConfigureAwait(false);
+                }
+                finally
+                {
+                    FfmpegStartLock.Release();
+                }
             }
 
             int audioBitrate;
@@ -295,7 +306,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             // If performSubtitleConversions is true we're actually starting ffmpeg
             var startNumberParam = performSubtitleConversions ? GetStartNumber(state).ToString(UsCulture) : "0";
-            
+
             var args = string.Format("{0} {1} -i {2}{3} -map_metadata -1 -threads {4} {5} {6} -sc_threshold 0 {7} -hls_time {8} -start_number {9} -hls_list_size {10} \"{11}\"",
                 itsOffset,
                 inputModifier,
