@@ -22,11 +22,11 @@
     font-weight: normal;
     position: relative;
     top: -7px;
-    margin-left: 3px;
+    margin: 0 10px 0 3px;
     max-width: 200px;
     overflow: hidden;
-    margin-right: 2em;
     white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .nowPlayingDoubleText {

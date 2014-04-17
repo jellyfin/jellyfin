@@ -219,11 +219,19 @@
     #videoControls #video-advanced-controls {
         width: 350px;
     }
+
+    #videoControls .nowPlayingText {
+        max-width: 160px;
+    }
 }
 
 @media all and (max-width: 960px), all and (max-height: 550px) {
     #videoControls #video-advanced-controls {
         width: 275px;
+    }
+
+    #videoControls .nowPlayingText {
+        max-width: 90px;
     }
 }
 
