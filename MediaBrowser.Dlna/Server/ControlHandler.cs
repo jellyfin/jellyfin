@@ -465,6 +465,11 @@ namespace MediaBrowser.Dlna.Server
                 res.SetAttribute("nrAudioChannels", targetChannels.Value.ToString(_usCulture));
             }
 
+            if (targetWidth.HasValue && targetHeight.HasValue)
+            {
+                res.SetAttribute("resolution", string.Format("{0}x{1}", targetWidth.Value, targetHeight.Value));
+            }
+            
             if (targetSampleRate.HasValue)
             {
                 res.SetAttribute("sampleFrequency", targetSampleRate.Value.ToString(_usCulture));
