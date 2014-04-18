@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common;
+﻿using System.Linq;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -18,8 +19,12 @@ namespace MediaBrowser.Dlna.Server
         private readonly IApplicationHost _appHost;
         private readonly INetworkManager _network;
 
+        public static DlnaServerEntryPoint Instance;
+
         public DlnaServerEntryPoint(IServerConfigurationManager config, ILogManager logManager, IApplicationHost appHost, INetworkManager network)
         {
+            Instance = this;
+
             _config = config;
             _appHost = appHost;
             _network = network;
@@ -84,6 +89,11 @@ namespace MediaBrowser.Dlna.Server
 
                 _ssdpHandler.RegisterNotification(guid, uri, IPAddress.Parse(address));
             }
+        }
+
+        public UpnpDevice GetServerUpnpDevice(string uuid)
+        {
+            return _ssdpHandler.Devices.FirstOrDefault(i => string.Equals(uuid, i.Uuid.ToString("N"), StringComparison.OrdinalIgnoreCase));
         }
 
         private void DisposeServer()

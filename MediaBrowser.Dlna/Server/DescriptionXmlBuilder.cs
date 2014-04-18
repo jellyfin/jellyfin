@@ -176,7 +176,7 @@ namespace MediaBrowser.Dlna.Server
                 ServiceType = "urn:schemas-upnp-org:service:ContentDirectory:1",
                 ServiceId = "urn:upnp-org:serviceId:ContentDirectory",
                 ScpdUrl = "/mediabrowser/dlna/contentdirectory.xml",
-                ControlUrl = "/mediabrowser/dlna/control"
+                ControlUrl = "/mediabrowser/dlna/" + _serverUdn + "/control"
             });
 
             return list;

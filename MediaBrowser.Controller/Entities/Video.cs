@@ -26,6 +26,10 @@ namespace MediaBrowser.Controller.Entities
         public List<Guid> AdditionalPartIds { get; set; }
         public List<Guid> LocalAlternateVersionIds { get; set; }
 
+        public string FormatName { get; set; }
+        public long? Size { get; set; }
+        public string Container { get; set; }
+
         public Video()
         {
             PlayableStreamFileNames = new List<string>();

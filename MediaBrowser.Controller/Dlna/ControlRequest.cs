@@ -8,6 +8,8 @@ namespace MediaBrowser.Controller.Dlna
 
         public string InputXml { get; set; }
 
+        public string TargetServerUuId { get; set; }
+
         public ControlRequest()
         {
             Headers = new Dictionary<string, string>();
@@ -19,6 +21,8 @@ namespace MediaBrowser.Controller.Dlna
         public IDictionary<string, string> Headers { get; set; }
 
         public string Xml { get; set; }
+
+        public bool IsSuccessful { get; set; }
 
         public ControlResponse()
         {

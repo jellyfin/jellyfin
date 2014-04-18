@@ -300,7 +300,7 @@ namespace MediaBrowser.Api.Playback
                 case EncodingQuality.HighSpeed:
                     return 2;
                 case EncodingQuality.HighQuality:
-                    return isWebm ? Math.Max((int)((Environment.ProcessorCount -1) / 2) , 2) : 0;
+                    return 2;
                 case EncodingQuality.MaxQuality:
                     return isWebm ? Math.Max(Environment.ProcessorCount - 1, 2) : 0;
                 default:
@@ -373,7 +373,6 @@ namespace MediaBrowser.Api.Playback
                         break;
                     case EncodingQuality.MaxQuality:
                         crf = "4";
-                        //profilescore aready set to 0
                         break;
                     default:
                         throw new ArgumentException("Unrecognized quality setting");
@@ -381,7 +380,9 @@ namespace MediaBrowser.Api.Playback
 
                 if (isVc1)
                 {
-                    profileScore = 1;
+                    profileScore ++;
+                    // Max of 2
+                    profileScore = Math.Min(profileScore, 2);
                 }
 
                 // http://www.webmproject.org/docs/encoder-parameters/
@@ -1713,33 +1714,19 @@ namespace MediaBrowser.Api.Playback
             var extension = GetOutputFileExtension(state);
 
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
-            var orgOp = ";DLNA.ORG_OP=";
+            var orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(state.RunTimeTicks.HasValue, isStaticallyStreamed, state.TranscodeSeekInfo);
 
-            if (state.RunTimeTicks.HasValue)
+            if (state.RunTimeTicks.HasValue && !isStaticallyStreamed)
             {
-                // Time-based seeking currently only possible when transcoding
-                orgOp += isStaticallyStreamed ? "0" : "1";
-
-                // Byte-based seeking only possible when not transcoding
-                orgOp += isStaticallyStreamed || state.TranscodeSeekInfo == TranscodeSeekInfo.Bytes ? "1" : "0";
-
-                if (!isStaticallyStreamed)
-                {
-                    AddTimeSeekResponseHeaders(state, responseHeaders);
-                }
-            }
-            else
-            {
-                // No seeking is available if we don't know the content runtime
-                orgOp += "00";
+                AddTimeSeekResponseHeaders(state, responseHeaders);
             }
 
             // 0 = native, 1 = transcoded
             var orgCi = isStaticallyStreamed ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            var flagValue = DlnaFlags.DLNA_ORG_FLAG_STREAMING_TRANSFER_MODE |
-                            DlnaFlags.DLNA_ORG_FLAG_BACKGROUND_TRANSFERT_MODE |
-                            DlnaFlags.DLNA_ORG_FLAG_DLNA_V15;
+            var flagValue = DlnaFlags.StreamingTransferMode |
+                            DlnaFlags.BackgroundTransferMode |
+                            DlnaFlags.DlnaV15;
 
             if (isStaticallyStreamed)
             {
@@ -1800,23 +1787,6 @@ namespace MediaBrowser.Api.Playback
                 Request.Response.AddHeader(item.Key, item.Value);
             }
         }
-
-        [Flags]
-        private enum DlnaFlags
-        {
-            DLNA_ORG_FLAG_SENDER_PACED = (1 << 31),
-            DLNA_ORG_FLAG_TIME_BASED_SEEK = (1 << 30),
-            DLNA_ORG_FLAG_BYTE_BASED_SEEK = (1 << 29),
-            DLNA_ORG_FLAG_PLAY_CONTAINER = (1 << 28),
-            DLNA_ORG_FLAG_S0_INCREASE = (1 << 27),
-            DLNA_ORG_FLAG_SN_INCREASE = (1 << 26),
-            DLNA_ORG_FLAG_RTSP_PAUSE = (1 << 25),
-            DLNA_ORG_FLAG_STREAMING_TRANSFER_MODE = (1 << 24),
-            DLNA_ORG_FLAG_INTERACTIVE_TRANSFERT_MODE = (1 << 23),
-            DLNA_ORG_FLAG_BACKGROUND_TRANSFERT_MODE = (1 << 22),
-            DLNA_ORG_FLAG_CONNECTION_STALL = (1 << 21),
-            DLNA_ORG_FLAG_DLNA_V15 = (1 << 20),
-        };
 
         private void AddTimeSeekResponseHeaders(StreamState state, IDictionary<string, string> responseHeaders)
         {

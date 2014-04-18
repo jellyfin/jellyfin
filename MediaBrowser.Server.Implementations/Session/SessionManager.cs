@@ -294,6 +294,7 @@ namespace MediaBrowser.Server.Implementations.Session
             session.PlayState.VolumeLevel = info.VolumeLevel;
             session.PlayState.AudioStreamIndex = info.AudioStreamIndex;
             session.PlayState.SubtitleStreamIndex = info.SubtitleStreamIndex;
+            session.PlayState.PlayMethod = info.PlayMethod;
         }
 
         /// <summary>
@@ -1253,8 +1254,8 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;
-
             var thumbItem = item.HasImage(ImageType.Thumb) ? item : null;
+            var logoItem = item.HasImage(ImageType.Logo) ? item : null;
 
             if (thumbItem == null)
             {
@@ -1292,6 +1293,11 @@ namespace MediaBrowser.Server.Implementations.Session
                 thumbItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Thumb));
             }
 
+            if (logoItem == null)
+            {
+                logoItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Logo));
+            }
+
             if (thumbItem != null)
             {
                 info.ThumbImageTag = GetImageCacheTag(thumbItem, ImageType.Thumb);
@@ -1302,6 +1308,12 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 info.BackdropImageTag = GetImageCacheTag(backropItem, ImageType.Backdrop);
                 info.BackdropItemId = GetDtoId(backropItem);
+            }
+
+            if (logoItem != null)
+            {
+                info.LogoImageTag = GetImageCacheTag(logoItem, ImageType.Logo);
+                info.LogoItemId = GetDtoId(logoItem);
             }
 
             return info;

@@ -106,6 +106,15 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\DirectPlayProfile.cs">
       <Link>Dlna\DirectPlayProfile.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\DlnaMaps.cs">
+      <Link>Dlna\DlnaMaps.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\MediaFormatProfile.cs">
+      <Link>Dlna\MediaFormatProfile.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\MediaFormatProfileResolver.cs">
+      <Link>Dlna\MediaFormatProfileResolver.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\ResponseProfile.cs">
       <Link>Dlna\ResponseProfile.cs</Link>
     </Compile>
