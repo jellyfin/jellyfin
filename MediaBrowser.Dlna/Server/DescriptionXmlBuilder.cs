@@ -57,7 +57,7 @@ namespace MediaBrowser.Dlna.Server
 
         private void AppendDeviceProperties(StringBuilder builder)
         {
-            builder.Append("<UDN>" + SecurityElement.Escape(_serverUdn) + "</UDN>");
+            builder.Append("<UDN>uuid:" + SecurityElement.Escape(_serverUdn) + "</UDN>");
             builder.Append("<dlna:X_DLNACAP>" + SecurityElement.Escape(_profile.XDlnaCap ?? string.Empty) + "</dlna:X_DLNACAP>");
 
             if (!string.IsNullOrWhiteSpace(_profile.XDlnaDoc))
