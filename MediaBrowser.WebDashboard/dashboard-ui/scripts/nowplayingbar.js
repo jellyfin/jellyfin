@@ -230,16 +230,17 @@
         volumeSlider.slider('refresh');
 
         if (!isPositionSliderActive) {
+
             if (state.canSeek) {
 
                 var pct = state.positionTicks / state.runtimeTicks;
                 pct *= 100;
 
-                positionSlider.val(pct).prop('disabled', '');
+                positionSlider.val(pct).slider("enable");
 
             } else {
 
-                positionSlider.val(0).prop('disabled', 'disabled');
+                positionSlider.val(0).slider("disable");
             }
 
             positionSlider.slider('refresh');

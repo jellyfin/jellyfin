@@ -273,7 +273,7 @@
 
         var request = new chrome.cast.media.LoadRequest(castMediaInfo);
         request.autoplay = true;
-        request.currentTime = 0;
+        request.currentTime = startTimeTicks ? startTimeTicks / 10000000 : 0;
 
         this.castPlayerState = PLAYER_STATE.LOADING;
         this.session.loadMedia(request,
@@ -289,7 +289,7 @@
 
         console.log("chromecast new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
         this.currentMediaSession = mediaSession;
-        this.currentMediaTime = this.session.media[0].currentTime;
+        this.currentMediaTime = mediaSession.currentTime;
 
         if (how == 'loadMedia') {
             this.castPlayerState = PLAYER_STATE.PLAYING;
@@ -298,7 +298,7 @@
         }
 
         if (how == 'activeSession') {
-            this.castPlayerState = this.session.media[0].playerState;
+            this.castPlayerState = mediaSession.playerState;
         }
 
         if (this.castPlayerState == PLAYER_STATE.PLAYING) {
@@ -307,7 +307,7 @@
         }
 
         this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
-        this.currentMediaDuration = this.currentMediaSession.media.duration;
+        this.currentMediaDuration = mediaSession.media.customData.runTimeTicks;
     };
 
     /**
@@ -474,7 +474,7 @@
     CastPlayer.prototype.seekMedia = function (event) {
         var pos = parseInt(event);
 
-        var curr = parseInt(this.currentMediaTime + this.currentMediaDuration * pos);
+        var curr = pos / 10000000;
 
         if (this.castPlayerState != PLAYER_STATE.PLAYING && this.castPlayerState != PLAYER_STATE.PAUSED) {
             return;
@@ -482,7 +482,7 @@
 
         this.currentMediaTime = curr;
         console.log('Seeking ' + this.currentMediaSession.sessionId + ':' +
-          this.currentMediaSession.mediaSessionId + ' to ' + pos + "%");
+          this.currentMediaSession.mediaSessionId + ' to ' + curr);
         var request = new chrome.cast.media.SeekRequest();
         request.currentTime = this.currentMediaTime;
         this.currentMediaSession.seek(request,
@@ -538,6 +538,14 @@
      * Update progress bar based on timer  
      */
     CastPlayer.prototype.updateProgressBarByTimer = function () {
+        if (!this.currentMediaTime) {
+            this.currentMediaDuration = this.session.media[0].currentTime;
+        }
+
+        if (!this.currentMediaDuration) {
+            this.currentMediaDuration = this.session.media[0].media.customData.runTimeTicks;
+        }
+
         var pp = 0;
         if (this.currentMediaDuration > 0) {
             pp = Number(this.currentMediaTime / this.currentMediaDuration).toFixed(3);
@@ -548,7 +556,7 @@
             $(this).trigger("/playback/update",
             [{
                 positionTicks: this.currentMediaTime * 10000000,
-                runtimeTicks: this.currentMediaDuration * 10000000
+                runtimeTicks: this.currentMediaDuration
             }]);
         }
 
@@ -785,7 +793,8 @@
             userId: Dashboard.getCurrentUserId(),
             deviceName: ApiClient.deviceName(),
             //deviceId: ApiClient.deviceId(),
-            startTimeTicks: startTimeTicks || 0
+            startTimeTicks: startTimeTicks || 0,
+            runTimeTicks: item.RunTimeTicks
         };
 
     }
@@ -984,6 +993,7 @@
         });
 
         $(castPlayer).on("/playback/update", function (e, data) {
+
             self.positionTicks = data.positionTicks;
             self.runtimeTicks = data.runtimeTicks;
 
@@ -1286,9 +1296,8 @@
             self.currentTimeElement.html(timeText);
         };
 
-        self.changeStream = function (position) {
-            console.log("seek", position);
-            ////castPlayer.seekMedia(position);
+        self.changeStream = self.seek = function (position) {
+            castPlayer.seekMedia(position);
         };
 
         self.removeFromPlaylist = function (i) {
@@ -1373,7 +1382,9 @@
                 canSeek: self.positionTicks < self.runtimeTicks,
                 positionTicks: self.positionTicks,
                 runtimeTicks: self.runtimeTicks,
-                volumeLevel: castPlayer.currentVolume
+                volumeLevel: castPlayer.currentVolume * 100,
+                isPaused: self.isPaused,
+                isMuted: self.isMuted
             };
         };
     }
