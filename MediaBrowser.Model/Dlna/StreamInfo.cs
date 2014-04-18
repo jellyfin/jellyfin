@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -11,8 +13,6 @@ namespace MediaBrowser.Model.Dlna
     public class StreamInfo
     {
         public string ItemId { get; set; }
-
-        public string MediaSourceId { get; set; }
 
         public bool IsDirectStream { get; set; }
 
@@ -49,6 +49,18 @@ namespace MediaBrowser.Model.Dlna
         public long? RunTimeTicks { get; set; }
 
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
+
+        public bool EstimateContentLength { get; set; }
+
+        public MediaSourceInfo MediaSource { get; set; }
+
+        public string MediaSourceId
+        {
+            get
+            {
+                return MediaSource == null ? null : MediaSource.Id;
+            }
+        }
 
         public string ToUrl(string baseUrl)
         {
@@ -102,6 +114,136 @@ namespace MediaBrowser.Model.Dlna
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
         }
 
+        /// <summary>
+        /// Returns the audio stream that will be used
+        /// </summary>
+        public MediaStream TargetAudioStream
+        {
+            get
+            {
+                if (MediaSource != null)
+                {
+                    var audioStreams = MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio);
+
+                    if (AudioStreamIndex.HasValue)
+                    {
+                        return audioStreams.FirstOrDefault(i => i.Index == AudioStreamIndex.Value);
+                    }
+
+                    return audioStreams.FirstOrDefault();
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Returns the video stream that will be used
+        /// </summary>
+        public MediaStream TargetVideoStream
+        {
+            get
+            {
+                if (MediaSource != null)
+                {
+                    return MediaSource.MediaStreams
+                        .FirstOrDefault(i => i.Type == MediaStreamType.Video && (i.Codec ?? string.Empty).IndexOf("jpeg", StringComparison.OrdinalIgnoreCase) == -1);
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public int? TargetAudioSampleRate
+        {
+            get
+            {
+                var stream = TargetAudioStream;
+                return stream == null ? null : stream.SampleRate;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio bitrate that will be in the output stream
+        /// </summary>
+        public int? TargetAudioBitrate
+        {
+            get
+            {
+                var stream = TargetAudioStream;
+                return AudioBitrate.HasValue && !IsDirectStream
+                    ? AudioBitrate
+                    : stream == null ? null : stream.BitRate;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio channels that will be in the output stream
+        /// </summary>
+        public int? TargetAudioChannels
+        {
+            get
+            {
+                var stream = TargetAudioStream;
+
+                return MaxAudioChannels.HasValue && !IsDirectStream
+                    ? (stream.Channels.HasValue ? Math.Min(MaxAudioChannels.Value, stream.Channels.Value) : MaxAudioChannels.Value)
+                    : stream == null ? null : stream.Channels;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio codec that will be in the output stream
+        /// </summary>
+        public string TargetAudioCodec
+        {
+            get
+            {
+                var stream = TargetAudioStream;
+
+                return IsDirectStream
+                 ? (stream == null ? null : stream.Codec)
+                 : AudioCodec;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio channels that will be in the output stream
+        /// </summary>
+        public long? TargetSize
+        {
+            get
+            {
+                if (IsDirectStream)
+                {
+                    return MediaSource.Bitrate;
+                }
+
+                if (RunTimeTicks.HasValue)
+                {
+                    var totalBitrate = 0;
+
+                    if (AudioBitrate.HasValue)
+                    {
+                        totalBitrate += AudioBitrate.Value;
+                    }
+                    if (VideoBitrate.HasValue)
+                    {
+                        totalBitrate += VideoBitrate.Value;
+                    }
+
+                    return Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(RunTimeTicks.Value).TotalSeconds);
+                }
+                var stream = TargetAudioStream;
+
+                return MaxAudioChannels.HasValue && !IsDirectStream
+                    ? (stream.Channels.HasValue ? Math.Min(MaxAudioChannels.Value, stream.Channels.Value) : MaxAudioChannels.Value)
+                    : stream == null ? null : stream.Channels;
+            }
+        }
     }
 
     /// <summary>

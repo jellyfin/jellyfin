@@ -81,7 +81,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 ItemId = options.ItemId,
                 MediaType = DlnaProfileType.Audio,
-                MediaSourceId = item.Id,
+                MediaSource = item,
                 RunTimeTicks = item.RunTimeTicks
             };
 
@@ -116,6 +116,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 playlistItem.IsDirectStream = false;
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
+                playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 playlistItem.Container = transcodingProfile.Container;
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec;
 
@@ -152,7 +153,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 ItemId = options.ItemId,
                 MediaType = DlnaProfileType.Video,
-                MediaSourceId = item.Id,
+                MediaSource = item,
                 RunTimeTicks = item.RunTimeTicks
             };
 
@@ -196,6 +197,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 playlistItem.IsDirectStream = false;
                 playlistItem.Container = transcodingProfile.Container;
+                playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',').FirstOrDefault();
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;

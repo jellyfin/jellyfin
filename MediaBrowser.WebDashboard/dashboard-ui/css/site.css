@@ -934,16 +934,16 @@ progress {
     z-index: 1000;
 }
 
-.notPlayingSession .sessionNowPlayingContent {
+.activeSession:not(.playingSession) .sessionNowPlayingContent {
     display: none;
 }
 
-.notPlayingSession .sessionNowPlayingInnerContent {
+.activeSession:not(.playingSession) .sessionNowPlayingInnerContent {
     background-color: #f0f0f0;
     color: #000;
 }
 
-.notPlayingSession .sessionUserInfo, .notPlayingSession .sessionNowPlayingInfo {
+.activeSession:not(.playingSession) .sessionUserInfo, .activeSession:not(.playingSession) .sessionNowPlayingInfo {
     bottom: 0;
 }
 

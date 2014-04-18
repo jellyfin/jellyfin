@@ -209,7 +209,7 @@
 
             var nowPlayingItem = connection.NowPlayingItem;
 
-            var className = nowPlayingItem ? 'activeSession' : 'notPlayingSession activeSession';
+            var className = nowPlayingItem ? 'playingSession activeSession' : 'activeSession';
 
             html += '<div class="' + className + '" id="' + rowId + '">';
 
@@ -400,9 +400,9 @@
         var nowPlayingItem = session.NowPlayingItem;
 
         if (nowPlayingItem) {
-            row.removeClass('notPlayingSession');
+            row.addClass('playingSession');
         } else {
-            row.addClass('notPlayingSession');
+            row.removeClass('playingSession');
         }
 
         $('.sessionUserName', row).html(DashboardPage.getUsersHtml(session));
@@ -877,8 +877,8 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageh
             return this;
         }
 
-        return this.off('.sessionItemMenu').on('mouseenter.sessionItemMenu', '.activeSession', onHoverIn)
-            .on('mouseleave.sessionItemMenu', '.activeSession', onHoverOut);
+        return this.off('.sessionItemMenu').on('mouseenter.sessionItemMenu', '.playingSession', onHoverIn)
+            .on('mouseleave.sessionItemMenu', '.playingSession', onHoverOut);
     };
 
 })(jQuery, document, window);
