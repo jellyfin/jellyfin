@@ -984,6 +984,7 @@
         });
 
         $(castPlayer).on("/playback/update", function (e, data) {
+
             self.positionTicks = data.positionTicks;
             self.runtimeTicks = data.runtimeTicks;
 
@@ -1373,7 +1374,7 @@
                 canSeek: self.positionTicks < self.runtimeTicks,
                 positionTicks: self.positionTicks,
                 runtimeTicks: self.runtimeTicks,
-                volumeLevel: castPlayer.currentVolume
+                volumeLevel: castPlayer.currentVolume * 100
             };
         };
     }
