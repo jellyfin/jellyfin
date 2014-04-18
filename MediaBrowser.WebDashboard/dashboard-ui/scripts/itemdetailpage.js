@@ -905,15 +905,15 @@
 
         $('#criticReviewsContent', page).html(html).trigger('create');
     }
-    
+
     function renderThemeMedia(page, item) {
-        
+
         ApiClient.getThemeMedia(Dashboard.getCurrentUserId(), item.Id, true).done(function (result) {
 
             var themeSongs = result.ThemeSongsResult.OwnerId == item.Id ?
                 result.ThemeSongsResult.Items :
                 [];
-            
+
             var themeVideos = result.ThemeVideosResult.OwnerId == item.Id ?
                 result.ThemeVideosResult.Items :
                 [];
@@ -1062,7 +1062,7 @@
         var html = '';
 
         if (version.Name && item.MediaSources.length > 1) {
-            html += '<span class="mediaInfoAttribute">' + version.Name + '</span><br/>';
+            html += '<div><span class="mediaInfoAttribute">' + version.Name + '</span></div><br/>';
         }
 
         for (var i = 0, length = version.MediaStreams.length; i < length; i++) {
@@ -1150,8 +1150,23 @@
             html += '</div>';
         }
 
+        if (version.Container) {
+            html += '<div><span class="mediaInfoLabel">Container</span><span class="mediaInfoAttribute">' + version.Container + '</span></div>';
+        }
+
+        if (version.Formats && version.Formats.length) {
+            html += '<div><span class="mediaInfoLabel">Format</span><span class="mediaInfoAttribute">' + version.Formats.join(',') + '</span></div>';
+        }
+
+        if (version.Size) {
+
+            var size = (version.Size / (1024 * 1024)).toFixed(0);
+
+            html += '<div><span class="mediaInfoLabel">Size</span><span class="mediaInfoAttribute">' + size + ' MB</span></div>';
+        }
+
         if (version.Path) {
-            html += '<br/><span class="mediaInfoLabel">Path</span><span class="mediaInfoAttribute">' + version.Path + '</span>';
+            html += '<div><span class="mediaInfoLabel">Path</span><span class="mediaInfoAttribute">' + version.Path + '</span></div>';
         }
 
         return html;

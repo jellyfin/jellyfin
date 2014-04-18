@@ -290,7 +290,7 @@
             }
 
             if (idleState == true) {
-                video.removeClass("cursor-inactive").addClass("cursor-active");
+                video.removeClass("cursor-inactive");
                 videoControls.removeClass("inactive").addClass("active");
             }
 
@@ -298,7 +298,7 @@
 
             timeout = window.setTimeout(function () {
                 idleState = true;
-                video.removeClass("cursor-active").addClass("cursor-inactive");
+                video.addClass("cursor-inactive");
                 videoControls.removeClass("active").addClass("inactive");
             }, 4000);
         }

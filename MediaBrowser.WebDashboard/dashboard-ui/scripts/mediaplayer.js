@@ -1202,7 +1202,7 @@
                     if (stream.Type == "Audio") {
 
                         // Stream statically when possible
-                        if (stream.BitRate <= 256000) {
+                        if (stream.BitRate <= 320000) {
                             isStatic = true;
                         }
                         break;

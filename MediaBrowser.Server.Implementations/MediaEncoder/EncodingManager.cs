@@ -158,15 +158,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                             continue;
                         }
 
-                        if (video.VideoType == VideoType.BluRay)
-                        {
-                            // Can only extract reliably on single file blurays
-                            if (video.PlayableStreamFileNames == null || video.PlayableStreamFileNames.Count != 1)
-                            {
-                                continue;
-                            }
-                        }
-
                         // Add some time for the first chapter to make sure we don't end up with a black image
                         var time = chapter.StartPositionTicks == 0 ? TimeSpan.FromTicks(Math.Min(FirstChapterTicks, video.RunTimeTicks ?? 0)) : TimeSpan.FromTicks(chapter.StartPositionTicks);
 

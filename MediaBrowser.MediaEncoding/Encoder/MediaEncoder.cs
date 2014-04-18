@@ -768,7 +768,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2},thumbnail=40\" -f image2 \"{1}\"", inputPath, "-", vf) :
+            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, "-", vf) :
                 string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf);
 
             var probeSize = GetProbeSizeArgument(type);

@@ -46,6 +46,10 @@ namespace MediaBrowser.Model.Dlna
         public string DeviceProfileId { get; set; }
         public string DeviceId { get; set; }
 
+        public long? RunTimeTicks { get; set; }
+
+        public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
+
         public string ToUrl(string baseUrl)
         {
             return ToDlnaUrl(baseUrl);

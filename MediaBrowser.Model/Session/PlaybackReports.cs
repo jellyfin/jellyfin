@@ -90,6 +90,19 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The volume level.</value>
         public int? VolumeLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the play method.
+        /// </summary>
+        /// <value>The play method.</value>
+        public PlayMethod PlayMethod { get; set; }
+    }
+
+    public enum PlayMethod
+    {
+        Transcode = 0,
+        DirectStream = 1,
+        DirectPlay = 2
     }
 
     /// <summary>

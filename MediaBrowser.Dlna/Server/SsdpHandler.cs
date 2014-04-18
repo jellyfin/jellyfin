@@ -44,7 +44,7 @@ namespace MediaBrowser.Dlna.Server
             Start();
         }
 
-        private IEnumerable<UpnpDevice> Devices
+        public IEnumerable<UpnpDevice> Devices
         {
             get
             {

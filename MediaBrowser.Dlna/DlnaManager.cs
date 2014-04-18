@@ -3,6 +3,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Dlna.Profiles;
 using MediaBrowser.Dlna.Server;
@@ -27,8 +28,11 @@ namespace MediaBrowser.Dlna
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
+        private readonly IDtoService _dtoService;
+        private readonly IImageProcessor _imageProcessor;
+        private readonly IUserDataManager _userDataManager;
 
-        public DlnaManager(IXmlSerializer xmlSerializer, IFileSystem fileSystem, IApplicationPaths appPaths, ILogger logger, IJsonSerializer jsonSerializer, IUserManager userManager, ILibraryManager libraryManager)
+        public DlnaManager(IXmlSerializer xmlSerializer, IFileSystem fileSystem, IApplicationPaths appPaths, ILogger logger, IJsonSerializer jsonSerializer, IUserManager userManager, ILibraryManager libraryManager, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
@@ -37,6 +41,9 @@ namespace MediaBrowser.Dlna
             _jsonSerializer = jsonSerializer;
             _userManager = userManager;
             _libraryManager = libraryManager;
+            _dtoService = dtoService;
+            _imageProcessor = imageProcessor;
+            _userDataManager = userDataManager;
 
             //DumpProfiles();
         }
@@ -502,7 +509,14 @@ namespace MediaBrowser.Dlna
 
         public ControlResponse ProcessControlRequest(ControlRequest request)
         {
-            return new ControlHandler(_logger, _userManager, _libraryManager)
+            var profile = GetProfile(request.Headers)
+                          ?? GetDefaultProfile();
+
+            var device = DlnaServerEntryPoint.Instance.GetServerUpnpDevice(request.TargetServerUuId);
+
+            var serverAddress = device.Descriptor.ToString().Substring(0, device.Descriptor.ToString().IndexOf("/dlna", StringComparison.OrdinalIgnoreCase));
+
+            return new ControlHandler(_logger, _userManager, _libraryManager, profile, serverAddress, _dtoService, _imageProcessor, _userDataManager)
                 .ProcessControlRequest(request);
         }
 
