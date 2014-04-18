@@ -515,5 +515,7 @@
 	"ServerUpToDate": "Media Browser Server is up to date",
 	"ErrorConnectingToMediaBrowserRepository": "There was an error connecting to the remote Media Browser repository.",
 	"LabelComponentsUpdated": "The following components have been installed or updated:",
-	"MessagePleaseRestartServerToFinishUpdating": "Please restart the server to finish applying updates."
+	"MessagePleaseRestartServerToFinishUpdating": "Please restart the server to finish applying updates.",
+	"LabelDownMixAudioScale": "Down mix audio boost scale:",
+	"LabelDownMixAudioScaleHelp": "Boost audio when downmixing. Set to 1 to preserve original volume value."
 }

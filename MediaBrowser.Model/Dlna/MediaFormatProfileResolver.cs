@@ -35,17 +35,23 @@ namespace MediaBrowser.Model.Dlna
 
         private MediaFormatProfile ResolveVideoMPEG2TSFormat(string videoCodec, string audioCodec, int? width, int? height, int? bitrate, TransportStreamTimestamp timestampType)
         {
-            //  String suffix = "";
-            //  if (isNoTimestamp(timestampType))
-            //    suffix = "_ISO";
-            //  else if (timestampType == TransportStreamTimestamp.VALID) {
-            //    suffix = "_T";
-            //  }
+            var suffix = "";
 
-            //  String resolution = "S";
-            //  if ((width.intValue() > 720) || (height.intValue() > 576)) {
-            //    resolution = "H";
-            //  }
+            switch (timestampType)
+            {
+                case TransportStreamTimestamp.NONE:
+                    suffix = "_ISO";
+                    break;
+                case TransportStreamTimestamp.VALID:
+                    suffix = "_T";
+                    break;
+            }
+
+            String resolution = "S";
+            if ((width.HasValue && width.Value > 720) || (height.HasValue && height.Value > 576))
+            {
+                resolution = "H";
+            }
 
             //  if (videoCodec == VideoCodec.MPEG2)
             //  {
@@ -55,54 +61,60 @@ namespace MediaBrowser.Model.Dlna
             //      profiles.add(MediaFormatProfile.MPEG_TS_JP_T);
             //    }
             //    return profiles;
-            //  }if (videoCodec == VideoCodec.H264)
-            //  {
-            //    if (audioCodec == AudioCodec.LPCM)
-            //      return Collections.singletonList(MediaFormatProfile.AVC_TS_HD_50_LPCM_T);
-            //    if (audioCodec == AudioCodec.DTS) {
-            //      if (isNoTimestamp(timestampType)) {
-            //        return Collections.singletonList(MediaFormatProfile.AVC_TS_HD_DTS_ISO);
-            //      }
-            //      return Collections.singletonList(MediaFormatProfile.AVC_TS_HD_DTS_T);
-            //    }
-            //    if (audioCodec == AudioCodec.MP2) {
-            //      if (isNoTimestamp(timestampType)) {
-            //        return Collections.singletonList(MediaFormatProfile.valueOf(String.format("AVC_TS_HP_%sD_MPEG1_L2_ISO", cast(Object[])[ resolution ])));
-            //      }
-            //      return Collections.singletonList(MediaFormatProfile.valueOf(String.format("AVC_TS_HP_%sD_MPEG1_L2_T", cast(Object[])[ resolution ])));
-            //    }
+            //  }
+            if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.Equals(audioCodec, "lpcm", StringComparison.OrdinalIgnoreCase))
+                    return MediaFormatProfile.AVC_TS_HD_50_LPCM_T;
 
-            //    if (audioCodec == AudioCodec.AAC)
-            //      return Collections.singletonList(MediaFormatProfile.valueOf(String.format("AVC_TS_MP_%sD_AAC_MULT5%s", cast(Object[])[ resolution, suffix ])));
-            //    if (audioCodec == AudioCodec.MP3)
-            //      return Collections.singletonList(MediaFormatProfile.valueOf(String.format("AVC_TS_MP_%sD_MPEG1_L3%s", cast(Object[])[ resolution, suffix ])));
-            //    if ((audioCodec is null) || (audioCodec == AudioCodec.AC3)) {
-            //      return Collections.singletonList(MediaFormatProfile.valueOf(String.format("AVC_TS_MP_%sD_AC3%s", cast(Object[])[ resolution, suffix ])));
-            //    }
-            //  }
-            //  else if (videoCodec == VideoCodec.VC1) {
-            //    if ((audioCodec is null) || (audioCodec == AudioCodec.AC3))
-            //    {
-            //      if ((width.intValue() > 720) || (height.intValue() > 576)) {
-            //        return Collections.singletonList(MediaFormatProfile.VC1_TS_AP_L2_AC3_ISO);
-            //      }
-            //      return Collections.singletonList(MediaFormatProfile.VC1_TS_AP_L1_AC3_ISO);
-            //    }
-            //    if (audioCodec == AudioCodec.DTS) {
-            //      suffix = suffix.equals("_ISO") ? suffix : "_T";
-            //      return Collections.singletonList(MediaFormatProfile.valueOf(String.format("VC1_TS_HD_DTS%s", cast(Object[])[ suffix ])));
-            //    }
-            //  } else if ((videoCodec == VideoCodec.MPEG4) || (videoCodec == VideoCodec.MSMPEG4)) {
-            //    if (audioCodec == AudioCodec.AAC)
-            //      return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_AAC%s", cast(Object[])[ suffix ])));
-            //    if (audioCodec == AudioCodec.MP3)
-            //      return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_MPEG1_L3%s", cast(Object[])[ suffix ])));
-            //    if (audioCodec == AudioCodec.MP2)
-            //      return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_MPEG2_L2%s", cast(Object[])[ suffix ])));
-            //    if ((audioCodec is null) || (audioCodec == AudioCodec.AC3)) {
-            //      return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_AC3%s", cast(Object[])[ suffix ])));
-            //    }
-            //  }
+                if (string.Equals(audioCodec, "dts", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (timestampType == TransportStreamTimestamp.NONE)
+                    {
+                        return MediaFormatProfile.AVC_TS_HD_DTS_ISO;
+                    }
+                    return MediaFormatProfile.AVC_TS_HD_DTS_T;
+                }
+                //if (audioCodec == AudioCodec.MP2) {
+                //  if (isNoTimestamp(timestampType)) {
+                //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("AVC_TS_HP_%sD_MPEG1_L2_ISO", cast(Object[])[ resolution ])));
+                //  }
+                //  return Collections.singletonList(MediaFormatProfile.valueOf(String.format("AVC_TS_HP_%sD_MPEG1_L2_T", cast(Object[])[ resolution ])));
+                //}
+
+                //if (audioCodec == AudioCodec.AAC)
+                //  return Collections.singletonList(MediaFormatProfile.valueOf(String.format("AVC_TS_MP_%sD_AAC_MULT5%s", cast(Object[])[ resolution, suffix ])));
+                //if (audioCodec == AudioCodec.MP3)
+                //  return Collections.singletonList(MediaFormatProfile.valueOf(String.format("AVC_TS_MP_%sD_MPEG1_L3%s", cast(Object[])[ resolution, suffix ])));
+                //if ((audioCodec is null) || (audioCodec == AudioCodec.AC3)) {
+                //  return Collections.singletonList(MediaFormatProfile.valueOf(String.format("AVC_TS_MP_%sD_AC3%s", cast(Object[])[ resolution, suffix ])));
+                //}
+            }
+            else if (string.Equals(videoCodec, "vc1", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrEmpty(audioCodec) || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase))
+                {
+                    if ((width.HasValue && width.Value > 720) || (height.HasValue && height.Value > 576))
+                    {
+                        return MediaFormatProfile.VC1_TS_AP_L2_AC3_ISO;
+                    }
+                    return MediaFormatProfile.VC1_TS_AP_L1_AC3_ISO;
+                }
+                //  if (audioCodec == AudioCodec.DTS) {
+                //    suffix = suffix.equals("_ISO") ? suffix : "_T";
+                //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("VC1_TS_HD_DTS%s", cast(Object[])[ suffix ])));
+                //  }
+                //} else if ((videoCodec == VideoCodec.MPEG4) || (videoCodec == VideoCodec.MSMPEG4)) {
+                //  if (audioCodec == AudioCodec.AAC)
+                //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_AAC%s", cast(Object[])[ suffix ])));
+                //  if (audioCodec == AudioCodec.MP3)
+                //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_MPEG1_L3%s", cast(Object[])[ suffix ])));
+                //  if (audioCodec == AudioCodec.MP2)
+                //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_MPEG2_L2%s", cast(Object[])[ suffix ])));
+                //  if ((audioCodec is null) || (audioCodec == AudioCodec.AC3)) {
+                //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_AC3%s", cast(Object[])[ suffix ])));
+                //  }
+            }
 
             throw new ArgumentException("Mpeg video file does not match any supported DLNA profile");
         }

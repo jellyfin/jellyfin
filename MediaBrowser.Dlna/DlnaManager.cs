@@ -516,7 +516,15 @@ namespace MediaBrowser.Dlna
 
             var serverAddress = device.Descriptor.ToString().Substring(0, device.Descriptor.ToString().IndexOf("/dlna", StringComparison.OrdinalIgnoreCase));
 
-            return new ControlHandler(_logger, _userManager, _libraryManager, profile, serverAddress, _dtoService, _imageProcessor, _userDataManager)
+            return new ControlHandler(
+                _logger, 
+                _userManager, 
+                _libraryManager, 
+                profile, 
+                serverAddress, 
+                _dtoService, 
+                _imageProcessor, 
+                _userDataManager)
                 .ProcessControlRequest(request);
         }
 

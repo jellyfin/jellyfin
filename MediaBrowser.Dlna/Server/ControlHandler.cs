@@ -89,6 +89,8 @@ namespace MediaBrowser.Dlna.Server
                 sparams.Add(e.LocalName, e.InnerText.Trim());
             }
 
+            var deviceId = "fgd";
+
             var env = new XmlDocument();
             env.AppendChild(env.CreateXmlDeclaration("1.0", "utf-8", "yes"));
             var envelope = env.CreateElement("SOAP-ENV", "Envelope", NS_SOAPENV);
@@ -116,7 +118,7 @@ namespace MediaBrowser.Dlna.Server
                     result = HandleGetSystemUpdateID();
                     break;
                 case "Browse":
-                    result = HandleBrowse(sparams, user);
+                    result = HandleBrowse(sparams, user, deviceId);
                     break;
                 case "X_GetFeatureList":
                     result = HandleXGetFeatureList();
@@ -235,7 +237,7 @@ namespace MediaBrowser.Dlna.Server
             return builder.ToString();
         }
 
-        private IEnumerable<KeyValuePair<string, string>> HandleBrowse(Headers sparams, User user)
+        private IEnumerable<KeyValuePair<string, string>> HandleBrowse(Headers sparams, User user, string deviceId)
         {
             var id = sparams["ObjectID"];
             var flag = sparams["BrowseFlag"];
@@ -298,7 +300,7 @@ namespace MediaBrowser.Dlna.Server
                     }
                     else
                     {
-                        Browse_AddItem(result, i, user);
+                        Browse_AddItem(result, i, user, deviceId);
                     }
                 }
             }
@@ -366,7 +368,7 @@ namespace MediaBrowser.Dlna.Server
             }
         }
 
-        private void Browse_AddItem(XmlDocument result, BaseItem item, User user)
+        private void Browse_AddItem(XmlDocument result, BaseItem item, User user, string deviceId)
         {
             var element = result.CreateElement(string.Empty, "item", NS_DIDL);
             element.SetAttribute("restricted", "1");
@@ -389,13 +391,13 @@ namespace MediaBrowser.Dlna.Server
             var audio = item as Audio;
             if (audio != null)
             {
-                AddAudioResource(element, audio);
+                AddAudioResource(element, audio, deviceId);
             }
 
             var video = item as Video;
             if (video != null)
             {
-                AddVideoResource(element, video);
+                AddVideoResource(element, video, deviceId);
             }
 
             AddCover(item, element);
@@ -403,12 +405,7 @@ namespace MediaBrowser.Dlna.Server
             result.DocumentElement.AppendChild(element);
         }
 
-        private string GetDeviceId()
-        {
-            return "erer";
-        }
-
-        private void AddVideoResource(XmlElement container, Video video)
+        private void AddVideoResource(XmlElement container, Video video, string deviceId)
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
@@ -421,7 +418,7 @@ namespace MediaBrowser.Dlna.Server
                 ItemId = video.Id.ToString("N"),
                 MediaSources = sources,
                 Profile = _profile,
-                DeviceId = GetDeviceId(),
+                DeviceId = deviceId,
                 MaxBitrate = maxBitrateSetting
             });
 
@@ -435,17 +432,21 @@ namespace MediaBrowser.Dlna.Server
                 res.SetAttribute("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
             }
 
-            if (streamInfo.IsDirectStream && mediaSource.Size.HasValue)
+            if (streamInfo.IsDirectStream || streamInfo.EstimateContentLength)
             {
-                res.SetAttribute("size", mediaSource.Size.Value.ToString(_usCulture));
+                var size = streamInfo.TargetSize;
+
+                if (size.HasValue)
+                {
+                    res.SetAttribute("size", size.Value.ToString(_usCulture));
+                }
             }
 
             var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video && !string.Equals(i.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase));
-            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
-            var targetAudioBitrate = streamInfo.AudioBitrate ?? (audioStream == null ? null : audioStream.BitRate);
-            var targetSampleRate = audioStream == null ? null : audioStream.SampleRate;
-            var targetChannels = streamInfo.MaxAudioChannels ?? (audioStream == null ? null : audioStream.Channels);
+            var targetAudioBitrate = streamInfo.TargetAudioBitrate;
+            var targetSampleRate = streamInfo.TargetAudioSampleRate;
+            var targetChannels = streamInfo.TargetAudioChannels;
 
             var targetWidth = streamInfo.MaxWidth ?? (videoStream == null ? null : videoStream.Width);
             var targetHeight = streamInfo.MaxHeight ?? (videoStream == null ? null : videoStream.Height);
@@ -454,9 +455,7 @@ namespace MediaBrowser.Dlna.Server
                 ? (videoStream == null ? null : videoStream.Codec)
                 : streamInfo.VideoCodec;
 
-            var targetAudioCodec = streamInfo.IsDirectStream
-             ? (audioStream == null ? null : audioStream.Codec)
-             : streamInfo.AudioCodec;
+            var targetAudioCodec = streamInfo.TargetAudioCodec;
 
             var targetBitrate = maxBitrateSetting ?? mediaSource.Bitrate;
 
@@ -506,7 +505,7 @@ namespace MediaBrowser.Dlna.Server
             container.AppendChild(res);
         }
 
-        private void AddAudioResource(XmlElement container, Audio audio)
+        private void AddAudioResource(XmlElement container, Audio audio, string deviceId)
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
@@ -517,7 +516,7 @@ namespace MediaBrowser.Dlna.Server
                 ItemId = audio.Id.ToString("N"),
                 MediaSources = sources,
                 Profile = _profile,
-                DeviceId = GetDeviceId()
+                DeviceId = deviceId
             });
 
             var url = streamInfo.ToDlnaUrl(_serverAddress);
@@ -530,16 +529,19 @@ namespace MediaBrowser.Dlna.Server
                 res.SetAttribute("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
             }
 
-            if (streamInfo.IsDirectStream && mediaSource.Size.HasValue)
+            if (streamInfo.IsDirectStream || streamInfo.EstimateContentLength)
             {
-                res.SetAttribute("size", mediaSource.Size.Value.ToString(_usCulture));
+                var size = streamInfo.TargetSize;
+
+                if (size.HasValue)
+                {
+                    res.SetAttribute("size", size.Value.ToString(_usCulture));
+                }
             }
 
-            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
-
-            var targetAudioBitrate = streamInfo.AudioBitrate ?? (audioStream == null ? null : audioStream.BitRate);
-            var targetSampleRate = audioStream == null ? null : audioStream.SampleRate;
-            var targetChannels = streamInfo.MaxAudioChannels ?? (audioStream == null ? null : audioStream.Channels);
+            var targetAudioBitrate = streamInfo.TargetAudioBitrate;
+            var targetSampleRate = streamInfo.TargetAudioSampleRate;
+            var targetChannels = streamInfo.TargetAudioChannels;
 
             if (targetChannels.HasValue)
             {

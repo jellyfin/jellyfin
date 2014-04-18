@@ -356,6 +356,7 @@ namespace MediaBrowser.Server.Implementations.Localization
                 new LocalizatonOption{ Name="Greek", Value="el"},
                 new LocalizatonOption{ Name="Hebrew", Value="he"},
                 new LocalizatonOption{ Name="Italian", Value="it"},
+                new LocalizatonOption{ Name="Kazakh", Value="kk"},
                 new LocalizatonOption{ Name="Norwegian Bokmål", Value="nb"},
                 new LocalizatonOption{ Name="Portuguese (Brazil)", Value="pt-BR"},
                 new LocalizatonOption{ Name="Portuguese (Portugal)", Value="pt-PT"},
