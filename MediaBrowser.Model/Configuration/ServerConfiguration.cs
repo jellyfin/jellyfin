@@ -222,6 +222,8 @@ namespace MediaBrowser.Model.Configuration
         
         public DlnaOptions DlnaOptions { get; set; }
 
+        public double DownMixAudioBoost { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -242,6 +244,7 @@ namespace MediaBrowser.Model.Configuration
             EnablePeoplePrefixSubFolders = true;
 
             EnableUPnP = true;
+            DownMixAudioBoost = 2;
 
             MinResumePct = 5;
             MaxResumePct = 90;

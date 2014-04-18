@@ -380,7 +380,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (isVc1)
                 {
-                    profileScore ++;
+                    profileScore++;
                     // Max of 2
                     profileScore = Math.Min(profileScore, 2);
                 }
@@ -445,7 +445,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (state.AudioStream != null && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
                 {
-                    volParam = ",volume=2.000000";
+                    volParam = ",volume=" + ServerConfigurationManager.Configuration.DownMixAudioBoost.ToString(UsCulture);
                 }
             }
 
