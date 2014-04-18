@@ -81,7 +81,6 @@
     <Compile Include="Ssdp\SsdpHelper.cs" />
     <Compile Include="PlayTo\SsdpHttpClient.cs" />
     <Compile Include="Common\StateVariable.cs" />
-    <Compile Include="PlayTo\StreamHelper.cs" />
     <Compile Include="PlayTo\TransportCommands.cs" />
     <Compile Include="PlayTo\TransportStateEventArgs.cs" />
     <Compile Include="PlayTo\uBaseObject.cs" />

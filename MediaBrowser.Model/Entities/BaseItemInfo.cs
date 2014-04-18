@@ -52,6 +52,18 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The primary image item identifier.</value>
         public string PrimaryImageItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logo image tag.
+        /// </summary>
+        /// <value>The logo image tag.</value>
+        public Guid? LogoImageTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logo item identifier.
+        /// </summary>
+        /// <value>The logo item identifier.</value>
+        public string LogoItemId { get; set; }
         
         /// <summary>
         /// Gets or sets the thumb image tag.

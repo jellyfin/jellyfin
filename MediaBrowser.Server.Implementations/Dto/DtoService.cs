@@ -1234,15 +1234,21 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Path = GetMappedPath(i),
                 RunTimeTicks = i.RunTimeTicks,
                 Video3DFormat = i.Video3DFormat,
-                VideoType = i.VideoType
+                VideoType = i.VideoType,
+                Container = i.Container,
+                Size = i.Size,
+                Formats = (i.FormatName ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
             };
 
-            if (i.VideoType == VideoType.VideoFile || i.VideoType == VideoType.Iso)
+            if (string.IsNullOrEmpty(info.Container))
             {
-                var locationType = i.LocationType;
-                if (!string.IsNullOrWhiteSpace(i.Path) && locationType != LocationType.Remote && locationType != LocationType.Virtual)
+                if (i.VideoType == VideoType.VideoFile || i.VideoType == VideoType.Iso)
                 {
-                    info.Container = Path.GetExtension(i.Path).TrimStart('.');
+                    var locationType = i.LocationType;
+                    if (!string.IsNullOrWhiteSpace(i.Path) && locationType != LocationType.Remote && locationType != LocationType.Virtual)
+                    {
+                        info.Container = Path.GetExtension(i.Path).TrimStart('.');
+                    }
                 }
             }
 
@@ -1265,13 +1271,19 @@ namespace MediaBrowser.Server.Implementations.Dto
                 MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
                 Name = i.Name,
                 Path = GetMappedPath(i),
-                RunTimeTicks = i.RunTimeTicks
+                RunTimeTicks = i.RunTimeTicks,
+                Container = i.Container,
+                Size = i.Size,
+                Formats = (i.FormatName ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
             };
 
-            var locationType = i.LocationType;
-            if (!string.IsNullOrWhiteSpace(i.Path) && locationType != LocationType.Remote && locationType != LocationType.Virtual)
+            if (string.IsNullOrEmpty(info.Container))
             {
-                info.Container = Path.GetExtension(i.Path).TrimStart('.');
+                var locationType = i.LocationType;
+                if (!string.IsNullOrWhiteSpace(i.Path) && locationType != LocationType.Remote && locationType != LocationType.Virtual)
+                {
+                    info.Container = Path.GetExtension(i.Path).TrimStart('.');
+                }
             }
 
             var bitrate = info.MediaStreams.Where(m => m.Type == MediaStreamType.Audio).Select(m => m.BitRate ?? 0).Sum();

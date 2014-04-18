@@ -39,6 +39,7 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <param name="serverAddress">The server address.</param>
         /// <param name="streamUrl">The stream URL.</param>
         /// <param name="streams">The streams.</param>
+        /// <param name="includeImageRes">if set to <c>true</c> [include image resource].</param>
         /// <returns>System.String.</returns>
         public static string Build(BaseItem dto, string userId, string serverAddress, string streamUrl, IEnumerable<MediaStream> streams, bool includeImageRes)
         {

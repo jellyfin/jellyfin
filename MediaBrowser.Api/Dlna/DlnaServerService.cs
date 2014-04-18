@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using System;
+using MediaBrowser.Controller.Dlna;
 using ServiceStack;
+using ServiceStack.Text.Controller;
 using ServiceStack.Web;
 using System.Collections.Generic;
 using System.IO;
@@ -21,9 +23,12 @@ namespace MediaBrowser.Api.Dlna
     {
     }
 
-    [Route("/Dlna/control", "POST", Summary = "Processes a control request")]
+    [Route("/Dlna/{UuId}/control", "POST", Summary = "Processes a control request")]
     public class ProcessControlRequest : IRequiresRequestStream
     {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
+        
         public Stream RequestStream { get; set; }
     }
 
@@ -66,12 +71,16 @@ namespace MediaBrowser.Api.Dlna
 
         private async Task<ControlResponse> PostAsync(ProcessControlRequest request)
         {
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
+            var id = pathInfo.GetArgumentValue<string>(1);
+            
             using (var reader = new StreamReader(request.RequestStream))
             {
                 return _dlnaManager.ProcessControlRequest(new ControlRequest
                 {
                     Headers = GetRequestHeaders(),
-                    InputXml = await reader.ReadToEndAsync().ConfigureAwait(false)
+                    InputXml = await reader.ReadToEndAsync().ConfigureAwait(false),
+                    TargetServerUuId = id
                 });
             }
         }
