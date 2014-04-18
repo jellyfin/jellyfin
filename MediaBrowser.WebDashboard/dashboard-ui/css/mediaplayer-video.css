@@ -357,10 +357,6 @@
     }
 }
 
-.cursor-active {
-    cursor: default;
-}
-
 .cursor-inactive {
     cursor: none;
 }

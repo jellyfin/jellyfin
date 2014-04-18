@@ -211,7 +211,7 @@
 
             var className = nowPlayingItem ? 'activeSession' : 'notPlayingSession activeSession';
 
-            html += '<a class="' + className + '" id="' + rowId + '" href="nowplaying.html?id=' + connection.Id + '">';
+            html += '<div class="' + className + '" id="' + rowId + '">';
 
             html += '<div class="sessionNowPlayingContent"';
 
@@ -233,8 +233,9 @@
                 html += clientImage;
             }
 
-            html += '<div class="sessionAppName" style="display:inline-block;">' + connection.DeviceName;
-            html += '<br/>' + connection.ApplicationVersion;
+            html += '<div class="sessionAppName" style="display:inline-block;">';
+            html += '<div class="sessionDeviceName">' + connection.DeviceName + '</div>';
+            html += '<div class="sessionAppSecondaryText">' + DashboardPage.getAppSecondaryText(connection) + '</div>';
             html += '</div>';
 
             html += '</div>';
@@ -256,9 +257,14 @@
 
             html += '</div>';
 
-            html += '<div class="sessionNowPlayingInfo">';
             if (nowPlayingItem) {
-                html += DashboardPage.getNowPlayingName(connection);
+
+                var nowPlayingName = DashboardPage.getNowPlayingName(connection);
+
+                html += '<div class="sessionNowPlayingInfo" data-imgsrc="' + nowPlayingName.image + '">';
+                html += nowPlayingName.html;
+            } else {
+                html += '<div class="sessionNowPlayingInfo">';
             }
             html += '</div>';
 
@@ -273,34 +279,38 @@
             }
 
             html += '</div>';
-            html += '</a>';
+
+            html += '<div class="posterItemOverlayTarget"></div>';
+
+            html += '</div>';
 
         }
 
-        parentElement.append(html).trigger('create');
+        parentElement.append(html).createSessionItemMenus().trigger('create');
 
         $('.deadSession', parentElement).remove();
     },
 
+    getAppSecondaryText: function (session) {
+
+        return session.ApplicationVersion;
+    },
+
     getNowPlayingName: function (session) {
+
+        var imgUrl = '';
 
         var nowPlayingItem = session.NowPlayingItem;
 
         if (!nowPlayingItem) {
 
-            return 'Last seen ' + humane_date(session.LastActivityDate);
+            return {
+                html: 'Last seen ' + humane_date(session.LastActivityDate),
+                image: imgUrl
+            };
         }
 
         var topText = nowPlayingItem.Name;
-
-        if (nowPlayingItem.MediaType == 'Video') {
-            if (nowPlayingItem.IndexNumber != null) {
-                topText = nowPlayingItem.IndexNumber + " - " + topText;
-            }
-            if (nowPlayingItem.ParentIndexNumber != null) {
-                topText = nowPlayingItem.ParentIndexNumber + "." + topText;
-            }
-        }
 
         var bottomText = '';
 
@@ -316,8 +326,40 @@
             bottomText = nowPlayingItem.ProductionYear;
         }
 
-        return bottomText ? topText + '<br/>' + bottomText : topText;
+        if (nowPlayingItem.LogoItemId) {
 
+            imgUrl = ApiClient.getImageUrl(nowPlayingItem.LogoItemId, {
+
+                tag: session.LogoImageTag,
+                height: 48,
+                type: 'Logo'
+
+            });
+
+            topText = '<img src="' + imgUrl + '" style="max-height:24px;max-width:130px;" />';
+        }
+
+        var text = bottomText ? topText + '<br/>' + bottomText : topText;
+
+        return {
+            html: text,
+            image: imgUrl
+        };
+
+        //var playstate = session.PlayState;
+
+        //if (playstate) {
+
+        //    if (playstate.PlayMethod == 'DirectPlay') {
+        //        return 'Direct playing';
+        //    }
+        //    if (playstate.PlayMethod == 'DirectStream') {
+        //        return 'Direct streaming';
+        //    }
+        //    if (playstate.PlayMethod == 'Transcode') {
+        //        text = text + '<div class="sessionPlayMethod">Transcoding</div>';
+        //    }
+        //}
     },
 
     getUsersHtml: function (session) {
@@ -365,8 +407,16 @@
 
         $('.sessionUserName', row).html(DashboardPage.getUsersHtml(session));
 
-        $('.sessionNowPlayingInfo', row).html(DashboardPage.getNowPlayingName(session));
+        $('.sessionAppSecondaryText', row).html(DashboardPage.getAppSecondaryText(session));
 
+        var nowPlayingName = DashboardPage.getNowPlayingName(session);
+        var nowPlayingInfoElem = $('.sessionNowPlayingInfo', row);
+
+        if (!nowPlayingName.image || nowPlayingName.image != nowPlayingInfoElem.attr('data-imgsrc')) {
+            nowPlayingInfoElem.html(nowPlayingName.html);
+            nowPlayingInfoElem.attr('data-imgsrc', nowPlayingName.image || '');
+        }
+        
         if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
 
             var position = session.PlayState.PositionTicks || 0;
@@ -755,3 +805,80 @@
 };
 
 $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pagehide', "#dashboardPage", DashboardPage.onPageHide);
+
+(function ($, document, window) {
+
+    var showOverlayTimeout;
+
+    function onHoverOut() {
+
+        if (showOverlayTimeout) {
+            clearTimeout(showOverlayTimeout);
+            showOverlayTimeout = null;
+        }
+
+        $('.posterItemOverlayTarget:visible', this).each(function () {
+
+            var elem = this;
+
+            $(this).animate({ "height": "0" }, "fast", function () {
+
+                $(elem).hide();
+
+            });
+
+        });
+
+        $('.posterItemOverlayTarget:visible', this).stop().animate({ "height": "0" }, function () {
+
+            $(this).hide();
+
+        });
+    }
+
+    $.fn.createSessionItemMenus = function () {
+
+        function onShowTimerExpired(elem) {
+
+            if ($('.itemSelectionPanel:visible', elem).length) {
+                return;
+            }
+
+            var innerElem = $('.posterItemOverlayTarget', elem);
+
+            innerElem.show().each(function () {
+
+                this.style.height = 0;
+
+            }).animate({ "height": "100%" }, "fast");
+        }
+
+        function onHoverIn() {
+
+            if (showOverlayTimeout) {
+                clearTimeout(showOverlayTimeout);
+                showOverlayTimeout = null;
+            }
+
+            var elem = this;
+
+            showOverlayTimeout = setTimeout(function () {
+
+                onShowTimerExpired(elem);
+
+            }, 1000);
+        }
+
+        // https://hacks.mozilla.org/2013/04/detecting-touch-its-the-why-not-the-how/
+
+        if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)) {
+            /* browser with either Touch Events of Pointer Events
+               running on touch-capable device */
+            return this;
+        }
+
+        return this.off('.sessionItemMenu').on('mouseenter.sessionItemMenu', '.activeSession', onHoverIn)
+            .on('mouseleave.sessionItemMenu', '.activeSession', onHoverOut);
+    };
+
+})(jQuery, document, window);

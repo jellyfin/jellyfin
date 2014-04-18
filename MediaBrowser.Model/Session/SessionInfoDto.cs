@@ -233,5 +233,11 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The now playing media version identifier.</value>
         public string MediaSourceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the play method.
+        /// </summary>
+        /// <value>The play method.</value>
+        public PlayMethod? PlayMethod { get; set; }
     }
 }

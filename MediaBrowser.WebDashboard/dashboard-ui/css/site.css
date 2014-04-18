@@ -870,7 +870,7 @@ progress {
     left: 0;
     right: 0;
     bottom: 0;
-    border-radius: 3px;
+    border-radius: 2px;
 }
 
 .sessionNowPlayingInnerContent {
@@ -882,7 +882,7 @@ progress {
     bottom: 0;
     color: #fff;
     font-weight: 400;
-    border-radius: 3px;
+    border-radius: 2px;
 }
 
 .sessionAppInfo {
@@ -931,6 +931,7 @@ progress {
     height: 7px;
     width: 100%;
     opacity: .95;
+    z-index: 1000;
 }
 
 .notPlayingSession .sessionNowPlayingContent {

@@ -10,6 +10,7 @@ namespace MediaBrowser.Model.Dto
         public string Path { get; set; }
 
         public string Container { get; set; }
+        public long? Size { get; set; }
 
         public LocationType LocationType { get; set; }
         
@@ -25,6 +26,14 @@ namespace MediaBrowser.Model.Dto
         
         public List<MediaStream> MediaStreams { get; set; }
 
+        public List<string> Formats { get; set; }
+        
         public int? Bitrate { get; set; }
+
+        public MediaSourceInfo()
+        {
+            Formats = new List<string>();
+            MediaStreams = new List<MediaStream>();
+        }
     }
 }

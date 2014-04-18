@@ -121,9 +121,27 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (data.format.tags != null)
+            if (data.format != null)
             {
-                FetchDataFromTags(audio, data.format.tags);
+                audio.FormatName = data.format.format_name;
+
+                var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
+
+                audio.Container = extension;
+
+                if (!string.IsNullOrEmpty(data.format.size))
+                {
+                    audio.Size = long.Parse(data.format.size , _usCulture);
+                }
+                else
+                {
+                    audio.Size = null;
+                }
+
+                if (data.format.tags != null)
+                {
+                    FetchDataFromTags(audio, data.format.tags);
+                }
             }
 
             return _itemRepo.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);

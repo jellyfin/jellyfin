@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -158,6 +159,29 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (needToSetRuntime && !string.IsNullOrEmpty(data.format.duration))
                 {
                     video.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration, _usCulture)).Ticks;
+                }
+
+                video.FormatName = (data.format.format_name ?? string.Empty)
+                    .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
+
+                if (video.VideoType == VideoType.VideoFile)
+                {
+                    var extension = (Path.GetExtension(video.Path) ?? string.Empty).TrimStart('.');
+
+                    video.Container = extension;
+                }
+                else
+                {
+                    video.Container = null;
+                }
+
+                if (!string.IsNullOrEmpty(data.format.size))
+                {
+                    video.Size = long.Parse(data.format.size, _usCulture);
+                }
+                else
+                {
+                    video.Size = null;
                 }
             }
 

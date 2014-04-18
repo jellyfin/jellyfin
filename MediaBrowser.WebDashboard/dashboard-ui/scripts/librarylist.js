@@ -279,8 +279,8 @@
             });
         }
 
-        return this.on('mouseenter', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverIn)
-            .on('mouseleave', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverOut);
+        return this.off('.posterItemHoverMenu').on('mouseenter.posterItemHoverMenu', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverIn)
+            .on('mouseleave.posterItemHoverMenu', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverOut);
     };
 
     function toggleSelections(page) {

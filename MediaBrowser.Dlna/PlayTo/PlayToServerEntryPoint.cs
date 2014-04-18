@@ -2,6 +2,7 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
@@ -24,8 +25,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
         private readonly IServerApplicationHost _appHost;
+        private readonly IDtoService _dtoService;
 
-        public PlayToServerEntryPoint(ILogManager logManager, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost)
+        public PlayToServerEntryPoint(ILogManager logManager, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IDtoService dtoService)
         {
             _config = config;
             _sessionManager = sessionManager;
@@ -36,6 +38,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _userManager = userManager;
             _dlnaManager = dlnaManager;
             _appHost = appHost;
+            _dtoService = dtoService;
             _logger = logManager.GetLogger("PlayTo");
         }
 
@@ -72,7 +75,18 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 try
                 {
-                    _manager = new PlayToManager(_logger, _config, _sessionManager, _httpClient, _itemRepo, _libraryManager, _networkManager, _userManager, _dlnaManager, _appHost);
+                    _manager = new PlayToManager(_logger, 
+                        _config, 
+                        _sessionManager, 
+                        _httpClient, 
+                        _itemRepo, 
+                        _libraryManager, 
+                        _networkManager, 
+                        _userManager, 
+                        _dlnaManager, 
+                        _appHost, 
+                        _dtoService);
+
                     _manager.Start();
                 }
                 catch (Exception ex)
