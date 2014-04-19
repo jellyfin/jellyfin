@@ -196,18 +196,18 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Episode> GetEpisodes(User user, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
         {
+            var episodes = GetRecursiveChildren(user)
+                .OfType<Episode>();
+
             if (IndexNumber.HasValue)
             {
                 var series = Series;
 
                 if (series != null)
                 {
-                    return series.GetEpisodes(user, IndexNumber.Value, includeMissingEpisodes, includeVirtualUnairedEpisodes);
+                    return series.GetEpisodes(user, IndexNumber.Value, includeMissingEpisodes, includeVirtualUnairedEpisodes, episodes);
                 }
             }
-
-            var episodes = GetRecursiveChildren(user)
-                .OfType<Episode>();
 
             if (!includeMissingEpisodes)
             {

@@ -4,6 +4,6 @@ namespace MediaBrowser.Dlna.PlayTo
 {
     public class TransportStateEventArgs : EventArgs
     {
-        public bool Stopped { get; set; }
+        public TRANSPORTSTATE State { get; set; }
     }
 }

@@ -168,10 +168,18 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Episode> GetEpisodes(User user, int seasonNumber, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
         {
+            return GetEpisodes(user, seasonNumber, includeMissingEpisodes, includeVirtualUnairedEpisodes,
+                new List<Episode>());
+        }
+
+        internal IEnumerable<Episode> GetEpisodes(User user, int seasonNumber, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes, IEnumerable<Episode> additionalEpisodes)
+        {
             var episodes = GetRecursiveChildren(user)
                 .OfType<Episode>();
 
             episodes = FilterEpisodesBySeason(episodes, seasonNumber, DisplaySpecialsWithSeasons);
+
+            episodes = episodes.Concat(additionalEpisodes).Distinct();
 
             if (!includeMissingEpisodes)
             {

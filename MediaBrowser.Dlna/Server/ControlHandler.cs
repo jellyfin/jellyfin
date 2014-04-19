@@ -185,7 +185,7 @@ namespace MediaBrowser.Dlna.Server
         {
             var id = sparams["ObjectID"];
 
-            var item = _libraryManager.GetItemById(new Guid(id));
+            var item = GetItemFromObjectId(id, user);
 
             var newbookmark = int.Parse(sparams["PosSecond"], _usCulture);
 
@@ -265,9 +265,7 @@ namespace MediaBrowser.Dlna.Server
             didl.SetAttribute("xmlns:sec", NS_SEC);
             result.AppendChild(didl);
 
-            var folder = string.IsNullOrWhiteSpace(id) || string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
-                ? user.RootFolder
-                : (Folder)_libraryManager.GetItemById(new Guid(id));
+            var folder = (Folder)GetItemFromObjectId(id, user);
 
             var children = GetChildrenSorted(folder, user).ToList();
 
@@ -326,6 +324,17 @@ namespace MediaBrowser.Dlna.Server
             }
 
             return _libraryManager.Sort(children, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
+        }
+
+        private BaseItem GetItemFromObjectId(string id, User user)
+        {
+           return string.IsNullOrWhiteSpace(id) || string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
+
+                // Samsung sometimes uses 1 as root
+                || string.Equals(id, "1", StringComparison.OrdinalIgnoreCase)
+
+                ? user.RootFolder
+                : _libraryManager.GetItemById(new Guid(id));
         }
 
         private void Browse_AddFolder(XmlDocument result, Folder f, int childCount)

@@ -135,7 +135,7 @@ namespace MediaBrowser.Dlna.Server
 
         private void RespondToSearch(IPEndPoint endpoint, string req)
         {
-            if (req == "ssdp:all")
+            if (string.Equals(req, "ssdp:all", StringComparison.OrdinalIgnoreCase))
             {
                 req = null;
             }
@@ -171,7 +171,7 @@ namespace MediaBrowser.Dlna.Server
 
             SendDatagram(endpoint, dev.Address, msg, false);
 
-            _logger.Info("{1} - Responded to a {0} request", dev.Type, endpoint);
+            _logger.Info("{1} - Responded to a {0} request to {2}", dev.Type, endpoint, dev.Address.ToString());
         }
 
         private void SendDatagram(IPEndPoint endpoint, IPAddress localAddress, string msg, bool sticky)
