@@ -12,9 +12,11 @@ namespace MediaBrowser.Dlna.Server
                 GetGetSystemUpdateIDAction(),
                 GetSearchCapabilitiesAction(),
                 GetSortCapabilitiesAction(),
+                GetSearchAction(),
                 GetBrowseAction(),
                 GetX_GetFeatureListAction(),
-                GetXSetBookmarkAction()
+                GetXSetBookmarkAction(),
+                GetBrowseByLetterAction()
             };
 
             return list;
@@ -83,6 +85,86 @@ namespace MediaBrowser.Dlna.Server
                 Name = "FeatureList",
                 Direction = "out",
                 RelatedStateVariable = "A_ARG_TYPE_Featurelist"
+            });
+
+            return action;
+        }
+
+        private ServiceAction GetSearchAction()
+        {
+            var action = new ServiceAction
+            {
+                Name = "Search"
+            };
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "ContainerID",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_ObjectID"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "SearchCriteria",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_SearchCriteria"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "Filter",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_Filter"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "StartingIndex",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_Index"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "RequestedCount",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_Count"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "SortCriteria",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_SortCriteria"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "Result",
+                Direction = "out",
+                RelatedStateVariable = "A_ARG_TYPE_Result"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "NumberReturned",
+                Direction = "out",
+                RelatedStateVariable = "A_ARG_TYPE_Count"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "TotalMatches",
+                Direction = "out",
+                RelatedStateVariable = "A_ARG_TYPE_Count"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "UpdateID",
+                Direction = "out",
+                RelatedStateVariable = "A_ARG_TYPE_UpdateID"
             });
 
             return action;
@@ -168,6 +250,93 @@ namespace MediaBrowser.Dlna.Server
             return action;
         }
 
+        private ServiceAction GetBrowseByLetterAction()
+        {
+            var action = new ServiceAction
+            {
+                Name = "X_BrowseByLetter"
+            };
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "ObjectID",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_ObjectID"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "BrowseFlag",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_BrowseFlag"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "Filter",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_Filter"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "StartingLetter",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_BrowseLetter"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "RequestedCount",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_Count"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "SortCriteria",
+                Direction = "in",
+                RelatedStateVariable = "A_ARG_TYPE_SortCriteria"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "Result",
+                Direction = "out",
+                RelatedStateVariable = "A_ARG_TYPE_Result"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "NumberReturned",
+                Direction = "out",
+                RelatedStateVariable = "A_ARG_TYPE_Count"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "TotalMatches",
+                Direction = "out",
+                RelatedStateVariable = "A_ARG_TYPE_Count"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "UpdateID",
+                Direction = "out",
+                RelatedStateVariable = "A_ARG_TYPE_UpdateID"
+            });
+
+            action.ArgumentList.Add(new Argument
+            {
+                Name = "StartingIndex",
+                Direction = "out",
+                RelatedStateVariable = "A_ARG_TYPE_Index"
+            });
+
+            return action;
+        }
+        
         private ServiceAction GetXSetBookmarkAction()
         {
             var action = new ServiceAction

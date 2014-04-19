@@ -953,6 +953,20 @@ progress {
     box-shadow: 0 0 20px 1px #38c;
 }
 
+.sessionNowPlayingTime {
+    color: #fff;
+    position: absolute;
+    right: 10px;
+    bottom: 15px;
+}
+
+.sessionNowPlayingStreamInfo {
+    color: #fff;
+    position: absolute;
+    left: 10px;
+    top: 10px;
+}
+
 @media all and (max-width: 1000px) {
 
     .activeSession {

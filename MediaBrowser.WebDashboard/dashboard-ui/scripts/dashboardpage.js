@@ -280,7 +280,11 @@
 
             html += '</div>';
 
-            html += '<div class="posterItemOverlayTarget"></div>';
+            html += '<div class="posterItemOverlayTarget">';
+
+            html += '<div class="sessionNowPlayingStreamInfo">' + DashboardPage.getSessionNowPlayingStreamInfo(connection) + '</div>';
+            html += '<div class="sessionNowPlayingTime">' + DashboardPage.getSessionNowPlayingTime(connection) + '</div>';
+            html += '</div>';
 
             html += '</div>';
 
@@ -289,6 +293,50 @@
         parentElement.append(html).createSessionItemMenus().trigger('create');
 
         $('.deadSession', parentElement).remove();
+    },
+
+    getSessionNowPlayingStreamInfo: function (session) {
+
+        var html = '';
+
+        html += '<div>';
+
+        if (session.PlayState.PlayMethod == 'Transcode') {
+            html += 'Transcoding';
+        }
+        else if (session.PlayState.PlayMethod == 'DirectStream') {
+            html += 'Direct Streaming';
+        }
+        else if (session.PlayState.PlayMethod == 'DirectPlay') {
+            html += 'Direct Playing';
+        }
+
+        html += '</div>';
+
+        return html;
+    },
+
+    getSessionNowPlayingTime: function (session) {
+
+        var html = '';
+
+        if (session.PlayState.PositionTicks) {
+            html += Dashboard.getDisplayTime(session.PlayState.PositionTicks);
+        } else {
+            html += '--:--:--';
+        }
+
+        html += ' / ';
+
+        var nowPlayingItem = session.NowPlayingItem;
+
+        if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
+            html += Dashboard.getDisplayTime(nowPlayingItem.RunTimeTicks);
+        } else {
+            html += '--:--:--';
+        }
+
+        return html;
     },
 
     getAppSecondaryText: function (session) {
@@ -405,6 +453,9 @@
             row.removeClass('playingSession');
         }
 
+        $('.sessionNowPlayingStreamInfo', row).html(DashboardPage.getSessionNowPlayingStreamInfo(session));
+        $('.sessionNowPlayingTime', row).html(DashboardPage.getSessionNowPlayingTime(session));
+
         $('.sessionUserName', row).html(DashboardPage.getUsersHtml(session));
 
         $('.sessionAppSecondaryText', row).html(DashboardPage.getAppSecondaryText(session));
@@ -416,7 +467,7 @@
             nowPlayingInfoElem.html(nowPlayingName.html);
             nowPlayingInfoElem.attr('data-imgsrc', nowPlayingName.image || '');
         }
-        
+
         if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
 
             var position = session.PlayState.PositionTicks || 0;

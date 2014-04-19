@@ -2,18 +2,8 @@
     width: 250px;
 }
 
-    .searchPanel + .ui-panel-dismiss {
-        right: 250px;
-    }
-
-@media all and (min-width: 600px) {
-    .searchPanel {
-        width: 300px;
-    }
-
-        .searchPanel + .ui-panel-dismiss {
-            right: 300px;
-        }
+.searchPanelModelOpen {
+    right: 250px!important;
 }
 
 .searchHints {

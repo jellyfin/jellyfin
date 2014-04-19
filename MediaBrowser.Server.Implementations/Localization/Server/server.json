@@ -517,5 +517,20 @@
 	"LabelComponentsUpdated": "The following components have been installed or updated:",
 	"MessagePleaseRestartServerToFinishUpdating": "Please restart the server to finish applying updates.",
 	"LabelDownMixAudioScale": "Down mix audio boost scale:",
-	"LabelDownMixAudioScaleHelp": "Boost audio when downmixing. Set to 1 to preserve original volume value."
+	"LabelDownMixAudioScaleHelp": "Boost audio when downmixing. Set to 1 to preserve original volume value.",
+	"ButtonLinkKeys": "Link Keys",
+	"LabelOldSupporterKey": "Old supporter key",
+	"LabelNewSupporterKey": "New supporter key",
+	"HeaderMultipleKeyLinking": "Multiple Key Linking",
+	"MultipleKeyLinkingHelp": "If you have more than one supporter key, use this form to link the old key's registrations with your new one.",
+	"LabelCurrentEmailAddress": "Current email address",
+	"LabelCurrentEmailAddressHelp": "The current email address to which your new key was sent.",
+	"HeaderForgotKey": "Forgot Key",
+	"LabelEmailAddress": "Email address",
+	"LabelSupporterEmailAddress": "The email address that was used to purchase the key.",
+	"ButtonRetrieveKey": "Retrieve Key",
+	"LabelSupporterKey": "Supporter Key (paste from email)",
+	"LabelSupporterKeyHelp": "Enter your supporter key to start enjoying additional benefits the community has developed for Media Browser.",
+	"MessageInvalidKey": "MB3 Key Missing or Invalid",
+	"ErrorMessageInvalidKey": "In order for any premium content to be registered, you must also be an MB3 Supporter. Please donate and support the continued development of the core product. Thank you."
 }

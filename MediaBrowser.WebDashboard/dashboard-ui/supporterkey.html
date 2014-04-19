@@ -18,23 +18,24 @@
                     </div>
 
                     <form id="supporterKeyForm">
-					
+
                         <div style="margin: 1em 0;">
-                            <label for="txtSupporterKey">MB3 Supporter Key (paste from email)</label>
+                            <label for="txtSupporterKey">${LabelSupporterKey}</label>
                             <input type="password" id="txtSupporterKey" name="txtSupporterKey" data-inline="true" />
                             <div class="fieldDescription">
-                                Enter your supporter key to start enjoying additional benefits the community has developed for Media Browser. <strong>MB3 keys only.</strong>
+                                ${LabelSupporterKeyHelp}
                             </div>
 
-                            <p style="display: none; padding: 1em; border-radius: 5px; font-weight: normal;" class="ui-bar-a notSupporter">
-                                <strong>MB3 Key Missing or Invalid</strong> - in order for any premium content to be registered, you must also be an MB3 Supporter.
-                            Please <a href="supporter.html">donate</a> and support the continued development of the core product.  Thank you.  
-                        
-                            </p>
+                            <div style="display: none; padding: 1em; margin-top: 1em; border-radius: 5px; font-weight: normal;" class="ui-bar-a notSupporter">
+                                <p><strong>${MessageInvalidKey}</strong></p>
+                                <p>
+                                    ${ErrorMessageInvalidKey}
+                                </p>
+                            </div>
 
                         </div>
                         <div style="margin: 2em 0;">
-						
+
                             <label for="txtLegacyKey">MB2 Supporter Key</label>
                             <input type="password" id="txtLegacyKey" name="txtLegacyKey" />
                             <div class="fieldDescription">
@@ -48,16 +49,16 @@
                     </form>
                     <br />
                     <div data-role="collapsible">
-                        <h3>Lost Key</h3>
+                        <h3>${HeaderForgotKey}</h3>
                         <div>
                             <form id="lostKeyForm">
                                 <div style="margin: 1em 0;">
-                                    <label for="txtEmail">Email Address</label>
+                                    <label for="txtEmail">${LabelEmailAddress}</label>
                                     <input type="email" required id="txtEmail" name="txtEmail" />
-                                    <div class="fieldDescription">The email address that was used to purchase the key.</div>
+                                    <div class="fieldDescription">${LabelSupporterEmailAddress}</div>
                                 </div>
                                 <p>
-                                    <button type="submit" id="mbRetrieveKeyBtn" data-icon="action" data-theme="b">Retrieve Key</button>
+                                    <button type="submit" id="mbRetrieveKeyBtn" data-icon="action" data-theme="b">${ButtonRetrieveKey}</button>
 
                                 </p>
                             </form>
@@ -65,31 +66,31 @@
                     </div>
 
                     <div data-role="collapsible">
-                        <h3>Multiple Key Linking</h3>
+                        <h3>${HeaderMultipleKeyLinking}</h3>
                         <div>
 
                             <form id="linkKeysForm">
                                 <p>
-                                    If you have more than one supporter key, use this form to link the old key's registrations with your new one.
+                                    ${MultipleKeyLinkingHelp}
                                 </p>
                                 <div style="margin: 1em 0;">
-                                    <label for="txtEmail">Current Email Address</label>
+                                    <label for="txtEmail">${LabelCurrentEmailAddress}</label>
                                     <input type="email" required id="txtNewEmail" name="txtNewEmail" />
                                     <div class="fieldDescription">
-                                        The current email address to which your new key was sent.
+                                        ${LabelCurrentEmailAddressHelp}
                                     </div>
                                 </div>
                                 <p>
-                                    <label for="txtNewKey">New Supporter Key</label>
+                                    <label for="txtNewKey">${LabelNewSupporterKey}</label>
                                     <input type="password" required="required" id="txtNewKey" name="txtNewKey" />
                                 </p>
                                 <p>
 
-                                    <label for="txtOldKey">Old Supporter Key</label>
+                                    <label for="txtOldKey">${LabelOldSupporterKey}</label>
                                     <input type="password" required="required" id="txtOldKey" name="txtOldKey" />
                                 </p>
                                 <p>
-                                    <button type="submit" id="mbLinkKeysBtn" data-icon="check" data-theme="b">Link Keys</button>
+                                    <button type="submit" id="mbLinkKeysBtn" data-icon="check" data-theme="b">${ButtonLinkKeys}</button>
                                 </p>
                             </form>
                         </div>

@@ -62,9 +62,6 @@
 
             if (currentPlayer) {
                 currentPlayer.unMute();
-
-                $(this).hide();
-                $('.muteButton', elem).show();
             }
         });
 
@@ -72,9 +69,6 @@
 
             if (currentPlayer) {
                 currentPlayer.mute();
-
-                $(this).hide();
-                $('.unmuteButton', elem).show();
             }
         });
 
@@ -89,9 +83,6 @@
 
             if (currentPlayer) {
                 currentPlayer.pause();
-
-                $(this).hide();
-                $('.unpauseButton', elem).show();
             }
         });
 
@@ -99,9 +90,6 @@
 
             if (currentPlayer) {
                 currentPlayer.unpause();
-
-                $(this).hide();
-                $('.pauseButton', elem).show();
             }
         });
 
@@ -163,6 +151,14 @@
 
         return elem;
     }
+    
+    function showButton(button) {
+        button.removeClass('hide');
+    }
+    
+    function hideButton(button) {
+        button.addClass('hide');
+    }
 
     function updatePlayerState(state) {
 
@@ -203,24 +199,24 @@
 
         if (state.isMuted) {
 
-            muteButton.hide();
-            unmuteButton.show();
+            hideButton(muteButton);
+            showButton(unmuteButton);
 
         } else {
 
-            muteButton.show();
-            unmuteButton.hide();
+            showButton(muteButton);
+            hideButton(unmuteButton);
         }
 
         if (state.isPaused) {
 
-            pauseButton.hide();
-            unpauseButton.show();
+            hideButton(pauseButton);
+            showButton(unpauseButton);
 
         } else {
 
-            pauseButton.show();
-            unpauseButton.hide();
+            showButton(pauseButton);
+            hideButton(unpauseButton);
         }
 
         if (!isVolumeSliderActive) {
@@ -320,6 +316,8 @@
 
     function onPlaybackStart(e, state) {
 
+        console.log('nowplaying event: ' + e.type);
+
         var player = this;
 
         player.beginPlayerUpdates();
@@ -343,6 +341,7 @@
 
     function onPlaybackStopped(e, state) {
 
+        console.log('nowplaying event: ' + e.type);
         var player = this;
 
         player.endPlayerUpdates();
@@ -352,6 +351,7 @@
 
     function onStateChanged(e, state) {
 
+        //console.log('nowplaying event: ' + e.type);
         var player = this;
 
         if (player.isDefaultPlayer && state.mediaType == 'Video') {
@@ -385,7 +385,7 @@
                 player.beginPlayerUpdates();
             }
 
-            onStateChanged.call(player, null, state);
+            onStateChanged.call(player, {type: 'init'}, state);
         });
 
         $(player).on('playbackstart.nowplayingbar', onPlaybackStart)

@@ -37,7 +37,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                     var isStandalone = args.Parent == null;
 
                     if (isStandalone ||
-                        string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
+                        string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase) ||
+                        string.IsNullOrEmpty(collectionType))
                     {
                         return new Controller.Entities.Audio.Audio();
                     }

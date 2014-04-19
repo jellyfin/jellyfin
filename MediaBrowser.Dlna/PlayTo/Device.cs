@@ -66,8 +66,8 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        private string _transportState = String.Empty;
-        public string TransportState
+        private TRANSPORTSTATE _transportState = TRANSPORTSTATE.STOPPED;
+        public TRANSPORTSTATE TransportState
         {
             get
             {
@@ -80,8 +80,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 _transportState = value;
 
-                if (value == TRANSPORTSTATE.PLAYING || value == TRANSPORTSTATE.STOPPED)
-                    NotifyPlaybackChanged(value == TRANSPORTSTATE.STOPPED);
+                NotifyPlaybackChanged(value);
             }
         }
 
@@ -374,7 +373,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 .ConfigureAwait(false);
 
             await Task.Delay(50).ConfigureAwait(false);
-            TransportState = "PAUSED_PLAYBACK";
+            TransportState = TRANSPORTSTATE.PAUSED_PLAYBACK;
             return true;
         }
 
@@ -492,7 +491,14 @@ namespace MediaBrowser.Dlna.PlayTo
             var transportStateValue = transportState == null ? null : transportState.Value;
 
             if (transportStateValue != null)
-                TransportState = transportStateValue;
+            {
+                TRANSPORTSTATE state;
+
+                if (Enum.TryParse(transportStateValue, true, out state))
+                {
+                    TransportState = state;
+                }
+            }
 
             UpdateTime = DateTime.UtcNow;
         }
@@ -857,13 +863,13 @@ namespace MediaBrowser.Dlna.PlayTo
         public event EventHandler<TransportStateEventArgs> PlaybackChanged;
         public event EventHandler<CurrentIdEventArgs> CurrentIdChanged;
 
-        private void NotifyPlaybackChanged(bool value)
+        private void NotifyPlaybackChanged(TRANSPORTSTATE state)
         {
             if (PlaybackChanged != null)
             {
                 PlaybackChanged.Invoke(this, new TransportStateEventArgs
                 {
-                    Stopped = IsStopped
+                    State = state
                 });
             }
         }
@@ -895,14 +901,14 @@ namespace MediaBrowser.Dlna.PlayTo
             return String.Format("{0} - {1}", Properties.Name, Properties.BaseUrl);
         }
 
-        private class TRANSPORTSTATE
-        {
-            public const string STOPPED = "STOPPED";
-            public const string PLAYING = "PLAYING";
-            public const string TRANSITIONING = "TRANSITIONING";
-            public const string PAUSED_PLAYBACK = "PAUSED_PLAYBACK";
-            public const string PAUSED = "PAUSED";
-        }
+    }
 
+    public enum TRANSPORTSTATE
+    {
+        STOPPED,
+        PLAYING,
+        TRANSITIONING,
+        PAUSED_PLAYBACK,
+        PAUSED
     }
 }

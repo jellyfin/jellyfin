@@ -88,10 +88,10 @@ namespace MediaBrowser.Dlna.PlayTo
             if (_currentItem == null)
                 return;
 
-            if (e.Stopped == false)
+            if (e.State == TRANSPORTSTATE.STOPPED)
                 await ReportProgress().ConfigureAwait(false);
 
-            else if (e.Stopped && _playbackStarted)
+            else if (e.State == TRANSPORTSTATE.STOPPED && _playbackStarted)
             {
                 _playbackStarted = false;
 

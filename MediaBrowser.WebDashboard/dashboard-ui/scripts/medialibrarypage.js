@@ -73,7 +73,7 @@
 
         })[0];
 
-        typeName = typeName ? typeName.name : "General or mixed content";
+        typeName = typeName ? typeName.name : "Mixed movies & tv";
 
         html += '<p style="padding-left:.5em;">Folder type: <b>' + typeName + '</b></p>';
 
