@@ -73,9 +73,12 @@
     <Compile Include="Dlna\DeviceProfileInfo.cs" />
     <Compile Include="Dlna\DirectPlayProfile.cs" />
     <Compile Include="Dlna\DlnaMaps.cs" />
+    <Compile Include="Dlna\Filter.cs" />
     <Compile Include="Dlna\MediaFormatProfile.cs" />
     <Compile Include="Dlna\MediaFormatProfileResolver.cs" />
     <Compile Include="Dlna\ResponseProfile.cs" />
+    <Compile Include="Dlna\SearchCriteria.cs" />
+    <Compile Include="Dlna\SortCriteria.cs" />
     <Compile Include="Dlna\StreamBuilder.cs" />
     <Compile Include="Dlna\StreamInfo.cs" />
     <Compile Include="Dlna\TranscodingProfile.cs" />

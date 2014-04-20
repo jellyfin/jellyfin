@@ -25,12 +25,12 @@ namespace MediaBrowser.Dlna.Server
     public class ControlHandler
     {
         private readonly ILogger _logger;
-        private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
         private readonly DeviceProfile _profile;
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
         private readonly IUserDataManager _userDataManager;
+        private readonly User _user;
 
         private readonly string _serverAddress;
 
@@ -44,16 +44,16 @@ namespace MediaBrowser.Dlna.Server
         private int systemID = 0;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public ControlHandler(ILogger logger, IUserManager userManager, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user)
         {
             _logger = logger;
-            _userManager = userManager;
             _libraryManager = libraryManager;
             _profile = profile;
             _serverAddress = serverAddress;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
             _userDataManager = userDataManager;
+            _user = user;
         }
 
         public ControlResponse ProcessControlRequest(ControlRequest request)
@@ -104,31 +104,24 @@ namespace MediaBrowser.Dlna.Server
 
             _logger.Debug("Received control request {0}", method.Name);
 
-            var user = _userManager.Users.First();
+            var user = _user;
 
-            switch (method.LocalName)
-            {
-                case "GetSearchCapabilities":
-                    result = HandleGetSearchCapabilities();
-                    break;
-                case "GetSortCapabilities":
-                    result = HandleGetSortCapabilities();
-                    break;
-                case "GetSystemUpdateID":
-                    result = HandleGetSystemUpdateID();
-                    break;
-                case "Browse":
-                    result = HandleBrowse(sparams, user, deviceId);
-                    break;
-                case "X_GetFeatureList":
-                    result = HandleXGetFeatureList();
-                    break;
-                case "X_SetBookmark":
-                    result = HandleXSetBookmark(sparams, user);
-                    break;
-                default:
-                    throw new ResourceNotFoundException();
-            }
+            if (string.Equals(method.LocalName, "GetSearchCapabilities", StringComparison.OrdinalIgnoreCase))
+                result = HandleGetSearchCapabilities();
+            else if (string.Equals(method.LocalName, "GetSortCapabilities", StringComparison.OrdinalIgnoreCase))
+                result = HandleGetSortCapabilities();
+            else if (string.Equals(method.LocalName, "GetSystemUpdateID", StringComparison.OrdinalIgnoreCase))
+                result = HandleGetSystemUpdateID();
+            else if (string.Equals(method.LocalName, "Browse", StringComparison.OrdinalIgnoreCase))
+                result = HandleBrowse(sparams, user, deviceId);
+            else if (string.Equals(method.LocalName, "X_GetFeatureList", StringComparison.OrdinalIgnoreCase))
+                result = HandleXGetFeatureList();
+            else if (string.Equals(method.LocalName, "X_SetBookmark", StringComparison.OrdinalIgnoreCase))
+                result = HandleXSetBookmark(sparams, user);
+            else if (string.Equals(method.LocalName, "Search", StringComparison.OrdinalIgnoreCase))
+                result = HandleSearch(sparams, user, deviceId);
+            else
+                throw new ResourceNotFoundException("Unexpected control request name: " + method.LocalName);
 
             var response = env.CreateElement(String.Format("u:{0}Response", method.LocalName), method.NamespaceURI);
             rbody.AppendChild(response);
@@ -241,10 +234,12 @@ namespace MediaBrowser.Dlna.Server
         {
             var id = sparams["ObjectID"];
             var flag = sparams["BrowseFlag"];
+            var filter = new Filter(sparams.GetValueOrDefault("Filter", "*"));
+            var sortCriteria = new SortCriteria(sparams.GetValueOrDefault("SortCriteria", ""));
 
             var provided = 0;
-            int requested = 0;
-            int start = 0;
+            var requested = 0;
+            var start = 0;
 
             if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requested) && requested <= 0)
             {
@@ -267,11 +262,13 @@ namespace MediaBrowser.Dlna.Server
 
             var folder = (Folder)GetItemFromObjectId(id, user);
 
-            var children = GetChildrenSorted(folder, user).ToList();
+            var children = GetChildrenSorted(folder, user, sortCriteria).ToList();
 
+            var totalCount = children.Count;
+            
             if (string.Equals(flag, "BrowseMetadata"))
             {
-                Browse_AddFolder(result, folder, children.Count);
+                Browse_AddFolder(result, folder, children.Count, filter);
                 provided++;
             }
             else
@@ -292,13 +289,13 @@ namespace MediaBrowser.Dlna.Server
                     if (i.IsFolder)
                     {
                         var f = (Folder)i;
-                        var childCount = GetChildrenSorted(f, user).Count();
+                        var childCount = GetChildrenSorted(f, user, sortCriteria).Count();
 
-                        Browse_AddFolder(result, f, childCount);
+                        Browse_AddFolder(result, f, childCount, filter);
                     }
                     else
                     {
-                        Browse_AddItem(result, i, user, deviceId);
+                        Browse_AddItem(result, i, user, deviceId, filter);
                     }
                 }
             }
@@ -309,35 +306,175 @@ namespace MediaBrowser.Dlna.Server
             {
                 new KeyValuePair<string,string>("Result", resXML),
                 new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
-                new KeyValuePair<string,string>("TotalMatches", children.Count.ToString(_usCulture)),
+                new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
                 new KeyValuePair<string,string>("UpdateID", systemID.ToString(_usCulture))
             };
         }
 
-        private IEnumerable<BaseItem> GetChildrenSorted(Folder folder, User user)
+        private IEnumerable<KeyValuePair<string, string>> HandleSearch(Headers sparams, User user, string deviceId)
         {
-            var children = folder.GetChildren(user, true).Where(i => i.LocationType != LocationType.Virtual);
+            var searchCriteria = new SearchCriteria(sparams.GetValueOrDefault("SearchCriteria", ""));
+            var sortCriteria = new SortCriteria(sparams.GetValueOrDefault("SortCriteria", ""));
+            var filter = new Filter(sparams.GetValueOrDefault("Filter", "*"));
+
+            // sort example: dc:title, dc:date
+
+            var provided = 0;
+            var requested = 0;
+            var start = 0;
+
+            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requested) && requested <= 0)
+            {
+                requested = 0;
+            }
+            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out start) && start <= 0)
+            {
+                start = 0;
+            }
+
+            //var root = GetItem(id) as IMediaFolder;
+            var result = new XmlDocument();
+
+            var didl = result.CreateElement(string.Empty, "DIDL-Lite", NS_DIDL);
+            didl.SetAttribute("xmlns:dc", NS_DC);
+            didl.SetAttribute("xmlns:dlna", NS_DLNA);
+            didl.SetAttribute("xmlns:upnp", NS_UPNP);
+            didl.SetAttribute("xmlns:sec", NS_SEC);
+            result.AppendChild(didl);
+
+            var folder = (Folder)GetItemFromObjectId(sparams["ContainerID"], user);
+
+            var children = GetChildrenSorted(folder, user, searchCriteria, sortCriteria).ToList();
+
+            var totalCount = children.Count;
+
+            if (start > 0)
+            {
+                children = children.Skip(start).ToList();
+            }
+            if (requested > 0)
+            {
+                children = children.Take(requested).ToList();
+            }
+
+            provided = children.Count;
+
+            foreach (var i in children)
+            {
+                if (i.IsFolder)
+                {
+                    var f = (Folder)i;
+                    var childCount = GetChildrenSorted(f, user, searchCriteria, sortCriteria).Count();
+
+                    Browse_AddFolder(result, f, childCount, filter);
+                }
+                else
+                {
+                    Browse_AddItem(result, i, user, deviceId, filter);
+                }
+            }
+
+            var resXML = result.OuterXml;
+
+            return new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("Result", resXML),
+                new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
+                new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
+                new KeyValuePair<string,string>("UpdateID", systemID.ToString(_usCulture))
+            };
+        }
+
+        private IEnumerable<BaseItem> GetChildrenSorted(Folder folder, User user, SearchCriteria search, SortCriteria sort)
+        {
+            if (search.SearchType == SearchType.Unknown)
+            {
+                return GetChildrenSorted(folder, user, sort);
+            }
+
+            var items = folder.GetRecursiveChildren(user);
+            items = FilterUnsupportedContent(items);
+
+            if (search.SearchType == SearchType.Audio)
+            {
+                items = items.OfType<Audio>();
+            }
+            else if (search.SearchType == SearchType.Video)
+            {
+                items = items.OfType<Video>();
+            }
+            else if (search.SearchType == SearchType.Image)
+            {
+                items = items.OfType<Photo>();
+            }
+            else if (search.SearchType == SearchType.Playlist)
+            {
+            }
+
+            return SortItems(items, user, sort);
+        }
+
+        private IEnumerable<BaseItem> GetChildrenSorted(Folder folder, User user, SortCriteria sort)
+        {
+            var items = folder.GetChildren(user, true);
+
+            items = FilterUnsupportedContent(items);
 
             if (folder is Series || folder is Season || folder is BoxSet)
             {
-                return children;
+                return items;
             }
 
-            return _libraryManager.Sort(children, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
+            return SortItems(items, user, sort);
+        }
+
+        private IEnumerable<BaseItem> SortItems(IEnumerable<BaseItem> items, User user, SortCriteria sort)
+        {
+            return _libraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
+        }
+
+        private IEnumerable<BaseItem> FilterUnsupportedContent(IEnumerable<BaseItem> items)
+        {
+            return items.Where(i =>
+            {
+                // Unplayable
+                // TODO: Display and prevent playback with restricted flag?
+                if (i.LocationType == LocationType.Virtual)
+                {
+                    return false;
+                }
+
+                // Unplayable
+                // TODO: Display and prevent playback with restricted flag?
+                var supportsPlaceHolder = i as ISupportsPlaceHolders;
+                if (supportsPlaceHolder != null && supportsPlaceHolder.IsPlaceHolder)
+                {
+                    return false;
+                }
+
+                // Upnp renderers won't understand these
+                // TODO: Display and prevent playback with restricted flag?
+                if (i is Game || i is Book)
+                {
+                    return false;
+                }
+
+                return true;
+            });
         }
 
         private BaseItem GetItemFromObjectId(string id, User user)
         {
-           return string.IsNullOrWhiteSpace(id) || string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
+            return string.IsNullOrWhiteSpace(id) || string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
 
-                // Samsung sometimes uses 1 as root
-                || string.Equals(id, "1", StringComparison.OrdinalIgnoreCase)
+                 // Samsung sometimes uses 1 as root
+                 || string.Equals(id, "1", StringComparison.OrdinalIgnoreCase)
 
-                ? user.RootFolder
-                : _libraryManager.GetItemById(new Guid(id));
+                 ? user.RootFolder
+                 : _libraryManager.GetItemById(new Guid(id));
         }
 
-        private void Browse_AddFolder(XmlDocument result, Folder f, int childCount)
+        private void Browse_AddFolder(XmlDocument result, Folder f, int childCount, Filter filter)
         {
             var container = result.CreateElement(string.Empty, "container", NS_DIDL);
             container.SetAttribute("restricted", "0");
@@ -355,7 +492,7 @@ namespace MediaBrowser.Dlna.Server
                 container.SetAttribute("parentID", parent.Id.ToString("N"));
             }
 
-            AddCommonFields(f, container);
+            AddCommonFields(f, container, filter);
 
             AddCover(f, container);
 
@@ -377,7 +514,7 @@ namespace MediaBrowser.Dlna.Server
             }
         }
 
-        private void Browse_AddItem(XmlDocument result, BaseItem item, User user, string deviceId)
+        private void Browse_AddItem(XmlDocument result, BaseItem item, User user, string deviceId, Filter filter)
         {
             var element = result.CreateElement(string.Empty, "item", NS_DIDL);
             element.SetAttribute("restricted", "1");
@@ -392,7 +529,7 @@ namespace MediaBrowser.Dlna.Server
 
             AddBookmarkInfo(item, user, element);
 
-            AddGeneralProperties(item, element);
+            AddGeneralProperties(item, element, filter);
 
             // refID?
             // storeAttribute(itemNode, object, ClassProperties.REF_ID, false);
@@ -400,13 +537,13 @@ namespace MediaBrowser.Dlna.Server
             var audio = item as Audio;
             if (audio != null)
             {
-                AddAudioResource(element, audio, deviceId);
+                AddAudioResource(element, audio, deviceId, filter);
             }
 
             var video = item as Video;
             if (video != null)
             {
-                AddVideoResource(element, video, deviceId);
+                AddVideoResource(element, video, deviceId, filter);
             }
 
             AddCover(item, element);
@@ -414,7 +551,7 @@ namespace MediaBrowser.Dlna.Server
             result.DocumentElement.AppendChild(element);
         }
 
-        private void AddVideoResource(XmlElement container, Video video, string deviceId)
+        private void AddVideoResource(XmlElement container, Video video, string deviceId, Filter filter)
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
@@ -441,13 +578,16 @@ namespace MediaBrowser.Dlna.Server
                 res.SetAttribute("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
             }
 
-            if (streamInfo.IsDirectStream || streamInfo.EstimateContentLength)
+            if (filter.Contains("res@size"))
             {
-                var size = streamInfo.TargetSize;
-
-                if (size.HasValue)
+                if (streamInfo.IsDirectStream || streamInfo.EstimateContentLength)
                 {
-                    res.SetAttribute("size", size.Value.ToString(_usCulture));
+                    var size = streamInfo.TargetSize;
+
+                    if (size.HasValue)
+                    {
+                        res.SetAttribute("size", size.Value.ToString(_usCulture));
+                    }
                 }
             }
 
@@ -473,11 +613,14 @@ namespace MediaBrowser.Dlna.Server
                 res.SetAttribute("nrAudioChannels", targetChannels.Value.ToString(_usCulture));
             }
 
-            if (targetWidth.HasValue && targetHeight.HasValue)
+            if (filter.Contains("res@resolution"))
             {
-                res.SetAttribute("resolution", string.Format("{0}x{1}", targetWidth.Value, targetHeight.Value));
+                if (targetWidth.HasValue && targetHeight.HasValue)
+                {
+                    res.SetAttribute("resolution", string.Format("{0}x{1}", targetWidth.Value, targetHeight.Value));
+                }
             }
-            
+
             if (targetSampleRate.HasValue)
             {
                 res.SetAttribute("sampleFrequency", targetSampleRate.Value.ToString(_usCulture));
@@ -514,7 +657,7 @@ namespace MediaBrowser.Dlna.Server
             container.AppendChild(res);
         }
 
-        private void AddAudioResource(XmlElement container, Audio audio, string deviceId)
+        private void AddAudioResource(XmlElement container, Audio audio, string deviceId, Filter filter)
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
@@ -538,13 +681,16 @@ namespace MediaBrowser.Dlna.Server
                 res.SetAttribute("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
             }
 
-            if (streamInfo.IsDirectStream || streamInfo.EstimateContentLength)
+            if (filter.Contains("res@size"))
             {
-                var size = streamInfo.TargetSize;
-
-                if (size.HasValue)
+                if (streamInfo.IsDirectStream || streamInfo.EstimateContentLength)
                 {
-                    res.SetAttribute("size", size.Value.ToString(_usCulture));
+                    var size = streamInfo.TargetSize;
+
+                    if (size.HasValue)
+                    {
+                        res.SetAttribute("size", size.Value.ToString(_usCulture));
+                    }
                 }
             }
 
@@ -659,13 +805,17 @@ namespace MediaBrowser.Dlna.Server
         /// <summary>
         /// Adds fields used by both items and folders
         /// </summary>
-        /// <param name="item"></param>
-        /// <param name="element"></param>
-        private void AddCommonFields(BaseItem item, XmlElement element)
+        /// <param name="item">The item.</param>
+        /// <param name="element">The element.</param>
+        /// <param name="filter">The filter.</param>
+        private void AddCommonFields(BaseItem item, XmlElement element, Filter filter)
         {
-            if (item.PremiereDate.HasValue)
+            if (filter.Contains("dc:date"))
             {
-                AddValue(element, "dc", "date", item.PremiereDate.Value.ToString("o"), NS_DC);
+                if (item.PremiereDate.HasValue)
+                {
+                    AddValue(element, "dc", "date", item.PremiereDate.Value.ToString("o"), NS_DC);
+                }
             }
 
             if (item.Genres.Count > 0)
@@ -678,24 +828,44 @@ namespace MediaBrowser.Dlna.Server
                 AddValue(element, "upnp", "publisher", item.Studios[0], NS_UPNP);
             }
 
-            AddValue(element, "dc", "title", item.Name, NS_DC);
-
-            if (!string.IsNullOrWhiteSpace(item.Overview))
+            if (filter.Contains("dc:title"))
             {
-                AddValue(element, "dc", "description", item.Overview, NS_DC);
+                AddValue(element, "dc", "title", item.Name, NS_DC);
+            }
+
+            if (filter.Contains("dc:description"))
+            {
+                if (!string.IsNullOrWhiteSpace(item.Overview))
+                {
+                    AddValue(element, "dc", "description", item.Overview, NS_DC);
+                }
+            }
+            if (filter.Contains("upnp:longDescription"))
+            {
+                if (!string.IsNullOrWhiteSpace(item.Overview))
+                {
+                    AddValue(element, "upnp", "longDescription", item.Overview, NS_UPNP);
+                }
             }
 
             if (!string.IsNullOrEmpty(item.OfficialRating))
             {
-                AddValue(element, "dc", "rating", item.OfficialRating, NS_DC);
+                if (filter.Contains("dc:rating"))
+                {
+                    AddValue(element, "dc", "rating", item.OfficialRating, NS_DC);
+                }
+                if (filter.Contains("upnp:rating"))
+                {
+                    AddValue(element, "upnp", "rating", item.OfficialRating, NS_UPNP);
+                }
             }
 
             AddPeople(item, element);
         }
 
-        private void AddGeneralProperties(BaseItem item, XmlElement element)
+        private void AddGeneralProperties(BaseItem item, XmlElement element, Filter filter)
         {
-            AddCommonFields(item, element);
+            AddCommonFields(item, element, filter);
 
             var audio = item as Audio;
 
@@ -861,7 +1031,7 @@ namespace MediaBrowser.Dlna.Server
             {
 
             }
-            
+
             return new ImageDownloadInfo
             {
                 ItemId = item.Id.ToString("N"),

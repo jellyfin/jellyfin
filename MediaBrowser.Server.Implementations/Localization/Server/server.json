@@ -414,7 +414,7 @@
 	"LabelEnableDlnaDebugLogging": "Enable DLNA debug logging",
 	"LabelEnableDlnaDebugLoggingHelp": "This will create large log files and should only be used as needed for troubleshooting purposes.",
 	"LabelEnableDlnaClientDiscoveryInterval": "Client discovery interval (seconds)",
-	"LabelEnableDlnaClientDiscoveryIntervalHelp": "Determines the duration in seconds of the interval between SSDP searches performed by Media Browser.",
+	"LabelEnableDlnaClientDiscoveryIntervalHelp": "Determines the duration in seconds between SSDP searches performed by Media Browser.",
 	"HeaderCustomDlnaProfiles": "Custom Profiles",
 	"HeaderSystemDlnaProfiles": "System Profiles",
 	"CustomDlnaProfilesHelp": "Create a custom profile to target a new device or override a system profile.",
@@ -532,5 +532,15 @@
 	"LabelSupporterKey": "Supporter Key (paste from email)",
 	"LabelSupporterKeyHelp": "Enter your supporter key to start enjoying additional benefits the community has developed for Media Browser.",
 	"MessageInvalidKey": "MB3 Key Missing or Invalid",
-	"ErrorMessageInvalidKey": "In order for any premium content to be registered, you must also be an MB3 Supporter. Please donate and support the continued development of the core product. Thank you."
+	"ErrorMessageInvalidKey": "In order for any premium content to be registered, you must also be an MB3 Supporter. Please donate and support the continued development of the core product. Thank you.",
+	"HeaderDisplaySettings": "Display Settings",
+	"TabPlayTo": "Play To",
+	"LabelEnableDlnaServer": "Enable Dlna server",
+	"LabelEnableDlnaServerHelp": "Allows UPnP devices on your network to browse and play Media Browser content.",
+	"LabelEnableBlastAliveMessages": "Blast alive messages",
+	"LabelEnableBlastAliveMessagesHelp": "Enable this if the server is not detected reliably by other UPnP devices on your network.",
+	"LabelBlastMessageInterval": "Alive message interval (seconds)",
+	"LabelBlastMessageIntervalHelp": "Determines the duration in seconds between server alive messages.",
+	"LabelDefaultUser": "Default user:",
+	"LabelDefaultUserHelp": "Determines which user library should be displayed on connected devices. This can be overridden using a device profile."
 }

@@ -44,7 +44,16 @@ namespace MediaBrowser.Providers.Movies
 
             var file = new FileInfo(specificFile);
 
-            return info.IsInMixedFolder || file.Exists ? file : new FileInfo(Path.Combine(directoryPath, "movie.xml"));
+            // In a mixed folder, only {moviename}.xml is supported
+            if (info.IsInMixedFolder)
+            {
+                return file;
+            }
+
+            // If in it's own folder, prefer movie.xml, but allow the specific file as well
+            var movieFile = new FileInfo(Path.Combine(directoryPath, "movie.xml"));
+
+            return movieFile.Exists ? movieFile : file;
         }
     }
 }

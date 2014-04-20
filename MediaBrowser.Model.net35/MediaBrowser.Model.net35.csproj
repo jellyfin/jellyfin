@@ -109,6 +109,9 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\DlnaMaps.cs">
       <Link>Dlna\DlnaMaps.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\Filter.cs">
+      <Link>Dlna\Filter.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\MediaFormatProfile.cs">
       <Link>Dlna\MediaFormatProfile.cs</Link>
     </Compile>
@@ -117,6 +120,12 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\ResponseProfile.cs">
       <Link>Dlna\ResponseProfile.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\SearchCriteria.cs">
+      <Link>Dlna\SearchCriteria.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\SortCriteria.cs">
+      <Link>Dlna\SortCriteria.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\StreamBuilder.cs">
       <Link>Dlna\StreamBuilder.cs</Link>
