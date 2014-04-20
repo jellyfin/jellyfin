@@ -1,9 +1,11 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Dlna.Profiles;
 using MediaBrowser.Dlna.Server;
@@ -31,8 +33,9 @@ namespace MediaBrowser.Dlna
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
         private readonly IUserDataManager _userDataManager;
+        private readonly IServerConfigurationManager _config;
 
-        public DlnaManager(IXmlSerializer xmlSerializer, IFileSystem fileSystem, IApplicationPaths appPaths, ILogger logger, IJsonSerializer jsonSerializer, IUserManager userManager, ILibraryManager libraryManager, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager)
+        public DlnaManager(IXmlSerializer xmlSerializer, IFileSystem fileSystem, IApplicationPaths appPaths, ILogger logger, IJsonSerializer jsonSerializer, IUserManager userManager, ILibraryManager libraryManager, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager, IServerConfigurationManager config)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
@@ -44,6 +47,7 @@ namespace MediaBrowser.Dlna
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
             _userDataManager = userDataManager;
+            _config = config;
 
             //DumpProfiles();
         }
@@ -451,15 +455,11 @@ namespace MediaBrowser.Dlna
 
             var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
 
-            if (current.Info.Type == DeviceProfileType.System)
-            {
-                throw new ArgumentException("System profiles are readonly");
-            }
-
             var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
             var path = Path.Combine(UserProfilesPath, newFilename);
 
-            if (!string.Equals(path, current.Path, StringComparison.Ordinal))
+            if (!string.Equals(path, current.Path, StringComparison.Ordinal) &&
+                current.Info.Type != DeviceProfileType.System)
             {
                 File.Delete(current.Path);
             }
@@ -516,15 +516,17 @@ namespace MediaBrowser.Dlna
 
             var serverAddress = device.Descriptor.ToString().Substring(0, device.Descriptor.ToString().IndexOf("/dlna", StringComparison.OrdinalIgnoreCase));
 
+            var user = GetUser(profile);
+
             return new ControlHandler(
                 _logger, 
-                _userManager, 
                 _libraryManager, 
                 profile, 
                 serverAddress, 
                 _dtoService, 
                 _imageProcessor, 
-                _userDataManager)
+                _userDataManager,
+                user)
                 .ProcessControlRequest(request);
         }
 
@@ -539,6 +541,34 @@ namespace MediaBrowser.Dlna
                 Format = format,
                 Stream = GetType().Assembly.GetManifestResourceStream("MediaBrowser.Dlna.Images." + filename.ToLower())
             };
+        }
+
+
+
+        private User GetUser(DeviceProfile profile)
+        {
+            if (!string.IsNullOrEmpty(profile.UserId))
+            {
+                var user = _userManager.GetUserById(new Guid(profile.UserId));
+
+                if (user != null)
+                {
+                    return user;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(_config.Configuration.DlnaOptions.DefaultUserId))
+            {
+                var user = _userManager.GetUserById(new Guid(_config.Configuration.DlnaOptions.DefaultUserId));
+
+                if (user != null)
+                {
+                    return user;
+                }
+            }
+
+            // No configuration so it's going to be pretty arbitrary
+            return _userManager.Users.First();
         }
     }
 }

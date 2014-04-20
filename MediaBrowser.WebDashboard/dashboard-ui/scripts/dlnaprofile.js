@@ -9,13 +9,17 @@
 
         Dashboard.showLoadingMsg();
 
-        getProfile().done(function (result) {
+        var promise1 = getProfile();
+        var promise2 = ApiClient.getUsers();
 
-            currentProfile = result;
+        $.when(promise1, promise2).done(function (response1, response2) {
 
-            renderProfile(page, result);
+            currentProfile = response1[0];
+
+            renderProfile(page, currentProfile, response2[0]);
 
             Dashboard.hideLoadingMsg();
+
         });
     }
 
@@ -28,13 +32,7 @@
         return $.getJSON(ApiClient.getUrl(url));
     }
 
-    function renderProfile(page, profile) {
-
-        if (profile.ProfileType == 'User' || !profile.Id) {
-            $('.btnSave', page).show();
-        } else {
-            $('.btnSave', page).hide();
-        }
+    function renderProfile(page, profile, users) {
 
         $('#txtName', page).val(profile.Name);
 
@@ -62,6 +60,11 @@
         profile.ContainerProfiles = (profile.ContainerProfiles || []);
         profile.CodecProfiles = (profile.CodecProfiles || []);
         profile.ResponseProfiles = (profile.ResponseProfiles || []);
+        
+        var usersHtml = '<option></option>' + users.map(function (u) {
+            return '<option value="' + u.Id + '">' + u.Name + '</option>';
+        }).join('');
+        $('#selectUser', page).html(usersHtml).val(profile.UserId || '').selectmenu("refresh");
 
         renderSubProfiles(page, profile);
     }
@@ -646,6 +649,8 @@
         profile.Identification.ManufacturerUrl = $('#txtIdManufacturerUrl', page).val();
         profile.Identification.SerialNumber = $('#txtIdSerialNumber', page).val();
         profile.Identification.DeviceDescription = $('#txtIdDeviceDescription', page).val();
+
+        profile.UserId = $('#selectUser', page).val();
     }
 
     $(document).on('pageinit', "#dlnaProfilePage", function () {

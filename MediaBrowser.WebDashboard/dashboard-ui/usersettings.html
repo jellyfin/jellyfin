@@ -16,35 +16,35 @@
                     <a href="#" data-role="button" class="ui-btn-active">${TabPreferences}</a>
                 </div>
                 <form id="userSettingsForm">
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <input type="checkbox" id="chkDisplayMissingEpisodes" name="chkDisplayMissingEpisodes" />
-                            <label for="chkDisplayMissingEpisodes">${LabelDisplayMissingEpisodesWithinSeasons}</label>
-                        </li>
-                        <li>
-                            <input type="checkbox" id="chkDisplayUnairedEpisodes" name="chkDisplayUnairedEpisodes" />
-                            <label for="chkDisplayUnairedEpisodes">${LabelUnairedMissingEpisodesWithinSeasons}</label>
-                        </li>
-                    </ul>
+                    <h2>${HeaderDisplaySettings}</h2>
+                    <div>
+                        <input type="checkbox" id="chkDisplayMissingEpisodes" data-mini="true" />
+                        <label for="chkDisplayMissingEpisodes">${LabelDisplayMissingEpisodesWithinSeasons}</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="chkDisplayUnairedEpisodes" data-mini="true" />
+                        <label for="chkDisplayUnairedEpisodes">${LabelUnairedMissingEpisodesWithinSeasons}</label>
+                    </div>
+                    <br />
                     <h2>${HeaderVideoPlaybackSettings}</h2>
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="selectAudioLanguage">${LabelAudioLanguagePreference}</label>
-                            <select name="selectAudioLanguage" id="selectAudioLanguage"></select>
+                            <select id="selectAudioLanguage" data-mini="true"></select>
                         </li>
                         <li>
                             <label for="selectSubtitleLanguage">${LabelSubtitleLanguagePreference}</label>
-                            <select name="selectSubtitleLanguage" id="selectSubtitleLanguage"></select>
+                            <select id="selectSubtitleLanguage" data-mini="true"></select>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkForcedSubtitlesOnly" name="chkForcedSubtitlesOnly" />
+                            <input type="checkbox" id="chkForcedSubtitlesOnly" data-mini="true" />
                             <label for="chkForcedSubtitlesOnly">${LabelDisplayForcedSubtitlesOnly}</label>
                         </li>
                         <li>
-                            <button type="submit" data-theme="b" data-icon="check">
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
                                 ${ButtonOk}
                             </button>
-                            <button type="button" onclick="history.back();" data-icon="delete">
+                            <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
                                 ${ButtonCancel}
                             </button>
                         </li>

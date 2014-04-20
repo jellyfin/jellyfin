@@ -543,6 +543,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "dlnaprofile.js",
                                 "dlnaprofiles.js",
                                 "dlnasettings.js",
+                                "dlnaserversettings.js",
                                 "editcollectionitems.js",
                                 "edititemmetadata.js",
                                 "edititempeople.js",

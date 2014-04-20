@@ -160,5 +160,17 @@ namespace MediaBrowser.Dlna.Server
         {
             return _dict.TryGetValue(Normalize(key), out value);
         }
+
+        public string GetValueOrDefault(string key, string defaultValue)
+        {
+            string val;
+
+            if (TryGetValue(key, out val))
+            {
+                return val;
+            }
+
+            return defaultValue;
+        }
     }
 }

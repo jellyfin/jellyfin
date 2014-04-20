@@ -10,7 +10,8 @@
             <div class="content-primary">
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="dlnasettings.html" data-role="button">${TabSettings}</a>
+                    <a href="dlnasettings.html" data-role="button">${TabPlayTo}</a>
+                    <a href="dlnaserversettings.html" data-role="button">${TabServer}</a>
                     <a href="dlnaprofiles.html" data-role="button" class="ui-btn-active">${TabProfiles}</a>
                 </div>
 
@@ -43,6 +44,14 @@
                             </li>
                         </ul>
 
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <label for="selectUser">User library:</label>
+                                <select id="selectUser" data-mini="true"></select>
+                                <div class="fieldDescription">Select which user library to display to the device. Leave empty to inherit the default setting.</div>
+                            </li>
+                        </ul>
+
                         <fieldset data-role="controlgroup">
                             <legend>Supported Media Types:</legend>
                             <input type="checkbox" data-mini="true" id="chkAudio" data-value="Audio" class="chkMediaType" />
@@ -67,7 +76,7 @@
                     </div>
                     <div class="tabContent tabIdentification">
 
-                        <p>Devices have two forms of identification, device properties and HTTP request headers. At least one form should be supplied.</p>
+                        <p>Enter at least one identification criteria.</p>
                         <br />
                         <ul data-role="listview" class="ulForm">
                             <li>
@@ -152,7 +161,7 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button class="btnSave" style="display: none;" type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            <button class="btnSave" type="submit" data-theme="b" data-icon="check" data-mini="true">
                                 Save
                             </button>
                             <button type="button" onclick="Dashboard.navigate('dlnaprofiles.html');" data-icon="delete" data-mini="true">
@@ -302,7 +311,7 @@
 
                     <p>Define additional conditions that must be met in order for a file to be direct played.</p>
 
-<!--                    <div data-role="controlgroup" data-type="horizontal" data-mini="true">
+                    <!--                    <div data-role="controlgroup" data-type="horizontal" data-mini="true">
                         <input type="radio" name="radioContainerProfileTab" class="radioTabButton" id="radioContainerProfileInfo" value="tabContainerBasics">
                         <label for="radioContainerProfileInfo">Info</label>
                         <input type="radio" name="radioContainerProfileTab" class="radioTabButton" id="radioContainerProfileConditions" value="tabContainerConditions">
@@ -327,7 +336,6 @@
                     </div>
 
                     <div class="tabContent tabContainerConditions" style="display: none;">
-                        
                     </div>
 
                     <p>

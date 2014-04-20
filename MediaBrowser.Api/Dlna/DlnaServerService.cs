@@ -1,10 +1,12 @@
-﻿using System;
-using MediaBrowser.Controller.Dlna;
+﻿using MediaBrowser.Controller.Dlna;
 using ServiceStack;
 using ServiceStack.Text.Controller;
 using ServiceStack.Web;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Dlna
@@ -17,19 +19,26 @@ namespace MediaBrowser.Api.Dlna
         public string UuId { get; set; }
     }
 
-    [Route("/Dlna/contentdirectory.xml", "GET", Summary = "Gets dlna content directory xml")]
-    [Route("/Dlna/contentdirectory", "GET", Summary = "Gets dlna content directory xml")]
+    [Route("/Dlna/contentdirectory/contentdirectory.xml", "GET", Summary = "Gets dlna content directory xml")]
+    [Route("/Dlna/contentdirectory/contentdirectory", "GET", Summary = "Gets dlna content directory xml")]
     public class GetContentDirectory
     {
     }
 
-    [Route("/Dlna/{UuId}/control", "POST", Summary = "Processes a control request")]
+    [Route("/Dlna/contentdirectory/{UuId}/control", "POST", Summary = "Processes a control request")]
     public class ProcessControlRequest : IRequiresRequestStream
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string UuId { get; set; }
-        
+
         public Stream RequestStream { get; set; }
+    }
+
+    [Route("/Dlna/contentdirectory/{UuId}/events", Summary = "Processes an event subscription request")]
+    public class ProcessEventRequest
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
     }
 
     [Route("/Dlna/icons/{Filename}", "GET", Summary = "Gets a server icon")]
@@ -72,8 +81,8 @@ namespace MediaBrowser.Api.Dlna
         private async Task<ControlResponse> PostAsync(ProcessControlRequest request)
         {
             var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var id = pathInfo.GetArgumentValue<string>(1);
-            
+            var id = pathInfo.GetArgumentValue<string>(2);
+
             using (var reader = new StreamReader(request.RequestStream))
             {
                 return _dlnaManager.ProcessControlRequest(new ControlRequest
@@ -110,6 +119,77 @@ namespace MediaBrowser.Api.Dlna
                     return ResultFactory.GetResult(bytes, "image/" + response.Format.ToString().ToLower());
                 }
             }
+        }
+
+        public object Any(ProcessEventRequest request)
+        {
+            var subscriptionId = GetHeader("SID");
+            var notificationType = GetHeader("NT");
+            var callback = GetHeader("CALLBACK");
+            var timeoutString = GetHeader("TIMEOUT");
+
+            var timeout = ParseTimeout(timeoutString) ?? 300;
+
+            if (string.Equals(Request.Verb, "SUBSCRIBE", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrEmpty(notificationType))
+                {
+                    RenewEvent(subscriptionId, timeout);
+                }
+                else
+                {
+                    SubscribeToEvent(notificationType, timeout, callback);
+                }
+
+                return GetSubscriptionResponse(request.UuId, timeout);
+            }
+
+            UnsubscribeFromEvent(subscriptionId);
+            return ResultFactory.GetResult("", "text/plain");
+        }
+
+        private void UnsubscribeFromEvent(string subscriptionId)
+        {
+
+        }
+
+        private void SubscribeToEvent(string notificationType, int? timeout, string callback)
+        {
+
+        }
+
+        private void RenewEvent(string subscriptionId, int? timeout)
+        {
+
+        }
+
+        private object GetSubscriptionResponse(string uuid, int timeout)
+        {
+            var headers = new Dictionary<string, string>();
+
+            headers["SID"] = "uuid:" + uuid;
+            headers["TIMEOUT"] = "SECOND-" + timeout.ToString(_usCulture);
+
+            return ResultFactory.GetResult("\r\n", "text/plain", headers);
+        }
+
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private int? ParseTimeout(string header)
+        {
+            if (!string.IsNullOrEmpty(header))
+            {
+                // Starts with SECOND-
+                header = header.Split('-').Last();
+
+                int val;
+
+                if (int.TryParse(header, NumberStyles.Any, _usCulture, out val))
+                {
+                    return val;
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -107,7 +107,11 @@ namespace MediaBrowser.Dlna.Server
                             break;
                         }
                         var parts = line.Split(new[] { ':' }, 2);
-                        headers[parts[0]] = parts[1].Trim();
+
+                        if (parts.Length >= 2)
+                        {
+                            headers[parts[0]] = parts[1].Trim();
+                        }
                     }
 
                     if (_config.Configuration.DlnaOptions.EnableDebugLogging)
@@ -158,18 +162,21 @@ namespace MediaBrowser.Dlna.Server
 
         private void SendSearchResponse(IPEndPoint endpoint, UpnpDevice dev)
         {
-            var headers = new Headers(true);
-            headers.Add("CACHE-CONTROL", "max-age = 600");
-            headers.Add("DATE", DateTime.Now.ToString("R"));
-            headers.Add("EXT", "");
-            headers.Add("LOCATION", dev.Descriptor.ToString());
-            headers.Add("SERVER", _serverSignature);
-            headers.Add("ST", dev.Type);
-            headers.Add("USN", dev.USN);
+            var builder = new StringBuilder();
 
-            var msg = String.Format("HTTP/1.1 200 OK\r\n{0}\r\n", headers.HeaderBlock);
+            const string argFormat = "{0}: {1}\r\n";
 
-            SendDatagram(endpoint, dev.Address, msg, false);
+            builder.Append("HTTP/1.1 200 OK\r\n");
+            builder.AppendFormat(argFormat, "CACHE-CONTROL", "max-age = 600");
+            builder.AppendFormat(argFormat, "DATE", DateTime.Now.ToString("R"));
+            builder.AppendFormat(argFormat, "EXT", "");
+            builder.AppendFormat(argFormat, "LOCATION", dev.Descriptor);
+            builder.AppendFormat(argFormat, "SERVER", _serverSignature);
+            builder.AppendFormat(argFormat, "ST", dev.Type);
+            builder.AppendFormat(argFormat, "USN", dev.USN);
+            builder.Append("\r\n");
+
+            SendDatagram(endpoint, dev.Address, builder.ToString(), false);
 
             _logger.Info("{1} - Responded to a {0} request to {2}", dev.Type, endpoint, dev.Address.ToString());
         }
@@ -237,19 +244,22 @@ namespace MediaBrowser.Dlna.Server
         private void NotifyDevice(UpnpDevice dev, string type, bool sticky)
         {
             _logger.Debug("NotifyDevice");
-            var headers = new Headers(true);
-            headers.Add("HOST", "239.255.255.250:1900");
-            headers.Add("CACHE-CONTROL", "max-age = 600");
-            headers.Add("LOCATION", dev.Descriptor.ToString());
-            headers.Add("SERVER", _serverSignature);
-            headers.Add("NTS", "ssdp:" + type);
-            headers.Add("NT", dev.Type);
-            headers.Add("USN", dev.USN);
+            var builder = new StringBuilder();
 
-            var msg = String.Format("NOTIFY * HTTP/1.1\r\n{0}\r\n", headers.HeaderBlock);
+            const string argFormat = "{0}: {1}\r\n";
+
+            builder.Append("NOTIFY * HTTP/1.1\r\n{0}\r\n");
+            builder.AppendFormat(argFormat, "HOST", "239.255.255.250:1900");
+            builder.AppendFormat(argFormat, "CACHE-CONTROL", "max-age = 600");
+            builder.AppendFormat(argFormat, "LOCATION", dev.Descriptor);
+            builder.AppendFormat(argFormat, "SERVER", _serverSignature);
+            builder.AppendFormat(argFormat, "NTS", "ssdp:" + type);
+            builder.AppendFormat(argFormat, "NT", dev.Type);
+            builder.AppendFormat(argFormat, "USN", dev.USN);
+            builder.Append("\r\n");
 
             _logger.Debug("{0} said {1}", dev.USN, type);
-            SendDatagram(_ssdpEndp, dev.Address, msg, sticky);
+            SendDatagram(_ssdpEndp, dev.Address, builder.ToString(), sticky);
         }
 
         public void RegisterNotification(Guid uuid, Uri descriptor, IPAddress address)
@@ -343,7 +353,12 @@ namespace MediaBrowser.Dlna.Server
         private readonly object _notificationTimerSyncLock = new object();
         private void StartNotificationTimer()
         {
-            const int intervalMs = 60000;
+            if (!_config.Configuration.DlnaOptions.BlastAliveMessages)
+            {
+                return;
+            }
+
+            var intervalMs = _config.Configuration.DlnaOptions.BlastAliveMessageIntervalSeconds * 1000;
 
             lock (_notificationTimerSyncLock)
             {

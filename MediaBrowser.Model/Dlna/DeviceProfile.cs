@@ -40,6 +40,8 @@ namespace MediaBrowser.Model.Dlna
 
         public string SupportedMediaTypes { get; set; }
 
+        public string UserId { get; set; }
+        
         /// <summary>
         /// Controls the content of the X_DLNADOC element in the urn:schemas-dlna-org:device-1-0 namespace.
         /// </summary>

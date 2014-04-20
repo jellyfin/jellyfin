@@ -27,7 +27,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
         /// <returns>System.String.</returns>
-        private static string GetConcatInputArgument(List<string> inputFiles)
+        private static string GetConcatInputArgument(IReadOnlyList<string> inputFiles)
         {
             // Get all streams
             // If there's more than one we'll need to use the concat command

@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>DLNA</title>
+</head>
+<body>
+    <div id="dlnaServerSettingsPage" data-role="page" class="page type-interior adminPage dlnaPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="dlnasettings.html" data-role="button">${TabPlayTo}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabServer}</a>
+                    <a href="dlnaprofiles.html" data-role="button">${TabProfiles}</a>
+                </div>
+
+                <form class="dlnaServerSettingsForm">
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="chkEnableServer">${LabelEnableDlnaServer}</label>
+                            <input type="checkbox" id="chkEnableServer" data-mini="true" />
+                            <div class="fieldDescription">${LabelEnableDlnaServerHelp}</div>
+                        </li>
+                        <li>
+                            <label for="chkBlastAliveMessages">${LabelEnableBlastAliveMessages}</label>
+                            <input type="checkbox" id="chkBlastAliveMessages" data-mini="true" />
+                            <div class="fieldDescription">${LabelEnableBlastAliveMessagesHelp}</div>
+                        </li>
+                        <li>
+                            <label for="txtBlastInterval">${LabelBlastMessageInterval}</label>
+                            <input type="number" id="txtBlastInterval" data-mini="true" min="1" max="300" />
+                            <div class="fieldDescription">${LabelBlastMessageIntervalHelp}</div>
+                        </li>
+                        <li>
+                            <label for="selectUser">${LabelDefaultUser}</label>
+                            <select id="selectUser" data-mini="true"></select>
+                            <div class="fieldDescription">${LabelDefaultUserHelp}</div>
+                        </li>
+                    </ul>
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check">
+                                ${ButtonSave}
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                                ${ButtonCancel}
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.dlnaServerSettingsForm').off('submit', DlnaServerSettingsPage.onSubmit).on('submit', DlnaServerSettingsPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

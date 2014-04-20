@@ -10,7 +10,8 @@
             <div class="content-primary">
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">${TabSettings}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabPlayTo}</a>
+                    <a href="dlnaserversettings.html" data-role="button">${TabServer}</a>
                     <a href="dlnaprofiles.html" data-role="button">${TabProfiles}</a>
                 </div>
 
@@ -32,6 +33,8 @@
                             <input type="number" id="txtClientDiscoveryInterval" data-mini="true" min="1" max="300" />
                             <div class="fieldDescription">${LabelEnableDlnaClientDiscoveryIntervalHelp}</div>
                         </li>
+                    </ul>
+                    <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">
                                 ${ButtonSave}
@@ -41,7 +44,6 @@
                             </button>
                         </li>
                     </ul>
-
                 </form>
 
             </div>
