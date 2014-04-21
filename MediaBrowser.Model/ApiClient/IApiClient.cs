@@ -924,14 +924,6 @@ namespace MediaBrowser.Model.ApiClient
         string GetVideoStreamUrl(VideoStreamOptions options);
 
         /// <summary>
-        /// Formulates a url for streaming audio using the HLS protocol
-        /// </summary>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">options</exception>
-        string GetHlsAudioStreamUrl(StreamOptions options);
-
-        /// <summary>
         /// Formulates a url for streaming video using the HLS protocol
         /// </summary>
         /// <param name="options">The options.</param>

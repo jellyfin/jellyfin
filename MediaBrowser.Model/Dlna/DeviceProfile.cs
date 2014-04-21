@@ -41,6 +41,16 @@ namespace MediaBrowser.Model.Dlna
         public string SupportedMediaTypes { get; set; }
 
         public string UserId { get; set; }
+
+        public string AlbumArtPn { get; set; }
+
+        public int? MaxAlbumArtWidth { get; set; }
+        public int? MaxAlbumArtHeight { get; set; }
+
+        public int? MaxIconWidth { get; set; }
+        public int? MaxIconHeight { get; set; }
+
+        public int? MaxBitrate { get; set; }
         
         /// <summary>
         /// Controls the content of the X_DLNADOC element in the urn:schemas-dlna-org:device-1-0 namespace.

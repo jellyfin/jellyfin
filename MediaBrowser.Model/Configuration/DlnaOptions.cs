@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Configuration
             EnableServer = true;
             BlastAliveMessages = true;
             ClientDiscoveryIntervalSeconds = 60;
-            BlastAliveMessageIntervalSeconds = 60;
+            BlastAliveMessageIntervalSeconds = 30;
         }
     }
 }

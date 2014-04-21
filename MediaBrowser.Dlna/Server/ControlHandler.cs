@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -265,7 +266,7 @@ namespace MediaBrowser.Dlna.Server
             var children = GetChildrenSorted(folder, user, sortCriteria).ToList();
 
             var totalCount = children.Count;
-            
+
             if (string.Equals(flag, "BrowseMetadata"))
             {
                 Browse_AddFolder(result, folder, children.Count, filter);
@@ -818,14 +819,14 @@ namespace MediaBrowser.Dlna.Server
                 }
             }
 
-            if (item.Genres.Count > 0)
+            foreach (var genre in item.Genres)
             {
-                AddValue(element, "upnp", "genre", item.Genres[0], NS_UPNP);
+                AddValue(element, "upnp", "genre", genre, NS_UPNP);
             }
 
-            if (item.Studios.Count > 0)
+            foreach (var studio in item.Studios)
             {
-                AddValue(element, "upnp", "publisher", item.Studios[0], NS_UPNP);
+                AddValue(element, "upnp", "publisher", studio, NS_UPNP);
             }
 
             if (filter.Contains("dc:title"))
@@ -871,9 +872,9 @@ namespace MediaBrowser.Dlna.Server
 
             if (audio != null)
             {
-                if (audio.Artists.Count > 0)
+                foreach (var artist in audio.Artists)
                 {
-                    AddValue(element, "upnp", "artist", audio.Artists[0], NS_UPNP);
+                    AddValue(element, "upnp", "artist", artist, NS_UPNP);
                 }
 
                 if (!string.IsNullOrEmpty(audio.Album))
@@ -930,20 +931,21 @@ namespace MediaBrowser.Dlna.Server
 
             var result = element.OwnerDocument;
 
-            var curl = GetImageUrl(imageInfo);
+            var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight);
 
             var icon = result.CreateElement("upnp", "albumArtURI", NS_UPNP);
             var profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
-            profile.InnerText = "JPEG_TN";
+            profile.InnerText = _profile.AlbumArtPn;
             icon.SetAttributeNode(profile);
-            icon.InnerText = curl;
+            icon.InnerText = albumartUrlInfo.Url;
             element.AppendChild(icon);
 
+            var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth, _profile.MaxIconHeight);
             icon = result.CreateElement("upnp", "icon", NS_UPNP);
             profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
-            profile.InnerText = "JPEG_TN";
+            profile.InnerText = _profile.AlbumArtPn;
             icon.SetAttributeNode(profile);
-            icon.InnerText = curl;
+            icon.InnerText = iconUrlInfo.Url;
             element.AppendChild(icon);
 
             if (!_profile.EnableAlbumArtInDidl)
@@ -952,10 +954,11 @@ namespace MediaBrowser.Dlna.Server
             }
 
             var res = result.CreateElement(string.Empty, "res", NS_DIDL);
-            res.InnerText = curl;
 
-            int? width = imageInfo.Width;
-            int? height = imageInfo.Height;
+            res.InnerText = albumartUrlInfo.Url;
+
+            var width = albumartUrlInfo.Width;
+            var height = albumartUrlInfo.Height;
 
             var mediaProfile = new MediaFormatProfileResolver().ResolveImageFormat("jpg", width, height);
 
@@ -967,11 +970,6 @@ namespace MediaBrowser.Dlna.Server
             if (width.HasValue && height.HasValue)
             {
                 res.SetAttribute("resolution", string.Format("{0}x{1}", width.Value, height.Value));
-            }
-            else
-            {
-                // TODO: Devices need to see something here?
-                res.SetAttribute("resolution", "200x200");
             }
 
             element.AppendChild(res);
@@ -1052,13 +1050,57 @@ namespace MediaBrowser.Dlna.Server
             internal int? Height;
         }
 
-        private string GetImageUrl(ImageDownloadInfo info)
+        class ImageUrlInfo
         {
-            return string.Format("{0}/Items/{1}/Images/{2}?tag={3}&format=jpg",
+            internal string Url;
+
+            internal int? Width;
+            internal int? Height;
+        }
+
+        private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int? maxWidth, int? maxHeight)
+        {
+            var url = string.Format("{0}/Items/{1}/Images/{2}?tag={3}&format=jpg",
                 _serverAddress,
                 info.ItemId,
                 info.Type,
                 info.ImageTag);
+
+            if (maxWidth.HasValue)
+            {
+                url += "&maxWidth=" + maxWidth.Value.ToString(_usCulture);
+            }
+
+            if (maxHeight.HasValue)
+            {
+                url += "&maxHeight=" + maxHeight.Value.ToString(_usCulture);
+            }
+
+            var width = info.Width;
+            var height = info.Height;
+
+            if (width.HasValue && height.HasValue)
+            {
+                if (maxWidth.HasValue || maxHeight.HasValue)
+                {
+                    var newSize = DrawingUtils.Resize(new ImageSize
+                    {
+                        Height = height.Value,
+                        Width = width.Value
+
+                    }, maxWidth: maxWidth, maxHeight: maxHeight);
+
+                    width = Convert.ToInt32(newSize.Width);
+                    height = Convert.ToInt32(newSize.Height);
+                }
+            }
+
+            return new ImageUrlInfo
+            {
+                Url = url,
+                Width = width,
+                Height = height
+            };
         }
     }
 }

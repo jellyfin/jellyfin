@@ -59,7 +59,7 @@ namespace MediaBrowser.Dlna.Server
         {
             builder.Append("<UDN>uuid:" + SecurityElement.Escape(_serverUdn) + "</UDN>");
             builder.Append("<dlna:X_DLNACAP>" + SecurityElement.Escape(_profile.XDlnaCap ?? string.Empty) + "</dlna:X_DLNACAP>");
-
+            
             if (!string.IsNullOrWhiteSpace(_profile.XDlnaDoc))
             {
                 builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" +
@@ -82,6 +82,11 @@ namespace MediaBrowser.Dlna.Server
 
             builder.Append("<sec:ProductCap>DCM10,getMediaInfo.sec</sec:ProductCap>");
             builder.Append("<sec:X_ProductCap>DCM10,getMediaInfo.sec</sec:X_ProductCap>");
+
+            if (!string.IsNullOrWhiteSpace(_profile.SonyAggregationFlags))
+            {
+                builder.Append("<av:aggregationFlags xmlns:av=\"urn:schemas-sony-com:av\">" + SecurityElement.Escape(_profile.SonyAggregationFlags) + "</av:aggregationFlags>");
+            }
         }
 
         private void AppendIconList(StringBuilder builder)

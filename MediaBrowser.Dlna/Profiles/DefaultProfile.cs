@@ -20,6 +20,11 @@ namespace MediaBrowser.Dlna.Profiles
             ModelUrl = "http://mediabrowser3.com/";
             ManufacturerUrl = "http://mediabrowser3.com/";
 
+            AlbumArtPn = "JPEG_SM";
+
+            MaxAlbumArtHeight = 512;
+            MaxAlbumArtWidth = 512;
+
             TranscodingProfiles = new[]
             {
                 new TranscodingProfile

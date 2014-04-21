@@ -20,6 +20,8 @@ namespace MediaBrowser.Model.Dlna
 
         public string Container { get; set; }
 
+        public string Protocol { get; set; }
+
         public long StartPositionTicks { get; set; }
 
         public string VideoCodec { get; set; }
@@ -84,6 +86,12 @@ namespace MediaBrowser.Model.Dlna
             {
                 return string.Format("{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, dlnaCommand);
             }
+
+            if (string.Equals(Protocol, "hls", StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Format("{0}/videos/{1}/stream.m3u8?{2}", baseUrl, ItemId, dlnaCommand);
+            }
+
             return string.Format("{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, dlnaCommand);
         }
 

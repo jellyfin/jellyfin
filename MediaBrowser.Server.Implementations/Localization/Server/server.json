@@ -59,6 +59,7 @@
 	"LabelDisplayMissingEpisodesWithinSeasons": "Display missing episodes within seasons",
 	"LabelUnairedMissingEpisodesWithinSeasons": "Display unaired episodes within seasons",
 	"HeaderVideoPlaybackSettings": "Video Playback Settings",
+	"HeaderPlaybackSettings": "Playback Settings",
 	"LabelAudioLanguagePreference": "Audio language preference:",
 	"LabelSubtitleLanguagePreference": "Subtitle language preference:",
 	"LabelDisplayForcedSubtitlesOnly": "Display only forced subtitles",
@@ -418,7 +419,7 @@
 	"HeaderCustomDlnaProfiles": "Custom Profiles",
 	"HeaderSystemDlnaProfiles": "System Profiles",
 	"CustomDlnaProfilesHelp": "Create a custom profile to target a new device or override a system profile.",
-	"SystemDlnaProfilesHelp": "System profiles are read-only. To override a system profile, create a custom profile targeting the same device.",
+	"SystemDlnaProfilesHelp": "System profiles are read-only. Changes to a system profile will be saved to a new custom profile.",
 	"TitleDashboard": "Dashboard",
 	"TabHome": "Home",
 	"TabInfo": "Info",
@@ -542,5 +543,5 @@
 	"LabelBlastMessageInterval": "Alive message interval (seconds)",
 	"LabelBlastMessageIntervalHelp": "Determines the duration in seconds between server alive messages.",
 	"LabelDefaultUser": "Default user:",
-	"LabelDefaultUserHelp": "Determines which user library should be displayed on connected devices. This can be overridden using a device profile."
+	"LabelDefaultUserHelp": "Determines which user library should be displayed on connected devices. This can be overridden for each device using profiles."
 }

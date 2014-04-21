@@ -49,7 +49,7 @@ namespace MediaBrowser.Dlna
             _userDataManager = userDataManager;
             _config = config;
 
-            //DumpProfiles();
+            DumpProfiles();
         }
 
         public IEnumerable<DeviceProfile> GetProfiles()

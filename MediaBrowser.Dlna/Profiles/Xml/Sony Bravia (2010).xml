@@ -18,6 +18,12 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
+  <AlbumArtPn>JPEG_SM</AlbumArtPn>
+  <MaxAlbumArtWidth>512</MaxAlbumArtWidth>
+  <MaxAlbumArtHeight>512</MaxAlbumArtHeight>
+  <MaxIconWidth xsi:nil="true" />
+  <MaxIconHeight xsi:nil="true" />
+  <MaxBitrate xsi:nil="true" />
   <SonyAggregationFlags>10</SonyAggregationFlags>
   <ProtocolInfo>http-get:*:audio/mpeg:DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=81500000000000000000000000000000,http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=00D00000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_PS_PAL;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=81500000000000000000000000000000</ProtocolInfo>
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
