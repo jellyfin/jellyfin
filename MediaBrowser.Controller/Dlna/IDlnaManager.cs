@@ -65,20 +65,6 @@ namespace MediaBrowser.Controller.Dlna
         string GetServerDescriptionXml(IDictionary<string, string> headers, string serverUuId);
 
         /// <summary>
-        /// Gets the content directory XML.
-        /// </summary>
-        /// <param name="headers">The headers.</param>
-        /// <returns>System.String.</returns>
-        string GetContentDirectoryXml(IDictionary<string, string> headers);
-
-        /// <summary>
-        /// Processes the control request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>ControlResponse.</returns>
-        ControlResponse ProcessControlRequest(ControlRequest request);
-
-        /// <summary>
         /// Gets the icon.
         /// </summary>
         /// <param name="filename">The filename.</param>

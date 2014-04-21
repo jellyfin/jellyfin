@@ -117,7 +117,6 @@ namespace MediaBrowser.Dlna.Server
                     if (_config.Configuration.DlnaOptions.EnableDebugLogging)
                     {
                         _logger.Debug("{0} - Datagram method: {1}", endpoint, method);
-                        //_logger.Debug(headers);
                     }
 
                     if (string.Equals(method, "M-SEARCH", StringComparison.OrdinalIgnoreCase))
@@ -234,7 +233,10 @@ namespace MediaBrowser.Dlna.Server
 
         private void NotifyAll()
         {
-            _logger.Debug("Sending alive notifications");
+            if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+            {
+                _logger.Debug("Sending alive notifications");
+            }
             foreach (var d in Devices)
             {
                 NotifyDevice(d, "alive", false);
@@ -243,7 +245,6 @@ namespace MediaBrowser.Dlna.Server
 
         private void NotifyDevice(UpnpDevice dev, string type, bool sticky)
         {
-            _logger.Debug("NotifyDevice");
             var builder = new StringBuilder();
 
             const string argFormat = "{0}: {1}\r\n";
@@ -258,7 +259,11 @@ namespace MediaBrowser.Dlna.Server
             builder.AppendFormat(argFormat, "USN", dev.USN);
             builder.Append("\r\n");
 
-            _logger.Debug("{0} said {1}", dev.USN, type);
+            if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+            {
+                _logger.Debug("{0} said {1}", dev.USN, type);
+            }
+
             SendDatagram(_ssdpEndp, dev.Address, builder.ToString(), sticky);
         }
 

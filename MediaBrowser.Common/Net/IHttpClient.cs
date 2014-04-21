@@ -44,6 +44,14 @@ namespace MediaBrowser.Common.Net
         Task<Stream> Get(HttpRequestOptions options);
 
         /// <summary>
+        /// Sends the asynchronous.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="httpMethod">The HTTP method.</param>
+        /// <returns>Task{HttpResponseInfo}.</returns>
+        Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, string httpMethod);
+
+        /// <summary>
         /// Performs a POST request
         /// </summary>
         /// <param name="url">The URL.</param>

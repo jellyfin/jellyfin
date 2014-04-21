@@ -53,6 +53,7 @@
     </Compile>
     <Compile Include="DlnaManager.cs" />
     <Compile Include="Common\Argument.cs" />
+    <Compile Include="Eventing\EventManager.cs" />
     <Compile Include="PlayTo\CurrentIdEventArgs.cs" />
     <Compile Include="PlayTo\Device.cs">
       <SubType>Code</SubType>
@@ -73,6 +74,7 @@
     <Compile Include="Profiles\Windows81Profile.cs" />
     <Compile Include="Profiles\WindowsMediaCenterProfile.cs" />
     <Compile Include="Profiles\WindowsPhoneProfile.cs" />
+    <Compile Include="Server\ContentDirectory.cs" />
     <Compile Include="Server\ControlHandler.cs" />
     <Compile Include="Server\ServiceActionListBuilder.cs" />
     <Compile Include="Server\ContentDirectoryXmlBuilder.cs" />

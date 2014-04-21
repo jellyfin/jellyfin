@@ -31,7 +31,7 @@ namespace MediaBrowser.Dlna.Server
             var builder = new StringBuilder();
 
             builder.Append("<?xml version=\"1.0\"?>");
-            builder.Append("<root xmlns=\"urn:schemas-upnp-org:device-1-0\" xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\" xmlns:sec=\"http://www.sec.co.kr/dlna\">");
+            builder.Append("<root xmlns=\"urn:schemas-upnp-org:device-1-0\" xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">");
 
             builder.Append("<specVersion>");
             builder.Append("<major>1</major>");
@@ -59,16 +59,8 @@ namespace MediaBrowser.Dlna.Server
         {
             builder.Append("<UDN>uuid:" + SecurityElement.Escape(_serverUdn) + "</UDN>");
             builder.Append("<dlna:X_DLNACAP>" + SecurityElement.Escape(_profile.XDlnaCap ?? string.Empty) + "</dlna:X_DLNACAP>");
-            
-            if (!string.IsNullOrWhiteSpace(_profile.XDlnaDoc))
-            {
-                builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" +
-                               SecurityElement.Escape(_profile.XDlnaDoc) + "</dlna:X_DLNADOC>");
-            }
-            else
-            {
-                builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">DMS-1.50</dlna:X_DLNADOC>");
-            }
+
+            builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + SecurityElement.Escape(_profile.XDlnaDoc ?? string.Empty) + "</dlna:X_DLNADOC>");
 
             builder.Append("<friendlyName>" + SecurityElement.Escape(_profile.FriendlyName ?? string.Empty) + "</friendlyName>");
             builder.Append("<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>");
@@ -79,9 +71,6 @@ namespace MediaBrowser.Dlna.Server
             builder.Append("<modelNumber>" + SecurityElement.Escape(_profile.ModelNumber ?? string.Empty) + "</modelNumber>");
             builder.Append("<modelURL>" + SecurityElement.Escape(_profile.ModelUrl ?? string.Empty) + "</modelURL>");
             builder.Append("<serialNumber>" + SecurityElement.Escape(_profile.SerialNumber ?? string.Empty) + "</serialNumber>");
-
-            builder.Append("<sec:ProductCap>DCM10,getMediaInfo.sec</sec:ProductCap>");
-            builder.Append("<sec:X_ProductCap>DCM10,getMediaInfo.sec</sec:X_ProductCap>");
 
             if (!string.IsNullOrWhiteSpace(_profile.SonyAggregationFlags))
             {

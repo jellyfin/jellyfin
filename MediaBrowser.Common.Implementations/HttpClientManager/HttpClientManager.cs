@@ -215,7 +215,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <returns>Task{HttpResponseInfo}.</returns>
         /// <exception cref="HttpException">
         /// </exception>
-        private async Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, string httpMethod)
+        public async Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, string httpMethod)
         {
             ValidateParams(options);
 

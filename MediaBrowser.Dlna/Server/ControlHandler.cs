@@ -42,10 +42,10 @@ namespace MediaBrowser.Dlna.Server
         private const string NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/";
         private const string NS_UPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
 
-        private int systemID = 0;
+        private readonly int _systemUpdateId;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -55,6 +55,7 @@ namespace MediaBrowser.Dlna.Server
             _imageProcessor = imageProcessor;
             _userDataManager = userDataManager;
             _user = user;
+            _systemUpdateId = systemUpdateId;
         }
 
         public ControlResponse ProcessControlRequest(ControlRequest request)
@@ -205,7 +206,7 @@ namespace MediaBrowser.Dlna.Server
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSystemUpdateID()
         {
-            return new Headers { { "Id", systemID.ToString(_usCulture) } };
+            return new Headers { { "Id", _systemUpdateId.ToString(_usCulture) } };
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleXGetFeatureList()
@@ -308,7 +309,7 @@ namespace MediaBrowser.Dlna.Server
                 new KeyValuePair<string,string>("Result", resXML),
                 new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
                 new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
-                new KeyValuePair<string,string>("UpdateID", systemID.ToString(_usCulture))
+                new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
             };
         }
 
@@ -382,7 +383,7 @@ namespace MediaBrowser.Dlna.Server
                 new KeyValuePair<string,string>("Result", resXML),
                 new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
                 new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
-                new KeyValuePair<string,string>("UpdateID", systemID.ToString(_usCulture))
+                new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
             };
         }
 
