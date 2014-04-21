@@ -20,6 +20,15 @@ namespace MediaBrowser.Dlna.Profiles
                 },
                 new TranscodingProfile
                 {
+                    Protocol = "hls",
+                    Container = "ts",
+                    VideoCodec = "h264",
+                    AudioCodec = "aac",
+                    Type = DlnaProfileType.Video,
+                    VideoProfile = "Baseline"
+                },
+                new TranscodingProfile
+                {
                     Container = "mp4",
                     VideoCodec = "h264",
                     AudioCodec = "aac",

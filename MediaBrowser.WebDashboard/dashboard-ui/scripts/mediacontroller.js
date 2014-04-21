@@ -373,7 +373,7 @@
         html += '<p class="fieldDescription">All plays will be sent to the selected player.</p>';
 
         checkedHtml = enableMirrorMode ? ' checked="checked"' : '';
-        html += '<div style="margin-top:1.5em;" class="fldMirrorMode"><label for="chkEnableMirrorMode">Enable Mirror Mode</label><input type="checkbox" class="chkEnableMirrorMode" id="chkEnableMirrorMode" data-mini="true"' + checkedHtml + ' /></div>';
+        html += '<div style="margin-top:1.5em;" class="fldMirrorMode"><label for="chkEnableMirrorMode">Enable display mirroring</label><input type="checkbox" class="chkEnableMirrorMode" id="chkEnableMirrorMode" data-mini="true"' + checkedHtml + ' /></div>';
 
         html += '</form>';
 

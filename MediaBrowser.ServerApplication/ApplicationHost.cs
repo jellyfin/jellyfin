@@ -32,7 +32,9 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Themes;
 using MediaBrowser.Dlna;
+using MediaBrowser.Dlna.Eventing;
 using MediaBrowser.Dlna.PlayTo;
+using MediaBrowser.Dlna.Server;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Logging;
@@ -506,8 +508,14 @@ namespace MediaBrowser.ServerApplication
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);
 
-            var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("DLNA"), JsonSerializer, UserManager, LibraryManager, DtoService, ImageProcessor, UserDataManager, ServerConfigurationManager);
+            var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("Dlna"), JsonSerializer);
             RegisterSingleInstance<IDlnaManager>(dlnaManager);
+
+            var dlnaEventManager = new EventManager(LogManager, HttpClient);
+            RegisterSingleInstance<IEventManager>(dlnaEventManager);
+
+            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, DtoService, LibraryManager, LogManager, ServerConfigurationManager, UserManager, dlnaEventManager);
+            RegisterSingleInstance<IContentDirectory>(contentDirectory);
 
             var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);
             RegisterSingleInstance<ICollectionManager>(collectionManager);

@@ -1,12 +1,8 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Dlna.Profiles;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Dlna;
@@ -28,28 +24,20 @@ namespace MediaBrowser.Dlna
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IUserManager _userManager;
-        private readonly ILibraryManager _libraryManager;
-        private readonly IDtoService _dtoService;
-        private readonly IImageProcessor _imageProcessor;
-        private readonly IUserDataManager _userDataManager;
-        private readonly IServerConfigurationManager _config;
 
-        public DlnaManager(IXmlSerializer xmlSerializer, IFileSystem fileSystem, IApplicationPaths appPaths, ILogger logger, IJsonSerializer jsonSerializer, IUserManager userManager, ILibraryManager libraryManager, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager, IServerConfigurationManager config)
+        public DlnaManager(IXmlSerializer xmlSerializer, 
+            IFileSystem fileSystem, 
+            IApplicationPaths appPaths, 
+            ILogger logger, 
+            IJsonSerializer jsonSerializer)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
             _logger = logger;
             _jsonSerializer = jsonSerializer;
-            _userManager = userManager;
-            _libraryManager = libraryManager;
-            _dtoService = dtoService;
-            _imageProcessor = imageProcessor;
-            _userDataManager = userDataManager;
-            _config = config;
 
-            DumpProfiles();
+            //DumpProfiles();
         }
 
         public IEnumerable<DeviceProfile> GetProfiles()
@@ -499,37 +487,6 @@ namespace MediaBrowser.Dlna
             return new DescriptionXmlBuilder(profile, serverUuId).GetXml();
         }
 
-        public string GetContentDirectoryXml(IDictionary<string, string> headers)
-        {
-            var profile = GetProfile(headers) ??
-                          GetDefaultProfile();
-
-            return new ContentDirectoryXmlBuilder(profile).GetXml();
-        }
-
-        public ControlResponse ProcessControlRequest(ControlRequest request)
-        {
-            var profile = GetProfile(request.Headers)
-                          ?? GetDefaultProfile();
-
-            var device = DlnaServerEntryPoint.Instance.GetServerUpnpDevice(request.TargetServerUuId);
-
-            var serverAddress = device.Descriptor.ToString().Substring(0, device.Descriptor.ToString().IndexOf("/dlna", StringComparison.OrdinalIgnoreCase));
-
-            var user = GetUser(profile);
-
-            return new ControlHandler(
-                _logger, 
-                _libraryManager, 
-                profile, 
-                serverAddress, 
-                _dtoService, 
-                _imageProcessor, 
-                _userDataManager,
-                user)
-                .ProcessControlRequest(request);
-        }
-
         public DlnaIconResponse GetIcon(string filename)
         {
             var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
@@ -541,34 +498,6 @@ namespace MediaBrowser.Dlna
                 Format = format,
                 Stream = GetType().Assembly.GetManifestResourceStream("MediaBrowser.Dlna.Images." + filename.ToLower())
             };
-        }
-
-
-
-        private User GetUser(DeviceProfile profile)
-        {
-            if (!string.IsNullOrEmpty(profile.UserId))
-            {
-                var user = _userManager.GetUserById(new Guid(profile.UserId));
-
-                if (user != null)
-                {
-                    return user;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(_config.Configuration.DlnaOptions.DefaultUserId))
-            {
-                var user = _userManager.GetUserById(new Guid(_config.Configuration.DlnaOptions.DefaultUserId));
-
-                if (user != null)
-                {
-                    return user;
-                }
-            }
-
-            // No configuration so it's going to be pretty arbitrary
-            return _userManager.Users.First();
         }
     }
 }

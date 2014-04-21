@@ -73,6 +73,7 @@
     <Compile Include="Dlna\DeviceProfileInfo.cs" />
     <Compile Include="Dlna\DirectPlayProfile.cs" />
     <Compile Include="Dlna\DlnaMaps.cs" />
+    <Compile Include="Dlna\EventSubscription.cs" />
     <Compile Include="Dlna\Filter.cs" />
     <Compile Include="Dlna\MediaFormatProfile.cs" />
     <Compile Include="Dlna\MediaFormatProfileResolver.cs" />

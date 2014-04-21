@@ -51,10 +51,14 @@ namespace MediaBrowser.Api.Dlna
     public class DlnaServerService : BaseApiService
     {
         private readonly IDlnaManager _dlnaManager;
+        private readonly IContentDirectory _contentDirectory;
+        private readonly IEventManager _eventManager;
 
-        public DlnaServerService(IDlnaManager dlnaManager)
+        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IEventManager eventManager)
         {
             _dlnaManager = dlnaManager;
+            _contentDirectory = contentDirectory;
+            _eventManager = eventManager;
         }
 
         public object Get(GetDescriptionXml request)
@@ -66,7 +70,7 @@ namespace MediaBrowser.Api.Dlna
 
         public object Get(GetContentDirectory request)
         {
-            var xml = _dlnaManager.GetContentDirectoryXml(GetRequestHeaders());
+            var xml = _contentDirectory.GetContentDirectoryXml(GetRequestHeaders());
 
             return ResultFactory.GetResult(xml, "text/xml");
         }
@@ -85,7 +89,7 @@ namespace MediaBrowser.Api.Dlna
 
             using (var reader = new StreamReader(request.RequestStream))
             {
-                return _dlnaManager.ProcessControlRequest(new ControlRequest
+                return _contentDirectory.ProcessControlRequest(new ControlRequest
                 {
                     Headers = GetRequestHeaders(),
                     InputXml = await reader.ReadToEndAsync().ConfigureAwait(false),
@@ -128,49 +132,24 @@ namespace MediaBrowser.Api.Dlna
             var callback = GetHeader("CALLBACK");
             var timeoutString = GetHeader("TIMEOUT");
 
-            var timeout = ParseTimeout(timeoutString) ?? 300;
+            var timeout = ParseTimeout(timeoutString);
 
             if (string.Equals(Request.Verb, "SUBSCRIBE", StringComparison.OrdinalIgnoreCase))
             {
                 if (string.IsNullOrEmpty(notificationType))
                 {
-                    RenewEvent(subscriptionId, timeout);
-                }
-                else
-                {
-                    SubscribeToEvent(notificationType, timeout, callback);
+                    return GetSubscriptionResponse(_eventManager.RenewEventSubscription(subscriptionId, timeout));
                 }
 
-                return GetSubscriptionResponse(request.UuId, timeout);
+                return GetSubscriptionResponse(_eventManager.CreateEventSubscription(notificationType, timeout, callback));
             }
 
-            UnsubscribeFromEvent(subscriptionId);
-            return ResultFactory.GetResult("", "text/plain");
+            return GetSubscriptionResponse(_eventManager.CancelEventSubscription(subscriptionId));
         }
 
-        private void UnsubscribeFromEvent(string subscriptionId)
+        private object GetSubscriptionResponse(EventSubscriptionResponse response)
         {
-
-        }
-
-        private void SubscribeToEvent(string notificationType, int? timeout, string callback)
-        {
-
-        }
-
-        private void RenewEvent(string subscriptionId, int? timeout)
-        {
-
-        }
-
-        private object GetSubscriptionResponse(string uuid, int timeout)
-        {
-            var headers = new Dictionary<string, string>();
-
-            headers["SID"] = "uuid:" + uuid;
-            headers["TIMEOUT"] = "SECOND-" + timeout.ToString(_usCulture);
-
-            return ResultFactory.GetResult("\r\n", "text/plain", headers);
+            return ResultFactory.GetResult(response.Content, response.ContentType, response.Headers);
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");

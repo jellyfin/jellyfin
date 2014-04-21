@@ -109,6 +109,9 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\DlnaMaps.cs">
       <Link>Dlna\DlnaMaps.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\EventSubscription.cs">
+      <Link>Dlna\EventSubscription.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\Filter.cs">
       <Link>Dlna\Filter.cs</Link>
     </Compile>
