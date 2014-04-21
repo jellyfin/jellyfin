@@ -55,6 +55,18 @@
         $('#txtIdSerialNumber', page).val(idInfo.SerialNumber || '');
         $('#txtIdDeviceDescription', page).val(idInfo.DeviceDescription || '');
 
+        $('#txtAlbumArtPn', page).val(profile.AlbumArtPn || '');
+        $('#txtAlbumArtMaxWidth', page).val(profile.MaxAlbumArtWidth || '');
+        $('#txtAlbumArtMaxHeight', page).val(profile.MaxAlbumArtHeight || '');
+        $('#txtIconMaxWidth', page).val(profile.MaxIconWidth || '');
+        $('#txtIconMaxHeight', page).val(profile.MaxIconHeight || '');
+
+        $('#chkIgnoreTranscodeByteRangeRequests', page).checked(profile.IgnoreTranscodeByteRangeRequests).checkboxradio('refresh');
+        $('#txtMaxAllowedBitrate', page).val(profile.MaxBitrate || '');
+
+        $('#chkRequiresPlainFolders', page).checked(profile.RequiresPlainFolders).checkboxradio('refresh');
+        $('#chkRequiresPlainVideoItems', page).checked(profile.RequiresPlainVideoItems).checkboxradio('refresh');
+
         profile.DirectPlayProfiles = (profile.DirectPlayProfiles || []);
         profile.TranscodingProfiles = (profile.TranscodingProfiles || []);
         profile.ContainerProfiles = (profile.ContainerProfiles || []);
@@ -649,6 +661,18 @@
         profile.Identification.ManufacturerUrl = $('#txtIdManufacturerUrl', page).val();
         profile.Identification.SerialNumber = $('#txtIdSerialNumber', page).val();
         profile.Identification.DeviceDescription = $('#txtIdDeviceDescription', page).val();
+
+        profile.AlbumArtPn = $('#txtAlbumArtPn', page).val();
+        profile.MaxAlbumArtWidth = $('#txtAlbumArtMaxWidth', page).val();
+        profile.MaxAlbumArtHeight = $('#txtAlbumArtMaxHeight', page).val();
+        profile.MaxIconWidth = $('#txtIconMaxWidth', page).val();
+        profile.MaxIconHeight = $('#txtIconMaxHeight', page).val();
+
+        profile.RequiresPlainFolders = $('#chkRequiresPlainFolders', page).checked();
+        profile.RequiresPlainVideoItems = $('#chkRequiresPlainVideoItems', page).checked();
+
+        profile.IgnoreTranscodeByteRangeRequests = $('#chkIgnoreTranscodeByteRangeRequests', page).checked();
+        profile.MaxBitrate = $('#txtMaxAllowedBitrate', page).val();
 
         profile.UserId = $('#selectUser', page).val();
     }

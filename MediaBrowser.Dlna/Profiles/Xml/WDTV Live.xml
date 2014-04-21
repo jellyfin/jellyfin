@@ -18,6 +18,12 @@
   <IgnoreTranscodeByteRangeRequests>true</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
+  <AlbumArtPn>JPEG_SM</AlbumArtPn>
+  <MaxAlbumArtWidth>512</MaxAlbumArtWidth>
+  <MaxAlbumArtHeight>512</MaxAlbumArtHeight>
+  <MaxIconWidth xsi:nil="true" />
+  <MaxIconHeight xsi:nil="true" />
+  <MaxBitrate xsi:nil="true" />
   <ProtocolInfo>DLNA</ProtocolInfo>
   <TimelineOffsetSeconds>5</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>

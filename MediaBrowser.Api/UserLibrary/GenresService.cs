@@ -110,7 +110,19 @@ namespace MediaBrowser.Api.UserLibrary
             return items
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(name => LibraryManager.GetGenre(name));
+                .Select(name =>
+                {
+                    try
+                    {
+                        return LibraryManager.GetGenre(name);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error getting genre {0}", ex, name);
+                        return null;
+                    }
+                })
+                .Where(i => i != null);
         }
     }
 }

@@ -18,6 +18,12 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
+  <AlbumArtPn>JPEG_SM</AlbumArtPn>
+  <MaxAlbumArtWidth>512</MaxAlbumArtWidth>
+  <MaxAlbumArtHeight>512</MaxAlbumArtHeight>
+  <MaxIconWidth xsi:nil="true" />
+  <MaxIconHeight xsi:nil="true" />
+  <MaxBitrate xsi:nil="true" />
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
   <SonyAggregationFlags>10</SonyAggregationFlags>
   <ProtocolInfo>DLNA</ProtocolInfo>

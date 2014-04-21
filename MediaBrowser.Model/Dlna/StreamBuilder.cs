@@ -85,10 +85,12 @@ namespace MediaBrowser.Model.Dlna
                 RunTimeTicks = item.RunTimeTicks
             };
 
+            var maxBitrateSetting = options.MaxBitrate ?? options.Profile.MaxBitrate;
+
             var audioStream = item.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
             // Honor the max bitrate setting
-            if (IsAudioEligibleForDirectPlay(item, options))
+            if (IsAudioEligibleForDirectPlay(item, maxBitrateSetting))
             {
                 var directPlay = options.Profile.DirectPlayProfiles
                     .FirstOrDefault(i => i.Type == playlistItem.MediaType && IsAudioDirectPlaySupported(i, item, audioStream));
@@ -119,6 +121,7 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 playlistItem.Container = transcodingProfile.Container;
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec;
+                playlistItem.Protocol = transcodingProfile.Protocol;
 
                 var audioTranscodingConditions = options.Profile.CodecProfiles
                     .Where(i => i.Type == CodecType.Audio && i.ContainsCodec(transcodingProfile.AudioCodec))
@@ -136,11 +139,11 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 // Honor requested max bitrate
-                if (options.MaxBitrate.HasValue)
+                if (maxBitrateSetting.HasValue)
                 {
-                    var currentValue = playlistItem.AudioBitrate ?? options.MaxBitrate.Value;
+                    var currentValue = playlistItem.AudioBitrate ?? maxBitrateSetting.Value;
 
-                    playlistItem.AudioBitrate = Math.Min(options.MaxBitrate.Value, currentValue);
+                    playlistItem.AudioBitrate = Math.Min(maxBitrateSetting.Value, currentValue);
                 }
             }
 
@@ -160,7 +163,9 @@ namespace MediaBrowser.Model.Dlna
             var audioStream = item.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
             var videoStream = item.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
-            if (IsEligibleForDirectPlay(item, options))
+            var maxBitrateSetting = options.MaxBitrate ?? options.Profile.MaxBitrate;
+
+            if (IsEligibleForDirectPlay(item, options, maxBitrateSetting))
             {
                 // See if it can be direct played
                 var directPlay = options.Profile.DirectPlayProfiles
@@ -201,6 +206,7 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',').FirstOrDefault();
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
+                playlistItem.Protocol = transcodingProfile.Protocol;
 
                 var videoTranscodingConditions = options.Profile.CodecProfiles
                     .Where(i => i.Type == CodecType.Video && i.ContainsCodec(transcodingProfile.VideoCodec))
@@ -233,9 +239,9 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 // Honor max rate
-                if (options.MaxBitrate.HasValue)
+                if (maxBitrateSetting.HasValue)
                 {
-                    var videoBitrate = options.MaxBitrate.Value;
+                    var videoBitrate = maxBitrateSetting.Value;
 
                     if (playlistItem.AudioBitrate.HasValue)
                     {
@@ -251,7 +257,7 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
-        private bool IsEligibleForDirectPlay(MediaSourceInfo item, VideoOptions options)
+        private bool IsEligibleForDirectPlay(MediaSourceInfo item, VideoOptions options, int? maxBitrate)
         {
             if (options.SubtitleStreamIndex.HasValue)
             {
@@ -264,13 +270,13 @@ namespace MediaBrowser.Model.Dlna
                 return false;
             }
 
-            return IsAudioEligibleForDirectPlay(item, options);
+            return IsAudioEligibleForDirectPlay(item, maxBitrate);
         }
 
-        private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, AudioOptions options)
+        private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, int? maxBitrate)
         {
             // Honor the max bitrate setting
-            return !options.MaxBitrate.HasValue || (item.Bitrate.HasValue && item.Bitrate.Value <= options.MaxBitrate.Value);
+            return !maxBitrate.HasValue || (item.Bitrate.HasValue && item.Bitrate.Value <= maxBitrate.Value);
         }
 
         private void ValidateInput(VideoOptions options)

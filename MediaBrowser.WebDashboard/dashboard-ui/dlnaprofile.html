@@ -64,14 +64,81 @@
                             <label for="chkVideo">Video</label>
                         </fieldset>
 
+
                         <br />
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <label for="chkEnableAlbumArtInDidl">Embed album art in Didl</label>
-                                <input type="checkbox" id="chkEnableAlbumArtInDidl" data-mini="true" />
-                                <div class="fieldDescription">Some devices prefer this method for obtaining album art. Others may fail to play with this option enabled.</div>
-                            </li>
-                        </ul>
+                        <div data-role="collapsible">
+                            <h2>${HeaderDisplaySettings}</h2>
+                            <div>
+                                <ul data-role="listview" class="ulForm">
+                                    <li>
+                                        <label for="chkRequiresPlainFolders">Display all folders as plain storage folders</label>
+                                        <input type="checkbox" id="chkRequiresPlainFolders" data-mini="true" />
+                                        <div class="fieldDescription">If enabled, all folders are represented in DIDL as "object.container.storageFolder" instead of a more specific type, such as "object.container.person.musicArtist".</div>
+                                    </li>
+                                    <li>
+                                        <label for="chkRequiresPlainVideoItems">Display all videos as plain video items</label>
+                                        <input type="checkbox" id="chkRequiresPlainVideoItems" data-mini="true" />
+                                        <div class="fieldDescription">If enabled, all videos are represented in DIDL as "object.item.videoItem" instead of a more specific type, such as "object.item.videoItem.movie".</div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div data-role="collapsible">
+                            <h2>${HeaderImageSettings}</h2>
+                            <div>
+                                <ul data-role="listview" class="ulForm">
+                                    <li>
+                                        <label for="chkEnableAlbumArtInDidl">Embed album art in Didl</label>
+                                        <input type="checkbox" id="chkEnableAlbumArtInDidl" data-mini="true" />
+                                        <div class="fieldDescription">Some devices prefer this method for obtaining album art. Others may fail to play with this option enabled.</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtAlbumArtPn">Album art PN:</label>
+                                        <input type="text" id="txtAlbumArtPn" data-mini="true" />
+                                        <div class="fieldDescription">PN used for album art, within the dlna:profileID attribute on upnp:albumArtURI. Default is JPEG_SM. Some clients require a specific value, regardless of the size of the image.</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtAlbumArtMaxWidth">Album art max width:</label>
+                                        <input type="number" id="txtAlbumArtMaxWidth" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <div class="fieldDescription">Max resolution of album art exposed via upnp:albumArtURI.</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtAlbumArtMaxHeight">Album art max height:</label>
+                                        <input type="number" id="txtAlbumArtMaxHeight" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <div class="fieldDescription">Max resolution of album art exposed via upnp:albumArtURI.</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtIconMaxWidth">Icon max width:</label>
+                                        <input type="number" id="txtIconMaxWidth" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <div class="fieldDescription">Max resolution of icons exposed via upnp:icon.</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtIconMaxHeight">Icon max height:</label>
+                                        <input type="number" id="txtIconMaxHeight" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <div class="fieldDescription">Max resolution of icons exposed via upnp:icon.</div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div data-role="collapsible">
+                            <h2>${HeaderPlaybackSettings}</h2>
+                            <div>
+                                <ul data-role="listview" class="ulForm">
+                                    <li>
+                                        <label for="txtMaxAllowedBitrate">Max bitrate:</label>
+                                        <input type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <div class="fieldDescription">Specify a max bitrate in bandwidth constrained environments, or if the device imposes it's own limit.</div>
+                                    </li>
+                                    <li>
+                                        <label for="chkIgnoreTranscodeByteRangeRequests">Ignore transcode byte range requests</label>
+                                        <input type="checkbox" id="chkIgnoreTranscodeByteRangeRequests" data-mini="true" />
+                                        <div class="fieldDescription">If enabled, these requests will be honored but will ignore the byte range header.</div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
 
                     </div>
                     <div class="tabContent tabIdentification">
