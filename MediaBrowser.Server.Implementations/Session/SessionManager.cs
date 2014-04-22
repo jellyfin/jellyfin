@@ -282,14 +282,13 @@ namespace MediaBrowser.Server.Implementations.Session
                 info.Item = GetItemInfo(libraryItem, runtimeTicks);
             }
 
-            session.PlayState.IsPaused = info.IsPaused;
-            session.PlayState.PositionTicks = info.PositionTicks;
             session.NowPlayingItem = info.Item;
             session.LastActivityDate = DateTime.UtcNow;
+
+            session.PlayState.IsPaused = info.IsPaused;
+            session.PlayState.PositionTicks = info.PositionTicks;
             session.PlayState.MediaSourceId = info.MediaSourceId;
-
             session.PlayState.CanSeek = info.CanSeek;
-
             session.PlayState.IsMuted = info.IsMuted;
             session.PlayState.VolumeLevel = info.VolumeLevel;
             session.PlayState.AudioStreamIndex = info.AudioStreamIndex;

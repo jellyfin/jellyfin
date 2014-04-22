@@ -1252,7 +1252,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            var bitrate = info.MediaStreams.Where(m => m.Type == MediaStreamType.Audio || m.Type == MediaStreamType.Video).Select(m => m.BitRate ?? 0).Sum();
+            var bitrate = i.TotalBitrate ?? 
+                info.MediaStreams.Where(m => m.Type != MediaStreamType.Subtitle && !string.Equals(m.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
+                .Select(m => m.BitRate ?? 0)
+                .Sum();
 
             if (bitrate > 0)
             {
@@ -1286,7 +1289,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            var bitrate = info.MediaStreams.Where(m => m.Type == MediaStreamType.Audio).Select(m => m.BitRate ?? 0).Sum();
+            var bitrate = i.TotalBitrate ??
+                info.MediaStreams.Where(m => m.Type == MediaStreamType.Audio)
+                .Select(m => m.BitRate ?? 0)
+                .Sum();
 
             if (bitrate > 0)
             {

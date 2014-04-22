@@ -173,6 +173,8 @@ namespace MediaBrowser.Model.Entities
         /// <value>The format.</value>
         public string Format { get; set; }
 
+        public int? TotalBitrate { get; set; }
+
         public MediaInfo()
         {
             MediaStreams = new List<MediaStream>();

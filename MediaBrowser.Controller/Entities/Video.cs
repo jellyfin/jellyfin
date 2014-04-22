@@ -29,6 +29,7 @@ namespace MediaBrowser.Controller.Entities
         public string FormatName { get; set; }
         public long? Size { get; set; }
         public string Container { get; set; }
+        public int? TotalBitrate { get; set; }
 
         public Video()
         {

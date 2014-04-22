@@ -151,6 +151,13 @@ namespace MediaBrowser.Providers.MediaInfo
 
         protected async Task Fetch(Video video, CancellationToken cancellationToken, InternalMediaInfoResult data, IIsoMount isoMount, BlurayDiscInfo blurayInfo, IDirectoryService directoryService)
         {
+            var mediaInfo = MediaEncoderHelpers.GetMediaInfo(data);
+            var mediaStreams = mediaInfo.MediaStreams;
+
+            video.TotalBitrate = mediaInfo.TotalBitrate;
+            video.FormatName = (mediaInfo.Format ?? string.Empty)
+                .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
+
             if (data.format != null)
             {
                 // For dvd's this may not always be accurate, so don't set the runtime if the item already has one
@@ -160,9 +167,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     video.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration, _usCulture)).Ticks;
                 }
-
-                video.FormatName = (data.format.format_name ?? string.Empty)
-                    .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
 
                 if (video.VideoType == VideoType.VideoFile)
                 {
@@ -184,8 +188,6 @@ namespace MediaBrowser.Providers.MediaInfo
                     video.Size = null;
                 }
             }
-
-            var mediaStreams = MediaEncoderHelpers.GetMediaInfo(data).MediaStreams;
 
             var mediaChapters = (data.Chapters ?? new MediaChapter[] { }).ToList();
             var chapters = mediaChapters.Select(GetChapterInfo).ToList();

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -257,26 +258,28 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
-        private readonly ISearchEngine _searchEngine;
         private readonly ILocalizationManager _localization;
 
         private readonly IDtoService _dtoService;
+        private readonly ICollectionManager _collectionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsService" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="searchEngine">The search engine.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ISearchEngine searchEngine, IUserDataManager userDataRepository, ILocalizationManager localization, IDtoService dtoService)
+        /// <param name="localization">The localization.</param>
+        /// <param name="dtoService">The dto service.</param>
+        /// <param name="collectionManager">The collection manager.</param>
+        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, ILocalizationManager localization, IDtoService dtoService, ICollectionManager collectionManager)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
-            _searchEngine = searchEngine;
             _userDataRepository = userDataRepository;
             _localization = localization;
             _dtoService = dtoService;
+            _collectionManager = collectionManager;
         }
 
         /// <summary>
@@ -319,7 +322,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (CollapseBoxSetItems(request))
             {
-                items = CollapseItemsWithinBoxSets(items, user);
+                items = _collectionManager.CollapseItemsWithinBoxSets(items, user);
             }
 
             items = ApplySortOrder(request, items, user, _libraryManager);
@@ -1245,38 +1248,143 @@ namespace MediaBrowser.Api.UserLibrary
             return false;
         }
 
-        private IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user)
-        {
-            var itemsToCollapse = new List<ISupportsBoxSetGrouping>();
-            var boxsets = new List<BaseItem>();
-
-            var list = items.ToList();
-
-            foreach (var item in list.OfType<ISupportsBoxSetGrouping>())
-            {
-                var currentBoxSets = item.BoxSetIdList
-                    .Select(i => _libraryManager.GetItemById(i))
-                    .Where(i => i != null && i.IsVisible(user))
-                    .ToList();
-
-                if (currentBoxSets.Count > 0)
-                {
-                    itemsToCollapse.Add(item);
-                    boxsets.AddRange(currentBoxSets);
-                }
-            }
-
-            return list.Except(itemsToCollapse.Cast<BaseItem>()).Concat(boxsets).Distinct();
-        }
-
         private bool AllowBoxSetCollapsing(GetItems request)
         {
-            // Only allow when using default sort order
-            if (!string.IsNullOrEmpty(request.SortBy) && !string.Equals(request.SortBy, "SortName", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(request.Filters))
             {
                 return false;
             }
 
+            if (!string.IsNullOrWhiteSpace(request.AllGenres))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Genres))
+            {
+                return false;
+            }
+
+            if (request.HasImdbId.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasOfficialRating.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasOverview.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasParentalRating.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasSpecialFeature.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasSubtitles.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasThemeSong.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasThemeVideo.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasTmdbId.HasValue)
+            {
+                return false;
+            }
+
+            if (request.HasTrailer.HasValue)
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Ids))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.ImageTypes))
+            {
+                return false;
+            }
+
+            if (request.Is3D.HasValue)
+            {
+                return false;
+            }
+
+            if (request.IsHD.HasValue)
+            {
+                return false;
+            }
+
+            if (request.IsInBoxSet.HasValue)
+            {
+                return false;
+            }
+
+            if (request.IsLocked.HasValue)
+            {
+                return false;
+            }
+
+            if (request.IsPlaceHolder.HasValue)
+            {
+                return false;
+            }
+
+            if (request.IsPlayed.HasValue)
+            {
+                return false;
+            }
+
+            if (request.IsUnidentified.HasValue)
+            {
+                return false;
+            }
+
+            if (request.IsYearMismatched.HasValue)
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Person))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Studios))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.VideoTypes))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Years))
+            {
+                return false;
+            }
+          
             return true;
         }
 

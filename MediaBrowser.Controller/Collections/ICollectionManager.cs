@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities.Movies;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -29,5 +30,13 @@ namespace MediaBrowser.Controller.Collections
         /// <param name="itemIds">The item ids.</param>
         /// <returns>Task.</returns>
         Task RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds);
+
+        /// <summary>
+        /// Collapses the items within box sets.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user);
     }
 }

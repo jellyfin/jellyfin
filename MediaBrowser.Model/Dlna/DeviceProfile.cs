@@ -61,7 +61,7 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         public string XDlnaCap { get; set; }
         /// <summary>
-        /// Controls the content of the aggregationFlags element in the urn:schemas-sonycom:av.
+        /// Controls the content of the aggregationFlags element in the urn:schemas-sonycom:av namespace.
         /// </summary>
         public string SonyAggregationFlags { get; set; }
 

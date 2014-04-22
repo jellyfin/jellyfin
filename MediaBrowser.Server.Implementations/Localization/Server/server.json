@@ -543,5 +543,7 @@
 	"LabelBlastMessageInterval": "Alive message interval (seconds)",
 	"LabelBlastMessageIntervalHelp": "Determines the duration in seconds between server alive messages.",
 	"LabelDefaultUser": "Default user:",
-	"LabelDefaultUserHelp": "Determines which user library should be displayed on connected devices. This can be overridden for each device using profiles."
+	"LabelDefaultUserHelp": "Determines which user library should be displayed on connected devices. This can be overridden for each device using profiles.",
+	"TitleDlna": "DLNA",
+	"HeaderServerSettings": "Server Settings"
 }
