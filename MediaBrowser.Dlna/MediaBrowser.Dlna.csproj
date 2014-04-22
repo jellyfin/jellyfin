@@ -58,6 +58,7 @@
     <Compile Include="PlayTo\Device.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="PlayTo\DeviceEventArgs.cs" />
     <Compile Include="PlayTo\DeviceInfo.cs" />
     <Compile Include="Common\DeviceService.cs" />
     <Compile Include="PlayTo\DidlBuilder.cs" />
@@ -86,7 +87,7 @@
     <Compile Include="PlayTo\TransportCommands.cs" />
     <Compile Include="PlayTo\TransportStateEventArgs.cs" />
     <Compile Include="PlayTo\uBaseObject.cs" />
-    <Compile Include="PlayTo\uContainer.cs" />
+    <Compile Include="PlayTo\UpnpContainer.cs" />
     <Compile Include="Common\DeviceIcon.cs" />
     <Compile Include="PlayTo\uParser.cs" />
     <Compile Include="PlayTo\uPnpNamespaces.cs" />

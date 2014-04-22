@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>DLNA</title>
+    <title>${TitleDlna}</title>
 </head>
 <body>
     <div id="dlnaProfilePage" data-role="page" class="page type-interior adminPage dlnaPage">
@@ -69,11 +69,12 @@
                         <div data-role="collapsible">
                             <h2>${HeaderDisplaySettings}</h2>
                             <div>
+                                <br />
                                 <ul data-role="listview" class="ulForm">
                                     <li>
                                         <label for="chkRequiresPlainFolders">Display all folders as plain storage folders</label>
                                         <input type="checkbox" id="chkRequiresPlainFolders" data-mini="true" />
-                                        <div class="fieldDescription">If enabled, all folders are represented in DIDL as "object.container.storageFolder" instead of a more specific type, such as "object.container.person.musicArtist".</div>
+                                        <div class="fieldDescription">If enabled, all folders are represented in DIDL as "object.container.storageFolder" instead of a more specific type, such as "object.container.musicArtist".</div>
                                     </li>
                                     <li>
                                         <label for="chkRequiresPlainVideoItems">Display all videos as plain video items</label>
@@ -87,6 +88,7 @@
                         <div data-role="collapsible">
                             <h2>${HeaderImageSettings}</h2>
                             <div>
+                                <br />
                                 <ul data-role="listview" class="ulForm">
                                     <li>
                                         <label for="chkEnableAlbumArtInDidl">Embed album art in Didl</label>
@@ -125,6 +127,7 @@
                         <div data-role="collapsible">
                             <h2>${HeaderPlaybackSettings}</h2>
                             <div>
+                                <br />
                                 <ul data-role="listview" class="ulForm">
                                     <li>
                                         <label for="txtMaxAllowedBitrate">Max bitrate:</label>
@@ -135,6 +138,29 @@
                                         <label for="chkIgnoreTranscodeByteRangeRequests">Ignore transcode byte range requests</label>
                                         <input type="checkbox" id="chkIgnoreTranscodeByteRangeRequests" data-mini="true" />
                                         <div class="fieldDescription">If enabled, these requests will be honored but will ignore the byte range header.</div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div data-role="collapsible">
+                            <h2>${HeaderServerSettings}</h2>
+                            <div>
+                                <p>These values control how Media Browser will present itself to the device.</p>
+                                <ul data-role="listview" class="ulForm">
+                                    <li>
+                                        <label for="txtXDlnaCap">X-Dlna cap:</label>
+                                        <input type="text" id="txtXDlnaCap" data-mini="true" />
+                                        <div class="fieldDescription">Determines the content of the X_DLNACAP element in the urn:schemas-dlna-org:device-1-0 namespace.</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtXDlnaDoc">X-Dlna doc:</label>
+                                        <input type="text" id="txtXDlnaDoc" data-mini="true" />
+                                        <div class="fieldDescription">Determines the content of the X_DLNADOC element in the urn:schemas-dlna-org:device-1-0 namespace.</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtSonyAggregationFlags">Sony aggregation flags:</label>
+                                        <input type="text" id="txtSonyAggregationFlags" data-mini="true" />
+                                        <div class="fieldDescription">Determines the content of the aggregationFlags element in the urn:schemas-sonycom:av namespace.</div>
                                     </li>
                                 </ul>
                             </div>
@@ -493,10 +519,10 @@
 
                     <p>
                         <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            Ok
+                            ${ButtonOk}
                         </button>
                         <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            Cancel
+                            ${ButtonCancel}
                         </button>
                     </p>
                 </form>

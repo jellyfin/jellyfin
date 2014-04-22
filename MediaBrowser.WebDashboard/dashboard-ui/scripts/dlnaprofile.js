@@ -67,6 +67,10 @@
         $('#chkRequiresPlainFolders', page).checked(profile.RequiresPlainFolders).checkboxradio('refresh');
         $('#chkRequiresPlainVideoItems', page).checked(profile.RequiresPlainVideoItems).checkboxradio('refresh');
 
+        $('#txtXDlnaCap', page).val(profile.XDlnaCap || '');
+        $('#txtXDlnaDoc', page).val(profile.XDlnaDoc || '');
+        $('#txtSonyAggregationFlags', page).val(profile.SonyAggregationFlags || '');
+
         profile.DirectPlayProfiles = (profile.DirectPlayProfiles || []);
         profile.TranscodingProfiles = (profile.TranscodingProfiles || []);
         profile.ContainerProfiles = (profile.ContainerProfiles || []);
@@ -673,6 +677,10 @@
 
         profile.IgnoreTranscodeByteRangeRequests = $('#chkIgnoreTranscodeByteRangeRequests', page).checked();
         profile.MaxBitrate = $('#txtMaxAllowedBitrate', page).val();
+
+        profile.XDlnaCap = $('#txtXDlnaCap', page).val();
+        profile.XDlnaDoc = $('#txtXDlnaDoc', page).val();
+        profile.SonyAggregationFlags = $('#txtSonyAggregationFlags', page).val();
 
         profile.UserId = $('#selectUser', page).val();
     }

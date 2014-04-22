@@ -93,8 +93,11 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <returns>Task.</returns>
         protected Task Fetch(Audio audio, CancellationToken cancellationToken, InternalMediaInfoResult data)
         {
-            var mediaStreams = MediaEncoderHelpers.GetMediaInfo(data).MediaStreams;
+            var mediaInfo = MediaEncoderHelpers.GetMediaInfo(data);
+            var mediaStreams = mediaInfo.MediaStreams;
 
+            audio.FormatName = mediaInfo.Format;
+            audio.TotalBitrate = mediaInfo.TotalBitrate;
             audio.HasEmbeddedImage = mediaStreams.Any(i => i.Type == MediaStreamType.Video);
 
             if (data.streams != null)
@@ -123,8 +126,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (data.format != null)
             {
-                audio.FormatName = data.format.format_name;
-
                 var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
 
                 audio.Container = extension;

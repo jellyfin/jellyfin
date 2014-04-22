@@ -213,7 +213,7 @@
         Dashboard.alert({
 
             title: "Error Launching Chromecast",
-            message: "There was an error launching chromecast. Please ensure your device is connected to your wifi network."
+            message: "There was an error launching chromecast. Please ensure your device is connected to your wireless network."
 
         });
 
@@ -1377,15 +1377,55 @@
 
         self.getPlayerStateInternal = function () {
 
-            return {
-                itemName: "Chromecast",
-                canSeek: self.positionTicks < self.runtimeTicks,
-                positionTicks: self.positionTicks,
-                runtimeTicks: self.runtimeTicks,
-                volumeLevel: castPlayer.currentVolume * 100,
-                isPaused: self.isPaused,
-                isMuted: self.isMuted
+            var state = {
+                PlayState: {
+                    
+                    CanSeek: self.positionTicks < self.runtimeTicks,
+                    PositionTicks: self.positionTicks,
+                    RunTimeTicks: self.runtimeTicks,
+                    VolumeLevel: castPlayer.currentVolume * 100,
+                    IsPaused: self.isPaused,
+                    IsMuted: self.isMuted
+                    
+                    // TODO: Implement
+                    // AudioStreamIndex: null,
+                    // SubtitleStreamIndex: null,
+                    // PlayMethod: 'DirectStream' or 'Transcode'
+                }
             };
+
+            // TODO: Implement
+            var isPlaying = false;
+            
+            if (isPlaying) {
+
+                //state.PlayState.MediaSourceId = 'xxx';
+
+                state.NowPlayingItem = {                    
+                  
+                    Name: 'Chromecast'
+                };
+
+                var nowPlayingItem = state.NowPlayingItem;
+                
+                // TODO: Fill in these properties using chromecast mediainfo and/or custom data
+                //nowPlayingItem.Id = item.Id;
+                //nowPlayingItem.MediaType = item.MediaType;
+                //nowPlayingItem.Type = item.Type;
+                //nowPlayingItem.Name = item.Name;
+
+                //nowPlayingItem.IndexNumber = item.IndexNumber;
+                //nowPlayingItem.IndexNumberEnd = item.IndexNumberEnd;
+                //nowPlayingItem.ParentIndexNumber = item.ParentIndexNumber;
+                //nowPlayingItem.ProductionYear = item.ProductionYear;
+                //nowPlayingItem.PremiereDate = item.PremiereDate;
+                //nowPlayingItem.SeriesName = item.SeriesName;
+                //nowPlayingItem.Album = item.Album;
+                //nowPlayingItem.Artists = item.Artists;
+
+            }
+
+            return state;
         };
     }
 

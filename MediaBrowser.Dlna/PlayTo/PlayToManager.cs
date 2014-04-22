@@ -23,7 +23,7 @@ namespace MediaBrowser.Dlna.PlayTo
 {
     class PlayToManager : IDisposable
     {
-        private bool _disposed = false;
+        private bool _disposed;
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
         private readonly IHttpClient _httpClient;
@@ -65,36 +65,28 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 _logger.Debug("Found interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
 
-                if (!network.SupportsMulticast || OperationalStatus.Up != network.OperationalStatus || !network.GetIPProperties().MulticastAddresses.Any())
+                if (!network.SupportsMulticast || !network.GetIPProperties().MulticastAddresses.Any())
                     continue;
 
                 var ipV4 = network.GetIPProperties().GetIPv4Properties();
                 if (null == ipV4)
                     continue;
 
-                IPAddress localIp = null;
+                var localIp = network.GetIPProperties().UnicastAddresses
+                    .Where(i => i.Address.AddressFamily == AddressFamily.InterNetwork)
+                    .Select(i => i.Address)
+                    .FirstOrDefault();
 
-                foreach (var ipInfo in network.GetIPProperties().UnicastAddresses)
+                if (localIp != null)
                 {
-                    if (ipInfo.Address.AddressFamily == AddressFamily.InterNetwork)
+                    try
                     {
-                        localIp = ipInfo.Address;
-                        break;
+                        CreateListener(localIp);
                     }
-                }
-
-                if (localIp == null)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    CreateListener(localIp);
-                }
-                catch (Exception e)
-                {
-                    _logger.ErrorException("Failed to Initilize Socket", e);
+                    catch (Exception e)
+                    {
+                        _logger.ErrorException("Failed to Initilize Socket", e);
+                    }
                 }
             }
         }

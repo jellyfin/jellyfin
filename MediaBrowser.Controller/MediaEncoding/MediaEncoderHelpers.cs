@@ -134,6 +134,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (data.format != null)
             {
                 info.Format = data.format.format_name;
+
+                if (!string.IsNullOrEmpty(data.format.bit_rate))
+                {
+                    info.TotalBitrate = int.Parse(data.format.bit_rate, UsCulture);
+                }
             }
 
             return info;

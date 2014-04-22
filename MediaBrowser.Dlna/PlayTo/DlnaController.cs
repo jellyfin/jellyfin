@@ -24,7 +24,6 @@ namespace MediaBrowser.Dlna.PlayTo
     public class PlayToController : ISessionController, IDisposable
     {
         private Device _device;
-        private BaseItem _currentItem;
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
         private readonly IItemRepository _itemRepository;
@@ -35,9 +34,6 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IUserManager _userManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IDtoService _dtoService;
-        private bool _playbackStarted;
-
-        private const int UpdateTimerIntervalMs = 1000;
 
         public bool SupportsMediaRemoteControl
         {
@@ -72,67 +68,105 @@ namespace MediaBrowser.Dlna.PlayTo
         public void Init(Device device)
         {
             _device = device;
-            _device.PlaybackChanged += Device_PlaybackChanged;
-            _device.CurrentIdChanged += Device_CurrentIdChanged;
+            _device.PlaybackStart += _device_PlaybackStart;
+            _device.PlaybackProgress += _device_PlaybackProgress;
+            _device.PlaybackStopped += _device_PlaybackStopped;
             _device.Start();
 
-            _updateTimer = new Timer(updateTimer_Elapsed, null, UpdateTimerIntervalMs, UpdateTimerIntervalMs);
+            _updateTimer = new Timer(updateTimer_Elapsed, null, 30000, 30000);
+        }
+
+        async void _device_PlaybackStopped(object sender, PlaybackStoppedEventArgs e)
+        {
+            try
+            {
+                await _sessionManager.OnPlaybackStopped(new PlaybackStopInfo
+                {
+                    ItemId = e.MediaInfo.Id,
+                    SessionId = _session.Id,
+                    PositionTicks = _device.Position.Ticks
+
+                }).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error reporting progress", ex);
+            }
+
+            await SetNext().ConfigureAwait(false);
+        }
+
+        async void _device_PlaybackStart(object sender, PlaybackStartEventArgs e)
+        {
+            var playlistItem = Playlist.FirstOrDefault(p => p.PlayState == 1);
+
+            if (playlistItem != null)
+            {
+                var streamInfo = playlistItem.StreamInfo;
+
+                var info = GetProgressInfo(streamInfo, e.MediaInfo);
+
+                try
+                {
+                    await _sessionManager.OnPlaybackStart(info).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error reporting progress", ex);
+                }
+            }
+        }
+
+        async void _device_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        {
+            var playlistItem = Playlist.FirstOrDefault(p => p.PlayState == 1);
+
+            if (playlistItem != null)
+            {
+                var streamInfo = playlistItem.StreamInfo;
+
+                var info = GetProgressInfo(streamInfo, e.MediaInfo);
+
+                try
+                {
+                    await _sessionManager.OnPlaybackProgress(info).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error reporting progress", ex);
+                }
+            }
+        }
+
+        private PlaybackStartInfo GetProgressInfo(StreamInfo streamInfo, uBaseObject mediaInfo)
+        {
+            var ticks = _device.Position.Ticks;
+
+            if (!streamInfo.IsDirectStream)
+            {
+                ticks += streamInfo.StartPositionTicks;
+            }
+
+            return new PlaybackStartInfo
+            {
+                ItemId = mediaInfo.Id,
+                SessionId = _session.Id,
+                PositionTicks = ticks,
+                IsMuted = _device.IsMuted,
+                IsPaused = _device.IsPaused,
+                MediaSourceId = streamInfo.MediaSourceId,
+                AudioStreamIndex = streamInfo.AudioStreamIndex,
+                SubtitleStreamIndex = streamInfo.SubtitleStreamIndex,
+                VolumeLevel = _device.Volume,
+                CanSeek = streamInfo.RunTimeTicks.HasValue,
+                PlayMethod = streamInfo.IsDirectStream ? PlayMethod.DirectStream : PlayMethod.Transcode,
+                QueueableMediaTypes = new List<string> { mediaInfo.MediaType }
+            };
         }
 
         #region Device EventHandlers & Update Timer
 
         Timer _updateTimer;
-
-        async void Device_PlaybackChanged(object sender, TransportStateEventArgs e)
-        {
-            if (_currentItem == null)
-                return;
-
-            if (e.State == TRANSPORTSTATE.STOPPED)
-                await ReportProgress().ConfigureAwait(false);
-
-            else if (e.State == TRANSPORTSTATE.STOPPED && _playbackStarted)
-            {
-                _playbackStarted = false;
-
-                await _sessionManager.OnPlaybackStopped(new PlaybackStopInfo
-                {
-                    ItemId = _currentItem.Id.ToString("N"),
-                    SessionId = _session.Id,
-                    PositionTicks = _device.Position.Ticks
-
-                }).ConfigureAwait(false);
-
-                await SetNext().ConfigureAwait(false);
-            }
-        }
-
-        async void Device_CurrentIdChanged(object sender, CurrentIdEventArgs e)
-        {
-            if (!string.IsNullOrWhiteSpace(e.Id))
-            {
-                Guid guid;
-
-                if (Guid.TryParse(e.Id, out guid))
-                {
-                    if (_currentItem != null && _currentItem.Id == guid)
-                    {
-                        return;
-                    }
-
-                    var item = _libraryManager.GetItemById(guid);
-
-                    if (item != null)
-                    {
-                        _logger.Debug("{0} - CurrentId {1}", _session.DeviceName, item.Id);
-                        _currentItem = item;
-                        _playbackStarted = false;
-
-                        await ReportProgress().ConfigureAwait(false);
-                    }
-                }
-            }
-        }
 
         /// <summary>
         /// Handles the Elapsed event of the updateTimer control.
@@ -140,14 +174,7 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <param name="state">The state.</param>
         private async void updateTimer_Elapsed(object state)
         {
-            if (_disposed)
-                return;
-
-            if (IsSessionActive)
-            {
-                await ReportProgress().ConfigureAwait(false);
-            }
-            else
+            if (!IsSessionActive)
             {
                 _updateTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
@@ -159,70 +186,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error in ReportSessionEnded", ex);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Reports the playback progress.
-        /// </summary>
-        /// <returns></returns>
-        private async Task ReportProgress()
-        {
-            if (_currentItem == null || _device.IsStopped)
-                return;
-
-            var playlistItem = Playlist.FirstOrDefault(p => p.PlayState == 1);
-
-            if (playlistItem != null)
-            {
-                var streamInfo = playlistItem.StreamInfo;
-
-                if (!_playbackStarted)
-                {
-                    await _sessionManager.OnPlaybackStart(new PlaybackStartInfo
-                    {
-                        ItemId = _currentItem.Id.ToString("N"),
-                        SessionId = _session.Id,
-                        CanSeek = streamInfo.RunTimeTicks.HasValue,
-                        QueueableMediaTypes = new List<string> { _currentItem.MediaType },
-                        MediaSourceId = streamInfo.MediaSourceId,
-                        AudioStreamIndex = streamInfo.AudioStreamIndex,
-                        SubtitleStreamIndex = streamInfo.SubtitleStreamIndex,
-                        IsMuted = _device.IsMuted,
-                        IsPaused = _device.IsPaused,
-                        VolumeLevel = _device.Volume,
-                        PlayMethod = streamInfo.IsDirectStream ? PlayMethod.DirectStream : PlayMethod.Transcode
-
-                    }).ConfigureAwait(false);
-
-                    _playbackStarted = true;
-                }
-
-                if ((_device.IsPlaying || _device.IsPaused))
-                {
-                    var ticks = _device.Position.Ticks;
-
-                    if (!streamInfo.IsDirectStream)
-                    {
-                        ticks += streamInfo.StartPositionTicks;
-                    }
-
-                    await _sessionManager.OnPlaybackProgress(new PlaybackProgressInfo
-                    {
-                        ItemId = _currentItem.Id.ToString("N"),
-                        SessionId = _session.Id,
-                        PositionTicks = ticks,
-                        IsMuted = _device.IsMuted,
-                        IsPaused = _device.IsPaused,
-                        MediaSourceId = streamInfo.MediaSourceId,
-                        AudioStreamIndex = streamInfo.AudioStreamIndex,
-                        SubtitleStreamIndex = streamInfo.SubtitleStreamIndex,
-                        VolumeLevel = _device.Volume,
-                        CanSeek = streamInfo.RunTimeTicks.HasValue,
-                        PlayMethod = streamInfo.IsDirectStream ? PlayMethod.DirectStream : PlayMethod.Transcode
-
-                    }).ConfigureAwait(false);
                 }
             }
         }
@@ -263,11 +226,11 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (command.PlayCommand == PlayCommand.PlayLast)
             {
-                AddItemsToPlaylist(playlist);
+                Playlist.AddRange(playlist);
             }
             if (command.PlayCommand == PlayCommand.PlayNext)
             {
-                AddItemsToPlaylist(playlist);
+                Playlist.AddRange(playlist);
             }
 
             _logger.Debug("{0} - Playing {1} items", _session.DeviceName, playlist.Count);
@@ -314,11 +277,9 @@ namespace MediaBrowser.Dlna.PlayTo
 
 
                 case PlaystateCommand.NextTrack:
-                    _currentItem = null;
                     return SetNext();
 
                 case PlaystateCommand.PreviousTrack:
-                    _currentItem = null;
                     return SetPrevious();
             }
 
@@ -374,17 +335,12 @@ namespace MediaBrowser.Dlna.PlayTo
 
         #region Playlist
 
-        private List<PlaylistItem> _playlist = new List<PlaylistItem>();
-
+        private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
         private List<PlaylistItem> Playlist
         {
             get
             {
                 return _playlist;
-            }
-            set
-            {
-                _playlist = value;
             }
         }
 
@@ -564,15 +520,6 @@ namespace MediaBrowser.Dlna.PlayTo
             return true;
         }
 
-        /// <summary>
-        /// Adds the items to playlist.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        private void AddItemsToPlaylist(IEnumerable<PlaylistItem> items)
-        {
-            Playlist.AddRange(items);
-        }
-
         private async Task<bool> SetNext()
         {
             if (!Playlist.Any() || Playlist.All(i => i.PlayState != 0))
@@ -608,7 +555,7 @@ namespace MediaBrowser.Dlna.PlayTo
             return true;
         }
 
-        public Task<bool> SetPrevious()
+        public Task SetPrevious()
         {
             if (!Playlist.Any() || Playlist.All(i => i.PlayState != 2))
                 return Task.FromResult(false);
@@ -638,9 +585,13 @@ namespace MediaBrowser.Dlna.PlayTo
             if (!_disposed)
             {
                 _disposed = true;
+                
+                _device.PlaybackStart -= _device_PlaybackStart;
+                _device.PlaybackProgress -= _device_PlaybackProgress;
+                _device.PlaybackStopped -= _device_PlaybackStopped;
+                
                 _updateTimer.Dispose();
                 _device.Dispose();
-                _logger.Log(LogSeverity.Debug, "Controller disposed");
             }
         }
 
@@ -659,9 +610,9 @@ namespace MediaBrowser.Dlna.PlayTo
                     case GeneralCommandType.VolumeUp:
                         return _device.VolumeUp();
                     case GeneralCommandType.Mute:
-                        return _device.VolumeDown(true);
+                        return _device.Mute();
                     case GeneralCommandType.Unmute:
-                        return _device.VolumeUp(true);
+                        return _device.Unmute();
                     case GeneralCommandType.ToggleMute:
                         return _device.ToggleMute();
                     case GeneralCommandType.SetVolume:

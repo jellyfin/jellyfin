@@ -131,7 +131,8 @@
             if (currentPlayer && lastPlayerState) {
 
                 var newPercent = parseFloat(this.value);
-                var newPositionTicks = (newPercent / 100) * lastPlayerState.runtimeTicks;
+                var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
+
                 currentPlayer.seek(Math.floor(newPositionTicks));
             }
         });
@@ -162,7 +163,7 @@
 
     function updatePlayerState(state) {
 
-        if (state.itemName) {
+        if (state.NowPlayingItem) {
             showNowPlayingBar();
         } else {
             hideNowPlayingBar();
@@ -197,7 +198,9 @@
             unmuteButton.prop('disabled', '');
         }
 
-        if (state.isMuted) {
+        var playState = state.PlayState || {};
+        
+        if (playState.IsMuted) {
 
             hideButton(muteButton);
             showButton(unmuteButton);
@@ -208,7 +211,7 @@
             hideButton(unmuteButton);
         }
 
-        if (state.isPaused) {
+        if (playState.IsPaused) {
 
             hideButton(pauseButton);
             showButton(unpauseButton);
@@ -220,16 +223,17 @@
         }
 
         if (!isVolumeSliderActive) {
-            volumeSlider.val(state.volumeLevel || 0);
+            volumeSlider.val(playState.VolumeLevel || 0);
         }
 
         volumeSlider.slider('refresh');
 
+        var nowPlayingItem = state.NowPlayingItem || {};
         if (!isPositionSliderActive) {
 
-            if (state.canSeek) {
+            if (playState.CanSeek) {
 
-                var pct = state.positionTicks / state.runtimeTicks;
+                var pct = playState.PositionTicks / nowPlayingItem.RunTimeTicks;
                 pct *= 100;
 
                 positionSlider.val(pct).slider("enable");
@@ -242,11 +246,11 @@
             positionSlider.slider('refresh');
         }
 
-        var timeText = Dashboard.getDisplayTime(state.positionTicks);
+        var timeText = Dashboard.getDisplayTime(playState.PositionTicks);
 
-        if (state.runtimeTicks) {
+        if (nowPlayingItem.RunTimeTicks) {
 
-            timeText += " / " + Dashboard.getDisplayTime(state.runtimeTicks);
+            timeText += " / " + Dashboard.getDisplayTime(nowPlayingItem.RunTimeTicks);
 
         }
 
@@ -269,37 +273,39 @@
         nowPlayingTextElement.html(nameHtml);
 
         var url;
+        
+        var nowPlayingItem = state.NowPlayingItem;
 
-        if (state.primaryImageTag) {
+        if (nowPlayingItem.PrimaryImageTag) {
 
-            url = ApiClient.getImageUrl(state.primaryImageItemId, {
+            url = ApiClient.getImageUrl(nowPlayingItem.PrimaryImageItemId, {
                 type: "Primary",
                 height: 80,
-                tag: state.primaryImageTag
+                tag: nowPlayingItem.PrimaryImageTag
             });
         }
-        else if (state.backdropImageTag) {
+        else if (nowPlayingItem.BackdropImageTag) {
 
-            url = ApiClient.getImageUrl(state.backdropItemId, {
+            url = ApiClient.getImageUrl(nowPlayingItem.BackdropItemId, {
                 type: "Backdrop",
                 height: 80,
-                tag: state.backdropImageTag,
+                tag: nowPlayingItem.BackdropImageTag,
                 index: 0
             });
 
-        } else if (state.thumbImageTag) {
+        } else if (nowPlayingItem.ThumbImageTag) {
 
-            url = ApiClient.getImageUrl(state.thumbImageItemId, {
+            url = ApiClient.getImageUrl(nowPlayingItem.ThumbImageItemId, {
                 type: "Thumb",
                 height: 80,
-                tag: state.thumbImageTag
+                tag: nowPlayingItem.ThumbImageTag
             });
         }
 
-        else if (state.itemType == "TvChannel" || state.itemType == "Recording") {
+        else if (nowPlayingItem.Type == "TvChannel" || nowPlayingItem.Type == "Recording") {
             url = "css/images/items/detail/tv.png";
         }
-        else if (state.mediaType == "Audio") {
+        else if (nowPlayingItem.MediaType == "Audio") {
             url = "css/images/items/detail/audio.png";
         }
         else {
@@ -355,7 +361,7 @@
         //console.log('nowplaying event: ' + e.type);
         var player = this;
 
-        if (player.isDefaultPlayer && state.mediaType == 'Video') {
+        if (player.isDefaultPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
             return;
         }
 

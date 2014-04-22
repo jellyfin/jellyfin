@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Dlna.PlayTo
 {
     public class uBaseObject 
@@ -18,5 +19,40 @@ namespace MediaBrowser.Dlna.PlayTo
         public string Url { get; set; }
 
         public string[] ProtocolInfo { get; set; }
+
+        public string UpnpClass { get; set; }
+
+        public bool Equals(uBaseObject obj)
+        {
+            if (obj == null)
+            {
+                throw new ArgumentNullException("obj");
+            }
+
+            return string.Equals(Id, obj.Id);
+        }
+
+        public string MediaType
+        {
+            get
+            {
+                var classType = UpnpClass ?? string.Empty;
+
+                if (classType.IndexOf(Model.Entities.MediaType.Audio, StringComparison.Ordinal) != -1)
+                {
+                    return Model.Entities.MediaType.Audio;
+                }
+                if (classType.IndexOf(Model.Entities.MediaType.Video, StringComparison.Ordinal) != -1)
+                {
+                    return Model.Entities.MediaType.Video;
+                }
+                if (classType.IndexOf("image", StringComparison.Ordinal) != -1)
+                {
+                    return Model.Entities.MediaType.Photo;
+                }
+
+                return null;
+            }
+        }
     }
 }

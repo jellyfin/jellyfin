@@ -129,14 +129,13 @@ namespace MediaBrowser.Controller.Entities
             return NullTaskResult;
         }
 
-        private List<LinkedChild> _linkedChildren;
         /// <summary>
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
         /// <value>The linked children.</value>
         public override List<LinkedChild> LinkedChildren
         {
-            get { return _linkedChildren ?? (_linkedChildren = GetLinkedChildrenInternal()); }
+            get { return GetLinkedChildrenInternal(); }
             set
             {
                 base.LinkedChildren = value;
@@ -175,7 +174,6 @@ namespace MediaBrowser.Controller.Entities
         public void ResetDynamicChildren()
         {
             _actualChildren = null;
-            _linkedChildren = null;
         }
     }
 }

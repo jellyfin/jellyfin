@@ -12,6 +12,8 @@ namespace MediaBrowser.Dlna.Profiles
 
             ProtocolInfo = "DLNA";
 
+            XDlnaDoc = "DMS-1.50";
+
             FriendlyName = "Media Browser";
             Manufacturer = "Media Browser";
             ModelDescription = "Media Browser";

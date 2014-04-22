@@ -29,10 +29,10 @@ namespace MediaBrowser.Dlna.PlayTo
             var uPnpResponse = XElement.Parse((String)item);
 
             var uObjects = from container in uPnpResponse.Elements(uPnpNamespaces.containers)
-                           select new uParserObject { Type = (string)container.Element(uPnpNamespaces.uClass), Element = container };
+                           select new uParserObject { Element = container };
 
             var uObjects2 = from container in uPnpResponse.Elements(uPnpNamespaces.items)
-                            select new uParserObject { Type = (string)container.Element(uPnpNamespaces.uClass), Element = container };
+                            select new uParserObject { Element = container };
 
             list.AddRange(uObjects.Concat(uObjects2).Select(CreateObjectFromXML).Where(uObject => uObject != null));
 
@@ -41,14 +41,12 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public static uBaseObject CreateObjectFromXML(uParserObject uItem)
         {
-            return uContainer.Create(uItem.Element);
+            return UpnpContainer.Create(uItem.Element);
         }
     }
 
     public class uParserObject
     {
-        public string Type { get; set; }
-
         public XElement Element { get; set; }
     }
 }

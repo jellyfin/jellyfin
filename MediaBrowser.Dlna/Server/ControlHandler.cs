@@ -259,7 +259,7 @@ namespace MediaBrowser.Dlna.Server
             didl.SetAttribute("xmlns:dc", NS_DC);
             didl.SetAttribute("xmlns:dlna", NS_DLNA);
             didl.SetAttribute("xmlns:upnp", NS_UPNP);
-            didl.SetAttribute("xmlns:sec", NS_SEC);
+            //didl.SetAttribute("xmlns:sec", NS_SEC);
             result.AppendChild(didl);
 
             var folder = (Folder)GetItemFromObjectId(id, user);
@@ -341,7 +341,7 @@ namespace MediaBrowser.Dlna.Server
             didl.SetAttribute("xmlns:dc", NS_DC);
             didl.SetAttribute("xmlns:dlna", NS_DLNA);
             didl.SetAttribute("xmlns:upnp", NS_UPNP);
-            didl.SetAttribute("xmlns:sec", NS_SEC);
+            //didl.SetAttribute("xmlns:sec", NS_SEC);
             result.AppendChild(didl);
 
             var folder = (Folder)GetItemFromObjectId(sparams["ContainerID"], user);
@@ -498,7 +498,6 @@ namespace MediaBrowser.Dlna.Server
 
             AddCover(f, container);
 
-            container.AppendChild(CreateObjectClass(result, f));
             result.DocumentElement.AppendChild(container);
         }
 
@@ -527,9 +526,7 @@ namespace MediaBrowser.Dlna.Server
                 element.SetAttribute("parentID", item.Parent.Id.ToString("N"));
             }
 
-            element.AppendChild(CreateObjectClass(result, item));
-
-            AddBookmarkInfo(item, user, element);
+            //AddBookmarkInfo(item, user, element);
 
             AddGeneralProperties(item, element, filter);
 
@@ -812,6 +809,13 @@ namespace MediaBrowser.Dlna.Server
         /// <param name="filter">The filter.</param>
         private void AddCommonFields(BaseItem item, XmlElement element, Filter filter)
         {
+            if (filter.Contains("dc:title"))
+            {
+                AddValue(element, "dc", "title", item.Name, NS_DC);
+            }
+
+            element.AppendChild(CreateObjectClass(element.OwnerDocument, item));
+            
             if (filter.Contains("dc:date"))
             {
                 if (item.PremiereDate.HasValue)
@@ -828,11 +832,6 @@ namespace MediaBrowser.Dlna.Server
             foreach (var studio in item.Studios)
             {
                 AddValue(element, "upnp", "publisher", studio, NS_UPNP);
-            }
-
-            if (filter.Contains("dc:title"))
-            {
-                AddValue(element, "dc", "title", item.Name, NS_DC);
             }
 
             if (filter.Contains("dc:description"))

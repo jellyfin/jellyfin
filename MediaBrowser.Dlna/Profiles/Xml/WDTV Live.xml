@@ -24,6 +24,7 @@
   <MaxIconWidth xsi:nil="true" />
   <MaxIconHeight xsi:nil="true" />
   <MaxBitrate xsi:nil="true" />
+  <XDlnaDoc>DMS-1.50</XDlnaDoc>
   <ProtocolInfo>DLNA</ProtocolInfo>
   <TimelineOffsetSeconds>5</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>

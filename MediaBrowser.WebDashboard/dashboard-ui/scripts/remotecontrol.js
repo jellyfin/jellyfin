@@ -103,7 +103,7 @@
         };
 
         self.unMute = function () {
-            sendCommand('Unmnute');
+            sendCommand('Unmute');
         };
 
         self.toggleMute = function () {
@@ -238,53 +238,7 @@
 
     function getPlayerState(session) {
 
-        var state = {};
-
-        var playerState = session.PlayState;
-        
-        if (playerState) {
-            
-            state.isMuted = playerState.IsMuted;
-            state.isPaused = playerState.IsPaused;
-            state.canSeek = playerState.CanSeek;
-            state.positionTicks = playerState.PositionTicks || 0;
-
-            state.mediaSource = playerState.MediaSourceId;
-            state.volumeLevel = playerState.VolumeLevel;
-            state.audioStreamIndex = playerState.AudioStreamIndex;
-            state.subtitleStreamIndex = playerState.SubtitleStreamIndex;
-        }
-
-        var item = session.NowPlayingItem;
-
-        if (item) {
-
-            state.itemId = item.Id;
-            state.mediaType = item.MediaType;
-            state.itemType = item.Type;
-            state.indexNumber = item.IndexNumber;
-            state.indexNumberEnd = item.IndexNumberEnd;
-            state.parentIndexNumber = item.ParentIndexNumber;
-            state.productionYear = item.ProductionYear;
-            state.premiereDate = item.PremiereDate;
-            state.seriesName = item.SeriesName;
-            state.album = item.Album;
-            state.itemName = item.Name;
-            state.artists = item.Artists;
-
-            state.primaryImageItemId = item.PrimaryImageItemId;
-            state.primaryImageTag = item.PrimaryImageTag;
-
-            state.backdropItemId = item.BackdropItemId;
-            state.backdropImageTag = item.BackdropImageTag;
-
-            state.thumbItemId = item.ThumbItemId;
-            state.thumbImageTag = item.ThumbImageTag;
-
-            state.runtimeTicks = item.RunTimeTicks;
-        }
-
-        return state;
+        return session;
     }
 
     function firePlaybackEvent(name, session) {

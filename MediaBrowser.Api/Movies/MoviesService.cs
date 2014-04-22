@@ -237,7 +237,7 @@ namespace MediaBrowser.Api.Movies
             foreach (var director in directors)
             {
                 var items = allMovies
-                    .Where(i => !_userDataRepository.GetUserData(userId, i.GetUserDataKey()).Played && i.People.Any(p => string.Equals(p.Type, PersonType.Director, StringComparison.OrdinalIgnoreCase) && string.Equals(p.Name, director, StringComparison.OrdinalIgnoreCase)))
+                    .Where(i => i.People.Any(p => string.Equals(p.Type, PersonType.Director, StringComparison.OrdinalIgnoreCase) && string.Equals(p.Name, director, StringComparison.OrdinalIgnoreCase)))
                     .Take(itemLimit)
                     .ToList();
 
@@ -261,7 +261,7 @@ namespace MediaBrowser.Api.Movies
             foreach (var name in names)
             {
                 var items = allMovies
-                    .Where(i => !_userDataRepository.GetUserData(userId, i.GetUserDataKey()).Played && i.People.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)))
+                    .Where(i => i.People.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)))
                     .Take(itemLimit)
                     .ToList();
 
@@ -286,7 +286,6 @@ namespace MediaBrowser.Api.Movies
             {
                 var similar = SimilarItemsHelper
                     .GetSimilaritems(item, allMovies, SimilarItemsHelper.GetSimiliarityScore)
-                    .Where(i => !_userDataRepository.GetUserData(userId, i.GetUserDataKey()).Played)
                     .Take(itemLimit)
                     .ToList();
 

@@ -227,5 +227,29 @@ namespace MediaBrowser.Server.Implementations.Collections
 
             await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
         }
+
+        public IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user)
+        {
+            var itemsToCollapse = new List<ISupportsBoxSetGrouping>();
+            var boxsets = new List<BaseItem>();
+
+            var list = items.ToList();
+
+            foreach (var item in list.OfType<ISupportsBoxSetGrouping>())
+            {
+                var currentBoxSets = item.BoxSetIdList
+                    .Select(i => _libraryManager.GetItemById(i))
+                    .Where(i => i != null && i.IsVisible(user))
+                    .ToList();
+
+                if (currentBoxSets.Count > 0)
+                {
+                    itemsToCollapse.Add(item);
+                    boxsets.AddRange(currentBoxSets);
+                }
+            }
+
+            return list.Except(itemsToCollapse.Cast<BaseItem>()).Concat(boxsets).Distinct();
+        }
     }
 }

@@ -537,29 +537,30 @@
 
         self.getNowPlayingNameHtml = function (playerState) {
 
-            var topText = playerState.itemName;
+            var nowPlayingItem = playerState.NowPlayingItem;
+            var topText = nowPlayingItem.Name;
 
-            if (playerState.mediaType == 'Video') {
-                if (playerState.indexNumber != null) {
-                    topText = playerState.indexNumber + " - " + topText;
+            if (nowPlayingItem.MediaType == 'Video') {
+                if (nowPlayingItem.IndexNumber != null) {
+                    topText = nowPlayingItem.IndexNumber + " - " + topText;
                 }
-                if (playerState.parentIndexNumber != null) {
-                    topText = playerState.parentIndexNumber + "." + topText;
+                if (nowPlayingItem.ParentIndexNumber != null) {
+                    topText = nowPlayingItem.ParentIndexNumber + "." + topText;
                 }
             }
 
             var bottomText = '';
 
-            if (playerState.artists && playerState.artists.length) {
+            if (nowPlayingItem.Artists && nowPlayingItem.Artists.length) {
                 bottomText = topText;
-                topText = playerState.artists[0];
+                topText = nowPlayingItem.Artists[0];
             }
-            else if (playerState.seriesName || playerState.album) {
+            else if (nowPlayingItem.SeriesName || nowPlayingItem.Album) {
                 bottomText = topText;
-                topText = playerState.seriesName || playerState.album;
+                topText = nowPlayingItem.SeriesName || nowPlayingItem.Album;
             }
-            else if (playerState.productionYear) {
-                bottomText = playerState.productionYear;
+            else if (nowPlayingItem.ProductionYear) {
+                bottomText = nowPlayingItem.ProductionYear;
             }
 
             return bottomText ? topText + '<br/>' + bottomText : topText;
@@ -950,67 +951,96 @@
 
         self.getPlayerStateInternal = function (playerElement, item, mediaSource) {
 
-            var state = {};
+            var state = {
+                PlayState: {}
+            };
 
             if (playerElement) {
 
-                state.volumeLevel = playerElement.volume * 100;
-                state.isMuted = playerElement.volume == 0;
-                state.isPaused = playerElement.paused;
-                state.positionTicks = self.getCurrentTicks(playerElement);
+                state.PlayState.VolumeLevel = playerElement.volume * 100;
+                state.PlayState.IsMuted = playerElement.volume == 0;
+                state.PlayState.IsPaused = playerElement.paused;
+                state.PlayState.PositionTicks = self.getCurrentTicks(playerElement);
+
+                var currentSrc = playerElement.currentSrc;
+
+                if (currentSrc) {
+
+                    var audioStreamIndex = getParameterByName('AudioStreamIndex', currentSrc);
+
+                    if (audioStreamIndex) {
+                        state.PlayState.AudioStreamIndex = parseInt(audioStreamIndex);
+                    }
+                    var subtitleStreamIndex = getParameterByName('SubtitleStreamIndex', currentSrc);
+
+                    if (subtitleStreamIndex) {
+                        state.PlayState.SubtitleStreamIndex = parseInt(subtitleStreamIndex);
+                    }
+
+                    state.PlayState.PlayMethod = getParameterByName('static', currentSrc) == 'true' ?
+                        'DirectStream' :
+                        'Transcode';
+                }
             }
 
             if (mediaSource) {
 
-                state.mediaSourceId = mediaSource.Id;
-                state.runtimeTicks = mediaSource.RunTimeTicks;
+                state.PlayState.MediaSourceId = mediaSource.Id;
 
-                state.canSeek = mediaSource.RunTimeTicks && mediaSource.RunTimeTicks > 0;
+                state.NowPlayingItem = {
+                    RunTimeTicks: mediaSource.RunTimeTicks
+                };
+
+                state.PlayState.CanSeek = mediaSource.RunTimeTicks && mediaSource.RunTimeTicks > 0;
             }
 
             if (item) {
 
-                state.itemId = item.Id;
-                state.mediaType = item.MediaType;
-                state.itemType = item.Type;
-                state.indexNumber = item.IndexNumber;
-                state.indexNumberEnd = item.IndexNumberEnd;
-                state.parentIndexNumber = item.ParentIndexNumber;
-                state.productionYear = item.ProductionYear;
-                state.premiereDate = item.PremiereDate;
-                state.seriesName = item.SeriesName;
-                state.album = item.Album;
-                state.itemName = item.Name;
-                state.artists = item.Artists;
+                state.NowPlayingItem = state.NowPlayingItem || {};
+                var nowPlayingItem = state.NowPlayingItem;
+                
+                nowPlayingItem.Id = item.Id;
+                nowPlayingItem.MediaType = item.MediaType;
+                nowPlayingItem.Type = item.Type;
+                nowPlayingItem.Name = item.Name;
+
+                nowPlayingItem.IndexNumber = item.IndexNumber;
+                nowPlayingItem.IndexNumberEnd = item.IndexNumberEnd;
+                nowPlayingItem.ParentIndexNumber = item.ParentIndexNumber;
+                nowPlayingItem.ProductionYear = item.ProductionYear;
+                nowPlayingItem.PremiereDate = item.PremiereDate;
+                nowPlayingItem.SeriesName = item.SeriesName;
+                nowPlayingItem.Album = item.Album;
+                nowPlayingItem.Artists = item.Artists;
 
                 var imageTags = item.ImageTags || {};
 
                 if (imageTags.Primary) {
 
-                    state.primaryImageItemId = item.Id;
-                    state.primaryImageTag = imageTags.Primary;
+                    nowPlayingItem.PrimaryImageItemId = item.Id;
+                    nowPlayingItem.PrimaryImageTag = imageTags.Primary;
                 }
                 else if (item.AlbumPrimaryImageTag) {
 
-                    state.primaryImageItemId = item.AlbumId;
-                    state.primaryImageTag = item.AlbumPrimaryImageTag;
+                    nowPlayingItem.PrimaryImageItemId = item.AlbumId;
+                    nowPlayingItem.PrimaryImageTag = item.AlbumPrimaryImageTag;
                 }
                 else if (item.SeriesPrimaryImageTag) {
 
-                    state.primaryImageItemId = item.SeriesId;
-                    state.primaryImageTag = item.SeriesPrimaryImageTag;
+                    nowPlayingItem.PrimaryImageItemId = item.SeriesId;
+                    nowPlayingItem.PrimaryImageTag = item.SeriesPrimaryImageTag;
                 }
 
                 if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
-                    state.backdropItemId = item.Id;
-                    state.backdropImageTag = item.BackdropImageTags[0];
+                    nowPlayingItem.BackdropItemId = item.Id;
+                    nowPlayingItem.BackdropImageTag = item.BackdropImageTags[0];
                 }
 
                 if (imageTags.Thumb) {
 
-                    state.thumbItemId = item.Id;
-                    state.thumbImageTag = imageTags.Thumb;
+                    nowPlayingItem.ThumbItemId = item.Id;
+                    nowPlayingItem.ThumbImageTag = imageTags.Thumb;
                 }
             }
 
@@ -1073,7 +1103,7 @@
             var mediaSource = currentMediaSource;
 
             ApiClient.reportPlaybackStopped({
-                
+
                 itemId: item.Id,
                 mediaSourceId: mediaSource.Id,
                 positionTicks: position

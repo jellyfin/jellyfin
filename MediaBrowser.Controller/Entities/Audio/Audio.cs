@@ -15,6 +15,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         public string FormatName { get; set; }
         public long? Size { get; set; }
         public string Container { get; set; }
+        public int? TotalBitrate { get; set; }
 
         public Audio()
         {
