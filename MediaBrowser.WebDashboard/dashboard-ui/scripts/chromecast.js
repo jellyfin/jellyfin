@@ -1382,7 +1382,6 @@
                     
                     CanSeek: self.positionTicks < self.runtimeTicks,
                     PositionTicks: self.positionTicks,
-                    RunTimeTicks: self.runtimeTicks,
                     VolumeLevel: castPlayer.currentVolume * 100,
                     IsPaused: self.isPaused,
                     IsMuted: self.isMuted
@@ -1403,6 +1402,7 @@
 
                 state.NowPlayingItem = {                    
                   
+                    RunTimeTicks: self.runtimeTicks,
                     Name: 'Chromecast'
                 };
 
