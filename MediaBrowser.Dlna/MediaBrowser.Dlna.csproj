@@ -61,7 +61,7 @@
     <Compile Include="PlayTo\DeviceEventArgs.cs" />
     <Compile Include="PlayTo\DeviceInfo.cs" />
     <Compile Include="Common\DeviceService.cs" />
-    <Compile Include="PlayTo\DidlBuilder.cs" />
+    <Compile Include="Didl\DidlBuilder.cs" />
     <Compile Include="PlayTo\DlnaController.cs" />
     <Compile Include="PlayTo\Extensions.cs" />
     <Compile Include="PlayTo\PlaylistItem.cs">

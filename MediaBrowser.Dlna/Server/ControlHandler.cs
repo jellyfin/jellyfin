@@ -93,15 +93,6 @@ namespace MediaBrowser.Dlna.Server
 
             var deviceId = "fgd";
 
-            var env = new XmlDocument();
-            env.AppendChild(env.CreateXmlDeclaration("1.0", "utf-8", "yes"));
-            var envelope = env.CreateElement("SOAP-ENV", "Envelope", NS_SOAPENV);
-            env.AppendChild(envelope);
-            envelope.SetAttribute("encodingStyle", NS_SOAPENV, "http://schemas.xmlsoap.org/soap/encoding/");
-
-            var rbody = env.CreateElement("SOAP-ENV:Body", NS_SOAPENV);
-            env.DocumentElement.AppendChild(rbody);
-
             IEnumerable<KeyValuePair<string, string>> result;
 
             _logger.Debug("Received control request {0}", method.Name);
@@ -124,6 +115,15 @@ namespace MediaBrowser.Dlna.Server
                 result = HandleSearch(sparams, user, deviceId);
             else
                 throw new ResourceNotFoundException("Unexpected control request name: " + method.LocalName);
+
+            var env = new XmlDocument();
+            env.AppendChild(env.CreateXmlDeclaration("1.0", "utf-8", "yes"));
+            var envelope = env.CreateElement("SOAP-ENV", "Envelope", NS_SOAPENV);
+            env.AppendChild(envelope);
+            envelope.SetAttribute("encodingStyle", NS_SOAPENV, "http://schemas.xmlsoap.org/soap/encoding/");
+
+            var rbody = env.CreateElement("SOAP-ENV:Body", NS_SOAPENV);
+            env.DocumentElement.AppendChild(rbody);
 
             var response = env.CreateElement(String.Format("u:{0}Response", method.LocalName), method.NamespaceURI);
             rbody.AppendChild(response);
