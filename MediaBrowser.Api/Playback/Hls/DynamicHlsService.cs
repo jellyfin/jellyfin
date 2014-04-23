@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Dto;
@@ -64,17 +63,6 @@ namespace MediaBrowser.Api.Playback.Hls
         {
         }
 
-        protected override string GetOutputFilePath(StreamState state)
-        {
-            var folder = (state.MediaPath + state.Request.DeviceId).GetMD5().ToString("N");
-
-            folder = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, folder);
-
-            var outputFileExtension = GetOutputFileExtension(state);
-
-            return Path.Combine(folder, GetCommandLineArguments("dummy\\dummy", state, false).GetMD5() + (outputFileExtension ?? string.Empty).ToLower());
-        }
-
         public object Get(GetMasterHlsVideoStream request)
         {
             var result = GetAsync(request).Result;
@@ -135,15 +123,6 @@ namespace MediaBrowser.Api.Playback.Hls
         private async Task<object> GetAsync(GetMasterHlsVideoStream request)
         {
             var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
-
-            if (!state.VideoRequest.VideoBitRate.HasValue && (string.IsNullOrEmpty(state.VideoRequest.VideoCodec) || !string.Equals(state.VideoRequest.VideoCodec, "copy", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("A video bitrate is required");
-            }
-            if (!state.Request.AudioBitRate.HasValue && (string.IsNullOrEmpty(state.Request.AudioCodec) || !string.Equals(state.Request.AudioCodec, "copy", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("An audio bitrate is required");
-            }
 
             int audioBitrate;
             int videoBitrate;
@@ -260,14 +239,14 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (state.AudioStream != null)
             {
-                var channels = GetNumAudioChannelsParam(state.Request, state.AudioStream);
+                var channels = state.OutputAudioChannels;
 
                 if (channels.HasValue)
                 {
                     args += " -ac " + channels.Value;
                 }
 
-                var bitrate = GetAudioBitrateParam(state);
+                var bitrate = state.OutputAudioBitrate;
 
                 if (bitrate.HasValue)
                 {

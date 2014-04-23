@@ -630,24 +630,42 @@ namespace MediaBrowser.Dlna.Server
                 res.SetAttribute("bitrate", targetAudioBitrate.Value.ToString(_usCulture));
             }
 
-            var formatProfile = new MediaFormatProfileResolver().ResolveVideoFormat(streamInfo.Container,
-                targetVideoCodec,
-                targetAudioCodec,
-                targetWidth,
-                targetHeight,
-                targetBitrate,
-                TransportStreamTimestamp.NONE);
+            var mediaProfile = _profile.GetVideoMediaProfile(streamInfo.Container,
+                streamInfo.AudioCodec,
+                streamInfo.VideoCodec,
+                streamInfo.TargetAudioStream,
+                streamInfo.TargetVideoStream);
+
+            var formatProfile = mediaProfile == null ? null : mediaProfile.OrgPn;
+
+            if (string.IsNullOrEmpty(formatProfile))
+            {
+                var format = new MediaFormatProfileResolver().ResolveVideoFormat(streamInfo.Container,
+                        targetVideoCodec,
+                        targetAudioCodec,
+                        targetWidth,
+                        targetHeight,
+                        targetBitrate,
+                        TransportStreamTimestamp.VALID);
+
+                formatProfile = format.HasValue ? format.Value.ToString() : null;
+            }
 
             var filename = url.Substring(0, url.IndexOf('?'));
+
+            var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
+               ? MimeTypes.GetMimeType(filename)
+               : mediaProfile.MimeType;
 
             var orgOpValue = DlnaMaps.GetOrgOpValue(mediaSource.RunTimeTicks.HasValue, streamInfo.IsDirectStream, streamInfo.TranscodeSeekInfo);
 
             var orgCi = streamInfo.IsDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
+            var orgPn = !string.IsNullOrEmpty(formatProfile) ? "DLNA.ORG_PN=:" + formatProfile + ";" : string.Empty;
 
             res.SetAttribute("protocolInfo", String.Format(
-                "http-get:*:{0}:DLNA.ORG_PN={1};DLNA.ORG_OP={2};DLNA.ORG_CI={3};DLNA.ORG_FLAGS={4}",
-                MimeTypes.GetMimeType(filename),
-                formatProfile,
+                "http-get:*:{0}:{1}DLNA.ORG_OP={2};DLNA.ORG_CI={3};DLNA.ORG_FLAGS={4}",
+                mimeType,
+                orgPn,
                 orgOpValue,
                 orgCi,
                 DlnaMaps.DefaultStreaming
@@ -712,18 +730,36 @@ namespace MediaBrowser.Dlna.Server
                 res.SetAttribute("bitrate", targetAudioBitrate.Value.ToString(_usCulture));
             }
 
-            var formatProfile = new MediaFormatProfileResolver().ResolveAudioFormat(streamInfo.Container, targetAudioBitrate, targetSampleRate, targetChannels);
+            var mediaProfile = _profile.GetAudioMediaProfile(streamInfo.Container,
+                streamInfo.AudioCodec,
+                streamInfo.TargetAudioStream);
+
+            var formatProfile = mediaProfile == null ? null : mediaProfile.OrgPn;
+
+            if (string.IsNullOrEmpty(formatProfile))
+            {
+                var format = new MediaFormatProfileResolver().ResolveAudioFormat(streamInfo.Container,
+                    targetAudioBitrate, targetSampleRate, targetChannels);
+
+                formatProfile = format.HasValue ? format.Value.ToString() : null;
+            }
 
             var filename = url.Substring(0, url.IndexOf('?'));
+
+            var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
+                ? MimeTypes.GetMimeType(filename)
+                : mediaProfile.MimeType;
 
             var orgOpValue = DlnaMaps.GetOrgOpValue(mediaSource.RunTimeTicks.HasValue, streamInfo.IsDirectStream, streamInfo.TranscodeSeekInfo);
 
             var orgCi = streamInfo.IsDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
+            var orgPn = !string.IsNullOrEmpty(formatProfile) ? "DLNA.ORG_PN=:" + formatProfile + ";" : string.Empty;
+            
             res.SetAttribute("protocolInfo", String.Format(
-                "http-get:*:{0}:DLNA.ORG_PN={1};DLNA.ORG_OP={2};DLNA.ORG_CI={3};DLNA.ORG_FLAGS={4}",
-                MimeTypes.GetMimeType(filename),
-                formatProfile,
+                "http-get:*:{0}:{1}DLNA.ORG_OP={2};DLNA.ORG_CI={3};DLNA.ORG_FLAGS={4}",
+                mimeType,
+                orgPn,
                 orgOpValue,
                 orgCi,
                 DlnaMaps.DefaultStreaming
@@ -815,7 +851,7 @@ namespace MediaBrowser.Dlna.Server
             }
 
             element.AppendChild(CreateObjectClass(element.OwnerDocument, item));
-            
+
             if (filter.Contains("dc:date"))
             {
                 if (item.PremiereDate.HasValue)
@@ -962,9 +998,13 @@ namespace MediaBrowser.Dlna.Server
 
             var mediaProfile = new MediaFormatProfileResolver().ResolveImageFormat("jpg", width, height);
 
+            var orgPn = mediaProfile.HasValue ? "DLNA.ORG_PN=:" + mediaProfile.Value + ";" : string.Empty;
+
             res.SetAttribute("protocolInfo", string.Format(
-                "http-get:*:{1}DLNA.ORG_PN=:{0};DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS={2}",
-                mediaProfile, "image/jpeg", DlnaMaps.DefaultStreaming
+                "http-get:*:{1}:{0}DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS={2}",
+                orgPn,
+                "image/jpeg",
+                DlnaMaps.DefaultStreaming
                 ));
 
             if (width.HasValue && height.HasValue)

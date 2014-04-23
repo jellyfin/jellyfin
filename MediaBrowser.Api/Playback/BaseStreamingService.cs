@@ -126,7 +126,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        protected virtual string GetOutputFilePath(StreamState state)
+        protected string GetOutputFilePath(StreamState state)
         {
             var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
 
@@ -136,11 +136,6 @@ namespace MediaBrowser.Api.Playback
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        /// <summary>
-        /// The fast seek offset seconds
-        /// </summary>
-        private const int FastSeekOffsetSeconds = 1;
 
         /// <summary>
         /// Gets the fast seek command line parameter.
@@ -162,17 +157,6 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the slow seek command line parameter.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.String.</returns>
-        /// <value>The slow seek command line parameter.</value>
-        protected string GetSlowSeekCommandLineParameter(StreamRequest request)
-        {
             return string.Empty;
         }
 
@@ -415,9 +399,9 @@ namespace MediaBrowser.Api.Playback
                 param += string.Format(" -r {0}", framerate.Value.ToString(UsCulture));
             }
 
-            if (!string.IsNullOrEmpty(state.VideoSync))
+            if (!string.IsNullOrEmpty(state.OutputVideoSync))
             {
-                param += " -vsync " + state.VideoSync;
+                param += " -vsync " + state.OutputVideoSync;
             }
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
@@ -438,7 +422,7 @@ namespace MediaBrowser.Api.Playback
             var volParam = string.Empty;
             var audioSampleRate = string.Empty;
 
-            var channels = GetNumAudioChannelsParam(state.Request, state.AudioStream);
+            var channels = state.OutputAudioChannels;
 
             // Boost volume to 200% when downsampling from 6ch to 2ch
             if (channels.HasValue && channels.Value <= 2)
@@ -449,9 +433,9 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            if (state.Request.AudioSampleRate.HasValue)
+            if (state.OutputAudioSampleRate.HasValue)
             {
-                audioSampleRate = state.Request.AudioSampleRate.Value + ":";
+                audioSampleRate = state.OutputAudioSampleRate.Value + ":";
             }
 
             var adelay = isHls ? "adelay=1," : string.Empty;
@@ -478,7 +462,7 @@ namespace MediaBrowser.Api.Playback
                 audioSampleRate,
                 volParam,
                 pts,
-                state.AudioSync);
+                state.OutputAudioSync);
         }
 
         /// <summary>
@@ -746,7 +730,7 @@ namespace MediaBrowser.Api.Playback
         /// <param name="request">The request.</param>
         /// <param name="audioStream">The audio stream.</param>
         /// <returns>System.Nullable{System.Int32}.</returns>
-        protected int? GetNumAudioChannelsParam(StreamRequest request, MediaStream audioStream)
+        private int? GetNumAudioChannelsParam(StreamRequest request, MediaStream audioStream)
         {
             if (audioStream != null)
             {
@@ -973,17 +957,17 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        protected int? GetVideoBitrateParamValue(StreamState state)
+        private int? GetVideoBitrateParamValue(VideoStreamRequest request, MediaStream videoStream)
         {
-            var bitrate = state.VideoRequest.VideoBitRate;
+            var bitrate = request.VideoBitRate;
 
-            if (state.VideoStream != null)
+            if (videoStream != null)
             {
-                var isUpscaling = state.VideoRequest.Height.HasValue && state.VideoStream.Height.HasValue &&
-                                   state.VideoRequest.Height.Value > state.VideoStream.Height.Value;
+                var isUpscaling = request.Height.HasValue && videoStream.Height.HasValue &&
+                                   request.Height.Value > videoStream.Height.Value;
 
-                if (state.VideoRequest.Width.HasValue && state.VideoStream.Width.HasValue &&
-                    state.VideoRequest.Width.Value > state.VideoStream.Width.Value)
+                if (request.Width.HasValue && videoStream.Width.HasValue &&
+                    request.Width.Value > videoStream.Width.Value)
                 {
                     isUpscaling = true;
                 }
@@ -991,9 +975,9 @@ namespace MediaBrowser.Api.Playback
                 // Don't allow bitrate increases unless upscaling
                 if (!isUpscaling)
                 {
-                    if (bitrate.HasValue && state.VideoStream.BitRate.HasValue)
+                    if (bitrate.HasValue && videoStream.BitRate.HasValue)
                     {
-                        bitrate = Math.Min(bitrate.Value, state.VideoStream.BitRate.Value);
+                        bitrate = Math.Min(bitrate.Value, videoStream.BitRate.Value);
                     }
                 }
             }
@@ -1003,7 +987,7 @@ namespace MediaBrowser.Api.Playback
 
         protected string GetVideoBitrateParam(StreamState state, string videoCodec, bool isHls)
         {
-            var bitrate = GetVideoBitrateParamValue(state);
+            var bitrate = state.OutputVideoBitrate;
 
             if (bitrate.HasValue)
             {
@@ -1045,14 +1029,14 @@ namespace MediaBrowser.Api.Playback
             return string.Empty;
         }
 
-        protected int? GetAudioBitrateParam(StreamState state)
+        private int? GetAudioBitrateParam(StreamRequest request, MediaStream audioStream)
         {
-            if (state.Request.AudioBitRate.HasValue)
+            if (request.AudioBitRate.HasValue)
             {
                 // Make sure we don't request a bitrate higher than the source
-                var currentBitrate = state.AudioStream == null ? state.Request.AudioBitRate.Value : state.AudioStream.BitRate ?? state.Request.AudioBitRate.Value;
+                var currentBitrate = audioStream == null ? request.AudioBitRate.Value : audioStream.BitRate ?? request.AudioBitRate.Value;
 
-                return Math.Min(currentBitrate, state.Request.AudioBitRate.Value);
+                return Math.Min(currentBitrate, request.AudioBitRate.Value);
             }
 
             return null;
@@ -1399,7 +1383,7 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 state.ReadInputAtNativeFramerate = recording.RecordingInfo.Status == RecordingStatus.InProgress;
-                state.AudioSync = "1000";
+                state.OutputAudioSync = "1000";
                 state.DeInterlace = true;
                 state.InputVideoSync = "-1";
                 state.InputAudioSync = "1";
@@ -1430,7 +1414,7 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 state.ReadInputAtNativeFramerate = true;
-                state.AudioSync = "1000";
+                state.OutputAudioSync = "1000";
                 state.DeInterlace = true;
                 state.InputVideoSync = "-1";
                 state.InputAudioSync = "1";
@@ -1492,10 +1476,26 @@ namespace MediaBrowser.Api.Playback
             state.SegmentLength = state.ReadInputAtNativeFramerate ? 5 : 10;
             state.HlsListSize = state.ReadInputAtNativeFramerate ? 100 : 1440;
 
+            var container = Path.GetExtension(state.RequestedUrl);
+
+            if (string.IsNullOrEmpty(container))
+            {
+                container = Path.GetExtension(GetOutputFilePath(state));
+            }
+
+            state.OutputContainer = (container ?? string.Empty).TrimStart('.');
+
             ApplyDeviceProfileSettings(state);
+
+            state.OutputContainer = GetOutputFileExtension(state).TrimStart('.');
+            state.OutputAudioBitrate = GetAudioBitrateParam(state.Request, state.AudioStream);
+            state.OutputAudioSampleRate = request.AudioSampleRate;
+            state.OutputAudioChannels = GetNumAudioChannelsParam(state.Request, state.AudioStream);
 
             if (videoRequest != null)
             {
+                state.OutputVideoBitrate = GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream);
+
                 if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream))
                 {
                     videoRequest.VideoCodec = "copy";
@@ -1649,13 +1649,6 @@ namespace MediaBrowser.Api.Playback
                 return;
             }
 
-            var container = Path.GetExtension(state.RequestedUrl);
-
-            if (string.IsNullOrEmpty(container))
-            {
-                container = Path.GetExtension(GetOutputFilePath(state));
-            }
-
             var audioCodec = state.Request.AudioCodec;
 
             if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.AudioStream != null)
@@ -1671,8 +1664,8 @@ namespace MediaBrowser.Api.Playback
             }
 
             var mediaProfile = state.VideoRequest == null ?
-                profile.GetAudioMediaProfile(container, audioCodec, state.AudioStream) :
-                profile.GetVideoMediaProfile(container, audioCodec, videoCodec, state.AudioStream, state.VideoStream);
+                profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.AudioStream) :
+                profile.GetVideoMediaProfile(state.OutputContainer, audioCodec, videoCodec, state.AudioStream, state.VideoStream);
 
             if (mediaProfile != null)
             {
@@ -1681,8 +1674,8 @@ namespace MediaBrowser.Api.Playback
             }
 
             var transcodingProfile = state.VideoRequest == null ?
-                profile.GetAudioTranscodingProfile(container, audioCodec) :
-                profile.GetVideoTranscodingProfile(container, audioCodec, videoCodec);
+                profile.GetAudioTranscodingProfile(state.OutputContainer, audioCodec) :
+                profile.GetVideoTranscodingProfile(state.OutputContainer, audioCodec, videoCodec);
 
             if (transcodingProfile != null)
             {
@@ -1709,9 +1702,6 @@ namespace MediaBrowser.Api.Playback
             var transferMode = GetHeader("transferMode.dlna.org");
             responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
             responseHeaders["realTimeInfo.dlna.org"] = "DLNA.ORG_TLAG=*";
-
-            var contentFeatures = string.Empty;
-            var extension = GetOutputFileExtension(state);
 
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
             var orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(state.RunTimeTicks.HasValue, isStaticallyStreamed, state.TranscodeSeekInfo);
@@ -1740,42 +1730,10 @@ namespace MediaBrowser.Api.Playback
             var dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}000000000000000000000000",
                 Enum.Format(typeof(DlnaFlags), flagValue, "x"));
 
-            if (!string.IsNullOrWhiteSpace(state.OrgPn))
-            {
-                contentFeatures = "DLNA.ORG_PN=" + state.OrgPn;
-            }
-            else if (string.Equals(extension, ".mp3", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MP3";
-            }
-            else if (string.Equals(extension, ".aac", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=AAC_ISO";
-            }
-            else if (string.Equals(extension, ".wma", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=WMABASE";
-            }
-            else if (string.Equals(extension, ".avi", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=AVI";
-            }
-            else if (string.Equals(extension, ".mkv", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MATROSKA";
-            }
-            else if (string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=AVC_MP4_MP_HD_720p_AAC";
-            }
-            else if (string.Equals(extension, ".mpeg", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
-            }
-            else if (string.Equals(extension, ".ts", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
-            }
+            var orgPn = GetOrgPnValue(state);
+
+            var contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty :
+                "DLNA.ORG_PN=" + orgPn;
 
             if (!string.IsNullOrEmpty(contentFeatures))
             {
@@ -1786,6 +1744,50 @@ namespace MediaBrowser.Api.Playback
             {
                 Request.Response.AddHeader(item.Key, item.Value);
             }
+        }
+
+        private string GetOrgPnValue(StreamState state)
+        {
+            if (!string.IsNullOrWhiteSpace(state.OrgPn))
+            {
+                return state.OrgPn;
+            }
+
+            if (state.VideoRequest == null)
+            {
+                var format = new MediaFormatProfileResolver()
+                    .ResolveAudioFormat(state.OutputContainer,
+                    state.OutputAudioBitrate,
+                    state.OutputAudioSampleRate,
+                    state.OutputAudioChannels);
+
+                return format.HasValue ? format.Value.ToString() : null;
+            }
+
+            var audioCodec = state.Request.AudioCodec;
+
+            if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.AudioStream != null)
+            {
+                audioCodec = state.AudioStream.Codec;
+            }
+
+            var videoCodec = state.VideoRequest == null ? null : state.VideoRequest.VideoCodec;
+
+            if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.VideoStream != null)
+            {
+                videoCodec = state.VideoStream.Codec;
+            }
+
+            var videoFormat = new MediaFormatProfileResolver()
+                .ResolveVideoFormat(state.OutputContainer,
+                    videoCodec,
+                    audioCodec,
+                    state.OutputWidth,
+                    state.OutputHeight,
+                    state.TotalOutputBitrate,
+                    TransportStreamTimestamp.VALID);
+
+            return videoFormat.HasValue ? videoFormat.Value.ToString() : null;
         }
 
         private void AddTimeSeekResponseHeaders(StreamState state, IDictionary<string, string> responseHeaders)

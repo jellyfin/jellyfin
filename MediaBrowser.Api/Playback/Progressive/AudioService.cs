@@ -82,23 +82,21 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var audioTranscodeParams = new List<string>();
 
-            var bitrate = GetAudioBitrateParam(state);
+            var bitrate = state.OutputAudioBitrate;
 
             if (bitrate.HasValue)
             {
                 audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(UsCulture));
             }
 
-            var channels = GetNumAudioChannelsParam(request, state.AudioStream);
-
-            if (channels.HasValue)
+            if (state.OutputAudioChannels.HasValue)
             {
-                audioTranscodeParams.Add("-ac " + channels.Value);
+                audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(UsCulture));
             }
 
-            if (request.AudioSampleRate.HasValue)
+            if (state.OutputAudioSampleRate.HasValue)
             {
-                audioTranscodeParams.Add("-ar " + request.AudioSampleRate.Value);
+                audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(UsCulture));
             }
 
             const string vn = " -vn";
@@ -107,10 +105,9 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var inputModifier = GetInputModifier(state);
 
-            return string.Format("{0} -i {1}{2} -threads {3}{4} {5} -id3v2_version 3 -write_id3v1 1 \"{6}\"",
+            return string.Format("{0} -i {1} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1 \"{5}\"",
                 inputModifier,
                 GetInputArgument(state),
-                GetSlowSeekCommandLineParameter(request),
                 threads,
                 vn,
                 string.Join(" ", audioTranscodeParams.ToArray()),

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -32,9 +33,7 @@ namespace MediaBrowser.Api.Playback
         public Stream LogFileStream { get; set; }
 
         public MediaStream AudioStream { get; set; }
-
         public MediaStream VideoStream { get; set; }
-
         public MediaStream SubtitleStream { get; set; }
 
         /// <summary>
@@ -50,7 +49,6 @@ namespace MediaBrowser.Api.Playback
         public bool IsInputVideo { get; set; }
 
         public VideoType VideoType { get; set; }
-
         public IsoType? IsoType { get; set; }
 
         public List<string> PlayableStreamFileNames { get; set; }
@@ -64,8 +62,8 @@ namespace MediaBrowser.Api.Playback
 
         public long? RunTimeTicks;
 
-        public string AudioSync = "1";
-        public string VideoSync = "vfr";
+        public string OutputAudioSync = "1";
+        public string OutputVideoSync = "vfr";
 
         public List<string> SupportedAudioCodecs { get; set; }
 
@@ -80,19 +78,14 @@ namespace MediaBrowser.Api.Playback
         public string InputVideoSync { get; set; }
  
         public bool DeInterlace { get; set; }
-
         public bool ReadInputAtNativeFramerate { get; set; }
-
         public string InputFormat { get; set; }
-
         public string InputVideoCodec { get; set; }
-
         public string InputAudioCodec { get; set; }
 
         public string MimeType { get; set; }
         public string OrgPn { get; set; }
 
-        // DLNA Settings
         public bool EstimateContentLength { get; set; }
         public bool EnableMpegtsM2TsMode { get; set; }
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
@@ -160,6 +153,71 @@ namespace MediaBrowser.Api.Playback
                 {
                     _logger.ErrorException("Error closing live tv stream", ex);
                 }
+            }
+        }
+
+        public int? OutputAudioChannels;
+        public int? OutputAudioSampleRate;
+        public int? OutputAudioBitrate;
+        public int? OutputVideoBitrate;
+
+        public string OutputContainer { get; set; }
+
+        public int? TotalOutputBitrate
+        {
+            get
+            {
+                return (OutputAudioBitrate ?? 0) + (OutputVideoBitrate ?? 0);
+            }
+        }
+
+        public int? OutputWidth
+        {
+            get
+            {
+                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                {
+                    var size = new ImageSize
+                    {
+                        Width = VideoStream.Width.Value,
+                        Height = VideoStream.Height.Value
+                    };
+
+                    var newSize = DrawingUtils.Resize(size,
+                        VideoRequest.Width,
+                        VideoRequest.Height,
+                        VideoRequest.MaxWidth,
+                        VideoRequest.MaxHeight);
+
+                    return Convert.ToInt32(newSize.Width);
+                }
+
+                return VideoRequest.MaxWidth ?? VideoRequest.Width;
+            }
+        }
+
+        public int? OutputHeight
+        {
+            get
+            {
+                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                {
+                    var size = new ImageSize
+                    {
+                        Width = VideoStream.Width.Value,
+                        Height = VideoStream.Height.Value
+                    };
+
+                    var newSize = DrawingUtils.Resize(size,
+                        VideoRequest.Width,
+                        VideoRequest.Height,
+                        VideoRequest.MaxWidth,
+                        VideoRequest.MaxHeight);
+
+                    return Convert.ToInt32(newSize.Height);
+                }
+
+                return VideoRequest.MaxHeight ?? VideoRequest.Height;
             }
         }
     }

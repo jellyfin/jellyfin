@@ -262,31 +262,31 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 videoCodec = state.VideoStream.Codec;
             }
 
-            var mediaProfile = state.VideoRequest == null ?
-                profile.GetAudioMediaProfile(container, audioCodec, state.AudioStream) :
-                profile.GetVideoMediaProfile(container, audioCodec, videoCodec, state.AudioStream, state.VideoStream);
+            //var mediaProfile = state.VideoRequest == null ?
+            //    profile.GetAudioMediaProfile(container, audioCodec) :
+            //    profile.GetVideoMediaProfile(container, audioCodec, videoCodec, state.AudioStream, state.VideoStream);
 
-            if (mediaProfile != null)
-            {
-                state.MimeType = mediaProfile.MimeType;
-                state.OrgPn = mediaProfile.OrgPn;
-            }
+            //if (mediaProfile != null)
+            //{
+            //    state.MimeType = mediaProfile.MimeType;
+            //    state.OrgPn = mediaProfile.OrgPn;
+            //}
 
-            var transcodingProfile = state.VideoRequest == null ?
-                profile.GetAudioTranscodingProfile(container, audioCodec) :
-                profile.GetVideoTranscodingProfile(container, audioCodec, videoCodec);
+            //var transcodingProfile = state.VideoRequest == null ?
+            //    profile.GetAudioTranscodingProfile(container, audioCodec) :
+            //    profile.GetVideoTranscodingProfile(container, audioCodec, videoCodec);
 
-            if (transcodingProfile != null)
-            {
-                //state.EstimateContentLength = transcodingProfile.EstimateContentLength;
-                state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
-                //state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
+            //if (transcodingProfile != null)
+            //{
+            //    //state.EstimateContentLength = transcodingProfile.EstimateContentLength;
+            //    state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
+            //    //state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
 
-                if (state.VideoRequest != null && string.IsNullOrWhiteSpace(state.VideoRequest.VideoProfile))
-                {
-                    state.VideoRequest.VideoProfile = transcodingProfile.VideoProfile;
-                }
-            }
+            //    if (state.VideoRequest != null && string.IsNullOrWhiteSpace(state.VideoRequest.VideoProfile))
+            //    {
+            //        state.VideoRequest.VideoProfile = transcodingProfile.VideoProfile;
+            //    }
+            //}
         }
 
         private EncodingQuality GetQualitySetting()
