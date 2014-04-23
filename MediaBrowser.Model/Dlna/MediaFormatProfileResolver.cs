@@ -33,7 +33,7 @@ namespace MediaBrowser.Model.Dlna
                 string.Equals(container, "m2ts", StringComparison.OrdinalIgnoreCase))
             {
 
-                var list = ResolveVideoMPEG2TSFormat(videoCodec, audioCodec, width, height, bitrate, timestampType)
+                var list = ResolveVideoMPEG2TSFormat(videoCodec, audioCodec, width, height, timestampType)
                    .ToList();
 
                 return list.Count > 0 ? list[0] : (MediaFormatProfile?)null;
@@ -54,7 +54,7 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        private IEnumerable<MediaFormatProfile> ResolveVideoMPEG2TSFormat(string videoCodec, string audioCodec, int? width, int? height, int? bitrate, TransportStreamTimestamp timestampType)
+        private IEnumerable<MediaFormatProfile> ResolveVideoMPEG2TSFormat(string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
         {
             var suffix = "";
 

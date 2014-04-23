@@ -104,7 +104,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     try
                     {
-                        _manager.Stop();
                         _manager.Dispose();
                     }
                     catch (Exception ex)

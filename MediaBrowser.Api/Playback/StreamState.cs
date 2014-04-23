@@ -84,7 +84,6 @@ namespace MediaBrowser.Api.Playback
         public string InputAudioCodec { get; set; }
 
         public string MimeType { get; set; }
-        public string OrgPn { get; set; }
 
         public bool EstimateContentLength { get; set; }
         public bool EnableMpegtsM2TsMode { get; set; }
@@ -162,6 +161,8 @@ namespace MediaBrowser.Api.Playback
         public int? OutputVideoBitrate;
 
         public string OutputContainer { get; set; }
+
+        public DeviceProfile DeviceProfile { get; set; }
 
         public int? TotalOutputBitrate
         {

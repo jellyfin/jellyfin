@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -55,6 +56,8 @@ namespace MediaBrowser.Model.Dlna
         public bool EstimateContentLength { get; set; }
 
         public MediaSourceInfo MediaSource { get; set; }
+
+        public TransportStreamTimestamp TargetTimestamp { get; set; }
 
         public string MediaSourceId
         {
@@ -250,6 +253,68 @@ namespace MediaBrowser.Model.Dlna
                 return MaxAudioChannels.HasValue && !IsDirectStream
                     ? (stream.Channels.HasValue ? Math.Min(MaxAudioChannels.Value, stream.Channels.Value) : MaxAudioChannels.Value)
                     : stream == null ? null : stream.Channels;
+            }
+        }
+
+        public int? TotalOutputBitrate
+        {
+            get
+            {
+                return (TargetAudioBitrate ?? 0) + (VideoBitrate ?? 0);
+            }
+        }
+
+        public int? TargetWidth
+        {
+            get
+            {
+                var videoStream = TargetVideoStream;
+
+                if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
+                {
+                    var size = new ImageSize
+                    {
+                        Width = videoStream.Width.Value,
+                        Height = videoStream.Height.Value
+                    };
+
+                    var newSize = DrawingUtils.Resize(size,
+                        null,
+                        null,
+                        MaxWidth,
+                        MaxHeight);
+
+                    return Convert.ToInt32(newSize.Width);
+                }
+
+                return MaxWidth;
+            }
+        }
+
+        public int? TargetHeight
+        {
+            get
+            {
+                var videoStream = TargetVideoStream;
+
+                if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
+                {
+                    var size = new ImageSize
+                    {
+                        Width = videoStream.Width.Value,
+                        Height = videoStream.Height.Value
+                    };
+
+                    var newSize = DrawingUtils.Resize(size,
+                        null,
+                        null,
+                        MaxWidth,
+                        MaxHeight);
+
+                    return Convert.ToInt32(newSize.Height);
+                }
+
+                return MaxHeight;
             }
         }
     }

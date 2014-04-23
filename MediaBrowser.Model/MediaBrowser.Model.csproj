@@ -68,6 +68,7 @@
     <Compile Include="Configuration\ServerConfiguration.cs" />
     <Compile Include="Dlna\CodecProfile.cs" />
     <Compile Include="Dlna\ContainerProfile.cs" />
+    <Compile Include="Dlna\ContentFeatureBuilder.cs" />
     <Compile Include="Dlna\DeviceIdentification.cs" />
     <Compile Include="Dlna\DeviceProfile.cs" />
     <Compile Include="Dlna\DeviceProfileInfo.cs" />

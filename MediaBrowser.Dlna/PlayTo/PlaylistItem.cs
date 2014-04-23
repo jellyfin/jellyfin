@@ -11,5 +11,7 @@ namespace MediaBrowser.Dlna.PlayTo
         public string Didl { get; set; }
 
         public StreamInfo StreamInfo { get; set; }
+
+        public DeviceProfile Profile { get; set; }
     }
 }

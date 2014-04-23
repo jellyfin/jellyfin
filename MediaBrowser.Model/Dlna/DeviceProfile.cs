@@ -159,7 +159,7 @@ namespace MediaBrowser.Model.Dlna
             });
         }
 
-        public ResponseProfile GetAudioMediaProfile(string container, string audioCodec, MediaStream audioStream)
+        public ResponseProfile GetAudioMediaProfile(string container, string audioCodec)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
@@ -186,7 +186,7 @@ namespace MediaBrowser.Model.Dlna
             });
         }
 
-        public ResponseProfile GetVideoMediaProfile(string container, string audioCodec, string videoCodec, MediaStream audioStream, MediaStream videoStream)
+        public ResponseProfile GetVideoMediaProfile(string container, string audioCodec, string videoCodec)
         {
             container = (container ?? string.Empty).TrimStart('.');
 

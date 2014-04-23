@@ -1507,6 +1507,16 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
+            var headers = new Dictionary<string, string>();
+            foreach (var key in Request.Headers.AllKeys)
+            {
+                headers[key] = Request.Headers[key];
+            }
+
+            state.DeviceProfile = string.IsNullOrWhiteSpace(state.Request.DeviceProfileId) ?
+                DlnaManager.GetProfile(headers) :
+                DlnaManager.GetProfile(state.Request.DeviceProfileId); 
+            
             return state;
         }
 
@@ -1631,16 +1641,7 @@ namespace MediaBrowser.Api.Playback
 
         private void ApplyDeviceProfileSettings(StreamState state)
         {
-            var headers = new Dictionary<string, string>();
-
-            foreach (var key in Request.Headers.AllKeys)
-            {
-                headers[key] = Request.Headers[key];
-            }
-
-            var profile = string.IsNullOrWhiteSpace(state.Request.DeviceProfileId) ?
-                DlnaManager.GetProfile(headers) :
-                DlnaManager.GetProfile(state.Request.DeviceProfileId);
+            var profile = state.DeviceProfile;
 
             if (profile == null)
             {
@@ -1664,13 +1665,12 @@ namespace MediaBrowser.Api.Playback
             }
 
             var mediaProfile = state.VideoRequest == null ?
-                profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.AudioStream) :
-                profile.GetVideoMediaProfile(state.OutputContainer, audioCodec, videoCodec, state.AudioStream, state.VideoStream);
+                profile.GetAudioMediaProfile(state.OutputContainer, audioCodec) :
+                profile.GetVideoMediaProfile(state.OutputContainer, audioCodec, videoCodec);
 
             if (mediaProfile != null)
             {
                 state.MimeType = mediaProfile.MimeType;
-                state.OrgPn = mediaProfile.OrgPn;
             }
 
             var transcodingProfile = state.VideoRequest == null ?
@@ -1699,95 +1699,71 @@ namespace MediaBrowser.Api.Playback
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected void AddDlnaHeaders(StreamState state, IDictionary<string, string> responseHeaders, bool isStaticallyStreamed)
         {
+            var profile = state.DeviceProfile;
+
+            if (profile == null)
+            {
+                return;
+            }
+
             var transferMode = GetHeader("transferMode.dlna.org");
             responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
             responseHeaders["realTimeInfo.dlna.org"] = "DLNA.ORG_TLAG=*";
-
-            // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
-            var orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(state.RunTimeTicks.HasValue, isStaticallyStreamed, state.TranscodeSeekInfo);
 
             if (state.RunTimeTicks.HasValue && !isStaticallyStreamed)
             {
                 AddTimeSeekResponseHeaders(state, responseHeaders);
             }
 
-            // 0 = native, 1 = transcoded
-            var orgCi = isStaticallyStreamed ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
+            var audioCodec = state.Request.AudioCodec;
 
-            var flagValue = DlnaFlags.StreamingTransferMode |
-                            DlnaFlags.BackgroundTransferMode |
-                            DlnaFlags.DlnaV15;
-
-            if (isStaticallyStreamed)
+            if (state.VideoRequest == null)
             {
-                //flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_BYTE_BASED_SEEK;
+                responseHeaders["contentFeatures.dlna.org"] = new ContentFeatureBuilder(profile)
+                    .BuildAudioHeader(
+                    state.OutputContainer,
+                    audioCodec,
+                    state.OutputAudioBitrate,
+                    state.OutputAudioSampleRate,
+                    state.OutputAudioChannels,
+                    isStaticallyStreamed,
+                    state.RunTimeTicks,
+                    state.TranscodeSeekInfo
+                    );
             }
-            else if (state.RunTimeTicks.HasValue)
+            else
             {
-                //flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_TIME_BASED_SEEK;
-            }
+                if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.AudioStream != null)
+                {
+                    audioCodec = state.AudioStream.Codec;
+                }
 
-            var dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}000000000000000000000000",
-                Enum.Format(typeof(DlnaFlags), flagValue, "x"));
+                var videoCodec = state.VideoRequest == null ? null : state.VideoRequest.VideoCodec;
 
-            var orgPn = GetOrgPnValue(state);
+                if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.VideoStream != null)
+                {
+                    videoCodec = state.VideoStream.Codec;
+                }
 
-            var contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty :
-                "DLNA.ORG_PN=" + orgPn;
-
-            if (!string.IsNullOrEmpty(contentFeatures))
-            {
-                responseHeaders["contentFeatures.dlna.org"] = (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
+                responseHeaders["contentFeatures.dlna.org"] = new ContentFeatureBuilder(profile)
+                    .BuildVideoHeader(
+                    state.OutputContainer,
+                    videoCodec,
+                    audioCodec,
+                    state.OutputWidth,
+                    state.OutputHeight,
+                    state.TotalOutputBitrate,
+                    TransportStreamTimestamp.VALID,
+                    isStaticallyStreamed,
+                    state.RunTimeTicks,
+                    state.TranscodeSeekInfo
+                    );
             }
 
             foreach (var item in responseHeaders)
             {
                 Request.Response.AddHeader(item.Key, item.Value);
             }
-        }
-
-        private string GetOrgPnValue(StreamState state)
-        {
-            if (!string.IsNullOrWhiteSpace(state.OrgPn))
-            {
-                return state.OrgPn;
-            }
-
-            if (state.VideoRequest == null)
-            {
-                var format = new MediaFormatProfileResolver()
-                    .ResolveAudioFormat(state.OutputContainer,
-                    state.OutputAudioBitrate,
-                    state.OutputAudioSampleRate,
-                    state.OutputAudioChannels);
-
-                return format.HasValue ? format.Value.ToString() : null;
-            }
-
-            var audioCodec = state.Request.AudioCodec;
-
-            if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.AudioStream != null)
-            {
-                audioCodec = state.AudioStream.Codec;
-            }
-
-            var videoCodec = state.VideoRequest == null ? null : state.VideoRequest.VideoCodec;
-
-            if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.VideoStream != null)
-            {
-                videoCodec = state.VideoStream.Codec;
-            }
-
-            var videoFormat = new MediaFormatProfileResolver()
-                .ResolveVideoFormat(state.OutputContainer,
-                    videoCodec,
-                    audioCodec,
-                    state.OutputWidth,
-                    state.OutputHeight,
-                    state.TotalOutputBitrate,
-                    TransportStreamTimestamp.VALID);
-
-            return videoFormat.HasValue ? videoFormat.Value.ToString() : null;
         }
 
         private void AddTimeSeekResponseHeaders(StreamState state, IDictionary<string, string> responseHeaders)
