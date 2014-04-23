@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Security;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Common;
 using MediaBrowser.Model.Logging;
@@ -299,15 +300,11 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private string CreateDidlMeta(string value)
         {
-            if (value == null)
+            if (string.IsNullOrEmpty(value))
                 return String.Empty;
 
-            var escapedData = value.Replace("<", "&lt;").Replace(">", "&gt;");
-
-            return String.Format(BaseDidl, escapedData.Replace("\r\n", ""));
+            return SecurityElement.Escape(value);
         }
-
-        private const string BaseDidl = "&lt;DIDL-Lite xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\"&gt;{0}&lt;/DIDL-Lite&gt;";
 
         public async Task SetNextAvTransport(string value, string header, string metaData)
         {
@@ -615,7 +612,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (string.IsNullOrWhiteSpace(trackString) || string.Equals(trackString, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<bool, uBaseObject>(true, null);
+                return new Tuple<bool, uBaseObject>(false, null);
             }
 
             XElement uPnpResponse;
@@ -624,9 +621,9 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 uPnpResponse = XElement.Parse(trackString);
             }
-            catch
+            catch (Exception ex)
             {
-                _logger.Error("Unable to parse xml {0}", trackString);
+                _logger.ErrorException("Unable to parse xml {0}", ex, trackString);
                 return new Tuple<bool, uBaseObject>(true, null);
             }
 

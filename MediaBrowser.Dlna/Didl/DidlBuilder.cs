@@ -1,167 +1,691 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Xml;
 
 namespace MediaBrowser.Dlna.Didl
 {
     public class DidlBuilder
     {
-        const string CRLF = "\r\n";
-        const string UNKNOWN = "Unknown";
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        
+        private const string NS_DIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
+        private const string NS_DC = "http://purl.org/dc/elements/1.1/";
+        private const string NS_UPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
+        private const string NS_DLNA = "urn:schemas-dlna-org:metadata-1-0/";
 
-        const string DIDL_START = @"<item id=""{0}"" parentID=""{1}"" restricted=""1"" xmlns=""urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/"">" + CRLF;
-        const string DIDL_TITLE = @"  <dc:title xmlns:dc=""http://purl.org/dc/elements/1.1/"">{0}</dc:title>" + CRLF;
-        const string DIDL_ARTIST = @"<upnp:artist xmlns:upnp=""urn:schemas-upnp-org:metadata-1-0/upnp/"">{0}</upnp:artist>" + CRLF;
-        const string DIDL_ALBUM = @"<upnp:album xmlns:upnp=""urn:schemas-upnp-org:metadata-1-0/upnp/"">{0}</upnp:album>" + CRLF;
-        const string DIDL_TRACKNUM = @"<upnp:originalTrackNumber xmlns:upnp=""urn:schemas-upnp-org:metadata-1-0/upnp/"">{0}</upnp:originalTrackNumber>" + CRLF;
-        const string DIDL_VIDEOCLASS = @"  <upnp:class xmlns:upnp=""urn:schemas-upnp-org:metadata-1-0/upnp/"">object.item.videoItem</upnp:class>" + CRLF;
-        const string DIDL_AUDIOCLASS = @"  <upnp:class xmlns:upnp=""urn:schemas-upnp-org:metadata-1-0/upnp/"">object.item.audioItem.musicTrack</upnp:class>" + CRLF;
-        const string DIDL_IMAGE = @"  <upnp:albumArtURI dlna:profileID=""JPEG_TN"" xmlns:dlna=""urn:schemas-dlna-org:metadata-1-0/"" xmlns:upnp=""urn:schemas-upnp-org:metadata-1-0/upnp/"">{0}</upnp:albumArtURI>" + CRLF +
-                                               @"  <upnp:icon xmlns:upnp=""urn:schemas-upnp-org:metadata-1-0/upnp/"">{0}</upnp:icon>" + CRLF;
-        const string DIDL_RELEASEDATE = @"  <dc:date xmlns:dc=""http://purl.org/dc/elements/1.1/"">{0}</dc:date>" + CRLF;
-        const string DIDL_GENRE = @"  <upnp:genre xmlns:upnp=""urn:schemas-upnp-org:metadata-1-0/upnp/"">{0}</upnp:genre>" + CRLF;
-        const string DESCRIPTION = @"  <dc:description xmlns:dc=""http://purl.org/dc/elements/1.1/"">{0}</dc:description>" + CRLF;
-        const string DIDL_VIDEO_RES = @"  <res bitrate=""{0}"" duration=""{1}"" protocolInfo=""http-get:*:video/x-msvideo:DLNA.ORG_PN=AVI;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000"" resolution=""{2}x{3}"">{4}</res>" + CRLF;
-        const string DIDL_AUDIO_RES = @"  <res bitrate=""{0}"" duration=""{1}"" nrAudioChannels=""2"" protocolInfo=""http-get:*:audio/mp3:DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000"" sampleFrequency=""{2}"">{3}</res>" + CRLF;
-        const string DIDL_IMAGE_RES = @"  <res protocolInfo=""http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_TN;DLNA.ORG_OP=00;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=00D00000000000000000000000000000"" resolution=""212x320"">{0}</res>" + CRLF;
-        const string DIDL_ALBUMIMAGE_RES = @"  <res protocolInfo=""http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_TN;DLNA.ORG_OP=00;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=00D00000000000000000000000000000"" resolution=""320x320"">{0}</res>" + CRLF;
-        const string DIDL_RATING = @"  <upnp:rating xmlns:upnp=""urn:schemas-upnp-org:metadata-1-0/upnp/"">{0}</upnp:rating>" + CRLF;
-        const string DIDL_END = "</item>";
+        private readonly DeviceProfile _profile;
+        private readonly IImageProcessor _imageProcessor;
+        private readonly string _serverAddress;
+        private readonly IDtoService _dtoService;
+
+        public DidlBuilder(DeviceProfile profile, IImageProcessor imageProcessor, string serverAddress, IDtoService dtoService)
+        {
+            _profile = profile;
+            _imageProcessor = imageProcessor;
+            _serverAddress = serverAddress;
+            _dtoService = dtoService;
+        }
+
+        public string GetItemDidl(BaseItem item, string deviceId, Filter filter)
+        {
+            var result = new XmlDocument();
+
+            var didl = result.CreateElement(string.Empty, "DIDL-Lite", NS_DIDL);
+            didl.SetAttribute("xmlns:dc", NS_DC);
+            didl.SetAttribute("xmlns:dlna", NS_DLNA);
+            didl.SetAttribute("xmlns:upnp", NS_UPNP);
+            //didl.SetAttribute("xmlns:sec", NS_SEC);
+            result.AppendChild(didl);
+
+            result.DocumentElement.AppendChild(GetItemElement(result, item, deviceId, filter));
+
+            return result.DocumentElement.OuterXml;
+        }
+
+        public XmlElement GetItemElement(XmlDocument doc, BaseItem item, string deviceId, Filter filter)
+        {
+            var element = doc.CreateElement(string.Empty, "item", NS_DIDL);
+            element.SetAttribute("restricted", "1");
+            element.SetAttribute("id", item.Id.ToString("N"));
+
+            if (item.Parent != null)
+            {
+                element.SetAttribute("parentID", item.Parent.Id.ToString("N"));
+            }
+
+            //AddBookmarkInfo(item, user, element);
+
+            AddGeneralProperties(item, element, filter);
+
+            // refID?
+            // storeAttribute(itemNode, object, ClassProperties.REF_ID, false);
+
+            var audio = item as Audio;
+            if (audio != null)
+            {
+                AddAudioResource(element, audio, deviceId, filter);
+            }
+
+            var video = item as Video;
+            if (video != null)
+            {
+                AddVideoResource(element, video, deviceId, filter);
+            }
+
+            AddCover(item, element);
+
+            return element;
+        }
+
+        private void AddVideoResource(XmlElement container, Video video, string deviceId, Filter filter)
+        {
+            var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
+
+            var sources = _dtoService.GetMediaSources(video);
+
+            int? maxBitrateSetting = null;
+
+            var streamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
+            {
+                ItemId = video.Id.ToString("N"),
+                MediaSources = sources,
+                Profile = _profile,
+                DeviceId = deviceId,
+                MaxBitrate = maxBitrateSetting
+            });
+
+            var url = streamInfo.ToDlnaUrl(_serverAddress);
+            //res.AppendChild(container.OwnerDocument.CreateCDataSection(url));
+            res.InnerText = url;
+
+            var mediaSource = sources.First(i => string.Equals(i.Id, streamInfo.MediaSourceId));
+
+            if (mediaSource.RunTimeTicks.HasValue)
+            {
+                res.SetAttribute("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
+            }
+
+            if (filter.Contains("res@size"))
+            {
+                if (streamInfo.IsDirectStream || streamInfo.EstimateContentLength)
+                {
+                    var size = streamInfo.TargetSize;
+
+                    if (size.HasValue)
+                    {
+                        res.SetAttribute("size", size.Value.ToString(_usCulture));
+                    }
+                }
+            }
+
+            var totalBitrate = streamInfo.TotalOutputBitrate;
+            var targetSampleRate = streamInfo.TargetAudioSampleRate;
+            var targetChannels = streamInfo.TargetAudioChannels;
+
+            var targetWidth = streamInfo.TargetWidth;
+            var targetHeight = streamInfo.TargetHeight;
+
+            if (targetChannels.HasValue)
+            {
+                res.SetAttribute("nrAudioChannels", targetChannels.Value.ToString(_usCulture));
+            }
+
+            if (filter.Contains("res@resolution"))
+            {
+                if (targetWidth.HasValue && targetHeight.HasValue)
+                {
+                    res.SetAttribute("resolution", string.Format("{0}x{1}", targetWidth.Value, targetHeight.Value));
+                }
+            }
+
+            if (targetSampleRate.HasValue)
+            {
+                res.SetAttribute("sampleFrequency", targetSampleRate.Value.ToString(_usCulture));
+            }
+
+            if (totalBitrate.HasValue)
+            {
+                res.SetAttribute("bitrate", totalBitrate.Value.ToString(_usCulture));
+            }
+
+            var mediaProfile = _profile.GetVideoMediaProfile(streamInfo.Container,
+                streamInfo.AudioCodec,
+                streamInfo.VideoCodec);
+
+            var filename = url.Substring(0, url.IndexOf('?'));
+
+            var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
+               ? MimeTypes.GetMimeType(filename)
+               : mediaProfile.MimeType;
+
+            var contentFeatures = new ContentFeatureBuilder(_profile).BuildVideoHeader(streamInfo.Container,
+                streamInfo.VideoCodec,
+                streamInfo.AudioCodec,
+                targetWidth,
+                targetHeight,
+                totalBitrate,
+                streamInfo.TargetTimestamp,
+                streamInfo.IsDirectStream,
+                streamInfo.RunTimeTicks,
+                streamInfo.TranscodeSeekInfo);
+
+            res.SetAttribute("protocolInfo", String.Format(
+                "http-get:*:{0}:{1}",
+                mimeType,
+                contentFeatures
+                ));
+
+            container.AppendChild(res);
+        }
+
+        private void AddAudioResource(XmlElement container, Audio audio, string deviceId, Filter filter)
+        {
+            var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
+
+            var sources = _dtoService.GetMediaSources(audio);
+
+            var streamInfo = new StreamBuilder().BuildAudioItem(new AudioOptions
+            {
+                ItemId = audio.Id.ToString("N"),
+                MediaSources = sources,
+                Profile = _profile,
+                DeviceId = deviceId
+            });
+
+            var url = streamInfo.ToDlnaUrl(_serverAddress);
+            //res.AppendChild(container.OwnerDocument.CreateCDataSection(url));
+            res.InnerText = url;
+
+            var mediaSource = sources.First(i => string.Equals(i.Id, streamInfo.MediaSourceId));
+
+            if (mediaSource.RunTimeTicks.HasValue)
+            {
+                res.SetAttribute("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
+            }
+
+            if (filter.Contains("res@size"))
+            {
+                if (streamInfo.IsDirectStream || streamInfo.EstimateContentLength)
+                {
+                    var size = streamInfo.TargetSize;
+
+                    if (size.HasValue)
+                    {
+                        res.SetAttribute("size", size.Value.ToString(_usCulture));
+                    }
+                }
+            }
+
+            var targetAudioBitrate = streamInfo.TargetAudioBitrate;
+            var targetSampleRate = streamInfo.TargetAudioSampleRate;
+            var targetChannels = streamInfo.TargetAudioChannels;
+
+            if (targetChannels.HasValue)
+            {
+                res.SetAttribute("nrAudioChannels", targetChannels.Value.ToString(_usCulture));
+            }
+
+            if (targetSampleRate.HasValue)
+            {
+                res.SetAttribute("sampleFrequency", targetSampleRate.Value.ToString(_usCulture));
+            }
+
+            if (targetAudioBitrate.HasValue)
+            {
+                res.SetAttribute("bitrate", targetAudioBitrate.Value.ToString(_usCulture));
+            }
+
+            var mediaProfile = _profile.GetAudioMediaProfile(streamInfo.Container,
+                streamInfo.AudioCodec);
+
+            var filename = url.Substring(0, url.IndexOf('?'));
+
+            var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
+                ? MimeTypes.GetMimeType(filename)
+                : mediaProfile.MimeType;
+
+            var contentFeatures = new ContentFeatureBuilder(_profile).BuildAudioHeader(streamInfo.Container,
+                streamInfo.TargetAudioCodec,
+                targetAudioBitrate,
+                targetSampleRate,
+                targetChannels,
+                streamInfo.IsDirectStream,
+                streamInfo.RunTimeTicks,
+                streamInfo.TranscodeSeekInfo);
+
+            res.SetAttribute("protocolInfo", String.Format(
+                "http-get:*:{0}:{1}",
+                mimeType,
+                contentFeatures
+                ));
+
+            container.AppendChild(res);
+        }
+        
+        public XmlElement GetFolderElement(XmlDocument doc, Folder folder, int childCount, Filter filter)
+        {
+            var container = doc.CreateElement(string.Empty, "container", NS_DIDL);
+            container.SetAttribute("restricted", "0");
+            container.SetAttribute("searchable", "1");
+            container.SetAttribute("childCount", childCount.ToString(_usCulture));
+            container.SetAttribute("id", folder.Id.ToString("N"));
+
+            var parent = folder.Parent;
+            if (parent == null)
+            {
+                container.SetAttribute("parentID", "0");
+            }
+            else
+            {
+                container.SetAttribute("parentID", parent.Id.ToString("N"));
+            }
+
+            AddCommonFields(folder, container, filter);
+
+            AddCover(folder, container);
+
+            return container;
+        }
+
+        //private void AddBookmarkInfo(BaseItem item, User user, XmlElement element)
+        //{
+        //    var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+
+        //    if (userdata.PlaybackPositionTicks > 0)
+        //    {
+        //        var dcmInfo = element.OwnerDocument.CreateElement("sec", "dcmInfo", NS_SEC);
+        //        dcmInfo.InnerText = string.Format("BM={0}", Convert.ToInt32(TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds).ToString(_usCulture));
+        //        element.AppendChild(dcmInfo);
+        //    }
+        //}
 
         /// <summary>
-        /// Builds a Didl MetaData object for the specified dto.
+        /// Adds fields used by both items and folders
         /// </summary>
-        /// <param name="dto">The dto.</param>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="serverAddress">The server address.</param>
-        /// <param name="streamUrl">The stream URL.</param>
-        /// <param name="streams">The streams.</param>
-        /// <param name="includeImageRes">if set to <c>true</c> [include image resource].</param>
-        /// <returns>System.String.</returns>
-        public static string Build(BaseItem dto, string userId, string serverAddress, string streamUrl, IEnumerable<MediaStream> streams, bool includeImageRes)
+        /// <param name="item">The item.</param>
+        /// <param name="element">The element.</param>
+        /// <param name="filter">The filter.</param>
+        private void AddCommonFields(BaseItem item, XmlElement element, Filter filter)
         {
-            string response = string.Format(DIDL_START, dto.Id, userId);
-            response += string.Format(DIDL_TITLE, dto.Name.Replace("&", "and"));
-            if (IsVideo(dto))
-                response += DIDL_VIDEOCLASS;
-            else
-                response += DIDL_AUDIOCLASS;
-
-            var imageUrl = GetImageUrl(dto, serverAddress);
-
-            if (!string.IsNullOrWhiteSpace(imageUrl))
+            if (filter.Contains("dc:title"))
             {
-                response += string.Format(DIDL_IMAGE, imageUrl);
+                AddValue(element, "dc", "title", item.Name, NS_DC);
             }
-            response += string.Format(DIDL_RELEASEDATE, GetDateString(dto.PremiereDate));
 
-            //TODO Add genres to didl;
-            response += string.Format(DIDL_GENRE, UNKNOWN);
+            element.AppendChild(CreateObjectClass(element.OwnerDocument, item));
 
-            if (IsVideo(dto))
+            if (filter.Contains("dc:date"))
             {
-                response += string.Format(DESCRIPTION, UNKNOWN);
-                response += GetVideoDIDL(dto, streamUrl, streams);
-
-                if (includeImageRes && !string.IsNullOrWhiteSpace(imageUrl))
+                if (item.PremiereDate.HasValue)
                 {
-                    response += string.Format(DIDL_IMAGE_RES, imageUrl);
+                    AddValue(element, "dc", "date", item.PremiereDate.Value.ToString("o"), NS_DC);
+                }
+            }
+
+            foreach (var genre in item.Genres)
+            {
+                AddValue(element, "upnp", "genre", genre, NS_UPNP);
+            }
+
+            foreach (var studio in item.Studios)
+            {
+                AddValue(element, "upnp", "publisher", studio, NS_UPNP);
+            }
+
+            if (filter.Contains("dc:description"))
+            {
+                if (!string.IsNullOrWhiteSpace(item.Overview))
+                {
+                    AddValue(element, "dc", "description", item.Overview, NS_DC);
+                }
+            }
+            if (filter.Contains("upnp:longDescription"))
+            {
+                if (!string.IsNullOrWhiteSpace(item.Overview))
+                {
+                    AddValue(element, "upnp", "longDescription", item.Overview, NS_UPNP);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(item.OfficialRating))
+            {
+                if (filter.Contains("dc:rating"))
+                {
+                    AddValue(element, "dc", "rating", item.OfficialRating, NS_DC);
+                }
+                if (filter.Contains("upnp:rating"))
+                {
+                    AddValue(element, "upnp", "rating", item.OfficialRating, NS_UPNP);
+                }
+            }
+
+            AddPeople(item, element);
+        }
+
+        private XmlElement CreateObjectClass(XmlDocument result, BaseItem item)
+        {
+            var objectClass = result.CreateElement("upnp", "class", NS_UPNP);
+
+            if (item.IsFolder)
+            {
+                string classType = null;
+
+                if (!_profile.RequiresPlainFolders)
+                {
+                    if (item is MusicAlbum)
+                    {
+                        classType = "object.container.album.musicAlbum";
+                    }
+                    if (item is MusicArtist)
+                    {
+                        classType = "object.container.person.musicArtist";
+                    }
+                }
+
+                objectClass.InnerText = classType ?? "object.container.storageFolder";
+            }
+            else if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
+            {
+                objectClass.InnerText = "object.item.audioItem.musicTrack";
+            }
+            else if (string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase))
+            {
+                objectClass.InnerText = "object.item.imageItem.photo";
+            }
+            else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!_profile.RequiresPlainVideoItems && item is Movie)
+                {
+                    objectClass.InnerText = "object.item.videoItem.movie";
+                }
+                else
+                {
+                    objectClass.InnerText = "object.item.videoItem";
                 }
             }
             else
             {
-                var audio = dto as Audio;
+                throw new NotSupportedException();
+            }
 
-                if (audio != null)
+            return objectClass;
+        }
+
+        private void AddPeople(BaseItem item, XmlElement element)
+        {
+            foreach (var actor in item.People)
+            {
+                AddValue(element, "upnp", (actor.Type ?? PersonType.Actor).ToLower(), actor.Name, NS_UPNP);
+            }
+        }
+
+        private void AddGeneralProperties(BaseItem item, XmlElement element, Filter filter)
+        {
+            AddCommonFields(item, element, filter);
+
+            var audio = item as Audio;
+
+            if (audio != null)
+            {
+                foreach (var artist in audio.Artists)
                 {
-                    response += string.Format(DIDL_ARTIST, audio.Artists.FirstOrDefault() ?? UNKNOWN);
-                    response += string.Format(DIDL_ALBUM, audio.Album);
-
-                    response += string.Format(DIDL_TRACKNUM, audio.IndexNumber ?? 0);
+                    AddValue(element, "upnp", "artist", artist, NS_UPNP);
                 }
 
-                response += GetAudioDIDL(dto, streamUrl, streams);
-
-                if (includeImageRes && !string.IsNullOrWhiteSpace(imageUrl))
+                if (!string.IsNullOrEmpty(audio.Album))
                 {
-                    response += string.Format(DIDL_ALBUMIMAGE_RES, imageUrl);
+                    AddValue(element, "upnp", "album", audio.Album, NS_UPNP);
+                }
+
+                if (!string.IsNullOrEmpty(audio.AlbumArtist))
+                {
+                    AddValue(element, "upnp", "albumArtist", audio.AlbumArtist, NS_UPNP);
                 }
             }
 
-            response += DIDL_END;
+            var album = item as MusicAlbum;
 
-            return response;
-        }
-
-        private static string GetVideoDIDL(BaseItem dto, string streamUrl, IEnumerable<MediaStream> streams)
-        {
-            var videostream = streams.Where(stream => stream.Type == MediaStreamType.Video).OrderBy(s => s.IsDefault ? 0 : 1).FirstOrDefault();
-
-            if (videostream == null)
+            if (album != null)
             {
-                // TOOD: ???
-                return string.Empty;
+                if (!string.IsNullOrEmpty(album.AlbumArtist))
+                {
+                    AddValue(element, "upnp", "artist", album.AlbumArtist, NS_UPNP);
+                    AddValue(element, "upnp", "albumArtist", album.AlbumArtist, NS_UPNP);
+                }
             }
 
-            return string.Format(DIDL_VIDEO_RES, 
-                videostream.BitRate.HasValue ? videostream.BitRate.Value / 10 : 0, 
-                GetDurationString(dto), 
-                videostream.Width ?? 0, 
-                videostream.Height ?? 0, 
-                streamUrl);
-        }
+            var musicVideo = item as MusicVideo;
 
-        private static string GetAudioDIDL(BaseItem dto, string streamUrl, IEnumerable<MediaStream> streams)
-        {
-            var audiostream = streams.Where(stream => stream.Type == MediaStreamType.Audio).OrderBy(s => s.IsDefault ? 0 : 1).FirstOrDefault();
-
-            if (audiostream == null)
+            if (musicVideo != null)
             {
-                // TOOD: ???
-                return string.Empty;
+                if (!string.IsNullOrEmpty(musicVideo.Artist))
+                {
+                    AddValue(element, "upnp", "artist", musicVideo.Artist, NS_UPNP);
+                }
+
+                if (!string.IsNullOrEmpty(musicVideo.Album))
+                {
+                    AddValue(element, "upnp", "album", musicVideo.Album, NS_UPNP);
+                }
             }
 
-            return string.Format(DIDL_AUDIO_RES, 
-                audiostream.BitRate.HasValue ? audiostream.BitRate.Value / 10 : 16000, 
-                GetDurationString(dto), 
-                audiostream.SampleRate ?? 0, 
-                streamUrl);
+            if (item.IndexNumber.HasValue)
+            {
+                AddValue(element, "upnp", "originalTrackNumber", item.IndexNumber.Value.ToString(_usCulture), NS_UPNP);
+            }
         }
 
-        private static string GetImageUrl(BaseItem dto, string serverAddress)
+        private void AddValue(XmlElement elem, string prefix, string name, string value, string namespaceUri)
         {
-            const ImageType imageType = ImageType.Primary;
-
-            if (!dto.HasImage(imageType))
+            try
             {
-                dto = dto.Parents.FirstOrDefault(i => i.HasImage(imageType));
+                var date = elem.OwnerDocument.CreateElement(prefix, name, namespaceUri);
+                date.InnerText = value;
+                elem.AppendChild(date);
+            }
+            catch (XmlException)
+            {
+                //_logger.Error("Error adding xml value: " + value);
+            }
+        }
+
+        private void AddCover(BaseItem item, XmlElement element)
+        {
+            var imageInfo = GetImageInfo(item);
+
+            if (imageInfo == null)
+            {
+                return;
             }
 
-            return dto == null ? null : string.Format("{0}/Items/{1}/Images/{2}", serverAddress, dto.Id, imageType);
+            var result = element.OwnerDocument;
+
+            var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight);
+
+            var icon = result.CreateElement("upnp", "albumArtURI", NS_UPNP);
+            var profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
+            profile.InnerText = _profile.AlbumArtPn;
+            icon.SetAttributeNode(profile);
+            icon.InnerText = albumartUrlInfo.Url;
+            element.AppendChild(icon);
+
+            var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth, _profile.MaxIconHeight);
+            icon = result.CreateElement("upnp", "icon", NS_UPNP);
+            profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
+            profile.InnerText = _profile.AlbumArtPn;
+            icon.SetAttributeNode(profile);
+            icon.InnerText = iconUrlInfo.Url;
+            element.AppendChild(icon);
+
+            if (!_profile.EnableAlbumArtInDidl)
+            {
+                return;
+            }
+
+            var res = result.CreateElement(string.Empty, "res", NS_DIDL);
+
+            res.InnerText = albumartUrlInfo.Url;
+
+            var width = albumartUrlInfo.Width;
+            var height = albumartUrlInfo.Height;
+
+            var mediaProfile = new MediaFormatProfileResolver().ResolveImageFormat("jpg", width, height);
+
+            var orgPn = mediaProfile.HasValue ? "DLNA.ORG_PN=:" + mediaProfile.Value + ";" : string.Empty;
+
+            res.SetAttribute("protocolInfo", string.Format(
+                "http-get:*:{1}:{0}DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS={2}",
+                orgPn,
+                "image/jpeg",
+                DlnaMaps.DefaultStreaming
+                ));
+
+            if (width.HasValue && height.HasValue)
+            {
+                res.SetAttribute("resolution", string.Format("{0}x{1}", width.Value, height.Value));
+            }
+
+            element.AppendChild(res);
         }
 
-        private static string GetDurationString(BaseItem dto)
+        private ImageDownloadInfo GetImageInfo(BaseItem item)
         {
-            var duration = TimeSpan.FromTicks(dto.RunTimeTicks.HasValue ? dto.RunTimeTicks.Value : 0);
+            if (item.HasImage(ImageType.Primary))
+            {
+                return GetImageInfo(item, ImageType.Primary);
+            }
+            if (item.HasImage(ImageType.Thumb))
+            {
+                return GetImageInfo(item, ImageType.Thumb);
+            }
 
-            // TODO: Bad format string?
-            return string.Format("{0}:{1:00}:2{00}.000", duration.Hours, duration.Minutes, duration.Seconds);
+            if (item is Audio || item is Episode)
+            {
+                item = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Primary));
+
+                if (item != null)
+                {
+                    return GetImageInfo(item, ImageType.Primary);
+                }
+            }
+
+            return null;
         }
 
-        private static string GetDateString(DateTime? date)
+        private ImageDownloadInfo GetImageInfo(BaseItem item, ImageType type)
         {
-            if (!date.HasValue)
-                return UNKNOWN;
+            var imageInfo = item.GetImageInfo(type, 0);
+            string tag = null;
 
-            return string.Format("{0}-{1:00}-{2:00}", date.Value.Year, date.Value.Month, date.Value.Day);
+            try
+            {
+                var guid = _imageProcessor.GetImageCacheTag(item, ImageType.Primary);
+
+                tag = guid.HasValue ? guid.Value.ToString("N") : null;
+            }
+            catch
+            {
+
+            }
+
+            int? width = null;
+            int? height = null;
+
+            try
+            {
+                var size = _imageProcessor.GetImageSize(imageInfo.Path, imageInfo.DateModified);
+
+                width = Convert.ToInt32(size.Width);
+                height = Convert.ToInt32(size.Height);
+            }
+            catch
+            {
+
+            }
+
+            return new ImageDownloadInfo
+            {
+                ItemId = item.Id.ToString("N"),
+                Type = ImageType.Primary,
+                ImageTag = tag,
+                Width = width,
+                Height = height
+            };
         }
 
-        private static bool IsVideo(BaseItem item)
+        class ImageDownloadInfo
         {
-            return string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
+            internal string ItemId;
+            internal string ImageTag;
+            internal ImageType Type;
+
+            internal int? Width;
+            internal int? Height;
+        }
+
+        class ImageUrlInfo
+        {
+            internal string Url;
+
+            internal int? Width;
+            internal int? Height;
+        }
+
+        private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int? maxWidth, int? maxHeight)
+        {
+            var url = string.Format("{0}/Items/{1}/Images/{2}?tag={3}&format=jpg",
+                _serverAddress,
+                info.ItemId,
+                info.Type,
+                info.ImageTag);
+
+            if (maxWidth.HasValue)
+            {
+                url += "&maxWidth=" + maxWidth.Value.ToString(_usCulture);
+            }
+
+            if (maxHeight.HasValue)
+            {
+                url += "&maxHeight=" + maxHeight.Value.ToString(_usCulture);
+            }
+
+            var width = info.Width;
+            var height = info.Height;
+
+            if (width.HasValue && height.HasValue)
+            {
+                if (maxWidth.HasValue || maxHeight.HasValue)
+                {
+                    var newSize = DrawingUtils.Resize(new ImageSize
+                    {
+                        Height = height.Value,
+                        Width = width.Value
+
+                    }, maxWidth: maxWidth, maxHeight: maxHeight);
+
+                    width = Convert.ToInt32(newSize.Width);
+                    height = Convert.ToInt32(newSize.Height);
+                }
+            }
+
+            return new ImageUrlInfo
+            {
+                Url = url,
+                Width = width,
+                Height = height
+            };
         }
     }
 }

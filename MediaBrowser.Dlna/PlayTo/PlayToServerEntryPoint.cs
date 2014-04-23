@@ -2,6 +2,7 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -26,8 +27,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IDlnaManager _dlnaManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IDtoService _dtoService;
+        private readonly IImageProcessor _imageProcessor;
 
-        public PlayToServerEntryPoint(ILogManager logManager, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IDtoService dtoService)
+        public PlayToServerEntryPoint(ILogManager logManager, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IDtoService dtoService, IImageProcessor imageProcessor)
         {
             _config = config;
             _sessionManager = sessionManager;
@@ -39,6 +41,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _dlnaManager = dlnaManager;
             _appHost = appHost;
             _dtoService = dtoService;
+            _imageProcessor = imageProcessor;
             _logger = logManager.GetLogger("PlayTo");
         }
 
@@ -85,7 +88,8 @@ namespace MediaBrowser.Dlna.PlayTo
                         _userManager, 
                         _dlnaManager, 
                         _appHost, 
-                        _dtoService);
+                        _dtoService,
+                        _imageProcessor);
 
                     _manager.Start();
                 }

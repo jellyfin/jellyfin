@@ -5,7 +5,7 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        IncludeItemTypes: "Movie,Trailer",
+        IncludeItemTypes: "Movie",
         Recursive: true,
         Fields: "DateCreated",
         StartIndex: 0
