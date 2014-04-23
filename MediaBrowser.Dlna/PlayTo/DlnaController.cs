@@ -401,66 +401,38 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private string GetDlnaHeaders(PlaylistItem item)
         {
+            var profile = item.Profile;
             var streamInfo = item.StreamInfo;
 
-            var orgOp = !streamInfo.IsDirectStream ? ";DLNA.ORG_OP=00" : ";DLNA.ORG_OP=01";
-
-            var orgCi = !streamInfo.IsDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
-
-            const string dlnaflags = ";DLNA.ORG_FLAGS=01500000000000000000000000000000";
-
-            string contentFeatures;
-
-            var container = streamInfo.Container.TrimStart('.');
-
-            if (string.Equals(container, "mp3", StringComparison.OrdinalIgnoreCase))
+            if (streamInfo.MediaType == DlnaProfileType.Audio)
             {
-                contentFeatures = "DLNA.ORG_PN=MP3";
-            }
-            else if (string.Equals(container, "wma", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=WMABASE";
-            }
-            else if (string.Equals(container, "wmw", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=WMVMED_BASE";
-            }
-            else if (string.Equals(container, "asf", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=WMVMED_BASE";
-            }
-            else if (string.Equals(container, "avi", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=AVI";
-            }
-            else if (string.Equals(container, "mkv", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MATROSKA";
-            }
-            else if (string.Equals(container, "mp4", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=AVC_MP4_MP_HD_720p_AAC";
-            }
-            else if (string.Equals(container, "mpeg", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
-            }
-            else if (string.Equals(container, "ts", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
-            }
-            else if (streamInfo.MediaType == DlnaProfileType.Video)
-            {
-                // Default to AVI for video
-                contentFeatures = "DLNA.ORG_PN=AVI";
-            }
-            else
-            {
-                // Default to MP3 for audio
-                contentFeatures = "DLNA.ORG_PN=MP3";
+                return new ContentFeatureBuilder(profile)
+                    .BuildAudioHeader(streamInfo.Container,
+                    streamInfo.AudioCodec,
+                    streamInfo.TargetAudioBitrate,
+                    streamInfo.TargetAudioSampleRate,
+                    streamInfo.TargetAudioChannels,
+                    streamInfo.IsDirectStream,
+                    streamInfo.RunTimeTicks,
+                    streamInfo.TranscodeSeekInfo);
             }
 
-            return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
+            if (streamInfo.MediaType == DlnaProfileType.Video)
+            {
+                return new ContentFeatureBuilder(profile)
+                    .BuildVideoHeader(streamInfo.Container,
+                    streamInfo.VideoCodec,
+                    streamInfo.AudioCodec,
+                    streamInfo.TargetWidth,
+                    streamInfo.TargetHeight,
+                    streamInfo.TotalOutputBitrate,
+                    streamInfo.TargetTimestamp,
+                    streamInfo.IsDirectStream,
+                    streamInfo.RunTimeTicks,
+                    streamInfo.TranscodeSeekInfo);
+            }
+
+            return null;
         }
 
         private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaSourceInfo> mediaSources, DeviceProfile profile, string deviceId)
@@ -477,7 +449,9 @@ namespace MediaBrowser.Dlna.PlayTo
                         MediaSources = mediaSources,
                         Profile = profile,
                         DeviceId = deviceId
-                    })
+                    }),
+
+                    Profile = profile
                 };
             }
 
@@ -493,7 +467,9 @@ namespace MediaBrowser.Dlna.PlayTo
                         MediaSources = mediaSources,
                         Profile = profile,
                         DeviceId = deviceId
-                    })
+                    }),
+
+                    Profile = profile
                 };
             }
 

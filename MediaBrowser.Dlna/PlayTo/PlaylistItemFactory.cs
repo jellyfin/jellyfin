@@ -19,7 +19,9 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     ItemId = item.Id.ToString("N"),
                     MediaType = DlnaProfileType.Photo,
-                }
+                },
+
+                Profile = profile
             };
 
             var directPlay = profile.DirectPlayProfiles

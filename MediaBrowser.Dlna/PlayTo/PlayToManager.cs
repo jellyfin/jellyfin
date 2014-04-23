@@ -104,10 +104,6 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public void Stop()
-        {
-        }
-
         /// <summary>
         /// Creates a socket for the interface and listends for data.
         /// </summary>

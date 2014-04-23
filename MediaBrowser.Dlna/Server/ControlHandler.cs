@@ -632,9 +632,7 @@ namespace MediaBrowser.Dlna.Server
 
             var mediaProfile = _profile.GetVideoMediaProfile(streamInfo.Container,
                 streamInfo.AudioCodec,
-                streamInfo.VideoCodec,
-                streamInfo.TargetAudioStream,
-                streamInfo.TargetVideoStream);
+                streamInfo.VideoCodec);
 
             var formatProfile = mediaProfile == null ? null : mediaProfile.OrgPn;
 
@@ -646,7 +644,7 @@ namespace MediaBrowser.Dlna.Server
                         targetWidth,
                         targetHeight,
                         targetBitrate,
-                        TransportStreamTimestamp.VALID);
+                        streamInfo.TargetTimestamp);
 
                 formatProfile = format.HasValue ? format.Value.ToString() : null;
             }
@@ -731,8 +729,7 @@ namespace MediaBrowser.Dlna.Server
             }
 
             var mediaProfile = _profile.GetAudioMediaProfile(streamInfo.Container,
-                streamInfo.AudioCodec,
-                streamInfo.TargetAudioStream);
+                streamInfo.AudioCodec);
 
             var formatProfile = mediaProfile == null ? null : mediaProfile.OrgPn;
 
@@ -780,11 +777,11 @@ namespace MediaBrowser.Dlna.Server
                 {
                     if (item is MusicAlbum)
                     {
-                        classType = "object.container.musicAlbum";
+                        classType = "object.container.album.musicAlbum";
                     }
                     if (item is MusicArtist)
                     {
-                        classType = "object.container.musicArtist";
+                        classType = "object.container.person.musicArtist";
                     }
                 }
 
