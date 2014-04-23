@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -35,6 +36,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IUserManager _userManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IDtoService _dtoService;
+        private readonly IImageProcessor _imageProcessor;
 
         public bool SupportsMediaRemoteControl
         {
@@ -52,7 +54,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, INetworkManager networkManager, IDlnaManager dlnaManager, IUserManager userManager, IServerApplicationHost appHost, IDtoService dtoService)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, INetworkManager networkManager, IDlnaManager dlnaManager, IUserManager userManager, IServerApplicationHost appHost, IDtoService dtoService, IImageProcessor imageProcessor)
         {
             _session = session;
             _itemRepository = itemRepository;
@@ -63,6 +65,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _userManager = userManager;
             _appHost = appHost;
             _dtoService = dtoService;
+            _imageProcessor = imageProcessor;
             _logger = logger;
         }
 
@@ -390,12 +393,11 @@ namespace MediaBrowser.Dlna.PlayTo
 
             playlistItem.StreamUrl = playlistItem.StreamInfo.ToUrl(serverAddress);
 
-            var mediaStreams = mediaSources
-                .Where(i => string.Equals(i.Id, playlistItem.StreamInfo.MediaSourceId))
-                .SelectMany(i => i.MediaStreams)
-                .ToList();
+            var itemXml =
+                new DidlBuilder(profile, _imageProcessor, serverAddress, _dtoService).GetItemDidl(item, _session.DeviceId,
+                    new Filter());
 
-            playlistItem.Didl = DidlBuilder.Build(item, _session.UserId.ToString(), serverAddress, playlistItem.StreamUrl, mediaStreams, profile.EnableAlbumArtInDidl);
+            playlistItem.Didl = itemXml;
 
             return playlistItem;
         }
