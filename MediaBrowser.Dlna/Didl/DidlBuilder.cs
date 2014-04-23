@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace MediaBrowser.Dlna.Didl
 {
-    internal class DidlBuilder
+    public class DidlBuilder
     {
         const string CRLF = "\r\n";
         const string UNKNOWN = "Unknown";
