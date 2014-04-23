@@ -9,6 +9,12 @@ namespace MediaBrowser.Model.Dlna
         private readonly List<string> _fields;
         private readonly bool _all;
 
+        public Filter()
+            : this("*")
+        {
+
+        }
+
         public Filter(string filter)
         {
             _all = string.Equals(filter, "*", StringComparison.OrdinalIgnoreCase);

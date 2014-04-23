@@ -39,8 +39,8 @@ namespace MediaBrowser.Model.Dlna
                 //flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_TIME_BASED_SEEK;
             }
 
-            var dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}000000000000000000000000",
-             Enum.Format(typeof(DlnaFlags), flagValue, "x"));
+            var dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
+             FlagsToString(flagValue));
 
             var mediaProfile = _profile.GetAudioMediaProfile(container, audioCodec);
 
@@ -54,6 +54,12 @@ namespace MediaBrowser.Model.Dlna
             var contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
 
             return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
+        }
+
+        private static string FlagsToString(DlnaFlags flags)
+        {
+            //return Enum.Format(typeof(DlnaFlags), flags, "x");
+            return string.Format("{0:X8}{1:D24}", (ulong)flags, 0);
         }
 
         public string BuildVideoHeader(string container, 
