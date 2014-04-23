@@ -29,15 +29,6 @@ namespace MediaBrowser.Api.Playback.Hls
         {
         }
 
-        protected override string GetOutputFilePath(StreamState state)
-        {
-            var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
-
-            var outputFileExtension = GetOutputFileExtension(state);
-
-            return Path.Combine(folder, GetCommandLineArguments("dummy\\dummy", state, false).GetMD5() + (outputFileExtension ?? string.Empty).ToLower());
-        }
-
         /// <summary>
         /// Gets the audio arguments.
         /// </summary>
@@ -92,17 +83,6 @@ namespace MediaBrowser.Api.Playback.Hls
         private async Task<object> ProcessRequestAsync(StreamRequest request)
         {
             var state = GetState(request, CancellationToken.None).Result;
-
-            if (!state.VideoRequest.VideoBitRate.HasValue && (string.IsNullOrEmpty(state.VideoRequest.VideoCodec) || !string.Equals(state.VideoRequest.VideoCodec, "copy", StringComparison.OrdinalIgnoreCase)))
-            {
-                state.Dispose();
-                throw new ArgumentException("A video bitrate is required");
-            }
-            if (!state.Request.AudioBitRate.HasValue && (string.IsNullOrEmpty(state.Request.AudioCodec) || !string.Equals(state.Request.AudioCodec, "copy", StringComparison.OrdinalIgnoreCase)))
-            {
-                state.Dispose();
-                throw new ArgumentException("An audio bitrate is required");
-            }
 
             var playlist = GetOutputFilePath(state);
 
@@ -192,8 +172,8 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <param name="videoBitrate">The video bitrate.</param>
         protected void GetPlaylistBitrates(StreamState state, out int audioBitrate, out int videoBitrate)
         {
-            var audioBitrateParam = GetAudioBitrateParam(state);
-            var videoBitrateParam = GetVideoBitrateParamValue(state);
+            var audioBitrateParam = state.OutputAudioBitrate;
+            var videoBitrateParam = state.OutputVideoBitrate;
 
             if (!audioBitrateParam.HasValue)
             {
@@ -307,11 +287,10 @@ namespace MediaBrowser.Api.Playback.Hls
             // If performSubtitleConversions is true we're actually starting ffmpeg
             var startNumberParam = performSubtitleConversions ? GetStartNumber(state).ToString(UsCulture) : "0";
 
-            var args = string.Format("{0} {1} -i {2}{3} -map_metadata -1 -threads {4} {5} {6} -sc_threshold 0 {7} -hls_time {8} -start_number {9} -hls_list_size {10} \"{11}\"",
+            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9} \"{10}\"",
                 itsOffset,
                 inputModifier,
                 GetInputArgument(state),
-                GetSlowSeekCommandLineParameter(state.Request),
                 threads,
                 GetMapArgs(state),
                 GetVideoArguments(state, performSubtitleConversions),

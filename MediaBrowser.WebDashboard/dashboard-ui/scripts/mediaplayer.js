@@ -1059,21 +1059,11 @@
 
             self.updateCanClientSeek(playerElement);
 
-            ApiClient.reportPlaybackStart({
-                itemId: item.Id,
-                QueueableMediaTypes: item.MediaType,
-                CanSeek: mediaSource.RunTimeTicks != null,
-                MediaSourceId: mediaSource.Id,
-                IsPaused: playerElement.paused,
-                IsMuted: playerElement.volume == 0,
-                VolumeLevel: playerElement.volume * 100
-            });
-
-            self.startProgressInterval(item.Id, mediaSource.Id);
-
             var state = self.getPlayerStateInternal(playerElement, item, mediaSource);
 
             $(self).trigger('playbackstart', [state]);
+
+            self.startProgressInterval(item.Id, mediaSource.Id);
         };
 
         self.onVolumeChanged = function (playerElement) {
@@ -1093,22 +1083,10 @@
 
             $(playerElement).off('ended.playbackstopped');
 
-            var endTime = playerElement.currentTime;
-
             clearProgressInterval();
-
-            var position = Math.floor(10000000 * endTime) + self.startTimeTicksOffset;
 
             var item = currentItem;
             var mediaSource = currentMediaSource;
-
-            ApiClient.reportPlaybackStopped({
-
-                itemId: item.Id,
-                mediaSourceId: mediaSource.Id,
-                positionTicks: position
-
-            });
 
             if (item.MediaType == "Video") {
                 ApiClient.stopActiveEncodings();

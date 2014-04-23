@@ -107,10 +107,9 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var inputModifier = GetInputModifier(state);
 
-            return string.Format("{0} -i {1}{2}{3} {4} {5} -map_metadata -1 -threads {6} {7}{8} \"{9}\"",
+            return string.Format("{0} -i {1}{2} {3} {4} -map_metadata -1 -threads {5} {6}{7} \"{8}\"",
                 inputModifier,
                 GetInputArgument(state),
-                GetSlowSeekCommandLineParameter(state.Request),
                 keyFrame,
                 GetMapArgs(state),
                 GetVideoArguments(state, videoCodec, performSubtitleConversions),
@@ -204,14 +203,14 @@ namespace MediaBrowser.Api.Playback.Progressive
             var args = "-acodec " + codec;
 
             // Add the number of audio channels
-            var channels = GetNumAudioChannelsParam(request, state.AudioStream);
+            var channels = state.OutputAudioChannels;
 
             if (channels.HasValue)
             {
                 args += " -ac " + channels.Value;
             }
 
-            var bitrate = GetAudioBitrateParam(state);
+            var bitrate = state.OutputAudioBitrate;
 
             if (bitrate.HasValue)
             {

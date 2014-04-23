@@ -308,16 +308,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <returns>System.Nullable{System.Int64}.</returns>
         private long? GetEstimatedContentLength(StreamState state)
         {
-            var totalBitrate = 0;
-
-            if (state.Request.AudioBitRate.HasValue)
-            {
-                totalBitrate += state.Request.AudioBitRate.Value;
-            }
-            if (state.VideoRequest != null && state.VideoRequest.VideoBitRate.HasValue)
-            {
-                totalBitrate += state.VideoRequest.VideoBitRate.Value;
-            }
+            var totalBitrate = state.TotalOutputBitrate ?? 0;
 
             if (totalBitrate > 0 && state.RunTimeTicks.HasValue)
             {

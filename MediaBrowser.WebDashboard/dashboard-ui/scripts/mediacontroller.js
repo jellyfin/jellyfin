@@ -16,6 +16,36 @@
         });
     }
 
+    function monitorPlayer(player) {
+
+        $(player).on('playbackstart.mediacontroller', function (e, state) {
+
+            var info = {                
+                QueueableMediaTypes: state.NowPlayingItem.MediaType,
+                ItemId: state.NowPlayingItem.Id,
+                NowPlayingItem: state.NowPlayingItem
+            };
+
+            info = $.extend(info, state.PlayState);
+            
+            ApiClient.reportPlaybackStart(info);
+            
+        }).on('playbackstop.mediacontroller', function (e, state) {
+
+            ApiClient.reportPlaybackStopped({
+
+                itemId: state.NowPlayingItem.Id,
+                mediaSourceId: state.PlayState.MediaSourceId,
+                positionTicks: state.PlayState.PositionTicks
+
+            });
+
+        }).on('positionchange.mediacontroller', function (e, state) {
+
+
+        });
+    }
+
     function mediaController() {
 
         var self = this;
@@ -26,6 +56,10 @@
         self.registerPlayer = function (player) {
 
             players.push(player);
+
+            if (player.isLocalPlayer) {
+                monitorPlayer(player);
+            }
         };
 
         self.getPlayerInfo = function () {

@@ -126,14 +126,14 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (state.AudioStream != null)
             {
-                var channels = GetNumAudioChannelsParam(state.Request, state.AudioStream);
+                var channels = state.OutputAudioChannels;
 
                 if (channels.HasValue)
                 {
                     args += " -ac " + channels.Value;
                 }
 
-                var bitrate = GetAudioBitrateParam(state);
+                var bitrate = state.OutputAudioBitrate;
 
                 if (bitrate.HasValue)
                 {
