@@ -1665,8 +1665,21 @@ namespace MediaBrowser.Api.Playback
             }
 
             var mediaProfile = state.VideoRequest == null ?
-                profile.GetAudioMediaProfile(state.OutputContainer, audioCodec) :
-                profile.GetVideoMediaProfile(state.OutputContainer, audioCodec, videoCodec);
+                profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate) :
+                profile.GetVideoMediaProfile(state.OutputContainer, 
+                audioCodec, 
+                videoCodec,
+                state.OutputAudioBitrate,
+                state.OutputAudioChannels,
+                state.OutputWidth,
+                state.OutputHeight,
+                state.TargetVideoBitDepth,
+                state.OutputVideoBitrate,
+                state.TargetVideoProfile,
+                state.TargetVideoLevel,
+                state.TargetFramerate,
+                state.TargetPacketLength,
+                state.TargetTimestamp);
 
             if (mediaProfile != null)
             {
@@ -1752,10 +1765,17 @@ namespace MediaBrowser.Api.Playback
                     audioCodec,
                     state.OutputWidth,
                     state.OutputHeight,
-                    state.TotalOutputBitrate,
-                    TransportStreamTimestamp.VALID,
+                    state.TargetVideoBitDepth,
+                    state.OutputVideoBitrate,
+                    state.OutputAudioBitrate,
+                    state.OutputAudioChannels,
+                    state.TargetTimestamp,
                     isStaticallyStreamed,
                     state.RunTimeTicks,
+                    state.TargetVideoProfile,
+                    state.TargetVideoLevel,
+                    state.TargetFramerate,
+                    state.TargetPacketLength,
                     state.TranscodeSeekInfo
                     );
             }

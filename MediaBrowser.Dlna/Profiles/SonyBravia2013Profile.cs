@@ -26,6 +26,15 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
+            ContentDirectoryRootAttributes = new[]
+            {
+                new XmlAttribute
+                {
+                    Name = "xmlns:av",
+                    Value = "urn:schemas-sony-com:av"
+                }
+            };
+
             ModelName = "Windows Media Player Sharing";
             ModelNumber = "3.0";
             ModelUrl = "http://www.microsoft.com/";
@@ -184,7 +193,23 @@ namespace MediaBrowser.Dlna.Profiles
                     AudioCodec="ac3,aac,mp3",
                     MimeType = "video/vnd.dlna.mpeg-tts",
                     OrgPn="AVC_TS_HD_24_AC3_T,AVC_TS_HD_50_AC3_T,AVC_TS_HD_60_AC3_T,AVC_TS_HD_EU_T",
-                    Type = DlnaProfileType.Video
+                    Type = DlnaProfileType.Video,
+
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.Equals,
+                            Property = ProfileConditionValue.PacketLength,
+                            Value = "192"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.Equals,
+                            Property = ProfileConditionValue.VideoTimestamp,
+                            Value = "Valid"
+                        }
+                    }
                 },
 
                 new ResponseProfile
@@ -194,7 +219,17 @@ namespace MediaBrowser.Dlna.Profiles
                     AudioCodec="ac3,aac,mp3",
                     MimeType = "video/mpeg",
                     OrgPn="AVC_TS_HD_24_AC3_ISO,AVC_TS_HD_50_AC3_ISO,AVC_TS_HD_60_AC3_ISO,AVC_TS_HD_EU_ISO",
-                    Type = DlnaProfileType.Video
+                    Type = DlnaProfileType.Video,
+
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.Equals,
+                            Property = ProfileConditionValue.PacketLength,
+                            Value = "188"
+                        }
+                    }
                 },
 
                 new ResponseProfile

@@ -1,57 +1,62 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
     public class MediaFormatProfileResolver
     {
-        public MediaFormatProfile? ResolveVideoFormat(string container, string videoCodec, string audioCodec, int? width, int? height, int? bitrate, TransportStreamTimestamp timestampType)
+        public IEnumerable<MediaFormatProfile> ResolveVideoFormat(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
         {
             if (string.Equals(container, "asf", StringComparison.OrdinalIgnoreCase))
-                return ResolveVideoASFFormat(videoCodec, audioCodec, width, height);
+            {
+                var val = ResolveVideoASFFormat(videoCodec, audioCodec, width, height);
+                return val.HasValue ? new List<MediaFormatProfile> { val.Value } : new List<MediaFormatProfile>();
+            }
 
             if (string.Equals(container, "mp4", StringComparison.OrdinalIgnoreCase))
-                return ResolveVideoMP4Format(videoCodec, audioCodec, width, height, bitrate);
+            {
+                var val = ResolveVideoMP4Format(videoCodec, audioCodec, width, height);
+                return val.HasValue ? new List<MediaFormatProfile> { val.Value } : new List<MediaFormatProfile>();
+            }
 
             if (string.Equals(container, "avi", StringComparison.OrdinalIgnoreCase))
-                return MediaFormatProfile.AVI;
+                return new[] { MediaFormatProfile.AVI };
 
             if (string.Equals(container, "mkv", StringComparison.OrdinalIgnoreCase))
-                return MediaFormatProfile.MATROSKA;
+                return new[] { MediaFormatProfile.MATROSKA };
 
             if (string.Equals(container, "mpeg2ps", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(container, "ts", StringComparison.OrdinalIgnoreCase))
-                // MediaFormatProfile.MPEG_PS_PAL, MediaFormatProfile.MPEG_PS_NTSC
-                return MediaFormatProfile.MPEG_PS_NTSC;
+
+                return new[] { MediaFormatProfile.MPEG_PS_NTSC, MediaFormatProfile.MPEG_PS_PAL };
 
             if (string.Equals(container, "mpeg1video", StringComparison.OrdinalIgnoreCase))
-                return MediaFormatProfile.MPEG1;
+                return new[] { MediaFormatProfile.MPEG1 };
 
             if (string.Equals(container, "mpeg2ts", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(container, "mpegts", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(container, "m2ts", StringComparison.OrdinalIgnoreCase))
             {
 
-                var list = ResolveVideoMPEG2TSFormat(videoCodec, audioCodec, width, height, timestampType)
-                   .ToList();
-
-                return list.Count > 0 ? list[0] : (MediaFormatProfile?)null;
+                return ResolveVideoMPEG2TSFormat(videoCodec, audioCodec, width, height, timestampType);
             }
 
             if (string.Equals(container, "flv", StringComparison.OrdinalIgnoreCase))
-                return MediaFormatProfile.FLV;
+                return new[] { MediaFormatProfile.FLV };
 
             if (string.Equals(container, "wtv", StringComparison.OrdinalIgnoreCase))
-                return MediaFormatProfile.WTV;
+                return new[] { MediaFormatProfile.WTV };
 
             if (string.Equals(container, "3gp", StringComparison.OrdinalIgnoreCase))
-                return ResolveVideo3GPFormat(videoCodec, audioCodec);
+            {
+                var val = ResolveVideo3GPFormat(videoCodec, audioCodec);
+                return val.HasValue ? new List<MediaFormatProfile> { val.Value } : new List<MediaFormatProfile>();
+            }
 
             if (string.Equals(container, "ogv", StringComparison.OrdinalIgnoreCase) || string.Equals(container, "ogg", StringComparison.OrdinalIgnoreCase))
-                return MediaFormatProfile.OGV;
+                return new[] { MediaFormatProfile.OGV };
 
-            return null;
+            return new List<MediaFormatProfile>();
         }
 
         private IEnumerable<MediaFormatProfile> ResolveVideoMPEG2TSFormat(string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
@@ -132,11 +137,16 @@ namespace MediaBrowser.Model.Dlna
                     }
                     return new[] { MediaFormatProfile.VC1_TS_AP_L1_AC3_ISO };
                 }
-                //  if (audioCodec == AudioCodec.DTS) {
-                //    suffix = suffix.equals("_ISO") ? suffix : "_T";
-                //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("VC1_TS_HD_DTS%s", cast(Object[])[ suffix ])));
-                //  }
-                //} else if ((videoCodec == VideoCodec.MPEG4) || (videoCodec == VideoCodec.MSMPEG4)) {
+                if (string.Equals(audioCodec, "dts", StringComparison.OrdinalIgnoreCase))
+                {
+                    suffix = string.Equals(suffix, "_ISO") ? suffix : "_T";
+
+                    return new[] { ValueOf(string.Format("VC1_TS_HD_DTS{0}", suffix)) };
+                }
+
+            }
+            else if (string.Equals(videoCodec, "mpeg4", StringComparison.OrdinalIgnoreCase) || string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
+            {
                 //  if (audioCodec == AudioCodec.AAC)
                 //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_AAC%s", cast(Object[])[ suffix ])));
                 //  if (audioCodec == AudioCodec.MP3)
@@ -145,7 +155,6 @@ namespace MediaBrowser.Model.Dlna
                 //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_MPEG2_L2%s", cast(Object[])[ suffix ])));
                 //  if ((audioCodec is null) || (audioCodec == AudioCodec.AC3)) {
                 //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_AC3%s", cast(Object[])[ suffix ])));
-                //  }
             }
 
             return new List<MediaFormatProfile>();
@@ -156,7 +165,7 @@ namespace MediaBrowser.Model.Dlna
             return (MediaFormatProfile)Enum.Parse(typeof(MediaFormatProfile), value, true);
         }
 
-        private MediaFormatProfile? ResolveVideoMP4Format(string videoCodec, string audioCodec, int? width, int? height, int? bitrate)
+        private MediaFormatProfile? ResolveVideoMP4Format(string videoCodec, string audioCodec, int? width, int? height)
         {
             if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
             {

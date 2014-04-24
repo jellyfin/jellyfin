@@ -428,10 +428,17 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.AudioCodec,
                     streamInfo.TargetWidth,
                     streamInfo.TargetHeight,
-                    streamInfo.TotalOutputBitrate,
+                    streamInfo.TargetVideoBitDepth,
+                    streamInfo.TargetVideoBitrate,
+                    streamInfo.TargetAudioChannels,
+                    streamInfo.TargetAudioBitrate,
                     streamInfo.TargetTimestamp,
                     streamInfo.IsDirectStream,
                     streamInfo.RunTimeTicks,
+                    streamInfo.TargetVideoProfile,
+                    streamInfo.TargetVideoLevel,
+                    streamInfo.TargetFramerate,
+                    streamInfo.TargetPacketLength,
                     streamInfo.TranscodeSeekInfo);
             }
 

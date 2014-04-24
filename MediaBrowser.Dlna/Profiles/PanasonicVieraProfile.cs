@@ -1,6 +1,5 @@
-﻿using System.Xml.Serialization;
-using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Model.Dlna;
+﻿using MediaBrowser.Model.Dlna;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
 {
@@ -25,6 +24,15 @@ namespace MediaBrowser.Dlna.Profiles
                        Match = HeaderMatchType.Substring
                    }
                }
+            };
+
+            ContentDirectoryRootAttributes = new[]
+            {
+                new XmlAttribute
+                {
+                    Name = "xmlns:pv",
+                    Value = "http://www.pv.com/pvns/"
+                }
             };
 
             TimelineOffsetSeconds = 10;

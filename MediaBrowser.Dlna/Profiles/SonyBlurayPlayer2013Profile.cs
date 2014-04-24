@@ -18,6 +18,15 @@ namespace MediaBrowser.Dlna.Profiles
                 ModelNumber = "BDP-2013"
             };
 
+            ContentDirectoryRootAttributes = new[]
+            {
+                new XmlAttribute
+                {
+                    Name = "xmlns:av",
+                    Value = "urn:schemas-sony-com:av"
+                }
+            };
+
             ModelName = "Windows Media Player Sharing";
             ModelNumber = "3.0";
             Manufacturer = "Microsoft Corporation";

@@ -104,6 +104,9 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\CodecProfile.cs">
       <Link>Dlna\CodecProfile.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\ConditionProcessor.cs">
+      <Link>Dlna\ConditionProcessor.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\ContainerProfile.cs">
       <Link>Dlna\ContainerProfile.cs</Link>
     </Compile>

@@ -195,6 +195,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 stream.AverageFrameRate = GetFrameRate(streamInfo.avg_frame_rate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.r_frame_rate);
+
+                stream.BitDepth = GetBitDepth(stream.PixelFormat);
             }
             else
             {
@@ -230,6 +232,34 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return stream;
+        }
+
+        private static int? GetBitDepth(string pixelFormat)
+        {
+            var eightBit = new List<string>
+            {
+                "yuv420p",
+                "yuv411p",
+                "yuvj420p",
+                "uyyvyy411",
+                "nv12",
+                "nv21",
+                "rgb444le",
+                "rgb444be",
+                "bgr444le",
+                "bgr444be",
+                "yuvj411p"            
+            };
+
+            if (!string.IsNullOrEmpty(pixelFormat))
+            {
+                if (eightBit.Contains(pixelFormat, StringComparer.OrdinalIgnoreCase))
+                {
+                    return 8;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

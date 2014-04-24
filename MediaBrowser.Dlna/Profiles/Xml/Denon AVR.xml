@@ -27,6 +27,7 @@
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
+  <ContentDirectoryRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp3,flac,m4a,wma" type="Audio" />
   </DirectPlayProfiles>

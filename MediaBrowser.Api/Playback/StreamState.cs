@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Globalization;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
@@ -221,5 +222,88 @@ namespace MediaBrowser.Api.Playback
                 return VideoRequest.MaxHeight ?? VideoRequest.Height;
             }
         }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public int? TargetVideoBitDepth
+        {
+            get
+            {
+                var stream = VideoStream;
+                return stream == null || !Request.Static ? null : stream.BitDepth;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public double? TargetFramerate
+        {
+            get
+            {
+                var stream = VideoStream;
+                var requestedFramerate = VideoRequest.MaxFramerate ?? VideoRequest.Framerate;
+
+                return requestedFramerate.HasValue && !Request.Static
+                    ? requestedFramerate
+                    : stream == null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public double? TargetVideoLevel
+        {
+            get
+            {
+                var stream = VideoStream;
+                return !string.IsNullOrEmpty(VideoRequest.Level) && !Request.Static
+                    ? double.Parse(VideoRequest.Level, CultureInfo.InvariantCulture)
+                    : stream == null ? null : stream.Level;
+            }
+        }
+
+        public TransportStreamTimestamp TargetTimestamp
+        {
+            get
+            {
+                var stream = VideoStream;
+
+                return !Request.Static
+                    ? TransportStreamTimestamp.VALID
+                    : stream == null ? TransportStreamTimestamp.VALID : stream.Timestamp;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public int? TargetPacketLength
+        {
+            get
+            {
+                var stream = VideoStream;
+                return !Request.Static
+                    ? null
+                    : stream == null ? null : stream.PacketLength;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public string TargetVideoProfile
+        {
+            get
+            {
+                var stream = VideoStream;
+                return !string.IsNullOrEmpty(VideoRequest.Profile) && !Request.Static
+                    ? VideoRequest.Profile
+                    : stream == null ? null : stream.Profile;
+            }
+        }
+
     }
 }

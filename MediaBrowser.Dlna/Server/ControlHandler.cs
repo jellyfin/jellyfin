@@ -40,6 +40,8 @@ namespace MediaBrowser.Dlna.Server
 
         private readonly DidlBuilder _didlBuilder;
 
+        private readonly DeviceProfile _profile;
+
         public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId)
         {
             _logger = logger;
@@ -47,6 +49,7 @@ namespace MediaBrowser.Dlna.Server
             _userDataManager = userDataManager;
             _user = user;
             _systemUpdateId = systemUpdateId;
+            _profile = profile;
 
             _didlBuilder = new DidlBuilder(profile, imageProcessor, serverAddress, dtoService);
         }
@@ -314,7 +317,6 @@ namespace MediaBrowser.Dlna.Server
 
             // sort example: dc:title, dc:date
 
-            var provided = 0;
             var requested = 0;
             var start = 0;
 
@@ -334,7 +336,12 @@ namespace MediaBrowser.Dlna.Server
             didl.SetAttribute("xmlns:dc", NS_DC);
             didl.SetAttribute("xmlns:dlna", NS_DLNA);
             didl.SetAttribute("xmlns:upnp", NS_UPNP);
-            //didl.SetAttribute("xmlns:sec", NS_SEC);
+
+            foreach (var att in _profile.ContentDirectoryRootAttributes)
+            {
+                didl.SetAttribute(att.Name, att.Value);
+            }
+
             result.AppendChild(didl);
 
             var folder = (Folder)GetItemFromObjectId(sparams["ContainerID"], user);
@@ -352,7 +359,7 @@ namespace MediaBrowser.Dlna.Server
                 children = children.Take(requested).ToList();
             }
 
-            provided = children.Count;
+            var provided = children.Count;
 
             foreach (var i in children)
             {

@@ -1133,6 +1133,10 @@
                 attributes.push(createAttribute("Sample Rate", stream.SampleRate + ' khz'));
             }
 
+            if (stream.BitDepth) {
+                attributes.push(createAttribute("Bit Depth", stream.BitDepth + ' bit'));
+            }
+
             if (stream.PixelFormat) {
                 attributes.push(createAttribute("Pixel Format", stream.PixelFormat));
             }

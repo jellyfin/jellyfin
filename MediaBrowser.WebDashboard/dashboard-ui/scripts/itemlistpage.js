@@ -7,7 +7,7 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        Fields: "DateCreated",
+        Fields: "DateCreated,PrimaryImageAspectRatio",
         StartIndex: 0
     };
 

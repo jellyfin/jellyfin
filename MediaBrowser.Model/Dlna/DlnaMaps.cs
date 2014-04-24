@@ -41,6 +41,19 @@ namespace MediaBrowser.Model.Dlna
             // No seeking is available if we don't know the content runtime
             return "00";
         }
+
+        public static string GetImageOrgOpValue()
+        {
+            var orgOp = string.Empty;
+
+            // Time-based seeking currently only possible when transcoding
+            orgOp += "0";
+
+            // Byte-based seeking only possible when not transcoding
+            orgOp += "1";
+
+            return orgOp;
+        }
     }
 
     [Flags]
