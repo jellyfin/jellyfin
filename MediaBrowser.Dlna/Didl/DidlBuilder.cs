@@ -9,7 +9,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
@@ -47,6 +46,12 @@ namespace MediaBrowser.Dlna.Didl
             didl.SetAttribute("xmlns:dlna", NS_DLNA);
             didl.SetAttribute("xmlns:upnp", NS_UPNP);
             //didl.SetAttribute("xmlns:sec", NS_SEC);
+
+            foreach (var att in _profile.ContentDirectoryRootAttributes)
+            {
+                didl.SetAttribute(att.Name, att.Value);
+            }
+
             result.AppendChild(didl);
 
             result.DocumentElement.AppendChild(GetItemElement(result, item, deviceId, filter));
@@ -130,7 +135,7 @@ namespace MediaBrowser.Dlna.Didl
                 }
             }
 
-            var totalBitrate = streamInfo.TotalOutputBitrate;
+            var totalBitrate = streamInfo.TargetTotalBitrate;
             var targetSampleRate = streamInfo.TargetAudioSampleRate;
             var targetChannels = streamInfo.TargetAudioChannels;
 
@@ -162,7 +167,18 @@ namespace MediaBrowser.Dlna.Didl
 
             var mediaProfile = _profile.GetVideoMediaProfile(streamInfo.Container,
                 streamInfo.AudioCodec,
-                streamInfo.VideoCodec);
+                streamInfo.VideoCodec,
+                streamInfo.TargetAudioBitrate,
+                targetChannels,
+                targetWidth,
+                targetHeight,
+                streamInfo.TargetVideoBitDepth,
+                streamInfo.TargetVideoBitrate,
+                streamInfo.TargetVideoProfile,
+                streamInfo.TargetVideoLevel,
+                streamInfo.TargetFramerate,
+                streamInfo.TargetPacketLength,
+                streamInfo.TargetTimestamp);
 
             var filename = url.Substring(0, url.IndexOf('?'));
 
@@ -175,10 +191,17 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.AudioCodec,
                 targetWidth,
                 targetHeight,
-                totalBitrate,
+                streamInfo.TargetVideoBitDepth,
+                streamInfo.TargetVideoBitrate,
+                streamInfo.TargetAudioChannels,
+                streamInfo.TargetAudioBitrate,
                 streamInfo.TargetTimestamp,
                 streamInfo.IsDirectStream,
                 streamInfo.RunTimeTicks,
+                streamInfo.TargetVideoProfile,
+                streamInfo.TargetVideoLevel,
+                streamInfo.TargetFramerate,
+                streamInfo.TargetPacketLength,
                 streamInfo.TranscodeSeekInfo);
 
             res.SetAttribute("protocolInfo", String.Format(
@@ -248,7 +271,9 @@ namespace MediaBrowser.Dlna.Didl
             }
 
             var mediaProfile = _profile.GetAudioMediaProfile(streamInfo.Container,
-                streamInfo.AudioCodec);
+                streamInfo.AudioCodec,
+                targetChannels,
+                targetAudioBitrate);
 
             var filename = url.Substring(0, url.IndexOf('?'));
 
@@ -541,15 +566,12 @@ namespace MediaBrowser.Dlna.Didl
             var width = albumartUrlInfo.Width;
             var height = albumartUrlInfo.Height;
 
-            var mediaProfile = new MediaFormatProfileResolver().ResolveImageFormat("jpg", width, height);
+            var contentFeatures = new ContentFeatureBuilder(_profile).BuildImageHeader("jpg", width, height);
 
-            var orgPn = mediaProfile.HasValue ? "DLNA.ORG_PN=:" + mediaProfile.Value + ";" : string.Empty;
-
-            res.SetAttribute("protocolInfo", string.Format(
-                "http-get:*:{1}:{0}DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS={2}",
-                orgPn,
+            res.SetAttribute("protocolInfo", String.Format(
+                "http-get:*:{0}:{1}",
                 "image/jpeg",
-                DlnaMaps.DefaultStreaming
+                contentFeatures
                 ));
 
             if (width.HasValue && height.HasValue)

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -39,6 +40,24 @@ namespace MediaBrowser.Model.Entities
         /// <value>The bit rate.</value>
         public int? BitRate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the bit depth.
+        /// </summary>
+        /// <value>The bit depth.</value>
+        public int? BitDepth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the length of the packet.
+        /// </summary>
+        /// <value>The length of the packet.</value>
+        public int? PacketLength { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timestamp.
+        /// </summary>
+        /// <value>The timestamp.</value>
+        public TransportStreamTimestamp Timestamp { get; set; }
+        
         /// <summary>
         /// Gets or sets the channels.
         /// </summary>

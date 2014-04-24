@@ -1,6 +1,4 @@
 ﻿
-using System;
-
 namespace MediaBrowser.Model.Dlna
 {
     public enum MediaFormatProfile

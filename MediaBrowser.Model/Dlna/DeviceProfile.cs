@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
@@ -71,6 +70,8 @@ namespace MediaBrowser.Model.Dlna
         public bool RequiresPlainVideoItems { get; set; }
         public bool RequiresPlainFolders { get; set; }
 
+        public XmlAttribute[] ContentDirectoryRootAttributes { get; set; }
+
         /// <summary>
         /// Gets or sets the direct play profiles.
         /// </summary>
@@ -96,6 +97,8 @@ namespace MediaBrowser.Model.Dlna
             CodecProfiles = new CodecProfile[] { };
             ContainerProfiles = new ContainerProfile[] { };
 
+            ContentDirectoryRootAttributes = new XmlAttribute[] { };
+            
             SupportedMediaTypes = "Audio,Photo,Video";
         }
 
@@ -159,7 +162,7 @@ namespace MediaBrowser.Model.Dlna
             });
         }
 
-        public ResponseProfile GetAudioMediaProfile(string container, string audioCodec)
+        public ResponseProfile GetAudioMediaProfile(string container, string audioCodec, int? audioChannels, int? audioBitrate)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
@@ -182,11 +185,51 @@ namespace MediaBrowser.Model.Dlna
                     return false;
                 }
 
-                return true;
+                var conditionProcessor = new ConditionProcessor();
+                return i.Conditions.All(c => conditionProcessor.IsAudioConditionSatisfied(c,
+                    audioChannels,
+                    audioBitrate));
             });
         }
 
-        public ResponseProfile GetVideoMediaProfile(string container, string audioCodec, string videoCodec)
+        public ResponseProfile GetImageMediaProfile(string container, int? width, int? height)
+        {
+            container = (container ?? string.Empty).TrimStart('.');
+
+            return ResponseProfiles.FirstOrDefault(i =>
+            {
+                if (i.Type != DlnaProfileType.Photo)
+                {
+                    return false;
+                }
+
+                var containers = i.GetContainers().ToList();
+                if (containers.Count > 0 && !containers.Contains(container))
+                {
+                    return false;
+                }
+
+                var conditionProcessor = new ConditionProcessor();
+                return i.Conditions.All(c => conditionProcessor.IsImageConditionSatisfied(c,
+                    width,
+                    height));
+            });
+        }
+
+        public ResponseProfile GetVideoMediaProfile(string container, 
+            string audioCodec,
+            string videoCodec,
+            int? audioBitrate,
+            int? audioChannels,
+            int? width,
+            int? height,
+            int? bitDepth,
+            int? videoBitrate,
+            string videoProfile,
+            double? videoLevel,
+            double? videoFramerate,
+            int? packetLength,
+            TransportStreamTimestamp timestamp)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
@@ -215,11 +258,23 @@ namespace MediaBrowser.Model.Dlna
                     return false;
                 }
 
-                return true;
+                var conditionProcessor = new ConditionProcessor();
+                return i.Conditions.All(c => conditionProcessor.IsVideoConditionSatisfied(c,
+                    audioBitrate,
+                    audioChannels,
+                    width,
+                    height,
+                    bitDepth,
+                    videoBitrate,
+                    videoProfile,
+                    videoLevel,
+                    videoFramerate,
+                    packetLength,
+                    timestamp));
             });
         }
 
-        public ResponseProfile GetPhotoMediaProfile(string container)
+        public ResponseProfile GetPhotoMediaProfile(string container, int? width, int? height)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
@@ -236,7 +291,10 @@ namespace MediaBrowser.Model.Dlna
                     return false;
                 }
 
-                return true;
+                var conditionProcessor = new ConditionProcessor();
+                return i.Conditions.All(c => conditionProcessor.IsImageConditionSatisfied(c,
+                    width,
+                    height));
             });
         }
     }

@@ -26,6 +26,7 @@ namespace MediaBrowser.Model.Dlna
         public long StartPositionTicks { get; set; }
 
         public string VideoCodec { get; set; }
+        public string VideoProfile { get; set; }
 
         public string AudioCodec { get; set; }
 
@@ -56,8 +57,6 @@ namespace MediaBrowser.Model.Dlna
         public bool EstimateContentLength { get; set; }
 
         public MediaSourceInfo MediaSource { get; set; }
-
-        public TransportStreamTimestamp TargetTimestamp { get; set; }
 
         public string MediaSourceId
         {
@@ -178,6 +177,74 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public int? TargetVideoBitDepth
+        {
+            get
+            {
+                var stream = TargetVideoStream;
+                return stream == null || !IsDirectStream ? null : stream.BitDepth;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public double? TargetFramerate
+        {
+            get
+            {
+                var stream = TargetVideoStream;
+                return MaxFramerate.HasValue && !IsDirectStream
+                    ? MaxFramerate
+                    : stream == null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public double? TargetVideoLevel
+        {
+            get
+            {
+                var stream = TargetVideoStream;
+                return VideoLevel.HasValue && !IsDirectStream
+                    ? VideoLevel
+                    : stream == null ? null : stream.Level;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public int? TargetPacketLength
+        {
+            get
+            {
+                var stream = TargetVideoStream;
+                return !IsDirectStream
+                    ? null
+                    : stream == null ? null : stream.PacketLength;
+            }
+        }
+
+        /// <summary>
+        /// Predicts the audio sample rate that will be in the output stream
+        /// </summary>
+        public string TargetVideoProfile
+        {
+            get
+            {
+                var stream = TargetVideoStream;
+                return !string.IsNullOrEmpty(VideoProfile) && !IsDirectStream
+                    ? VideoProfile
+                    : stream == null ? null : stream.Profile;
+            }
+        }
+
+        /// <summary>
         /// Predicts the audio bitrate that will be in the output stream
         /// </summary>
         public int? TargetAudioBitrate
@@ -256,11 +323,35 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        public int? TotalOutputBitrate
+        public int? TargetVideoBitrate
         {
             get
             {
-                return (TargetAudioBitrate ?? 0) + (VideoBitrate ?? 0);
+                var stream = TargetVideoStream;
+
+                return VideoBitrate.HasValue && !IsDirectStream
+                    ? VideoBitrate
+                    : stream == null ? null : stream.BitRate;
+            }
+        }
+
+        public TransportStreamTimestamp TargetTimestamp
+        {
+            get
+            {
+                var stream = TargetVideoStream;
+
+                return !IsDirectStream
+                    ? TransportStreamTimestamp.VALID
+                    : stream == null ? TransportStreamTimestamp.VALID : stream.Timestamp;
+            }
+        }
+
+        public int? TargetTotalBitrate
+        {
+            get
+            {
+                return (TargetAudioBitrate ?? 0) + (TargetVideoBitrate ?? 0);
             }
         }
 

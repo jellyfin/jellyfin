@@ -26,6 +26,9 @@
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
+  <ContentDirectoryRootAttributes>
+    <XmlAttribute name="xmlns:sec" value="http://www.sec.co.kr/" />
+  </ContentDirectoryRootAttributes>
   <DirectPlayProfiles>
     <DirectPlayProfile container="asf" audioCodec="mp3,ac3,wmav2,wmapro,wmavoice" videoCodec="h264,mpeg4,mjpeg" type="Video" />
     <DirectPlayProfile container="avi" audioCodec="mp3,ac3,dca" videoCodec="h264,mpeg4,mjpeg" type="Video" />

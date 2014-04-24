@@ -17,6 +17,15 @@ namespace MediaBrowser.Dlna.Profiles
                 ModelUrl = "samsung.com"
             };
 
+            ContentDirectoryRootAttributes = new[]
+            {
+                new XmlAttribute
+                {
+                    Name = "xmlns:sec",
+                    Value = "http://www.sec.co.kr/"
+                }
+            };
+
             TranscodingProfiles = new[]
            {
                new TranscodingProfile

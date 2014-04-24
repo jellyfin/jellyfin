@@ -76,10 +76,12 @@ namespace MediaBrowser.Model.Dlna
         Width,
         Height,
         Has64BitOffsets,
+        PacketLength,
         VideoBitDepth,
         VideoBitrate,
         VideoFramerate,
         VideoLevel,
-        VideoProfile
+        VideoProfile,
+        VideoTimestamp
     }
 }
