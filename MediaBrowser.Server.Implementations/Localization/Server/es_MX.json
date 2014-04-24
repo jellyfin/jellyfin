@@ -380,7 +380,7 @@
     "ButtonPlayTrailer": "Avance",
     "LabelMissing": "Falta",
     "LabelOffline": "Desconectado",
-    "PathSubstitutionHelp": "El reemplazo de ruta se utiliza para mapear una ruta en el servidor a la que los clientes puedan acceder. Al permitir a los clientes acceder directamente a los medios en el servidor podr\u00e1n reproducirlos directamente a trav\u00e9s de la red evitando el uso de recursos del servidor para transmitirlos y transcodificarlos.",
+    "PathSubstitutionHelp": "Las rutas alternativas se utilizan para mapear una ruta en el servidor a la que los clientes puedan acceder. Al permitir a los clientes acceder directamente a los medios en el servidor podr\u00e1n reproducirlos directamente a trav\u00e9s de la red evitando el uso de recursos del servidor para transmitirlos y transcodificarlos.",
     "HeaderFrom": "Desde",
     "HeaderTo": "Hasta",
     "LabelFrom": "Desde:",
