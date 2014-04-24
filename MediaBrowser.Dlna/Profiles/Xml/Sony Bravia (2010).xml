@@ -30,9 +30,9 @@
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
-  <ContentDirectoryRootAttributes>
+  <XmlRootAttributes>
     <XmlAttribute name="xmlns:av" value="urn:schemas-sony-com:av" />
-  </ContentDirectoryRootAttributes>
+  </XmlRootAttributes>
   <DirectPlayProfiles>
     <DirectPlayProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" />
     <DirectPlayProfile container="ts" audioCodec="mp3,mp2" videoCodec="mpeg1video,mpeg2video" type="Video" />

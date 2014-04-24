@@ -17,7 +17,7 @@ namespace MediaBrowser.Dlna.Profiles
                 ModelUrl = "samsung.com"
             };
 
-            ContentDirectoryRootAttributes = new[]
+            XmlRootAttributes = new[]
             {
                 new XmlAttribute
                 {

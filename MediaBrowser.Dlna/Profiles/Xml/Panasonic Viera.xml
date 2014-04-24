@@ -29,9 +29,9 @@
   <TimelineOffsetSeconds>10</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
-  <ContentDirectoryRootAttributes>
+  <XmlRootAttributes>
     <XmlAttribute name="xmlns:pv" value="http://www.pv.com/pvns/" />
-  </ContentDirectoryRootAttributes>
+  </XmlRootAttributes>
   <DirectPlayProfiles>
     <DirectPlayProfile container="mpeg" audioCodec="ac3,mp3" videoCodec="mpeg2video,mpeg4" type="Video" />
     <DirectPlayProfile container="mkv" audioCodec="aac,ac3,mp3,pcm" videoCodec="h264" type="Video" />

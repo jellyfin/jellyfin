@@ -31,7 +31,13 @@ namespace MediaBrowser.Dlna.Server
             var builder = new StringBuilder();
 
             builder.Append("<?xml version=\"1.0\"?>");
-            builder.Append("<root xmlns=\"urn:schemas-upnp-org:device-1-0\" xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">");
+
+            builder.Append("<root xmlns=\"urn:schemas-upnp-org:device-1-0\" xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\"");
+            foreach (var att in _profile.XmlRootAttributes)
+            {
+                builder.AppendFormat(" {0}=\"{1}\"", att.Name, att.Value);
+            }
+            builder.Append(">");
 
             builder.Append("<specVersion>");
             builder.Append("<major>1</major>");
