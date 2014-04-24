@@ -18,7 +18,7 @@ namespace MediaBrowser.Dlna.Profiles
                 ModelNumber = "BDP-2013"
             };
 
-            ContentDirectoryRootAttributes = new[]
+            XmlRootAttributes = new[]
             {
                 new XmlAttribute
                 {

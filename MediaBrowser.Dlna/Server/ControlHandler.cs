@@ -337,7 +337,7 @@ namespace MediaBrowser.Dlna.Server
             didl.SetAttribute("xmlns:dlna", NS_DLNA);
             didl.SetAttribute("xmlns:upnp", NS_UPNP);
 
-            foreach (var att in _profile.ContentDirectoryRootAttributes)
+            foreach (var att in _profile.XmlRootAttributes)
             {
                 didl.SetAttribute(att.Name, att.Value);
             }

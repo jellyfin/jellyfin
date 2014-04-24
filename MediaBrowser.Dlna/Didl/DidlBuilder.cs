@@ -47,7 +47,7 @@ namespace MediaBrowser.Dlna.Didl
             didl.SetAttribute("xmlns:upnp", NS_UPNP);
             //didl.SetAttribute("xmlns:sec", NS_SEC);
 
-            foreach (var att in _profile.ContentDirectoryRootAttributes)
+            foreach (var att in _profile.XmlRootAttributes)
             {
                 didl.SetAttribute(att.Name, att.Value);
             }

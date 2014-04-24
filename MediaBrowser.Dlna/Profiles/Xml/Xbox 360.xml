@@ -29,7 +29,7 @@
   <TimelineOffsetSeconds>40</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>true</RequiresPlainVideoItems>
   <RequiresPlainFolders>true</RequiresPlainFolders>
-  <ContentDirectoryRootAttributes />
+  <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="avi" audioCodec="ac3,mp3" videoCodec="mpeg4" type="Video" />
     <DirectPlayProfile container="avi" audioCodec="aac" videoCodec="h264" type="Video" />

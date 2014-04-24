@@ -27,7 +27,7 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
-            ContentDirectoryRootAttributes = new[]
+            XmlRootAttributes = new[]
             {
                 new XmlAttribute
                 {
