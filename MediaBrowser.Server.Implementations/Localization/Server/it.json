@@ -59,7 +59,7 @@
     "LabelDisplayMissingEpisodesWithinSeasons": "Visualizza gli episodi mancanti  nelle stagioni",
     "LabelUnairedMissingEpisodesWithinSeasons": "Visualizzare episodi mai andati in onda all'interno stagioni",
     "HeaderVideoPlaybackSettings": "Impostazioni di riproduzione video",
-    "HeaderPlaybackSettings": "Playback Settings",
+    "HeaderPlaybackSettings": "Impostazioni di riproduzione",
     "LabelAudioLanguagePreference": "Audio preferenze di lingua:",
     "LabelSubtitleLanguagePreference": "Sottotitoli preferenze di lingua:",
     "LabelDisplayForcedSubtitlesOnly": "Visualizzare solo i sottotitoli forzati",
@@ -541,5 +541,5 @@
     "LabelDefaultUser": "Utente di Default:",
     "LabelDefaultUserHelp": "Determina quale libreria utente deve essere visualizzato sui dispositivi collegati. Questo pu\u00f2 essere disattivata tramite un profilo di dispositivo.",
     "TitleDlna": "DLNA",
-    "HeaderServerSettings": "Server Settings"
+    "HeaderServerSettings": "Impostazioni server"
 }

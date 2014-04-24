@@ -408,7 +408,7 @@
     "OptionUpscalingHelp": "In sommige gevallen zal dit resulteren in een betere videokwaliteit, maar zal het CPU-gebruik verhogen.",
     "EditCollectionItemsHelp": "Toevoegen of verwijderen van alle films, series, albums, boeken of games die je wilt groeperen in deze collectie.",
     "HeaderAddTitles": "Titels toevoegen",
-    "LabelEnableDlnaPlayTo": "DLNA Afspelen naar inschakelen",
+    "LabelEnableDlnaPlayTo": "DLNA Afspelen met inschakelen",
     "LabelEnableDlnaPlayToHelp": "Media Browser kan apparaten detecteren binnen uw netwerk en de mogelijkheid bieden om ze op afstand te besturen.",
     "LabelEnableDlnaDebugLogging": "DLNA foutopsporings log inschakelen",
     "LabelEnableDlnaDebugLoggingHelp": "Dit zal grote logbestanden maken en mag alleen worden gebruikt als dat nodig is voor het oplossen van problemen.",
