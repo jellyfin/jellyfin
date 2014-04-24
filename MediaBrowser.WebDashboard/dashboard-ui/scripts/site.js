@@ -636,7 +636,7 @@ var Dashboard = {
         $(Dashboard).trigger('interiorheaderrendered', [header, user]);
     },
 
-    ensureToolsMenu: function (page) {
+    ensureToolsMenu: function (page, user) {
 
         if (!page.hasClass('type-interior')) {
             return;
@@ -650,7 +650,9 @@ var Dashboard = {
 
             html += '<p class="libraryPanelHeader" style="margin: 30px 0 20px 25px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" style="height:28px;" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
 
-            html += '<div style="position:absolute;top:20px;right:20px;"><a data-role="button" data-theme="b" data-icon="edit" data-iconpos="notext" href="edititemmetadata.html" title="Metadata Manager">Metadata Manager</a></div>';
+            if (user.Configuration.IsAdministrator) {
+                html += '<div style="position:absolute;top:20px;right:20px;"><a data-role="button" data-theme="b" data-icon="edit" data-iconpos="notext" href="edititemmetadata.html" title="Metadata Manager">Metadata Manager</a></div>';
+            }
 
             html += '<div class="sidebarLinks">';
 
@@ -661,6 +663,10 @@ var Dashboard = {
             for (i = 0, length = links.length; i < length; i++) {
 
                 link = links[i];
+
+                if (!user.Configuration.IsAdministrator) {
+                    break;
+                }
 
                 if (link.divider) {
                     html += "<div class='sidebarDivider'></div>";
@@ -690,6 +696,10 @@ var Dashboard = {
             for (i = 0, length = links.length; i < length; i++) {
 
                 link = links[i];
+
+                if (!user.Configuration.IsAdministrator) {
+                    break;
+                }
 
                 if (link.divider) {
                     html += "<div class='dashboardPanelDivider'></div>";
@@ -1393,8 +1403,21 @@ $(document).on('pagebeforeshow', ".page", function () {
     var userId = Dashboard.getCurrentUserId();
     ApiClient.currentUserId(userId);
 
-    if (!userId) {
+    if (userId) {
 
+        Dashboard.getCurrentUser().done(function (user) {
+
+            if (!user.Configuration.IsAdministrator && page.hasClass('type-interior') && !page.hasClass('publicUserPage')) {
+                window.location.replace("index.html");
+            }
+
+            Dashboard.ensureToolsMenu(page, user);
+            Dashboard.ensureHeader(page, user);
+            Dashboard.ensurePageTitle(page);
+        });
+    }
+
+    else {
         if (this.id !== "loginPage" && !page.hasClass('wizardPage')) {
 
             Dashboard.logout();
@@ -1403,21 +1426,6 @@ $(document).on('pagebeforeshow', ".page", function () {
 
         Dashboard.ensureHeader(page);
         Dashboard.ensurePageTitle(page);
-    }
-
-    else {
-
-        Dashboard.getCurrentUser().done(function (user) {
-
-            if (user.Configuration.IsAdministrator) {
-                Dashboard.ensureToolsMenu(page);
-            } else if (page.hasClass('adminPage')) {
-                window.location.replace("index.html");
-            }
-
-            Dashboard.ensureHeader(page, user);
-            Dashboard.ensurePageTitle(page);
-        });
     }
 
     if (!ApiClient.isWebSocketOpen()) {
