@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections;
@@ -11,6 +12,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -31,6 +33,12 @@ namespace MediaBrowser.Controller.Entities
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the timestamp.
+        /// </summary>
+        /// <value>The timestamp.</value>
+        public TransportStreamTimestamp Timestamp { get; set; }
+        
         public Video()
         {
             PlayableStreamFileNames = new List<string>();

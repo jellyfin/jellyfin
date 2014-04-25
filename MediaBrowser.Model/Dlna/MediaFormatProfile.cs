@@ -110,11 +110,4 @@ namespace MediaBrowser.Model.Dlna
         MPEG4_H263_3GPP_P0_L10_AMR,
         MPEG4_H263_MP4_P0_L10_AAC
     }
-
-    public enum TransportStreamTimestamp
-    {
-        NONE, 
-        ZERO, 
-        VALID
-    }
 }

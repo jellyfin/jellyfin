@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -285,7 +286,7 @@ namespace MediaBrowser.Model.Dlna
             var audioBitrate = audioStream == null ? null : audioStream.BitRate;
             var audioChannels = audioStream == null ? null : audioStream.Channels;
 
-            var timestamp = videoStream == null ? TransportStreamTimestamp.NONE : videoStream.Timestamp;
+            var timestamp = videoStream == null ? TransportStreamTimestamp.NONE : mediaSource.Timestamp;
             var packetLength = videoStream == null ? null : videoStream.PacketLength;
 
             // Check container conditions

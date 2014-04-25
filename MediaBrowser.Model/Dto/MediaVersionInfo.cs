@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -30,6 +31,8 @@ namespace MediaBrowser.Model.Dto
         
         public int? Bitrate { get; set; }
 
+        public TransportStreamTimestamp Timestamp { get; set; }
+        
         public MediaSourceInfo()
         {
             Formats = new List<string>();

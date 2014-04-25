@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -147,14 +149,14 @@ namespace MediaBrowser.Model.Dlna
             }
             else if (string.Equals(videoCodec, "mpeg4", StringComparison.OrdinalIgnoreCase) || string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
             {
-                //  if (audioCodec == AudioCodec.AAC)
-                //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_AAC%s", cast(Object[])[ suffix ])));
-                //  if (audioCodec == AudioCodec.MP3)
-                //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_MPEG1_L3%s", cast(Object[])[ suffix ])));
-                //  if (audioCodec == AudioCodec.MP2)
-                //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_MPEG2_L2%s", cast(Object[])[ suffix ])));
-                //  if ((audioCodec is null) || (audioCodec == AudioCodec.AC3)) {
-                //    return Collections.singletonList(MediaFormatProfile.valueOf(String.format("MPEG4_P2_TS_ASP_AC3%s", cast(Object[])[ suffix ])));
+                if (string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase))
+                    return new[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_AAC{0}", suffix)) };
+                if (string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
+                    return new[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_MPEG1_L3{0}", suffix)) };
+                if (string.Equals(audioCodec, "mp2", StringComparison.OrdinalIgnoreCase))
+                    return new[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_MPEG2_L2{0}", suffix)) };
+                if (string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase))
+                    return new[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_AC3{0}", suffix)) };
             }
 
             return new List<MediaFormatProfile>();

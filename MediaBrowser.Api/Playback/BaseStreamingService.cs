@@ -1435,6 +1435,9 @@ namespace MediaBrowser.Api.Playback
                     state.PlayableStreamFileNames = video.PlayableStreamFileNames == null
                         ? new List<string>()
                         : video.PlayableStreamFileNames.ToList();
+
+                    state.DeInterlace = string.Equals(video.Container, "wtv", StringComparison.OrdinalIgnoreCase);
+                    state.InputTimestamp = video.Timestamp;
                 }
 
                 state.RunTimeTicks = item.RunTimeTicks;

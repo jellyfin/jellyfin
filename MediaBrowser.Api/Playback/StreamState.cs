@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -26,7 +27,7 @@ namespace MediaBrowser.Api.Playback
         {
             get { return Request as VideoStreamRequest; }
         }
-        
+
         /// <summary>
         /// Gets or sets the log file stream.
         /// </summary>
@@ -77,19 +78,21 @@ namespace MediaBrowser.Api.Playback
 
         public string InputAudioSync { get; set; }
         public string InputVideoSync { get; set; }
- 
+
         public bool DeInterlace { get; set; }
         public bool ReadInputAtNativeFramerate { get; set; }
         public string InputFormat { get; set; }
         public string InputVideoCodec { get; set; }
         public string InputAudioCodec { get; set; }
 
+        public TransportStreamTimestamp InputTimestamp { get; set; }
+
         public string MimeType { get; set; }
 
         public bool EstimateContentLength { get; set; }
         public bool EnableMpegtsM2TsMode { get; set; }
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
-        
+
         public string GetMimeType(string outputPath)
         {
             if (!string.IsNullOrEmpty(MimeType))
@@ -269,11 +272,13 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
-                var stream = VideoStream;
+                var defaultValue = string.Equals(OutputContainer, "m2ts", StringComparison.OrdinalIgnoreCase) ? 
+                    TransportStreamTimestamp.VALID : 
+                    TransportStreamTimestamp.NONE;
 
                 return !Request.Static
-                    ? TransportStreamTimestamp.VALID
-                    : stream == null ? TransportStreamTimestamp.VALID : stream.Timestamp;
+                    ? defaultValue
+                    : InputTimestamp;
             }
         }
 

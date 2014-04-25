@@ -1237,7 +1237,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                 VideoType = i.VideoType,
                 Container = i.Container,
                 Size = i.Size,
-                Formats = (i.FormatName ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
+                Formats = (i.FormatName ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
+                Timestamp = i.Timestamp
             };
 
             if (string.IsNullOrEmpty(info.Container))
