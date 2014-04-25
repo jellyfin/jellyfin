@@ -2,7 +2,7 @@
 using MediaBrowser.Model.Notifications;
 using ServiceStack;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,17 +28,17 @@ namespace MediaBrowser.Api
     public class GetNotificationsSummary : IReturn<NotificationsSummary>
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
     }
 
     [Route("/Notifications/{UserId}", "POST", Summary = "Adds a notifications")]
-    public class AddUserNotification : IReturn<Notification>
+    public class AddUserNotification : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "The Id of the new notification. If unspecified one will be provided.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public Guid? Id { get; set; }
+        public string Id { get; set; }
 
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         [ApiMember(Name = "Name", Description = "The notification's name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Name { get; set; }
@@ -49,12 +49,6 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Url", Description = "The notification's info url", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Url { get; set; }
 
-        [ApiMember(Name = "Category", Description = "The notification's category", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Category { get; set; }
-
-        [ApiMember(Name = "RelatedId", Description = "The notification's related id (item)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string RelatedId { get; set; }
-
         [ApiMember(Name = "Level", Description = "The notification level", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public NotificationLevel Level { get; set; }
     }
@@ -63,7 +57,7 @@ namespace MediaBrowser.Api
     public class MarkRead : IReturnVoid
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         [ApiMember(Name = "Ids", Description = "A list of notification ids, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
         public string Ids { get; set; }
@@ -73,7 +67,7 @@ namespace MediaBrowser.Api
     public class MarkUnread : IReturnVoid
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         [ApiMember(Name = "Ids", Description = "A list of notification ids, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
         public string Ids { get; set; }
@@ -82,17 +76,19 @@ namespace MediaBrowser.Api
     public class NotificationsService : BaseApiService
     {
         private readonly INotificationsRepository _notificationsRepo;
+        private readonly INotificationManager _notificationManager;
 
-        public NotificationsService(INotificationsRepository notificationsRepo)
+        public NotificationsService(INotificationsRepository notificationsRepo, INotificationManager notificationManager)
         {
             _notificationsRepo = notificationsRepo;
+            _notificationManager = notificationManager;
         }
 
-        public object Post(AddUserNotification request)
+        public void Post(AddUserNotification request)
         {
             var task = AddNotification(request);
 
-            return ToOptimizedResult(task.Result);
+            Task.WaitAll(task);
         }
 
         public object Get(GetNotificationsSummary request)
@@ -102,24 +98,19 @@ namespace MediaBrowser.Api
             return result;
         }
 
-        private async Task<Notification> AddNotification(AddUserNotification request)
+        private async Task AddNotification(AddUserNotification request)
         {
-            var notification = new Notification
+            var notification = new NotificationRequest
             {
-                Id = request.Id ?? Guid.NewGuid(),
                 Date = DateTime.UtcNow,
                 Description = request.Description,
                 Level = request.Level,
                 Name = request.Name,
                 Url = request.Url,
-                UserId = request.UserId,
-                Category = request.Category,
-                RelatedId = request.RelatedId
+                UserIds = new List<string> { request.UserId }
             };
 
-            await _notificationsRepo.AddNotification(notification, CancellationToken.None).ConfigureAwait(false);
-
-            return notification;
+            await _notificationManager.SendNotification(notification, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(MarkRead request)
@@ -136,9 +127,9 @@ namespace MediaBrowser.Api
             Task.WaitAll(task);
         }
 
-        private Task MarkRead(string idList, Guid userId, bool read)
+        private Task MarkRead(string idList, string userId, bool read)
         {
-            var ids = idList.Split(',').Select(i => new Guid(i));
+            var ids = idList.Split(',');
 
             return _notificationsRepo.MarkRead(ids, userId, read, CancellationToken.None);
         }

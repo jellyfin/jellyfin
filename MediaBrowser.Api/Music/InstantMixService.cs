@@ -38,18 +38,20 @@ namespace MediaBrowser.Api.Music
         private readonly IUserManager _userManager;
 
         private readonly IDtoService _dtoService;
+        private readonly ILibraryManager _libraryManager;
         private readonly IMusicManager _musicManager;
 
-        public InstantMixService(IUserManager userManager, IDtoService dtoService, IMusicManager musicManager)
+        public InstantMixService(IUserManager userManager, IDtoService dtoService, IMusicManager musicManager, ILibraryManager libraryManager)
         {
             _userManager = userManager;
             _dtoService = dtoService;
             _musicManager = musicManager;
+            _libraryManager = libraryManager;
         }
 
         public object Get(GetInstantMixFromSong request)
         {
-            var item = (Audio)_dtoService.GetItemByDtoId(request.Id);
+            var item = (Audio)_libraryManager.GetItemById(request.Id);
 
             var user = _userManager.GetUserById(request.UserId.Value);
 
@@ -60,7 +62,7 @@ namespace MediaBrowser.Api.Music
 
         public object Get(GetInstantMixFromAlbum request)
         {
-            var album = (MusicAlbum)_dtoService.GetItemByDtoId(request.Id);
+            var album = (MusicAlbum)_libraryManager.GetItemById(request.Id);
 
             var user = _userManager.GetUserById(request.UserId.Value);
 

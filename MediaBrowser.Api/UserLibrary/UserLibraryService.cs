@@ -463,7 +463,9 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _dtoService.GetItemByDtoId(request.Id, user.Id);
+            var item = string.IsNullOrEmpty(request.Id) ? 
+                user.RootFolder : 
+                _libraryManager.GetItemById(request.Id);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
@@ -529,7 +531,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _dtoService.GetItemByDtoId(request.Id, user.Id);
+            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
@@ -559,7 +561,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _dtoService.GetItemByDtoId(request.Id, user.Id);
+            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
@@ -597,7 +599,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _dtoService.GetItemByDtoId(request.Id, user.Id);
+            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
 
             var items = _libraryManager.GetIntros(item, user);
 
@@ -651,7 +653,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(userId);
 
-            var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : _dtoService.GetItemByDtoId(itemId, user.Id);
+            var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : _libraryManager.GetItemById(itemId);
 
             var key = item.GetUserDataKey();
 
@@ -701,7 +703,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(userId);
 
-            var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : _dtoService.GetItemByDtoId(itemId, user.Id);
+            var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : _libraryManager.GetItemById(itemId);
 
             var key = item.GetUserDataKey();
 
@@ -871,7 +873,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task.</returns>
         private async Task<UserItemDataDto> UpdatePlayedStatus(User user, string itemId, bool wasPlayed, DateTime? datePlayed)
         {
-            var item = _dtoService.GetItemByDtoId(itemId, user.Id);
+            var item = _libraryManager.GetItemById(itemId);
 
             if (wasPlayed)
             {

@@ -1336,8 +1336,8 @@ namespace MediaBrowser.Api.Playback
             }
 
             var item = string.IsNullOrEmpty(request.MediaSourceId) ?
-                DtoService.GetItemByDtoId(request.Id) :
-                DtoService.GetItemByDtoId(request.MediaSourceId);
+                LibraryManager.GetItemById(request.Id) :
+                LibraryManager.GetItemById(request.MediaSourceId);
 
             if (user != null && item.GetPlayAccess(user) != PlayAccess.Full)
             {

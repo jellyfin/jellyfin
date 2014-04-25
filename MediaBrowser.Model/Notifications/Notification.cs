@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Notifications
 {
     public class Notification
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         public DateTime Date { get; set; }
 
@@ -17,16 +18,32 @@ namespace MediaBrowser.Model.Notifications
         public string Description { get; set; }
 
         public string Url { get; set; }
-
-        public string Category { get; set; }
-
-        public string RelatedId { get; set; }
         
         public NotificationLevel Level { get; set; }
 
         public Notification()
         {
-            Id = Guid.NewGuid();
+            Date = DateTime.UtcNow;
+        }
+    }
+
+    public class NotificationRequest
+    {
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        public string Url { get; set; }
+
+        public NotificationLevel Level { get; set; }
+
+        public List<string> UserIds { get; set; }
+
+        public DateTime Date { get; set; }
+        
+        public NotificationRequest()
+        {
+            UserIds = new List<string>();
             Date = DateTime.UtcNow;
         }
     }

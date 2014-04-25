@@ -73,7 +73,7 @@ namespace MediaBrowser.Api
                            ? (request.UserId.HasValue
                                   ? user.RootFolder
                                   : _libraryManager.RootFolder)
-                           : _dtoService.GetItemByDtoId(request.Id, request.UserId);
+                           : _libraryManager.GetItemById(request.Id);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))
@@ -104,7 +104,7 @@ namespace MediaBrowser.Api
 
         private async Task RemoveAlternateVersions(DeleteAlternateSources request)
         {
-            var video = (Video)_dtoService.GetItemByDtoId(request.Id);
+            var video = (Video)_libraryManager.GetItemById(request.Id);
 
             foreach (var link in video.GetLinkedAlternateVersions())
             {

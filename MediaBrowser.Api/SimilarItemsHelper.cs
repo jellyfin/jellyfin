@@ -73,7 +73,7 @@ namespace MediaBrowser.Api
 
             var item = string.IsNullOrEmpty(request.Id) ?
                 (request.UserId.HasValue ? user.RootFolder :
-                libraryManager.RootFolder) : dtoService.GetItemByDtoId(request.Id, request.UserId);
+                libraryManager.RootFolder) : libraryManager.GetItemById(request.Id);
 
             var fields = request.GetItemFields().ToList();
 

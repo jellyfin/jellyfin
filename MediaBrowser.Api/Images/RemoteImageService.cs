@@ -175,7 +175,7 @@ namespace MediaBrowser.Api.Images
 
         public object Get(GetRemoteImageProviders request)
         {
-            var item = _dtoService.GetItemByDtoId(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
 
             var result = GetImageProviders(item);
 
@@ -201,7 +201,7 @@ namespace MediaBrowser.Api.Images
 
         public object Get(GetRemoteImages request)
         {
-            var item = _dtoService.GetItemByDtoId(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
 
             var result = GetRemoteImageResult(item, request);
 
@@ -269,7 +269,7 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Post(DownloadRemoteImage request)
         {
-            var item = _dtoService.GetItemByDtoId(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
 
             var task = DownloadRemoteImage(item, request);
 
