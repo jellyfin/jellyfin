@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleAdvanced}</title>
+</head>
+<body>
+    <div id="notificationSettingsPage" data-role="page" class="page type-interior advancedConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="advanced.html" data-role="button">${TabGeneral}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabNotifications}</a>
+                    <a href="advancedpaths.html" data-role="button">${TabPaths}</a>
+                    <a href="advancedserversettings.html" data-role="button">${TabServer}</a>
+                    <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
+                </div>
+                <form class="notificationSettingsForm">
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label>${HeaderEnableNotificationForEvents}</label>
+                            <div data-role="controlgroup">
+                                <input type="checkbox" data-mini="true" id="chkNewLibraryContent" />
+                                <label for="chkNewLibraryContent">${OptionNotifyOnNewLibraryContent}</label>
+
+                                <input type="checkbox" data-mini="true" id="chkFailedTasks" />
+                                <label for="chkFailedTasks">${OptionNotifyOnFailedTasks}</label>
+
+                                <input type="checkbox" data-mini="true" id="chkUpdates" />
+                                <label for="chkUpdates">${OptionNotifyOnUpdates}</label>
+
+                                <input type="checkbox" data-mini="true" id="chkPlayback" />
+                                <label for="chkPlayback">${OptionNotifyOnPlayback}</label>
+
+                                <div class="fieldDescription">${SendNotificationHelp}</div>
+                            </div>
+                        </li>
+                    </ul>
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                ${ButtonSave}
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                                ${ButtonCancel}
+                            </button>
+                        </li>
+
+                    </ul>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.notificationSettingsForm').off('submit', NotificationSettingsPage.onSubmit).on('submit', NotificationSettingsPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

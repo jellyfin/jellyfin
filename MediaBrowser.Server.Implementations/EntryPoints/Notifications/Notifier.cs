@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
@@ -26,6 +27,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
         private readonly ITaskManager _taskManager;
         private readonly INotificationManager _notificationManager;
+
+        private IServerConfigurationManager _config;
 
         public Notifications(IInstallationManager installationManager, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager)
         {
@@ -75,7 +78,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         {
             var result = e.Argument;
 
-            if (result.Status == TaskCompletionStatus.Failed)
+            if (result.Status == TaskCompletionStatus.Failed && 
+                _config.Configuration.NotificationOptions.SendOnFailedTasks)
             {
                 var userIds = _userManager
                   .Users
@@ -130,6 +134,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
         async void _installationManager_PackageInstallationCompleted(object sender, InstallationEventArgs e)
         {
+            if (!_config.Configuration.NotificationOptions.SendOnUpdates)
+            {
+                return;
+            }
+
             var installationInfo = e.InstallationInfo;
 
             var userIds = _userManager
