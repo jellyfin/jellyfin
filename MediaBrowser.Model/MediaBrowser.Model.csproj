@@ -62,7 +62,6 @@
     <Compile Include="Configuration\AutoOrganize.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Configuration\DlnaOptions.cs" />
-    <Compile Include="Configuration\ManualLoginCategory.cs" />
     <Compile Include="Configuration\MetadataPlugin.cs" />
     <Compile Include="Configuration\MetadataOptions.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />

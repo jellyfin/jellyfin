@@ -1,11 +1,13 @@
 ﻿using DvdLib.Ifo;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -33,6 +35,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
         private readonly IEncodingManager _encodingManager;
+        private readonly IFileSystem _fileSystem;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
@@ -214,6 +217,8 @@ namespace MediaBrowser.Providers.MediaInfo
             video.DefaultVideoStreamIndex = videoStream == null ? (int?)null : videoStream.Index;
 
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
+
+            ExtractTimestamp(video);
 
             await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
             {
@@ -566,6 +571,53 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 item.PlayableStreamFileNames = blurayDiscInfo.Files.ToList();
             }
+        }
+
+        private void ExtractTimestamp(Video video)
+        {
+            if (video.VideoType == VideoType.VideoFile)
+            {
+                if (string.Equals(video.Container, "mpeg2ts", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(video.Container, "m2ts", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(video.Container, "ts", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        video.Timestamp = GetMpegTimestamp(video.Path);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error extracting timestamp info from {0}", ex, video.Path);
+                    }
+                }
+            }
+        }
+
+        private TransportStreamTimestamp GetMpegTimestamp(string path)
+        {
+            var packetBuffer = new byte['Å'];
+
+            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                fs.Read(packetBuffer, 0, packetBuffer.Length);
+            }
+
+            if (packetBuffer[0] == 71)
+            {
+                return TransportStreamTimestamp.NONE;
+            }
+
+            if ((packetBuffer[4] == 71) && (packetBuffer['Ä'] == 71))
+            {
+                if ((packetBuffer[0] == 0) && (packetBuffer[1] == 0) && (packetBuffer[2] == 0) && (packetBuffer[3] == 0))
+                {
+                    return TransportStreamTimestamp.ZERO;
+                }
+
+                return TransportStreamTimestamp.VALID;
+            }
+
+            return TransportStreamTimestamp.NONE;
         }
 
         private void FetchFromDvdLib(Video item, IIsoMount mount)

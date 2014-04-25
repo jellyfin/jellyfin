@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {

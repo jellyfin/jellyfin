@@ -16,18 +16,18 @@
 
                 <form id="allUserSettingsForm">
 
-                    <p>Require manual username entry for:</p>
+                    <p>${HeaderRequireManualLogin}</p>
 
                     <div data-role="controlgroup">
-                        <input type="checkbox" data-mini="true" id="chkMobileClients" name="chkMobileClients" />
-                        <label for="chkMobileClients">Mobile Clients</label>
+                        <input type="checkbox" data-mini="true" id="chkMobileClients" />
+                        <label for="chkMobileClients">${OptionMobileApps}</label>
 
-                        <input type="checkbox" data-mini="true" id="chkMBT" name="chkMBT" />
-                        <label for="chkMBT">Media Browser Theater</label>
+                        <input type="checkbox" data-mini="true" id="chkOtherApps" />
+                        <label for="chkOtherApps">${OptionOtherApps}</label>
 
                     </div>
 
-                    <div class="fieldDescription">When disabled clients may present a login screen with a visual selection of users.</div>
+                    <div class="fieldDescription">${HeaderRequireManualLoginHelp}</div>
 
                     <br />
                     <br />

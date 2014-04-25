@@ -2,19 +2,8 @@
 
     function loadPage(page, config) {
 
-        var clients = config.ManualLoginClients;
-
-        $('#chkMobileClients', page).checked(clients.filter(function (i) {
-
-            return i == "Mobile";
-
-        }).length > 0).checkboxradio("refresh");
-
-        $('#chkMBT', page).checked(clients.filter(function (i) {
-
-            return i == "MediaBrowserTheater";
-
-        }).length > 0).checkboxradio("refresh");
+        $('#chkMobileClients', page).checked(config.RequireManualLoginForMobileApps).checkboxradio("refresh");
+        $('#chkOtherApps', page).checked(config.RequireManualLoginForOtherApps).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -43,17 +32,8 @@
 
             ApiClient.getServerConfiguration().done(function (config) {
 
-                var clients = [];
-
-                if ($('#chkMobileClients', form).checked()) {
-                    clients.push("Mobile");
-                }
-
-                if ($('#chkMBT', form).checked()) {
-                    clients.push("MediaBrowserTheater");
-                }
-
-                config.ManualLoginClients = clients;
+                config.RequireManualLoginForMobileApps = $('#chkMobileClients', form).checked();
+                config.RequireManualLoginForOtherApps = $('#chkOtherApps', form).checked();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });

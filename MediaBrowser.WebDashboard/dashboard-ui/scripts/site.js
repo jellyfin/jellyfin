@@ -752,6 +752,7 @@ var Dashboard = {
             selected: page.hasClass("organizePage")
         }, {
             name: "DLNA",
+            divider: true,
             href: "dlnasettings.html",
             selected: page.hasClass("dlnaPage")
         }, {

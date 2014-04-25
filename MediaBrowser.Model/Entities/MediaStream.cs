@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -52,12 +51,6 @@ namespace MediaBrowser.Model.Entities
         /// <value>The length of the packet.</value>
         public int? PacketLength { get; set; }
 
-        /// <summary>
-        /// Gets or sets the timestamp.
-        /// </summary>
-        /// <value>The timestamp.</value>
-        public TransportStreamTimestamp Timestamp { get; set; }
-        
         /// <summary>
         /// Gets or sets the channels.
         /// </summary>

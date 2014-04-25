@@ -16,17 +16,17 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="txtWeatherLocation">Weather display location: </label>
+                            <label for="txtWeatherLocation">${LabelWeatherDisplayLocation}</label>
                             <input id="txtWeatherLocation" name="txtWeatherLocation" type="text" />
                             <div class="fieldDescription">
-                                US zip code / City, State, Country / City, Country
+                                ${LabelWeatherDisplayLocationHelp}
                             </div>
                         </li>
                         <li>
-                            <label for="selectWeatherUnit">Weather display unit: </label>
+                            <label for="selectWeatherUnit">${LabelWeatherDisplayUnit}</label>
                             <select id="selectWeatherUnit" name="selectWeatherUnit">
-                                <option value="Celsius">Celsius</option>
-                                <option value="Fahrenheit">Fahrenheit</option>
+                                <option value="Celsius">${OptionCelsius}</option>
+                                <option value="Fahrenheit">${OptionFahrenheit}</option>
                             </select>
                         </li>
                         <li>

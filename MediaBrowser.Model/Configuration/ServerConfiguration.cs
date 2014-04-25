@@ -168,8 +168,6 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The dashboard source path.</value>
         public string DashboardSourcePath { get; set; }
 
-        public ManualLoginCategory[] ManualLoginClients { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether [enable tv db updates].
         /// </summary>
@@ -177,6 +175,9 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableTvDbUpdates { get; set; }
         public bool EnableTmdbUpdates { get; set; }
         public bool EnableFanArtUpdates { get; set; }
+
+        public bool RequireManualLoginForMobileApps { get; set; }
+        public bool RequireManualLoginForOtherApps { get; set; }
 
         /// <summary>
         /// Gets or sets the image saving convention.
@@ -256,7 +257,6 @@ namespace MediaBrowser.Model.Configuration
 
             EnableInternetProviders = true; //initial installs will need these
 
-            ManualLoginClients = new ManualLoginCategory[] { };
             PathSubstitutions = new PathSubstitution[] { };
 
             MetadataRefreshDays = 30;
