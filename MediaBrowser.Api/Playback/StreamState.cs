@@ -273,8 +273,8 @@ namespace MediaBrowser.Api.Playback
             get
             {
                 var defaultValue = string.Equals(OutputContainer, "m2ts", StringComparison.OrdinalIgnoreCase) ? 
-                    TransportStreamTimestamp.VALID : 
-                    TransportStreamTimestamp.NONE;
+                    TransportStreamTimestamp.Valid : 
+                    TransportStreamTimestamp.None;
 
                 return !Request.Static
                     ? defaultValue

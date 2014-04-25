@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Dlna
             double? videoLevel,
             double? videoFramerate,
             int? packetLength,
-            TransportStreamTimestamp timestamp)
+            TransportStreamTimestamp? timestamp)
         {
             switch (condition.Property)
             {
@@ -176,8 +176,14 @@ namespace MediaBrowser.Model.Dlna
             return false;
         }
         
-        private bool IsConditionSatisfied(ProfileCondition condition, TransportStreamTimestamp timestamp)
+        private bool IsConditionSatisfied(ProfileCondition condition, TransportStreamTimestamp? timestamp)
         {
+            if (!timestamp.HasValue)
+            {
+                // If the value is unknown, it satisfies if not marked as required
+                return !condition.IsRequired;
+            }
+            
             var expected = (TransportStreamTimestamp)Enum.Parse(typeof(TransportStreamTimestamp), condition.Value, true);
             
             switch (condition.Condition)

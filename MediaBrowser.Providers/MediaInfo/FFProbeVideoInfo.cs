@@ -1,5 +1,6 @@
 ﻿using DvdLib.Ifo;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -7,7 +8,6 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -20,7 +20,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -39,7 +38,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager)
+        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -50,6 +49,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _appPaths = appPaths;
             _json = json;
             _encodingManager = encodingManager;
+            _fileSystem = fileSystem;
         }
 
         public async Task<ItemUpdateType> ProbeVideo<T>(T item, IDirectoryService directoryService, CancellationToken cancellationToken)
@@ -584,10 +584,13 @@ namespace MediaBrowser.Providers.MediaInfo
                     try
                     {
                         video.Timestamp = GetMpegTimestamp(video.Path);
+
+                        _logger.Debug("Video has {0} timestamp", video.Timestamp);
                     }
                     catch (Exception ex)
                     {
                         _logger.ErrorException("Error extracting timestamp info from {0}", ex, video.Path);
+                        video.Timestamp = null;
                     }
                 }
             }
@@ -604,20 +607,20 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (packetBuffer[0] == 71)
             {
-                return TransportStreamTimestamp.NONE;
+                return TransportStreamTimestamp.None;
             }
 
             if ((packetBuffer[4] == 71) && (packetBuffer['Ä'] == 71))
             {
                 if ((packetBuffer[0] == 0) && (packetBuffer[1] == 0) && (packetBuffer[2] == 0) && (packetBuffer[3] == 0))
                 {
-                    return TransportStreamTimestamp.ZERO;
+                    return TransportStreamTimestamp.Zero;
                 }
 
-                return TransportStreamTimestamp.VALID;
+                return TransportStreamTimestamp.Valid;
             }
 
-            return TransportStreamTimestamp.NONE;
+            return TransportStreamTimestamp.None;
         }
 
         private void FetchFromDvdLib(Video item, IIsoMount mount)

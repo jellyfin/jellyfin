@@ -1149,17 +1149,13 @@
                 attributes.push(createAttribute("External", (stream.IsExternal ? 'Yes' : 'No')));
             }
 
+            if (stream.Type == "Video" && version.Timestamp) {
+                attributes.push(createAttribute("Timestamp", version.Timestamp));
+            }
+
             html += attributes.join('<br/>');
 
             html += '</div>';
-        }
-
-        if (version.Container) {
-            html += '<div><span class="mediaInfoLabel">Container</span><span class="mediaInfoAttribute">' + version.Container + '</span></div>';
-        }
-
-        if (version.Formats && version.Formats.length) {
-            html += '<div><span class="mediaInfoLabel">Format</span><span class="mediaInfoAttribute">' + version.Formats.join(',') + '</span></div>';
         }
 
         if (version.Size) {
@@ -1171,6 +1167,14 @@
 
         if (version.Path) {
             html += '<div><span class="mediaInfoLabel">Path</span><span class="mediaInfoAttribute">' + version.Path + '</span></div>';
+        }
+
+        if (version.Container) {
+            //html += '<div><span class="mediaInfoLabel">Container</span><span class="mediaInfoAttribute">' + version.Container + '</span></div>';
+        }
+
+        if (version.Formats && version.Formats.length) {
+            //html += '<div><span class="mediaInfoLabel">Format</span><span class="mediaInfoAttribute">' + version.Formats.join(',') + '</span></div>';
         }
 
         return html;

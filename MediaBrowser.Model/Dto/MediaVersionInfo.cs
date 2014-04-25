@@ -31,7 +31,7 @@ namespace MediaBrowser.Model.Dto
         
         public int? Bitrate { get; set; }
 
-        public TransportStreamTimestamp Timestamp { get; set; }
+        public TransportStreamTimestamp? Timestamp { get; set; }
         
         public MediaSourceInfo()
         {
