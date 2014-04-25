@@ -561,5 +561,5 @@
 	"OptionNotifyOnPlayback": "When users play content",
 	"OptionNotifyOnFailedTasks": "When scheduled tasks fail",
 	"OptionNotifyOnNewLibraryContent": "When new library content is added",
-	"SendNotificationHelp": "Notifications are delivered to the dashboard inbox. Browse the plugin catalog to install additional notification formats such as email and text messaging."
+	"SendNotificationHelp": "Notifications are delivered to the dashboard inbox. Browse the plugin catalog to install additional notification options."
 }
