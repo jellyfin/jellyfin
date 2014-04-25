@@ -55,7 +55,7 @@
 	"TabProfile": "Profile",
 	"TabMetadata": "Metadata",
 	"TabImages": "Images",
-	"TabNotifications": "Notifications"
+	"TabNotifications": "Notifications",
 	"TabCollectionTitles": "Titles",
 	"LabelDisplayMissingEpisodesWithinSeasons": "Display missing episodes within seasons",
 	"LabelUnairedMissingEpisodesWithinSeasons": "Display unaired episodes within seasons",
