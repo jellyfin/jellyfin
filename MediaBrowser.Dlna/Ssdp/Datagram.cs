@@ -4,24 +4,31 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace MediaBrowser.Dlna.Server
+namespace MediaBrowser.Dlna.Ssdp
 {
     public class Datagram
     {
         public IPEndPoint EndPoint { get; private set; }
         public IPAddress LocalAddress { get; private set; }
         public string Message { get; private set; }
-        public bool Sticky { get; private set; }
 
+        /// <summary>
+        /// The number of times to send the message
+        /// </summary>
+        public int TotalSendCount { get; private set; }
+
+        /// <summary>
+        /// The number of times the message has been sent
+        /// </summary>
         public int SendCount { get; private set; }
 
         private readonly ILogger _logger;
 
-        public Datagram(IPEndPoint endPoint, IPAddress localAddress, ILogger logger, string message, bool sticky)
+        public Datagram(IPEndPoint endPoint, IPAddress localAddress, ILogger logger, string message, int totalSendCount)
         {
             Message = message;
             _logger = logger;
-            Sticky = sticky;
+            TotalSendCount = totalSendCount;
             LocalAddress = localAddress;
             EndPoint = endPoint;
         }
@@ -31,9 +38,11 @@ namespace MediaBrowser.Dlna.Server
             var msg = Encoding.ASCII.GetBytes(Message);
             try
             {
-                var client = new UdpClient();
-                client.Client.Bind(new IPEndPoint(LocalAddress, 0));
-                client.BeginSend(msg, msg.Length, EndPoint, result =>
+                var client = CreateSocket();
+
+                client.Bind(new IPEndPoint(LocalAddress, 0));
+
+                client.BeginSendTo(msg, 0, msg.Length, SocketFlags.None, EndPoint, result =>
                 {
                     try
                     {
@@ -60,6 +69,14 @@ namespace MediaBrowser.Dlna.Server
                 _logger.ErrorException("Error sending Datagram", ex);
             }
             ++SendCount;
+        }
+
+        private Socket CreateSocket()
+        {
+            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            return socket;
         }
     }
 }

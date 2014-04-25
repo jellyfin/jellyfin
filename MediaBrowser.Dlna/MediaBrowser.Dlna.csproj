@@ -54,6 +54,7 @@
     <Compile Include="DlnaManager.cs" />
     <Compile Include="Common\Argument.cs" />
     <Compile Include="Eventing\EventManager.cs" />
+    <Compile Include="Main\DlnaEntryPoint.cs" />
     <Compile Include="PlayTo\CurrentIdEventArgs.cs" />
     <Compile Include="PlayTo\Device.cs">
       <SubType>Code</SubType>
@@ -79,7 +80,7 @@
     <Compile Include="Server\ControlHandler.cs" />
     <Compile Include="Server\ServiceActionListBuilder.cs" />
     <Compile Include="Server\ContentDirectoryXmlBuilder.cs" />
-    <Compile Include="Server\Datagram.cs" />
+    <Compile Include="Ssdp\Datagram.cs" />
     <Compile Include="Server\DescriptionXmlBuilder.cs" />
     <Compile Include="Ssdp\SsdpHelper.cs" />
     <Compile Include="PlayTo\SsdpHttpClient.cs" />
@@ -108,10 +109,11 @@
     <Compile Include="Profiles\Xbox360Profile.cs" />
     <Compile Include="Profiles\XboxOneProfile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server\DlnaServerEntryPoint.cs" />
     <Compile Include="Server\Headers.cs" />
-    <Compile Include="Server\SsdpHandler.cs" />
     <Compile Include="Server\UpnpDevice.cs" />
+    <Compile Include="Ssdp\SsdpMessageBuilder.cs" />
+    <Compile Include="Ssdp\SsdpMessageEventArgs.cs" />
+    <Compile Include="Ssdp\SsdpHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

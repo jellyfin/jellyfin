@@ -93,7 +93,8 @@ namespace MediaBrowser.Api.Dlna
                 {
                     Headers = GetRequestHeaders(),
                     InputXml = await reader.ReadToEndAsync().ConfigureAwait(false),
-                    TargetServerUuId = id
+                    TargetServerUuId = id,
+                    RequestedUrl = Request.AbsoluteUri
                 });
             }
         }

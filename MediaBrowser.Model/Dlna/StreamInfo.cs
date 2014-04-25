@@ -298,7 +298,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (IsDirectStream)
                 {
-                    return MediaSource.Bitrate;
+                    return MediaSource.Size;
                 }
 
                 if (RunTimeTicks.HasValue)
