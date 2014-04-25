@@ -67,10 +67,10 @@ namespace MediaBrowser.Model.Dlna
 
             switch (timestampType)
             {
-                case TransportStreamTimestamp.NONE:
+                case TransportStreamTimestamp.None:
                     suffix = "_ISO";
                     break;
-                case TransportStreamTimestamp.VALID:
+                case TransportStreamTimestamp.Valid:
                     suffix = "_T";
                     break;
             }
@@ -89,7 +89,7 @@ namespace MediaBrowser.Model.Dlna
                 list.Add(ValueOf("MPEG_TS_SD_EU" + suffix));
                 list.Add(ValueOf("MPEG_TS_SD_KO" + suffix));
 
-                if ((timestampType == TransportStreamTimestamp.VALID) && string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase))
+                if ((timestampType == TransportStreamTimestamp.Valid) && string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase))
                 {
                     list.Add(MediaFormatProfile.MPEG_TS_JP_T);
                 }
@@ -102,7 +102,7 @@ namespace MediaBrowser.Model.Dlna
 
                 if (string.Equals(audioCodec, "dts", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (timestampType == TransportStreamTimestamp.NONE)
+                    if (timestampType == TransportStreamTimestamp.None)
                     {
                         return new[] { MediaFormatProfile.AVC_TS_HD_DTS_ISO };
                     }
@@ -111,7 +111,7 @@ namespace MediaBrowser.Model.Dlna
 
                 if (string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (timestampType == TransportStreamTimestamp.NONE)
+                    if (timestampType == TransportStreamTimestamp.None)
                     {
                         return new[] { ValueOf(string.Format("AVC_TS_HP_{0}D_MPEG1_L2_ISO", resolution)) };
                     }

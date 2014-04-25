@@ -341,12 +341,12 @@ namespace MediaBrowser.Model.Dlna
             get
             {
                 var defaultValue = string.Equals(Container, "m2ts", StringComparison.OrdinalIgnoreCase)
-                    ? TransportStreamTimestamp.VALID
-                    : TransportStreamTimestamp.NONE;
+                    ? TransportStreamTimestamp.Valid
+                    : TransportStreamTimestamp.None;
                 
                 return !IsDirectStream
                     ? defaultValue
-                    : MediaSource == null ? defaultValue : MediaSource.Timestamp;
+                    : MediaSource == null ? defaultValue : MediaSource.Timestamp ?? TransportStreamTimestamp.None;
             }
         }
 

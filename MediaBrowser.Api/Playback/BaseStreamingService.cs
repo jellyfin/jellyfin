@@ -24,6 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -1437,7 +1438,7 @@ namespace MediaBrowser.Api.Playback
                         : video.PlayableStreamFileNames.ToList();
 
                     state.DeInterlace = string.Equals(video.Container, "wtv", StringComparison.OrdinalIgnoreCase);
-                    state.InputTimestamp = video.Timestamp;
+                    state.InputTimestamp = video.Timestamp ?? TransportStreamTimestamp.None;
                 }
 
                 state.RunTimeTicks = item.RunTimeTicks;

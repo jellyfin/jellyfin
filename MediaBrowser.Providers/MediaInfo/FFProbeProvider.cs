@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -43,6 +44,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
         private readonly IEncodingManager _encodingManager;
+        private readonly IFileSystem _fileSystem;
 
         public string Name
         {
@@ -94,7 +96,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return FetchAudioInfo(item, cancellationToken);
         }
 
-        public FFProbeProvider(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager)
+        public FFProbeProvider(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -105,6 +107,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _appPaths = appPaths;
             _json = json;
             _encodingManager = encodingManager;
+            _fileSystem = fileSystem;
         }
 
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
@@ -131,7 +134,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
-            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager);
+            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem);
 
             return prober.ProbeVideo(item, directoryService, cancellationToken);
         }
@@ -162,7 +165,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (video != null && !video.IsPlaceHolder)
                 {
-                    var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager);
+                    var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem);
 
                     return !video.SubtitleFiles.SequenceEqual(prober.GetSubtitleFiles(video, directoryService).Select(i => i.FullName).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
                 }

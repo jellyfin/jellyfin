@@ -37,7 +37,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the timestamp.
         /// </summary>
         /// <value>The timestamp.</value>
-        public TransportStreamTimestamp Timestamp { get; set; }
+        public TransportStreamTimestamp? Timestamp { get; set; }
         
         public Video()
         {

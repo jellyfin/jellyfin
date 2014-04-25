@@ -37,8 +37,8 @@ namespace MediaBrowser.Model.MediaInfo
 
     public enum TransportStreamTimestamp
     {
-        NONE,
-        ZERO,
-        VALID
+        None,
+        Zero,
+        Valid
     }
 }
