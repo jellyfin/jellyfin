@@ -284,7 +284,7 @@ namespace MediaBrowser.Api.Library
 
         public object Get(GetFile request)
         {
-            var item = _dtoService.GetItemByDtoId(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
             var locationType = item.LocationType;
             if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
             {
@@ -350,7 +350,7 @@ namespace MediaBrowser.Api.Library
         /// <returns>Task{BaseItemDto[]}.</returns>
         public List<BaseItemDto> GetAncestors(GetAncestors request)
         {
-            var item = _dtoService.GetItemByDtoId(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
 
             var baseItemDtos = new List<BaseItemDto>();
 
@@ -504,7 +504,7 @@ namespace MediaBrowser.Api.Library
 
         private Task DeleteItem(DeleteItem request)
         {
-            var item = _dtoService.GetItemByDtoId(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
 
             var session = GetSession(_sessionManager);
 
@@ -593,7 +593,7 @@ namespace MediaBrowser.Api.Library
                            ? (request.UserId.HasValue
                                   ? user.RootFolder
                                   : (Folder)_libraryManager.RootFolder)
-                           : _dtoService.GetItemByDtoId(request.Id, request.UserId);
+                           : _libraryManager.GetItemById(request.Id);
 
             var originalItem = item;
 
@@ -661,7 +661,7 @@ namespace MediaBrowser.Api.Library
                            ? (request.UserId.HasValue
                                   ? user.RootFolder
                                   : (Folder)_libraryManager.RootFolder)
-                           : _dtoService.GetItemByDtoId(request.Id, request.UserId);
+                           : _libraryManager.GetItemById(request.Id);
 
             var originalItem = item;
 
@@ -771,7 +771,7 @@ namespace MediaBrowser.Api.Library
                            ? (userId.HasValue
                                   ? user.RootFolder
                                   : (Folder)_libraryManager.RootFolder)
-                           : _dtoService.GetItemByDtoId(id, userId);
+                           : _libraryManager.GetItemById(id);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))

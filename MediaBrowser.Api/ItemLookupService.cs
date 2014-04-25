@@ -124,7 +124,7 @@ namespace MediaBrowser.Api
 
         public object Get(GetExternalIdInfos request)
         {
-            var item = _dtoService.GetItemByDtoId(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
 
             var infos = _providerManager.GetExternalIdInfos(item).ToList();
 

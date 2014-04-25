@@ -373,11 +373,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <exception cref="System.InvalidOperationException"></exception>
         private IEnumerable<BaseItem> GetItemsToSerialize(GetItems request, User user)
         {
-            var userId = user == null ? (Guid?)null : user.Id;
-
             var item = string.IsNullOrEmpty(request.ParentId) ?
                 user == null ? _libraryManager.RootFolder : user.RootFolder :
-                _dtoService.GetItemByDtoId(request.ParentId, userId);
+                _libraryManager.GetItemById(request.ParentId);
 
             // Default list type = children
             IEnumerable<BaseItem> items;
@@ -386,7 +384,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var idList = request.Ids.Split(',').ToList();
 
-                items = idList.Select(i => _dtoService.GetItemByDtoId(i, userId));
+                items = idList.Select(i => _libraryManager.GetItemById(i));
             }
 
             else if (request.Recursive)

@@ -10,8 +10,8 @@ namespace MediaBrowser.Controller.Notifications
 
     public class NotificationReadEventArgs : EventArgs
     {
-        public Guid[] IdList { get; set; }
-        public Guid UserId { get; set; }
+        public string[] IdList { get; set; }
+        public string UserId { get; set; }
         public bool IsRead { get; set; }
     }
 }

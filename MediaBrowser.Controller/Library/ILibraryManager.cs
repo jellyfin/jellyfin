@@ -342,5 +342,10 @@ namespace MediaBrowser.Controller.Library
                 DeleteFileLocation = true
             });
         }
+
+        public static BaseItem GetItemById(this ILibraryManager manager, string id)
+        {
+            return manager.GetItemById(new Guid(id));
+        }
     }
 }

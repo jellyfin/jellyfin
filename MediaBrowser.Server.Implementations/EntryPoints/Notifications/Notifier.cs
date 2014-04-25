@@ -20,20 +20,20 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
     /// </summary>
     public class Notifications : IServerEntryPoint
     {
-        private readonly INotificationsRepository _notificationsRepo;
         private readonly IInstallationManager _installationManager;
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
 
         private readonly ITaskManager _taskManager;
+        private readonly INotificationManager _notificationManager;
 
-        public Notifications(IInstallationManager installationManager, INotificationsRepository notificationsRepo, IUserManager userManager, ILogger logger, ITaskManager taskManager)
+        public Notifications(IInstallationManager installationManager, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager)
         {
             _installationManager = installationManager;
-            _notificationsRepo = notificationsRepo;
             _userManager = userManager;
             _logger = logger;
             _taskManager = taskManager;
+            _notificationManager = notificationManager;
         }
 
         public void Run()
@@ -49,21 +49,25 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
         async void _userManager_UserCreated(object sender, GenericEventArgs<User> e)
         {
-            var notification = new Notification
+            var userIds = _userManager
+              .Users
+              .Select(i => i.Id.ToString("N"))
+              .ToList();
+
+            var notification = new NotificationRequest
             {
-                UserId = e.Argument.Id,
-                Category = "UserCreated",
+                UserIds = userIds,
                 Name = "Welcome to Media Browser!",
                 Description = "Check back here for more notifications."
             };
 
             try
             {
-                await _notificationsRepo.AddNotification(notification, CancellationToken.None).ConfigureAwait(false);
+                await _notificationManager.SendNotification(notification, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error adding notification", ex);
+                _logger.ErrorException("Error sending notification", ex);
             }
         }
 
@@ -73,29 +77,27 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             if (result.Status == TaskCompletionStatus.Failed)
             {
-                foreach (var user in _userManager
-                    .Users
-                    .Where(i => i.Configuration.IsAdministrator)
-                    .ToList())
-                {
-                    var notification = new Notification
-                    {
-                        UserId = user.Id,
-                        Category = "ScheduledTaskFailed",
-                        Name = result.Name + " failed",
-                        RelatedId = result.Name,
-                        Description = result.ErrorMessage,
-                        Level = NotificationLevel.Error
-                    };
+                var userIds = _userManager
+                  .Users
+                  .Where(i => i.Configuration.IsAdministrator)
+                  .Select(i => i.Id.ToString("N"))
+                  .ToList();
 
-                    try
-                    {
-                        await _notificationsRepo.AddNotification(notification, CancellationToken.None).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error adding notification", ex);
-                    }
+                var notification = new NotificationRequest
+                {
+                    UserIds = userIds,
+                    Name = result.Name + " failed",
+                    Description = result.ErrorMessage,
+                    Level = NotificationLevel.Error
+                };
+
+                try
+                {
+                    await _notificationManager.SendNotification(notification, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error sending notification", ex);
                 }
             }
         }
@@ -104,27 +106,25 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         {
             var plugin = e.Argument;
 
-            foreach (var user in _userManager
-                .Users
-                .Where(i => i.Configuration.IsAdministrator)
-                .ToList())
-            {
-                var notification = new Notification
-                {
-                    UserId = user.Id,
-                    Category = "PluginUninstalled",
-                    Name = plugin.Name + " has been uninstalled",
-                    RelatedId = plugin.Id.ToString()
-                };
+            var userIds = _userManager
+              .Users
+              .Where(i => i.Configuration.IsAdministrator)
+              .Select(i => i.Id.ToString("N"))
+              .ToList();
 
-                try
-                {
-                    await _notificationsRepo.AddNotification(notification, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error adding notification", ex);
-                }
+            var notification = new NotificationRequest
+            {
+                UserIds = userIds,
+                Name = plugin.Name + " has been uninstalled"
+            };
+
+            try
+            {
+                await _notificationManager.SendNotification(notification, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error sending notification", ex);
             }
         }
 
@@ -132,28 +132,26 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         {
             var installationInfo = e.InstallationInfo;
 
-            foreach (var user in _userManager
-                .Users
-                .Where(i => i.Configuration.IsAdministrator)
-                .ToList())
-            {
-                var notification = new Notification
-                {
-                    UserId = user.Id,
-                    Category = "PackageInstallationCompleted",
-                    Name = installationInfo.Name + " " + installationInfo.Version + " was installed",
-                    RelatedId = installationInfo.Name,
-                    Description = e.PackageVersionInfo.description
-                };
+            var userIds = _userManager
+              .Users
+              .Where(i => i.Configuration.IsAdministrator)
+              .Select(i => i.Id.ToString("N"))
+              .ToList();
 
-                try
-                {
-                    await _notificationsRepo.AddNotification(notification, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error adding notification", ex);
-                }
+            var notification = new NotificationRequest
+            {
+                UserIds = userIds,
+                Name = installationInfo.Name + " " + installationInfo.Version + " was installed",
+                Description = e.PackageVersionInfo.description
+            };
+
+            try
+            {
+                await _notificationManager.SendNotification(notification, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error sending notification", ex);
             }
         }
 
@@ -161,29 +159,27 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         {
             var installationInfo = e.InstallationInfo;
 
-            foreach (var user in _userManager
+            var userIds = _userManager
                 .Users
                 .Where(i => i.Configuration.IsAdministrator)
-                .ToList())
-            {
-                var notification = new Notification
-                {
-                    UserId = user.Id,
-                    Category = "PackageInstallationFailed",
-                    Level = NotificationLevel.Error,
-                    Name = installationInfo.Name + " " + installationInfo.Version + " installation failed",
-                    RelatedId = installationInfo.Name,
-                    Description = e.Exception.Message
-                };
+                .Select(i => i.Id.ToString("N"))
+                .ToList();
 
-                try
-                {
-                    await _notificationsRepo.AddNotification(notification, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error adding notification", ex);
-                }
+            var notification = new NotificationRequest
+            {
+                UserIds = userIds,
+                Level = NotificationLevel.Error,
+                Name = installationInfo.Name + " " + installationInfo.Version + " installation failed",
+                Description = e.Exception.Message
+            };
+
+            try
+            {
+                await _notificationManager.SendNotification(notification, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error sending notification", ex);
             }
         }
 

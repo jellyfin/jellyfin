@@ -117,7 +117,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// </summary>
         /// <param name="list">The list.</param>
         /// <returns><c>true</c> if the specified list contains music; otherwise, <c>false</c>.</returns>
-        public static bool ContainsMusic(IEnumerable<FileSystemInfo> list)
+        private static bool ContainsMusic(IEnumerable<FileSystemInfo> list)
         {
             // If list contains at least 2 audio files or at least one and no video files consider it to contain music
             var foundAudio = 0;

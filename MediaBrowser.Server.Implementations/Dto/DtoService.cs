@@ -556,44 +556,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             return dto;
         }
 
-
-        /// <summary>
-        /// Gets a BaseItem based upon it's client-side item id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>BaseItem.</returns>
-        public BaseItem GetItemByDtoId(string id, Guid? userId = null)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException("id");
-            }
-
-            BaseItem item = null;
-
-            if (userId.HasValue)
-            {
-                item = _libraryManager.GetItemById(new Guid(id));
-            }
-
-            // If we still don't find it, look within individual user views
-            if (item == null && !userId.HasValue)
-            {
-                foreach (var user in _userManager.Users)
-                {
-                    item = GetItemByDtoId(id, user.Id);
-
-                    if (item != null)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            return item;
-        }
-
         /// <summary>
         /// Sets simple property values on a DTOBaseItem
         /// </summary>

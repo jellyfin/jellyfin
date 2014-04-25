@@ -56,6 +56,7 @@ using MediaBrowser.Server.Implementations.Library;
 using MediaBrowser.Server.Implementations.LiveTv;
 using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.MediaEncoder;
+using MediaBrowser.Server.Implementations.Notifications;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
@@ -188,6 +189,8 @@ namespace MediaBrowser.ServerApplication
         private INotificationsRepository NotificationsRepository { get; set; }
         private IFileOrganizationRepository FileOrganizationRepository { get; set; }
         private IProviderRepository ProviderRepository { get; set; }
+
+        private INotificationManager NotificationManager { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -523,6 +526,9 @@ namespace MediaBrowser.ServerApplication
             LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager);
             RegisterSingleInstance(LiveTvManager);
 
+            NotificationManager = new NotificationManager(LogManager, UserManager);
+            RegisterSingleInstance(NotificationManager);
+
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
             var userdataTask = Task.Run(async () => await ConfigureUserDataRepositories().ConfigureAwait(false));
@@ -705,6 +711,8 @@ namespace MediaBrowser.ServerApplication
             SessionManager.AddParts(GetExports<ISessionControllerFactory>());
 
             ChannelManager.AddParts(GetExports<IChannel>());
+
+            NotificationManager.AddParts(GetExports<INotificationService>());
         }
 
         /// <summary>

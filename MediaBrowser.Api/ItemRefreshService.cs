@@ -250,7 +250,7 @@ namespace MediaBrowser.Api
         /// <returns>Task.</returns>
         private async Task RefreshItem(RefreshItem request)
         {
-            var item = _dtoService.GetItemByDtoId(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
 
             var options = GetRefreshOptions(request);
             

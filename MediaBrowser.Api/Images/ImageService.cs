@@ -358,7 +358,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetItemImageInfos request)
         {
-            var item = _dtoService.GetItemByDtoId(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
 
             var result = GetItemImageInfos(item);
 
@@ -493,7 +493,9 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetItemImage request)
         {
-            var item = string.IsNullOrEmpty(request.Id) ? _libraryManager.RootFolder : _dtoService.GetItemByDtoId(request.Id);
+            var item = string.IsNullOrEmpty(request.Id) ? 
+                _libraryManager.RootFolder :
+                _libraryManager.GetItemById(request.Id);
 
             return GetImage(request, item);
         }

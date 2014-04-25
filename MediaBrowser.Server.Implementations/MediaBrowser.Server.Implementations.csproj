@@ -185,11 +185,13 @@
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
     <Compile Include="News\NewsService.cs" />
+    <Compile Include="Notifications\InternalNotificationService.cs" />
+    <Compile Include="Notifications\NotificationManager.cs" />
     <Compile Include="Persistence\SqliteChapterRepository.cs" />
     <Compile Include="Persistence\SqliteExtensions.cs" />
     <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
     <Compile Include="Persistence\SqliteMediaStreamsRepository.cs" />
-    <Compile Include="Persistence\SqliteNotificationsRepository.cs" />
+    <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
     <Compile Include="Persistence\SqliteProviderInfoRepository.cs" />
     <Compile Include="Persistence\SqliteShrinkMemoryTimer.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />

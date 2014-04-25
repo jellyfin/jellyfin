@@ -167,8 +167,10 @@
     <Compile Include="Net\IHttpServer.cs" />
     <Compile Include="Net\IRestfulService.cs" />
     <Compile Include="News\INewsService.cs" />
+    <Compile Include="Notifications\INotificationManager.cs" />
     <Compile Include="Notifications\INotificationsRepository.cs" />
     <Compile Include="Notifications\NotificationUpdateEventArgs.cs" />
+    <Compile Include="Notifications\UserNotification.cs" />
     <Compile Include="Persistence\IFileOrganizationRepository.cs" />
     <Compile Include="Persistence\MediaStreamQuery.cs" />
     <Compile Include="Providers\DirectoryService.cs" />

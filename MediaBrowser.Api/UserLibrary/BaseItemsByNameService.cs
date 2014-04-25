@@ -61,14 +61,14 @@ namespace MediaBrowser.Api.UserLibrary
             if (request.UserId.HasValue)
             {
                 user = UserManager.GetUserById(request.UserId.Value);
-                item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : DtoService.GetItemByDtoId(request.ParentId, user.Id);
+                item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : LibraryManager.GetItemById(request.ParentId);
 
                 libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
 
             }
             else
             {
-                item = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : DtoService.GetItemByDtoId(request.ParentId);
+                item = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : LibraryManager.GetItemById(request.ParentId);
 
                 libraryItems = LibraryManager.RootFolder.RecursiveChildren.ToList();
             }

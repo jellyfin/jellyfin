@@ -91,7 +91,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateItem request)
         {
-            var item = _dtoService.GetItemByDtoId(request.ItemId);
+            var item = _libraryManager.GetItemById(request.ItemId);
 
             var newLockData = request.LockData ?? false;
             var dontFetchMetaChanged = item.IsLocked != newLockData;

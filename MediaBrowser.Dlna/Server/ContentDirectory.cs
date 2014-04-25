@@ -8,9 +8,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Threading;
 
 namespace MediaBrowser.Dlna.Server
 {
@@ -26,9 +24,6 @@ namespace MediaBrowser.Dlna.Server
         private readonly IUserManager _userManager;
 
         private readonly IEventManager _eventManager;
-
-        private int _systemUpdateId;
-        private Timer _systemUpdateTimer;
 
         public ContentDirectory(IDlnaManager dlna,
             IUserDataManager userDataManager,
@@ -49,9 +44,16 @@ namespace MediaBrowser.Dlna.Server
             _userManager = userManager;
             _eventManager = eventManager;
             _logger = logManager.GetLogger("DlnaContentDirectory");
+        }
 
-            _systemUpdateTimer = new Timer(SystemUdpateTimerCallback, null, Timeout.Infinite,
-                Convert.ToInt64(TimeSpan.FromMinutes(60).TotalMilliseconds));
+        private int SystemUpdateId
+        {
+            get
+            {
+                var now = DateTime.UtcNow;
+
+                return now.Year + now.DayOfYear + now.Hour;
+            }
         }
 
         public string GetContentDirectoryXml(IDictionary<string, string> headers)
@@ -80,7 +82,7 @@ namespace MediaBrowser.Dlna.Server
                 _imageProcessor,
                 _userDataManager,
                 user,
-                _systemUpdateId)
+                SystemUpdateId)
                 .ProcessControlRequest(request);
         }
 
@@ -110,40 +112,9 @@ namespace MediaBrowser.Dlna.Server
             return _userManager.Users.First();
         }
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private async void SystemUdpateTimerCallback(object state)
-        {
-            var values = new Dictionary<string, string>();
-
-            _systemUpdateId++;
-            values["SystemUpdateID"] = _systemUpdateId.ToString(_usCulture);
-
-            try
-            {
-                await _eventManager.TriggerEvent("upnp:event", values).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error sending system update notification", ex);
-            }
-        }
-
-        private readonly object _disposeLock = new object();
         public void Dispose()
         {
-            lock (_disposeLock)
-            {
-                DisposeUpdateTimer();
-            }
-        }
 
-        private void DisposeUpdateTimer()
-        {
-            if (_systemUpdateTimer != null)
-            {
-                _systemUpdateTimer.Dispose();
-                _systemUpdateTimer = null;
-            }
         }
     }
 }

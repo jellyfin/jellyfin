@@ -1,16 +1,17 @@
-﻿using System.IO;
-using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
+using MediaBrowser.Server.Implementations.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Persistence
+namespace MediaBrowser.Server.Implementations.Notifications
 {
     public class SqliteNotificationsRepository : INotificationsRepository
     {
@@ -134,7 +135,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        public NotificationsSummary GetNotificationsSummary(Guid userId)
+        public NotificationsSummary GetNotificationsSummary(string userId)
         {
             var result = new NotificationsSummary();
 
@@ -142,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 cmd.CommandText = "select Level from Notifications where UserId=@UserId and IsRead=@IsRead";
 
-                cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = userId;
+                cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = new Guid(userId);
                 cmd.Parameters.Add(cmd, "@IsRead", DbType.Boolean).Value = false;
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
@@ -183,8 +184,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var notification = new Notification
             {
-                Id = reader.GetGuid(0),
-                UserId = reader.GetGuid(1),
+                Id = reader.GetGuid(0).ToString("N"),
+                UserId = reader.GetGuid(1).ToString("N"),
                 Date = reader.GetDateTime(2).ToUniversalTime(),
                 Name = reader.GetString(3)
             };
@@ -202,13 +203,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             notification.Level = GetLevel(reader, 6);
             notification.IsRead = reader.GetBoolean(7);
 
-            notification.Category = reader.GetString(8);
-
-            if (!reader.IsDBNull(9))
-            {
-                notification.RelatedId = reader.GetString(9);
-            }
-
             return notification;
         }
 
@@ -223,13 +217,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// or
         /// userId
         /// </exception>
-        public Notification GetNotification(Guid id, Guid userId)
+        public Notification GetNotification(string id, string userId)
         {
-            if (id == Guid.Empty)
+            if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException("id");
             }
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -238,8 +232,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 cmd.CommandText = "select Id,UserId,Date,Name,Description,Url,Level,IsRead,Category,RelatedId where Id=@Id And UserId = @UserId";
 
-                cmd.Parameters.Add(cmd, "@Id", DbType.Guid).Value = id;
-                cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = userId;
+                cmd.Parameters.Add(cmd, "@Id", DbType.Guid).Value = new Guid(id);
+                cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = new Guid(userId);
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
                 {
@@ -329,11 +323,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <returns>Task.</returns>
         private async Task ReplaceNotification(Notification notification, CancellationToken cancellationToken)
         {
-            if (notification.Id == Guid.Empty)
+            if (string.IsNullOrEmpty(notification.Id))
             {
-                throw new ArgumentException("The notification must have an id");
+                notification.Id = Guid.NewGuid().ToString("N");
             }
-            if (notification.UserId == Guid.Empty)
+            if (string.IsNullOrEmpty(notification.UserId))
             {
                 throw new ArgumentException("The notification must have a user id");
             }
@@ -348,16 +342,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 transaction = _connection.BeginTransaction();
 
-                _replaceNotificationCommand.GetParameter(0).Value = notification.Id;
-                _replaceNotificationCommand.GetParameter(1).Value = notification.UserId;
+                _replaceNotificationCommand.GetParameter(0).Value = new Guid(notification.Id);
+                _replaceNotificationCommand.GetParameter(1).Value = new Guid(notification.UserId);
                 _replaceNotificationCommand.GetParameter(2).Value = notification.Date.ToUniversalTime();
                 _replaceNotificationCommand.GetParameter(3).Value = notification.Name;
                 _replaceNotificationCommand.GetParameter(4).Value = notification.Description;
                 _replaceNotificationCommand.GetParameter(5).Value = notification.Url;
                 _replaceNotificationCommand.GetParameter(6).Value = notification.Level.ToString();
                 _replaceNotificationCommand.GetParameter(7).Value = notification.IsRead;
-                _replaceNotificationCommand.GetParameter(8).Value = notification.Category;
-                _replaceNotificationCommand.GetParameter(9).Value = notification.RelatedId;
+                _replaceNotificationCommand.GetParameter(8).Value = string.Empty;
+                _replaceNotificationCommand.GetParameter(9).Value = string.Empty;
 
                 _replaceNotificationCommand.Transaction = transaction;
 
@@ -404,9 +398,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <param name="isRead">if set to <c>true</c> [is read].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task MarkRead(IEnumerable<Guid> notificationIdList, Guid userId, bool isRead, CancellationToken cancellationToken)
+        public async Task MarkRead(IEnumerable<string> notificationIdList, string userId, bool isRead, CancellationToken cancellationToken)
         {
-            var idArray = notificationIdList.ToArray();
+            var list = notificationIdList.ToList();
+            var idArray = list.Select(i => new Guid(i)).ToArray();
 
             await MarkReadInternal(idArray, userId, isRead, cancellationToken).ConfigureAwait(false);
 
@@ -416,7 +411,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     NotificationsMarkedRead(this, new NotificationReadEventArgs
                     {
-                        IdList = idArray.ToArray(),
+                        IdList = list.ToArray(),
                         IsRead = isRead,
                         UserId = userId
                     });
@@ -428,7 +423,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        private async Task MarkReadInternal(IEnumerable<Guid> notificationIdList, Guid userId, bool isRead, CancellationToken cancellationToken)
+        private async Task MarkReadInternal(IEnumerable<Guid> notificationIdList, string userId, bool isRead, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -442,7 +437,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 transaction = _connection.BeginTransaction();
 
-                _markReadCommand.GetParameter(0).Value = userId;
+                _markReadCommand.GetParameter(0).Value = new Guid(userId);
                 _markReadCommand.GetParameter(1).Value = isRead;
 
                 foreach (var id in notificationIdList)

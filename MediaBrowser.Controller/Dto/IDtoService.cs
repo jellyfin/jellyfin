@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Dto
@@ -32,14 +31,6 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="data">The data.</param>
         /// <returns>UserItemDataDto.</returns>
         UserItemDataDto GetUserItemDataDto(UserItemData data);
-
-        /// <summary>
-        /// Gets the item by dto id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>BaseItem.</returns>
-        BaseItem GetItemByDtoId(string id, Guid? userId = null);
 
         /// <summary>
         /// Attaches the primary image aspect ratio.

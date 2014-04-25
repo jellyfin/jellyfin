@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
@@ -26,22 +25,23 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private readonly IApplicationPaths _appPaths;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
-        private readonly INotificationsRepository _notificationsRepo;
         private readonly IUserManager _userManager;
         private readonly IFileSystem _fileSystem;
 
         private readonly TimeSpan _frequency = TimeSpan.FromHours(6);
         private readonly TimeSpan _maxAge = TimeSpan.FromDays(31);
 
-        public RemoteNotifications(IApplicationPaths appPaths, ILogger logger, IHttpClient httpClient, IJsonSerializer json, INotificationsRepository notificationsRepo, IUserManager userManager, IFileSystem fileSystem)
+        private readonly INotificationManager _notificationManager;
+
+        public RemoteNotifications(IApplicationPaths appPaths, ILogger logger, IHttpClient httpClient, IJsonSerializer json, IUserManager userManager, IFileSystem fileSystem, INotificationManager notificationManager)
         {
             _appPaths = appPaths;
             _logger = logger;
             _httpClient = httpClient;
             _json = json;
-            _notificationsRepo = notificationsRepo;
             _userManager = userManager;
             _fileSystem = fileSystem;
+            _notificationManager = notificationManager;
         }
 
         /// <summary>
@@ -107,21 +107,19 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                 .Where(i => string.Equals(i.active, "1") && i.date.ToUniversalTime() > lastRunTime && (DateTime.UtcNow - i.date.ToUniversalTime()) <= _maxAge)
                 .ToList();
 
-            foreach (var user in _userManager.Users.ToList())
-            {
-                foreach (var notification in notificationList)
-                {
-                    await _notificationsRepo.AddNotification(new Notification
-                    {
-                        Category = notification.category,
-                        Date = notification.date,
-                        Name = notification.name,
-                        Description = notification.description,
-                        Url = notification.url,
-                        UserId = user.Id
+            var userIds = _userManager.Users.Select(i => i.Id.ToString("N")).ToList();
 
-                    }, CancellationToken.None).ConfigureAwait(false);
-                }
+            foreach (var notification in notificationList)
+            {
+                await _notificationManager.SendNotification(new NotificationRequest
+                {
+                    Date = notification.date,
+                    Name = notification.name,
+                    Description = notification.description,
+                    Url = notification.url,
+                    UserIds = userIds
+
+                }, CancellationToken.None).ConfigureAwait(false);
             }
         }
 

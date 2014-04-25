@@ -30,9 +30,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
         void _notificationsRepo_NotificationsMarkedRead(object sender, NotificationReadEventArgs e)
         {
-            var list = e.IdList.Select(i => i.ToString("N")).ToList();
+            var list = e.IdList.ToList();
 
-            list.Add(e.UserId.ToString("N"));
+            list.Add(e.UserId);
             list.Add(e.IsRead.ToString().ToLower());
 
             var msg = string.Join("|", list.ToArray());
