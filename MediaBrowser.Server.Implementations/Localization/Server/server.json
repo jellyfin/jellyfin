@@ -55,6 +55,7 @@
 	"TabProfile": "Profile",
 	"TabMetadata": "Metadata",
 	"TabImages": "Images",
+	"TabNotifications": "Notifications"
 	"TabCollectionTitles": "Titles",
 	"LabelDisplayMissingEpisodesWithinSeasons": "Display missing episodes within seasons",
 	"LabelUnairedMissingEpisodesWithinSeasons": "Display unaired episodes within seasons",
@@ -554,5 +555,11 @@
 	"HeaderRequireManualLogin": "Require manual username entry for:",
 	"HeaderRequireManualLoginHelp": "When disabled clients may present a login screen with a visual selection of users.",
 	"OptionOtherApps": "Other apps",
-	"OptionMobileApps": "Mobile apps"
+	"OptionMobileApps": "Mobile apps",
+	"HeaderEnableNotificationForEvents": "Send notifications for the following events:",
+	"OptionNotifyOnUpdates": "When updates are available",
+	"OptionNotifyOnPlayback": "When users play content",
+	"OptionNotifyOnFailedTasks": "When scheduled tasks fail",
+	"OptionNotifyOnNewLibraryContent": "When new library content is added",
+	"SendNotificationHelp": "Notifications are delivered to the dashboard inbox. Browse the plugin catalog to install additional notification formats such as email and text messaging."
 }

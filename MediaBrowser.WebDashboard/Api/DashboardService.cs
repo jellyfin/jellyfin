@@ -597,6 +597,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "musicrecommended.js",
                                 "musicvideos.js",
                                 "notifications.js",
+                                "notificationsettings.js",
                                 "playlist.js",
                                 "plugincatalogpage.js",
                                 "pluginspage.js",

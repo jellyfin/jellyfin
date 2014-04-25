@@ -225,6 +225,8 @@ namespace MediaBrowser.Model.Configuration
 
         public double DownMixAudioBoost { get; set; }
 
+        public NotificationOptions NotificationOptions { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -288,6 +290,8 @@ namespace MediaBrowser.Model.Configuration
             DlnaOptions = new DlnaOptions();
 
             UICulture = "en-us";
+
+            NotificationOptions = new NotificationOptions();
         }
     }
 
@@ -314,5 +318,21 @@ namespace MediaBrowser.Model.Configuration
     {
         public string From { get; set; }
         public string To { get; set; }
+    }
+
+    public class NotificationOptions
+    {
+        public bool SendOnUpdates { get; set; }
+        public bool SendOnPlayback { get; set; }
+        public bool SendOnFailedTasks { get; set; }
+        public bool SendOnNewLibraryContent { get; set; }
+
+        public NotificationOptions()
+        {
+            SendOnUpdates = true;
+            SendOnPlayback = true;
+            SendOnFailedTasks = true;
+            SendOnNewLibraryContent = true;
+        }
     }
 }
