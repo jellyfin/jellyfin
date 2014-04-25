@@ -25,10 +25,10 @@ namespace MediaBrowser.Dlna
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
 
-        public DlnaManager(IXmlSerializer xmlSerializer, 
-            IFileSystem fileSystem, 
-            IApplicationPaths appPaths, 
-            ILogger logger, 
+        public DlnaManager(IXmlSerializer xmlSerializer,
+            IFileSystem fileSystem,
+            IApplicationPaths appPaths,
+            ILogger logger,
             IJsonSerializer jsonSerializer)
         {
             _xmlSerializer = xmlSerializer;
@@ -229,6 +229,19 @@ namespace MediaBrowser.Dlna
             if (profile != null)
             {
                 _logger.Debug("Found matching device profile: {0}", profile.Name);
+            }
+            else
+            {
+                string userAgent = null;
+                headers.TryGetValue("User-Agent", out userAgent);
+
+                var msg = "No matching device profile found. The default will be used. ";
+                if (!string.IsNullOrEmpty(userAgent))
+                {
+                    msg += "User-agent: " + userAgent + ". ";
+                }
+
+                _logger.Debug(msg);
             }
 
             return profile;

@@ -50,7 +50,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 if (_device == null || _device.UpdateTime == default(DateTime))
                     return false;
 
-                return DateTime.UtcNow <= _device.UpdateTime.AddSeconds(30);
+                return DateTime.UtcNow <= _device.UpdateTime.AddMinutes(10);
             }
         }
 

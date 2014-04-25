@@ -18,7 +18,7 @@ namespace MediaBrowser.Dlna.Didl
     public class DidlBuilder
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        
+
         private const string NS_DIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
         private const string NS_DC = "http://purl.org/dc/elements/1.1/";
         private const string NS_UPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
@@ -298,7 +298,7 @@ namespace MediaBrowser.Dlna.Didl
 
             container.AppendChild(res);
         }
-        
+
         public XmlElement GetFolderElement(XmlDocument doc, Folder folder, int childCount, Filter filter)
         {
             var container = doc.CreateElement(string.Empty, "container", NS_DIDL);
@@ -450,9 +450,14 @@ namespace MediaBrowser.Dlna.Didl
 
         private void AddPeople(BaseItem item, XmlElement element)
         {
+            var types = new[] { PersonType.Director, PersonType.Writer, PersonType.Producer, PersonType.Composer, "Creator" };
+
             foreach (var actor in item.People)
             {
-                AddValue(element, "upnp", (actor.Type ?? PersonType.Actor).ToLower(), actor.Name, NS_UPNP);
+                var type = types.FirstOrDefault(i => string.Equals(i, actor.Type, StringComparison.OrdinalIgnoreCase) || string.Equals(i, actor.Role, StringComparison.OrdinalIgnoreCase))
+                    ?? PersonType.Actor;
+
+                AddValue(element, "upnp", type.ToLower(), actor.Name, NS_UPNP);
             }
         }
 

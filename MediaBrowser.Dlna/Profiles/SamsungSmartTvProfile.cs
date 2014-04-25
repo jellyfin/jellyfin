@@ -14,7 +14,17 @@ namespace MediaBrowser.Dlna.Profiles
 
             Identification = new DeviceIdentification
             {
-                ModelUrl = "samsung.com"
+                ModelUrl = "samsung.com",
+
+                Headers = new[]
+                {
+                    new HttpHeaderInfo
+                    {
+                        Name = "User-Agent",
+                        Value = @"SEC_",
+                        Match = HeaderMatchType.Substring
+                    }
+                }
             };
 
             XmlRootAttributes = new[]

@@ -67,10 +67,8 @@ namespace MediaBrowser.Dlna.Server
             var profile = _dlna.GetProfile(request.Headers) ??
                           _dlna.GetDefaultProfile();
 
-            var device = DlnaServerEntryPoint.Instance.GetServerUpnpDevice(request.TargetServerUuId);
-
-            var serverAddress = device.Descriptor.ToString().Substring(0, device.Descriptor.ToString().IndexOf("/dlna", StringComparison.OrdinalIgnoreCase));
-
+            var serverAddress = request.RequestedUrl.Substring(0, request.RequestedUrl.IndexOf("/dlna", StringComparison.OrdinalIgnoreCase));
+            
             var user = GetUser(profile);
 
             return new ControlHandler(

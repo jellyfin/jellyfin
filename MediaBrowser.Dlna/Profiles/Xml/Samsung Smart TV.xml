@@ -3,7 +3,9 @@
   <Name>Samsung Smart TV</Name>
   <Identification>
     <ModelUrl>samsung.com</ModelUrl>
-    <Headers />
+    <Headers>
+      <HttpHeaderInfo name="User-Agent" value="SEC_" match="Substring" />
+    </Headers>
   </Identification>
   <FriendlyName>Media Browser</FriendlyName>
   <Manufacturer>Media Browser</Manufacturer>

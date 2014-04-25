@@ -10,6 +10,8 @@ namespace MediaBrowser.Controller.Dlna
 
         public string TargetServerUuId { get; set; }
 
+        public string RequestedUrl { get; set; }
+
         public ControlRequest()
         {
             Headers = new Dictionary<string, string>();

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Text;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -68,7 +69,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 _logger.Debug("Found interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
 
-                if (!network.SupportsMulticast || !network.GetIPProperties().MulticastAddresses.Any())
+                if (!network.SupportsMulticast || OperationalStatus.Up != network.OperationalStatus || !network.GetIPProperties().MulticastAddresses.Any())
                     continue;
 
                 var ipV4 = network.GetIPProperties().GetIPv4Properties();
@@ -84,7 +85,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     try
                     {
-                        CreateListener(localIp);
+                        CreateListener(localIp, ipV4.Index);
                     }
                     catch (Exception e)
                     {
@@ -111,15 +112,15 @@ namespace MediaBrowser.Dlna.PlayTo
         /// Creates a socket for the interface and listends for data.
         /// </summary>
         /// <param name="localIp">The local ip.</param>
-        private void CreateListener(IPAddress localIp)
+        private void CreateListener(IPAddress localIp, int networkInterfaceIndex)
         {
             Task.Factory.StartNew(async (o) =>
             {
                 try
                 {
-                    var socket = GetMulticastSocket();
+                    var socket = GetMulticastSocket(networkInterfaceIndex);
 
-                    socket.Bind(new IPEndPoint(localIp, 0));
+                    socket.Bind(new IPEndPoint(localIp, 1900));
 
                     _logger.Info("Creating SSDP listener");
 
@@ -183,7 +184,8 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 try
                 {
-                    var request = SsdpHelper.CreateRendererSSDP(3);
+                    var msg = new SsdpMessageBuilder().BuildRendererDiscoveryMessage();
+                    var request = Encoding.UTF8.GetBytes(msg);
 
                     while (true)
                     {
@@ -210,12 +212,12 @@ namespace MediaBrowser.Dlna.PlayTo
         /// Gets a socket configured for SDDP multicasting.
         /// </summary>
         /// <returns></returns>
-        private Socket GetMulticastSocket()
+        private Socket GetMulticastSocket(int networkInterfaceIndex)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250")));
-            //socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 3);
+            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), networkInterfaceIndex));
+            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
             return socket;
         }
 
