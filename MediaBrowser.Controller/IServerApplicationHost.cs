@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Model.System;
+using System;
 
 namespace MediaBrowser.Controller
 {
@@ -8,6 +9,8 @@ namespace MediaBrowser.Controller
     /// </summary>
     public interface IServerApplicationHost : IApplicationHost
     {
+        event EventHandler HasUpdateAvailableChanged;
+        
         /// <summary>
         /// Gets the system info.
         /// </summary>
@@ -31,5 +34,11 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The HTTP server port.</value>
         int HttpServerPort { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has update available.
+        /// </summary>
+        /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
+        bool HasUpdateAvailable { get; }
     }
 }

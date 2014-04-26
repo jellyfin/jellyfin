@@ -1,5 +1,4 @@
-﻿using System.Security;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Common;
 using MediaBrowser.Model.Logging;
@@ -7,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -71,8 +71,6 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public DateTime UpdateTime { get; private set; }
-
         #endregion
 
         private readonly IHttpClient _httpClient;
@@ -104,8 +102,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public void Start()
         {
-            UpdateTime = DateTime.UtcNow;
-
             _timer = new Timer(TimerCallback, null, GetPlaybackTimerIntervalMs(), GetInactiveTimerIntervalMs());
 
             _volumeTimer = new Timer(VolumeTimerCallback, null, Timeout.Infinite, Timeout.Infinite);
@@ -123,6 +119,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     if (!_timerActive)
                     {
+                        _logger.Debug("RestartTimer");
                         _timer.Change(10, GetPlaybackTimerIntervalMs());
 
                         _volumeTimer.Change(100, GetVolumeTimerIntervalMs());
@@ -144,6 +141,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     if (_timerActive)
                     {
+                        _logger.Debug("RestartTimerInactive");
                         var interval = GetInactiveTimerIntervalMs();
 
                         _timer.Change(interval, interval);
@@ -270,7 +268,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public async Task SetAvTransport(string url, string header, string metaData)
         {
-            await SetStop().ConfigureAwait(false);
+            //await SetStop().ConfigureAwait(false);
 
             var command = AvCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
             if (command == null)
@@ -354,7 +352,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
+            var service = Properties.Services.First(s => s.ServiceType == ServiceAvtransportType);
 
             await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
@@ -366,7 +364,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
+            var service = Properties.Services.First(s => s.ServiceType == ServiceAvtransportType);
 
             await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
@@ -378,6 +376,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         #region Get data
 
+        private int _successiveStopCount;
         private async void TimerCallback(object sender)
         {
             if (_disposed)
@@ -389,8 +388,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 if (transportState.HasValue)
                 {
-                    UpdateTime = DateTime.UtcNow;
-
                     // If we're not playing anything no need to get additional data
                     if (transportState.Value == TRANSPORTSTATE.STOPPED)
                     {
@@ -424,9 +421,19 @@ namespace MediaBrowser.Dlna.PlayTo
 
             // If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
             if (TransportState == TRANSPORTSTATE.STOPPED)
-                RestartTimerInactive();
+            {
+                _successiveStopCount++;
+
+                if (_successiveStopCount >= 10)
+                {
+                    RestartTimerInactive();
+                }
+            }
             else
+            {
+                _successiveStopCount = 0;
                 RestartTimer();
+            }
         }
 
         private async void VolumeTimerCallback(object sender)
