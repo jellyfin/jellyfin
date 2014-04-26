@@ -34,11 +34,7 @@
             var users = response1[0];
             var config = response2[0];
 
-            var showManualForm = config.ManualLoginClients.filter(function (i) {
-
-                return i == "Mobile";
-
-            }).length || !users.length;
+            var showManualForm = config.RequireManualLoginForMobileApps || !users.length;
 
             if (showManualForm) {
 

@@ -47,10 +47,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             get
             {
-                if (_device == null || _device.UpdateTime == default(DateTime))
-                    return false;
-
-                return DateTime.UtcNow <= _device.UpdateTime.AddMinutes(10);
+                return _device != null;
             }
         }
 
@@ -506,12 +503,13 @@ namespace MediaBrowser.Dlna.PlayTo
             return true;
         }
 
-        private async Task<bool> SetNext()
+        private async Task SetNext()
         {
             if (!Playlist.Any() || Playlist.All(i => i.PlayState != 0))
             {
-                return true;
+                return;
             }
+
             var currentitem = Playlist.FirstOrDefault(i => i.PlayState == 1);
 
             if (currentitem != null)
@@ -523,7 +521,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (nextTrack == null)
             {
                 await _device.SetStop();
-                return true;
+                return;
             }
 
             nextTrack.PlayState = 1;
@@ -537,8 +535,6 @@ namespace MediaBrowser.Dlna.PlayTo
             var streamInfo = nextTrack.StreamInfo;
             if (streamInfo.StartPositionTicks > 0 && streamInfo.IsDirectStream)
                 await _device.Seek(TimeSpan.FromTicks(streamInfo.StartPositionTicks));
-
-            return true;
         }
 
         public Task SetPrevious()
@@ -571,11 +567,11 @@ namespace MediaBrowser.Dlna.PlayTo
             if (!_disposed)
             {
                 _disposed = true;
-                
+
                 _device.PlaybackStart -= _device_PlaybackStart;
                 _device.PlaybackProgress -= _device_PlaybackProgress;
                 _device.PlaybackStopped -= _device_PlaybackStopped;
-                
+
                 _updateTimer.Dispose();
                 _device.Dispose();
             }

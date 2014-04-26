@@ -556,10 +556,14 @@
 	"HeaderRequireManualLoginHelp": "When disabled clients may present a login screen with a visual selection of users.",
 	"OptionOtherApps": "Other apps",
 	"OptionMobileApps": "Mobile apps",
-	"HeaderEnableNotificationForEvents": "Send notifications for the following events:",
-	"OptionNotifyOnUpdates": "When updates are available",
-	"OptionNotifyOnPlayback": "When users play content",
-	"OptionNotifyOnFailedTasks": "When scheduled tasks fail",
-	"OptionNotifyOnNewLibraryContent": "When new library content is added",
-	"SendNotificationHelp": "Notifications are delivered to the dashboard inbox. Browse the plugin catalog to install additional notification options."
+	"HeaderEnableNotificationForEvents": "Nofity administrative users when:",
+	"OptionNotifyOnUpdates": "Updates are available",
+	"OptionNotifyOnVideoPlayback": "Video",
+	"OptionNotifyOnAudioPlayback": "Audio",
+	"OptionNotifyOnGamePlayback": "Games",
+	"OptionNotifyOnFailedTasks": "Scheduled tasks fail",
+	"OptionNotifyOnNewLibraryContent": "New library content is added",
+	"SendNotificationHelp": "Notifications are delivered to the dashboard inbox. Browse the plugin catalog to install additional notification options.",
+	"HeaderEnableNotificationForPlayback": "Notify when users play:",
+	"OptionNotifyOnServerRestartRequired": "The server needs to be restarted"
 }

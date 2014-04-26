@@ -2,6 +2,7 @@
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
@@ -904,7 +905,7 @@ namespace MediaBrowser.ServerApplication
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
                 WanAddress = GetWanAddress(),
-                HasUpdateAvailable = _hasUpdateAvailable,
+                HasUpdateAvailable = HasUpdateAvailable,
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
                 IsRunningAsService = IsRunningAsService,
@@ -997,7 +998,25 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        public event EventHandler HasUpdateAvailableChanged;
+
         private bool _hasUpdateAvailable;
+        public bool HasUpdateAvailable
+        {
+            get { return _hasUpdateAvailable; }
+            set
+            {
+                var fireEvent = value && !_hasUpdateAvailable;
+
+                _hasUpdateAvailable = value;
+
+                if (fireEvent)
+                {
+                    EventHelper.FireEventIfNotNull(HasUpdateAvailableChanged, this, EventArgs.Empty, Logger);
+                }
+            }
+        }
+
         /// <summary>
         /// Checks for update.
         /// </summary>
@@ -1011,7 +1030,7 @@ namespace MediaBrowser.ServerApplication
             var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, null, ApplicationVersion,
                                                            ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
 
-            _hasUpdateAvailable = version != null;
+            HasUpdateAvailable = version != null;
 
             return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
                        new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
@@ -1028,7 +1047,7 @@ namespace MediaBrowser.ServerApplication
         {
             await InstallationManager.InstallPackage(package, progress, cancellationToken).ConfigureAwait(false);
 
-            _hasUpdateAvailable = false;
+            HasUpdateAvailable = false;
 
             OnApplicationUpdated(package.version);
         }

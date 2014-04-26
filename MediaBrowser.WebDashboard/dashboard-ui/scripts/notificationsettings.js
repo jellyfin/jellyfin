@@ -9,7 +9,12 @@
             $('#chkNewLibraryContent', page).checked(notificationOptions.SendOnNewLibraryContent).checkboxradio('refresh');
             $('#chkFailedTasks', page).checked(notificationOptions.SendOnFailedTasks).checkboxradio('refresh');
             $('#chkUpdates', page).checked(notificationOptions.SendOnUpdates).checkboxradio('refresh');
-            $('#chkPlayback', page).checked(notificationOptions.SendOnPlayback).checkboxradio('refresh');
+            
+            $('#chkServerRestartRequired', page).checked(notificationOptions.SendOnServerRestartRequired).checkboxradio('refresh');
+
+            $('#chkVideoPlayback', page).checked(notificationOptions.SendOnVideoPlayback).checkboxradio('refresh');
+            $('#chkAudioPlayback', page).checked(notificationOptions.SendOnAudioPlayback).checkboxradio('refresh');
+            $('#chkGamePlayback', page).checked(notificationOptions.SendOnGamePlayback).checkboxradio('refresh');
 
         });
     }
@@ -23,7 +28,12 @@
             notificationOptions.SendOnNewLibraryContent = $('#chkNewLibraryContent', page).checked();
             notificationOptions.SendOnFailedTasks = $('#chkFailedTasks', page).checked();
             notificationOptions.SendOnUpdates = $('#chkUpdates', page).checked();
-            notificationOptions.SendOnPlayback = $('#chkPlayback', page).checked();
+            
+            notificationOptions.SendOnServerRestartRequired = $('#chkServerRestartRequired', page).checked();
+
+            notificationOptions.SendOnVideoPlayback = $('#chkVideoPlayback', page).checked();
+            notificationOptions.SendOnAudioPlayback = $('#chkAudioPlayback', page).checked();
+            notificationOptions.SendOnGamePlayback = $('#chkGamePlayback', page).checked();
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });

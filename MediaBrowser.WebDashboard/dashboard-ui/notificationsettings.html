@@ -28,13 +28,27 @@
                                 <input type="checkbox" data-mini="true" id="chkFailedTasks" />
                                 <label for="chkFailedTasks">${OptionNotifyOnFailedTasks}</label>
 
+                                <input type="checkbox" data-mini="true" id="chkServerRestartRequired" />
+                                <label for="chkServerRestartRequired">${OptionNotifyOnServerRestartRequired}</label>
+
                                 <input type="checkbox" data-mini="true" id="chkUpdates" />
                                 <label for="chkUpdates">${OptionNotifyOnUpdates}</label>
 
-                                <input type="checkbox" data-mini="true" id="chkPlayback" />
-                                <label for="chkPlayback">${OptionNotifyOnPlayback}</label>
-
                                 <div class="fieldDescription">${SendNotificationHelp}</div>
+                            </div>
+
+                            <br />
+
+                            <label>${HeaderEnableNotificationForPlayback}</label>
+                            <div data-role="controlgroup">
+                                <input type="checkbox" data-mini="true" id="chkVideoPlayback" />
+                                <label for="chkVideoPlayback">${OptionNotifyOnVideoPlayback}</label>
+
+                                <input type="checkbox" data-mini="true" id="chkAudioPlayback" />
+                                <label for="chkAudioPlayback">${OptionNotifyOnAudioPlayback}</label>
+
+                                <input type="checkbox" data-mini="true" id="chkGamePlayback" />
+                                <label for="chkGamePlayback">${OptionNotifyOnGamePlayback}</label>
                             </div>
                         </li>
                     </ul>
