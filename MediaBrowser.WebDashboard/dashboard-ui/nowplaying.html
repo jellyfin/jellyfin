@@ -4,9 +4,52 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="nowPlayingPage" data-role="page" class="page libraryPage" data-theme="b">
+    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage" data-theme="b">
 
         <div data-role="content">
+
+            <div data-role="controlgroup" data-type="horizontal" data-mini="true" style="text-align: center;">
+                <input type="radio" name="radioNowPlayingTab" class="radioTabButton" id="radioNowPlaying" value="tabNowPlaying">
+                <label for="radioNowPlaying">${TabNowPlaying}</label>
+                <input type="radio" name="radioNowPlayingTab" class="radioTabButton" id="radioNavigation" value="tabNavigation">
+                <label for="radioNavigation">${TabNavigation}</label>
+            </div>
+            <br />
+            
+            <div class="tabNowPlaying tabContent"></div>
+
+            <div class="tabNavigation tabContent" style="text-align: center;">
+
+                <div data-role="controlgroup" data-type="horizontal">
+                    <button data-icon="arrow-u" data-inline="true" data-iconpos="notext" title="${ButtonArrowUp}" class="btnArrowUp btnCommand" data-command="MoveUp">${ButtonArrowUp}</button>
+                </div>
+                <div data-role="controlgroup" data-type="horizontal">
+                    <button data-icon="arrow-l" data-inline="true" data-iconpos="notext" title="${ButtonArrowLeft}" class="btnArrowLeft btnCommand" data-command="MoveLeft">${ButtonArrowLeft}</button>
+                    <button data-icon="check" data-inline="true" data-iconpos="notext" title="${ButtonOk}" class="btnOk btnCommand" data-command="Select">${ButtonOk}</button>
+                    <button data-icon="arrow-r" data-inline="true" data-iconpos="notext" title="${ButtonArrowRight}" class="btnArrowRight btnCommand" data-command="MoveRight">${ButtonArrowRight}</button>
+                </div>
+                <div data-role="controlgroup" data-type="horizontal">
+                    <button data-icon="arrow-d" data-inline="true" data-iconpos="notext" title="${ButtonArrowDown}" class="btnArrowDown btnCommand" data-command="MoveDown">${ButtonArrowDown}</button>
+                </div>
+                <div data-role="controlgroup" data-type="horizontal">
+                    <button data-icon="back" data-inline="true" data-iconpos="notext" title="${ButtonBack}" class="btnBack btnCommand" data-command="Back">${ButtonBack}</button>
+                    <button data-icon="info" data-inline="true" data-iconpos="notext" title="${ButtonInfo}" class="btnInfo btnCommand" data-command="ToggleContextMenu">${ButtonInfo}</button>
+                </div>
+                <br />
+                <div data-role="controlgroup" data-type="horizontal">
+                    <button data-icon="home" data-inline="true" data-iconpos="notext" title="${ButtonHome}" class="btnGoHome btnCommand" data-command="GoHome">${ButtonHome}</button>
+                    <button data-inline="true" data-iconpos="right" title="${ButtonPageUp}" data-icon="plus" class="btnPageUp btnCommand ui-nodisc-icon" data-command="PageUp">${PageButtonAbbreviation}</button>
+                    <button data-inline="true" data-iconpos="right" title="${ButtonLetterUp}" data-icon="plus" class="btnLetterUp btnCommand ui-nodisc-icon" data-command="NextLetter">${LetterButtonAbbreviation}</button>
+                    <button data-icon="search" data-inline="true" data-iconpos="notext" title="${ButtonSearch}" class="btnShowSearch btnCommand" data-command="GoToSearch">${ButtonSearch}</button>
+                </div>
+                <div data-role="controlgroup" data-type="horizontal">
+                    <button data-icon="gear" data-inline="true" data-iconpos="notext" title="${ButtonSettings}" class="bthShowSettings btnCommand" data-command="GoToSettings">${ButtonSettings}</button>
+                    <button data-inline="true" data-iconpos="right" title="${ButtonPageDown}" data-icon="minus" class="btnPageDown btnCommand ui-nodisc-icon" data-command="PageDown">${PageButtonAbbreviation}</button>
+                    <button data-inline="true" data-iconpos="right" title="${ButtonLetterDown}" data-icon="minus" class="btnLetterDown btnCommand ui-nodisc-icon" data-command="PreviousLetter">${LetterButtonAbbreviation}</button>
+                    <button data-icon="camera" data-inline="true" data-iconpos="notext" title="${ButtonTakeScreenshot}" class="btnScreenshot btnCommand" data-command="TakeScreenshot">${ButtonTakeScreenshot}</button>
+                </div>
+
+            </div>
         </div>
     </div>
 </body>
