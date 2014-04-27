@@ -34,6 +34,8 @@ namespace MediaBrowser.Api.Playback
         /// <value>The log file stream.</value>
         public Stream LogFileStream { get; set; }
 
+        public string InputContainer { get; set; }
+        
         public MediaStream AudioStream { get; set; }
         public MediaStream VideoStream { get; set; }
         public MediaStream SubtitleStream { get; set; }

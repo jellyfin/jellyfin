@@ -75,7 +75,8 @@
                 notificationConfig = {
                     DisabledMonitorUsers: [],
                     SendToUsers: [],
-                    DisabledServices: []
+                    DisabledServices: [],
+                    SendToUserMode: 'Admins'
                 };
             }
 

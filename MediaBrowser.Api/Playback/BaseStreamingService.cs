@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -1089,15 +1090,13 @@ namespace MediaBrowser.Api.Playback
         {
             state.Dispose();
 
-            var outputFilePath = GetOutputFilePath(state);
-
             try
             {
-                Logger.Info("FFMpeg exited with code {0} for {1}", process.ExitCode, outputFilePath);
+                Logger.Info("FFMpeg exited with code {0}", process.ExitCode);
             }
             catch
             {
-                Logger.Info("FFMpeg exited with an error for {0}", outputFilePath);
+                Logger.Info("FFMpeg exited with an error.");
             }
         }
 
@@ -1388,6 +1387,7 @@ namespace MediaBrowser.Api.Playback
                 state.DeInterlace = true;
                 state.InputVideoSync = "-1";
                 state.InputAudioSync = "1";
+                state.InputContainer = recording.Container;
             }
             else if (item is LiveTvChannel)
             {
@@ -1439,6 +1439,14 @@ namespace MediaBrowser.Api.Playback
 
                     state.DeInterlace = string.Equals(video.Container, "wtv", StringComparison.OrdinalIgnoreCase);
                     state.InputTimestamp = video.Timestamp ?? TransportStreamTimestamp.None;
+
+                    state.InputContainer = video.Container;
+                }
+
+                var audio = item as Audio;
+                if (audio != null)
+                {
+                    state.InputContainer = audio.Container;
                 }
 
                 state.RunTimeTicks = item.RunTimeTicks;
@@ -1484,14 +1492,13 @@ namespace MediaBrowser.Api.Playback
 
             if (string.IsNullOrEmpty(container))
             {
-                container = Path.GetExtension(GetOutputFilePath(state));
+                container = request.Static ? state.InputContainer : Path.GetExtension(GetOutputFilePath(state));
             }
 
             state.OutputContainer = (container ?? string.Empty).TrimStart('.');
 
             ApplyDeviceProfileSettings(state);
 
-            state.OutputContainer = GetOutputFileExtension(state).TrimStart('.');
             state.OutputAudioBitrate = GetAudioBitrateParam(state.Request, state.AudioStream);
             state.OutputAudioSampleRate = request.AudioSampleRate;
             state.OutputAudioChannels = GetNumAudioChannelsParam(state.Request, state.AudioStream);
@@ -1519,8 +1526,8 @@ namespace MediaBrowser.Api.Playback
 
             state.DeviceProfile = string.IsNullOrWhiteSpace(state.Request.DeviceProfileId) ?
                 DlnaManager.GetProfile(headers) :
-                DlnaManager.GetProfile(state.Request.DeviceProfileId); 
-            
+                DlnaManager.GetProfile(state.Request.DeviceProfileId);
+
             return state;
         }
 
@@ -1670,8 +1677,8 @@ namespace MediaBrowser.Api.Playback
 
             var mediaProfile = state.VideoRequest == null ?
                 profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate) :
-                profile.GetVideoMediaProfile(state.OutputContainer, 
-                audioCodec, 
+                profile.GetVideoMediaProfile(state.OutputContainer,
+                audioCodec,
                 videoCodec,
                 state.OutputAudioBitrate,
                 state.OutputAudioChannels,

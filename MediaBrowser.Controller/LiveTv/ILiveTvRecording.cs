@@ -12,6 +12,8 @@ namespace MediaBrowser.Controller.LiveTv
 
         string MediaType { get; }
 
+        string Container { get; }
+
         RecordingInfo RecordingInfo { get; set; }
 
         long? RunTimeTicks { get; set; }
