@@ -1,6 +1,6 @@
 ﻿(function () {
 
-    function fillItems(elem, items, cssClass, idPrefix, disabledList) {
+    function fillItems(elem, items, cssClass, idPrefix, currentList, isEnabledList) {
 
         var html = '<div data-role="controlgroup">';
 
@@ -8,7 +8,9 @@
 
             var id = idPrefix + u.Id;
 
-            var checkedHtml = disabledList.indexOf(u.Id) != -1 ? '' : ' checked="checked"';
+            var isChecked = isEnabledList ? currentList.indexOf(u.Id) != -1 : currentList.indexOf(u.Id) == -1;
+
+            var checkedHtml = isChecked ? ' checked="checked"' : '';
 
             return '<label for="' + id + '">' + u.Name + '</label><input class="' + cssClass + '" type="checkbox" data-itemid="' + u.Id + '" data-mini="true" id="' + id + '"' + checkedHtml + ' />';
 
@@ -72,18 +74,20 @@
 
                 notificationConfig = {
                     DisabledMonitorUsers: [],
-                    DisabledSendToUsers: [],
+                    SendToUsers: [],
                     DisabledServices: []
                 };
             }
 
             fillItems($('.monitorUsersList', page), users, 'chkMonitor', 'chkMonitor', notificationConfig.DisabledMonitorUsers);
-            fillItems($('.sendToUsersList', page), users, 'chkSendTo', 'chkSendTo', notificationConfig.DisabledSendToUsers);
+            fillItems($('.sendToUsersList', page), users, 'chkSendTo', 'chkSendTo', notificationConfig.SendToUsers, true);
             fillItems($('.servicesList', page), services, 'chkService', 'chkService', notificationConfig.DisabledServices);
 
             $('#chkEnabled', page).checked(notificationConfig.Enabled || false).checkboxradio('refresh');
 
             $('#txtTitle', page).val(notificationConfig.Title || typeInfo.DefaultTitle);
+
+            $('#selectUsers', page).val(notificationConfig.SendToUserMode).selectmenu('refresh').trigger('change');
 
         });
     }
@@ -123,6 +127,7 @@
 
             notificationConfig.Enabled = $('#chkEnabled', page).checked();
             notificationConfig.Title = $('#txtTitle', page).val();
+            notificationConfig.SendToUserMode = $('#selectUsers', page).val();
 
             // Don't persist if it's just the default
             if (notificationConfig.Title == typeInfo.DefaultTitle) {
@@ -133,7 +138,7 @@
                 return c.getAttribute('data-itemid');
             });
 
-            notificationConfig.DisabledSendToUsers = $('.chkSendTo:not(:checked)', page).get().map(function (c) {
+            notificationConfig.SendToUsers = $('.chkSendTo:checked', page).get().map(function (c) {
                 return c.getAttribute('data-itemid');
             });
 
@@ -141,7 +146,7 @@
                 return c.getAttribute('data-itemid');
             });
 
-            ApiClient.updateServerConfiguration(config).done(function(r) {
+            ApiClient.updateServerConfiguration(config).done(function (r) {
 
                 Dashboard.navigate('notificationsettings.html');
             });
@@ -149,7 +154,21 @@
         });
     }
 
-    $(document).on('pageshow', "#notificationSettingPage", function () {
+    $(document).on('pageinit', "#notificationSettingPage", function () {
+
+        var page = this;
+
+        $('#selectUsers', page).on('change', function () {
+
+            if (this.value == 'Custom') {
+                $('.selectCustomUsers', page).show();
+            } else {
+                $('.selectCustomUsers', page).hide();
+            }
+
+        });
+
+    }).on('pageshow', "#notificationSettingPage", function () {
 
         var page = this;
 

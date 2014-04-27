@@ -38,8 +38,19 @@
                     </div>
 
                     <div>
-                        <label>${LabelSendNotificationToUsers}</label>
-                        <div class="sendToUsersList">
+                        <div>
+                            <label for="selectUsers">${LabelSendNotificationToUsers}</label>
+                            <select id="selectUsers" data-mini="true">
+                                <option value="All">${OptionAllUsers}</option>
+                                <option value="Admins">${OptionAdminUsers}</option>
+                                <option value="Custom">${OptionCustomUsers}</option>
+                            </select>
+                        </div>
+                        <div class="selectCustomUsers" style="display: none;">
+                            <br />
+                            <label>${LabelSelectUsers}</label>
+                            <div class="sendToUsersList">
+                            </div>
                         </div>
                         <br />
                         <br />
@@ -57,7 +68,7 @@
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="txtTitle">${LabelMessageTitle}</label>
-                            <input id="txtTitle" type="text" data-mini="true" />
+                            <input id="txtTitle" type="text" data-mini="true" required="required" />
                             <div class="fieldDescription tokenHelp">
                                 <div>${LabelAvailableTokens}</div>
                                 <div class="tokenList" style="margin-top: .5em;"></div>

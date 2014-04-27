@@ -14,42 +14,50 @@ namespace MediaBrowser.Model.Configuration
                 new NotificationOption
                 {
                     Type = NotificationType.TaskFailed.ToString(),
-                    Enabled = true
+                    Enabled = true,
+                    SendToUserMode = SendToUserType.Admins
                 },
                 new NotificationOption
                 {
                     Type = NotificationType.ServerRestartRequired.ToString(),
-                    Enabled = true
+                    Enabled = true,
+                    SendToUserMode = SendToUserType.Admins
                 },
                 new NotificationOption
                 {
                     Type = NotificationType.ApplicationUpdateAvailable.ToString(),
-                    Enabled = true
+                    Enabled = true,
+                    SendToUserMode = SendToUserType.Admins
                 },
                 new NotificationOption
                 {
                     Type = NotificationType.ApplicationUpdateInstalled.ToString(),
-                    Enabled = true
+                    Enabled = true,
+                    SendToUserMode = SendToUserType.Admins
                 },
                 new NotificationOption
                 {
                     Type = NotificationType.PluginUpdateInstalled.ToString(),
-                    Enabled = true
+                    Enabled = true,
+                    SendToUserMode = SendToUserType.Admins
                 },
                 new NotificationOption
                 {
                     Type = NotificationType.PluginUninstalled.ToString(),
-                    Enabled = true
+                    Enabled = true,
+                    SendToUserMode = SendToUserType.Admins
                 },
                 new NotificationOption
                 {
                     Type = NotificationType.InstallationFailed.ToString(),
-                    Enabled = true
+                    Enabled = true,
+                    SendToUserMode = SendToUserType.Admins
                 },
                 new NotificationOption
                 {
                     Type = NotificationType.PluginInstalled.ToString(),
-                    Enabled = true
+                    Enabled = true,
+                    SendToUserMode = SendToUserType.Admins
                 }
             };
         }
@@ -82,12 +90,26 @@ namespace MediaBrowser.Model.Configuration
                    !opt.DisabledMonitorUsers.Contains(userId, StringComparer.OrdinalIgnoreCase);
         }
 
-        public bool IsEnabledToSendToUser(string type, string userId)
+        public bool IsEnabledToSendToUser(string type, string userId, UserConfiguration userConfig)
         {
             var opt = GetOptions(type);
 
-            return opt != null && opt.Enabled &&
-                   !opt.DisabledSendToUsers.Contains(userId, StringComparer.OrdinalIgnoreCase);
+            if (opt != null && opt.Enabled)
+            {
+                if (opt.SendToUserMode == SendToUserType.All)
+                {
+                    return true;
+                }
+
+                if (opt.SendToUserMode == SendToUserType.Admins && userConfig.IsAdministrator)
+                {
+                    return true;
+                }
+
+                return opt.SendToUsers.Contains(userId, StringComparer.OrdinalIgnoreCase);
+            }
+
+            return false;
         }
     }
 
@@ -101,9 +123,9 @@ namespace MediaBrowser.Model.Configuration
         public string[] DisabledMonitorUsers { get; set; }
 
         /// <summary>
-        /// User Ids to not send to (it's opt out)
+        /// User Ids to send to (if SendToUserMode == Custom)
         /// </summary>
-        public string[] DisabledSendToUsers { get; set; }
+        public string[] SendToUsers { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="NotificationOption"/> is enabled.
@@ -122,28 +144,41 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The disabled services.</value>
         public string[] DisabledServices { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the send to user mode.
+        /// </summary>
+        /// <value>The send to user mode.</value>
+        public SendToUserType SendToUserMode { get; set; }
+
         public NotificationOption()
         {
             DisabledServices = new string[] { };
             DisabledMonitorUsers = new string[] { };
-            DisabledSendToUsers = new string[] { };
+            SendToUsers = new string[] { };
         }
     }
 
     public enum NotificationType
     {
-        TaskFailed,
-        InstallationFailed,
-        NewLibraryContent,
-        ServerRestartRequired,
         ApplicationUpdateAvailable,
         ApplicationUpdateInstalled,
+        AudioPlayback,
+        GamePlayback,
+        InstallationFailed,
         PluginInstalled,
         PluginUpdateInstalled,
         PluginUninstalled,
-        AudioPlayback,
-        GamePlayback,
+        NewLibraryContent,
+        ServerRestartRequired,
+        TaskFailed,
         VideoPlayback
+    }
+
+    public enum SendToUserType
+    {
+        All = 0,
+        Admins = 1,
+        Custom = 2
     }
 }

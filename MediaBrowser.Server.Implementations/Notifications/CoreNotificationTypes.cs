@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Localization;
+﻿using MediaBrowser.Controller;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Notifications;
@@ -11,22 +12,18 @@ namespace MediaBrowser.Server.Implementations.Notifications
     public class CoreNotificationTypes : INotificationTypeFactory
     {
         private readonly ILocalizationManager _localization;
+        private readonly IServerApplicationHost _appHost;
 
-        public CoreNotificationTypes(ILocalizationManager localization)
+        public CoreNotificationTypes(ILocalizationManager localization, IServerApplicationHost appHost)
         {
             _localization = localization;
+            _appHost = appHost;
         }
 
         public IEnumerable<NotificationTypeInfo> GetNotificationTypes()
         {
             var knownTypes = new List<NotificationTypeInfo>
             {
-                new NotificationTypeInfo
-                {
-                     Type = NotificationType.ApplicationUpdateAvailable.ToString(),
-                     DefaultTitle = "A new version of Media Browser Server is available for download."
-                },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.ApplicationUpdateInstalled.ToString(),
@@ -103,6 +100,15 @@ namespace MediaBrowser.Server.Implementations.Notifications
                      Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
                 }
             };
+
+            if (!_appHost.CanSelfUpdate)
+            {
+                knownTypes.Add(new NotificationTypeInfo
+                {
+                    Type = NotificationType.ApplicationUpdateAvailable.ToString(),
+                    DefaultTitle = "A new version of Media Browser Server is available for download."
+                });
+            }
 
             foreach (var type in knownTypes)
             {

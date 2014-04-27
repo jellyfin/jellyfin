@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Model.Notifications
 {
@@ -48,6 +49,8 @@ namespace MediaBrowser.Model.Notifications
 
         public Dictionary<string, string> Variables { get; set; }
 
+        public SendToUserType? SendToUserMode { get; set; }
+        
         public NotificationRequest()
         {
             UserIds = new List<string>();

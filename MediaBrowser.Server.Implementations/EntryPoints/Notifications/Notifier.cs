@@ -75,15 +75,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var installationInfo = e.Argument.Item1;
 
-            var userIds = _userManager
-              .Users
-              .Where(i => i.Configuration.IsAdministrator && _config.Configuration.NotificationOptions.IsEnabledToSendToUser(type, i.Id.ToString("N")))
-              .Select(i => i.Id.ToString("N"))
-              .ToList();
-
             var notification = new NotificationRequest
             {
-                UserIds = userIds,
                 Description = installationInfo.Description,
                 NotificationType = type
             };
@@ -100,15 +93,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var installationInfo = e.Argument;
 
-            var userIds = _userManager
-              .Users
-              .Where(i => i.Configuration.IsAdministrator && _config.Configuration.NotificationOptions.IsEnabledToSendToUser(type, i.Id.ToString("N")))
-              .Select(i => i.Id.ToString("N"))
-              .ToList();
-
             var notification = new NotificationRequest
             {
-                UserIds = userIds,
                 Description = installationInfo.description,
                 NotificationType = type
             };
@@ -129,15 +115,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var type = NotificationType.ApplicationUpdateAvailable.ToString();
 
-            var userIds = _userManager
-              .Users
-              .Where(i => i.Configuration.IsAdministrator && _config.Configuration.NotificationOptions.IsEnabledToSendToUser(type, i.Id.ToString("N")))
-              .Select(i => i.Id.ToString("N"))
-              .ToList();
-
             var notification = new NotificationRequest
             {
-                UserIds = userIds,
                 Description = "Please see mediabrowser3.com for details.",
                 NotificationType = type
             };
@@ -154,15 +133,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var type = NotificationType.ServerRestartRequired.ToString();
 
-            var userIds = _userManager
-              .Users
-              .Where(i => i.Configuration.IsAdministrator && _config.Configuration.NotificationOptions.IsEnabledToSendToUser(type, i.Id.ToString("N")))
-              .Select(i => i.Id.ToString("N"))
-              .ToList();
-
             var notification = new NotificationRequest
             {
-                UserIds = userIds,
                 NotificationType = type
             };
 
@@ -173,17 +145,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         {
             var user = e.Users.FirstOrDefault();
 
-            var userIds = _userManager
-              .Users
-              .Where(i => NotifyOnPlayback(e.MediaInfo.MediaType, user, i))
-              .Select(i => i.Id.ToString("N"))
-              .ToList();
-
             var item = e.MediaInfo;
 
             var notification = new NotificationRequest
             {
-                UserIds = userIds
+                NotificationType = GetPlaybackNotificationType(item.MediaType)
             };
 
             notification.Variables["ItemName"] = item.Name;
@@ -193,71 +159,23 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             await SendNotification(notification).ConfigureAwait(false);
         }
-
-        private bool NotifyOnPlayback(string mediaType, User playingUser, User notifiedUser)
+        
+        private string GetPlaybackNotificationType(string mediaType)
         {
             if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
             {
-                var type = NotificationType.AudioPlayback.ToString();
-
-                if (playingUser != null)
-                {
-                    if (!_config.Configuration.NotificationOptions.IsEnabledToMonitorUser(
-                            type, playingUser.Id.ToString("N")))
-                    {
-                        return false;
-                    }
-
-                    if (playingUser.Id == notifiedUser.Id)
-                    {
-                        return false;
-                    }
-                }
-
-                return _config.Configuration.NotificationOptions.IsEnabledToSendToUser(type, notifiedUser.Id.ToString("N"));
+                return NotificationType.AudioPlayback.ToString();
             }
             if (string.Equals(mediaType, MediaType.Game, StringComparison.OrdinalIgnoreCase))
             {
-                var type = NotificationType.GamePlayback.ToString();
-
-                if (playingUser != null)
-                {
-                    if (!_config.Configuration.NotificationOptions.IsEnabledToMonitorUser(
-                            type, playingUser.Id.ToString("N")))
-                    {
-                        return false;
-                    }
-
-                    if (playingUser.Id == notifiedUser.Id)
-                    {
-                        return false;
-                    }
-                }
-
-                return _config.Configuration.NotificationOptions.IsEnabledToSendToUser(type, notifiedUser.Id.ToString("N"));
+                return NotificationType.GamePlayback.ToString();
             }
             if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
-                var type = NotificationType.VideoPlayback.ToString();
-
-                if (playingUser != null)
-                {
-                    if (!_config.Configuration.NotificationOptions.IsEnabledToMonitorUser(
-                            type, playingUser.Id.ToString("N")))
-                    {
-                        return false;
-                    }
-
-                    if (playingUser.Id == notifiedUser.Id)
-                    {
-                        return false;
-                    }
-                }
-
-                return _config.Configuration.NotificationOptions.IsEnabledToSendToUser(type, notifiedUser.Id.ToString("N"));
+                return NotificationType.VideoPlayback.ToString();
             }
 
-            return false;
+            return null;
         }
 
         async void _libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
@@ -266,17 +184,10 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             {
                 var type = NotificationType.NewLibraryContent.ToString();
 
-                var userIds = _userManager
-                  .Users
-                  .Where(i => _config.Configuration.NotificationOptions.IsEnabledToSendToUser(type, i.Id.ToString("N")))
-                  .Select(i => i.Id.ToString("N"))
-                  .ToList();
-
                 var item = e.Item;
 
                 var notification = new NotificationRequest
                 {
-                    UserIds = userIds,
                     NotificationType = type
                 };
 
@@ -306,15 +217,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             {
                 var type = NotificationType.TaskFailed.ToString();
 
-                var userIds = _userManager
-                  .Users
-                  .Where(i => i.Configuration.IsAdministrator && _config.Configuration.NotificationOptions.IsEnabledToSendToUser(type, i.Id.ToString("N")))
-                  .Select(i => i.Id.ToString("N"))
-                  .ToList();
-
                 var notification = new NotificationRequest
                 {
-                    UserIds = userIds,
                     Description = result.ErrorMessage,
                     Level = NotificationLevel.Error,
                     NotificationType = type
@@ -332,15 +236,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             
             var plugin = e.Argument;
 
-            var userIds = _userManager
-              .Users
-              .Where(i => i.Configuration.IsAdministrator && _config.Configuration.NotificationOptions.IsEnabledToSendToUser(type, i.Id.ToString("N")))
-              .Select(i => i.Id.ToString("N"))
-              .ToList();
-
             var notification = new NotificationRequest
             {
-                UserIds = userIds,
                 NotificationType = type
             };
 
@@ -356,15 +253,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var type = NotificationType.InstallationFailed.ToString();
 
-            var userIds = _userManager
-                .Users
-                .Where(i => i.Configuration.IsAdministrator && _config.Configuration.NotificationOptions.IsEnabledToSendToUser(type, i.Id.ToString("N")))
-                .Select(i => i.Id.ToString("N"))
-                .ToList();
-
             var notification = new NotificationRequest
             {
-                UserIds = userIds,
                 Level = NotificationLevel.Error,
                 Description = e.Exception.Message,
                 NotificationType = type
