@@ -92,6 +92,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\MetadataPlugin.cs">
       <Link>Configuration\MetadataPlugin.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\NotificationOptions.cs">
+      <Link>Configuration\NotificationOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\ServerConfiguration.cs">
       <Link>Configuration\ServerConfiguration.cs</Link>
     </Compile>

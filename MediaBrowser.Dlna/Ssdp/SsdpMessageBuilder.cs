@@ -31,7 +31,7 @@ namespace MediaBrowser.Dlna.Ssdp
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             values["HOST"] = "239.255.255.250:1900";
-            values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/0.6.9.1";
+            values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
             values["ST"] = deviceSearchType;
             values["MAN"] = "\"ssdp:discover\"";
             values["MX"] = mx;

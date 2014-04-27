@@ -1,8 +1,15 @@
-﻿using MediaBrowser.Common;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Session;
+using MediaBrowser.Dlna.PlayTo;
 using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
 using System;
@@ -15,19 +22,39 @@ namespace MediaBrowser.Dlna.Main
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
-        private readonly IApplicationHost _appHost;
+        private readonly IServerApplicationHost _appHost;
         private readonly INetworkManager _network;
 
+        private PlayToManager _manager;
+        private readonly ISessionManager _sessionManager;
+        private readonly IHttpClient _httpClient;
+        private readonly IItemRepository _itemRepo;
+        private readonly ILibraryManager _libraryManager;
+        private readonly INetworkManager _networkManager;
+        private readonly IUserManager _userManager;
+        private readonly IDlnaManager _dlnaManager;
+        private readonly IDtoService _dtoService;
+        private readonly IImageProcessor _imageProcessor;
+        
         private SsdpHandler _ssdpHandler;
 
         private readonly List<Guid> _registeredServerIds = new List<Guid>();
         private bool _dlnaServerStarted;
 
-        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IApplicationHost appHost, INetworkManager network)
+        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager, IDtoService dtoService, IImageProcessor imageProcessor)
         {
             _config = config;
             _appHost = appHost;
             _network = network;
+            _sessionManager = sessionManager;
+            _httpClient = httpClient;
+            _itemRepo = itemRepo;
+            _libraryManager = libraryManager;
+            _networkManager = networkManager;
+            _userManager = userManager;
+            _dlnaManager = dlnaManager;
+            _dtoService = dtoService;
+            _imageProcessor = imageProcessor;
             _logger = logManager.GetLogger("Dlna");
         }
 
@@ -46,15 +73,26 @@ namespace MediaBrowser.Dlna.Main
 
         private void ReloadComponents()
         {
-            var isStarted = _dlnaServerStarted;
+            var isServerStarted = _dlnaServerStarted;
 
-            if (_config.Configuration.DlnaOptions.EnableServer && !isStarted)
+            if (_config.Configuration.DlnaOptions.EnableServer && !isServerStarted)
             {
                 StartDlnaServer();
             }
-            else if (!_config.Configuration.DlnaOptions.EnableServer && isStarted)
+            else if (!_config.Configuration.DlnaOptions.EnableServer && isServerStarted)
             {
                 DisposeDlnaServer();
+            }
+
+            var isPlayToStarted = _manager != null;
+
+            if (_config.Configuration.DlnaOptions.EnablePlayTo && !isPlayToStarted)
+            {
+                StartPlayToManager();
+            }
+            else if (!_config.Configuration.DlnaOptions.EnablePlayTo && isPlayToStarted)
+            {
+                DisposePlayToManager();
             }
         }
 
@@ -145,9 +183,59 @@ namespace MediaBrowser.Dlna.Main
               );
         }
 
+        private readonly object _syncLock = new object();
+        private void StartPlayToManager()
+        {
+            lock (_syncLock)
+            {
+                try
+                {
+                    _manager = new PlayToManager(_logger,
+                        _config,
+                        _sessionManager,
+                        _httpClient,
+                        _itemRepo,
+                        _libraryManager,
+                        _networkManager,
+                        _userManager,
+                        _dlnaManager,
+                        _appHost,
+                        _dtoService,
+                        _imageProcessor,
+                        _ssdpHandler);
+
+                    _manager.Start();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error starting PlayTo manager", ex);
+                }
+            }
+        }
+
+        private void DisposePlayToManager()
+        {
+            lock (_syncLock)
+            {
+                if (_manager != null)
+                {
+                    try
+                    {
+                        _manager.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error disposing PlayTo manager", ex);
+                    }
+                    _manager = null;
+                }
+            }
+        }
+
         public void Dispose()
         {
             DisposeDlnaServer();
+            DisposePlayToManager();
             DisposeSsdpHandler();
         }
 

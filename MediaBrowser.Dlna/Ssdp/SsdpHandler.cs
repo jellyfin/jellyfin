@@ -1,14 +1,13 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 
 namespace MediaBrowser.Dlna.Ssdp
@@ -29,13 +28,13 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private Timer _queueTimer;
         private Timer _notificationTimer;
-        
+
         private readonly AutoResetEvent _datagramPosted = new AutoResetEvent(false);
         private readonly ConcurrentQueue<Datagram> _messageQueue = new ConcurrentQueue<Datagram>();
 
         private bool _isDisposed;
         private readonly ConcurrentDictionary<Guid, List<UpnpDevice>> _devices = new ConcurrentDictionary<Guid, List<UpnpDevice>>();
-  
+
         public SsdpHandler(ILogger logger, IServerConfigurationManager config, string serverSignature)
         {
             _logger = logger;
@@ -51,6 +50,8 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 RespondToSearch(args.EndPoint, args.Headers["st"]);
             }
+
+            EventHelper.FireEventIfNotNull(MessageReceived, this, args, _logger);
         }
 
         public IEnumerable<UpnpDevice> RegisteredDevices
@@ -60,7 +61,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 return _devices.Values.SelectMany(i => i).ToList();
             }
         }
-        
+
         public void Start()
         {
             _socket = CreateMulticastSocket();
@@ -79,8 +80,8 @@ namespace MediaBrowser.Dlna.Ssdp
             SendDatagram(header, values, _ssdpEndp, localAddress, sendCount);
         }
 
-        public void SendDatagram(string header, 
-            Dictionary<string, string> values, 
+        public void SendDatagram(string header,
+            Dictionary<string, string> values,
             IPEndPoint endpoint,
             IPAddress localAddress,
             int sendCount = 1)
@@ -105,7 +106,7 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             foreach (var d in RegisteredDevices)
             {
-                if (string.Equals(deviceType, "ssdp:all", StringComparison.OrdinalIgnoreCase) || 
+                if (string.Equals(deviceType, "ssdp:all", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(deviceType, d.Type, StringComparison.OrdinalIgnoreCase))
                 {
                     SendDatagram(header, values, endpoint, d.Address);
@@ -141,7 +142,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
                     _logger.Info("{1} - Responded to a {0} request to {2}", d.Type, endpoint, d.Address.ToString());
                 }
-            } 
+            }
         }
 
         private readonly object _queueTimerSyncLock = new object();
@@ -223,43 +224,17 @@ namespace MediaBrowser.Dlna.Ssdp
                 var receivedCount = _socket.EndReceiveFrom(result, ref endpoint);
                 var received = (byte[])result.AsyncState;
 
+                var args = SsdpHelper.ParseSsdpResponse(received, (IPEndPoint)endpoint);
+
                 if (_config.Configuration.DlnaOptions.EnableDebugLogging)
                 {
-                    _logger.Debug("{0} - SSDP Received a datagram", endpoint);
+                    var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
+                    var headerText = string.Join(",", headerTexts.ToArray());
+
+                    _logger.Debug("{0} message received from {1}. Headers: {2}", args.Method, args.EndPoint, headerText);
                 }
 
-                using (var reader = new StreamReader(new MemoryStream(received), Encoding.ASCII))
-                {
-                    var proto = (reader.ReadLine() ?? string.Empty).Trim();
-                    var method = proto.Split(new[] { ' ' }, 2)[0];
-                    var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                    for (var line = reader.ReadLine(); line != null; line = reader.ReadLine())
-                    {
-                        line = line.Trim();
-                        if (string.IsNullOrEmpty(line))
-                        {
-                            break;
-                        }
-                        var parts = line.Split(new[] { ':' }, 2);
-
-                        if (parts.Length >= 2)
-                        {
-                            headers[parts[0]] = parts[1].Trim();
-                        }
-                    }
-
-                    if (_config.Configuration.DlnaOptions.EnableDebugLogging)
-                    {
-                        _logger.Debug("{0} - Datagram method: {1}", endpoint, method);
-                    }
-
-                    OnMessageReceived(new SsdpMessageEventArgs
-                    {
-                        Method = method,
-                        Headers = headers,
-                        EndPoint = (IPEndPoint)endpoint
-                    });
-                }
+                OnMessageReceived(args);
             }
             catch (Exception ex)
             {

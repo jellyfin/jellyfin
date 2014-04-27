@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Dlna.Didl;
+using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -38,6 +39,8 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
 
+        private readonly SsdpHandler _ssdpHandler;
+
         public bool SupportsMediaRemoteControl
         {
             get { return true; }
@@ -51,7 +54,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, INetworkManager networkManager, IDlnaManager dlnaManager, IUserManager userManager, IServerApplicationHost appHost, IDtoService dtoService, IImageProcessor imageProcessor)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, INetworkManager networkManager, IDlnaManager dlnaManager, IUserManager userManager, IServerApplicationHost appHost, IDtoService dtoService, IImageProcessor imageProcessor, SsdpHandler ssdpHandler)
         {
             _session = session;
             _itemRepository = itemRepository;
@@ -63,6 +66,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _appHost = appHost;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
+            _ssdpHandler = ssdpHandler;
             _logger = logger;
         }
 
@@ -74,7 +78,35 @@ namespace MediaBrowser.Dlna.PlayTo
             _device.PlaybackStopped += _device_PlaybackStopped;
             _device.Start();
 
-            _updateTimer = new Timer(updateTimer_Elapsed, null, 30000, 30000);
+            _ssdpHandler.MessageReceived += _SsdpHandler_MessageReceived;
+        }
+
+        async void _SsdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
+        {
+            string nts;
+            e.Headers.TryGetValue("NTS", out nts);
+
+            string usn;
+            if (!e.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
+
+            string nt;
+            if (!e.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
+            
+            if (string.Equals(e.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase) && 
+                string.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase))
+            {
+                if (usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1 ||
+                        nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        if (!_disposed)
+                        {
+                            await _sessionManager.ReportSessionEnded(_session.Id).ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
         }
 
         async void _device_PlaybackStopped(object sender, PlaybackStoppedEventArgs e)
@@ -164,34 +196,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 QueueableMediaTypes = new List<string> { mediaInfo.MediaType }
             };
         }
-
-        #region Device EventHandlers & Update Timer
-
-        Timer _updateTimer;
-
-        /// <summary>
-        /// Handles the Elapsed event of the updateTimer control.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        private async void updateTimer_Elapsed(object state)
-        {
-            if (!IsSessionActive)
-            {
-                _updateTimer.Change(Timeout.Infinite, Timeout.Infinite);
-
-                try
-                {
-                    // Session is inactive, mark it for Disposal and don't start the elapsed timer.
-                    await _sessionManager.ReportSessionEnded(_session.Id);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in ReportSessionEnded", ex);
-                }
-            }
-        }
-
-        #endregion
 
         #region SendCommands
 
@@ -571,8 +575,8 @@ namespace MediaBrowser.Dlna.PlayTo
                 _device.PlaybackStart -= _device_PlaybackStart;
                 _device.PlaybackProgress -= _device_PlaybackProgress;
                 _device.PlaybackStopped -= _device_PlaybackStopped;
+                _ssdpHandler.MessageReceived -= _SsdpHandler_MessageReceived;
 
-                _updateTimer.Dispose();
                 _device.Dispose();
             }
         }

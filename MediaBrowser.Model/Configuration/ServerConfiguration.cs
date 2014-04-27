@@ -319,22 +319,4 @@ namespace MediaBrowser.Model.Configuration
         public string From { get; set; }
         public string To { get; set; }
     }
-
-    public class NotificationOptions
-    {
-        public bool SendOnUpdates { get; set; }
-        public bool SendOnVideoPlayback { get; set; }
-        public bool SendOnAudioPlayback { get; set; }
-        public bool SendOnGamePlayback { get; set; }
-        public bool SendOnFailedTasks { get; set; }
-        public bool SendOnNewLibraryContent { get; set; }
-        public bool SendOnServerRestartRequired { get; set; }
-
-        public NotificationOptions()
-        {
-            SendOnUpdates = true;
-            SendOnFailedTasks = true;
-            SendOnServerRestartRequired = true;
-        }
-    }
 }

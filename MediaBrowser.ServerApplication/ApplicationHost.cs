@@ -34,6 +34,7 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Themes;
 using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.Eventing;
+using MediaBrowser.Dlna.Main;
 using MediaBrowser.Dlna.PlayTo;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.MediaEncoding.BdInfo;
@@ -527,7 +528,7 @@ namespace MediaBrowser.ServerApplication
             LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager);
             RegisterSingleInstance(LiveTvManager);
 
-            NotificationManager = new NotificationManager(LogManager, UserManager);
+            NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
             RegisterSingleInstance(NotificationManager);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
@@ -713,7 +714,7 @@ namespace MediaBrowser.ServerApplication
 
             ChannelManager.AddParts(GetExports<IChannel>());
 
-            NotificationManager.AddParts(GetExports<INotificationService>());
+            NotificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
         }
 
         /// <summary>
@@ -846,7 +847,7 @@ namespace MediaBrowser.ServerApplication
             list.Add(typeof(MediaEncoder).Assembly);
 
             // Dlna 
-            list.Add(typeof(PlayToServerEntryPoint).Assembly);
+            list.Add(typeof(DlnaEntryPoint).Assembly);
 
             list.AddRange(Assemblies.GetAssembliesWithParts());
 

@@ -438,7 +438,9 @@ namespace MediaBrowser.Server.Implementations.Session
                 Item = libraryItem,
                 Users = users,
                 MediaSourceId = info.MediaSourceId,
-                MediaInfo = info.Item
+                MediaInfo = info.Item,
+                DeviceName = session.DeviceName,
+                ClientName = session.Client
 
             }, _logger);
 
@@ -507,7 +509,9 @@ namespace MediaBrowser.Server.Implementations.Session
                 Users = users,
                 PlaybackPositionTicks = session.PlayState.PositionTicks,
                 MediaSourceId = session.PlayState.MediaSourceId,
-                MediaInfo = info.Item
+                MediaInfo = info.Item,
+                DeviceName = session.DeviceName,
+                ClientName = session.Client
 
             }, _logger);
         }
@@ -577,7 +581,9 @@ namespace MediaBrowser.Server.Implementations.Session
                 PlaybackPositionTicks = info.PositionTicks,
                 PlayedToCompletion = playedToCompletion,
                 MediaSourceId = info.MediaSourceId,
-                MediaInfo = info.Item
+                MediaInfo = info.Item,
+                DeviceName = session.DeviceName,
+                ClientName = session.Client
 
             }, _logger);
 

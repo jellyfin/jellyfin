@@ -70,7 +70,6 @@
     </Compile>
     <Compile Include="PlayTo\PlaylistItemFactory.cs" />
     <Compile Include="PlayTo\PlayToManager.cs" />
-    <Compile Include="PlayTo\PlayToServerEntryPoint.cs" />
     <Compile Include="Common\ServiceAction.cs" />
     <Compile Include="Profiles\Foobar2000Profile.cs" />
     <Compile Include="Profiles\Windows81Profile.cs" />

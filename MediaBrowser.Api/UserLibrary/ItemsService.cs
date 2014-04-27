@@ -301,9 +301,10 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{ItemsResult}.</returns>
         private ItemsResult GetItems(GetItems request)
         {
+            var parentItem = string.IsNullOrEmpty(request.ParentId) ? null : _libraryManager.GetItemById(request.ParentId);
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 
-            var items = GetItemsToSerialize(request, user);
+            var items = GetItemsToSerialize(request, user, parentItem);
 
             items = items.AsParallel();
 
@@ -320,7 +321,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             items = items.AsEnumerable();
 
-            if (CollapseBoxSetItems(request))
+            if (CollapseBoxSetItems(request, parentItem))
             {
                 items = _collectionManager.CollapseItemsWithinBoxSets(items, user);
             }
@@ -348,8 +349,14 @@ namespace MediaBrowser.Api.UserLibrary
             };
         }
 
-        private bool CollapseBoxSetItems(GetItems request)
+        private bool CollapseBoxSetItems(GetItems request, BaseItem parentItem)
         {
+            // Could end up stuck in a loop like this
+            if (parentItem is BoxSet)
+            {
+                return false;
+            }
+
             var param = request.CollapseBoxSetItems;
 
             if (!param.HasValue)
@@ -369,13 +376,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="user">The user.</param>
+        /// <param name="parentItem">The parent item.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         /// <exception cref="System.InvalidOperationException"></exception>
-        private IEnumerable<BaseItem> GetItemsToSerialize(GetItems request, User user)
+        private IEnumerable<BaseItem> GetItemsToSerialize(GetItems request, User user, BaseItem parentItem)
         {
             var item = string.IsNullOrEmpty(request.ParentId) ?
                 user == null ? _libraryManager.RootFolder : user.RootFolder :
-                _libraryManager.GetItemById(request.ParentId);
+                parentItem;
 
             // Default list type = children
             IEnumerable<BaseItem> items;
@@ -1382,7 +1390,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 return false;
             }
-          
+
             return true;
         }
 

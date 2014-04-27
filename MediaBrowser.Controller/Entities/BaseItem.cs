@@ -236,6 +236,10 @@ namespace MediaBrowser.Controller.Entities
             {
                 return DontFetchMeta;
             }
+            set
+            {
+                DontFetchMeta = value;
+            }
         }
 
         public bool IsUnidentified { get; set; }

@@ -2,10 +2,10 @@
 using MediaBrowser.Controller.News;
 using MediaBrowser.Model.News;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.News
 {

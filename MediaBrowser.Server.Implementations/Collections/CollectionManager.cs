@@ -56,7 +56,7 @@ namespace MediaBrowser.Server.Implementations.Collections
                     Parent = parentFolder,
                     DisplayMediaType = "Collection",
                     Path = path,
-                    DontFetchMeta = options.IsLocked,
+                    IsLocked = options.IsLocked,
                     ProviderIds = options.ProviderIds
                 };
 

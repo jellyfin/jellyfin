@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -28,76 +27,17 @@ namespace MediaBrowser.Api
         public string Id { get; set; }
     }
 
-    [Route("/Artists/{Name}/Refresh", "POST")]
-    [Api(Description = "Refreshes metadata for an artist")]
-    public class RefreshArtist : BaseRefreshRequest
-    {
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Name { get; set; }
-    }
-
-    [Route("/Genres/{Name}/Refresh", "POST")]
-    [Api(Description = "Refreshes metadata for a genre")]
-    public class RefreshGenre : BaseRefreshRequest
-    {
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Name { get; set; }
-    }
-
-    [Route("/MusicGenres/{Name}/Refresh", "POST")]
-    [Api(Description = "Refreshes metadata for a music genre")]
-    public class RefreshMusicGenre : BaseRefreshRequest
-    {
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Name { get; set; }
-    }
-
-    [Route("/GameGenres/{Name}/Refresh", "POST")]
-    [Api(Description = "Refreshes metadata for a game genre")]
-    public class RefreshGameGenre : BaseRefreshRequest
-    {
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Name { get; set; }
-    }
-
-    [Route("/Persons/{Name}/Refresh", "POST")]
-    [Api(Description = "Refreshes metadata for a person")]
-    public class RefreshPerson : BaseRefreshRequest
-    {
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Name { get; set; }
-    }
-
-    [Route("/Studios/{Name}/Refresh", "POST")]
-    [Api(Description = "Refreshes metadata for a studio")]
-    public class RefreshStudio : BaseRefreshRequest
-    {
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Name { get; set; }
-    }
-
     public class ItemRefreshService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
-        private readonly IDtoService _dtoService;
 
-        public ItemRefreshService(ILibraryManager libraryManager, IDtoService dtoService)
+        public ItemRefreshService(ILibraryManager libraryManager)
         {
             _libraryManager = libraryManager;
-            _dtoService = dtoService;
         }
 
-        public void Post(RefreshArtist request)
+        private async Task RefreshArtist(RefreshItem request, MusicArtist item)
         {
-            var task = RefreshArtist(request);
-
-            Task.WaitAll(task);
-        }
-
-        private async Task RefreshArtist(RefreshArtist request)
-        {
-            var item = GetArtist(request.Name, _libraryManager);
-
             var cancellationToken = CancellationToken.None;
 
             var albums = _libraryManager.RootFolder
@@ -127,118 +67,15 @@ namespace MediaBrowser.Api
             }
         }
 
-        public void Post(RefreshGenre request)
-        {
-            var task = RefreshGenre(request);
-
-            Task.WaitAll(task);
-        }
-
-        private async Task RefreshGenre(RefreshGenre request)
-        {
-            var item = GetGenre(request.Name, _libraryManager);
-
-            try
-            {
-                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error refreshing library", ex);
-            }
-        }
-
-        public void Post(RefreshMusicGenre request)
-        {
-            var task = RefreshMusicGenre(request);
-
-            Task.WaitAll(task);
-        }
-
-        private async Task RefreshMusicGenre(RefreshMusicGenre request)
-        {
-            var item = GetMusicGenre(request.Name, _libraryManager);
-
-            try
-            {
-                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error refreshing library", ex);
-            }
-        }
-
-        public void Post(RefreshGameGenre request)
-        {
-            var task = RefreshGameGenre(request);
-
-            Task.WaitAll(task);
-        }
-
-        private async Task RefreshGameGenre(RefreshGameGenre request)
-        {
-            var item = GetGameGenre(request.Name, _libraryManager);
-
-            try
-            {
-                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error refreshing library", ex);
-            }
-        }
-
-        public void Post(RefreshPerson request)
-        {
-            var task = RefreshPerson(request);
-
-            Task.WaitAll(task);
-        }
-
-        private async Task RefreshPerson(RefreshPerson request)
-        {
-            var item = GetPerson(request.Name, _libraryManager);
-
-            try
-            {
-                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error refreshing library", ex);
-            }
-        }
-
-        public void Post(RefreshStudio request)
-        {
-            var task = RefreshStudio(request);
-
-            Task.WaitAll(task);
-        }
-
-        private async Task RefreshStudio(RefreshStudio request)
-        {
-            var item = GetStudio(request.Name, _libraryManager);
-
-            try
-            {
-                await item.RefreshMetadata(GetRefreshOptions(request), CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error refreshing library", ex);
-            }
-        }
-
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
         public void Post(RefreshItem request)
         {
-            var task = RefreshItem(request);
+            var item = _libraryManager.GetItemById(request.Id);
+
+            var task = item is MusicArtist ? RefreshArtist(request, (MusicArtist)item) : RefreshItem(request, item);
 
             Task.WaitAll(task);
         }
@@ -248,10 +85,8 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task.</returns>
-        private async Task RefreshItem(RefreshItem request)
+        private async Task RefreshItem(RefreshItem request, BaseItem item)
         {
-            var item = _libraryManager.GetItemById(request.Id);
-
             var options = GetRefreshOptions(request);
             
             try
