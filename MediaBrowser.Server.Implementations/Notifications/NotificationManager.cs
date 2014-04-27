@@ -38,7 +38,9 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 null :
                 _config.Configuration.NotificationOptions.GetOptions(notificationType);
 
-            var users = GetUserIds(request, options).Select(i => _userManager.GetUserById(new Guid(i)));
+            var users = GetUserIds(request, options)
+                .Except(request.UserIds)
+                .Select(i => _userManager.GetUserById(new Guid(i)));
 
             var title = GetTitle(request, options);
 
@@ -81,20 +83,10 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 }
             }
 
-            if (options != null)
+            if (options != null && !string.IsNullOrWhiteSpace(request.NotificationType))
             {
-                switch (options.SendToUserMode)
-                {
-                    case SendToUserType.Admins:
-                        return _userManager.Users.Where(i => i.Configuration.IsAdministrator)
-                                .Select(i => i.Id.ToString("N"));
-                    case SendToUserType.All:
-                        return _userManager.Users.Select(i => i.Id.ToString("N"));
-                    case SendToUserType.Custom:
-                        return options.SendToUsers;
-                    default:
-                        throw new ArgumentException("Unrecognized SendToUserMode: " + options.SendToUserMode);
-                }
+                return _userManager.Users.Where(i => _config.Configuration.NotificationOptions.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N"), i.Configuration))
+                   .Select(i => i.Id.ToString("N"));
             }
 
             return new List<string>();
