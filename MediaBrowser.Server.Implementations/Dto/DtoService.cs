@@ -313,6 +313,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             dto.Players = item.PlayersSupported;
             dto.GameSystem = item.GameSystem;
+            dto.MultiPartGameFiles = item.MultiPartGameFiles;
         }
 
         private void SetGameSystemProperties(BaseItemDto dto, GameSystem item)

@@ -49,7 +49,8 @@
             Filters: "IsResumable",
             Limit: screenWidth >= 1920 ? 4 : (screenWidth >= 1440 ? 4 : 3),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio"
+            Fields: "PrimaryImageAspectRatio",
+            CollapseBoxSetItems: false
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

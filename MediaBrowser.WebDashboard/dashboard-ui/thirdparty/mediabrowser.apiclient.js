@@ -1104,102 +1104,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.refreshArtist = function (name, force) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Artists/" + self.encodeName(name) + "/Refresh", {
-                forced: force || false
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url
-            });
-        };
-
-        self.refreshGenre = function (name, force) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Genres/" + self.encodeName(name) + "/Refresh", {
-                forced: force || false
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url
-            });
-        };
-
-        self.refreshMusicGenre = function (name, force) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("MusicGenres/" + self.encodeName(name) + "/Refresh", {
-                forced: force || false
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url
-            });
-        };
-
-        self.refreshGameGenre = function (name, force) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("GameGenres/" + self.encodeName(name) + "/Refresh", {
-                forced: force || false
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url
-            });
-        };
-
-        self.refreshPerson = function (name, force) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Persons/" + self.encodeName(name) + "/Refresh", {
-                forced: force || false
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url
-            });
-        };
-
-        self.refreshStudio = function (name, force) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Studios/" + self.encodeName(name) + "/Refresh", {
-                forced: force || false
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url
-            });
-        };
-
         /**
          * Installs or updates a new plugin
          */
@@ -1660,34 +1564,13 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.deleteItemImage = function (itemId, itemType, itemName, imageType, imageIndex) {
+        self.deleteItemImage = function (itemId, imageType, imageIndex) {
 
             if (!imageType) {
                 throw new Error("null imageType");
             }
 
-            if (!itemType) {
-                throw new Error("null itemType");
-            }
-
-            var url;
-
-            if (itemType == "Artist") {
-                url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
-            }
-            else if (itemType == "Genre") {
-                url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "GameGenre") {
-                url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "MusicGenre") {
-                url = self.getUrl("MusicGenres/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "Person") {
-                url = self.getUrl("Persons/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "Studio") {
-                url = self.getUrl("Studios/" + self.encodeName(itemName) + "/Images");
-            } else {
-                url = self.getUrl("Items/" + itemId + "/Images");
-            }
+            var url = self.getUrl("Items/" + itemId + "/Images");
 
             url += "/" + imageType;
 
@@ -1738,36 +1621,15 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateItemImageIndex = function (itemId, itemType, itemName, imageType, imageIndex, newIndex) {
+        self.updateItemImageIndex = function (itemId, imageType, imageIndex, newIndex) {
 
             if (!imageType) {
                 throw new Error("null imageType");
             }
 
-            if (!itemType) {
-                throw new Error("null itemType");
-            }
-
-            var url;
-
             var options = { newIndex: newIndex };
 
-            if (itemType == "Artist") {
-                url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
-            }
-            else if (itemType == "Genre") {
-                url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
-            } else if (itemType == "GameGenre") {
-                url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
-            } else if (itemType == "MusicGenre") {
-                url = self.getUrl("MusicGenres/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
-            } else if (itemType == "Person") {
-                url = self.getUrl("Persons/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
-            } else if (itemType == "Studio") {
-                url = self.getUrl("Studios/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
-            } else {
-                url = self.getUrl("Items/" + itemId + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
-            }
+            var url = self.getUrl("Items/" + itemId + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
 
             return self.ajax({
                 type: "POST",
@@ -1775,30 +1637,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getItemImageInfos = function (itemId, itemType, itemName) {
+        self.getItemImageInfos = function (itemId) {
 
-            if (!itemType) {
-                throw new Error("null itemType");
-            }
-
-            var url;
-
-            if (itemType == "Artist") {
-                url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
-            }
-            else if (itemType == "Genre") {
-                url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "GameGenre") {
-                url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "MusicGenre") {
-                url = self.getUrl("MusicGenres/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "Person") {
-                url = self.getUrl("Persons/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "Studio") {
-                url = self.getUrl("Studios/" + self.encodeName(itemName) + "/Images");
-            } else {
-                url = self.getUrl("Items/" + itemId + "/Images");
-            }
+            var url = self.getUrl("Items/" + itemId + "/Images");
 
             return self.ajax({
                 type: "GET",
@@ -1897,7 +1738,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return deferred.promise();
         };
 
-        self.uploadItemImage = function (itemId, itemType, itemName, imageType, file) {
+        self.uploadItemImage = function (itemId, imageType, file) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -1915,24 +1756,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("File must be an image.");
             }
 
-            var url;
-
-            if (itemType == "Artist") {
-                url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
-            }
-            else if (itemType == "Genre") {
-                url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "GameGenre") {
-                url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "MusicGenre") {
-                url = self.getUrl("MusicGenres/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "Person") {
-                url = self.getUrl("Persons/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "Studio") {
-                url = self.getUrl("Studios/" + self.encodeName(itemName) + "/Images");
-            } else {
-                url = self.getUrl("Items/" + itemId + "/Images");
-            }
+            var url  = self.getUrl("Items/" + itemId + "/Images");
 
             url += "/" + imageType;
 
@@ -2583,102 +2407,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateArtist = function (item) {
-
-            if (!item) {
-                throw new Error("null item");
-            }
-
-            var url = self.getUrl("Artists/" + self.encodeName(item.Name));
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                data: JSON.stringify(item),
-                contentType: "application/json"
-            });
-        };
-
-        self.updatePerson = function (item) {
-
-            if (!item) {
-                throw new Error("null item");
-            }
-
-            var url = self.getUrl("Persons/" + self.encodeName(item.Name));
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                data: JSON.stringify(item),
-                contentType: "application/json"
-            });
-        };
-
-        self.updateStudio = function (item) {
-
-            if (!item) {
-                throw new Error("null item");
-            }
-
-            var url = self.getUrl("Studios/" + self.encodeName(item.Name));
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                data: JSON.stringify(item),
-                contentType: "application/json"
-            });
-        };
-
-        self.updateGenre = function (item) {
-
-            if (!item) {
-                throw new Error("null item");
-            }
-
-            var url = self.getUrl("Genres/" + self.encodeName(item.Name));
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                data: JSON.stringify(item),
-                contentType: "application/json"
-            });
-        };
-
-        self.updateMusicGenre = function (item) {
-
-            if (!item) {
-                throw new Error("null item");
-            }
-
-            var url = self.getUrl("MusicGenres/" + self.encodeName(item.Name));
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                data: JSON.stringify(item),
-                contentType: "application/json"
-            });
-        };
-
-        self.updateGameGenre = function (item) {
-
-            if (!item) {
-                throw new Error("null item");
-            }
-
-            var url = self.getUrl("GameGenres/" + self.encodeName(item.Name));
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                data: JSON.stringify(item),
-                contentType: "application/json"
-            });
-        };
-
         /**
          * Updates plugin security info
          */
@@ -3166,389 +2894,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             return self.ajax({
                 type: "POST",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        /**
-         * Updates a user's favorite status for an item by name.
-         * @param {String} userId
-         * @param {String} name
-         * @param {Boolean} isFavorite
-         */
-        self.updateFavoriteArtistStatus = function (userId, name, isFavorite) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Favorites/Artists/" + self.encodeName(name));
-
-            var method = isFavorite ? "POST" : "DELETE";
-
-            return self.ajax({
-                type: method,
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.updateFavoritePersonStatus = function (userId, name, isFavorite) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Favorites/Persons/" + self.encodeName(name));
-
-            var method = isFavorite ? "POST" : "DELETE";
-
-            return self.ajax({
-                type: method,
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.updateFavoriteStudioStatus = function (userId, name, isFavorite) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Favorites/Studios/" + self.encodeName(name));
-
-            var method = isFavorite ? "POST" : "DELETE";
-
-            return self.ajax({
-                type: method,
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.updateFavoriteGenreStatus = function (userId, name, isFavorite) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Favorites/Genres/" + self.encodeName(name));
-
-            var method = isFavorite ? "POST" : "DELETE";
-
-            return self.ajax({
-                type: method,
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.updateFavoriteMusicGenreStatus = function (userId, name, isFavorite) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Favorites/MusicGenres/" + self.encodeName(name));
-
-            var method = isFavorite ? "POST" : "DELETE";
-
-            return self.ajax({
-                type: method,
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.updateFavoriteGameGenreStatus = function (userId, name, isFavorite) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Favorites/GameGenres/" + self.encodeName(name));
-
-            var method = isFavorite ? "POST" : "DELETE";
-
-            return self.ajax({
-                type: method,
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        /**
-        * Updates a user's rating for an item by name.
-        * @param {String} userId
-        * @param {String} name
-        * @param {Boolean} likes
-        */
-        self.updateArtistRating = function (userId, name, likes) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/Artists/" + self.encodeName(name), {
-                likes: likes
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.updatePersonRating = function (userId, name, likes) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/Persons/" + self.encodeName(name), {
-                likes: likes
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.updateStudioRating = function (userId, name, likes) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/Studios/" + self.encodeName(name), {
-                likes: likes
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.updateGenreRating = function (userId, name, likes) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/Genres/" + self.encodeName(name), {
-                likes: likes
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.updateMusicGenreRating = function (userId, name, likes) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/MusicGenres/" + self.encodeName(name), {
-                likes: likes
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.updateGameGenreRating = function (userId, name, likes) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/GameGenres/" + self.encodeName(name), {
-                likes: likes
-            });
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        /**
-        * Clears a user's rating for an item by name.
-        * @param {String} userId
-        * @param {String} name
-        */
-        self.clearArtistRating = function (userId, name) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/Artists/" + self.encodeName(name));
-
-            return self.ajax({
-                type: "DELETE",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.clearPersonRating = function (userId, name) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/Persons/" + self.encodeName(name));
-
-            return self.ajax({
-                type: "DELETE",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.clearStudioRating = function (userId, name) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/Studios/" + self.encodeName(name));
-
-            return self.ajax({
-                type: "DELETE",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.clearGenreRating = function (userId, name) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/Genres/" + self.encodeName(name));
-
-            return self.ajax({
-                type: "DELETE",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.clearMusicGenreRating = function (userId, name) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/MusicGenres/" + self.encodeName(name));
-
-            return self.ajax({
-                type: "DELETE",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.clearGameGenreRating = function (userId, name) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var url = self.getUrl("Users/" + userId + "/Ratings/GameGenres/" + self.encodeName(name));
-
-            return self.ajax({
-                type: "DELETE",
                 url: url,
                 dataType: "json"
             });

@@ -14,7 +14,8 @@
             Limit: screenWidth >= 1920 ? 32 : (screenWidth >= 1440 ? 24 : (screenWidth >= 800 ? 18 : 12)),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
-            Filters: "IsUnplayed"
+            Filters: "IsUnplayed",
+            CollapseBoxSetItems: false
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -34,7 +35,8 @@
             Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 6),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
-            Filters: "IsUnplayed"
+            Filters: "IsUnplayed",
+            CollapseBoxSetItems: false
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

@@ -46,7 +46,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // Make sure the item has a name
             EnsureName(item, args);
 
-            item.DontFetchMeta = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1 ||
+            item.IsLocked = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1 ||
                 item.Parents.Any(i => i.IsLocked);
 
             // Make sure DateCreated and DateModified have values

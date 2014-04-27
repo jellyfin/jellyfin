@@ -1,5 +1,4 @@
-﻿using System.Text;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -12,12 +11,12 @@ using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +29,6 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly ISessionManager _sessionManager;
         private readonly IHttpClient _httpClient;
         private readonly CancellationTokenSource _tokenSource;
-        private ConcurrentDictionary<string, DateTime> _locations;
 
         private readonly IItemRepository _itemRepository;
         private readonly ILibraryManager _libraryManager;
@@ -42,9 +40,10 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
 
-        public PlayToManager(ILogger logger, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IDtoService dtoService, IImageProcessor imageProcessor)
+        private readonly SsdpHandler _ssdpHandler;
+        
+        public PlayToManager(ILogger logger, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IDtoService dtoService, IImageProcessor imageProcessor, SsdpHandler ssdpHandler)
         {
-            _locations = new ConcurrentDictionary<string, DateTime>();
             _tokenSource = new CancellationTokenSource();
 
             _logger = logger;
@@ -58,13 +57,12 @@ namespace MediaBrowser.Dlna.PlayTo
             _appHost = appHost;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
+            _ssdpHandler = ssdpHandler;
             _config = config;
         }
 
         public void Start()
         {
-            _locations = new ConcurrentDictionary<string, DateTime>();
-
             foreach (var network in GetNetworkInterfaces())
             {
                 _logger.Debug("Found interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
@@ -121,7 +119,9 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     var socket = GetMulticastSocket(networkInterfaceIndex);
 
-                    socket.Bind(new IPEndPoint(localIp, 1900));
+                    var endPoint = new IPEndPoint(localIp, 1900);
+
+                    socket.Bind(endPoint);
 
                     _logger.Info("Creating SSDP listener");
 
@@ -135,9 +135,9 @@ namespace MediaBrowser.Dlna.PlayTo
 
                         if (receivedBytes > 0)
                         {
-                            var headers = SsdpHelper.ParseSsdpResponse(receiveBuffer);
+                            var args = SsdpHelper.ParseSsdpResponse(receiveBuffer, endPoint);
 
-                            TryCreateController(headers);
+                            TryCreateController(args);
                         }
                     }
 
@@ -154,11 +154,47 @@ namespace MediaBrowser.Dlna.PlayTo
             }, _tokenSource.Token, TaskCreationOptions.LongRunning);
         }
 
-        private void TryCreateController(IDictionary<string, string> headers)
+        private void TryCreateController(SsdpMessageEventArgs args)
         {
-            string location;
+            string nts;
+            args.Headers.TryGetValue("NTS", out nts);
 
-            if (!headers.TryGetValue("Location", out location))
+            string usn;
+            if (!args.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
+
+            string nt;
+            if (!args.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
+
+            // Don't create a new controller when a device is indicating it's shutting down
+            if (string.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            // It has to report that it's a media renderer
+            if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
+                     nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                return;
+            }
+            
+            // Need to be able to download device description
+            string location;
+            if (!args.Headers.TryGetValue("Location", out location) ||
+                string.IsNullOrEmpty(location))
+            {
+                return;
+            }
+
+            if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+            {
+                var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
+                var headerText = string.Join(",", headerTexts.ToArray());
+
+                _logger.Debug("{0} PlayTo message received from {1}. Headers: {2}", args.Method, args.EndPoint, headerText);
+            }
+
+            if (_sessionManager.Sessions.Any(i => usn.IndexOf(i.DeviceId, StringComparison.OrdinalIgnoreCase) != -1))
             {
                 return;
             }
@@ -230,12 +266,9 @@ namespace MediaBrowser.Dlna.PlayTo
         /// <returns></returns>
         private async Task CreateController(Uri uri)
         {
-            if (!IsUriValid(uri))
-                return;
-
             var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
 
-            if (device != null && device.RendererCommands != null && !_sessionManager.Sessions.Any(s => string.Equals(s.DeviceId, device.Properties.UUID) && s.IsActive))
+            if (device != null && device.RendererCommands != null)
             {
                 var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null)
                     .ConfigureAwait(false);
@@ -244,7 +277,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 if (controller == null)
                 {
-                    sessionInfo.SessionController = controller = new PlayToController(sessionInfo, _sessionManager, _itemRepository, _libraryManager, _logger, _networkManager, _dlnaManager, _userManager, _appHost, _dtoService, _imageProcessor);
+                    sessionInfo.SessionController = controller = new PlayToController(sessionInfo, _sessionManager, _itemRepository, _libraryManager, _logger, _networkManager, _dlnaManager, _userManager, _appHost, _dtoService, _imageProcessor, _ssdpHandler);
 
                     controller.Init(device);
 
@@ -269,33 +302,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
                 }
             }
-        }
-
-        /// <summary>
-        /// Determines if the Uri is valid for further inspection or not.
-        /// (the limit for reinspection is 5 minutes)
-        /// </summary>
-        /// <param name="uri">The URI.</param>
-        /// <returns>Returns <b>True</b> if the Uri is valid for further inspection</returns>
-        private bool IsUriValid(Uri uri)
-        {
-            if (uri == null)
-                return false;
-
-            if (!_locations.ContainsKey(uri.OriginalString))
-            {
-                _locations.AddOrUpdate(uri.OriginalString, DateTime.UtcNow, (key, existingVal) => existingVal);
-
-                return true;
-            }
-
-            var time = _locations[uri.OriginalString];
-
-            if ((DateTime.UtcNow - time).TotalMinutes <= 5)
-            {
-                return false;
-            }
-            return _locations.TryUpdate(uri.OriginalString, DateTime.UtcNow, time);
         }
 
         public void Dispose()

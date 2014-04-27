@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleAdvanced}</title>
+</head>
+<body>
+    <div id="notificationSettingPage" data-role="page" class="page type-interior advancedConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="advanced.html" data-role="button">${TabGeneral}</a>
+                    <a href="notificationsettings.html" data-role="button" class="ui-btn-active">${TabNotifications}</a>
+                    <a href="advancedpaths.html" data-role="button">${TabPaths}</a>
+                    <a href="advancedserversettings.html" data-role="button">${TabServer}</a>
+                    <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
+                </div>
+
+                <h2 class="notificationType" style="margin-bottom: 0;"></h2>
+
+                <form class="notificationSettingForm">
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <input type="checkbox" id="chkEnabled" data-mini="true" />
+                            <label for="chkEnabled">${LabelNotificationEnabled}</label>
+                        </li>
+                    </ul>
+
+                    <div class="monitorUsers" style="display: none;">
+                        <label>${LabelMonitorUsers}</label>
+                        <div class="monitorUsersList">
+                        </div>
+                        <div class="fieldDescription">${UsersNotNotifiedAboutSelfActivity}</div>
+                        <br />
+                        <br />
+                    </div>
+
+                    <div>
+                        <label>${LabelSendNotificationToUsers}</label>
+                        <div class="sendToUsersList">
+                        </div>
+                        <br />
+                        <br />
+                    </div>
+
+                    <div>
+                        <label>${LabelUseNotificationServices}</label>
+                        <div class="servicesList">
+                        </div>
+                        <div class="fieldDescription">${AdditionalNotificationServices}</div>
+                        <br />
+                    </div>
+
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="txtTitle">${LabelMessageTitle}</label>
+                            <input id="txtTitle" type="text" data-mini="true" />
+                            <div class="fieldDescription tokenHelp">
+                                <div>${LabelAvailableTokens}</div>
+                                <div class="tokenList" style="margin-top: .5em;"></div>
+                            </div>
+                        </li>
+                        <li>
+                            <br />
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                ${ButtonSave}
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('notificationsettings.html');" data-icon="delete" data-mini="true">
+                                ${ButtonCancel}
+                            </button>
+                        </li>
+
+                    </ul>
+                </form>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.notificationSettingForm').off('submit', NotificationSettingPage.onSubmit).on('submit', NotificationSettingPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

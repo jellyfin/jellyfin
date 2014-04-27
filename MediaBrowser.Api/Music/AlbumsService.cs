@@ -10,8 +10,7 @@ using System.Linq;
 
 namespace MediaBrowser.Api.Music
 {
-    [Route("/Albums/{Id}/Similar", "GET")]
-    [Api(Description = "Finds albums similar to a given album.")]
+    [Route("/Albums/{Id}/Similar", "GET", Summary = "Finds albums similar to a given album.")]
     public class GetSimilarAlbums : BaseGetSimilarItemsFromItem
     {
     }

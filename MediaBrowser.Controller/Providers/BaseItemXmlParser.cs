@@ -429,7 +429,7 @@ namespace MediaBrowser.Controller.Providers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            item.DontFetchMeta = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                            item.IsLocked = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }
                         break;
                     }

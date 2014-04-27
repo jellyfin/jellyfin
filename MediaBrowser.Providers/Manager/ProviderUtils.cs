@@ -183,7 +183,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 target.ForcedSortName = source.ForcedSortName;
                 target.LockedFields = source.LockedFields;
-                target.DontFetchMeta = source.DontFetchMeta;
+                target.IsLocked = source.IsLocked;
                 target.DisplayMediaType = source.DisplayMediaType;
 
                 var sourceHasLanguageSettings = source as IHasPreferredMetadataLanguage;

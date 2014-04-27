@@ -2,42 +2,48 @@
 
     function reload(page) {
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        Dashboard.showLoadingMsg();
 
-            var notificationOptions = config.NotificationOptions;
-            
-            $('#chkNewLibraryContent', page).checked(notificationOptions.SendOnNewLibraryContent).checkboxradio('refresh');
-            $('#chkFailedTasks', page).checked(notificationOptions.SendOnFailedTasks).checkboxradio('refresh');
-            $('#chkUpdates', page).checked(notificationOptions.SendOnUpdates).checkboxradio('refresh');
-            
-            $('#chkServerRestartRequired', page).checked(notificationOptions.SendOnServerRestartRequired).checkboxradio('refresh');
+        $.getJSON(ApiClient.getUrl("Notifications/Types")).done(function (list) {
 
-            $('#chkVideoPlayback', page).checked(notificationOptions.SendOnVideoPlayback).checkboxradio('refresh');
-            $('#chkAudioPlayback', page).checked(notificationOptions.SendOnAudioPlayback).checkboxradio('refresh');
-            $('#chkGamePlayback', page).checked(notificationOptions.SendOnGamePlayback).checkboxradio('refresh');
+            var html = '<ul data-role="listview" data-inset="true">';
 
+            var lastCategory = "";
+
+            html += list.map(function (i) {
+
+                var itemHtml = '';
+
+                if (i.Category != lastCategory) {
+                    lastCategory = i.Category;
+                    itemHtml += '<li data-role="list-divider">';
+                    itemHtml += i.Category;
+                    itemHtml += '</li>';
+                }
+
+                itemHtml += '<li>';
+                itemHtml += '<a href="notificationsetting.html?type=' + i.Type + '">';
+                itemHtml += '<h3>' + i.Name + '</h3>';
+
+                if (i.Enabled) {
+                    itemHtml += '<p style="color:#009F00;">Enabled</p>';
+                } else {
+                    itemHtml += '<p style="color:#cc0000;">Disabled</p>';
+                }
+
+                itemHtml += '</a>';
+                itemHtml += '</li>';
+
+                return itemHtml;
+
+            }).join('');
+
+            html += '</ul>';
+
+            $('.notificationList', page).html(html).trigger('create');
+
+            Dashboard.hideLoadingMsg();
         });
-    }
-
-    function save(page) {
-
-        ApiClient.getServerConfiguration().done(function (config) {
-
-            var notificationOptions = config.NotificationOptions;
-
-            notificationOptions.SendOnNewLibraryContent = $('#chkNewLibraryContent', page).checked();
-            notificationOptions.SendOnFailedTasks = $('#chkFailedTasks', page).checked();
-            notificationOptions.SendOnUpdates = $('#chkUpdates', page).checked();
-            
-            notificationOptions.SendOnServerRestartRequired = $('#chkServerRestartRequired', page).checked();
-
-            notificationOptions.SendOnVideoPlayback = $('#chkVideoPlayback', page).checked();
-            notificationOptions.SendOnAudioPlayback = $('#chkAudioPlayback', page).checked();
-            notificationOptions.SendOnGamePlayback = $('#chkGamePlayback', page).checked();
-
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
-        });
-
     }
 
     $(document).on('pageshow', "#notificationSettingsPage", function () {
@@ -46,15 +52,5 @@
 
         reload(page);
     });
-
-    window.NotificationSettingsPage = {
-
-        onSubmit: function () {
-
-            var page = $(this).parents('.page');
-            save(page);
-            return false;
-        }
-    };
 
 })(jQuery, window);

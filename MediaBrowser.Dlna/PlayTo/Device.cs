@@ -409,30 +409,30 @@ namespace MediaBrowser.Dlna.PlayTo
                             UpdateMediaInfo(currentObject, transportState.Value);
                         }
                     }
+
+                    if (_disposed)
+                        return;
+
+                    // If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
+                    if (transportState.Value == TRANSPORTSTATE.STOPPED)
+                    {
+                        _successiveStopCount++;
+
+                        if (_successiveStopCount >= 10)
+                        {
+                            RestartTimerInactive();
+                        }
+                    }
+                    else
+                    {
+                        _successiveStopCount = 0;
+                        RestartTimer();
+                    }
                 }
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error updating device info", ex);
-            }
-
-            if (_disposed)
-                return;
-
-            // If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
-            if (TransportState == TRANSPORTSTATE.STOPPED)
-            {
-                _successiveStopCount++;
-
-                if (_successiveStopCount >= 10)
-                {
-                    RestartTimerInactive();
-                }
-            }
-            else
-            {
-                _successiveStopCount = 0;
-                RestartTimer();
             }
         }
 

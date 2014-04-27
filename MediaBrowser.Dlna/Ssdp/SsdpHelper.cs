@@ -1,40 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 
 namespace MediaBrowser.Dlna.Ssdp
 {
     public class SsdpHelper
     {
-        /// <summary>
-        /// Parses the socket response into a location Uri for the DeviceDescription.xml.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <returns></returns>
-        public static Dictionary<string,string> ParseSsdpResponse(byte[] data)
+        public static SsdpMessageEventArgs ParseSsdpResponse(byte[] data, IPEndPoint endpoint)
         {
-            var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            using (var reader = new StreamReader(new MemoryStream(data), Encoding.ASCII))
+            using (var ms = new MemoryStream(data))
             {
-                for (var line = reader.ReadLine(); line != null; line = reader.ReadLine())
+                using (var reader = new StreamReader(ms, Encoding.ASCII))
                 {
-                    line = line.Trim();
-                    if (string.IsNullOrEmpty(line))
+                    var proto = (reader.ReadLine() ?? string.Empty).Trim();
+                    var method = proto.Split(new[] { ' ' }, 2)[0];
+                    var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    for (var line = reader.ReadLine(); line != null; line = reader.ReadLine())
                     {
-                        break;
-                    }
-                    var parts = line.Split(new[] { ':' }, 2);
+                        line = line.Trim();
+                        if (string.IsNullOrEmpty(line))
+                        {
+                            break;
+                        }
+                        var parts = line.Split(new[] { ':' }, 2);
 
-                    if (parts.Length == 2)
-                    {
-                        headers[parts[0]] = parts[1].Trim();
+                        if (parts.Length >= 2)
+                        {
+                            headers[parts[0]] = parts[1].Trim();
+                        }
                     }
+
+                    return new SsdpMessageEventArgs
+                    {
+                        Method = method,
+                        Headers = headers,
+                        EndPoint = endpoint
+                    };
                 }
             }
-            
-            return headers;
         }
     }
 }

@@ -289,7 +289,7 @@
                     $('.lnkBrowseAllImages', page).addClass('hide');
                 }
 
-                ApiClient.getItemImageInfos(currentItem.Id, currentItem.Type, currentItem.Name).done(function (imageInfos) {
+                ApiClient.getItemImageInfos(currentItem.Id).done(function (imageInfos) {
 
                     renderStandardImages(page, item, imageInfos, providers);
                     renderBackdrops(page, item, imageInfos, providers);
@@ -486,7 +486,7 @@
 
             var imageType = $('#selectImageType', page).val();
 
-            ApiClient.uploadItemImage(currentItem.Id, currentItem.Type, currentItem.Name, imageType, file).done(function () {
+            ApiClient.uploadItemImage(currentItem.Id, imageType, file).done(function () {
 
                 $('#uploadImage', page).val('').trigger('change');
                 $('#popupUpload', page).popup("close");
@@ -504,7 +504,7 @@
             Dashboard.confirm("Are you sure you wish to delete this image?", "Delete " + type + " Image", function (result) {
 
                 if (result) {
-                    ApiClient.deleteItemImage(currentItem.Id, currentItem.Type, currentItem.Name, type, index).done(function () {
+                    ApiClient.deleteItemImage(currentItem.Id, type, index).done(function () {
 
                         processImageChangeResult(page);
 
@@ -520,7 +520,7 @@
 
             var page = $.mobile.activePage;
 
-            ApiClient.updateItemImageIndex(currentItem.Id, currentItem.Type, currentItem.Name, type, index, newIndex).done(function () {
+            ApiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).done(function () {
 
                 processImageChangeResult(page);
 

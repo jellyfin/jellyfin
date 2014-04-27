@@ -807,31 +807,7 @@
                 item.RunTimeTicks = seriesRuntime ? (seriesRuntime * 600000000) : null;
             }
 
-            var updatePromise;
-
-            if (currentItem.Type == "MusicArtist") {
-                updatePromise = ApiClient.updateArtist(item);
-            }
-            else if (currentItem.Type == "Genre") {
-                updatePromise = ApiClient.updateGenre(item);
-            }
-            else if (currentItem.Type == "MusicGenre") {
-                updatePromise = ApiClient.updateMusicGenre(item);
-            }
-            else if (currentItem.Type == "GameGenre") {
-                updatePromise = ApiClient.updateGameGenre(item);
-            }
-            else if (currentItem.Type == "Person") {
-                updatePromise = ApiClient.updatePerson(item);
-            }
-            else if (currentItem.Type == "Studio") {
-                updatePromise = ApiClient.updateStudio(item);
-            }
-            else {
-                updatePromise = ApiClient.updateItem(item);
-            }
-
-            updatePromise.done(function () {
+            ApiClient.updateItem(item).done(function () {
 
                 Dashboard.alert('Item saved.');
 
@@ -1104,33 +1080,9 @@
 
             $('#refreshLoading', page).show();
 
-            var refreshPromise;
-
             var force = $('#selectRefreshMode', page).val() == 'all';
 
-            if (currentItem.Type == "MusicArtist") {
-                refreshPromise = ApiClient.refreshArtist(currentItem.Name, force);
-            }
-            else if (currentItem.Type == "Genre") {
-                refreshPromise = ApiClient.refreshGenre(currentItem.Name, force);
-            }
-            else if (currentItem.Type == "MusicGenre") {
-                refreshPromise = ApiClient.refreshMusicGenre(currentItem.Name, force);
-            }
-            else if (currentItem.Type == "GameGenre") {
-                refreshPromise = ApiClient.refreshGameGenre(currentItem.Name, force);
-            }
-            else if (currentItem.Type == "Person") {
-                refreshPromise = ApiClient.refreshPerson(currentItem.Name, force);
-            }
-            else if (currentItem.Type == "Studio") {
-                refreshPromise = ApiClient.refreshStudio(currentItem.Name, force);
-            }
-            else {
-                refreshPromise = ApiClient.refreshItem(currentItem.Id, force, true);
-            }
-
-            refreshPromise.done(function () {
+            ApiClient.refreshItem(currentItem.Id, force, true).done(function () {
 
                 reload(page);
 

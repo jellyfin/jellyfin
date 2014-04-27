@@ -64,6 +64,7 @@
     <Compile Include="Configuration\DlnaOptions.cs" />
     <Compile Include="Configuration\MetadataPlugin.cs" />
     <Compile Include="Configuration\MetadataOptions.cs" />
+    <Compile Include="Configuration\NotificationOptions.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
     <Compile Include="Dlna\CodecProfile.cs" />
     <Compile Include="Dlna\ConditionProcessor.cs" />

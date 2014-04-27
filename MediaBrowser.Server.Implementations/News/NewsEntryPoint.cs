@@ -2,9 +2,12 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.News;
+using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -25,15 +28,20 @@ namespace MediaBrowser.Server.Implementations.News
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
 
+        private readonly INotificationManager _notifications;
+        private readonly IUserManager _userManager;
+
         private readonly TimeSpan _frequency = TimeSpan.FromHours(24);
 
-        public NewsEntryPoint(IHttpClient httpClient, IApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IJsonSerializer json)
+        public NewsEntryPoint(IHttpClient httpClient, IApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IJsonSerializer json, INotificationManager notifications, IUserManager userManager)
         {
             _httpClient = httpClient;
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _logger = logger;
             _json = json;
+            _notifications = notifications;
+            _userManager = userManager;
         }
 
         public void Run()
@@ -61,6 +69,13 @@ namespace MediaBrowser.Server.Implementations.News
 
         private async Task DownloadNews(string path)
         {
+            DateTime? lastUpdate = null;
+
+            if (File.Exists(path))
+            {
+                lastUpdate = _fileSystem.GetLastWriteTimeUtc(path);
+            }
+
             var requestOptions = new HttpRequestOptions
             {
                 Url = "http://mediabrowser3.com/community/index.php?/blog/rss/1-media-browser-developers-blog",
@@ -75,7 +90,29 @@ namespace MediaBrowser.Server.Implementations.News
                 var news = ParseRssItems(doc).ToList();
 
                 _json.SerializeToFile(news, path);
+
+                await CreateNotifications(news, lastUpdate, CancellationToken.None).ConfigureAwait(false);
             }
+        }
+
+        private Task CreateNotifications(List<NewsItem> items, DateTime? lastUpdate, CancellationToken cancellationToken)
+        {
+            if (lastUpdate.HasValue)
+            {
+                items = items.Where(i => i.Date.ToUniversalTime() > lastUpdate.Value)
+                    .ToList();
+            }
+
+            var tasks = items.Select(i => _notifications.SendNotification(new NotificationRequest
+            {
+                Date = i.Date,
+                Name = i.Title,
+                Description = i.Link,
+                UserIds = _userManager.Users.Select(u => u.Id.ToString("N")).ToList()
+
+            }, cancellationToken));
+
+            return Task.WhenAll(tasks);
         }
 
         private IEnumerable<NewsItem> ParseRssItems(XmlDocument xmlDoc)
