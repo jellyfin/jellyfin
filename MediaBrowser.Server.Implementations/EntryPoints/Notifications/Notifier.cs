@@ -149,7 +149,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var notification = new NotificationRequest
             {
-                NotificationType = GetPlaybackNotificationType(item.MediaType)
+                NotificationType = GetPlaybackNotificationType(item.MediaType),
+
+                ExcludeUserIds = e.Users.Select(i => i.Id.ToString("N")).ToList()
             };
 
             notification.Variables["ItemName"] = item.Name;
