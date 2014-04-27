@@ -77,6 +77,11 @@
         // Playback display element id
         this.playback = "playTime";
 
+        // bind once - commit 2ebffc2271da0bc5e8b13821586aee2a2e3c7753
+        this.errorHandler = this.onError.bind(this);
+        this.incrementMediaTimeHandler = this.incrementMediaTime.bind(this);
+        this.mediaStatusUpdateHandler = this.onMediaStatusUpdate.bind(this);
+
         this.initializeCastPlayer();
     };
 
@@ -110,7 +115,8 @@
 
         console.log('chromecast.initialize');
 
-        chrome.cast.initialize(apiConfig, this.onInitSuccess.bind(this), this.onError.bind(this));
+        chrome.cast.initialize(apiConfig, this.onInitSuccess.bind(this), this.errorHandler);
+
     };
 
     /**
@@ -225,7 +231,7 @@
      */
     CastPlayer.prototype.stopApp = function () {
         this.session.stop(this.onStopAppSuccess.bind(this, 'Session stopped'),
-            this.onError.bind(this));
+            this.errorHandler);
 
     };
 
@@ -294,7 +300,7 @@
         if (how == 'loadMedia') {
             this.castPlayerState = PLAYER_STATE.PLAYING;
             clearInterval(this.timer);
-            this.startProgressTimer(this.incrementMediaTime);
+            this.startProgressTimer();
         }
 
         if (how == 'activeSession') {
@@ -303,11 +309,11 @@
 
         if (this.castPlayerState == PLAYER_STATE.PLAYING) {
             // start progress timer
-            this.startProgressTimer(this.incrementMediaTime);
+            this.startProgressTimer();
         }
 
-        this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
-        this.currentMediaDuration = mediaSession.media.customData.runTimeTicks;
+        this.currentMediaSession.addUpdateListener(this.mediaStatusUpdateHandler);
+        this.currentMediaDuration = mediaSession.media.duration * 10000000;
     };
 
     /**
@@ -362,18 +368,18 @@
             case PLAYER_STATE.PAUSED:
                 this.currentMediaSession.play(null,
                   this.mediaCommandSuccessCallback.bind(this, "playing started for " + this.currentMediaSession.sessionId),
-                  this.onError.bind(this));
-                this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
+                  this.errorHandler);
+                this.currentMediaSession.addUpdateListener(this.mediaStatusUpdateHandler);
                 this.castPlayerState = PLAYER_STATE.PLAYING;
                 // start progress timer
                 clearInterval(this.timer);
-                this.startProgressTimer(this.incrementMediaTime);
+                this.startProgressTimer();
                 break;
             case PLAYER_STATE.IDLE:
             case PLAYER_STATE.LOADING:
             case PLAYER_STATE.STOPPED:
                 this.loadMedia(this.currentMediaIndex);
-                this.currentMediaSession.addUpdateListener(this.onMediaStatusUpdate.bind(this));
+                this.currentMediaSession.addUpdateListener(this.mediaStatusUpdateHandler);
                 this.castPlayerState = PLAYER_STATE.PLAYING;
                 break;
             default:
@@ -394,7 +400,7 @@
             this.castPlayerState = PLAYER_STATE.PAUSED;
             this.currentMediaSession.pause(null,
               this.mediaCommandSuccessCallback.bind(this, "paused " + this.currentMediaSession.sessionId),
-              this.onError.bind(this));
+              this.errorHandler);
             clearInterval(this.timer);
         }
     };
@@ -410,7 +416,7 @@
 
         this.currentMediaSession.stop(null,
           this.mediaCommandSuccessCallback.bind(this, "stopped " + this.currentMediaSession.sessionId),
-          this.onError.bind(this));
+          this.errorHandler);
         this.castPlayerState = PLAYER_STATE.STOPPED;
         clearInterval(this.timer);
     };
@@ -429,12 +435,12 @@
             this.currentVolume = vol || 1;
             this.session.setReceiverVolumeLevel(this.currentVolume,
               this.mediaCommandSuccessCallback.bind(this),
-              this.onError.bind(this));
+              this.errorHandler);
         }
         else {
             this.session.setReceiverMuted(true,
               this.mediaCommandSuccessCallback.bind(this),
-              this.onError.bind(this));
+              this.errorHandler);
         }
     };
 
@@ -487,7 +493,7 @@
         request.currentTime = this.currentMediaTime;
         this.currentMediaSession.seek(request,
           this.onSeekSuccess.bind(this, 'media seek done'),
-          this.onError.bind(this));
+          this.errorHandler);
         this.castPlayerState = PLAYER_STATE.SEEKING;
     };
 
@@ -571,14 +577,14 @@
     /**
     * @param {function} A callback function for the fucntion to start timer 
     */
-    CastPlayer.prototype.startProgressTimer = function(callback) {
+    CastPlayer.prototype.startProgressTimer = function() {
         if(this.timer) {
             clearInterval(this.timer);
             this.timer = null;
         }
 
         // start progress timer
-        this.timer = setInterval(callback.bind(this), this.timerStep);
+        this.timer = setInterval(this.incrementMediaTimeHandler, this.timerStep);
     };
 
     var castPlayer = new CastPlayer();
@@ -1257,14 +1263,14 @@
         self.getCurrentTargetInfo = function () {
             
             var appName = null;
-            if (castPlayer.session && castPlayer.session.receiver && castPlayer.session.friendlyName) {
-                appName = castPlayer.session.friendlyName;
+            if (castPlayer.session && castPlayer.session.receiver && castPlayer.session.receiver.friendlyName) {
+                appName = castPlayer.session.receiver.friendlyName;
             }
 
             return {
                 name: PlayerName,
                 id: PlayerName,
-                playerName: self.name,
+                playerName: self.name, // TODO: PlayerName == self.name, so do we need to use either/or?
                 playableMediaTypes: ["Audio", "Video"],
                 isLocalPlayer: false,
                 appName: appName,
@@ -1296,7 +1302,11 @@
             self.currentTimeElement.html(timeText);
         };
 
-        self.changeStream = self.seek = function (position) {
+        self.changeStream = function (position) {
+            castPlayer.seekMedia(position);
+        };
+
+        self.seek = function (position) {
             castPlayer.seekMedia(position);
         };
 
