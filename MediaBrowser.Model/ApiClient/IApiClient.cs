@@ -141,13 +141,6 @@ namespace MediaBrowser.Model.ApiClient
         Task MarkNotificationsRead(string userId, IEnumerable<Guid> notificationIdList, bool isRead);
 
         /// <summary>
-        /// Adds the notification.
-        /// </summary>
-        /// <param name="notification">The notification.</param>
-        /// <returns>Task{Notification}.</returns>
-        Task SendNotification(NotificationRequest notification);
-
-        /// <summary>
         /// Gets the notifications summary.
         /// </summary>
         /// <param name="userId">The user id.</param>
