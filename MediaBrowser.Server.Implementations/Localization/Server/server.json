@@ -77,6 +77,7 @@
 	"MaxParentalRatingHelp": "Content with a higher rating will be hidden from this user.",
 	"LibraryAccessHelp": "Select the media folders to share with this user. Administrators will be able to edit all folders using the metadata manager.",
 	"ButtonDeleteImage": "Delete Image",
+	"LabelSelectUsers": "Select users:",
 	"ButtonUpload": "Upload",
 	"HeaderUploadNewImage": "Upload New Image",
 	"LabelDropImageHere": "Drop Image Here",
@@ -579,5 +580,8 @@
 	"CategorySystem": "System",
 	"LabelMessageTitle": "Message title:",
 	"LabelAvailableTokens": "Available tokens:",
-	"AdditionalNotificationServices": "Browse the plugin catalog to install additional notification services."
+	"AdditionalNotificationServices": "Browse the plugin catalog to install additional notification services.",
+	"OptionAllUsers": "All users",
+	"OptionAdminUsers": "Administrators",
+	"OptionCustomUsers": "Custom"
 }

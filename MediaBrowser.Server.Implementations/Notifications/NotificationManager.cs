@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
 using System;
@@ -31,11 +32,15 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
         public Task SendNotification(NotificationRequest request, CancellationToken cancellationToken)
         {
-            var users = request.UserIds.Select(i => _userManager.GetUserById(new Guid(i)));
-
             var notificationType = request.NotificationType;
 
-            var title = GetTitle(request);
+            var options = string.IsNullOrWhiteSpace(notificationType) ?
+                null :
+                _config.Configuration.NotificationOptions.GetOptions(notificationType);
+
+            var users = GetUserIds(request, options).Select(i => _userManager.GetUserById(new Guid(i)));
+
+            var title = GetTitle(request, options);
 
             var tasks = _services.Where(i => IsEnabled(i, notificationType))
                 .Select(i => SendNotification(request, i, users, title, cancellationToken));
@@ -56,6 +61,43 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
             return Task.WhenAll(tasks);
 
+        }
+
+        private IEnumerable<string> GetUserIds(NotificationRequest request, NotificationOption options)
+        {
+            if (request.SendToUserMode.HasValue)
+            {
+                switch (request.SendToUserMode.Value)
+                {
+                    case SendToUserType.Admins:
+                        return _userManager.Users.Where(i => i.Configuration.IsAdministrator)
+                                .Select(i => i.Id.ToString("N"));
+                    case SendToUserType.All:
+                        return _userManager.Users.Select(i => i.Id.ToString("N"));
+                    case SendToUserType.Custom:
+                        return request.UserIds;
+                    default:
+                        throw new ArgumentException("Unrecognized SendToUserMode: " + request.SendToUserMode.Value);
+                }
+            }
+
+            if (options != null)
+            {
+                switch (options.SendToUserMode)
+                {
+                    case SendToUserType.Admins:
+                        return _userManager.Users.Where(i => i.Configuration.IsAdministrator)
+                                .Select(i => i.Id.ToString("N"));
+                    case SendToUserType.All:
+                        return _userManager.Users.Select(i => i.Id.ToString("N"));
+                    case SendToUserType.Custom:
+                        return options.SendToUsers;
+                    default:
+                        throw new ArgumentException("Unrecognized SendToUserMode: " + options.SendToUserMode);
+                }
+            }
+
+            return new List<string>();
         }
 
         private async Task SendNotification(NotificationRequest request,
@@ -86,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
             }
         }
 
-        private string GetTitle(NotificationRequest request)
+        private string GetTitle(NotificationRequest request, NotificationOption options)
         {
             var title = request.Name;
 
@@ -95,8 +137,6 @@ namespace MediaBrowser.Server.Implementations.Notifications
             {
                 if (!string.IsNullOrEmpty(request.NotificationType))
                 {
-                    var options = _config.Configuration.NotificationOptions.GetOptions(request.NotificationType);
-
                     if (options != null)
                     {
                         title = options.Title;
