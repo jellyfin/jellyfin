@@ -43,7 +43,7 @@ namespace MediaBrowser.Api
     {
     }
 
-    [Route("/Notifications", "POST", Summary = "Sends a notification to all admin users")]
+    [Route("/Notifications/Admin", "POST", Summary = "Sends a notification to all admin users")]
     public class AddAdminNotification : IReturnVoid
     {
         [ApiMember(Name = "Name", Description = "The notification's name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
@@ -54,25 +54,6 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "ImageUrl", Description = "The notification's image url", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string ImageUrl { get; set; }
-
-        [ApiMember(Name = "Url", Description = "The notification's info url", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Url { get; set; }
-
-        [ApiMember(Name = "Level", Description = "The notification level", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public NotificationLevel Level { get; set; }
-    }
-    
-    [Route("/Notifications/{UserId}", "POST", Summary = "Sends a notification to a user")]
-    public class AddUserNotification : IReturnVoid
-    {
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string UserId { get; set; }
-
-        [ApiMember(Name = "Name", Description = "The notification's name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Name { get; set; }
-
-        [ApiMember(Name = "Description", Description = "The notification's description", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Description { get; set; }
 
         [ApiMember(Name = "Url", Description = "The notification's info url", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Url { get; set; }
@@ -114,13 +95,6 @@ namespace MediaBrowser.Api
             _userManager = userManager;
         }
 
-        public void Post(AddUserNotification request)
-        {
-            var task = AddNotification(request);
-
-            Task.WaitAll(task);
-        }
-
         public object Get(GetNotificationTypes request)
         {
             var result = _notificationManager.GetNotificationTypes().ToList();
@@ -140,21 +114,6 @@ namespace MediaBrowser.Api
             var result = _notificationsRepo.GetNotificationsSummary(request.UserId);
 
             return ToOptimizedResult(result);
-        }
-
-        private async Task AddNotification(AddUserNotification request)
-        {
-            var notification = new NotificationRequest
-            {
-                Date = DateTime.UtcNow,
-                Description = request.Description,
-                Level = request.Level,
-                Name = request.Name,
-                Url = request.Url,
-                UserIds = new List<string> { request.UserId }
-            };
-
-            await _notificationManager.SendNotification(notification, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(AddAdminNotification request)
