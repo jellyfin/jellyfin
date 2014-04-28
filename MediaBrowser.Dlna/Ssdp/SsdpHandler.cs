@@ -372,17 +372,18 @@ namespace MediaBrowser.Dlna.Ssdp
                 return;
             }
 
+            const int initialDelayMs = 3000;
             var intervalMs = _config.Configuration.DlnaOptions.BlastAliveMessageIntervalSeconds * 1000;
 
             lock (_notificationTimerSyncLock)
             {
                 if (_notificationTimer == null)
                 {
-                    _notificationTimer = new Timer(state => NotifyAll(), null, intervalMs, intervalMs);
+                    _notificationTimer = new Timer(state => NotifyAll(), null, initialDelayMs, intervalMs);
                 }
                 else
                 {
-                    _notificationTimer.Change(intervalMs, intervalMs);
+                    _notificationTimer.Change(initialDelayMs, intervalMs);
                 }
             }
         }

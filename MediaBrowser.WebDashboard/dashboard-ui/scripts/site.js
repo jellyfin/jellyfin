@@ -830,6 +830,28 @@ var Dashboard = {
 
     },
 
+    processGeneralCommand: function (cmd) {
+
+        // Full list
+        // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
+        
+        if (cmd.Name === 'GoHome') {
+            Dashboard.navigate('index.html');
+        }
+        else if (cmd.Name === 'GoToSettings') {
+            Dashboard.navigate('dashboard.html');
+        }
+        else if (cmd.Name === 'DisplayContent') {
+            Dashboard.onBrowseCommand(cmd.Arguments);
+        }
+        else if (cmd.Name === 'GoToSearch') {
+            Search.showSearchPanel($.mobile.activePage);
+        }
+        else {
+            console.log('Unrecognized command: ' + cmd.Name);
+        }
+    },
+
     onWebSocketMessageReceived: function (e, data) {
 
         var msg = data;
@@ -911,15 +933,7 @@ var Dashboard = {
 
             var cmd = msg.Data;
 
-            if (cmd.Name === 'GoHome') {
-                Dashboard.navigate('index.html');
-            }
-            else if (cmd.Name === 'GoToSettings') {
-                Dashboard.navigate('dashboard.html');
-            }
-            else if (cmd.Name === 'DisplayContent') {
-                Dashboard.onBrowseCommand(cmd.Arguments);
-            }
+            Dashboard.processGeneralCommand(cmd);
         }
         else if (msg.MessageType === "MessageCommand") {
 
@@ -1283,7 +1297,8 @@ var Dashboard = {
             "ToggleFullscreen",
             "SetAudioStreamIndex",
             "SetSubtitleStreamIndex",
-            "DisplayContent"
+            "DisplayContent",
+            "GoToSearch"
         ];
 
     }

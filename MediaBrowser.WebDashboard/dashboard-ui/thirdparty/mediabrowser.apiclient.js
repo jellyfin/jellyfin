@@ -3057,7 +3057,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.sendCommand = function (sessionId, command, options) {
+        self.sendCommand = function (sessionId, command) {
 
             if (!sessionId) {
                 throw new Error("null sessionId");
@@ -3074,12 +3074,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 url: url
             };
 
-            options = {
-                Arguments: options || {},
-                Name: command
-            };
-
-            ajaxOptions.data = JSON.stringify(options);
+            ajaxOptions.data = JSON.stringify(command);
             ajaxOptions.contentType = "application/json";
 
             return self.ajax(ajaxOptions);

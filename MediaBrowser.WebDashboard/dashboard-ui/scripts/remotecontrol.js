@@ -28,18 +28,31 @@
         ApiClient.sendPlayStateCommand(sessionId, command, options);
     }
 
-    function sendCommand(command, options) {
-
-        var sessionId = MediaController.getPlayerInfo().id;
-
-        ApiClient.sendCommand(sessionId, command, options);
-    }
-
     function remoteControlPlayer() {
 
         var self = this;
 
         self.name = 'Remote Control';
+
+        function sendCommandByName(name, options) {
+
+            var command = {
+                Name: name
+            };
+
+            if (options) {
+                command.Arguments = options;
+            }
+
+            self.sendCommand(command);
+        }
+
+        self.sendCommand = function (command) {
+
+            var sessionId = MediaController.getPlayerInfo().id;
+
+            ApiClient.sendCommand(sessionId, command);
+        };
 
         self.play = function (options) {
 
@@ -99,19 +112,19 @@
         };
 
         self.mute = function () {
-            sendCommand('Mute');
+            sendCommandByName('Mute');
         };
 
         self.unMute = function () {
-            sendCommand('Unmute');
+            sendCommandByName('Unmute');
         };
 
         self.toggleMute = function () {
-            sendCommand('ToggleMute');
+            sendCommandByName('ToggleMute');
         };
 
         self.setVolume = function (vol) {
-            sendCommand('SetVolume', {
+            sendCommandByName('SetVolume', {
 
                 Volume: vol
 
@@ -120,7 +133,7 @@
 
         self.displayContent = function (options) {
 
-            sendCommand('DisplayContent', {
+            sendCommandByName('DisplayContent', {
 
                 ItemName: options.itemName,
                 ItemType: options.itemType,

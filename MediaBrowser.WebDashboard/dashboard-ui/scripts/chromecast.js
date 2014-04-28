@@ -1374,6 +1374,44 @@
             castPlayer.setReceiverVolume(false, vol / 100);
         };
 
+        self.sendCommand = function (cmd) {
+
+            // Full list
+            // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
+
+            switch (cmd.Name) {
+
+                case 'VolumeUp':
+                    self.volumeUp();
+                    break;
+                case 'VolumeDown':
+                    self.volumeDown();
+                    break;
+                case 'Mute':
+                    self.mute();
+                    break;
+                case 'Unmute':
+                    self.unMute();
+                    break;
+                case 'ToggleMute':
+                    self.toggleMute();
+                    break;
+                case 'SetVolume':
+                    self.setVolume(cmd.Arguments.Volume);
+                    break;
+                case 'SetAudioStreamIndex':
+                    break;
+                case 'SetSubtitleStreamIndex':
+                    break;
+                case 'ToggleFullscreen':
+                    break;
+                default:
+                    // Not player-related
+                    Dashboard.processGeneralCommand(cmd);
+            }
+
+        };
+
         self.getPlayerState = function () {
 
             var deferred = $.Deferred();

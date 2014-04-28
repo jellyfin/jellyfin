@@ -14,7 +14,9 @@
 
         $('.btnCommand', page).on('click', function () {
 
-
+            currentPlayer.sendCommand({
+                Name: this.getAttribute('data-command')
+            });
         });
     }
 
@@ -95,6 +97,7 @@
 
         var page = this;
 
+        $('.radioTabButton', page).checked(false).checkboxradio('refresh');
         $('.radioTabButton:first', page).checked(true).checkboxradio('refresh').trigger('change');
 
         $(function () {
