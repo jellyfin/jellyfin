@@ -1,6 +1,7 @@
 ﻿(function (window, document, $, setTimeout, clearTimeout) {
 
     var currentPlayer;
+    var lastPlayerState;
 
     function bindEvents(page) {
 
@@ -12,11 +13,36 @@
             elem.show();
         });
 
-        $('.btnCommand', page).on('click', function () {
+        $('.btnCommand,.btnToggleFullscreen', page).on('click', function () {
 
             currentPlayer.sendCommand({
                 Name: this.getAttribute('data-command')
             });
+        });
+
+        $('.btnStop', page).on('click', function () {
+
+            currentPlayer.stop();
+        });
+
+        $('.btnPlay', page).on('click', function () {
+
+            currentPlayer.unpause();
+        });
+
+        $('.btnPause', page).on('click', function () {
+
+            currentPlayer.pause();
+        });
+
+        $('.btnNextTrack', page).on('click', function () {
+
+            currentPlayer.nextTrack();
+        });
+
+        $('.btnPreviousTrack', page).on('click', function () {
+
+            currentPlayer.previousTrack();
         });
     }
 
@@ -34,9 +60,58 @@
         var player = this;
 
         player.endPlayerUpdates();
+
+        onStateChanged.call(player, e, state);
     }
 
     function onStateChanged(e, state) {
+
+        updatePlayerState($.mobile.activePage, state);
+    }
+
+    function showButton(button) {
+        button.removeClass('hide');
+    }
+
+    function hideButton(button) {
+        button.addClass('hide');
+    }
+
+    function updatePlayerState(page, state) {
+
+        lastPlayerState = state;
+
+        var item = state.NowPlayingItem;
+
+        var playerInfo = MediaController.getPlayerInfo();
+
+        var supportedCommands = playerInfo.supportedCommands;
+
+        $('.btnToggleFullscreen', page).buttonEnabled(item && item.MediaType == 'Video' && supportedCommands.indexOf('ToggleFullscreen') != -1);
+
+        $('.btnAudioTracks', page).buttonEnabled(item != null);
+        $('.btnSubtitles', page).buttonEnabled(item != null);
+        $('.btnChapters', page).buttonEnabled(item != null);
+
+        $('.btnStop', page).buttonEnabled(item != null);
+        $('.btnNextTrack', page).buttonEnabled(item != null);
+        $('.btnPreviousTrack', page).buttonEnabled(item != null);
+        
+        var btnPause = $('.btnPause', page).buttonEnabled(item != null);
+        var btnPlay = $('.btnPlay', page).buttonEnabled(item != null);
+        
+        var playState = state.PlayState || {};
+
+        if (playState.IsPaused) {
+
+            hideButton(btnPause);
+            showButton(btnPlay);
+
+        } else {
+
+            showButton(btnPause);
+            hideButton(btnPlay);
+        }
 
     }
 
@@ -93,13 +168,6 @@
 
         bindEvents(page);
 
-    }).on('pageshow', "#nowPlayingPage", function () {
-
-        var page = this;
-
-        $('.radioTabButton', page).checked(false).checkboxradio('refresh');
-        $('.radioTabButton:first', page).checked(true).checkboxradio('refresh').trigger('change');
-
         $(function () {
 
             $(MediaController).on('playerchange.nowplayingpage', function () {
@@ -111,11 +179,20 @@
 
         });
 
+    }).on('pageshow', "#nowPlayingPage", function () {
+
+        var page = this;
+
+        $('.radioTabButton', page).checked(false).checkboxradio('refresh');
+        $('.radioTabButton:first', page).checked(true).checkboxradio('refresh').trigger('change');
+
     }).on('pagehide', "#nowPlayingPage", function () {
 
         releaseCurrentPlayer();
 
         $(MediaController).off('playerchange.nowplayingpage');
+
+        lastPlayerState = null;
     });
 
 })(window, document, jQuery, setTimeout, clearTimeout);

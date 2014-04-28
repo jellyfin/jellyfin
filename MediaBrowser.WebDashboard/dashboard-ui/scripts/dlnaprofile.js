@@ -45,6 +45,15 @@
 
         var idInfo = profile.Identification || {};
 
+        $('#txtInfoFriendlyName', page).val(profile.FriendlyName || '');
+        $('#txtInfoModelName', page).val(profile.ModelName || '');
+        $('#txtInfoModelNumber', page).val(profile.ModelNumber || '');
+        $('#txtInfoModelDescription', page).val(profile.ModelDescription || '');
+        $('#txtInfoModelUrl', page).val(profile.ModelUrl || '');
+        $('#txtInfoManufacturer', page).val(profile.Manufacturer || '');
+        $('#txtInfoManufacturerUrl', page).val(profile.ManufacturerUrl || '');
+        $('#txtInfoSerialNumber', page).val(profile.SerialNumber || '');
+
         $('#txtIdFriendlyName', page).val(idInfo.FriendlyName || '');
         $('#txtIdModelName', page).val(idInfo.ModelName || '');
         $('#txtIdModelNumber', page).val(idInfo.ModelNumber || '');
@@ -655,6 +664,15 @@
         }).join(',');
 
         profile.Identification = profile.Identification || {};
+
+        profile.FriendlyName = $('#txtInfoFriendlyName', page).val();
+        profile.ModelName = $('#txtInfoModelName', page).val();
+        profile.ModelNumber = $('#txtInfoModelNumber', page).val();
+        profile.ModelDescription = $('#txtInfoModelDescription', page).val();
+        profile.ModelUrl = $('#txtInfoModelUrl', page).val();
+        profile.Manufacturer = $('#txtInfoManufacturer', page).val();
+        profile.ManufacturerUrl = $('#txtInfoManufacturerUrl', page).val();
+        profile.SerialNumber = $('#txtInfoSerialNumber', page).val();
 
         profile.Identification.FriendlyName = $('#txtIdFriendlyName', page).val();
         profile.Identification.ModelName = $('#txtIdModelName', page).val();

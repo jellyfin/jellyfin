@@ -1216,3 +1216,7 @@ a.itemTag:hover {
             right: 300px;
         }
 }
+
+.nowPlayingPage .btnCommand {
+    font-size: 19px;
+}
