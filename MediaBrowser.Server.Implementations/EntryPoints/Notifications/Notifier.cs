@@ -147,6 +147,13 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var item = e.MediaInfo;
 
+            if (e.Item !=null && e.Item.Parent == null)
+            {
+                // Don't report theme song or local trailer playback
+                // TODO: This will also cause movie specials to not be reported
+                return;
+            }
+
             var notification = new NotificationRequest
             {
                 NotificationType = GetPlaybackNotificationType(item.MediaType),

@@ -87,6 +87,9 @@ namespace MediaBrowser.Model.Dlna
         {
             switch (condition.Property)
             {
+                case ProfileConditionValue.AudioProfile:
+                    // TODO: Implement
+                    return true;
                 case ProfileConditionValue.AudioBitrate:
                     return IsConditionSatisfied(condition, audioBitrate);
                 case ProfileConditionValue.AudioChannels:

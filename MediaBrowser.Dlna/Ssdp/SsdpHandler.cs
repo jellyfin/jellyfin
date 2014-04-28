@@ -40,6 +40,13 @@ namespace MediaBrowser.Dlna.Ssdp
             _logger = logger;
             _config = config;
             _serverSignature = serverSignature;
+
+            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
+        }
+
+        void _config_ConfigurationUpdated(object sender, EventArgs e)
+        {
+            ReloadAliveNotifier();
         }
 
         public event EventHandler<SsdpMessageEventArgs> MessageReceived;
@@ -69,7 +76,7 @@ namespace MediaBrowser.Dlna.Ssdp
             _logger.Info("SSDP service started");
             Receive();
 
-            StartNotificationTimer();
+            ReloadAliveNotifier();
         }
 
         public void SendDatagram(string header,
@@ -249,6 +256,8 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public void Dispose()
         {
+            _config.ConfigurationUpdated -= _config_ConfigurationUpdated;
+
             _isDisposed = true;
             while (_messageQueue.Count != 0)
             {
@@ -365,25 +374,34 @@ namespace MediaBrowser.Dlna.Ssdp
         }
 
         private readonly object _notificationTimerSyncLock = new object();
-        private void StartNotificationTimer()
+        private int _aliveNotifierIntervalMs;
+        private void ReloadAliveNotifier()
         {
             if (!_config.Configuration.DlnaOptions.BlastAliveMessages)
             {
+                DisposeNotificationTimer();
                 return;
             }
 
-            const int initialDelayMs = 3000;
             var intervalMs = _config.Configuration.DlnaOptions.BlastAliveMessageIntervalSeconds * 1000;
 
-            lock (_notificationTimerSyncLock)
+            if (_notificationTimer == null || _aliveNotifierIntervalMs != intervalMs)
             {
-                if (_notificationTimer == null)
+                lock (_notificationTimerSyncLock)
                 {
-                    _notificationTimer = new Timer(state => NotifyAll(), null, initialDelayMs, intervalMs);
-                }
-                else
-                {
-                    _notificationTimer.Change(initialDelayMs, intervalMs);
+                    if (_notificationTimer == null)
+                    {
+                        _logger.Debug("Starting alive notifier");
+                        const int initialDelayMs = 3000;
+                        _notificationTimer = new Timer(state => NotifyAll(), null, initialDelayMs, intervalMs);
+                    }
+                    else
+                    {
+                        _logger.Debug("Updating alive notifier");
+                        _notificationTimer.Change(intervalMs, intervalMs);
+                    }
+
+                    _aliveNotifierIntervalMs = intervalMs;
                 }
             }
         }
@@ -394,6 +412,7 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 if (_notificationTimer != null)
                 {
+                    _logger.Debug("Stopping alive notifier");
                     _notificationTimer.Dispose();
                     _notificationTimer = null;
                 }

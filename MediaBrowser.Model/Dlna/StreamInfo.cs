@@ -267,10 +267,11 @@ namespace MediaBrowser.Model.Dlna
             get
             {
                 var stream = TargetAudioStream;
+                var streamChannels = stream == null ? null : stream.Channels;
 
                 return MaxAudioChannels.HasValue && !IsDirectStream
-                    ? (stream.Channels.HasValue ? Math.Min(MaxAudioChannels.Value, stream.Channels.Value) : MaxAudioChannels.Value)
-                    : stream == null ? null : stream.Channels;
+                    ? (streamChannels.HasValue ? Math.Min(MaxAudioChannels.Value, streamChannels.Value) : MaxAudioChannels.Value)
+                    : stream == null ? null : streamChannels;
             }
         }
 
@@ -303,24 +304,14 @@ namespace MediaBrowser.Model.Dlna
 
                 if (RunTimeTicks.HasValue)
                 {
-                    var totalBitrate = 0;
+                    var totalBitrate = TargetTotalBitrate;
 
-                    if (AudioBitrate.HasValue)
-                    {
-                        totalBitrate += AudioBitrate.Value;
-                    }
-                    if (VideoBitrate.HasValue)
-                    {
-                        totalBitrate += VideoBitrate.Value;
-                    }
-
-                    return Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(RunTimeTicks.Value).TotalSeconds);
+                    return totalBitrate.HasValue ?
+                        Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(RunTimeTicks.Value).TotalSeconds) :
+                        (long?)null;
                 }
-                var stream = TargetAudioStream;
 
-                return MaxAudioChannels.HasValue && !IsDirectStream
-                    ? (stream.Channels.HasValue ? Math.Min(MaxAudioChannels.Value, stream.Channels.Value) : MaxAudioChannels.Value)
-                    : stream == null ? null : stream.Channels;
+                return null;
             }
         }
 
@@ -343,7 +334,7 @@ namespace MediaBrowser.Model.Dlna
                 var defaultValue = string.Equals(Container, "m2ts", StringComparison.OrdinalIgnoreCase)
                     ? TransportStreamTimestamp.Valid
                     : TransportStreamTimestamp.None;
-                
+
                 return !IsDirectStream
                     ? defaultValue
                     : MediaSource == null ? defaultValue : MediaSource.Timestamp ?? TransportStreamTimestamp.None;
