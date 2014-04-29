@@ -89,9 +89,9 @@
 
         $('.btnToggleFullscreen', page).buttonEnabled(item && item.MediaType == 'Video' && supportedCommands.indexOf('ToggleFullscreen') != -1);
 
-        $('.btnAudioTracks', page).buttonEnabled(item != null);
-        $('.btnSubtitles', page).buttonEnabled(item != null);
-        $('.btnChapters', page).buttonEnabled(item != null);
+        $('.btnAudioTracks', page).buttonEnabled(false);
+        $('.btnSubtitles', page).buttonEnabled(false);
+        $('.btnChapters', page).buttonEnabled(false);
 
         $('.btnStop', page).buttonEnabled(item != null);
         $('.btnNextTrack', page).buttonEnabled(item != null);
@@ -142,7 +142,7 @@
 
         player.getPlayerState().done(function (state) {
 
-            if (state.itemName) {
+            if (state.NowPlayingItem) {
                 player.beginPlayerUpdates();
             }
 
@@ -168,6 +168,13 @@
 
         bindEvents(page);
 
+    }).on('pageshow', "#nowPlayingPage", function () {
+
+        var page = this;
+
+        $('.radioTabButton', page).checked(false).checkboxradio('refresh');
+        $('.radioTabButton:first', page).checked(true).checkboxradio('refresh').trigger('change');
+
         $(function () {
 
             $(MediaController).on('playerchange.nowplayingpage', function () {
@@ -178,13 +185,6 @@
             bindToPlayer(page, MediaController.getCurrentPlayer());
 
         });
-
-    }).on('pageshow', "#nowPlayingPage", function () {
-
-        var page = this;
-
-        $('.radioTabButton', page).checked(false).checkboxradio('refresh');
-        $('.radioTabButton:first', page).checked(true).checkboxradio('refresh').trigger('change');
 
     }).on('pagehide', "#nowPlayingPage", function () {
 

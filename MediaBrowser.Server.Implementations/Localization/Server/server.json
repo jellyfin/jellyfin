@@ -578,6 +578,8 @@
 	"LabelUseNotificationServices": "Use the following services:",
 	"CategoryUser": "User",
 	"CategorySystem": "System",
+	"CategoryApplication": "Application",
+	"CategoryPlugin": "Plugin",
 	"LabelMessageTitle": "Message title:",
 	"LabelAvailableTokens": "Available tokens:",
 	"AdditionalNotificationServices": "Browse the plugin catalog to install additional notification services.",
@@ -602,5 +604,17 @@
 	"PageButtonAbbreviation": "PG",
 	"LetterButtonAbbreviation": "A",
 	"TabNowPlaying": "Now Playing",
-	"TabNavigation": "Navigation"
+	"TabNavigation": "Navigation",
+	"ButtonFullscreen": "Toggle fullscreen",
+	"ButtonScenes": "Scenes",
+	"ButtonSubtitles": "Subtitles",
+	"ButtonAudioTracks": "Audio tracks",
+	"ButtonPreviousTrack": "Previous track",
+	"ButtonNextTrack": "Next track",
+	"ButtonStop": "Stop",
+	"ButtonPlay": "Play",
+	"ButtonPause": "Pause",
+	"LabelGroupMoviesIntoCollections": "Group movies into collections",
+	"LabelGroupMoviesIntoCollectionsHelp": "When displaying movie lists, movies belonging to a collection will be displayed as one grouped item.",
+	"NotificationOptionPluginError": "Plugin failure"
 }

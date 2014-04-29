@@ -587,7 +587,7 @@
         this.timer = setInterval(this.incrementMediaTimeHandler, this.timerStep);
     };
 
-    var castPlayer = new CastPlayer();
+    //var castPlayer = new CastPlayer();
 
     function getCodecLimits() {
 
@@ -1477,16 +1477,16 @@
         };
     }
 
-    MediaController.registerPlayer(new chromecastPlayer());
+    //MediaController.registerPlayer(new chromecastPlayer());
 
-    $(MediaController).on('playerchange', function () {
+    //$(MediaController).on('playerchange', function () {
 
-        if (MediaController.getPlayerInfo().name == PlayerName) {
+    //    if (MediaController.getPlayerInfo().name == PlayerName) {
 
-            if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
-                castPlayer.launchApp();
-            }
-        }
-    });
+    //        if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
+    //            castPlayer.launchApp();
+    //        }
+    //    }
+    //});
 
 })(window, window.chrome, console);

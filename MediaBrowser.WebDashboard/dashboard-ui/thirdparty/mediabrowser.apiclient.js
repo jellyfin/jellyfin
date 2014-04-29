@@ -182,6 +182,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         self.sendWebSocketMessage = function (name, data) {
 
+            console.log('Sending web socket message: ' + name);
+            
             var msg = { MessageType: name };
 
             if (data) {

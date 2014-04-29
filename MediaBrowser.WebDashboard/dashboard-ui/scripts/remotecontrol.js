@@ -167,15 +167,19 @@
             return deferred.promise();
         };
 
-        function subscribeToPlayerUpdates() {
+        self.subscribeToPlayerUpdates = function () {
+
+            self.isUpdating = true;
 
             if (ApiClient.isWebSocketOpen()) {
 
-                ApiClient.sendWebSocketMessage("SessionsStart", "100,700");
+                ApiClient.sendWebSocketMessage("SessionsStart", "100,900");
             }
-        }
+        };
 
         function unsubscribeFromPlayerUpdates() {
+
+            self.false = true;
 
             if (ApiClient.isWebSocketOpen()) {
 
@@ -190,7 +194,7 @@
 
                 playerListenerCount = 0;
 
-                subscribeToPlayerUpdates();
+                self.subscribeToPlayerUpdates();
             }
 
             playerListenerCount++;
@@ -259,6 +263,14 @@
         $(player).trigger(name, [getPlayerState(session)]);
     }
 
+    function onWebSocketConnectionChange() {
+        
+        // Reconnect
+        if (player.isUpdating) {
+            player.subscribeToPlayerUpdates();
+        }
+    }
+
     function onWebSocketMessageReceived(e, msg) {
 
         if (msg.MessageType === "Sessions") {
@@ -291,6 +303,6 @@
         }
     }
 
-    $(ApiClient).on("websocketmessage", onWebSocketMessageReceived);
+    $(ApiClient).on("websocketmessage", onWebSocketMessageReceived).on("websocketopen", onWebSocketConnectionChange);
 
 })(window, document, jQuery);

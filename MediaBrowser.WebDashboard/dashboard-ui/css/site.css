@@ -856,7 +856,7 @@ progress {
 .activeSession {
     display: inline-block;
     position: relative;
-    margin: 5px;
+    margin: 4px;
     width: 275px;
     height: 154.6875px;
 }
@@ -934,13 +934,18 @@ progress {
     z-index: 1000;
 }
 
+.activeDevicesCollapsible .ui-collapsible-content {
+    padding: .25em!important;
+}
+
 .activeSession:not(.playingSession) .sessionNowPlayingContent {
     display: none;
 }
 
 .activeSession:not(.playingSession) .sessionNowPlayingInnerContent {
-    background-color: #f0f0f0;
+    background-color: #fff;
     color: #000;
+    border: 1px solid #ddd;
 }
 
 .activeSession:not(.playingSession) .sessionUserInfo, .activeSession:not(.playingSession) .sessionNowPlayingInfo {

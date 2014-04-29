@@ -897,7 +897,10 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (previousMediaInfo == null && mediaInfo != null)
             {
-                OnPlaybackStart(mediaInfo);
+                if (state != TRANSPORTSTATE.STOPPED)
+                {
+                    OnPlaybackStart(mediaInfo);
+                }
             }
             else if (mediaInfo == null && previousMediaInfo != null)
             {

@@ -58,6 +58,12 @@ namespace MediaBrowser.Model.Configuration
                     Type = NotificationType.PluginInstalled.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
+                },
+                new NotificationOption
+                {
+                    Type = NotificationType.PluginError.ToString(),
+                    Enabled = true,
+                    SendToUserMode = SendToUserType.Admins
                 }
             };
         }
@@ -166,6 +172,7 @@ namespace MediaBrowser.Model.Configuration
         AudioPlayback,
         GamePlayback,
         InstallationFailed,
+        PluginError,
         PluginInstalled,
         PluginUpdateInstalled,
         PluginUninstalled,

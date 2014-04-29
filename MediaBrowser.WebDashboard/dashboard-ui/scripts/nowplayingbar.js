@@ -388,7 +388,7 @@
 
         player.getPlayerState().done(function (state) {
 
-            if (state.itemName) {
+            if (state.NowPlayingItem) {
                 player.beginPlayerUpdates();
             }
 

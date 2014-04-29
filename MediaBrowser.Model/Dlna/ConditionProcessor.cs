@@ -1,7 +1,6 @@
-﻿using System;
+﻿using MediaBrowser.Model.MediaInfo;
+using System;
 using System.Globalization;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -83,13 +82,13 @@ namespace MediaBrowser.Model.Dlna
 
         public bool IsVideoAudioConditionSatisfied(ProfileCondition condition, 
             int? audioChannels, 
-            int? audioBitrate)
+            int? audioBitrate,
+            string audioProfile)
         {
             switch (condition.Property)
             {
                 case ProfileConditionValue.AudioProfile:
-                    // TODO: Implement
-                    return true;
+                    return IsConditionSatisfied(condition, audioProfile);
                 case ProfileConditionValue.AudioBitrate:
                     return IsConditionSatisfied(condition, audioBitrate);
                 case ProfileConditionValue.AudioChannels:

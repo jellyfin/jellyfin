@@ -321,7 +321,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             items = items.AsEnumerable();
 
-            if (CollapseBoxSetItems(request, parentItem))
+            if (CollapseBoxSetItems(request, parentItem, user))
             {
                 items = _collectionManager.CollapseItemsWithinBoxSets(items, user);
             }
@@ -349,7 +349,7 @@ namespace MediaBrowser.Api.UserLibrary
             };
         }
 
-        private bool CollapseBoxSetItems(GetItems request, BaseItem parentItem)
+        private bool CollapseBoxSetItems(GetItems request, BaseItem parentItem, User user)
         {
             // Could end up stuck in a loop like this
             if (parentItem is BoxSet)
@@ -361,6 +361,11 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (!param.HasValue)
             {
+                if (user != null && !user.Configuration.GroupMoviesIntoBoxSets)
+                {
+                    return false;
+                }
+
                 if (!string.IsNullOrWhiteSpace(request.IncludeItemTypes) &&
                     request.IncludeItemTypes.Split(',').Contains("Movie", StringComparer.OrdinalIgnoreCase))
                 {

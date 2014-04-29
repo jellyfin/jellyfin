@@ -10,8 +10,7 @@
         IncludeItemTypes: "Movie",
         Recursive: true,
         Fields: "PrimaryImageAspectRatio",
-        StartIndex: 0,
-        CollapseBoxSetItems: true
+        StartIndex: 0
     };
 
     function reloadItems(page) {

@@ -264,7 +264,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="libraryItem">The library item.</param>
         private void UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem)
         {
-            var runtimeTicks = libraryItem.RunTimeTicks;
+            var runtimeTicks = libraryItem == null ? null : libraryItem.RunTimeTicks;
 
             if (string.IsNullOrWhiteSpace(info.MediaSourceId))
             {
@@ -277,7 +277,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 runtimeTicks = _libraryManager.GetItemById(new Guid(info.MediaSourceId)).RunTimeTicks;
             }
 
-            if (!string.IsNullOrWhiteSpace(info.ItemId))
+            if (!string.IsNullOrWhiteSpace(info.ItemId) && libraryItem != null)
             {
                 info.Item = GetItemInfo(libraryItem, runtimeTicks);
             }

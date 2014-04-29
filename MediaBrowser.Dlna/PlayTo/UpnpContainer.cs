@@ -5,7 +5,7 @@ namespace MediaBrowser.Dlna.PlayTo
 {
     public class UpnpContainer : uBaseObject
     {
-        new public static uBaseObject Create(XElement container)
+        public static uBaseObject Create(XElement container)
         {
             if (container == null)
             {

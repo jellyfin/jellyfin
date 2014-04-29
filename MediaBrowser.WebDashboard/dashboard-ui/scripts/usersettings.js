@@ -33,6 +33,8 @@
         $('#chkDisplayMissingEpisodes', page).checked(user.Configuration.DisplayMissingEpisodes || false).checkboxradio("refresh");
         $('#chkDisplayUnairedEpisodes', page).checked(user.Configuration.DisplayUnairedEpisodes || false).checkboxradio("refresh");
 
+        $('#chkGroupMoviesIntoCollections', page).checked(user.Configuration.GroupMoviesIntoBoxSets || false).checkboxradio("refresh");
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -58,6 +60,7 @@
         user.Configuration.UseForcedSubtitlesOnly = $('#chkForcedSubtitlesOnly', page).checked();
         user.Configuration.DisplayMissingEpisodes = $('#chkDisplayMissingEpisodes', page).checked();
         user.Configuration.DisplayUnairedEpisodes = $('#chkDisplayUnairedEpisodes', page).checked();
+        user.Configuration.GroupMoviesIntoBoxSets = $('#chkGroupMoviesIntoCollections', page).checked();
 
         ApiClient.updateUser(user).done(function () {
             onSaveComplete(page);
