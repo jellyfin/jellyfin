@@ -47,6 +47,13 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
                 new NotificationTypeInfo
                 {
+                     Type = NotificationType.PluginError.ToString(),
+                     DefaultTitle = "{Name} has encountered an error: {Message}",
+                     Variables = new List<string>{"Name", "Message"}
+                },
+
+                new NotificationTypeInfo
+                {
                      Type = NotificationType.PluginUninstalled.ToString(),
                      DefaultTitle = "{Name} was uninstalled.",
                      Variables = new List<string>{"Name", "Version"}
@@ -115,7 +122,11 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 Update(type);
             }
 
-            return knownTypes.OrderBy(i => i.Category).ThenBy(i => i.Name);
+            var systemName = _localization.GetLocalizedString("CategorySystem");
+
+            return knownTypes.OrderByDescending(i => string.Equals(i.Category, systemName, StringComparison.OrdinalIgnoreCase))
+                .ThenBy(i => i.Category)
+                .ThenBy(i => i.Name);
         }
 
         private void Update(NotificationTypeInfo note)
@@ -127,6 +138,10 @@ namespace MediaBrowser.Server.Implementations.Notifications
             if (note.Type.IndexOf("Playback", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 note.Category = _localization.GetLocalizedString("CategoryUser");
+            }
+            else   if (note.Type.IndexOf("Plugin", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                note.Category = _localization.GetLocalizedString("CategoryPlugin");
             }
             else
             {

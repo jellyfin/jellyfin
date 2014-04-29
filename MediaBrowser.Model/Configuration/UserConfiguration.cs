@@ -54,6 +54,8 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableMediaPlayback { get; set; }
         public bool EnableContentDeletion { get; set; }
 
+        public bool GroupMoviesIntoBoxSets { get; set; }
+
         public string[] BlockedMediaFolders { get; set; }
 
         public UnratedItem[] BlockUnratedItems { get; set; }
@@ -69,6 +71,7 @@ namespace MediaBrowser.Model.Configuration
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;
+            GroupMoviesIntoBoxSets = true;
 
             BlockedMediaFolders = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };

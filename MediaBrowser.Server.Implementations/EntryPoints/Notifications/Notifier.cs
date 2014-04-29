@@ -67,6 +67,21 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _sessionManager.PlaybackStart += _sessionManager_PlaybackStart;
             _appHost.HasPendingRestartChanged += _appHost_HasPendingRestartChanged;
             _appHost.HasUpdateAvailableChanged += _appHost_HasUpdateAvailableChanged;
+            _appHost.ApplicationUpdated += _appHost_ApplicationUpdated;
+        }
+
+        async void _appHost_ApplicationUpdated(object sender, GenericEventArgs<Version> e)
+        {
+            var type = NotificationType.ApplicationUpdateInstalled.ToString();
+
+            var notification = new NotificationRequest
+            {
+                NotificationType = type
+            };
+
+            notification.Variables["Version"] = e.Argument.ToString();
+            
+            await SendNotification(notification).ConfigureAwait(false);
         }
 
         async void _installationManager_PluginUpdated(object sender, GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> e)
@@ -302,6 +317,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             _appHost.HasPendingRestartChanged -= _appHost_HasPendingRestartChanged;
             _appHost.HasUpdateAvailableChanged -= _appHost_HasUpdateAvailableChanged;
+            _appHost.ApplicationUpdated -= _appHost_ApplicationUpdated;
         }
     }
 }

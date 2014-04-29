@@ -285,6 +285,7 @@ namespace MediaBrowser.Model.Dlna
 
             var audioBitrate = audioStream == null ? null : audioStream.BitRate;
             var audioChannels = audioStream == null ? null : audioStream.Channels;
+            var audioProfile = audioStream == null ? null : audioStream.Profile;
 
             var timestamp = videoStream == null ? TransportStreamTimestamp.None : mediaSource.Timestamp;
             var packetLength = videoStream == null ? null : videoStream.PacketLength;
@@ -348,7 +349,8 @@ namespace MediaBrowser.Model.Dlna
 
                 if (!conditions.All(i => conditionProcessor.IsVideoAudioConditionSatisfied(i,
                   audioChannels,
-                  audioBitrate)))
+                  audioBitrate,
+                  audioProfile)))
                 {
                     return null;
                 }

@@ -32,7 +32,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable u pn p]; otherwise, <c>false</c>.</value>
         public bool EnableUPnP { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the HTTP server port number.
         /// </summary>
@@ -62,7 +62,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The metadata path.</value>
         public string MetadataPath { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the display name of the season zero.
         /// </summary>
@@ -220,12 +220,15 @@ namespace MediaBrowser.Model.Configuration
         public string WanDdns { get; set; }
 
         public string UICulture { get; set; }
-        
+
         public DlnaOptions DlnaOptions { get; set; }
 
         public double DownMixAudioBoost { get; set; }
 
         public NotificationOptions NotificationOptions { get; set; }
+
+        [Obsolete("Please use RequireManualLoginForMobileApps")]
+        public string[] ManualLoginClients { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -292,6 +295,8 @@ namespace MediaBrowser.Model.Configuration
             UICulture = "en-us";
 
             NotificationOptions = new NotificationOptions();
+
+            ManualLoginClients = new string[] { };
         }
     }
 
