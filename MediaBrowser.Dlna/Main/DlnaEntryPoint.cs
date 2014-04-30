@@ -30,7 +30,6 @@ namespace MediaBrowser.Dlna.Main
         private readonly IHttpClient _httpClient;
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
-        private readonly INetworkManager _networkManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
         private readonly IDtoService _dtoService;
@@ -41,7 +40,7 @@ namespace MediaBrowser.Dlna.Main
         private readonly List<Guid> _registeredServerIds = new List<Guid>();
         private bool _dlnaServerStarted;
 
-        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager, IDtoService dtoService, IImageProcessor imageProcessor)
+        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IDtoService dtoService, IImageProcessor imageProcessor)
         {
             _config = config;
             _appHost = appHost;
@@ -50,7 +49,6 @@ namespace MediaBrowser.Dlna.Main
             _httpClient = httpClient;
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
-            _networkManager = networkManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
             _dtoService = dtoService;
@@ -196,7 +194,6 @@ namespace MediaBrowser.Dlna.Main
                         _httpClient,
                         _itemRepo,
                         _libraryManager,
-                        _networkManager,
                         _userManager,
                         _dlnaManager,
                         _appHost,

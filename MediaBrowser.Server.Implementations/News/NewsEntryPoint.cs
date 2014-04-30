@@ -99,7 +99,7 @@ namespace MediaBrowser.Server.Implementations.News
         {
             if (lastUpdate.HasValue)
             {
-                items = items.Where(i => i.Date.ToUniversalTime() > lastUpdate.Value)
+                items = items.Where(i => i.Date.ToUniversalTime() >= lastUpdate.Value)
                     .ToList();
             }
 

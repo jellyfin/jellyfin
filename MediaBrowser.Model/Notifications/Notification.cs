@@ -78,6 +78,8 @@ namespace MediaBrowser.Model.Notifications
 
         public string DefaultTitle { get; set; }
 
+        public string DefaultDescription { get; set; }
+        
         public List<string> Variables { get; set; }
 
         public NotificationTypeInfo()

@@ -1054,7 +1054,7 @@ namespace MediaBrowser.ServerApplication
 
             HasUpdateAvailable = false;
 
-            OnApplicationUpdated(package.version);
+            OnApplicationUpdated(package);
         }
 
         /// <summary>

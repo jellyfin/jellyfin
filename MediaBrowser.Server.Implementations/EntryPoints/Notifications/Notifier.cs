@@ -70,7 +70,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _appHost.ApplicationUpdated += _appHost_ApplicationUpdated;
         }
 
-        async void _appHost_ApplicationUpdated(object sender, GenericEventArgs<Version> e)
+        async void _appHost_ApplicationUpdated(object sender, GenericEventArgs<PackageVersionInfo> e)
         {
             var type = NotificationType.ApplicationUpdateInstalled.ToString();
 
@@ -79,8 +79,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                 NotificationType = type
             };
 
-            notification.Variables["Version"] = e.Argument.ToString();
-            
+            notification.Variables["Version"] = e.Argument.versionStr;
+            notification.Variables["ReleaseNotes"] = e.Argument.description;
+   
             await SendNotification(notification).ConfigureAwait(false);
         }
 
@@ -98,6 +99,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             notification.Variables["Name"] = installationInfo.Name;
             notification.Variables["Version"] = installationInfo.Version.ToString();
+            notification.Variables["ReleaseNotes"] = e.Argument.Item2.description;
 
             await SendNotification(notification).ConfigureAwait(false);
         }
@@ -249,6 +251,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                 };
 
                 notification.Variables["Name"] = e.Argument.Name;
+                notification.Variables["ErrorMessage"] = e.Argument.ErrorMessage;
 
                 await SendNotification(notification).ConfigureAwait(false);
             }
