@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Dlna;
+﻿using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -31,15 +29,14 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly ISessionManager _sessionManager;
         private readonly IItemRepository _itemRepository;
         private readonly ILibraryManager _libraryManager;
-        private readonly INetworkManager _networkManager;
         private readonly ILogger _logger;
         private readonly IDlnaManager _dlnaManager;
         private readonly IUserManager _userManager;
-        private readonly IServerApplicationHost _appHost;
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
 
         private readonly SsdpHandler _ssdpHandler;
+        private readonly string _serverAddress;
 
         public bool SupportsMediaRemoteControl
         {
@@ -54,19 +51,18 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, INetworkManager networkManager, IDlnaManager dlnaManager, IUserManager userManager, IServerApplicationHost appHost, IDtoService dtoService, IImageProcessor imageProcessor, SsdpHandler ssdpHandler)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IDtoService dtoService, IImageProcessor imageProcessor, SsdpHandler ssdpHandler, string serverAddress)
         {
             _session = session;
             _itemRepository = itemRepository;
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
-            _networkManager = networkManager;
             _dlnaManager = dlnaManager;
             _userManager = userManager;
-            _appHost = appHost;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
             _ssdpHandler = ssdpHandler;
+            _serverAddress = serverAddress;
             _logger = logger;
         }
 
@@ -81,6 +77,11 @@ namespace MediaBrowser.Dlna.PlayTo
             _ssdpHandler.MessageReceived += _SsdpHandler_MessageReceived;
         }
 
+        private string GetServerAddress()
+        {
+            return _serverAddress;
+        }
+
         async void _SsdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
         {
             string nts;
@@ -93,17 +94,20 @@ namespace MediaBrowser.Dlna.PlayTo
             if (!e.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
             
             if (string.Equals(e.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase) && 
-                string.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase))
+                string.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase) &&
+                usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
+                !_disposed)
             {
-                if (usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1)
+                if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1 ||
-                        nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)
+                    try
                     {
-                        if (!_disposed)
-                        {
-                            await _sessionManager.ReportSessionEnded(_session.Id).ConfigureAwait(false);
-                        }
+                        await _sessionManager.ReportSessionEnded(_session.Id).ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        // Could throw if the session is already gone
                     }
                 }
             }
@@ -366,16 +370,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     list.Add(item);
                 }
             }
-        }
-
-        private string GetServerAddress()
-        {
-            return string.Format("{0}://{1}:{2}/mediabrowser",
-
-                "http",
-                _networkManager.GetLocalIpAddresses().FirstOrDefault() ?? "localhost",
-                _appHost.HttpServerPort
-                );
         }
 
         private PlaylistItem CreatePlaylistItem(BaseItem item, long startPostionTicks, string serverAddress)

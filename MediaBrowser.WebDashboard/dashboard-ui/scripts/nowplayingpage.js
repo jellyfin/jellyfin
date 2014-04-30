@@ -2,6 +2,7 @@
 
     var currentPlayer;
     var lastPlayerState;
+    var isPositionSliderActive;
 
     function bindEvents(page) {
 
@@ -44,6 +45,23 @@
 
             currentPlayer.previousTrack();
         });
+
+        $('.positionSlider', page).on('slidestart', function () {
+
+            isPositionSliderActive = true;
+
+        }).on('slidestop', function () {
+
+            isPositionSliderActive = false;
+
+            if (currentPlayer && lastPlayerState) {
+
+                var newPercent = parseFloat(this.value);
+                var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
+
+                currentPlayer.seek(Math.floor(newPositionTicks));
+            }
+        });
     }
 
     function onPlaybackStart(e, state) {
@@ -62,6 +80,8 @@
         player.endPlayerUpdates();
 
         onStateChanged.call(player, e, state);
+
+        $('.itemName', page).html('');
     }
 
     function onStateChanged(e, state) {
@@ -113,6 +133,96 @@
             hideButton(btnPlay);
         }
 
+        if (!isPositionSliderActive) {
+
+            var positionSlider = $('.positionSlider', page);
+
+            if (item && item.RunTimeTicks) {
+
+                var pct = playState.PositionTicks / item.RunTimeTicks;
+                pct *= 100;
+
+                positionSlider.val(pct);
+
+            } else {
+
+                positionSlider.val(0);
+            }
+            
+            if (playState.CanSeek) {
+                positionSlider.slider("enable");
+            } else {
+                positionSlider.slider("disable");
+            }
+
+            positionSlider.slider('refresh');
+        }
+
+        if (playState.PositionTicks == null) {
+            $('.positionTime', page).html('--:--');
+        } else {
+            $('.positionTime', page).html(Dashboard.getDisplayTime(playState.PositionTicks));
+        }
+
+        if (item && item.RunTimeTicks != null) {
+            $('.runtime', page).html(Dashboard.getDisplayTime(item.RunTimeTicks));
+        } else {
+            $('.runtime', page).html('--:--');
+        }
+
+        if (item && item.MediaType == 'Video') {
+            $('.videoButton', page).css('visibility', 'visible');
+        } else {
+            $('.videoButton', page).css('visibility', 'hidden');
+        }
+        
+        updateNowPlayingInfo(page, state);
+    }
+
+    var currentImgUrl;
+    function updateNowPlayingInfo(page, state) {
+
+        var item = state.NowPlayingItem;
+
+        $('.itemName', page).html(item ? MediaPlayer.getNowPlayingNameHtml(state) : '');
+
+        var url;
+
+        if (!item) {
+        }
+        else if (item.PrimaryImageTag) {
+
+            url = ApiClient.getImageUrl(item.PrimaryImageItemId, {
+                type: "Primary",
+                height: 600,
+                tag: item.PrimaryImageTag
+            });
+        }
+        else if (item.BackdropImageTag) {
+
+            url = ApiClient.getImageUrl(item.BackdropItemId, {
+                type: "Backdrop",
+                height: 600,
+                tag: item.BackdropImageTag,
+                index: 0
+            });
+
+        } else if (item.ThumbImageTag) {
+
+            url = ApiClient.getImageUrl(item.ThumbImageItemId, {
+                type: "Thumb",
+                height: 600,
+                tag: item.ThumbImageTag
+            });
+        }
+
+        if (url == currentImgUrl) {
+            return;
+        }
+
+        currentImgUrl = url;
+
+        $('.nowPlayingPageImage', page).html(url ? '<img src="' + url + '" />' : '');
     }
 
     function updateSupportedCommands(page, commands) {

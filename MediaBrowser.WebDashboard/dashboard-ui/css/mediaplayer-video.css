@@ -102,14 +102,12 @@
     max-height: 100%;
 }
 
-#mediaPlayer .ui-slider-track, .nowPlayingBar .ui-slider-track {
+#mediaPlayer .ui-slider-track, .nowPlayingBar .ui-slider-track, .nowPlayingPage .ui-slider-track {
     border-color: #2ad !important;
     height: 2px!important;
 }
 
-#mediaPlayer .ui-slider-handle, .nowPlayingBar .ui-slider-handle {
-    height: 10px !important;
-    margin-top: -6px !important;
+#mediaPlayer .ui-slider-handle, .nowPlayingBar .ui-slider-handle, .nowPlayingPage .ui-slider-handle {
 }
 
 #videoPlayer.fullscreenVideo #videoControls {

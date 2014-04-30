@@ -39,13 +39,14 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 _config.Configuration.NotificationOptions.GetOptions(notificationType);
 
             var users = GetUserIds(request, options)
-                .Except(request.UserIds)
+                .Except(request.ExcludeUserIds)
                 .Select(i => _userManager.GetUserById(new Guid(i)));
 
             var title = GetTitle(request, options);
+            var description = GetDescription(request, options);
 
             var tasks = _services.Where(i => IsEnabled(i, notificationType))
-                .Select(i => SendNotification(request, i, users, title, cancellationToken));
+                .Select(i => SendNotification(request, i, users, description, title, cancellationToken));
 
             return Task.WhenAll(tasks);
         }
@@ -54,12 +55,13 @@ namespace MediaBrowser.Server.Implementations.Notifications
             INotificationService service,
             IEnumerable<User> users,
             string title,
+            string description,
             CancellationToken cancellationToken)
         {
             users = users.Where(i => IsEnabledForUser(service, i))
                 .ToList();
 
-            var tasks = users.Select(i => SendNotification(request, service, title, i, cancellationToken));
+            var tasks = users.Select(i => SendNotification(request, service, title, description, i, cancellationToken));
 
             return Task.WhenAll(tasks);
 
@@ -89,19 +91,20 @@ namespace MediaBrowser.Server.Implementations.Notifications
                    .Select(i => i.Id.ToString("N"));
             }
 
-            return new List<string>();
+            return request.UserIds;
         }
 
         private async Task SendNotification(NotificationRequest request,
             INotificationService service,
             string title,
+            string description,
             User user,
             CancellationToken cancellationToken)
         {
             var notification = new UserNotification
             {
                 Date = request.Date,
-                Description = request.Description,
+                Description = description,
                 Level = request.Level,
                 Name = title,
                 Url = request.Url,
@@ -160,6 +163,48 @@ namespace MediaBrowser.Server.Implementations.Notifications
             }
 
             return title;
+        }
+
+        private string GetDescription(NotificationRequest request, NotificationOption options)
+        {
+            var text = request.Description;
+
+            // If empty, grab from options 
+            if (string.IsNullOrEmpty(text))
+            {
+                if (!string.IsNullOrEmpty(request.NotificationType))
+                {
+                    if (options != null)
+                    {
+                        text = options.Title;
+                    }
+                }
+            }
+
+            // If still empty, grab default
+            if (string.IsNullOrEmpty(text))
+            {
+                if (!string.IsNullOrEmpty(request.NotificationType))
+                {
+                    var info = GetNotificationTypes().FirstOrDefault(i => string.Equals(i.Type, request.NotificationType, StringComparison.OrdinalIgnoreCase));
+
+                    if (info != null)
+                    {
+                        text = info.DefaultDescription;
+                    }
+                }
+            }
+
+            text = text ?? string.Empty;
+
+            foreach (var pair in request.Variables)
+            {
+                var token = "{" + pair.Key + "}";
+
+                text = text.Replace(token, pair.Value, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return text;
         }
 
         private bool IsEnabledForUser(INotificationService service, User user)

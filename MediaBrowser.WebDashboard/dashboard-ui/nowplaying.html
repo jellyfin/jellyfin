@@ -6,36 +6,52 @@
 <body>
     <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage" data-theme="b">
 
-        <div data-role="content">
+        <div data-role="content" style="padding: 1em 0;">
 
             <div data-role="controlgroup" data-type="horizontal" data-mini="true" style="text-align: center;">
                 <input type="radio" name="radioNowPlayingTab" class="radioTabButton" id="radioNowPlaying" value="tabNowPlaying">
                 <label for="radioNowPlaying">${TabNowPlaying}</label>
                 <input type="radio" name="radioNowPlayingTab" class="radioTabButton" id="radioNavigation" value="tabNavigation">
-                <label for="radioNavigation">${TabNavigation}</label>
+                <label for="radioNavigation">${TabControls}</label>
             </div>
             <br />
 
             <div style="text-align: center;">
                 <div class="tabNowPlaying tabContent">
 
+                    <div class="itemName" style="line-height: normal;"></div>
+                    <div class="nowPlayingPageImage" style="margin: 1em 0;"></div>
+                    <div>
+                        <div class="positionTime" style="display: inline-block; vertical-align: top; padding-top: 1px;"></div>
+                        <div class="positionSliderContainer sliderContainer" style="margin: 0 auto;">
+                            <input type="range" style="display: none;" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" data-mini="true" data-theme="a" data-highlight="true" />
+                        </div>
+                        <div class="runtime" style="display: inline-block; vertical-align: top; padding-top: 1px;"></div>
+                    </div>
+
                     <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="previous-track" data-inline="true" data-iconpos="notext" title="${ButtonPreviousTrack}" class="btnPreviousTrack btnPlayStateCommand" data-command="GoHome">${ButtonPreviousTrack}</button>
-                        <button data-icon="pause" data-inline="true" data-iconpos="notext" title="${ButtonPause}" class="btnPause btnPlayStateCommand" data-command="GoHome">${ButtonPause}</button>
-                        <button data-icon="play" data-inline="true" data-iconpos="notext" title="${ButtonPlay}" class="btnPlay btnPlayStateCommand" data-command="GoHome">${ButtonPlay}</button>
-                        <button data-icon="stop" data-inline="true" data-iconpos="notext" title="${ButtonStop}" class="btnStop btnPlayStateCommand" data-command="GoHome">${ButtonStop}</button>
-                        <button data-icon="next-track" data-inline="true" data-iconpos="notext" title="${ButtonNextTrack}" class="btnNextTrack btnPlayStateCommand" data-command="GoToSearch">${ButtonNextTrack}</button>
+                        <button data-icon="previous-track" data-inline="true" data-iconpos="notext" title="${ButtonPreviousTrack}" class="btnPreviousTrack btnPlayStateCommand">${ButtonPreviousTrack}</button>
+                        <button data-icon="pause" data-inline="true" data-iconpos="notext" title="${ButtonPause}" class="btnPause btnPlayStateCommand">${ButtonPause}</button>
+                        <button data-icon="play" data-inline="true" data-iconpos="notext" title="${ButtonPlay}" class="btnPlay btnPlayStateCommand">${ButtonPlay}</button>
+                        <button data-icon="stop" data-inline="true" data-iconpos="notext" title="${ButtonStop}" class="btnStop btnPlayStateCommand">${ButtonStop}</button>
+                        <button data-icon="next-track" data-inline="true" data-iconpos="notext" title="${ButtonNextTrack}" class="btnNextTrack btnPlayStateCommand">${ButtonNextTrack}</button>
                     </div>
                     <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="audiocd" data-inline="true" data-iconpos="notext" title="${ButtonAudioTracks}" class="btnAudioTracks btnPlayStateCommand" data-command="GoToSearch">${ButtonAudioTracks}</button>
-                        <button data-icon="subtitles" data-inline="true" data-iconpos="notext" title="${ButtonSubtitles}" class="btnSubtitles btnPlayStateCommand" data-command="GoToSearch">${ButtonSubtitles}</button>
-                        <button data-icon="video" data-inline="true" data-iconpos="notext" title="${ButtonScenes}" class="btnChapters btnPlayStateCommand" data-command="GoToSearch">${ButtonScenes}</button>
-                        <button data-icon="expand" data-inline="true" data-iconpos="notext" title="${ButtonFullscreen}" class="btnToggleFullscreen btnPlayStateCommand" data-command="ToggleFullscreen">${ButtonFullscreen}</button>
+                        <button data-icon="volume-up" data-inline="true" data-iconpos="notext" title="${ButtonVolumeUp}" class="btnCommand" data-command="VolumeUp">${ButtonVolumeUp}</button>
+                        <button data-icon="volume-off" data-inline="true" data-iconpos="notext" title="${ButtonMute}" class="btnCommand" data-command="ToggleMute">${ButtonMute}</button>
+                        <button data-icon="expand" data-inline="true" data-iconpos="notext" title="${ButtonFullscreen}" class="btnToggleFullscreen btnPlayStateCommand" data-command="ToggleFullscreen" style="visibility:hidden;">${ButtonFullscreen}</button>
+                        <button data-icon="expand" data-inline="true" data-iconpos="notext" title="${ButtonFullscreen}" class="btnToggleFullscreen videoButton btnPlayStateCommand" data-command="ToggleFullscreen">${ButtonFullscreen}</button>
+                    </div>
+                    <div data-role="controlgroup" data-type="horizontal">
+                        <button data-icon="volume-down" data-inline="true" data-iconpos="notext" title="${ButtonVolumeDown}" class="btnCommand" data-command="VolumeDown">${ButtonVolumeDown}</button>
+                        <button data-icon="audiocd" data-inline="true" data-iconpos="notext" title="${ButtonAudioTracks}" class="btnAudioTracks videoButton btnPlayStateCommand" data-command="GoToSearch">${ButtonAudioTracks}</button>
+                        <button data-icon="subtitles" data-inline="true" data-iconpos="notext" title="${ButtonSubtitles}" class="btnSubtitles videoButton btnPlayStateCommand" data-command="GoToSearch">${ButtonSubtitles}</button>
+                        <button data-icon="video" data-inline="true" data-iconpos="notext" title="${ButtonScenes}" class="btnChapters videoButton btnPlayStateCommand" data-command="GoToSearch">${ButtonScenes}</button>
                     </div>
 
                 </div>
 
-                <div class="tabNavigation tabContent">
+                <div class="tabNavigation tabContent" style="display: none;">
 
                     <div data-role="controlgroup" data-type="horizontal">
                         <button data-icon="arrow-u" data-inline="true" data-iconpos="notext" title="${ButtonArrowUp}" class="btnArrowUp btnCommand" data-command="MoveUp">${ButtonArrowUp}</button>
@@ -68,6 +84,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 </body>
 </html>

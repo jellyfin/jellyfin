@@ -22,7 +22,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Occurs when [application updated].
         /// </summary>
-        event EventHandler<GenericEventArgs<Version>> ApplicationUpdated;
+        event EventHandler<GenericEventArgs<PackageVersionInfo>> ApplicationUpdated;
 
         /// <summary>
         /// Gets a value indicating whether this instance is running as service.

@@ -373,6 +373,8 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\">");
             sb.Append("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"mobile-web-app-capable\" content=\"yes\">");
+            //sb.Append("<meta name=\"application-name\" content=\"Media Browser\">");
+            //sb.Append("<meta name=\"msapplication-config\" content=\"config.xml\">");
             //sb.Append("<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">");
 
             sb.Append("<link rel=\"icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\" />");
@@ -382,7 +384,7 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"css/images/touchicon72.png\" />");
             sb.Append("<link rel=\"apple-touch-icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\" />");
             sb.Append("<link rel=\"apple-touch-startup-image\" href=\"css/images/iossplash.png\" />");
-            sb.Append("<link rel=\"shortcut icon\" href=\"favicon.ico\" />");
+            sb.Append("<link rel=\"shortcut icon\" href=\"css/images/favicon.ico\" />");
 
             return sb.ToString();
         }

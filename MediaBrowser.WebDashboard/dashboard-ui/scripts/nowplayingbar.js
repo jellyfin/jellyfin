@@ -163,7 +163,7 @@
 
     function updatePlayerState(state) {
 
-        if (state.NowPlayingItem) {
+        if (state.NowPlayingItem && !$($.mobile.activePage).hasClass('nowPlayingPage')) {
             showNowPlayingBar();
         } else {
             hideNowPlayingBar();
@@ -231,16 +231,22 @@
         var nowPlayingItem = state.NowPlayingItem || {};
         if (!isPositionSliderActive) {
 
-            if (playState.CanSeek) {
+            if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
 
                 var pct = playState.PositionTicks / nowPlayingItem.RunTimeTicks;
                 pct *= 100;
 
-                positionSlider.val(pct).slider("enable");
+                positionSlider.val(pct);
 
             } else {
 
-                positionSlider.val(0).slider("disable");
+                positionSlider.val(0);
+            }
+
+            if (playState.CanSeek) {
+                positionSlider.slider("enable");
+            } else {
+                positionSlider.slider("disable");
             }
 
             positionSlider.slider('refresh');

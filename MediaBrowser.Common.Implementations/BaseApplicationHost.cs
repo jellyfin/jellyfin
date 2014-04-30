@@ -1,5 +1,4 @@
-﻿using System.Text;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Archiving;
 using MediaBrowser.Common.Implementations.IO;
@@ -26,6 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -46,7 +46,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Occurs when [application updated].
         /// </summary>
-        public event EventHandler<GenericEventArgs<Version>> ApplicationUpdated;
+        public event EventHandler<GenericEventArgs<PackageVersionInfo>> ApplicationUpdated;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has changes that require the entire application to restart.
@@ -759,12 +759,16 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Called when [application updated].
         /// </summary>
-        /// <param name="newVersion">The new version.</param>
-        protected void OnApplicationUpdated(Version newVersion)
+        /// <param name="package">The package.</param>
+        protected void OnApplicationUpdated(PackageVersionInfo package)
         {
-            Logger.Info("Application has been updated to version {0}", newVersion);
+            Logger.Info("Application has been updated to version {0}", package.versionStr);
 
-            EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = newVersion }, Logger);
+            EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<PackageVersionInfo>
+            {
+                Argument = package
+
+            }, Logger);
 
             NotifyPendingRestart();
         }

@@ -1217,6 +1217,68 @@ a.itemTag:hover {
         }
 }
 
-.nowPlayingPage .btnCommand {
-    font-size: 19px;
+.nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+    font-size: 30px;
+}
+
+.nowPlayingPageImage img {
+    height: 300px;
+}
+
+.nowPlayingPage .positionSliderContainer {
+    width: 350px;
+}
+
+.nowPlayingNavButtonContainer {
+    width: 400px;
+}
+
+@media all and (max-width: 600px) {
+
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        font-size: 26px;
+    }
+
+    .nowPlayingPageImage img {
+        height: 200px;
+    }
+
+    .nowPlayingPage .positionSliderContainer {
+        width: 300px;
+    }
+}
+
+
+@media all and (max-width: 500px) {
+
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        font-size: 22px;
+    }
+
+    .nowPlayingPageImage img {
+        height: 200px;
+    }
+
+    .nowPlayingPage .positionSliderContainer {
+        width: 300px;
+    }
+}
+
+@media all and (max-width: 400px) {
+
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        font-size: 19px;
+    }
+
+    .nowPlayingPageImage img {
+        height: 200px;
+    }
+
+    .nowPlayingPage .positionSliderContainer {
+        width: 220px;
+    }
+
+    .nowPlayingNavButtonContainer {
+        width: 300px;
+    }
 }

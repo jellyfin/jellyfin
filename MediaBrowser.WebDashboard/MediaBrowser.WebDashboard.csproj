@@ -163,6 +163,7 @@
     <Content Include="dashboard-ui\css\images\clients\xbmc.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\css\images\favicon.ico" />
     <Content Include="dashboard-ui\css\images\icons\audiocd.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

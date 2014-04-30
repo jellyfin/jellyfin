@@ -32,7 +32,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private readonly IItemRepository _itemRepository;
         private readonly ILibraryManager _libraryManager;
-        private readonly INetworkManager _networkManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
         private readonly IServerConfigurationManager _config;
@@ -42,7 +41,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private readonly SsdpHandler _ssdpHandler;
         
-        public PlayToManager(ILogger logger, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, INetworkManager networkManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IDtoService dtoService, IImageProcessor imageProcessor, SsdpHandler ssdpHandler)
+        public PlayToManager(ILogger logger, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IDtoService dtoService, IImageProcessor imageProcessor, SsdpHandler ssdpHandler)
         {
             _tokenSource = new CancellationTokenSource();
 
@@ -51,7 +50,6 @@ namespace MediaBrowser.Dlna.PlayTo
             _httpClient = httpClient;
             _itemRepository = itemRepository;
             _libraryManager = libraryManager;
-            _networkManager = networkManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
             _appHost = appHost;
@@ -137,7 +135,7 @@ namespace MediaBrowser.Dlna.PlayTo
                         {
                             var args = SsdpHelper.ParseSsdpResponse(receiveBuffer, endPoint);
 
-                            TryCreateController(args);
+                            TryCreateController(args, localIp);
                         }
                     }
 
@@ -154,7 +152,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }, _tokenSource.Token, TaskCreationOptions.LongRunning);
         }
 
-        private void TryCreateController(SsdpMessageEventArgs args)
+        private void TryCreateController(SsdpMessageEventArgs args, IPAddress localIp)
         {
             string nts;
             args.Headers.TryGetValue("NTS", out nts);
@@ -203,7 +201,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 try
                 {
-                    await CreateController(new Uri(location)).ConfigureAwait(false);
+                    await CreateController(new Uri(location), localIp).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -264,7 +262,7 @@ namespace MediaBrowser.Dlna.PlayTo
         /// </summary>
         /// <param name="uri">The URI.</param>
         /// <returns></returns>
-        private async Task CreateController(Uri uri)
+        private async Task CreateController(Uri uri, IPAddress localIp)
         {
             var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
 
@@ -277,7 +275,19 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 if (controller == null)
                 {
-                    sessionInfo.SessionController = controller = new PlayToController(sessionInfo, _sessionManager, _itemRepository, _libraryManager, _logger, _networkManager, _dlnaManager, _userManager, _appHost, _dtoService, _imageProcessor, _ssdpHandler);
+                    var serverAddress = GetServerAddress(localIp);
+
+                    sessionInfo.SessionController = controller = new PlayToController(sessionInfo, 
+                        _sessionManager, 
+                        _itemRepository, 
+                        _libraryManager, 
+                        _logger, 
+                        _dlnaManager, 
+                        _userManager, 
+                        _dtoService, 
+                        _imageProcessor, 
+                        _ssdpHandler,
+                        serverAddress);
 
                     controller.Init(device);
 
@@ -302,6 +312,16 @@ namespace MediaBrowser.Dlna.PlayTo
                     _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
                 }
             }
+        }
+
+        private string GetServerAddress(IPAddress localIp)
+        {
+            return string.Format("{0}://{1}:{2}/mediabrowser",
+
+                "http",
+                localIp,
+                _appHost.HttpServerPort
+                );
         }
 
         public void Dispose()

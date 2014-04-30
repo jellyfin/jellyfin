@@ -48,8 +48,9 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.PluginError.ToString(),
-                     DefaultTitle = "{Name} has encountered an error: {Message}",
-                     Variables = new List<string>{"Name", "Message"}
+                     DefaultTitle = "{Name} has encountered an error.",
+                     DefaultDescription = "{ErrorMessage}",
+                     Variables = new List<string>{"Name", "ErrorMessage"}
                 },
 
                 new NotificationTypeInfo
@@ -63,7 +64,8 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 {
                      Type = NotificationType.PluginUpdateInstalled.ToString(),
                      DefaultTitle = "{Name} was updated.",
-                     Variables = new List<string>{"Name", "Version"}
+                     DefaultDescription = "{ReleaseNotes}",
+                     Variables = new List<string>{"Name", "ReleaseNotes", "Version"}
                 },
 
                 new NotificationTypeInfo
@@ -76,7 +78,8 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 {
                      Type = NotificationType.TaskFailed.ToString(),
                      DefaultTitle = "{Name} failed.",
-                     Variables = new List<string>{"Name"}
+                     DefaultDescription = "{ErrorMessage}",
+                     Variables = new List<string>{"Name", "ErrorMessage"}
                 },
 
                 new NotificationTypeInfo
