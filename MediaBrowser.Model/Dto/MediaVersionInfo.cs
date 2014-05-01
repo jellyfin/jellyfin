@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
 using MediaBrowser.Model.MediaInfo;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Dto
 {

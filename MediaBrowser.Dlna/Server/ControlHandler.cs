@@ -1,14 +1,15 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Dlna.Didl;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -27,6 +28,7 @@ namespace MediaBrowser.Dlna.Server
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataManager;
+        private readonly IServerConfigurationManager _config;
         private readonly User _user;
 
         private const string NS_DC = "http://purl.org/dc/elements/1.1/";
@@ -42,13 +44,14 @@ namespace MediaBrowser.Dlna.Server
 
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config)
         {
             _logger = logger;
             _libraryManager = libraryManager;
             _userDataManager = userDataManager;
             _user = user;
             _systemUpdateId = systemUpdateId;
+            _config = config;
             _profile = profile;
 
             _didlBuilder = new DidlBuilder(profile, imageProcessor, serverAddress, dtoService);
@@ -58,6 +61,11 @@ namespace MediaBrowser.Dlna.Server
         {
             try
             {
+                if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+                {
+                    LogRequest(request);
+                }
+
                 return ProcessControlRequestInternal(request);
             }
             catch (Exception ex)
@@ -66,6 +74,18 @@ namespace MediaBrowser.Dlna.Server
 
                 return GetErrorResponse(ex);
             }
+        }
+
+        private void LogRequest(ControlRequest request)
+        {
+            var builder = new StringBuilder();
+
+            var headers = string.Join(", ", request.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
+            builder.AppendFormat("Headers: {0}", headers);
+            builder.AppendLine();
+            builder.Append(request.InputXml);
+
+            _logger.LogMultiline("Control request", LogSeverity.Debug, builder);
         }
 
         private ControlResponse ProcessControlRequestInternal(ControlRequest request)

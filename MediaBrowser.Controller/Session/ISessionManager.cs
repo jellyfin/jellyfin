@@ -191,16 +191,14 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="itemId">The item identifier.</param>
-        /// <param name="context">The context.</param>
-        void ReportNowViewingItem(string sessionId, string itemId, string context);
+        void ReportNowViewingItem(string sessionId, string itemId);
 
         /// <summary>
         /// Reports the now viewing item.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="item">The item.</param>
-        /// <param name="context">The context.</param>
-        void ReportNowViewingItem(string sessionId, BaseItemInfo item, string context);
+        void ReportNowViewingItem(string sessionId, BaseItemInfo item);
         
         /// <summary>
         /// Authenticates the new session.

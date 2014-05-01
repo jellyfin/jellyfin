@@ -145,7 +145,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    SendDatagram(header, values, endpoint, d.Address);
+                    SendDatagram(header, values, endpoint, null);
 
                     _logger.Info("{1} - Responded to a {0} request to {2}", d.Type, endpoint, d.Address.ToString());
                 }

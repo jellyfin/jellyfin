@@ -27,6 +27,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.ApplicationUpdateInstalled.ToString(),
+                     DefaultDescription = "{ReleaseNotes}",
                      DefaultTitle = "A new version of Media Browser Server has been installed.",
                      Variables = new List<string>{"Version"}
                 },

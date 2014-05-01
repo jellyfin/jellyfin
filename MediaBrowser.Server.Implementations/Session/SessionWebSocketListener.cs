@@ -163,8 +163,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var vals = message.Data.Split('|');
 
-                var context = vals.Length > 3 ? vals[3] : null;
-                _sessionManager.ReportNowViewingItem(session.Id, vals[1], context);
+                _sessionManager.ReportNowViewingItem(session.Id, vals[1]);
             }
         }
 

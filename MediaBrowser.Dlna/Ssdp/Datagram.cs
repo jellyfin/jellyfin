@@ -8,8 +8,8 @@ namespace MediaBrowser.Dlna.Ssdp
 {
     public class Datagram
     {
-        public IPEndPoint EndPoint { get; private set; }
-        public IPAddress LocalAddress { get; private set; }
+        public IPEndPoint ToEndPoint { get; private set; }
+        public IPAddress FromEndPoint { get; private set; }
         public string Message { get; private set; }
 
         /// <summary>
@@ -24,13 +24,13 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private readonly ILogger _logger;
 
-        public Datagram(IPEndPoint endPoint, IPAddress localAddress, ILogger logger, string message, int totalSendCount)
+        public Datagram(IPEndPoint toEndPoint, IPAddress fromEndPoint, ILogger logger, string message, int totalSendCount)
         {
             Message = message;
             _logger = logger;
             TotalSendCount = totalSendCount;
-            LocalAddress = localAddress;
-            EndPoint = endPoint;
+            FromEndPoint = fromEndPoint;
+            ToEndPoint = toEndPoint;
         }
 
         public void Send()
@@ -40,9 +40,12 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 var client = CreateSocket();
 
-                client.Bind(new IPEndPoint(LocalAddress, 0));
+                if (FromEndPoint != null)
+                {
+                    client.Bind(new IPEndPoint(FromEndPoint, 0));
+                }
 
-                client.BeginSendTo(msg, 0, msg.Length, SocketFlags.None, EndPoint, result =>
+                client.BeginSendTo(msg, 0, msg.Length, SocketFlags.None, ToEndPoint, result =>
                 {
                     try
                     {
