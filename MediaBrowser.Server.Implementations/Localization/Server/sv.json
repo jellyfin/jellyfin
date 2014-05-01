@@ -574,8 +574,8 @@
     "LabelUseNotificationServices": "Anv\u00e4nd f\u00f6ljande tj\u00e4nster:",
     "CategoryUser": "Anv\u00e4ndare",
     "CategorySystem": "System",
-    "CategoryApplication": "Application",
-    "CategoryPlugin": "Plugin",
+    "CategoryApplication": "App",
+    "CategoryPlugin": "Till\u00e4gg",
     "LabelMessageTitle": "Meddelande titel",
     "LabelAvailableTokens": "Tillg\u00e4ngliga tokens:",
     "AdditionalNotificationServices": "Bl\u00e4ddra i plugin katalogen f\u00f6r att installera ytterligare notifikations tj\u00e4nster",
@@ -600,6 +600,7 @@
     "LetterButtonAbbreviation": "A",
     "TabNowPlaying": "Nu spelas",
     "TabNavigation": "Navigering",
+    "TabControls": "Kontroller",
     "ButtonFullscreen": "V\u00e4xla fullsk\u00e4rmsl\u00e4ge",
     "ButtonScenes": "Scener",
     "ButtonSubtitles": "Undertexter",
@@ -610,5 +611,8 @@
     "ButtonPause": "Paus",
     "LabelGroupMoviesIntoCollections": "Gruppera filmer i samlingsboxar",
     "LabelGroupMoviesIntoCollectionsHelp": "I filmlistor visas filmer som ing\u00e5r i en samlingsbox som ett enda objekt.",
-    "NotificationOptionPluginError": "Plugin failure"
+    "NotificationOptionPluginError": "Fel uppstod med till\u00e4gget",
+    "ButtonVolumeUp": "H\u00f6j Volymen",
+    "ButtonVolumeDown": "S\u00e4nk Volymen",
+    "ButtonMute": "Tyst"
 }

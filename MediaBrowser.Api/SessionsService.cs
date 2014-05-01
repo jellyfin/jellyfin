@@ -63,15 +63,6 @@ namespace MediaBrowser.Api
         /// <value>The name of the item.</value>
         [ApiMember(Name = "ItemName", Description = "The name of the item.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string ItemName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the context (Movies, Music, TvShows, etc)
-        /// Applicable to genres, studios and persons only because the context of items and artists can be inferred.
-        /// This is optional to supply and clients are free to ignore it.
-        /// </summary>
-        /// <value>The context.</value>
-        [ApiMember(Name = "Context", Description = "The ui context for the client (movies, music, tv, games etc). This is optional to supply and clients are free to ignore it.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Context { get; set; }
     }
 
     [Route("/Sessions/{Id}/Playing", "POST", Summary = "Instructs a session to play an item")]
@@ -311,7 +302,6 @@ namespace MediaBrowser.Api
         {
             var command = new BrowseRequest
             {
-                Context = request.Context,
                 ItemId = request.ItemId,
                 ItemName = request.ItemName,
                 ItemType = request.ItemType

@@ -16,9 +16,10 @@
 
         $('.btnCommand,.btnToggleFullscreen', page).on('click', function () {
 
-            currentPlayer.sendCommand({
+            MediaController.sendCommand({
                 Name: this.getAttribute('data-command')
-            });
+                
+            }, currentPlayer);
         });
 
         $('.btnStop', page).on('click', function () {
@@ -79,9 +80,7 @@
 
         player.endPlayerUpdates();
 
-        onStateChanged.call(player, e, state);
-
-        $('.itemName', page).html('');
+        onStateChanged.call(player, e, {});
     }
 
     function onStateChanged(e, state) {
@@ -220,6 +219,10 @@
             return;
         }
 
+        setImageUrl(page, url);
+    }
+    
+    function setImageUrl(page, url) {
         currentImgUrl = url;
 
         $('.nowPlayingPageImage', page).html(url ? '<img src="' + url + '" />' : '');

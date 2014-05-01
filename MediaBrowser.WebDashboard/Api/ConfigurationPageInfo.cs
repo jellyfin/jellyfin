@@ -1,5 +1,4 @@
-﻿using System;
-using MediaBrowser.Controller.Plugins;
+﻿using MediaBrowser.Controller.Plugins;
 
 namespace MediaBrowser.WebDashboard.Api
 {

@@ -600,6 +600,7 @@
     "LetterButtonAbbreviation": "A",
     "TabNowPlaying": "Now Playing",
     "TabNavigation": "Navigation",
+    "TabControls": "Controls",
     "ButtonFullscreen": "Toggle fullscreen",
     "ButtonScenes": "Scenes",
     "ButtonSubtitles": "Subtitles",
@@ -610,5 +611,8 @@
     "ButtonPause": "Pause",
     "LabelGroupMoviesIntoCollections": "Group movies into collections",
     "LabelGroupMoviesIntoCollectionsHelp": "When displaying movie lists, movies belonging to a collection will be displayed as one grouped item.",
-    "NotificationOptionPluginError": "Plugin failure"
+    "NotificationOptionPluginError": "Plugin failure",
+    "ButtonVolumeUp": "Volume up",
+    "ButtonVolumeDown": "Volume down",
+    "ButtonMute": "Mute"
 }

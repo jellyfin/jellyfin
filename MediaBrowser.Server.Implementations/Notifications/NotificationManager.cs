@@ -46,7 +46,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
             var description = GetDescription(request, options);
 
             var tasks = _services.Where(i => IsEnabled(i, notificationType))
-                .Select(i => SendNotification(request, i, users, description, title, cancellationToken));
+                .Select(i => SendNotification(request, i, users, title, description, cancellationToken));
 
             return Task.WhenAll(tasks);
         }
@@ -176,7 +176,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 {
                     if (options != null)
                     {
-                        text = options.Title;
+                        text = options.Description;
                     }
                 }
             }

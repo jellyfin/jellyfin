@@ -82,7 +82,8 @@ namespace MediaBrowser.Dlna.Server
                 _imageProcessor,
                 _userDataManager,
                 user,
-                SystemUpdateId)
+                SystemUpdateId,
+                _config)
                 .ProcessControlRequest(request);
         }
 

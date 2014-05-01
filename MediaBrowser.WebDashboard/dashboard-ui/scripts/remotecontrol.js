@@ -131,6 +131,18 @@
             });
         };
 
+        self.volumeUp = function () {
+            sendCommandByName('VolumeUp');
+        };
+
+        self.volumeDown = function () {
+            sendCommandByName('VolumeDown');
+        };
+
+        self.toggleFullscreen = function () {
+            sendCommandByName('ToggleFullscreen');
+        };
+
         self.displayContent = function (options) {
 
             sendCommandByName('DisplayContent', {

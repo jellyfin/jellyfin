@@ -574,7 +574,7 @@
     "LabelUseNotificationServices": "Usar los siguientes servicios:",
     "CategoryUser": "Usuario",
     "CategorySystem": "Sistema",
-    "CategoryApplication": "Application",
+    "CategoryApplication": "Aplicaci\u00f3n",
     "CategoryPlugin": "Plugin",
     "LabelMessageTitle": "T\u00edtulo del mensaje:",
     "LabelAvailableTokens": "Tokens disponibles:",
@@ -600,6 +600,7 @@
     "LetterButtonAbbreviation": "A",
     "TabNowPlaying": "Reproduciendo ahora",
     "TabNavigation": "Navegaci\u00f3n",
+    "TabControls": "Controles",
     "ButtonFullscreen": "Pantalla completa",
     "ButtonScenes": "Escenas",
     "ButtonSubtitles": "Subt\u00edtulos",
@@ -610,5 +611,8 @@
     "ButtonPause": "Pausa",
     "LabelGroupMoviesIntoCollections": "Agrupar pel\u00edculas en colecciones",
     "LabelGroupMoviesIntoCollectionsHelp": "Cuando se muestran las listas de pel\u00edculas, las pel\u00edculas pertenecientes a una colecci\u00f3n se mostrar\u00e1n como un elemento agrupado.",
-    "NotificationOptionPluginError": "Plugin failure"
+    "NotificationOptionPluginError": "Error en plugin",
+    "ButtonVolumeUp": "Subir volumen",
+    "ButtonVolumeDown": "Bajar volumen",
+    "ButtonMute": "Silencio"
 }

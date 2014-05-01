@@ -26,5 +26,5 @@
     "UninstallPluginConfirmation": "\u00bfEst\u00e1 seguro que desea desinstalar {0}?",
     "NoPluginConfigurationMessage": "El complemento no requiere configuraci\u00f3n",
     "NoPluginsInstalledMessage": "No tiene complementos instalados.",
-    "BrowsePluginCatalogMessage": "Navege en el catalogo de complementos para ver los complementos disponibles."
+    "BrowsePluginCatalogMessage": "Explore el catalogo de complementos para ver los complementos disponibles."
 }

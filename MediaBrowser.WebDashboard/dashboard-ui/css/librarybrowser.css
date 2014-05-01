@@ -1222,7 +1222,8 @@ a.itemTag:hover {
 }
 
 .nowPlayingPageImage img {
-    height: 300px;
+    max-height: 300px;
+    max-width: 300px;
 }
 
 .nowPlayingPage .positionSliderContainer {
@@ -1240,7 +1241,8 @@ a.itemTag:hover {
     }
 
     .nowPlayingPageImage img {
-        height: 200px;
+        max-height: 200px;
+        max-width: 250px;
     }
 
     .nowPlayingPage .positionSliderContainer {
@@ -1254,24 +1256,12 @@ a.itemTag:hover {
     .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
         font-size: 22px;
     }
-
-    .nowPlayingPageImage img {
-        height: 200px;
-    }
-
-    .nowPlayingPage .positionSliderContainer {
-        width: 300px;
-    }
 }
 
 @media all and (max-width: 400px) {
 
     .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
         font-size: 19px;
-    }
-
-    .nowPlayingPageImage img {
-        height: 200px;
     }
 
     .nowPlayingPage .positionSliderContainer {

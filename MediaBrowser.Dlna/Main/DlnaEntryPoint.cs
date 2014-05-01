@@ -151,7 +151,7 @@ namespace MediaBrowser.Dlna.Main
                     "urn:schemas-upnp-org:service:ContentDirectory:1", 
                     "uuid:" + guid.ToString("N")
                 };
-
+                
                 _ssdpHandler.RegisterNotification(guid, uri, IPAddress.Parse(address), services);
 
                 _registeredServerIds.Add(guid);

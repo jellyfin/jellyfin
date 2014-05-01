@@ -724,49 +724,6 @@
             });
         };
 
-        self.sendCommand = function (cmd) {
-
-            // Full list
-            // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
-
-            switch (cmd.Name) {
-
-                case 'VolumeUp':
-                    self.volumeUp();
-                    break;
-                case 'VolumeDown':
-                    self.volumeDown();
-                    break;
-                case 'Mute':
-                    self.mute();
-                    break;
-                case 'Unmute':
-                    self.unMute();
-                    break;
-                case 'ToggleMute':
-                    self.toggleMute();
-                    break;
-                case 'SetVolume':
-                    self.setVolume(cmd.Arguments.Volume);
-                    break;
-                case 'SetAudioStreamIndex':
-                    break;
-                case 'SetSubtitleStreamIndex':
-                    break;
-                case 'ToggleFullscreen':
-
-                    if (currentItem && currentItem.MediaType == 'Video') {
-                        self.toggleFullscreen();
-                    }
-
-                    break;
-                default:
-                    // Not player-related
-                    Dashboard.processGeneralCommand(cmd);
-            }
-
-        };
-
         self.pause = function () {
 
             currentMediaElement.pause();
@@ -795,6 +752,8 @@
 
             if (currentMediaElement) {
 
+                console.log('MediaPlayer toggling mute');
+
                 if (currentMediaElement.volume) {
                     self.mute();
                 } else {
@@ -822,6 +781,7 @@
 
             if (currentMediaElement) {
 
+                console.log('MediaPlayer setting volume to ' + val);
                 currentMediaElement.volume = val / 100;
 
                 self.onVolumeChanged(currentMediaElement);

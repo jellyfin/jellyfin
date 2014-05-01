@@ -88,12 +88,6 @@ namespace MediaBrowser.Model.Session
         public DateTime LastActivityDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the now viewing context.
-        /// </summary>
-        /// <value>The now viewing context.</value>
-        public string NowViewingContext { get; set; }
-
-        /// <summary>
         /// Gets or sets the now viewing item.
         /// </summary>
         /// <value>The now viewing item.</value>

@@ -835,20 +835,33 @@ var Dashboard = {
         // Full list
         // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
         
-        if (cmd.Name === 'GoHome') {
-            Dashboard.navigate('index.html');
-        }
-        else if (cmd.Name === 'GoToSettings') {
-            Dashboard.navigate('dashboard.html');
-        }
-        else if (cmd.Name === 'DisplayContent') {
-            Dashboard.onBrowseCommand(cmd.Arguments);
-        }
-        else if (cmd.Name === 'GoToSearch') {
-            Search.showSearchPanel($.mobile.activePage);
-        }
-        else {
-            console.log('Unrecognized command: ' + cmd.Name);
+        switch (cmd.Name) {
+        
+            case 'GoHome':
+                Dashboard.navigate('index.html');
+                break;
+            case 'GoToSettings':
+                Dashboard.navigate('dashboard.html');
+                break;
+            case 'DisplayContent':
+                Dashboard.onBrowseCommand(cmd.Arguments);
+                break;
+            case 'GoToSearch':
+                Search.showSearchPanel($.mobile.activePage);
+                break;
+            case 'VolumeUp':
+            case 'VolumeDown':
+            case 'Mute':
+            case 'Unmute':
+            case 'ToggleMute':
+            case 'SetVolume':
+            case 'SetAudioStreamIndex':
+            case 'SetSubtitleStreamIndex':
+            case 'ToggleFullscreen':
+                break;
+            default:
+                console.log('Unrecognized command: ' + cmd.Name);
+                break;
         }
     },
 
@@ -1294,7 +1307,6 @@ var Dashboard = {
             "Unmute",
             "ToggleMute",
             "SetVolume",
-            "ToggleFullscreen",
             "SetAudioStreamIndex",
             "SetSubtitleStreamIndex",
             "DisplayContent",

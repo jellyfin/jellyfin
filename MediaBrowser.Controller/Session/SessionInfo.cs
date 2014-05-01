@@ -87,12 +87,6 @@ namespace MediaBrowser.Controller.Session
         public string DeviceName { get; set; }
 
         /// <summary>
-        /// Gets or sets the now viewing context.
-        /// </summary>
-        /// <value>The now viewing context.</value>
-        public string NowViewingContext { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the now viewing item.
         /// </summary>
         /// <value>The name of the now viewing item.</value>

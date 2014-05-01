@@ -20,16 +20,16 @@
 
         $(player).on('playbackstart.mediacontroller', function (e, state) {
 
-            var info = {                
+            var info = {
                 QueueableMediaTypes: state.NowPlayingItem.MediaType,
                 ItemId: state.NowPlayingItem.Id,
                 NowPlayingItem: state.NowPlayingItem
             };
 
             info = $.extend(info, state.PlayState);
-            
+
             ApiClient.reportPlaybackStart(info);
-            
+
         }).on('playbackstop.mediacontroller', function (e, state) {
 
             ApiClient.reportPlaybackStopped({
@@ -285,6 +285,53 @@
         self.shuffle = function (id) {
             currentPlayer.shuffle(id);
         };
+
+        self.sendCommand = function (cmd, player) {
+
+            player = player || self.getLocalPlayer();
+
+            // Full list
+            // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
+            console.log('MediaController received command: ' + cmd.Name);
+            switch (cmd.Name) {
+
+                case 'VolumeUp':
+                    player.volumeUp();
+                    break;
+                case 'VolumeDown':
+                    player.volumeDown();
+                    break;
+                case 'Mute':
+                    player.mute();
+                    break;
+                case 'Unmute':
+                    player.unMute();
+                    break;
+                case 'ToggleMute':
+                    player.toggleMute();
+                    break;
+                case 'SetVolume':
+                    player.setVolume(cmd.Arguments.Volume);
+                    break;
+                case 'SetAudioStreamIndex':
+                    break;
+                case 'SetSubtitleStreamIndex':
+                    break;
+                case 'ToggleFullscreen':
+                    player.toggleFullscreen();
+                    break;
+                default:
+                    {
+                        if (player.isLocalPlayer) {
+                            // Not player-related
+                            Dashboard.processGeneralCommand(cmd);
+                        } else {
+                            player.sendCommand(cmd);
+                        }
+                        break;
+                    }
+            }
+        };
     }
 
     window.MediaController = new mediaController();
@@ -343,27 +390,7 @@
 
             localPlayer = MediaController.getLocalPlayer();
 
-            if (cmd.Name === 'Mute') {
-                localPlayer.mute();
-            }
-            else if (cmd.Name === 'Unmute') {
-                localPlayer.unMute();
-            }
-            else if (cmd.Name === 'VolumeUp') {
-                localPlayer.volumeUp();
-            }
-            else if (cmd.Name === 'VolumeDown') {
-                localPlayer.volumeDown();
-            }
-            else if (cmd.Name === 'ToggleMute') {
-                localPlayer.toggleMute();
-            }
-            else if (cmd.Name === 'Fullscreen') {
-                localPlayer.remoteFullscreen();
-            }
-            else if (cmd.Name === 'SetVolume') {
-                localPlayer.setVolume(parseFloat(cmd.Arguments.Volume));
-            }
+            MediaController.sendCommand(cmd, localPlayer);
         }
     }
 
