@@ -41,10 +41,8 @@ namespace MediaBrowser.Server.Mono
 			var applicationPath = Assembly.GetEntryAssembly ().Location;
 			#endif
 			
-			var commandArgs = Environment.GetCommandLineArgs();
-			
 			// Allow this to be specified on the command line.
-			var customProgramDataPath = commandArgs.ElementAtOrDefault(1);
+			var customProgramDataPath = ParseCommandLine();
 
 			var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
 
@@ -74,6 +72,20 @@ namespace MediaBrowser.Server.Mono
 
 				_appHost.Dispose();
 			}
+		}
+		
+		private static string ParseCommandLine()
+		{
+			var commandArgs = Environment.GetCommandLineArgs().ToList();
+			
+			var programDataPathIndex = commandArgs.IndexOf("-programdata");
+			
+			if (programDataPathIndex != -1)
+			{
+				return commandArgs.ElementAtOrDefault(programDataPathIndex + 1);
+			}
+			
+			return null;
 		}
 
 		private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)

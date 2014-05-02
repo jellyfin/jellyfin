@@ -3,8 +3,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using Mono.Nat;
-using Mono.Nat.Enums;
-using Mono.Nat.EventArgs;
 using System;
 using System.IO;
 using System.Text;
@@ -19,9 +17,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private bool _isStarted;
 
-        public ExternalPortForwarding(ILogger logger, IServerApplicationHost appHost, IServerConfigurationManager config)
+        public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config)
         {
-            _logger = logger;
+            _logger = logmanager.GetLogger("PortMapper");
             _appHost = appHost;
             _config = config;
 

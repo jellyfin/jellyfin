@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
@@ -185,6 +186,12 @@ namespace MediaBrowser.Providers.Manager
                 target.LockedFields = source.LockedFields;
                 target.IsLocked = source.IsLocked;
                 target.DisplayMediaType = source.DisplayMediaType;
+
+                // Grab the value if it's there, but if not then don't overwrite the default
+                if (source.DateCreated != default(DateTime))
+                {
+                    target.DateCreated = source.DateCreated;
+                }
 
                 var sourceHasLanguageSettings = source as IHasPreferredMetadataLanguage;
                 var targetHasLanguageSettings = target as IHasPreferredMetadataLanguage;

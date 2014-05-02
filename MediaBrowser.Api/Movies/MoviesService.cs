@@ -45,6 +45,13 @@ namespace MediaBrowser.Api.Movies
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? UserId { get; set; }
 
+        /// <summary>
+        /// Specify this to localize the search to a specific item or folder. Omit to use the root.
+        /// </summary>
+        /// <value>The parent id.</value>
+        [ApiMember(Name = "ParentId", Description = "Specify this to localize the search to a specific item or folder. Omit to use the root", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ParentId { get; set; }
+        
         public GetMovieRecommendations()
         {
             CategoryLimit = 5;
@@ -117,7 +124,9 @@ namespace MediaBrowser.Api.Movies
         {
             var user = _userManager.GetUserById(request.UserId.Value);
 
-            var movies = user.RootFolder.GetRecursiveChildren(user).OfType<Movie>().ToList();
+            var movies = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId)
+                .OfType<Movie>()
+                .ToList();
 
             var result = GetRecommendationCategories(user, movies, request.CategoryLimit, request.ItemLimit, request.GetItemFields().ToList());
 

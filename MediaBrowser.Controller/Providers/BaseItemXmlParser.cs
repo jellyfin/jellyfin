@@ -138,12 +138,23 @@ namespace MediaBrowser.Controller.Providers
             {
                 // DateCreated
                 case "Added":
-                    DateTime added;
-                    if (DateTime.TryParse(reader.ReadElementContentAsString() ?? string.Empty, out added))
                     {
-                        item.DateCreated = added.ToUniversalTime();
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            DateTime added;
+                            if (DateTime.TryParse(val, out added))
+                            {
+                                item.DateCreated = added.ToUniversalTime();
+                            }
+                            else
+                            {
+                                Logger.Warn("Invalid Added value found: " + val);
+                            }
+                        }
+                        break;
                     }
-                    break;
 
                 case "LocalTitle":
                     item.Name = reader.ReadElementContentAsString();
