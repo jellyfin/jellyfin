@@ -2025,6 +2025,18 @@
     <None Include="dashboard-ui\css\fonts\OpenSans-Light.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="dashboard-ui\css\fonts\RobotoLight.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\RobotoMedium.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\RobotoRegular.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\RobotoThin.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="WebMarkupMin.Configuration.xsd">
       <SubType>Designer</SubType>

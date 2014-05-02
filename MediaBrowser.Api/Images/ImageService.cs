@@ -1,8 +1,7 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Globalization;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -48,6 +47,8 @@ namespace MediaBrowser.Api.Images
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+
+        public string Params { get; set; }
     }
 
     /// <summary>
@@ -358,7 +359,45 @@ namespace MediaBrowser.Api.Images
                 _libraryManager.RootFolder :
                 _libraryManager.GetItemById(request.Id);
 
+            if (!string.IsNullOrEmpty(request.Params))
+            {
+                ParseOptions(request, request.Params);
+            }
+
             return GetImage(request, item);
+        }
+
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private void ParseOptions(ImageRequest request, string options)
+        {
+            var vals = options.Split(';');
+
+            for (var i = 0; i < vals.Length; i++)
+            {
+                var val = vals[i];
+
+                if (string.IsNullOrWhiteSpace(val))
+                {
+                    continue;
+                }
+
+                if (i == 0)
+                {
+                    request.Tag = val;
+                }
+                else if (i == 1)
+                {
+                    request.Format = (ImageOutputFormat)Enum.Parse(typeof(ImageOutputFormat), val, true);
+                }
+                else if (i == 2)
+                {
+                    request.MaxWidth = int.Parse(val, _usCulture);
+                }
+                else if (i == 3)
+                {
+                    request.MaxHeight = int.Parse(val, _usCulture);
+                }
+            }
         }
 
         /// <summary>

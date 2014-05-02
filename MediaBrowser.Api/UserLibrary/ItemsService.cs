@@ -502,9 +502,6 @@ namespace MediaBrowser.Api.UserLibrary
                         return userdata != null && userdata.IsFavorite;
                     });
 
-                case ItemFilter.IsRecentlyAdded:
-                    return items.Where(item => item.IsRecentlyAdded());
-
                 case ItemFilter.IsResumable:
                     return items.Where(item =>
                     {

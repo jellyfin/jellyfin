@@ -949,16 +949,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Determines if the item is considered new based on user settings
-        /// </summary>
-        /// <returns><c>true</c> if [is recently added] [the specified user]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public bool IsRecentlyAdded()
-        {
-            return (DateTime.UtcNow - DateCreated).TotalDays < ConfigurationManager.Configuration.RecentItemDays;
-        }
-
-        /// <summary>
         /// Gets the linked child.
         /// </summary>
         /// <param name="info">The info.</param>

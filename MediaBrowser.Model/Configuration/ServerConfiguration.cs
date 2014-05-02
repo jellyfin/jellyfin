@@ -124,12 +124,6 @@ namespace MediaBrowser.Model.Configuration
         public bool ShowLogWindow { get; set; }
 
         /// <summary>
-        /// Gets or sets the recent item days.
-        /// </summary>
-        /// <value>The recent item days.</value>
-        public int RecentItemDays { get; set; }
-
-        /// <summary>
         /// Gets or sets the minimum percentage of an item that must be played in order for playstate to be updated.
         /// </summary>
         /// <value>The min resume PCT.</value>
@@ -227,9 +221,6 @@ namespace MediaBrowser.Model.Configuration
 
         public NotificationOptions NotificationOptions { get; set; }
 
-        [Obsolete("Please use RequireManualLoginForMobileApps")]
-        public string[] ManualLoginClients { get; set; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -257,8 +248,6 @@ namespace MediaBrowser.Model.Configuration
             MinResumeDurationSeconds = Convert.ToInt32(TimeSpan.FromMinutes(5).TotalSeconds);
 
             RealtimeMonitorDelay = 30;
-
-            RecentItemDays = 10;
 
             EnableInternetProviders = true; //initial installs will need these
 
@@ -295,8 +284,6 @@ namespace MediaBrowser.Model.Configuration
             UICulture = "en-us";
 
             NotificationOptions = new NotificationOptions();
-
-            ManualLoginClients = new string[] { };
         }
     }
 
