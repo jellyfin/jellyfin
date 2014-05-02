@@ -13,6 +13,11 @@
         StartIndex: 0
     };
 
+    function getSavedQueryKey() {
+
+        return 'musicalbums' + (query.ParentId || '');
+    }
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -72,7 +77,7 @@
                 reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues('musicalbums', query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -157,7 +162,7 @@
             } else {
                 reloadItems(page);
             }
-            LibraryBrowser.saveViewSetting('musicalbums', view);
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
 
         $('.alphabetPicker', page).on('alphaselect', function (e, character) {
@@ -184,6 +189,8 @@
 
     }).on('pagebeforeshow', "#musicAlbumsPage", function () {
 
+        query.ParentId = LibraryMenu.getTopParentId();
+
         var page = this;
         var limit = LibraryBrowser.getDefaultPageSize();
         
@@ -193,9 +200,10 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues('musicalbums', query);
+        var viewKey = getSavedQueryKey();
+        LibraryBrowser.loadSavedQueryValues(viewKey, query);
 
-        LibraryBrowser.getSavedViewSetting('musicalbums').done(function (val) {
+        LibraryBrowser.getSavedViewSetting(viewKey).done(function (val) {
 
             if (val) {
                 $('#selectView', page).val(val).selectmenu('refresh').trigger('change');

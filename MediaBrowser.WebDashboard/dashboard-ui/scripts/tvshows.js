@@ -13,6 +13,11 @@
         StartIndex: 0
     };
 
+    function getSavedQueryKey() {
+
+        return 'tvshows' + (query.ParentId || '');
+    }
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -97,7 +102,7 @@
                 reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues('tvshows', query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -238,7 +243,7 @@
             } else {
                 reloadItems(page);
             }
-            LibraryBrowser.saveViewSetting('tvshows', view);
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
 
         $('#chkTrailer', this).on('change', function () {
@@ -341,6 +346,8 @@
 
     }).on('pagebeforeshow', "#tvShowsPage", function () {
 
+        query.ParentId = LibraryMenu.getTopParentId();
+
         var page = this;
         var limit = LibraryBrowser.getDefaultPageSize();
 
@@ -350,9 +357,11 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues('tvshows', query);
+        var viewKey = getSavedQueryKey();
 
-        LibraryBrowser.getSavedViewSetting('tvshows').done(function (val) {
+        LibraryBrowser.loadSavedQueryValues(viewKey, query);
+
+        LibraryBrowser.getSavedViewSetting(viewKey).done(function (val) {
 
             if (val) {
                 $('#selectView', page).val(val).selectmenu('refresh').trigger('change');

@@ -13,6 +13,11 @@
         IsVirtualUnaired: false
     };
 
+    function getSavedQueryKey() {
+
+        return 'episodes' + (query.ParentId || '');
+    }
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -60,9 +65,7 @@
                 reloadItems(page);
             });
 
-            if (getParameterByName('savequery') != 'false') {
-                LibraryBrowser.saveQueryValues('episodes', query);
-            }
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -269,6 +272,8 @@
 
     }).on('pagebeforeshow', "#episodesPage", function () {
 
+        query.ParentId = LibraryMenu.getTopParentId();
+
         var limit = LibraryBrowser.getDefaultPageSize();
 
         // If the default page size has changed, the start index will have to be reset
@@ -277,7 +282,7 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues('episodes', query);
+        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         var filters = getParameterByName('filters');
         if (filters) {

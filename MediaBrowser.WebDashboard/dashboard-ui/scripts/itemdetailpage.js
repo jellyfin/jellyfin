@@ -192,10 +192,6 @@
             $('#gameSystemTabs', page).show();
         }
 
-        if (item.Type == "Trailer") {
-            $('#trailerTabs', page).show();
-        }
-
         if (item.Type == "Episode" || item.Type == "Season" || item.Type == "Series") {
             $('#tvShowsTabs', page).show();
         }

@@ -37,6 +37,8 @@
     
     $(document).on('pagebeforeshow', "#moviesRecommendedPage", function () {
 
+        var parentId = LibraryMenu.getTopParentId();
+
         var screenWidth = $(window).width();
 
         var page = this;
@@ -50,7 +52,8 @@
             Limit: screenWidth >= 1920 ? 4 : (screenWidth >= 1440 ? 4 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
-            CollapseBoxSetItems: false
+            CollapseBoxSetItems: false,
+            ParentId: parentId
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -77,7 +80,8 @@
             userId: Dashboard.getCurrentUserId(),
             categoryLimit: screenWidth >= 1200 ? 6 : 3,
             itemLimit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 6),
-            Fields: "PrimaryImageAspectRatio"
+            Fields: "PrimaryImageAspectRatio",
+            ParentId: parentId
         });
 
         $.getJSON(url).done(function(recommendations) {

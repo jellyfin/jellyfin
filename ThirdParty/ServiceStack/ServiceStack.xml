@@ -250,6 +250,12 @@
             The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
             </summary>
         </member>
+        <member name="M:ServiceStack.Host.HttpListener.HttpListenerBase.RedirectDirectory(ServiceStack.Web.IHttpRequest)">
+            <summary>
+            Retain the same behavior as ASP.NET and redirect requests to directores 
+            without a trailing '/'
+            </summary>
+        </member>
         <member name="M:ServiceStack.Host.HttpListener.HttpListenerBase.Start(System.String,System.Threading.WaitCallback)">
             <summary>
             Starts the Web Service
@@ -283,6 +289,17 @@
             <summary>
             Creates the required missing tables or DB schema 
             </summary>
+        </member>
+        <member name="M:ServiceStack.Configuration.ISettings.Get(System.String)">
+            <summary>
+            Provides a common interface for Settings providers such as
+            ConfigurationManager or Azure's RoleEnvironment. The only
+            requirement is that if the implementation cannot find the
+            specified key, the return value must be null
+            </summary>
+            <param name="key">The key for the setting</param>
+            <returns>The string value of the specified key, or null if the key
+            was invalid</returns>
         </member>
         <member name="T:ServiceStack.Service">
             <summary>
@@ -3264,17 +3281,6 @@
             <param name="name"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Configuration.ISettings.Get(System.String)">
-            <summary>
-            Provides a common interface for Settings providers such as
-            ConfigurationManager or Azure's RoleEnvironment. The only
-            requirement is that if the implementation cannot find the
-            specified key, the return value must be null
-            </summary>
-            <param name="key">The key for the setting</param>
-            <returns>The string value of the specified key, or null if the key
-            was invalid</returns>
-        </member>
         <member name="M:ServiceStack.Configuration.ConfigUtils.GetNullableAppSetting(System.String)">
             <summary>
             Gets the nullable app setting.
@@ -3343,7 +3349,7 @@
             CORS allows to access resources from different domain which usually forbidden by origin policy. 
             </summary>
         </member>
-        <member name="M:ServiceStack.CorsFeature.#ctor(System.String,System.String,System.String,System.Boolean)">
+        <member name="M:ServiceStack.CorsFeature.#ctor(System.String,System.String,System.String,System.Boolean,System.String,System.Nullable{System.Int32})">
             <summary>
             Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
             </summary>

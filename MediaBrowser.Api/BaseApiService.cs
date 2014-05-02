@@ -154,8 +154,14 @@ namespace MediaBrowser.Api
             return libraryManager.GetPerson(DeSlugPersonName(name, libraryManager));
         }
 
-        protected IList<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager)
+        protected IList<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager, string parentId = null)
         {
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                var folder = (Folder) libraryManager.GetItemById(new Guid(parentId));
+
+                return folder.GetRecursiveChildren();
+            }
             if (userId.HasValue)
             {
                 var user = userManager.GetUserById(userId.Value);

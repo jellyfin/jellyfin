@@ -7,7 +7,7 @@
     padding-top: 48px !important;
 }
 
-    .libraryPage:not(.metadataEditorPage):not(#indexPage):not(#boxsetsPage):not(#itemListPage):not(.nowPlayingPage) {
+    .libraryPage:not(.metadataEditorPage):not(#indexPage):not(#boxsetsPage):not(#itemListPage):not(.nowPlayingPage):not(.trailerPage) {
         padding-top: 91px !important;
     }
 
@@ -61,6 +61,14 @@
     vertical-align: top;
 }
 
+.selectedMediaFolder {
+    color: #fff!important;
+}
+.viewMenuBar .selectedMediaFolder:before {
+    content: '\25BA';
+    color: #fff;
+}
+
 .viewMenuSecondary {
     float: right;
 }
@@ -107,8 +115,8 @@
 }
 
 .listHeader {
-    margin-top: .75em;
-    margin-bottom: 0;
+    margin-top: .5em;
+    margin-bottom: .25em;
     padding-left: 7px;
 }
 
@@ -126,17 +134,16 @@
 
 .libraryViewNavInner {
     text-align: center;
-    font-family: sans-serif, Arial;
     font-size: 14px;
     white-space: nowrap;
     padding: 0 0 0;
     overflow-x: auto;
     height: 55px;
-    text-transform: uppercase;
 }
 
 .libraryViewNav .ui-btn-active .libraryViewNavLinkContent {
     border-bottom-color: #38c;
+    color: #fff;
 }
 
 .libraryViewNav a {
@@ -153,24 +160,11 @@
         color: #bbb!important;
     }
 
-    .libraryViewNav a:after {
-        content: "|";
-        color: #444;
-        font-size: 20px;
-        font-weight: normal !important;
-        position: absolute;
-        top: 7px;
-    }
-
-    .libraryViewNav a:last-child::after {
-        content: "";
-    }
-
 .libraryViewNavLinkContent {
-    border-bottom: 6px solid transparent;
+    border-bottom: 5px solid transparent;
     display: inline-block;
-    padding: 0 1em 6px;
-    margin: 0 -2px 0 -1px;
+    padding: 0 .9em 7px;
+    color: #ddd;
 }
 
 .ehsContent {
@@ -590,7 +584,7 @@ a.itemTag:hover {
 }
 
 .lblDetailTab {
-    font-size: 15px!important;
+    font-size: 14px!important;
     font-weight: 400!important;
     font-family: 'Open Sans';
     padding: .5em 1em;

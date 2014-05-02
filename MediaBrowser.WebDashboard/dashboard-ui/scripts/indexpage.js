@@ -1,225 +1,71 @@
 ﻿(function ($, document, apiClient) {
 
-    function getViewHtml(view) {
-
-        var html = '';
-
-        html += '<a id="' + view.id + '" class="posterItem backdropPosterItem" href="' + view.url + '">';
-
-        html += '<div class="posterItemImage" style="padding:1px;"></div><div class="posterItemText posterItemTextCentered">' + view.name + '</div>';
-
-        html += '</a>';
-
-        return html;
-    }
-
-    function appendViewImages(elem, urls) {
-
-        var html = '';
-
-        for (var i = 0, length = urls.length; i < length; i++) {
-
-            var url = urls[i];
-
-            html += '<div class="viewCollageImage" style="background-image: url(\'' + url + '\');"></div>';
-
-        }
-
-
-        elem.html(html);
-    }
-
-    function renderMovieViewImages(page, userId) {
-
-        apiClient.getItems(userId, {
-
-            SortBy: "random",
-            IncludeItemTypes: "Movie,Trailer",
-            Limit: 6,
-            ImageTypes: "Primary",
-            Recursive: true
-
-        }).done(function (result) {
-
-            var urls = [];
-
-            for (var i = 0, length = result.Items.length; i < length; i++) {
-
-                urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
-                    width: 160,
-                    EnableImageEnhancers: false
-                }));
-
-            }
-
-            appendViewImages($('#moviesView .posterItemImage', page), urls);
-
-        });
-
-    }
-
-    function renderMusicViewImages(page, userId) {
-
-        apiClient.getItems(userId, {
-
-            SortBy: "random",
-            IncludeItemTypes: "MusicAlbum",
-            Limit: 6,
-            ImageTypes: "Primary",
-            Recursive: true
-
-        }).done(function (result) {
-
-            var urls = [];
-
-            for (var i = 0, length = result.Items.length; i < length; i++) {
-
-                urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
-                    width: 160,
-                    EnableImageEnhancers: false
-                }));
-
-            }
-
-            appendViewImages($('#musicView .posterItemImage', page), urls);
-
-        });
-
-    }
-
-    function renderGamesViewImages(page, userId) {
-
-        apiClient.getItems(userId, {
-
-            SortBy: "random",
-            MediaTypes: "Game",
-            Limit: 6,
-            ImageTypes: "Primary",
-            Recursive: true
-
-        }).done(function (result) {
-
-            var urls = [];
-
-            for (var i = 0, length = result.Items.length; i < length; i++) {
-
-                urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
-                    width: 160,
-                    EnableImageEnhancers: false
-                }));
-
-            }
-
-            appendViewImages($('#gamesView .posterItemImage', page), urls);
-
-        });
-
-    }
-
-    function renderTvViewImages(page, userId) {
-
-        apiClient.getItems(userId, {
-
-            SortBy: "random",
-            IncludeItemTypes: "Series",
-            Limit: 6,
-            ImageTypes: "Primary",
-            Recursive: true
-
-        }).done(function (result) {
-
-            var urls = [];
-
-            for (var i = 0, length = result.Items.length; i < length; i++) {
-
-                urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
-                    width: 160,
-                    EnableImageEnhancers: false
-                }));
-
-            }
-
-            appendViewImages($('#tvView .posterItemImage', page), urls);
-
-        });
-
-    }
-
-    function renderViews(page, userId) {
-
-        apiClient.getItemCounts(userId).done(function (counts) {
-
-            var views = [];
-
-            if (counts.MovieCount || counts.TrailerCount) {
-                views.push({ id: "moviesView", name: "Movies", url: "movieslatest.html", img: "css/images/items/list/chapter.png", background: "#0094FF" });
-            }
-
-            if (counts.EpisodeCount || counts.SeriesCount) {
-                views.push({ id: "tvView", name: "TV Shows", url: "tvrecommended.html", img: "css/images/items/list/collection.png", background: "#FF870F" });
-            }
-
-            if (counts.SongCount || counts.MusicVideoCount) {
-                views.push({ id: "musicView", name: "Music", url: "musicrecommended.html", img: "css/images/items/list/audiocollection.png", background: "#6FBD45" });
-            }
-
-            if (counts.GameCount) {
-                views.push({ id: "gamesView", name: "Games", url: "gamesrecommended.html", img: "css/images/items/list/gamecollection.png", background: "#E12026" });
-            }
-
-            var html = '';
-
-            for (var i = 0, length = views.length; i < length; i++) {
-
-                html += getViewHtml(views[i]);
-            }
-
-            var elem = $('#views', page).html(html).trigger('create');
-
-            if (counts.MovieCount || counts.TrailerCount) {
-                renderMovieViewImages(elem, userId);
-            }
-            if (counts.EpisodeCount || counts.SeriesCount) {
-                renderTvViewImages(elem, userId);
-            }
-            if (counts.SongCount || counts.MusicVideoCount) {
-                renderMusicViewImages(elem, userId);
-            }
-            if (counts.GameCount) {
-                renderGamesViewImages(elem, userId);
-            }
-        });
-
-    }
-
     $(document).on('pagebeforeshow', "#indexPage", function () {
+
+        var parentId = LibraryMenu.getTopParentId();
+
+        var screenWidth = $(window).width();
 
         var page = this;
 
-        var userId = Dashboard.getCurrentUserId();
-
-        if (!userId) {
-            return;
-        }
-
-        renderViews(page, userId);
-
         var options = {
 
-            sortBy: "SortName"
+            SortBy: "DatePlayed",
+            SortOrder: "Descending",
+            MediaTypes: "Video",
+            Filters: "IsResumable",
+            Limit: screenWidth >= 1920 ? 4 : (screenWidth >= 1440 ? 4 : 3),
+            Recursive: true,
+            Fields: "PrimaryImageAspectRatio",
+            CollapseBoxSetItems: false,
+            ExcludeLocationTypes: "Virtual",
+            ParentId: parentId
         };
 
-        apiClient.getItems(userId, options).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
-            $('#divCollections', page).html(LibraryBrowser.getPosterViewHtml({
+            if (result.Items.length) {
+                $('#resumableSection', page).show();
+            } else {
+                $('#resumableSection', page).hide();
+            }
+
+            $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                showTitle: true,
-                shape: "backdrop",
-                centerText: true
-            }));
+                preferBackdrop: true,
+                shape: 'backdrop',
+                overlayText: true,
+                showTitle: true
+
+            })).createPosterItemMenus();
 
         });
 
+        options = {
+
+            SortBy: "DateCreated",
+            SortOrder: "Descending",
+            Limit: screenWidth >= 1920 ? 24 : (screenWidth >= 1440 ? 24 : (screenWidth >= 800 ? 18 : 12)),
+            Recursive: true,
+            Fields: "PrimaryImageAspectRatio",
+            Filters: "IsUnplayed,IsNotFolder",
+            CollapseBoxSetItems: false,
+            ExcludeLocationTypes: "Virtual,Remote",
+            ParentId: parentId
+        };
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+
+            $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
+                
+                items: result.Items,
+                preferThumb: true,
+                shape: 'backdrop',
+                showTitle: true,
+                centerText: true
+
+            })).createPosterItemMenus();
+        });
     });
 
 })(jQuery, document, ApiClient);

@@ -2,6 +2,8 @@
 
     $(document).on('pagebeforeshow', "#gamesRecommendedPage", function () {
 
+        var parentId = LibraryMenu.getTopParentId();
+
         var page = this;
 
         var options = {
@@ -11,7 +13,8 @@
             MediaTypes: "Game",
             Limit: 10,
             Recursive: true,
-            Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio"
+            Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio",
+            ParentId: parentId
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -32,7 +35,8 @@
             Limit: 10,
             Recursive: true,
             Filters: "IsPlayed",
-            Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio"
+            Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio",
+            ParentId: parentId
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

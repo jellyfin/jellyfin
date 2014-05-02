@@ -1,5 +1,5 @@
 ﻿.posterItem {
-    margin: 4px 5px;
+    margin: 5px 5px;
     text-shadow: none;
     font-weight: normal!important;
     display: inline-block;
@@ -170,9 +170,9 @@
     }
 
 .posterItemProgress .itemProgressBar {
-    height: 10px;
+    height: 8px;
     width: 100%;
-    opacity: .7;
+    opacity: .8;
 }
 
 .miniPosterItemProgress {

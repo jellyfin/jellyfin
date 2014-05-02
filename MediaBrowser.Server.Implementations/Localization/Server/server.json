@@ -620,5 +620,6 @@
 	"NotificationOptionPluginError": "Plugin failure",
 	"ButtonVolumeUp": "Volume up",
 	"ButtonVolumeDown": "Volume down",
-	"ButtonMute": "Mute"
+	"ButtonMute": "Mute",
+	"HeaderLatestMedia": "Latest Media"
 }

@@ -2,17 +2,23 @@
 
     var itemCountsPromise;
     var liveTvInfoPromise;
+    var itemsPromise;
 
     function ensurePromises() {
+        itemsPromise = itemsPromise || ApiClient.getItems(Dashboard.getCurrentUserId(), {
+
+            SortBy: "SortName"
+
+        });
         itemCountsPromise = itemCountsPromise || ApiClient.getItemCounts(Dashboard.getCurrentUserId());
         liveTvInfoPromise = liveTvInfoPromise || ApiClient.getLiveTvInfo();
     }
 
-    function renderHeader(page, user) {
+    function renderHeader(user) {
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        html += '<button type="button" data-icon="bars" data-iconpos="notext" data-inline="true" title="Menu" class="libraryMenuButton" onclick="LibraryMenu.showLibraryMenu($(this).parents(\'.page\'));">Menu</button>';
+        html += '<button type="button" data-icon="bars" data-iconpos="notext" data-inline="true" title="Menu" class="libraryMenuButton" onclick="LibraryMenu.showLibraryMenu();">Menu</button>';
 
         html += '<a class="desktopHomeLink" href="index.html"><img src="css/images/mblogoicon.png" /></a>';
 
@@ -53,72 +59,90 @@
 
         html += '</div>';
 
-        var $page = $(page);
+        $(document.body).prepend(html);
 
-        $page.prepend(html);
+        $('.viewMenuBar').trigger('create');
 
-        $('.viewMenuBar', page).trigger('create');
-
-        $page.trigger('headercreated');
+        $(document).trigger('headercreated');
     }
 
-    function insertViews(page, user, counts, liveTvInfo) {
+    function getItemHref(item) {
+
+        if (item.Type == 'ManualCollectionsFolder') {
+            return 'collections.html?topParentId=' + item.Id;
+        }
+
+        if (item.CollectionType == 'boxsets') {
+            return 'moviecollections.html?topParentId=' + item.Id;
+        }
+
+        if (item.CollectionType == 'trailers') {
+            return 'movietrailers.html?topParentId=' + item.Id;
+        }
+
+        if (item.Type == 'TrailerCollectionFolder') {
+            return 'movietrailers.html?topParentId=' + item.Id;
+        }
+
+        if (item.CollectionType == 'movies') {
+            return 'movieslatest.html?topParentId=' + item.Id;
+        }
+
+        if (item.CollectionType == 'tvshows') {
+            return 'tvrecommended.html?topParentId=' + item.Id;
+        }
+
+        if (item.CollectionType == 'music') {
+            return 'musicrecommended.html?topParentId=' + item.Id;
+        }
+
+        if (item.CollectionType == 'games') {
+            return 'gamesrecommended.html?topParentId=' + item.Id;
+        }
+
+        return 'itemlist.html?topParentId=' + item.Id + '&parentid=' + item.Id;
+    }
+
+    function insertViews(user, counts, items, liveTvInfo) {
 
         var html = '';
 
-        var selectedCssClass = ' selectedViewLink';
-        var selectedHtml = "<span class='selectedViewIndicator'>&#9654;</span>";
+        html += items.map(function (i) {
 
-        var view = page.getAttribute('data-view') || getParameterByName('context');
+            return '<a data-itemid="' + i.Id + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink desktopViewMenuLink" href="' + getItemHref(i) + '"><span class="viewName">' + i.Name + '</span></a>';
 
-        if (counts.MovieCount) {
+        }).join('');
 
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'movies' ? selectedCssClass : '') + '" href="movieslatest.html">' + (view == 'movies' ? selectedHtml : '') + '<span class="viewName">Movies</span></a>';
-        }
-
-        if (counts.SeriesCount) {
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'tv' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tv' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
+        if (counts.ChannelCount) {
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink lnkMediaFolder" href="channels.html"><span class="viewName">Channels</span></a>';
         }
 
         if (liveTvInfo.EnabledUsers.indexOf(user.Id) != -1) {
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'livetv' ? selectedCssClass : '') + '" href="livetvsuggested.html">' + (view == 'livetv' ? selectedHtml : '') + '<span class="viewName">Live TV</span></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink lnkMediaFolder" data-itemid="livetv" href="livetvsuggested.html"><span class="viewName">Live TV</span></a>';
         }
 
-        if (counts.SongCount || counts.MusicVideoCount) {
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'music' ? selectedCssClass : '') + '" href="musicrecommended.html">' + (view == 'music' ? selectedHtml : '') + '<span class="viewName">Music</span></a>';
-        }
-
-        if (counts.GameCount) {
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
-        }
-
-        if (counts.ChannelCount) {
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'channels' ? selectedCssClass : '') + '" href="channels.html">' + (view == 'channels' ? selectedHtml : '') + '<span class="viewName">Channels</span></a>';
-        }
-
-        //if (counts.BoxSetCount) {
-        html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'boxsets' ? selectedCssClass : '') + '" href="collections.html">' + (view == 'boxsets' ? selectedHtml : '') + '<span class="viewName">Collections</span></a>';
-        //}
-
-        $('.viewMenuRemoteControlButton', page).before(html);
+        $('.viewMenuRemoteControlButton').before(html);
     }
 
-    function showLibraryMenu(page) {
+    function showLibraryMenu() {
 
         ensurePromises();
 
-        $.when(itemCountsPromise, liveTvInfoPromise).done(function (response1, response2) {
+        $.when(itemCountsPromise, itemsPromise, liveTvInfoPromise).done(function (response1, response2, response3) {
 
             var counts = response1[0];
-            var liveTvInfo = response2[0];
+            var items = response2[0].Items;
+            var liveTvInfo = response3[0];
 
-            var panel = getLibraryMenu(page, counts, liveTvInfo);
+            var page = $.mobile.activePage;
+
+            var panel = getLibraryMenu(page, counts, items, liveTvInfo);
 
             $(panel).panel('toggle');
         });
     }
 
-    function getLibraryMenu(page, counts, liveTvInfo) {
+    function getLibraryMenu(page, counts, items, liveTvInfo) {
 
         var panel = $('#libraryPanel', page);
 
@@ -132,33 +156,19 @@
 
             html += '<ul data-role="listview">';
 
-            if (counts.MovieCount) {
-                html += '<li><a class="libraryPanelLink" href="movieslatest.html">Movies</a></li>';
-            }
+            html += items.map(function (i) {
 
-            if (counts.SeriesCount) {
-                html += '<li><a class="libraryPanelLink" href="tvrecommended.html">TV</a></li>';
+                return '<li><a data-itemid="' + i.Id + '" class="libraryPanelLink lnkMediaFolder" href="' + getItemHref(i) + '">' + i.Name + '</a></li>';
+
+            }).join('');
+
+            if (counts.ChannelCount) {
+                html += '<li><a class="libraryPanelLink lnkMediaFolder" href="channels.html">Channels</a></li>';
             }
 
             if (liveTvInfo.EnabledUsers.indexOf(Dashboard.getCurrentUserId()) != -1) {
-                html += '<li><a class="libraryPanelLink" href="livetvsuggested.html">Live TV</a></li>';
+                html += '<li><a class="libraryPanelLink lnkMediaFolder" data-itemid="livetv" href="livetvsuggested.html">Live TV</a></li>';
             }
-
-            if (counts.SongCount || counts.MusicVideoCount) {
-                html += '<li><a class="libraryPanelLink" href="musicrecommended.html">Music</a></li>';
-            }
-
-            if (counts.ChannelCount) {
-                html += '<li><a class="libraryPanelLink" href="channels.html">Channels</a></li>';
-            }
-
-            if (counts.GameCount) {
-                html += '<li><a class="libraryPanelLink" href="gamesrecommended.html">Games</a></li>';
-            }
-
-            //if (counts.BoxSetCount) {
-            html += '<li><a class="libraryPanelLink" href="collections.html">Collections</a></li>';
-            //}
 
             html += '</ul>';
             html += '</div>';
@@ -171,12 +181,19 @@
         return panel;
     }
 
+    function getTopParentId() {
+
+        return getParameterByName('topParentId') || sessionStorage.getItem('topParentId') || null;
+    }
+
     window.LibraryMenu = {
-        showLibraryMenu: showLibraryMenu
+        showLibraryMenu: showLibraryMenu,
+
+        getTopParentId: getTopParentId
     };
-    
+
     function updateCastIcon() {
-        
+
         var info = MediaController.getPlayerInfo();
 
         if (info.isLocalPlayer) {
@@ -187,6 +204,48 @@
 
             $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
         }
+    }
+
+    function updateLibraryNavLinks(page) {
+
+        page = $(page);
+
+        var isLiveTvPage = page.hasClass('liveTvPage');
+
+        var id = isLiveTvPage || page.hasClass('noLibraryMenuSelectionPage') ?
+            '' :
+            getTopParentId() || '';
+
+        sessionStorage.setItem('topParentId', id);
+
+        $('.lnkMediaFolder').each(function () {
+
+            var itemId = this.getAttribute('data-itemid');
+
+            if (isLiveTvPage && itemId == 'livetv') {
+                $(this).addClass('selectedMediaFolder');
+            }
+            else if (id && itemId == id) {
+                $(this).addClass('selectedMediaFolder');
+            }
+            else {
+                $(this).removeClass('selectedMediaFolder');
+            }
+
+        });
+
+        $('.scopedLibraryViewNav a', page).each(function () {
+
+            var src = this.href;
+
+            if (src.indexOf('#') != -1) {
+                return;
+            }
+
+            src = replaceQueryString(src, 'topParentId', id);
+
+            this.href = src;
+        });
     }
 
     $(document).on('pageinit', ".libraryPage", function () {
@@ -201,31 +260,42 @@
 
         });
 
-    }).on('pagebeforeshow', ".libraryPage", function () {
+    }).on('pagebeforeshow', ".page", function () {
 
         var page = this;
 
-        if (!$('.viewMenuBar', page).length) {
+        if ($(page).hasClass('libraryPage')) {
 
-            Dashboard.getCurrentUser().done(function (user) {
+            if (!$('.viewMenuBar').length) {
 
-                renderHeader(page, user);
+                Dashboard.getCurrentUser().done(function (user) {
 
-                ensurePromises();
+                    renderHeader(user);
 
-                $.when(itemCountsPromise, liveTvInfoPromise).done(function (response1, response2) {
+                    ensurePromises();
 
-                    var counts = response1[0];
-                    var liveTvInfo = response2[0];
+                    $.when(itemCountsPromise, itemsPromise, liveTvInfoPromise).done(function (response1, response2, response3) {
 
-                    insertViews(page, user, counts, liveTvInfo);
+                        var counts = response1[0];
+                        var items = response2[0].Items;
+                        var liveTvInfo = response3[0];
 
+                        insertViews(user, counts, items, liveTvInfo);
 
+                        updateLibraryNavLinks(page);
+
+                    });
                 });
-            });
-        }
+            } else {
 
-        updateCastIcon();
+                $('.viewMenuBar').show();
+                updateLibraryNavLinks(page);
+
+            }
+
+        } else {
+            $('.viewMenuBar').hide();
+        }
 
     }).on('pageshow', ".libraryPage", function () {
 
@@ -239,15 +309,15 @@
             // Scroll back up so in case vertical scroll was messed with
             $(document).scrollTop(0);
         }
+
     });
 
-    $(function() {
-        
+    $(function () {
+
         $(MediaController).on('playerchange', function () {
             updateCastIcon();
         });
 
     });
-
 
 })(window, document, jQuery);

@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.Serialization;
 using Funq;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
@@ -246,8 +247,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 _autoResetEvents[index].Set();
             }
 
-            if (context == null) return;
-
             var date = DateTime.Now;
 
             Task.Factory.StartNew(async () =>
@@ -375,7 +374,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 };
 
                 var operationName = context.Request.GetOperationName();
-                var httpReq = context.ToRequest(operationName);
+                var httpReq = GetRequest(context, operationName);
                 var httpRes = httpReq.Response;
                 var contentType = httpReq.ResponseContentType;
 
@@ -409,6 +408,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
         }
 
+        private static ListenerRequest GetRequest(HttpListenerContext httpContext, string operationName)
+        {
+            var req = new ListenerRequest(httpContext, operationName, RequestAttributes.None);
+            req.RequestAttributes = req.GetAttributes();
+            return req;
+        }
+
         /// <summary>
         /// Shut down the Web Service
         /// </summary>
@@ -436,7 +442,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var operationName = context.Request.GetOperationName();
 
-            var httpReq = context.ToRequest(operationName);
+            var httpReq = GetRequest(context, operationName);
             var httpRes = httpReq.Response;
             var handler = HttpHandlerFactory.GetHandler(httpReq);
 

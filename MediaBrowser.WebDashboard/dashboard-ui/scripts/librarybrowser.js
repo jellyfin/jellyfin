@@ -742,7 +742,7 @@
                     html += "</div>";
                 }
 
-                var overlayText = forceName || options.overlayText;
+                var overlayText = options.overlayText || (forceName && !options.showTitle);
 
                 if (overlayText) {
                     html += '<div class="posterItemTextOverlay">';

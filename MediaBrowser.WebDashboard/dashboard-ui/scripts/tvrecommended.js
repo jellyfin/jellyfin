@@ -4,6 +4,8 @@
 
         var screenWidth = $(window).width();
 
+        var parentId = LibraryMenu.getTopParentId();
+
         var options = {
 
             SortBy: "DatePlayed",
@@ -13,7 +15,8 @@
             Limit: screenWidth >= 1920 ? 4 : (screenWidth >= 1440 ? 4 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
-            ExcludeLocationTypes: "Virtual"
+            ExcludeLocationTypes: "Virtual",
+            ParentId: parentId
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -38,12 +41,15 @@
 
     function loadNextUp(page) {
 
+        var parentId = LibraryMenu.getTopParentId();
+
         var options = {
 
             Limit: 24,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated",
             UserId: Dashboard.getCurrentUserId(),
-            ExcludeLocationTypes: "Virtual"
+            ExcludeLocationTypes: "Virtual",
+            ParentId: parentId
         };
 
         ApiClient.getNextUpEpisodes(options).done(function (result) {

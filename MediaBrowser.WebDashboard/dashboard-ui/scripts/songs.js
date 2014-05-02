@@ -13,9 +13,12 @@
         Limit: 200,
         StartIndex: 0
     };
-	
-	LibraryBrowser.loadSavedQueryValues('songs', query);
+    
+    function getSavedQueryKey() {
 
+        return 'songs' + (query.ParentId || '');
+    }
+	
     function updateFilterControls(page) {
 
         // Reset form values using the last used query
@@ -104,7 +107,7 @@
                 reloadItems(page);
             });
 			
-			LibraryBrowser.saveQueryValues('songs', query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -144,6 +147,10 @@
         });
 
     }).on('pagebeforeshow', "#songsPage", function () {
+
+        query.ParentId = LibraryMenu.getTopParentId();
+
+        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
 

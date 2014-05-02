@@ -6,6 +6,8 @@
 
         var page = this;
 
+        var parentId = LibraryMenu.getTopParentId();
+
         var options = {
 
             SortBy: "DateCreated",
@@ -13,7 +15,8 @@
             IncludeItemTypes: "MusicAlbum",
             Limit: screenWidth >= 1920 ? 6 : (screenWidth >= 1440 ? 6 : 5),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio"
+            Fields: "PrimaryImageAspectRatio",
+            ParentId: parentId
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -35,7 +38,8 @@
             IncludeItemTypes: "Audio",
             Limit: screenWidth >= 1920 ? 6 : (screenWidth >= 1440 ? 6 : 5),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,AudioInfo"
+            Fields: "PrimaryImageAspectRatio,AudioInfo",
+            ParentId: parentId
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -58,7 +62,8 @@
             Limit: screenWidth >= 1920 ? 6 : (screenWidth >= 1440 ? 6 : 5),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo",
-            Filters: "IsPlayed"
+            Filters: "IsPlayed",
+            ParentId: parentId
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -87,7 +92,8 @@
             Limit: screenWidth >= 1920 ? 12 : (screenWidth >= 1440 ? 12 : 10),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo",
-            Filters: "IsPlayed"
+            Filters: "IsPlayed",
+            ParentId: parentId
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

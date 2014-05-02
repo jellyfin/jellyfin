@@ -50,6 +50,13 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "SeriesId", Description = "Optional. Filter by series id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string SeriesId { get; set; }
+
+        /// <summary>
+        /// Specify this to localize the search to a specific item or folder. Omit to use the root.
+        /// </summary>
+        /// <value>The parent id.</value>
+        [ApiMember(Name = "ParentId", Description = "Specify this to localize the search to a specific item or folder. Omit to use the root", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ParentId { get; set; }
     }
 
     [Route("/Shows/Upcoming", "GET", Summary = "Gets a list of upcoming episodes")]
@@ -82,6 +89,13 @@ namespace MediaBrowser.Api
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, OverviewHtml, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
+
+        /// <summary>
+        /// Specify this to localize the search to a specific item or folder. Omit to use the root.
+        /// </summary>
+        /// <value>The parent id.</value>
+        [ApiMember(Name = "ParentId", Description = "Specify this to localize the search to a specific item or folder. Omit to use the root", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ParentId { get; set; }
     }
 
     [Route("/Shows/{Id}/Similar", "GET", Summary = "Finds tv shows similar to a given one.")]
@@ -218,7 +232,7 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager)
+            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId)
                 .OfType<Episode>();
 
             var itemsList = _libraryManager.Sort(items, user, new[] { "PremiereDate", "AirTime", "SortName" }, SortOrder.Ascending)
@@ -276,10 +290,7 @@ namespace MediaBrowser.Api
 
         public IEnumerable<Episode> GetNextUpEpisodes(GetNextUpEpisodes request)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var items = user.RootFolder
-                .GetRecursiveChildren(user)
+            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId)
                 .OfType<Series>();
 
             // Avoid implicitly captured closure

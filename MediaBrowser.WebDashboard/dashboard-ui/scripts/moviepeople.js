@@ -13,6 +13,11 @@
         Limit: 100
     };
 
+    function getSavedQueryKey() {
+
+        return 'moviepeople' + (query.ParentId || '');
+    }
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -52,7 +57,7 @@
                 reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues('moviepeople', query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -126,7 +131,17 @@
 
     }).on('pagebeforeshow', "#moviePeoplePage", function () {
 
-        LibraryBrowser.loadSavedQueryValues('moviepeople', query);
+        query.ParentId = LibraryMenu.getTopParentId();
+
+        var limit = LibraryBrowser.getDefaultPageSize();
+
+        // If the default page size has changed, the start index will have to be reset
+        if (limit != query.Limit) {
+            query.Limit = limit;
+            query.StartIndex = 0;
+        }
+
+        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
 

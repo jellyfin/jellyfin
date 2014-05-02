@@ -4,11 +4,14 @@
 
         var page = this;
 
+        var parentId = LibraryMenu.getTopParentId();
+
         var query = {
 
             Limit: 32,
             Fields: "SeriesInfo,UserData",
-            UserId: Dashboard.getCurrentUserId()
+            UserId: Dashboard.getCurrentUserId(),
+            ParentId: parentId
         };
 
         $.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).done(function (result) {

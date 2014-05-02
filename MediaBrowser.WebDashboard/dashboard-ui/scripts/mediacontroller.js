@@ -509,13 +509,11 @@
         });
     }
 
-    $(document).on('headercreated', ".libraryPage", function () {
+    $(document).on('headercreated', function () {
 
-        var page = this;
+        $('.btnCast').on('click', function () {
 
-        $('.btnCast', page).on('click', function () {
-
-            showPlayerSelection(page);
+            showPlayerSelection($.mobile.activePage);
         });
     });
 

@@ -4,6 +4,8 @@
 
         var screenWidth = $(window).width();
 
+        var parentId = LibraryMenu.getTopParentId();
+
         var page = this;
 
         var options = {
@@ -15,7 +17,8 @@
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             Filters: "IsUnplayed",
-            ExcludeLocationTypes: "Virtual"
+            ExcludeLocationTypes: "Virtual",
+            ParentId: parentId
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

@@ -12,6 +12,11 @@
         StartIndex: 0
     };
 
+    function getSavedQueryKey() {
+
+        return 'games' + (query.ParentId || '');
+    }
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -56,7 +61,7 @@
                 reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues('games', query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -190,6 +195,8 @@
 
     }).on('pagebeforeshow', "#gamesPage", function () {
 
+        query.ParentId = LibraryMenu.getTopParentId();
+
         var limit = LibraryBrowser.getDefaultPageSize();
 
         // If the default page size has changed, the start index will have to be reset
@@ -198,7 +205,7 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues('games', query);
+        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
 

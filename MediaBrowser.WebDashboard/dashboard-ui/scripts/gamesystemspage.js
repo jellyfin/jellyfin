@@ -11,6 +11,11 @@
         StartIndex: 0
     };
 
+    function getSavedQueryKey() {
+
+        return 'gamesystems' + (query.ParentId || '');
+    }
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -52,7 +57,7 @@
                 reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues('gamesystems', query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -65,6 +70,8 @@
 
     $(document).on('pagebeforeshow', "#gamesystemsPage", function () {
 
+        query.ParentId = LibraryMenu.getTopParentId();
+
         var limit = LibraryBrowser.getDefaultPageSize();
 
         // If the default page size has changed, the start index will have to be reset
@@ -73,7 +80,7 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues('gamesystems', query);
+        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
 

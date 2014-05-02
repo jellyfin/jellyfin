@@ -74,7 +74,9 @@
             Dashboard.hideLoadingMsg();
         });
 
-        var promise = query.ParentId ? ApiClient.getItem(userId, query.ParentId) : ApiClient.getRootFolder(userId);
+        var promise = query.ParentId ?
+            ApiClient.getItem(userId, query.ParentId) :
+            ApiClient.getRootFolder(userId);
 
         promise.done(function (item) {
 

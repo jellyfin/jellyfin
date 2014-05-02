@@ -2,6 +2,8 @@
 
     $(document).on('pagebeforeshow', "#moviesLatestPage", function () {
 
+        var parentId = LibraryMenu.getTopParentId();
+
         var screenWidth = $(window).width();
 
         var page = this;
@@ -11,11 +13,12 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
-            Limit: screenWidth >= 1920 ? 32 : (screenWidth >= 1440 ? 24 : (screenWidth >= 800 ? 18 : 12)),
+            Limit: screenWidth >= 1920 ? 32 : (screenWidth >= 1440 ? 32 : (screenWidth >= 800 ? 24 : 18)),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed",
-            CollapseBoxSetItems: false
+            CollapseBoxSetItems: false,
+            ParentId: parentId
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -24,34 +27,6 @@
                 items: result.Items
 
             })).createPosterItemMenus();
-        });
-
-
-        options = {
-
-            SortBy: "DateCreated",
-            SortOrder: "Descending",
-            IncludeItemTypes: "Trailer",
-            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 6),
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio",
-            Filters: "IsUnplayed",
-            CollapseBoxSetItems: false
-        };
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
-
-            if (result.Items.length) {
-                $('#trailerSection', page).show();
-            } else {
-                $('#trailerSection', page).hide();
-            }
-
-            $('#trailerItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items
-
-            })).createPosterItemMenus();
-
         });
 
     });

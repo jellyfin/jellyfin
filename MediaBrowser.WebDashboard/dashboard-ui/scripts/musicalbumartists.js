@@ -11,6 +11,11 @@
         StartIndex: 0
     };
 
+    function getSavedQueryKey() {
+
+        return 'musicartists' + (query.ParentId || '');
+    }
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -56,7 +61,7 @@
                 reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues('musicartists', query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -104,6 +109,8 @@
 
     }).on('pagebeforeshow', "#musicAlbumArtistsPage", function () {
 
+        query.ParentId = LibraryMenu.getTopParentId();
+
         var limit = LibraryBrowser.getDefaultPageSize();
 
         // If the default page size has changed, the start index will have to be reset
@@ -112,7 +119,7 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues('musicartists', query);
+        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
 

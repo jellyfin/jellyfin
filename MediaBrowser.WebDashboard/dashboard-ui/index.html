@@ -4,20 +4,23 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="indexPage" data-role="page" class="page type-home libraryPage" data-theme="b">
+    <div id="indexPage" data-role="page" class="page type-home libraryPage noLibraryMenuSelectionPage" data-theme="b">
         <div data-role="content">
 
             <table class="ehsContent">
                 <tr>
                     <td>
+                        <div id="resumableSection" style="display: none;">
+                            <h1 class="listHeader">${HeaderResume}</h1>
 
-                        <br />
-                        <div id="views">
+                            <div id="resumableItems">
+                            </div>
                         </div>
-                        <br />
-                        <h1 class="listHeader"><a href="itemlist.html">${HeaderMediaFolders}<img src="css/images/rightarrow.png" class="headerArrowImage" /></a></h1>
 
-                        <div id="divCollections"></div>
+                        <h1 class="listHeader">${HeaderLatestMedia}</h1>
+
+                        <div id="recentlyAddedItems">
+                        </div>
                     </td>
                 </tr>
             </table>

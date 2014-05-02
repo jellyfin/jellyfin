@@ -13,6 +13,11 @@
         Limit: 100
     };
 
+    function getSavedQueryKey() {
+
+        return 'tvpeople' + (query.ParentId || '');
+    }
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -52,7 +57,7 @@
                 reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues('tvpeople', query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -135,7 +140,9 @@
 
     }).on('pagebeforeshow', "#tvPeoplePage", function () {
 
-        LibraryBrowser.loadSavedQueryValues('tvpeople', query);
+        query.ParentId = LibraryMenu.getTopParentId();
+
+        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
 

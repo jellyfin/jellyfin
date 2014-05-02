@@ -1,0 +1,1690 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ServiceStack.Interfaces</name>
+    </assembly>
+    <members>
+        <member name="F:ServiceStack.AttributeBase.typeId">
+            <summary>
+            Required when using a TypeDescriptor to make it unique
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Caching.ICacheClient">
+            <summary>
+            A common interface implementation that is implemented by most cache providers
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Caching.ICacheClient.Remove(System.String)">
+            <summary>
+            Removes the specified item from the cache.
+            </summary>
+            <param name="key">The identifier for the item to delete.</param>
+            <returns>
+            true if the item was successfully removed from the cache; false otherwise.
+            </returns>
+        </member>
+        <member name="M:ServiceStack.Caching.ICacheClient.RemoveAll(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Removes the cache for all the keys provided.
+            </summary>
+            <param name="keys">The keys.</param>
+        </member>
+        <member name="M:ServiceStack.Caching.ICacheClient.Get``1(System.String)">
+            <summary>
+            Retrieves the specified item from the cache.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key">The identifier for the item to retrieve.</param>
+            <returns>
+            The retrieved item, or <value>null</value> if the key was not found.
+            </returns>
+        </member>
+        <member name="M:ServiceStack.Caching.ICacheClient.Increment(System.String,System.UInt32)">
+            <summary>
+            Increments the value of the specified key by the given amount. 
+            The operation is atomic and happens on the server.
+            A non existent value at key starts at 0
+            </summary>
+            <param name="key">The identifier for the item to increment.</param>
+            <param name="amount">The amount by which the client wants to increase the item.</param>
+            <returns>
+            The new value of the item or -1 if not found.
+            </returns>
+            <remarks>The item must be inserted into the cache before it can be changed. The item must be inserted as a <see cref="T:System.String"/>. The operation only works with <see cref="T:System.UInt32"/> values, so -1 always indicates that the item was not found.</remarks>
+        </member>
+        <member name="M:ServiceStack.Caching.ICacheClient.Decrement(System.String,System.UInt32)">
+            <summary>
+            Increments the value of the specified key by the given amount. 
+            The operation is atomic and happens on the server.
+            A non existent value at key starts at 0
+            </summary>
+            <param name="key">The identifier for the item to increment.</param>
+            <param name="amount">The amount by which the client wants to decrease the item.</param>
+            <returns>
+            The new value of the item or -1 if not found.
+            </returns>
+            <remarks>The item must be inserted into the cache before it can be changed. The item must be inserted as a <see cref="T:System.String"/>. The operation only works with <see cref="T:System.UInt32"/> values, so -1 always indicates that the item was not found.</remarks>
+        </member>
+        <member name="M:ServiceStack.Caching.ICacheClient.Add``1(System.String,``0)">
+            <summary>
+            Adds a new item into the cache at the specified cache key only if the cache is empty.
+            </summary>
+            <param name="key">The key used to reference the item.</param>
+            <param name="value">The object to be inserted into the cache.</param>
+            <returns>
+            true if the item was successfully stored in the cache; false otherwise.
+            </returns>
+            <remarks>The item does not expire unless it is removed due memory pressure.</remarks>
+        </member>
+        <member name="M:ServiceStack.Caching.ICacheClient.Set``1(System.String,``0)">
+            <summary>
+            Sets an item into the cache at the cache key specified regardless if it already exists or not.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Caching.ICacheClient.Replace``1(System.String,``0)">
+            <summary>
+            Replaces the item at the cachekey specified only if an items exists at the location already. 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Caching.ICacheClient.FlushAll">
+            <summary>
+            Invalidates all data on the cache.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Caching.ICacheClient.GetAll``1(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Retrieves multiple items from the cache. 
+            The default value of T is set for all keys that do not exist.
+            </summary>
+            <param name="keys">The list of identifiers for the items to retrieve.</param>
+            <returns>
+            a Dictionary holding all items indexed by their key.
+            </returns>
+        </member>
+        <member name="M:ServiceStack.Caching.ICacheClient.SetAll``1(System.Collections.Generic.IDictionary{System.String,``0})">
+            <summary>
+            Sets multiple items to the cache. 
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The values.</param>
+        </member>
+        <member name="M:ServiceStack.Caching.IRemoveByPattern.RemoveByPattern(System.String)">
+            <summary>
+            Removes items from cache that have keys matching the specified wildcard pattern
+            </summary>
+            <param name="pattern">The wildcard, where "*" means any sequence of characters and "?" means any single character.</param>
+        </member>
+        <member name="M:ServiceStack.Caching.IRemoveByPattern.RemoveByRegex(System.String)">
+            <summary>
+            Removes items from the cache based on the specified regular expression pattern
+            </summary>
+            <param name="regex">Regular expression pattern to search cache keys</param>
+        </member>
+        <member name="T:ServiceStack.Caching.IMemcachedClient">
+            <summary>
+            A light interface over a cache client.
+            This interface was inspired by Enyim.Caching.MemcachedClient
+            
+            Only the methods that are intended to be used are required, if you require
+            extra functionality you can uncomment the unused methods below as they have been
+            implemented in DdnMemcachedClient
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Caching.IMemcachedClient.Remove(System.String)">
+            <summary>
+            Removes the specified item from the cache.
+            </summary>
+            <param name="key">The identifier for the item to delete.</param>
+            <returns>
+            true if the item was successfully removed from the cache; false otherwise.
+            </returns>
+        </member>
+        <member name="M:ServiceStack.Caching.IMemcachedClient.RemoveAll(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Removes the cache for all the keys provided.
+            </summary>
+            <param name="keys">The keys.</param>
+        </member>
+        <member name="M:ServiceStack.Caching.IMemcachedClient.Get(System.String)">
+            <summary>
+            Retrieves the specified item from the cache.
+            </summary>
+            <param ICTname="key">The identifier for the item to retrieve.</param>
+            <returns>
+            The retrieved item, or <value>null</value> if the key was not found.
+            </returns>
+        </member>
+        <member name="M:ServiceStack.Caching.IMemcachedClient.Increment(System.String,System.UInt32)">
+            <summary>
+            Increments the value of the specified key by the given amount. The operation is atomic and happens on the server.
+            </summary>
+            <param name="key">The identifier for the item to increment.</param>
+            <param name="amount">The amount by which the client wants to increase the item.</param>
+            <returns>
+            The new value of the item or -1 if not found.
+            </returns>
+            <remarks>The item must be inserted into the cache before it can be changed. The item must be inserted as a <see cref="T:System.String"/>. The operation only works with <see cref="T:System.UInt32"/> values, so -1 always indicates that the item was not found.</remarks>
+        </member>
+        <member name="M:ServiceStack.Caching.IMemcachedClient.Decrement(System.String,System.UInt32)">
+            <summary>
+            Increments the value of the specified key by the given amount. The operation is atomic and happens on the server.
+            </summary>
+            <param name="key">The identifier for the item to increment.</param>
+            <param name="amount">The amount by which the client wants to decrease the item.</param>
+            <returns>
+            The new value of the item or -1 if not found.
+            </returns>
+            <remarks>The item must be inserted into the cache before it can be changed. The item must be inserted as a <see cref="T:System.String"/>. The operation only works with <see cref="T:System.UInt32"/> values, so -1 always indicates that the item was not found.</remarks>
+        </member>
+        <member name="M:ServiceStack.Caching.IMemcachedClient.Add(System.String,System.Object)">
+            <summary>
+            Inserts an item into the cache with a cache key to reference its location.
+            </summary>
+            <param name="key">The key used to reference the item.</param>
+            <param name="value">The object to be inserted into the cache.</param>
+            <returns>
+            true if the item was successfully stored in the cache; false otherwise.
+            </returns>
+            <remarks>The item does not expire unless it is removed due memory pressure.</remarks>
+        </member>
+        <member name="M:ServiceStack.Caching.IMemcachedClient.Add(System.String,System.Object,System.DateTime)">
+            <summary>
+            Inserts an item into the cache with a cache key to reference its location.
+            </summary>
+            <param name="key">The key used to reference the item.</param>
+            <param name="value">The object to be inserted into the cache.</param>
+            <param name="expiresAt">The time when the item is invalidated in the cache.</param>
+            <returns>true if the item was successfully stored in the cache; false otherwise.</returns>
+        </member>
+        <member name="M:ServiceStack.Caching.IMemcachedClient.FlushAll">
+            <summary>
+            Removes all data from the cache.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Caching.IMemcachedClient.GetAll(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Retrieves multiple items from the cache.
+            </summary>
+            <param name="keys">The list of identifiers for the items to retrieve.</param>
+            <returns>
+            a Dictionary holding all items indexed by their key.
+            </returns>
+        </member>
+        <member name="T:ServiceStack.Caching.ISession">
+            <summary>
+            A Users Session
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Caching.ISession.Set``1(System.String,``0)">
+            <summary>
+            Set a typed value at key
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:ServiceStack.Caching.ISession.Get``1(System.String)">
+            <summary>
+            Get a typed value at key
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Caching.ISession.Item(System.String)">
+            <summary>
+            Store any object at key
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Caching.ISessionFactory">
+            <summary>
+            Retrieves a User Session
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Caching.ISessionFactory.GetOrCreateSession(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
+            <summary>
+            Gets the session for this request, creates one if it doesn't exist.
+            </summary>
+            <param name="httpReq"></param>
+            <param name="httpRes"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Caching.ISessionFactory.GetOrCreateSession">
+            <summary>
+            Gets the session for this request, creates one if it doesn't exist.
+            Only for ASP.NET apps. Uses the HttpContext.Current singleton.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Configuration.IContainerAdapter">
+            <summary>
+            Allow delegation of dependencies to other IOC's
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Configuration.IContainerAdapter.TryResolve``1">
+            <summary>
+            Resolve Property Dependency
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Configuration.IContainerAdapter.Resolve``1">
+            <summary>
+            Resolve Constructor Dependency
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.DataAnnotations.BelongToAttribute">
+            <summary>
+            BelongToAttribute
+            Use to indicate that a join column belongs to another table.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.DataAnnotations.ComputeAttribute">
+            <summary>
+            Compute attribute.
+            Use to indicate that a property is a Calculated Field 
+            </summary>
+        </member>
+        <member name="T:ServiceStack.DataAnnotations.DecimalLengthAttribute">
+            <summary>
+            Decimal length attribute.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.DataAnnotations.ForeignKeyAttribute.ForeignKeyName">
+            <summary>
+            Explicit foreign key name. If it's null, or empty, the FK name will be autogenerated as before.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.DataAnnotations.IgnoreAttribute">
+            <summary>
+            IgnoreAttribute
+            Use to indicate that a property is not a field  in the table
+            properties with this attribute are ignored when building sql sentences
+            </summary>
+        </member>
+        <member name="T:ServiceStack.DataAnnotations.PrimaryKeyAttribute">
+            <summary>
+            Primary key attribute.
+            use to indicate that property is part of the pk
+            </summary>
+        </member>
+        <member name="T:ServiceStack.DataAnnotations.RowVersionAttribute">
+            <summary>
+            Used to indicate that property is a row version incremented automatically by the database
+            </summary>
+        </member>
+        <member name="T:ServiceStack.DataAnnotations.SchemaAttribute">
+            <summary>
+            Used to annotate an Entity with its DB schema
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:ServiceStack.DataAnnotations.SequenceAttribute" -->
+        <member name="T:ServiceStack.Data.IEntityStore`1">
+            <summary>
+            For providers that want a cleaner API with a little more perf
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:ServiceStack.DataAnnotations.MetaAttribute">
+            <summary>
+            Decorate any type or property with adhoc info
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.DebugLogFactory">
+            <summary>
+            Creates a Debug Logger, that logs all messages to: System.Diagnostics.Debug
+            
+            Made public so its testable
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.ILogFactory">
+            <summary>
+            Factory to create ILog instances
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogFactory.GetLogger(System.Type)">
+            <summary>
+            Gets the logger.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogFactory.GetLogger(System.String)">
+            <summary>
+            Gets the logger.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.DebugLogger">
+            <summary>
+            Default logger is to System.Diagnostics.Debug.WriteLine
+            
+            Made public so its testable
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.ILog">
+            <summary>
+            Logs a message in a running application
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.Debug(System.Object)">
+            <summary>
+            Logs a Debug message.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.Debug(System.Object,System.Exception)">
+            <summary>
+            Logs a Debug message and exception.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="exception">The exception.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.DebugFormat(System.String,System.Object[])">
+            <summary>
+            Logs a Debug format message.
+            </summary>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.Error(System.Object)">
+            <summary>
+            Logs a Error message.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.Error(System.Object,System.Exception)">
+            <summary>
+            Logs a Error message and exception.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="exception">The exception.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.ErrorFormat(System.String,System.Object[])">
+            <summary>
+            Logs a Error format message.
+            </summary>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.Fatal(System.Object)">
+            <summary>
+            Logs a Fatal message.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.Fatal(System.Object,System.Exception)">
+            <summary>
+            Logs a Fatal message and exception.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="exception">The exception.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.FatalFormat(System.String,System.Object[])">
+            <summary>
+            Logs a Error format message.
+            </summary>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.Info(System.Object)">
+            <summary>
+            Logs an Info message and exception.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.Info(System.Object,System.Exception)">
+            <summary>
+            Logs an Info message and exception.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="exception">The exception.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.InfoFormat(System.String,System.Object[])">
+            <summary>
+            Logs an Info format message.
+            </summary>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.Warn(System.Object)">
+            <summary>
+            Logs a Warning message.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.Warn(System.Object,System.Exception)">
+            <summary>
+            Logs a Warning message and exception.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="exception">The exception.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILog.WarnFormat(System.String,System.Object[])">
+            <summary>
+            Logs a Warning format message.
+            </summary>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="P:ServiceStack.Logging.ILog.IsDebugEnabled">
+            <summary>
+            Gets or sets a value indicating whether this instance is debug enabled.
+            </summary>
+            <value>
+            	<c>true</c> if this instance is debug enabled; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.#ctor(System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.Log(System.Object,System.Exception)">
+            <summary>
+            Logs the specified message.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.LogFormat(System.Object,System.Object[])">
+            <summary>
+            Logs the format.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.Log(System.Object)">
+            <summary>
+            Logs the specified message.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.NullDebugLogger">
+            <summary>
+            Default logger is to System.Diagnostics.Debug.Print
+            
+            Made public so its testable
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.NullDebugLogger.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.NullDebugLogger.#ctor(System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.NullDebugLogger.Log(System.Object,System.Exception)">
+            <summary>
+            Logs the specified message.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.NullDebugLogger.LogFormat(System.Object,System.Object[])">
+            <summary>
+            Logs the format.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.NullDebugLogger.Log(System.Object)">
+            <summary>
+            Logs the specified message.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.NullLogFactory">
+            <summary>
+            Creates a Debug Logger, that logs all messages to: System.Diagnostics.Debug
+            
+            Made public so its testable
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.StringBuilderLogFactory">
+            <summary>
+            StringBuilderLog writes to shared StringBuffer.
+            Made public so its testable
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.StringBuilderLog.Log(System.Object,System.Exception)">
+            <summary>
+            Logs the specified message.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.StringBuilderLog.LogFormat(System.Object,System.Object[])">
+            <summary>
+            Logs the format.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.StringBuilderLog.Log(System.Object)">
+            <summary>
+            Logs the specified message.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="T:ServiceStack.Logging.TestLogFactory">
+            <summary>
+            Creates a test Logger, that stores all log messages in a member list
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.TestLogger">
+            <summary>
+            Tests logger which  stores all log messages in a member list which can be examined later
+            
+            Made public so its testable
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.TestLogger.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.TestLogger"/> class.
+            </summary>
+            <param name="type">The type.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.TestLogger.#ctor(System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.TestLogger"/> class.
+            </summary>
+            <param name="type">The type.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.TestLogger.Log(ServiceStack.Logging.TestLogger.Levels,System.Object,System.Exception)">
+            <summary>
+            Logs the specified message.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="exception">The exception.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.TestLogger.LogFormat(ServiceStack.Logging.TestLogger.Levels,System.Object,System.Object[])">
+            <summary>
+            Logs the format.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.TestLogger.Log(ServiceStack.Logging.TestLogger.Levels,System.Object)">
+            <summary>
+            Logs the specified message.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="T:ServiceStack.IHasResponseStatus">
+            <summary>
+            Contract indication that the Response DTO has a ResponseStatus
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.LogManager">
+            <summary>
+            Logging API for this library. You can inject your own implementation otherwise
+            will use the DebugLogFactory to write to System.Diagnostics.Debug
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.LogManager.GetLogger(System.Type)">
+            <summary>
+            Gets the logger.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.LogManager.GetLogger(System.String)">
+            <summary>
+            Gets the logger.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Logging.LogManager.LogFactory">
+            <summary>
+            Gets or sets the log factory.
+            Use this to override the factory that is used to create loggers
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageQueueClient.Publish(System.String,ServiceStack.Messaging.IMessage)">
+            <summary>
+            Publish the specified message into the durable queue @queueName
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageQueueClient.Notify(System.String,ServiceStack.Messaging.IMessage)">
+            <summary>
+            Publish the specified message into the transient queue @queueName
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageQueueClient.Get``1(System.String,System.Nullable{System.TimeSpan})">
+            <summary>
+            Synchronous blocking get.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageQueueClient.GetAsync``1(System.String)">
+            <summary>
+            Non blocking get message
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageQueueClient.Ack(ServiceStack.Messaging.IMessage)">
+            <summary>
+            Acknowledge the message has been successfully received or processed
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageQueueClient.Nak(ServiceStack.Messaging.IMessage,System.Boolean,System.Exception)">
+            <summary>
+            Negative acknowledgement the message was not processed correctly
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageQueueClient.CreateMessage``1(System.Object)">
+            <summary>
+            Create a typed message from a raw MQ Response artefact
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Messaging.IMessageService">
+            <summary>
+            Simple definition of an MQ Host
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageService.RegisterHandler``1(System.Func{ServiceStack.Messaging.IMessage{``0},System.Object})">
+            <summary>
+            Register DTOs and hanlders the MQ Host will process
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="processMessageFn"></param>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageService.RegisterHandler``1(System.Func{ServiceStack.Messaging.IMessage{``0},System.Object},System.Action{ServiceStack.Messaging.IMessage{``0},System.Exception})">
+            <summary>
+            Register DTOs and hanlders the MQ Host will process
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="processMessageFn"></param>
+            <param name="processExceptionEx"></param>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageService.GetStats">
+            <summary>
+            Get Total Current Stats for all Message Handlers
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageService.GetStatus">
+            <summary>
+            Get the status of the service. Potential Statuses: Disposed, Stopped, Stopping, Starting, Started
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageService.GetStatsDescription">
+            <summary>
+            Get a Stats dump
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageService.Start">
+            <summary>
+            Start the MQ Host if not already started.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageService.Stop">
+            <summary>
+            Stop the MQ Host if not already stopped. 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.IMessageService.MessageFactory">
+            <summary>
+            Factory to create consumers and producers that work with this service
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.IMessageService.RegisteredTypes">
+            <summary>
+            Get a list of all message types registered on this MQ Host
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Messaging.Message`1">
+            <summary>
+            Basic implementation of IMessage[T]
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:ServiceStack.Messaging.QueueNames`1">
+            <summary>
+            Util static generic class to create unique queue names for types
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:ServiceStack.Messaging.QueueNames">
+            <summary>
+            Util class to create unique queue names for runtime types
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Messaging.UnRetryableMessagingException">
+            <summary>
+            For messaging exceptions that should by-pass the messaging service's configured
+            retry attempts and store the message straight into the DLQ
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.IRedisList`1">
+            <summary>
+            Wrap the common redis list operations under a IList[string] interface.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.IRedisTypedTransaction`1">
+            <summary>
+            Redis transaction for typed client
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.IRedisTypedQueueableOperation`1">
+            <summary>
+            interface to queueable operation using typed redis client
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.IRedisTypedPipeline`1">
+            <summary>
+            Interface to redis typed pipeline
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Pipeline.IRedisPipelineShared">
+            <summary>
+            Pipeline interface shared by typed and non-typed pipelines
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Pipeline.IRedisQueueCompletableOperation">
+            <summary>
+            Interface to operations that allow queued commands to be completed
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.IRedisClient.As``1">
+            <summary>
+            Returns a high-level typed client API
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:ServiceStack.Redis.IRedisClientCacheManager.GetClient">
+            <summary>
+            Returns a Read/Write client (The default) using the hosts defined in ReadWriteHosts
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.IRedisClientCacheManager.GetReadOnlyClient">
+            <summary>
+            Returns a ReadOnly client using the hosts defined in ReadOnlyHosts.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.IRedisClientCacheManager.GetCacheClient">
+            <summary>
+            Returns a Read/Write ICacheClient (The default) using the hosts defined in ReadWriteHosts
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.IRedisClientCacheManager.GetReadOnlyCacheClient">
+            <summary>
+            Returns a ReadOnly ICacheClient using the hosts defined in ReadOnlyHosts.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.IRedisClientsManager.GetClient">
+            <summary>
+            Returns a Read/Write client (The default) using the hosts defined in ReadWriteHosts
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.IRedisClientsManager.GetReadOnlyClient">
+            <summary>
+            Returns a ReadOnly client using the hosts defined in ReadOnlyHosts.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.IRedisClientsManager.GetCacheClient">
+            <summary>
+            Returns a Read/Write ICacheClient (The default) using the hosts defined in ReadWriteHosts
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.IRedisClientsManager.GetReadOnlyCacheClient">
+            <summary>
+            Returns a ReadOnly ICacheClient using the hosts defined in ReadOnlyHosts.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.IRedisSubscription.SubscribeToChannels(System.String[])">
+            <summary>
+            Subscribe to channels by name
+            </summary>
+            <param name="channels"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.IRedisSubscription.SubscribeToChannelsMatching(System.String[])">
+            <summary>
+            Subscribe to channels matching the supplied patterns
+            </summary>
+            <param name="patterns"></param>
+        </member>
+        <member name="P:ServiceStack.Redis.IRedisSubscription.SubscriptionCount">
+            <summary>
+            The number of active subscriptions this client has
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.IRedisSubscription.OnSubscribe">
+            <summary>
+            Registered handler called after client *Subscribes* to each new channel
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.IRedisSubscription.OnMessage">
+            <summary>
+            Registered handler called when each message is received
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.IRedisSubscription.OnUnSubscribe">
+            <summary>
+            Registered handler called when each channel is unsubscribed
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.IRedisTransaction">
+            <summary>
+            Interface to redis transaction
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.IRedisTransactionBase">
+            <summary>
+            Base transaction interface, shared by typed and non-typed transactions
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Pipeline.IRedisQueueableOperation">
+            <summary>
+            interface to operation that can queue commands
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Pipeline.IRedisPipeline">
+            <summary>
+            Interface to redis pipeline
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiAllowableValuesAttribute.Name">
+            <summary>
+            Gets or sets parameter name with which allowable values will be associated.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiAttribute.Description">
+            <summary>
+            The overall description of an API. Used by Swagger.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiMemberAttribute.Verb">
+            <summary>
+            Gets or sets verb to which applies attribute. By default applies to all verbs.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiMemberAttribute.ParameterType">
+            <summary>
+            Gets or sets parameter type: It can be only one of the following: path, query, body, or header.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiMemberAttribute.Name">
+            <summary>
+            Gets or sets unique name for the parameter. Each name must be unique, even if they are associated with different paramType values. 
+            </summary>
+            <remarks>
+            <para>
+            Other notes on the name field:
+            If paramType is body, the name is used only for UI and codegeneration.
+            If paramType is path, the name field must correspond to the associated path segment from the path field in the api object.
+            If paramType is query, the name field corresponds to the query param name.
+            </para>
+            </remarks>
+        </member>
+        <member name="P:ServiceStack.ApiMemberAttribute.Description">
+            <summary>
+            Gets or sets the human-readable description for the parameter.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiMemberAttribute.DataType">
+            <summary>
+            For path, query, and header paramTypes, this field must be a primitive. For body, this can be a complex or container datatype.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiMemberAttribute.IsRequired">
+            <summary>
+            For path, this is always true. Otherwise, this field tells the client whether or not the field must be supplied.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiMemberAttribute.AllowMultiple">
+            <summary>
+            For query params, this specifies that a comma-separated list of values can be passed to the API. For path and body types, this field cannot be true.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IApiResponseDescription.StatusCode">
+            <summary>
+            The status code of a response
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IApiResponseDescription.Description">
+            <summary>
+            The description of a response status code
+            </summary>
+        </member>
+        <member name="T:ServiceStack.IService">
+            <summary>
+            Marker interfaces
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Web.IRequiresRequestStream">
+            <summary>
+            Implement on Request DTOs that need access to the raw Request Stream
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequiresRequestStream.RequestStream">
+            <summary>
+            The raw Http Request Input Stream
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Configuration.IResolver.TryResolve``1">
+            <summary>
+            Resolve a dependency from the AppHost's IOC
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Web.IHasRequestFilter">
+            <summary>
+            This interface can be implemented by an attribute
+            which adds an request filter for the specific request DTO the attribute marked.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IHasRequestFilter.RequestFilter(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.Object)">
+            <summary>
+            The request filter is executed before the service.
+            </summary>
+            <param name="req">The http request wrapper</param>
+            <param name="res">The http response wrapper</param>
+            <param name="requestDto">The request DTO</param>
+        </member>
+        <member name="M:ServiceStack.Web.IHasRequestFilter.Copy">
+            <summary>
+            A new shallow copy of this filter is used on every request.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Web.IHasRequestFilter.Priority">
+            <summary>
+            Order in which Request Filters are executed. 
+            &lt;0 Executed before global request filters
+            &gt;0 Executed after global request filters
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Web.IHasResponseFilter">
+            <summary>
+            This interface can be implemented by an attribute
+            which adds an response filter for the specific response DTO the attribute marked.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IHasResponseFilter.ResponseFilter(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.Object)">
+            <summary>
+            The response filter is executed after the service
+            </summary>
+            <param name="req">The http request wrapper</param>
+            <param name="res">The http response wrapper</param>
+        </member>
+        <member name="M:ServiceStack.Web.IHasResponseFilter.Copy">
+            <summary>
+            A new shallow copy of this filter is used on every request.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Web.IHasResponseFilter.Priority">
+            <summary>
+            Order in which Response Filters are executed. 
+            &lt;0 Executed before global response filters
+            &gt;0 Executed after global response filters
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpResult.Status">
+            <summary>
+            The HTTP Response Status
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpResult.StatusCode">
+            <summary>
+            The HTTP Response Status Code
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpResult.StatusDescription">
+            <summary>
+            The HTTP Status Description
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpResult.ContentType">
+            <summary>
+            The HTTP Response ContentType
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpResult.Headers">
+            <summary>
+            Additional HTTP Headers
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpResult.Response">
+            <summary>
+            Response DTO
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpResult.ResponseFilter">
+            <summary>
+            if not provided, get's injected by ServiceStack
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpResult.RequestContext">
+            <summary>
+            Holds the request call context
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Web.IHttpRequest">
+            <summary>
+            A thin wrapper around ASP.NET or HttpListener's HttpRequest
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Web.IRequest">
+            <summary>
+            A thin wrapper around each host's Request e.g: ASP.NET, HttpListener, MQ, etc
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IRequest.GetRawBody">
+            <summary>
+            The entire string contents of Request.InputStream
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.OriginalRequest">
+            <summary>
+            The underlying ASP.NET or HttpListener HttpRequest
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.OperationName">
+            <summary>
+            The name of the service being called (e.g. Request DTO Name)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.Verb">
+            <summary>
+            The Verb / HttpMethod or Action for this request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.RequestPreferences">
+            <summary>
+            Optional preferences for the processing of this Request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.Dto">
+            <summary>
+            The Request DTO, after it has been deserialized.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.ContentType">
+            <summary>
+            The request ContentType
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.ResponseContentType">
+            <summary>
+            The expected Response ContentType for this request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.HasExplicitResponseContentType">
+            <summary>
+            Whether the ResponseContentType has been explicitly overrided or whether it was just the default
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.Items">
+            <summary>
+            Attach any data to this request that all filters and services can access.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.UseBufferedStream">
+            <summary>
+            Buffer the Request InputStream so it can be re-read
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.UserHostAddress">
+            <summary>
+            The Remote Ip as reported by Request.UserHostAddress
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.RemoteIp">
+            <summary>
+            The Remote Ip as reported by X-Forwarded-For, X-Real-IP or Request.UserHostAddress
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.IsSecureConnection">
+            <summary>
+            e.g. is https or not
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.Files">
+            <summary>
+            Access to the multi-part/formdata files posted on this request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.UrlReferrer">
+            <summary>
+            The value of the Referrer, null if not available
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpRequest.HttpResponse">
+            <summary>
+            The HttpResponse
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpRequest.HttpMethod">
+            <summary>
+            The HTTP Verb
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpRequest.XForwardedFor">
+            <summary>
+            The IP Address of the X-Forwarded-For header, null if null or empty
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpRequest.XForwardedPort">
+            <summary>
+            The Port number of the X-Forwarded-Port header, null if null or empty
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpRequest.XForwardedProtocol">
+            <summary>
+            The http or https scheme of the X-Forwarded-Proto header, null if null or empty
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpRequest.XRealIp">
+            <summary>
+            The value of the X-Real-IP header, null if null or empty
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Web.IHttpResponse">
+            <summary>
+            A thin wrapper around ASP.NET or HttpListener's HttpResponse
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Web.IResponse">
+            <summary>
+            A thin wrapper around each host's Response e.g: ASP.NET, HttpListener, MQ, etc
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IResponse.Close">
+            <summary>
+            Signal that this response has been handled and no more processing should be done.
+            When used in a request or response filter, no more filters or processing is done on this request.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IResponse.End">
+            <summary>
+            Calls Response.End() on ASP.NET HttpResponse otherwise is an alias for Close().
+            Useful when you want to prevent ASP.NET to provide it's own custom error page.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IResponse.Flush">
+            <summary>
+            Response.Flush() and OutputStream.Flush() seem to have different behaviour in ASP.NET
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IResponse.OriginalResponse">
+            <summary>
+            The underlying ASP.NET or HttpListener HttpResponse
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IResponse.Dto">
+            <summary>
+            The Response DTO
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IResponse.IsClosed">
+            <summary>
+            Gets a value indicating whether this instance is closed.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Web.IRequestLogger">
+            <summary>
+            Log every service request
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IRequestLogger.Log(ServiceStack.Web.IRequest,System.Object,System.Object,System.TimeSpan)">
+            <summary>
+            Log a request
+            </summary>
+            <param name="request">The RequestContext</param>
+            <param name="requestDto">Request DTO</param>
+            <param name="response">Response DTO or Exception</param>
+            <param name="elapsed">How long did the Request take</param>
+        </member>
+        <member name="M:ServiceStack.Web.IRequestLogger.GetLatestLogs(System.Nullable{System.Int32})">
+            <summary>
+            View the most recent logs
+            </summary>
+            <param name="take"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Web.IRequestLogger.EnableSessionTracking">
+            <summary>
+            Turn On/Off Session Tracking
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequestLogger.EnableRequestBodyTracking">
+            <summary>
+            Turn On/Off Raw Request Body Tracking
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequestLogger.EnableResponseTracking">
+            <summary>
+            Turn On/Off Tracking of Responses
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequestLogger.EnableErrorTracking">
+            <summary>
+            Turn On/Off Tracking of Exceptions
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequestLogger.RequiredRoles">
+            <summary>
+            Limit access to /requestlogs service to role
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequestLogger.ExcludeRequestDtoTypes">
+            <summary>
+            Don't log requests of these types.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequestLogger.HideRequestBodyForRequestDtoTypes">
+            <summary>
+            Don't log request bodys for services with sensitive information.
+            By default Auth and Registration requests are hidden.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Web.IRequiresRequest">
+            <summary>
+            Implement on services that need access to the RequestContext
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Web.IServiceController">
+            <summary>
+            Responsible for executing the operation within the specified context.
+            </summary>
+            <value>The operation types.</value>
+        </member>
+        <member name="M:ServiceStack.Web.IServiceController.GetRestPathForRequest(System.String,System.String)">
+            <summary>
+            Returns the first matching RestPath
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IServiceController.ExecuteMessage(ServiceStack.Messaging.IMessage)">
+            <summary>
+            Executes the MQ DTO request.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IServiceController.ExecuteMessage(ServiceStack.Messaging.IMessage,ServiceStack.Web.IRequest)">
+            <summary>
+            Executes the MQ DTO request with the supplied requestContext
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IServiceController.Execute(System.Object,ServiceStack.Web.IRequest)">
+            <summary>
+            Executes the DTO request under the supplied requestContext.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IServiceController.Execute(System.Object)">
+            <summary>
+            Executes the DTO request with an empty RequestContext.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Web.IServiceRoutes">
+            <summary>
+            Allow the registration of user-defined routes for services
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IServiceRoutes.Add``1(System.String)">
+            <summary>
+            	Maps the specified REST path to the specified request DTO.
+            </summary>
+            <typeparam name="TRequest">The type of request DTO to map 
+            	the path to.</typeparam>
+            <param name="restPath">The path to map the request DTO to.
+            	See <see cref="P:ServiceStack.RouteAttribute.Path">RouteAttribute.Path</see>
+            	for details on the correct format.</param>
+            <returns>The same <see cref="T:ServiceStack.Web.IServiceRoutes"/> instance;
+            	never <see langword="null"/>.</returns>
+        </member>
+        <member name="M:ServiceStack.Web.IServiceRoutes.Add``1(System.String,System.String)">
+            <summary>
+            	Maps the specified REST path to the specified request DTO, and
+            	specifies the HTTP verbs supported by the path.
+            </summary>
+            <typeparam name="TRequest">The type of request DTO to map 
+            	the path to.</typeparam>
+            <param name="restPath">The path to map the request DTO to.
+            	See <see cref="P:ServiceStack.RouteAttribute.Path">RouteAttribute.Path</see>
+            	for details on the correct format.</param>
+            <param name="verbs">
+            	The comma-delimited list of HTTP verbs supported by the path, 
+            	such as "GET,PUT,DELETE".  Specify empty or <see langword="null"/>
+            	to indicate that all verbs are supported.
+            </param>
+            <returns>The same <see cref="T:ServiceStack.Web.IServiceRoutes"/> instance;
+            	never <see langword="null"/>.</returns>
+        </member>
+        <member name="M:ServiceStack.Web.IServiceRoutes.Add(System.Type,System.String,System.String)">
+            <summary>
+            	Maps the specified REST path to the specified request DTO, 
+            	specifies the HTTP verbs supported by the path, and indicates
+            	the default MIME type of the returned response.
+            </summary>
+            <param name="requestType">
+            	The type of request DTO to map the path to.
+            </param>
+            <param name="restPath">The path to map the request DTO to.
+            	See <see cref="P:ServiceStack.RouteAttribute.Path">RouteAttribute.Path</see>
+            	for details on the correct format.</param>
+            <param name="verbs">
+            	The comma-delimited list of HTTP verbs supported by the path, 
+            	such as "GET,PUT,DELETE".
+            </param>
+            <returns>The same <see cref="T:ServiceStack.Web.IServiceRoutes"/> instance;
+            	never <see langword="null"/>.</returns>
+        </member>
+        <member name="M:ServiceStack.Web.IServiceRoutes.Add(System.Type,System.String,System.String,System.Int32)">
+            <summary>
+            	Maps the specified REST path to the specified request DTO, 
+            	specifies the HTTP verbs supported by the path, and indicates
+            	the default MIME type of the returned response.
+            </summary>
+            <param name="priority">
+                Used to rank the precedences of route definitions in reverse routing. 
+                i.e. Priorities below 0 are auto-generated have less precedence.
+            </param>
+        </member>
+        <member name="M:ServiceStack.Web.IServiceRoutes.Add(System.Type,System.String,System.String,System.String,System.String)">
+            <summary>
+            	Maps the specified REST path to the specified request DTO, 
+            	specifies the HTTP verbs supported by the path, and indicates
+            	the default MIME type of the returned response.
+            </summary>
+            <param name="requestType">
+            	The type of request DTO to map the path to.
+            </param>
+            <param name="restPath">The path to map the request DTO to.
+            	See <see cref="P:ServiceStack.RouteAttribute.Path">RouteAttribute.Path</see>
+            	for details on the correct format.</param>
+            <param name="verbs">
+            	The comma-delimited list of HTTP verbs supported by the path, 
+            	such as "GET,PUT,DELETE".
+            </param>
+            <param name="summary">
+                The short summary of what the REST does. 
+            </param>
+            <param name="notes">
+                The longer text to explain the behaviour of the REST. 
+            </param>
+            <returns>The same <see cref="T:ServiceStack.Web.IServiceRoutes"/> instance;
+            	never <see langword="null"/>.</returns>
+        </member>
+        <member name="T:ServiceStack.RouteAttribute">
+            <summary>
+            	Used to decorate Request DTO's to associate a RESTful request 
+            	path mapping with a service.  Multiple attributes can be applied to 
+            	each request DTO, to map multiple paths to the service.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.RouteAttribute.#ctor(System.String)">
+            <summary>
+            	<para>Initializes an instance of the <see cref="T:ServiceStack.RouteAttribute"/> class.</para>
+            </summary>
+            <param name="path">
+            	<para>The path template to map to the request.  See 
+            	<see cref="P:ServiceStack.RouteAttribute.Path">RouteAttribute.Path</see>
+            	for details on the correct format.</para>
+            </param>
+        </member>
+        <member name="M:ServiceStack.RouteAttribute.#ctor(System.String,System.String)">
+            <summary>
+            	<para>Initializes an instance of the <see cref="T:ServiceStack.RouteAttribute"/> class.</para>
+            </summary>
+            <param name="path">
+            	<para>The path template to map to the request.  See 
+            	<see cref="P:ServiceStack.RouteAttribute.Path">RouteAttribute.Path</see>
+            	for details on the correct format.</para>
+            </param>
+            <param name="verbs">A comma-delimited list of HTTP verbs supported by the 
+            	service.  If unspecified, all verbs are assumed to be supported.</param>
+        </member>
+        <member name="P:ServiceStack.RouteAttribute.Path">
+            <summary>
+            	Gets or sets the path template to be mapped to the request.
+            </summary>
+            <value>
+            	A <see cref="T:System.String"/> value providing the path mapped to
+            	the request.  Never <see langword="null"/>.
+            </value>
+            <remarks>
+            	<para>Some examples of valid paths are:</para>
+            
+            	<list>
+            		<item>"/Inventory"</item>
+            		<item>"/Inventory/{Category}/{ItemId}"</item>
+            		<item>"/Inventory/{ItemPath*}"</item>
+            	</list>
+            
+            	<para>Variables are specified within "{}"
+            	brackets.  Each variable in the path is mapped to the same-named property 
+            	on the request DTO.  At runtime, ServiceStack will parse the 
+            	request URL, extract the variable values, instantiate the request DTO,
+            	and assign the variable values into the corresponding request properties,
+            	prior to passing the request DTO to the service object for processing.</para>
+            
+            	<para>It is not necessary to specify all request properties as
+            	variables in the path.  For unspecified properties, callers may provide 
+            	values in the query string.  For example: the URL 
+            	"http://services/Inventory?Category=Books&amp;ItemId=12345" causes the same 
+            	request DTO to be processed as "http://services/Inventory/Books/12345", 
+            	provided that the paths "/Inventory" (which supports the first URL) and 
+            	"/Inventory/{Category}/{ItemId}" (which supports the second URL)
+            	are both mapped to the request DTO.</para>
+            
+            	<para>Please note that while it is possible to specify property values
+            	in the query string, it is generally considered to be less RESTful and
+            	less desirable than to specify them as variables in the path.  Using the 
+            	query string to specify property values may also interfere with HTTP
+            	caching.</para>
+            
+            	<para>The final variable in the path may contain a "*" suffix
+            	to grab all remaining segments in the path portion of the request URL and assign
+            	them to a single property on the request DTO.
+            	For example, if the path "/Inventory/{ItemPath*}" is mapped to the request DTO,
+            	then the request URL "http://services/Inventory/Books/12345" will result
+            	in a request DTO whose ItemPath property contains "Books/12345".
+            	You may only specify one such variable in the path, and it must be positioned at
+            	the end of the path.</para>
+            </remarks>
+        </member>
+        <member name="P:ServiceStack.RouteAttribute.Summary">
+            <summary>
+               Gets or sets short summary of what the route does.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.RouteAttribute.Notes">
+            <summary>
+               Gets or sets longer text to explain the behaviour of the route. 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.RouteAttribute.Verbs">
+            <summary>
+            	Gets or sets a comma-delimited list of HTTP verbs supported by the service, such as
+            	"GET,PUT,POST,DELETE".
+            </summary>
+            <value>
+            	A <see cref="T:System.String"/> providing a comma-delimited list of HTTP verbs supported
+            	by the service, <see langword="null"/> or empty if all verbs are supported.
+            </value>
+        </member>
+        <member name="P:ServiceStack.RouteAttribute.Priority">
+            <summary>
+            Used to rank the precedences of route definitions in reverse routing. 
+            i.e. Priorities below 0 are auto-generated have less precedence.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.FallbackRouteAttribute">
+            <summary>
+            Fallback routes have the lowest precedence, i.e. after normal Routes, static files or any matching Catch All Handlers.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.ErrorResponse">
+            <summary>
+            Generic ResponseStatus for when Response Type can't be inferred.
+            In schemaless formats like JSON, JSV it has the same shape as a typed Response DTO
+            </summary>
+        </member>
+        <member name="T:ServiceStack.RequestLogEntry">
+            <summary>
+            A log entry added by the IRequestLogger
+            </summary>
+        </member>
+        <member name="T:ServiceStack.RestrictAttribute">
+            <summary>
+            Decorate on Request DTO's to alter the accessibility of a service and its visibility on /metadata pages
+            </summary>
+        </member>
+        <member name="M:ServiceStack.RestrictAttribute.#ctor(ServiceStack.RequestAttributes[])">
+            <summary>
+            Restrict access and metadata visibility to any of the specified access scenarios
+            </summary>
+            <value>The restrict access to scenarios.</value>
+        </member>
+        <member name="M:ServiceStack.RestrictAttribute.#ctor(ServiceStack.RequestAttributes[],ServiceStack.RequestAttributes[])">
+            <summary>
+            Restrict access and metadata visibility to any of the specified access scenarios
+            </summary>
+            <value>The restrict access to scenarios.</value>
+        </member>
+        <member name="M:ServiceStack.RestrictAttribute.ToAllowedFlagsSet(ServiceStack.RequestAttributes[])">
+            <summary>
+            Returns the allowed set of scenarios based on the user-specified restrictions
+            </summary>
+            <param name="restrictToAny"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.RestrictAttribute.VisibleInternalOnly">
+            <summary>
+            Allow access but hide from metadata to requests from Localhost only
+            </summary>
+        </member>
+        <member name="P:ServiceStack.RestrictAttribute.VisibleLocalhostOnly">
+            <summary>
+            Allow access but hide from metadata to requests from Localhost and Local Intranet only
+            </summary>
+        </member>
+        <member name="P:ServiceStack.RestrictAttribute.InternalOnly">
+            <summary>
+            Restrict access and hide from metadata to requests from Localhost and Local Intranet only
+            </summary>
+        </member>
+        <member name="P:ServiceStack.RestrictAttribute.LocalhostOnly">
+            <summary>
+            Restrict access and hide from metadata to requests from Localhost only
+            </summary>
+        </member>
+        <member name="P:ServiceStack.RestrictAttribute.AccessTo">
+            <summary>
+            Sets a single access restriction
+            </summary>
+            <value>Restrict Access to.</value>
+        </member>
+        <member name="P:ServiceStack.RestrictAttribute.AccessibleToAny">
+            <summary>
+            Restrict access to any of the specified access scenarios
+            </summary>
+            <value>Access restrictions</value>
+        </member>
+        <member name="P:ServiceStack.RestrictAttribute.VisibilityTo">
+            <summary>
+            Sets a single metadata Visibility restriction
+            </summary>
+            <value>Restrict metadata Visibility to.</value>
+        </member>
+        <member name="P:ServiceStack.RestrictAttribute.VisibleToAny">
+            <summary>
+            Restrict metadata visibility to any of the specified access scenarios
+            </summary>
+            <value>Visibility restrictions</value>
+        </member>
+        <member name="M:ServiceStack.RestrictExtensions.ToAllowedFlagsSet(ServiceStack.RequestAttributes)">
+            <summary>
+            Converts from a User intended restriction to a flag with all the allowed attribute flags set, e.g:
+            
+            If No Network restrictions were specified all Network access types are allowed, e.g:
+                restrict EndpointAttributes.None => ... 111
+            
+            If a Network restriction was specified, only it will be allowed, e.g:
+                restrict EndpointAttributes.LocalSubnet => ... 010
+            
+            The returned Enum will have a flag with all the allowed attributes set
+            </summary>
+            <param name="restrictTo"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.ResponseError">
+            <summary>
+            Error information pertaining to a particular named field.
+            Used for returning multiple field validation errors.s
+            </summary>
+        </member>
+        <member name="T:ServiceStack.ResponseStatus">
+            <summary>
+            Common ResponseStatus class that should be present on all response DTO's
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ResponseStatus.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.ResponseStatus"/> class.
+            
+            A response status without an errorcode == success
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ResponseStatus.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.ResponseStatus"/> class.
+            
+            A response status with an errorcode == failure
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ResponseStatus.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.ResponseStatus"/> class.
+            
+            A response status with an errorcode == failure
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ResponseStatus.ErrorCode">
+            <summary>
+            Holds the custom ErrorCode enum if provided in ValidationException
+            otherwise will hold the name of the Exception type, e.g. typeof(Exception).Name
+            
+            A value of non-null means the service encountered an error while processing the request.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ResponseStatus.Message">
+            <summary>
+            A human friendly error message
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ResponseStatus.StackTrace">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ResponseStatus.Errors">
+            <summary>
+            For multiple detailed validation errors.
+            Can hold a specific error message for each named field.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IPartialWriter.WritePartialTo(ServiceStack.Web.IResponse)">
+            <summary>
+            Write a partial content result
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IPartialWriter.IsPartialRequest">
+            <summary>
+            Whether this HttpResult allows Partial Response
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IReplyClient.Send``1(System.Object)">
+            <summary>
+            Sends the specified request.
+            </summary>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
