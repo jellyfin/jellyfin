@@ -1458,10 +1458,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                 recursiveItemCount++;
 
                 // Check is recently added
-                if (child.IsRecentlyAdded())
-                {
-                    rcentlyAddedItemCount++;
-                }
+                //if (child.IsRecentlyAdded())
+                //{
+                //    rcentlyAddedItemCount++;
+                //}
 
                 var isUnplayed = true;
 

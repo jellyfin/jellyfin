@@ -621,5 +621,7 @@
 	"ButtonVolumeUp": "Volume up",
 	"ButtonVolumeDown": "Volume down",
 	"ButtonMute": "Mute",
-	"HeaderLatestMedia": "Latest Media"
+	"HeaderLatestMedia": "Latest Media",
+	"OptionNoSubtitles": "No Subtitles",
+	"OptionSpecialFeatures": "Special Features"
 }

@@ -2041,16 +2041,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             if (ratio) {
 
                 if (options.width) {
-                    options.width = options.width * ratio;
+                    
+                    options.width = Math.round(options.width * ratio);
                 }
                 if (options.height) {
-                    options.height = options.height * ratio;
+                    options.height = Math.round(options.height * ratio);
                 }
                 if (options.maxWidth) {
-                    options.maxWidth = options.maxWidth * ratio;
+                    options.maxWidth = Math.round(options.maxWidth * ratio);
                 }
                 if (options.maxHeight) {
-                    options.maxHeight = options.maxHeight * ratio;
+                    options.maxHeight = Math.round(options.maxHeight * ratio);
                 }
             }
 

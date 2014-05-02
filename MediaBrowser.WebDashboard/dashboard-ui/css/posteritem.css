@@ -338,11 +338,11 @@
 @media all and (min-width: 1440px) {
 
     .squarePosterItem {
-        width: 180px;
+        width: 167px;
     }
 
         .squarePosterItem .posterItemImage {
-            height: 180px;
+            height: 167px;
         }
 
     .backdropPosterItem {

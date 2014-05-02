@@ -26,6 +26,31 @@
     src: local('Open Sans Extrabold'), local('OpenSans-Extrabold'), url(fonts/OpenSans-ExtraBold.woff) format('woff');
 }
 
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 100;
+  src: local('Roboto Thin'), local('Roboto-Thin'), url(fonts/RobotoThin.woff) format('woff');
+}
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Roboto Light'), local('Roboto-Light'), url(fonts/RobotoLight.woff) format('woff');
+}
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto Regular'), local('Roboto-Regular'), url(fonts/RobotoRegular.woff) format('woff');
+}
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Roboto Medium'), local('Roboto-Medium'), url(fonts/RobotoMedium.woff) format('woff');
+}
+
 * {
     text-shadow: none!important;
 }
@@ -45,8 +70,9 @@ body {
     }
 
 h1 {
-    font-weight: 300;
-    font-size: 2em;
+    font-weight: 100;
+    font-size: 28px;
+    font-family: Roboto;
 }
 
 .ui-loader h1 {

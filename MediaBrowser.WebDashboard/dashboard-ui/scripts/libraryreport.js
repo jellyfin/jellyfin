@@ -600,6 +600,7 @@
         $('#chkSD', page).checked(query.IsHD == false).checkboxradio('refresh');
 
         $('#chkSubtitle', page).checked(query.HasSubtitles == true).checkboxradio('refresh');
+        $('#chkNoSubtitle', page).checked(query.HasSubtitles === false).checkboxradio('refresh');
         $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
         $('#chkSpecialFeature', page).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
@@ -711,6 +712,18 @@
 
             query.StartIndex = 0;
             query.HasSubtitles = this.checked ? true : null;
+
+            $('#chkNoSubtitle', page).checked(false).checkboxradio('refresh');
+
+            reloadItems(page);
+        });
+
+        $('#chkNoSubtitle', page).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasSubtitles = this.checked ? false : null;
+
+            $('#chkSubtitle', page).checked(false).checkboxradio('refresh');
 
             reloadItems(page);
         });

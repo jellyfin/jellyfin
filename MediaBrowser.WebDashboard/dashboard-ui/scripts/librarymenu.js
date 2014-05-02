@@ -68,19 +68,11 @@
 
     function getItemHref(item) {
 
-        if (item.Type == 'ManualCollectionsFolder') {
+        if (item.Type == 'ManualCollectionsFolder' || item.CollectionType == 'boxsets') {
             return 'collections.html?topParentId=' + item.Id;
         }
 
-        if (item.CollectionType == 'boxsets') {
-            return 'moviecollections.html?topParentId=' + item.Id;
-        }
-
-        if (item.CollectionType == 'trailers') {
-            return 'movietrailers.html?topParentId=' + item.Id;
-        }
-
-        if (item.Type == 'TrailerCollectionFolder') {
+        if (item.CollectionType == 'trailers' || item.Type == 'TrailerCollectionFolder') {
             return 'movietrailers.html?topParentId=' + item.Id;
         }
 

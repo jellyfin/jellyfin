@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -672,21 +673,28 @@ namespace MediaBrowser.Dlna.Didl
 
         private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int? maxWidth, int? maxHeight)
         {
-            var url = string.Format("{0}/Items/{1}/Images/{2}?tag={3}&format=jpg",
+            var url = string.Format("{0}/Items/{1}/Images/{2}?params=",
                 _serverAddress,
                 info.ItemId,
-                info.Type,
-                info.ImageTag);
+                info.Type);
+
+            var options = new List<string>
+            {
+                info.ImageTag,
+                "jpg"
+            };
 
             if (maxWidth.HasValue)
             {
-                url += "&maxWidth=" + maxWidth.Value.ToString(_usCulture);
+                options.Add(maxWidth.Value.ToString(_usCulture));
             }
 
             if (maxHeight.HasValue)
             {
-                url += "&maxHeight=" + maxHeight.Value.ToString(_usCulture);
+                options.Add(maxHeight.Value.ToString(_usCulture));
             }
+
+            url += string.Join(";", options.ToArray());
 
             var width = info.Width;
             var height = info.Height;
