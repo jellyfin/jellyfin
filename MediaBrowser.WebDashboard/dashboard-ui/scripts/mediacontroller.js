@@ -509,7 +509,7 @@
         });
     }
 
-    $(document).on('headercreated', function () {
+    $(document).on('headercreated', '.libraryPage', function () {
 
         $('.btnCast').on('click', function () {
 

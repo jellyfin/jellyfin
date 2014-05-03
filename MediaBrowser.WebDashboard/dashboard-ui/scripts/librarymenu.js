@@ -14,13 +14,13 @@
         liveTvInfoPromise = liveTvInfoPromise || ApiClient.getLiveTvInfo();
     }
 
-    function renderHeader(user) {
+    function renderHeader(page, user) {
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
         html += '<button type="button" data-icon="bars" data-iconpos="notext" data-inline="true" title="Menu" class="libraryMenuButton" onclick="LibraryMenu.showLibraryMenu();">Menu</button>';
 
-        html += '<a class="desktopHomeLink" href="index.html"><img src="css/images/mblogoicon.png" /></a>';
+        html += '<a class="desktopHomeLink" href="index.html"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a>';
 
         html += '<a class="viewMenuRemoteControlButton" href="nowplaying.html" data-role="button" data-icon="play" data-inline="true" data-iconpos="notext" title="Now Playing">Remote Control</a>';
 
@@ -59,16 +59,21 @@
 
         html += '</div>';
 
-        $(document.body).prepend(html);
+        html += '<div class="desktopLibraryMenu">';
+        html += '</div>';
 
-        $('.viewMenuBar').trigger('create');
+        var $page = $(page);
 
-        $(document).trigger('headercreated');
+        $page.prepend(html);
+
+        $('.viewMenuBar,.desktopLibraryMenu', page).trigger('create');
+
+        $page.trigger('headercreated');
     }
 
     function getItemHref(item) {
 
-        if (item.Type == 'ManualCollectionsFolder') {
+        if (item.CollectionType == 'boxsets' || item.Type == 'ManualCollectionsFolder') {
             return 'collections.html?topParentId=' + item.Id;
         }
 
@@ -95,25 +100,34 @@
         return 'itemlist.html?topParentId=' + item.Id + '&parentid=' + item.Id;
     }
 
-    function insertViews(user, counts, items, liveTvInfo) {
+    function insertViews(page, user, counts, items, liveTvInfo) {
 
         var html = '';
 
         html += items.map(function (i) {
 
-            return '<a data-itemid="' + i.Id + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink desktopViewMenuLink" href="' + getItemHref(i) + '"><span class="viewName">' + i.Name + '</span></a>';
+            var viewMenuCssClass = (i.CollectionType || 'general') + 'ViewMenu';
+
+            return '<a data-itemid="' + i.Id + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink ' + viewMenuCssClass + '" href="' + getItemHref(i) + '">' + i.Name + '</a>';
 
         }).join('');
 
-        if (counts.ChannelCount) {
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink lnkMediaFolder" data-itemid="channels" href="channels.html"><span class="viewName">Channels</span></a>';
+        var showChannels = counts.ChannelCount;
+        var showLiveTv = liveTvInfo.EnabledUsers.indexOf(user.Id) != -1;
+
+        if (showChannels || showLiveTv) {
+            html += '<div class="desktopLibraryMenuDivider"></div>';
         }
 
-        if (liveTvInfo.EnabledUsers.indexOf(user.Id) != -1) {
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink lnkMediaFolder" data-itemid="livetv" href="livetvsuggested.html"><span class="viewName">Live TV</span></a>';
+        if (showChannels) {
+            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder channelsViewMenu" data-itemid="channels" href="channels.html">Channels</a>';
         }
 
-        $('.viewMenuRemoteControlButton').before(html);
+        if (showLiveTv) {
+            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder tvshowsViewMenu" data-itemid="livetv" href="livetvsuggested.html">Live TV</a>';
+        }
+
+        $('.desktopLibraryMenu', page).html(html);
     }
 
     function showLibraryMenu() {
@@ -204,14 +218,14 @@
 
         var isLiveTvPage = page.hasClass('liveTvPage');
         var isChannelsPage = page.hasClass('channelsPage');
-        
-        var id = isLiveTvPage || isChannelsPage || page.hasClass('noLibraryMenuSelectionPage') ?
+
+        var id = isLiveTvPage || isChannelsPage || page.hasClass('allLibraryPage') ?
             '' :
             getTopParentId() || '';
 
         sessionStorage.setItem('topParentId', id);
 
-        $('.lnkMediaFolder').each(function () {
+        $('.lnkMediaFolder', page).each(function () {
 
             var itemId = this.getAttribute('data-itemid');
 
@@ -262,11 +276,11 @@
 
         if ($(page).hasClass('libraryPage')) {
 
-            if (!$('.viewMenuBar').length) {
+            if (!$('.viewMenuBar', page).length) {
 
                 Dashboard.getCurrentUser().done(function (user) {
 
-                    renderHeader(user);
+                    renderHeader(page, user);
 
                     ensurePromises();
 
@@ -276,21 +290,14 @@
                         var items = response2[0].Items;
                         var liveTvInfo = response3[0];
 
-                        insertViews(user, counts, items, liveTvInfo);
+                        insertViews(page, user, counts, items, liveTvInfo);
 
                         updateLibraryNavLinks(page);
 
                     });
                 });
-            } else {
-
-                $('.viewMenuBar').show();
-                updateLibraryNavLinks(page);
-
             }
 
-        } else {
-            $('.viewMenuBar').hide();
         }
 
     }).on('pageshow', ".libraryPage", function () {

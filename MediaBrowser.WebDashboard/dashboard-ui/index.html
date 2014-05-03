@@ -4,12 +4,17 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="indexPage" data-role="page" class="page type-home libraryPage noLibraryMenuSelectionPage noSecondaryNavPage" data-theme="b">
+    <div id="indexPage" data-role="page" class="page type-home libraryPage allLibraryPage noSecondaryNavPage" data-theme="b">
         <div data-role="content">
 
             <table class="ehsContent">
                 <tr>
                     <td>
+                        <h1 class="listHeader">${HeaderMyLibrary}</h1>
+
+                        <div class="myLibrary">
+                        </div>
+
                         <div id="resumableSection" style="display: none;">
                             <h1 class="listHeader">${HeaderResume}</h1>
 

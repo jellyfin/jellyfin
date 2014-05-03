@@ -624,5 +624,8 @@
 	"ButtonMute": "Mute",
 	"HeaderLatestMedia": "Latest Media",
 	"OptionNoSubtitles": "No Subtitles",
-	"OptionSpecialFeatures": "Special Features"
+	"OptionSpecialFeatures": "Special Features",
+	"HeaderCollections": "Collections",
+	"HeaderChannels": "Channels",
+	"HeaderMyLibrary": "My Library"
 }

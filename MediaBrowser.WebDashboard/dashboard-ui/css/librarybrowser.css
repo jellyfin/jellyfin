@@ -961,6 +961,17 @@ a.itemTag:hover {
     margin-left: .5em;
 }
 
+@media all and (min-width: 750px) {
+
+    .lnkSibling:not(.hide) {
+        display: block;
+    }
+
+    .itemBackdrop:not(.noBackdrop) {
+        border-bottom: 1px solid #111;
+    }
+}
+
 @media all and (min-height: 500px) {
 
     .alphabetPicker {

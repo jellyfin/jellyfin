@@ -10,6 +10,12 @@ namespace MediaBrowser.Model.Querying
         public string UserId { get; set; }
 
         /// <summary>
+        /// Gets or sets the parent identifier.
+        /// </summary>
+        /// <value>The parent identifier.</value>
+        public string ParentId { get; set; }
+        
+        /// <summary>
         /// Gets or sets the series id.
         /// </summary>
         /// <value>The series id.</value>
@@ -41,6 +47,12 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The user id.</value>
         public string UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent identifier.
+        /// </summary>
+        /// <value>The parent identifier.</value>
+        public string ParentId { get; set; }
 
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.

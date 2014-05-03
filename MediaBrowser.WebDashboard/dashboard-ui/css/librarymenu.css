@@ -1,11 +1,35 @@
 ﻿.libraryPage {
-    padding-top: 48px !important;
+    padding-top: 54px !important;
 }
 
     .libraryPage:not(.metadataEditorPage):not(.noSecondaryNavPage) {
-        padding-top: 91px !important;
+        padding-top: 97px !important;
     }
 
+.desktopLibraryMenu {
+    position: fixed;
+    left: 0;
+    z-index: 1001;
+    top: 54px;
+    background-color: #181818;
+    width: 200px;
+    min-height: 100px;
+    border-bottom-right-radius: 5px;
+}
+
+.itemDetailPage .desktopLibraryMenu {
+    background-color: rgba(24,24,24,.6);
+}
+
+.metadataEditorPage .desktopLibraryMenu {
+    display: none;
+}
+
+.desktopLibraryMenuDivider {
+    height: 1px;
+    background: #333;
+    margin: .5em 0;
+}
 
 .viewMenuBar {
     font-weight: bold;
@@ -14,13 +38,9 @@
     left: 0;
     z-index: 1000;
     top: 0;
-    padding-left: 10px;
     background: #181818;
-    border-bottom: 1px solid #080808;
-}
-
-.viewMenuLink {
-    font-size: 90%;
+    padding: 3px .25em 3px 1em;
+    border-bottom: 1px solid #101010;
 }
 
 .viewMenuLink {
@@ -30,6 +50,10 @@
     display: inline-block;
     vertical-align: middle;
 }
+
+    .viewMenuLink:hover {
+        background-color: #555;
+    }
 
 .viewMenuBar .btnCurrentUser {
     padding: 7px 1em 6px;
@@ -48,49 +72,84 @@
     vertical-align: top;
 }
 
-.selectedMediaFolder {
-    color: #fff!important;
+.viewMenuTextLink {
+    display: block;
+    padding: .6em .5em .6em 35px!important;
+    font-size: 15px;
+    font-weight: 300!important;
+    font-family: Roboto;
 }
 
-.viewMenuBar .selectedMediaFolder:before {
-    content: '\25BA';
-    color: #fff;
+.musicViewMenu {
+    background-image: url(images/items/folders/music.png);
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: 8px 8px;
+}
+
+.tvshowsViewMenu {
+    background-image: url(images/items/folders/tv.png);
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: 8px 8px;
+}
+
+.moviesViewMenu {
+    background-image: url(images/items/folders/movies.png);
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: 8px center;
+}
+
+.gamesViewMenu {
+    background-image: url(images/items/folders/games.png);
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: 8px 8px;
+}
+
+.channelsViewMenu {
+    background-image: url(images/items/folders/channels.png);
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: 8px center;
+}
+
+.booksViewMenu {
+    background-image: url(images/items/folders/books.png);
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: 8px center;
+}
+
+.collectionsViewMenu, .generalViewMenu, .homeVideosViewMenu {
+    background-image: url(images/items/folders/homevideos.png);
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: 8px center;
 }
 
 .viewMenuSecondary {
     float: right;
 }
 
-.viewMenuTextLink {
-    display: none;
-    height: 20px;
-    padding-top: 9px;
-    text-transform: uppercase;
-    font-size: 14px;
-    font-weight: 400!important;
-}
-
-.viewMenuTextLink {
-    display: inline-block;
-}
-
-.viewName {
-    vertical-align: middle;
-}
-
-.selectedViewLink {
+.selectedMediaFolder {
+    background-color: #38c!important;
     color: #fff!important;
 }
 
+.itemDetailPage .selectedMediaFolder {
+    background-color: rgba(51,136,204,.8)!important;
+}
 
 .libraryViewNav {
     height: 42px;
     overflow: hidden;
     border-bottom: 1px solid #333;
     position: fixed;
-    left: 0;
     right: 0;
-    top: 48px;
+    left: 0;
+    top: 54px;
     z-index: 1000;
     background-color: #252525;
 }
@@ -130,49 +189,51 @@
     color: #ddd;
 }
 
+.desktopHomeLink {
+    color: #ddd !important;
+    margin-right: 2em;
+    text-decoration: none;
+    font-weight: 400!important;
+}
 
-@media all and (min-width: 950px) {
+    .desktopHomeLink span {
+        vertical-align: middle;
+    }
+
+@media all and (min-width: 1280px) {
 
     .libraryMenuButton {
         display: none;
     }
-}
 
-@media all and (max-width: 950px) {
-
-    .desktopHomeLink {
-        display: none;
+    .libraryPage:not(.itemDetailPage):not(.metadataEditorPage) {
+        left: 215px !important;
+        width: auto !important;
+        right: 0 !important;
     }
 
-    .desktopViewMenuLink {
+    .libraryPage:not(.itemDetailPage) .libraryViewNav {
+    }
+}
+
+@media all and (max-width: 1280px) {
+
+    .desktopHomeLink {
         display: none;
     }
 
     .libraryViewNavInner {
         text-align: left;
     }
+
+    .desktopLibraryMenu {
+        display: none;
+    }
 }
 
 @media all and (min-width: 750px) {
 
-    .viewMenuLink {
-        padding-left: .8em;
-        padding-right: .8em;
-    }
-
-    .libraryMenuButton + .viewMenuTextLink {
-        padding-left: .6em !important;
-    }
-
     .viewMenuBar .btnCurrentUser {
         padding-right: 1.5em;
-    }
-
-    .lnkSibling:not(.hide) {
-        display: block;
-    }
-
-    .itemBackdrop:not(.noBackdrop) {
-        border-bottom: 1px solid #111;
     }
 }
