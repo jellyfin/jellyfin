@@ -203,6 +203,8 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',').FirstOrDefault();
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.Protocol = transcodingProfile.Protocol;
+                playlistItem.AudioStreamIndex = options.AudioStreamIndex;
+                playlistItem.SubtitleStreamIndex = options.SubtitleStreamIndex;
 
                 var videoTranscodingConditions = options.Profile.CodecProfiles
                     .Where(i => i.Type == CodecType.Video && i.ContainsCodec(transcodingProfile.VideoCodec))
