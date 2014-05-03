@@ -418,6 +418,10 @@ namespace MediaBrowser.Dlna.Didl
                     {
                         classType = "object.container.person.musicArtist";
                     }
+                    if (item is Series || item is Season || item is BoxSet || item is CollectionFolder)
+                    {
+                        classType = "object.container.album.videoAlbum";
+                    }                  
                 }
 
                 objectClass.InnerText = classType ?? "object.container.storageFolder";
@@ -435,7 +439,7 @@ namespace MediaBrowser.Dlna.Didl
                 if (!_profile.RequiresPlainVideoItems && item is Movie)
                 {
                     objectClass.InnerText = "object.item.videoItem.movie";
-                }
+                }                
                 else
                 {
                     objectClass.InnerText = "object.item.videoItem";
