@@ -658,6 +658,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "contextmenu.css",
                                       "mediaplayer.css",
                                       "mediaplayer-video.css",
+                                      "librarymenu.css",
                                       "librarybrowser.css",
                                       "detailtable.css",
                                       "posteritem.css",

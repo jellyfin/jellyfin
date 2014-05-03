@@ -228,7 +228,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 return;
             }
 
-            await program.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+            await program.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             _refreshedPrograms.TryAdd(program.Id, true);
         }
