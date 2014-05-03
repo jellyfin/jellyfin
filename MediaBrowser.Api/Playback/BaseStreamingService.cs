@@ -1725,16 +1725,11 @@ namespace MediaBrowser.Api.Playback
         {
             var profile = state.DeviceProfile;
 
-            if (profile == null)
-            {
-                return;
-            }
-
             var transferMode = GetHeader("transferMode.dlna.org");
             responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
             responseHeaders["realTimeInfo.dlna.org"] = "DLNA.ORG_TLAG=*";
 
-            if (state.RunTimeTicks.HasValue && !isStaticallyStreamed)
+            if (state.RunTimeTicks.HasValue && !isStaticallyStreamed && profile != null)
             {
                 AddTimeSeekResponseHeaders(state, responseHeaders);
             }
