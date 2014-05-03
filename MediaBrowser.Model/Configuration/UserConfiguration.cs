@@ -57,6 +57,7 @@ namespace MediaBrowser.Model.Configuration
         public bool GroupMoviesIntoBoxSets { get; set; }
 
         public string[] BlockedMediaFolders { get; set; }
+        public string[] BlockedChannels { get; set; }
 
         public UnratedItem[] BlockUnratedItems { get; set; }
 
@@ -74,6 +75,7 @@ namespace MediaBrowser.Model.Configuration
             GroupMoviesIntoBoxSets = true;
 
             BlockedMediaFolders = new string[] { };
+            BlockedChannels = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
         }
     }
@@ -88,6 +90,7 @@ namespace MediaBrowser.Model.Configuration
         Book,
         LiveTvChannel,
         LiveTvProgram,
+        ChannelContent,
         Other
     }
 }

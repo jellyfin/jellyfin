@@ -68,7 +68,7 @@
 
     function getItemHref(item) {
 
-        if (item.Type == 'ManualCollectionsFolder' || item.CollectionType == 'boxsets') {
+        if (item.Type == 'ManualCollectionsFolder') {
             return 'collections.html?topParentId=' + item.Id;
         }
 
@@ -106,7 +106,7 @@
         }).join('');
 
         if (counts.ChannelCount) {
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink lnkMediaFolder" href="channels.html"><span class="viewName">Channels</span></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink lnkMediaFolder" data-itemid="channels" href="channels.html"><span class="viewName">Channels</span></a>';
         }
 
         if (liveTvInfo.EnabledUsers.indexOf(user.Id) != -1) {
@@ -155,7 +155,7 @@
             }).join('');
 
             if (counts.ChannelCount) {
-                html += '<li><a class="libraryPanelLink lnkMediaFolder" href="channels.html">Channels</a></li>';
+                html += '<li><a class="libraryPanelLink lnkMediaFolder" data-itemid="channels" href="channels.html">Channels</a></li>';
             }
 
             if (liveTvInfo.EnabledUsers.indexOf(Dashboard.getCurrentUserId()) != -1) {
@@ -203,8 +203,9 @@
         page = $(page);
 
         var isLiveTvPage = page.hasClass('liveTvPage');
-
-        var id = isLiveTvPage || page.hasClass('noLibraryMenuSelectionPage') ?
+        var isChannelsPage = page.hasClass('channelsPage');
+        
+        var id = isLiveTvPage || isChannelsPage || page.hasClass('noLibraryMenuSelectionPage') ?
             '' :
             getTopParentId() || '';
 
@@ -214,7 +215,10 @@
 
             var itemId = this.getAttribute('data-itemid');
 
-            if (isLiveTvPage && itemId == 'livetv') {
+            if (isChannelsPage && itemId == 'channels') {
+                $(this).addClass('selectedMediaFolder');
+            }
+            else if (isLiveTvPage && itemId == 'livetv') {
                 $(this).addClass('selectedMediaFolder');
             }
             else if (id && itemId == id) {

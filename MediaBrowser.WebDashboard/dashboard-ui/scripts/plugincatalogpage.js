@@ -70,14 +70,22 @@
             var category = plugin.category || "General";
 
             if (category != currentCategory) {
-                html += '<h2 class="listHeader">' + category + '</h2>';
+
+                if (currentCategory) {
+                    html += '<br/>';
+                    html += '<br/>';
+                    html += '<br/>';
+                }
+
+                html += '<div class="ui-bar-a" style="padding: 0 1em;"><h3>' + category + '</h3></div>';
+                
                 currentCategory = category;
             }
 
             var href = plugin.externalUrl ? plugin.externalUrl : "addplugin.html?name=" + encodeURIComponent(plugin.name) + "&guid=" + plugin.guid;
             var target = plugin.externalUrl ? ' target="_blank"' : '';
 
-            html += "<a class='storeItem backdropPosterItem posterItem transparentPosterItem borderlessPosterItem' href='" + href + "' " + target + ">";
+            html += "<a class='backdropPosterItem posterItem' style='margin: .75em 5px 1em;' href='" + href + "' " + target + ">";
 
             if (plugin.thumbImage) {
                 html += '<div class="posterItemImage" style="background-image:url(\'' + plugin.thumbImage + '\');background-size:cover;">';
@@ -94,21 +102,13 @@
             }
             html += "</div>";
 
-            html += "<div class='posterItemText' style='color:#000;font-weight:400;font-size:14px;'>";
+            html += "<div class='posterItemText' style='color:#000;'>";
 
-            var installedPlugin = plugin.isApp ? null : installedPlugins.filter(function (ip) {
-                return ip.Name == plugin.name;
-            })[0];
+            html += plugin.name;
 
-            if (installedPlugin) {
-                html += plugin.name;
-            } else {
-                html += plugin.name;
-            }
-            
             html += "</div>";
 
-            html += "<div class='posterItemText packageReviewText' style='color:#000;font-weight:400;font-size:14px;'>";
+            html += "<div class='posterItemText packageReviewText' style='color:#000;'>";
             html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : "Free";
             html += Dashboard.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
 
@@ -117,6 +117,20 @@
             html += "</span>";
 
             html += "</div>";
+
+            var installedPlugin = plugin.isApp ? null : installedPlugins.filter(function (ip) {
+                return ip.Name == plugin.name;
+            })[0];
+
+            html += "<div class='posterItemText' style='color:#000;'>";
+            
+            if (installedPlugin) {
+                html += installedPlugin.Version + ' installed';
+            } else {
+                html += '&nbsp;';
+            }
+            html += "</div>";
+
             html += "</a>";
 
             pluginhtml += html;

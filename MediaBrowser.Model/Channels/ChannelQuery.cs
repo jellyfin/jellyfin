@@ -1,4 +1,6 @@
-﻿
+﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
+
 namespace MediaBrowser.Model.Channels
 {
     public class ChannelQuery
@@ -35,7 +37,7 @@ namespace MediaBrowser.Model.Channels
         /// </summary>
         /// <value>The category identifier.</value>
         public string CategoryId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the user identifier.
         /// </summary>
@@ -53,5 +55,15 @@ namespace MediaBrowser.Model.Channels
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
+
+        public SortOrder? SortOrder { get; set; }
+        public string[] SortBy { get; set; }
+        public ItemFilter[] Filters { get; set; }
+
+        public ChannelItemQuery()
+        {
+            Filters = new ItemFilter[] { };
+            SortBy = new string[] { };
+        }
     }
 }

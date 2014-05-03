@@ -1,0 +1,178 @@
+﻿.libraryPage {
+    padding-top: 48px !important;
+}
+
+    .libraryPage:not(.metadataEditorPage):not(.noSecondaryNavPage) {
+        padding-top: 91px !important;
+    }
+
+
+.viewMenuBar {
+    font-weight: bold;
+    position: fixed;
+    right: 0;
+    left: 0;
+    z-index: 1000;
+    top: 0;
+    padding-left: 10px;
+    background: #181818;
+    border-bottom: 1px solid #080808;
+}
+
+.viewMenuLink {
+    font-size: 90%;
+}
+
+.viewMenuLink {
+    text-decoration: none;
+    color: #ccc!important;
+    padding: 7px .5em 6px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.viewMenuBar .btnCurrentUser {
+    padding: 7px 1em 6px;
+}
+
+.viewMenuLink:hover {
+    color: #fff;
+}
+
+    .viewMenuLink:hover img {
+        opacity: .5;
+    }
+
+.viewMenuLink img {
+    height: 24px;
+    vertical-align: top;
+}
+
+.selectedMediaFolder {
+    color: #fff!important;
+}
+
+.viewMenuBar .selectedMediaFolder:before {
+    content: '\25BA';
+    color: #fff;
+}
+
+.viewMenuSecondary {
+    float: right;
+}
+
+.viewMenuTextLink {
+    display: none;
+    height: 20px;
+    padding-top: 9px;
+    text-transform: uppercase;
+    font-size: 14px;
+    font-weight: 400!important;
+}
+
+.viewMenuTextLink {
+    display: inline-block;
+}
+
+.viewName {
+    vertical-align: middle;
+}
+
+.selectedViewLink {
+    color: #fff!important;
+}
+
+
+.libraryViewNav {
+    height: 42px;
+    overflow: hidden;
+    border-bottom: 1px solid #333;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 48px;
+    z-index: 1000;
+    background-color: #252525;
+}
+
+.libraryViewNavInner {
+    text-align: center;
+    font-size: 14px;
+    white-space: nowrap;
+    padding: 0 0 0;
+    overflow-x: auto;
+    height: 55px;
+}
+
+.libraryViewNav .ui-btn-active .libraryViewNavLinkContent {
+    border-bottom-color: #38c;
+    color: #fff;
+}
+
+.libraryViewNav a {
+    display: inline-block;
+    padding: 12px 0 0;
+    color: #eee!important;
+    text-decoration: none;
+    margin: 0 0;
+    position: relative;
+    font-weight: normal;
+}
+
+    .libraryViewNav a:hover {
+        color: #bbb!important;
+    }
+
+.libraryViewNavLinkContent {
+    border-bottom: 5px solid transparent;
+    display: inline-block;
+    padding: 0 .9em 7px;
+    color: #ddd;
+}
+
+
+@media all and (min-width: 950px) {
+
+    .libraryMenuButton {
+        display: none;
+    }
+}
+
+@media all and (max-width: 950px) {
+
+    .desktopHomeLink {
+        display: none;
+    }
+
+    .desktopViewMenuLink {
+        display: none;
+    }
+
+    .libraryViewNavInner {
+        text-align: left;
+    }
+}
+
+@media all and (min-width: 750px) {
+
+    .viewMenuLink {
+        padding-left: .8em;
+        padding-right: .8em;
+    }
+
+    .libraryMenuButton + .viewMenuTextLink {
+        padding-left: .6em !important;
+    }
+
+    .viewMenuBar .btnCurrentUser {
+        padding-right: 1.5em;
+    }
+
+    .lnkSibling:not(.hide) {
+        display: block;
+    }
+
+    .itemBackdrop:not(.noBackdrop) {
+        border-bottom: 1px solid #111;
+    }
+}

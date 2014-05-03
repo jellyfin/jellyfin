@@ -60,7 +60,38 @@
 
         html += '</fieldset>';
 
-        $('.libraryAccess', page).html(html).trigger('create');
+        $('.mediaFolderAccess', page).html(html).trigger('create');
+    }
+
+    function loadChannels(page, user, channels) {
+
+        var html = '';
+
+        html += '<fieldset data-role="controlgroup">';
+
+        html += '<legend>Channels</legend>';
+
+        for (var i = 0, length = channels.length; i < length; i++) {
+
+            var folder = channels[i];
+
+            var id = 'channels' + i;
+
+            var checkedAttribute = user.Configuration.BlockedChannels.indexOf(folder.Name) == -1 ? ' checked="checked"' : '';
+
+            html += '<input class="chkChannel" data-foldername="' + folder.Name + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<label for="' + id + '">' + folder.Name + '</label>';
+        }
+
+        html += '</fieldset>';
+
+        $('.channelAccess', page).show().html(html).trigger('create');
+
+        if (channels.length) {
+            $('.channelAccessContainer', page).show();
+        } else {
+            $('.channelAccessContainer', page).hide();
+        }
     }
 
     function loadUnratedItems(page, user) {
@@ -68,6 +99,7 @@
         var items = [
             { name: 'Books', value: 'Book' },
             { name: 'Games', value: 'Game' },
+            { name: 'Internet Channel Content', value: 'ChannelContent' },
             { name: 'Live TV Channels', value: 'LiveTvChannel' },
             { name: 'Live TV Programs', value: 'LiveTvProgram' },
             { name: 'Movies', value: 'Movie' },
@@ -100,10 +132,11 @@
         $('.blockUnratedItems', page).html(html).trigger('create');
     }
 
-    function loadUser(page, user, loggedInUser, allParentalRatings, mediaFolders) {
+    function loadUser(page, user, loggedInUser, allParentalRatings, mediaFolders, channels) {
 
         Dashboard.setPageTitle(user.Name);
 
+        loadChannels(page, user, channels);
         loadMediaFolders(page, user, mediaFolders);
         loadUnratedItems(page, user);
 
@@ -142,6 +175,12 @@
         user.Configuration.MaxParentalRating = $('#selectMaxParentalRating', page).val() || null;
 
         user.Configuration.BlockedMediaFolders = $('.chkMediaFolder:not(:checked)', page).map(function () {
+
+            return this.getAttribute('data-foldername');
+
+        }).get();
+
+        user.Configuration.BlockedChannels = $('.chkChannel:not(:checked)', page).map(function () {
 
             return this.getAttribute('data-foldername');
 
@@ -207,9 +246,11 @@
 
         var promise4 = $.getJSON(ApiClient.getUrl("Library/MediaFolders"));
 
-        $.when(promise1, promise2, promise3, promise4).done(function (response1, response2, response3, response4) {
+        var promise5 = $.getJSON(ApiClient.getUrl("Channels"));
 
-            loadUser(page, response1[0] || response1, response2[0], response3[0], response4[0].Items);
+        $.when(promise1, promise2, promise3, promise4, promise5).done(function (response1, response2, response3, response4, response5) {
+
+            loadUser(page, response1[0] || response1, response2[0], response3[0], response4[0].Items, response5[0].Items);
 
         });
     });

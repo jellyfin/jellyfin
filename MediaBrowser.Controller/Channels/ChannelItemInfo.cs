@@ -18,6 +18,7 @@ namespace MediaBrowser.Controller.Channels
         public string Overview { get; set; }
 
         public List<string> Genres { get; set; }
+        public List<string> Studios { get; set; }
 
         public List<PersonInfo> People { get; set; }
         
@@ -38,9 +39,15 @@ namespace MediaBrowser.Controller.Channels
         public DateTime? PremiereDate { get; set; }
         public int? ProductionYear { get; set; }
 
+        public DateTime? DateCreated { get; set; }
+        
+        public List<ChannelMediaInfo> MediaSources { get; set; }
+        
         public ChannelItemInfo()
         {
+            MediaSources = new List<ChannelMediaInfo>();
             Genres = new List<string>();
+            Studios = new List<string>();
             People = new List<PersonInfo>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
@@ -70,6 +77,20 @@ namespace MediaBrowser.Controller.Channels
 
         Movie = 3,
 
-        Episode = 4
+        Episode = 4,
+
+        Song = 5
+    }
+
+    public class ChannelMediaInfo
+    {
+        public string Path { get; set; }
+
+        public Dictionary<string, string> RequiredHttpHeaders { get; set; }
+
+        public ChannelMediaInfo()
+        {
+            RequiredHttpHeaders = new Dictionary<string, string>();
+        }
     }
 }

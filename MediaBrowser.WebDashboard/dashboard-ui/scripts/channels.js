@@ -25,10 +25,11 @@
 
             html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "square",
+                shape: "backdrop",
                 context: 'channels',
                 showTitle: true,
-                centerText: true
+                centerText: true,
+                preferThumb: true
             });
 
             $('#items', page).html(html).trigger('create').createPosterItemMenus();

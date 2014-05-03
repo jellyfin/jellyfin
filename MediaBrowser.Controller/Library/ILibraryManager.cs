@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Library
 {

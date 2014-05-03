@@ -457,7 +457,7 @@
                 AdjacentTo: item.Id
             });
         }
-        else if (item.Type == "Episode") {
+        else if (item.Type == "Episode" && item.SeasonId) {
 
             // Use dedicated episodes endpoint
             promise = ApiClient.getEpisodes(item.SeriesId, {

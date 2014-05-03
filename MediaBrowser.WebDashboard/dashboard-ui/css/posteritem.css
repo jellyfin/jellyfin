@@ -55,10 +55,6 @@
     background-color: #999;
 }
 
-.borderlessPosterItem .posterItemImage {
-    border-color: transparent;
-}
-
 .posterItemStoreText {
     font-weight: normal;
     text-overflow: ellipsis;

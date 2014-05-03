@@ -507,7 +507,7 @@ namespace MediaBrowser.ServerApplication
                 MediaEncoder);
             RegisterSingleInstance(EncodingManager);
 
-            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager);
+            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager, UserDataManager);
             RegisterSingleInstance(ChannelManager);
 
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
