@@ -1734,6 +1734,11 @@ namespace MediaBrowser.Api.Playback
                 AddTimeSeekResponseHeaders(state, responseHeaders);
             }
 
+            if (profile == null)
+            {
+                profile = DlnaManager.GetDefaultProfile();
+            }
+
             var audioCodec = state.Request.AudioCodec;
 
             if (state.VideoRequest == null)
