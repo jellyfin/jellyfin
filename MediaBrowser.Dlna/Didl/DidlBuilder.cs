@@ -414,11 +414,11 @@ namespace MediaBrowser.Dlna.Didl
                     {
                         classType = "object.container.album.musicAlbum";
                     }
-                    if (item is MusicArtist)
+                    else if (item is MusicArtist)
                     {
                         classType = "object.container.person.musicArtist";
                     }
-                    if (item is Series || item is Season || item is BoxSet || item is CollectionFolder)
+                    else if (item is Series || item is Season || item is BoxSet)
                     {
                         classType = "object.container.album.videoAlbum";
                     }                  

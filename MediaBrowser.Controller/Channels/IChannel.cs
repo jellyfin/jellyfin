@@ -61,6 +61,11 @@ namespace MediaBrowser.Controller.Channels
         IEnumerable<ImageType> GetSupportedChannelImages();
     }
 
+    public interface IChannelFactory
+    {
+        IEnumerable<IChannel> GetChannels();
+    }
+
     public class ChannelInfo
     {
         /// <summary>

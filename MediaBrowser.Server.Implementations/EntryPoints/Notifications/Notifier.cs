@@ -81,7 +81,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             notification.Variables["Version"] = e.Argument.versionStr;
             notification.Variables["ReleaseNotes"] = e.Argument.description;
-   
+
             await SendNotification(notification).ConfigureAwait(false);
         }
 
@@ -164,7 +164,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var item = e.MediaInfo;
 
-            if (e.Item !=null && e.Item.Parent == null)
+            if (e.Item != null && e.Item.Parent == null)
             {
                 // Don't report theme song or local trailer playback
                 // TODO: This will also cause movie specials to not be reported
@@ -185,7 +185,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             await SendNotification(notification).ConfigureAwait(false);
         }
-        
+
         private string GetPlaybackNotificationType(string mediaType)
         {
             if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
@@ -218,7 +218,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                 };
 
                 notification.Variables["Name"] = item.Name;
-                
+
                 await SendNotification(notification).ConfigureAwait(false);
             }
         }
@@ -260,7 +260,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         async void _installationManager_PluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
         {
             var type = NotificationType.PluginUninstalled.ToString();
-            
+
             var plugin = e.Argument;
 
             var notification = new NotificationRequest
@@ -270,7 +270,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             notification.Variables["Name"] = plugin.Name;
             notification.Variables["Version"] = plugin.Version.ToString();
-            
+
             await SendNotification(notification).ConfigureAwait(false);
         }
 

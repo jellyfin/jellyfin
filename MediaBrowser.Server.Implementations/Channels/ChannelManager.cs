@@ -23,6 +23,7 @@ namespace MediaBrowser.Server.Implementations.Channels
     public class ChannelManager : IChannelManager
     {
         private IChannel[] _channels;
+        private IChannelFactory[] _factories;
         private List<Channel> _channelEntities = new List<Channel>();
 
         private readonly IUserManager _userManager;
@@ -44,9 +45,29 @@ namespace MediaBrowser.Server.Implementations.Channels
             _userDataManager = userDataManager;
         }
 
-        public void AddParts(IEnumerable<IChannel> channels)
+        public void AddParts(IEnumerable<IChannel> channels, IEnumerable<IChannelFactory> factories)
         {
             _channels = channels.ToArray();
+            _factories = factories.ToArray();
+        }
+
+        private IEnumerable<IChannel> GetAllChannels()
+        {
+            return _factories
+                .SelectMany(i =>
+                {
+                    try
+                    {
+                        return i.GetChannels().ToList();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting channel list", ex);
+                        return new List<IChannel>();
+                    }
+                })
+                .Concat(_channels)
+                .OrderBy(i => i.Name);
         }
 
         public Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken)
@@ -82,7 +103,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var allChannelsList = _channels.ToList();
+            var allChannelsList = GetAllChannels().ToList();
 
             var list = new List<Channel>();
 
@@ -380,7 +401,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         internal IChannel GetChannelProvider(Channel channel)
         {
-            return _channels.First(i => string.Equals(i.Name, channel.OriginalChannelName, StringComparison.OrdinalIgnoreCase));
+            return GetAllChannels().First(i => string.Equals(i.Name, channel.OriginalChannelName, StringComparison.OrdinalIgnoreCase));
         }
 
         private IEnumerable<BaseItem> ApplyFilters(IEnumerable<BaseItem> items, IEnumerable<ItemFilter> filters, User user)

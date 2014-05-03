@@ -712,7 +712,7 @@ namespace MediaBrowser.ServerApplication
 
             SessionManager.AddParts(GetExports<ISessionControllerFactory>());
 
-            ChannelManager.AddParts(GetExports<IChannel>());
+            ChannelManager.AddParts(GetExports<IChannel>(), GetExports<IChannelFactory>());
 
             NotificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
         }
