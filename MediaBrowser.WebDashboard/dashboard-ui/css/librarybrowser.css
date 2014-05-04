@@ -32,8 +32,6 @@
 }
 
 .ehsContent {
-    max-width: 640px;
-    margin: 0 auto;
     padding: 0;
     border-spacing: 0;
     border-collapse: collapse;
@@ -57,7 +55,6 @@
 }
 
 .viewSettings {
-    text-align: center;
     margin: 0 0 .25em;
 }
 
@@ -332,7 +329,7 @@ a.itemTag:hover {
 }
 
 .lnkPreviousItem {
-    left: 5px;
+    left: 210px;
 }
 
 .lnkNextItem {
@@ -611,25 +608,7 @@ a.itemTag:hover {
     }
 }
 
-@media all and (min-width: 800px) {
-
-    .ehsContent {
-        max-width: 700px;
-    }
-}
-
-@media all and (min-width: 900px) {
-
-    .ehsContent {
-        max-width: 880px;
-    }
-}
-
 @media all and (min-width: 1000px) {
-
-    .ehsContent {
-        max-width: 880px;
-    }
 
     .detailPageContent {
         max-width: 900px;
@@ -642,23 +621,12 @@ a.itemTag:hover {
 
 @media all and (min-width: 1200px) {
 
-    .ehsContent {
-        max-width: 950px;
-    }
-
     .detailPageContent {
         max-width: 930px;
     }
 
     .primaryDetailPageContent {
         max-width: 850px;
-    }
-}
-
-@media all and (min-width: 1440px) {
-
-    .ehsContent {
-        max-width: 1240px;
     }
 }
 
@@ -795,10 +763,6 @@ a.itemTag:hover {
     .libraryTabs .ui-btn-inner {
         padding: .5em 15px!important;
     }
-}
-
-.itemsContainer {
-    text-align: center;
 }
 
 @media all and (min-width: 1200px) {

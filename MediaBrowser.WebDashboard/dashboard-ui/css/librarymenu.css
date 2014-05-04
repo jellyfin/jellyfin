@@ -122,6 +122,20 @@
     background-position: 8px center;
 }
 
+.musicvideosViewMenu {
+    background-image: url(images/items/folders/musicvideos.png);
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: 8px 8px;
+}
+
+.photosViewMenu {
+    background-image: url(images/items/folders/photos.png);
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: 8px 8px;
+}
+
 .collectionsViewMenu, .generalViewMenu, .homeVideosViewMenu {
     background-image: url(images/items/folders/homevideos.png);
     background-repeat: no-repeat;
@@ -155,7 +169,7 @@
 }
 
 .libraryViewNavInner {
-    text-align: center;
+    text-align: left;
     font-size: 14px;
     white-space: nowrap;
     padding: 0 0 0;
@@ -185,7 +199,7 @@
 .libraryViewNavLinkContent {
     border-bottom: 5px solid transparent;
     display: inline-block;
-    padding: 0 .9em 7px;
+    padding: 0 1em 7px;
     color: #ddd;
 }
 
@@ -200,7 +214,7 @@
         vertical-align: middle;
     }
 
-@media all and (min-width: 1280px) {
+@media all and (min-width: 1279px) {
 
     .libraryMenuButton {
         display: none;
@@ -212,11 +226,16 @@
         right: 0 !important;
     }
 
-    .libraryPage:not(.itemDetailPage) .libraryViewNav {
+    .libraryPage .libraryViewNav {
+        padding-left: 232px !important;
+    }
+
+    .viewSettings {
+        padding-left: .4em;
     }
 }
 
-@media all and (max-width: 1280px) {
+@media all and (max-width: 1278px) {
 
     .desktopHomeLink {
         display: none;
@@ -228,6 +247,14 @@
 
     .desktopLibraryMenu {
         display: none;
+    }
+
+    .viewSettings {
+        text-align: center;
+    }
+
+    .itemsContainer {
+        text-align: center;
     }
 }
 

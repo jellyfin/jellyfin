@@ -1,8 +1,6 @@
-﻿using System;
+﻿using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {

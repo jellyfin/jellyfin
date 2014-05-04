@@ -542,7 +542,7 @@ namespace MediaBrowser.Api.Playback
                 var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
 
                 return isH264Output ?
-                    string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):trunc(ow/a/2)*2{2}\"", yadifParam, maxWidthParam, assSubtitleParam, copyTsParam) :
+                    string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):trunc(ow/dar/2)*2{2}\"", yadifParam, maxWidthParam, assSubtitleParam, copyTsParam) :
                     string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):-1{2}\"", yadifParam, maxWidthParam, assSubtitleParam, copyTsParam);
             }
 

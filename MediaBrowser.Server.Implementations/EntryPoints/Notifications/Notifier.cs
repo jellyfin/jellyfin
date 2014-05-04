@@ -164,6 +164,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var item = e.MediaInfo;
 
+            if (item == null)
+            {
+                _logger.Warn("PlaybackStart reported with null media info.");
+                return;
+            }
+
             if (e.Item != null && e.Item.Parent == null)
             {
                 // Don't report theme song or local trailer playback

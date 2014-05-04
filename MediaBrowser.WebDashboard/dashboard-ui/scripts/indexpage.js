@@ -61,7 +61,7 @@
 
             SortBy: "DateCreated",
             SortOrder: "Descending",
-            Limit: screenWidth >= 1920 ? 12 : (screenWidth >= 1440 ? 12 : (screenWidth >= 800 ? 12 : 12)),
+            Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : (screenWidth >= 800 ? 8 : 8)),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed,IsNotFolder",

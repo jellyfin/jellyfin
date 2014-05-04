@@ -69,8 +69,8 @@ body {
         text-decoration: underline;
     }
 
-h1 {
-    font-weight: 100;
+h1, h1 a {
+    font-weight: 100!important;
     font-size: 28px;
     font-family: Roboto;
 }
@@ -85,7 +85,6 @@ h2 {
 }
 
 h1 a {
-    font-weight: 300!important;
     text-decoration: none;
 }
 
