@@ -11,6 +11,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -33,8 +34,9 @@ namespace MediaBrowser.Server.Implementations.Channels
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly IJsonSerializer _jsonSerializer;
 
-        public ChannelManager(IUserManager userManager, IDtoService dtoService, ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IUserDataManager userDataManager)
+        public ChannelManager(IUserManager userManager, IDtoService dtoService, ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IUserDataManager userDataManager, IJsonSerializer jsonSerializer)
         {
             _userManager = userManager;
             _dtoService = dtoService;
@@ -43,6 +45,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             _config = config;
             _fileSystem = fileSystem;
             _userDataManager = userDataManager;
+            _jsonSerializer = jsonSerializer;
         }
 
         public void AddParts(IEnumerable<IChannel> channels, IEnumerable<IChannelFactory> factories)
@@ -227,19 +230,90 @@ namespace MediaBrowser.Server.Implementations.Channels
             return await GetReturnItems(items, user, query, cancellationToken).ConfigureAwait(false);
         }
 
+        private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
         private async Task<IEnumerable<ChannelItemInfo>> GetChannelItems(IChannel channel, User user, string categoryId, CancellationToken cancellationToken)
         {
-            // TODO: Put some caching in here
+            var cachePath = GetChannelDataCachePath(channel, user, categoryId);
 
-            var query = new InternalChannelItemQuery
+            try
             {
-                User = user,
-                CategoryId = categoryId
-            };
+                var channelItemResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
 
-            var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
+                if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(channelItemResult.CacheLength) > DateTime.UtcNow)
+                {
+                    return channelItemResult.Items;
+                }
+            }
+            catch (FileNotFoundException)
+            {
 
-            return result.Items;
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+
+            await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                try
+                {
+                    var channelItemResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+
+                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(channelItemResult.CacheLength) > DateTime.UtcNow)
+                    {
+                        return channelItemResult.Items;
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+
+                }
+                catch (DirectoryNotFoundException)
+                {
+
+                }
+
+                var query = new InternalChannelItemQuery
+                {
+                    User = user,
+                    CategoryId = categoryId
+                };
+
+                var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
+
+                CacheResponse(result, cachePath);
+
+                return result.Items;
+            }
+            finally
+            {
+                _resourcePool.Release();
+            }
+        }
+
+        private void CacheResponse(ChannelItemResult result, string path)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                _jsonSerializer.SerializeToFile(result, path);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error writing to channel cache file: {0}", ex, path);
+            }
+        }
+
+        private string GetChannelDataCachePath(IChannel channel, User user, string categoryId)
+        {
+            var channelId = GetInternalChannelId(channel.Name).ToString("N");
+
+            var categoryKey = string.IsNullOrWhiteSpace(categoryId) ? "root" : categoryId.GetMD5().ToString("N");
+
+            return Path.Combine(_config.ApplicationPaths.CachePath, channelId, categoryKey, user.Id.ToString("N") + ".json");
         }
 
         private async Task<QueryResult<BaseItemDto>> GetReturnItems(IEnumerable<ChannelItemInfo> items, User user, ChannelItemQuery query, CancellationToken cancellationToken)
