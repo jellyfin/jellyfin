@@ -389,7 +389,7 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task ExecuteRemoteProviders(TItemType item, TItemType temp, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, RefreshResult refreshResult, CancellationToken cancellationToken)
         {
-            TIdType id = null;
+            TIdType id = await CreateInitialLookupInfo(item, cancellationToken).ConfigureAwait(false);
 
             var unidentifiedCount = 0;
             var identifiedCount = 0;
@@ -399,11 +399,7 @@ namespace MediaBrowser.Providers.Manager
                 var providerName = provider.GetType().Name;
                 Logger.Debug("Running {0} for {1}", providerName, item.Path ?? item.Name);
 
-                if (id == null)
-                {
-                    id = item.GetLookupInfo();
-                }
-                else
+                if (id != null)
                 {
                     MergeNewData(temp, id);
                 }
@@ -446,6 +442,19 @@ namespace MediaBrowser.Providers.Manager
                 item.IsUnidentified = isUnidentified;
                 refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
             }
+        }
+
+        private async Task<TIdType> CreateInitialLookupInfo(TItemType item, CancellationToken cancellationToken)
+        {
+            var info = item.GetLookupInfo();
+            
+            var hasIdentity = info as IHasIdentities<IItemIdentity>;
+            if (hasIdentity != null)
+            {
+                await hasIdentity.FindIdentities(ProviderManager, cancellationToken).ConfigureAwait(false);
+            }
+
+            return info;
         }
 
         private void MergeNewData(TItemType source, TIdType lookupInfo)
