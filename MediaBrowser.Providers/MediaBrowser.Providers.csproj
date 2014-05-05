@@ -95,6 +95,7 @@
     <Compile Include="LiveTv\ProgramMetadataService.cs" />
     <Compile Include="LiveTv\VideoRecordingService.cs" />
     <Compile Include="Manager\ImageSaver.cs" />
+    <Compile Include="Manager\ItemIdentifier.cs" />
     <Compile Include="Manager\ItemImageProvider.cs" />
     <Compile Include="Manager\ProviderManager.cs" />
     <Compile Include="Manager\MetadataService.cs" />
