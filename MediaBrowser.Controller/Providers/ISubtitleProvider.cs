@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Model.Entities;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,7 +43,7 @@ namespace MediaBrowser.Controller.Providers
         public Stream Stream { get; set; }
     }
 
-    public class SubtitleRequest
+    public class SubtitleRequest : IHasProviderIds
     {
         public string Language { get; set; }
 
@@ -51,7 +53,14 @@ namespace MediaBrowser.Controller.Providers
         public string SeriesName { get; set; }
         public string Name { get; set; }
         public int? IndexNumber { get; set; }
+        public int? IndexNumberEnd { get; set; }
         public int? ParentIndexNumber { get; set; }
-        public long ImdbId { get; set; }
+        public int? ProductionYear { get; set; }
+        public Dictionary<string, string> ProviderIds { get; set; }
+
+        public SubtitleRequest()
+        {
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
     }
 }

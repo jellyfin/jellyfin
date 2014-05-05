@@ -356,8 +356,6 @@ namespace MediaBrowser.Providers.Movies
                     await Task.Delay(Convert.ToInt32(diff), cancellationToken).ConfigureAwait(false);
                 }
 
-                _lastRequestDate = DateTime.Now;
-
                 return await _httpClient.Get(options).ConfigureAwait(false);
             }
             finally
