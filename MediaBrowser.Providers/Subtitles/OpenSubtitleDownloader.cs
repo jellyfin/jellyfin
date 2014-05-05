@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using OpenSubtitlesHandler;
@@ -37,13 +38,23 @@ namespace MediaBrowser.Providers.Subtitles
 
         public Task<SubtitleResponse> GetSubtitles(SubtitleRequest request, CancellationToken cancellationToken)
         {
-            return GetMediaSubtitleSubtitles(request, cancellationToken);
+            return GetSubtitlesInternal(request, cancellationToken);
         }
 
-        public async Task<SubtitleResponse> GetMediaSubtitleSubtitles(SubtitleRequest request, CancellationToken cancellationToken)
+        private async Task<SubtitleResponse> GetSubtitlesInternal(SubtitleRequest request, 
+            CancellationToken cancellationToken)
         {
             var response = new SubtitleResponse();
 
+            var imdbIdText = request.GetProviderId(MetadataProviders.Imdb);
+            long imdbId;
+
+            if (string.IsNullOrWhiteSpace(imdbIdText) ||
+                long.TryParse(imdbIdText.TrimStart('t'), NumberStyles.Any, _usCulture, out imdbId))
+            {
+                return response;
+            }
+            
             switch (request.ContentType)
             {
                 case SubtitleMediaType.Episode:
@@ -102,7 +113,7 @@ namespace MediaBrowser.Providers.Subtitles
                 x =>
                     request.ContentType == SubtitleMediaType.Episode
                         ? int.Parse(x.SeriesSeason) == request.ParentIndexNumber && int.Parse(x.SeriesEpisode) == request.IndexNumber
-                        : long.Parse(x.IDMovieImdb) == request.ImdbId;
+                        : long.Parse(x.IDMovieImdb) == imdbId;
 
             var results = ((MethodResponseSubtitleSearch)result).Results;
             var bestResult = results.Where(x => x.SubBad == "0" && mediaFilter(x))
