@@ -37,25 +37,31 @@ namespace MediaBrowser.Providers.Subtitles
 
         public Task<SubtitleResponse> GetSubtitles(SubtitleRequest request, CancellationToken cancellationToken)
         {
-            return request.ContentType == SubtitleMediaType.Episode
-                ? GetEpisodeSubtitles(request, cancellationToken)
-                : GetMovieSubtitles(request, cancellationToken);
+            return GetMediaSubtitleSubtitles(request, cancellationToken);
         }
 
-        public async Task<SubtitleResponse> GetMovieSubtitles(SubtitleRequest request, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<SubtitleResponse> GetEpisodeSubtitles(SubtitleRequest request, CancellationToken cancellationToken)
+        public async Task<SubtitleResponse> GetMediaSubtitleSubtitles(SubtitleRequest request, CancellationToken cancellationToken)
         {
             var response = new SubtitleResponse();
 
-            if (!request.IndexNumber.HasValue || !request.ParentIndexNumber.HasValue)
+            switch (request.ContentType)
             {
-                _logger.Debug("Information Missing");
-                return response;
+                case SubtitleMediaType.Episode:
+                    if (!request.IndexNumber.HasValue || !request.ParentIndexNumber.HasValue || string.IsNullOrEmpty(request.SeriesName))
+                    {
+                        _logger.Debug("Information Missing");
+                        return response;
+                    }
+                    break;
+                case SubtitleMediaType.Movie:
+                    if (string.IsNullOrEmpty(request.Name))
+                    {
+                        _logger.Debug("Information Missing");
+                        return response;
+                    }
+                    break;
             }
+
             if (string.IsNullOrEmpty(request.MediaPath))
             {
                 _logger.Debug("Path Missing");
@@ -76,10 +82,13 @@ namespace MediaBrowser.Providers.Subtitles
             var fileInfo = new FileInfo(request.MediaPath);
             var movieByteSize = fileInfo.Length;
 
+            var subtitleSearchParameters = request.ContentType == SubtitleMediaType.Episode
+                ? new SubtitleSearchParameters(subLanguageId, request.SeriesName, request.ParentIndexNumber.Value.ToString(_usCulture), request.IndexNumber.Value.ToString(_usCulture))
+                : new SubtitleSearchParameters(subLanguageId, request.Name);
+
             var parms = new List<SubtitleSearchParameters> {
                                                                new SubtitleSearchParameters(subLanguageId, hash, movieByteSize),
-                                                               new SubtitleSearchParameters(subLanguageId, request.SeriesName, request.ParentIndexNumber.Value.ToString(_usCulture), request.IndexNumber.Value.ToString(_usCulture)),
-
+                                                               subtitleSearchParameters
                                                            };
 
             var result = OpenSubtitles.SearchSubtitles(parms.ToArray());
@@ -89,8 +98,14 @@ namespace MediaBrowser.Providers.Subtitles
                 return null;
             }
 
+            Predicate<SubtitleSearchResult> mediaFilter =
+                x =>
+                    request.ContentType == SubtitleMediaType.Episode
+                        ? int.Parse(x.SeriesSeason) == request.ParentIndexNumber && int.Parse(x.SeriesEpisode) == request.IndexNumber
+                        : long.Parse(x.IDMovieImdb) == request.ImdbId;
+
             var results = ((MethodResponseSubtitleSearch)result).Results;
-            var bestResult = results.Where(x => x.SubBad == "0" && int.Parse(x.SeriesSeason) == request.ParentIndexNumber && int.Parse(x.SeriesEpisode) == request.IndexNumber)
+            var bestResult = results.Where(x => x.SubBad == "0" && mediaFilter(x))
                     .OrderBy(x => x.MovieHash == hash)
                     .ThenBy(x => Math.Abs(long.Parse(x.MovieByteSize) - movieByteSize))
                     .ThenByDescending(x => int.Parse(x.SubDownloadsCnt))
@@ -124,7 +139,7 @@ namespace MediaBrowser.Providers.Subtitles
             var data = Convert.FromBase64String(res.Data);
 
             response.HasContent = true;
-            response.Format = SubtitleFormat.SRT;
+            response.Format = subtitle.SubFormat.ToUpper();
             response.Stream = new MemoryStream(Utilities.Decompress(new MemoryStream(data)));
             return response;
         }
