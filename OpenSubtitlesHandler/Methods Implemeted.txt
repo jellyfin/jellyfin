@@ -1,0 +1,39 @@
+﻿List of available OpenSubtitles.org server XML-RPC methods.
+==========================================================
+Legends:
+* OK: this method is fully implemented, tested and works fine.
+* TODO: this method is in the plan to be added.
+* NOT TESTED: this method added and expected to work fine but never tested. 
+* NOT WORK (x): this method added but not work. x= Description of the error.
+
+--------------------------------------------
+Method name              | Status
+-------------------------|------------------
+LogIn                    | OK
+LogOut                   | OK
+NoOperation              | OK
+SearchSubtitles          | OK
+DownloadSubtitles        | OK
+SearchToMail             | OK
+TryUploadSubtitles       | OK
+UploadSubtitles          | OK
+SearchMoviesOnIMDB       | OK
+GetIMDBMovieDetails      | OK
+InsertMovie              | OK
+InsertMovieHash          | OK
+ServerInfo               | OK
+ReportWrongMovieHash     | OK
+ReportWrongImdbMovie     | OK
+SubtitlesVote            | OK
+AddComment               | OK
+AddRequest               | OK
+GetComments              | OK
+GetSubLanguages          | OK
+DetectLanguage           | OK
+GetAvailableTranslations | OK
+GetTranslation           | NOT WORK (Returns status of error 410 'Other or unknown error')
+AutoUpdate               | NOT WORK (Returns status: 'parse error. not well formed')
+CheckMovieHash           | OK
+CheckMovieHash2          | OK
+CheckSubHash             | OK
+--------------------------------------------

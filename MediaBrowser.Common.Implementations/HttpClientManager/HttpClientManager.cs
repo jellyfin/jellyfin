@@ -230,10 +230,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             var httpWebRequest = GetRequest(options, httpMethod, options.EnableHttpCompression);
 
-            if (!string.IsNullOrEmpty(options.RequestContent) || string.Equals(httpMethod, "post", StringComparison.OrdinalIgnoreCase))
+            if (options.RequestContentBytes != null ||
+                !string.IsNullOrEmpty(options.RequestContent) ||
+                string.Equals(httpMethod, "post", StringComparison.OrdinalIgnoreCase))
             {
-                var content = options.RequestContent ?? string.Empty;
-                var bytes = Encoding.UTF8.GetBytes(content);
+                var bytes = options.RequestContentBytes ?? Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
 
                 httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
                 httpWebRequest.ContentLength = bytes.Length;

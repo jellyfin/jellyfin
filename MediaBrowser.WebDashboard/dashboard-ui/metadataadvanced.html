@@ -36,23 +36,31 @@
                             </div>
                         </li>
                     </ul>
-                    <h2>${HeaderAutomaticUpdates}</h2>
+
+                    <div data-role="collapsible">
+                        <h2>${HeaderAutomaticUpdates}</h2>
+                        <div>
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <input type="checkbox" id="chkEnableFanartUpdates" name="chkEnableFanartUpdates" data-mini="true" />
+                                    <label for="chkEnableFanartUpdates">${LabelAutomaticUpdatesFanart}</label>
+                                    <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
+                                </li>
+                                <li>
+                                    <input type="checkbox" id="chkEnableTmdbPersonUpdates" name="chkEnableTmdbPersonUpdates" data-mini="true" />
+                                    <label for="chkEnableTmdbPersonUpdates">${LabelAutomaticUpdatesTmdb}</label>
+                                    <div class="fieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
+                                </li>
+                                <li>
+                                    <input type="checkbox" id="chkEnableTvdbUpdates" name="chkEnableTvdbUpdates" data-mini="true" />
+                                    <label for="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</label>
+                                    <div class="fieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <br />
                     <ul data-role="listview" class="ulForm">
-                        <li>
-                            <input type="checkbox" id="chkEnableFanartUpdates" name="chkEnableFanartUpdates" data-mini="true" />
-                            <label for="chkEnableFanartUpdates">${LabelAutomaticUpdatesFanart}</label>
-                            <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
-                        </li>
-                        <li>
-                            <input type="checkbox" id="chkEnableTmdbPersonUpdates" name="chkEnableTmdbPersonUpdates" data-mini="true" />
-                            <label for="chkEnableTmdbPersonUpdates">${LabelAutomaticUpdatesTmdb}</label>
-                            <div class="fieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
-                        </li>
-                        <li>
-                            <input type="checkbox" id="chkEnableTvdbUpdates" name="chkEnableTvdbUpdates" data-mini="true" />
-                            <label for="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</label>
-                            <div class="fieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
-                        </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
                                 ${ButtonSave}

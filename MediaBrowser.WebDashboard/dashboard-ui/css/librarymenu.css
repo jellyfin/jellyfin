@@ -15,6 +15,7 @@
     width: 200px;
     min-height: 100px;
     border-bottom-right-radius: 5px;
+    padding-bottom: 10px;
 }
 
 .itemDetailPage .desktopLibraryMenu {

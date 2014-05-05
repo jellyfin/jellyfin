@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Dlna", "MediaB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.MediaEncoding", "MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj", "{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSubtitlesHandler", "OpenSubtitlesHandler\OpenSubtitlesHandler.csproj", "{4A4402D4-E910-443B-B8FC-2C18286A2CA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -263,6 +265,20 @@ Global
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.Release|Win32.ActiveCfg = Release|Any CPU
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.Release|x64.ActiveCfg = Release|Any CPU
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.Release|x86.ActiveCfg = Release|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|Win32.ActiveCfg = Release|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|x64.ActiveCfg = Release|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
