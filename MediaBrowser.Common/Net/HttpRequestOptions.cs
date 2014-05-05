@@ -69,6 +69,7 @@ namespace MediaBrowser.Common.Net
         public string RequestContentType { get; set; }
 
         public string RequestContent { get; set; }
+        public byte[] RequestContentBytes { get; set; }
 
         public bool BufferContent { get; set; }
 
