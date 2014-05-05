@@ -215,6 +215,9 @@
     <Compile Include="..\MediaBrowser.Model\Entities\ChapterInfo.cs">
       <Link>Entities\ChapterInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\CollectionType.cs">
+      <Link>Entities\CollectionType.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\DisplayPreferences.cs">
       <Link>Entities\DisplayPreferences.cs</Link>
     </Compile>
@@ -349,6 +352,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\BlurayDiscInfo.cs">
       <Link>MediaInfo\BlurayDiscInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\Constants.cs">
+      <Link>MediaInfo\Constants.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\IBlurayExaminer.cs">
       <Link>MediaInfo\IBlurayExaminer.cs</Link>
