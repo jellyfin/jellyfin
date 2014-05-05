@@ -49,7 +49,9 @@ namespace MediaBrowser.Controller.Providers
 
         public string MediaPath { get; set; }
         public string SeriesName { get; set; }
+        public string Name { get; set; }
         public int? IndexNumber { get; set; }
         public int? ParentIndexNumber { get; set; }
+        public long ImdbId { get; set; }
     }
 }
