@@ -30,7 +30,7 @@
             SortOrder: "Descending",
             MediaTypes: "Video",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 4 : (screenWidth >= 1440 ? 4 : 3),
+            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1440 ? 4 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             CollapseBoxSetItems: false,
