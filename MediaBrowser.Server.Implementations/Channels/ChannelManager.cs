@@ -220,14 +220,28 @@ namespace MediaBrowser.Server.Implementations.Channels
                 ? null
                 : _userManager.GetUserById(new Guid(query.UserId));
 
-            var id = new Guid(query.ChannelId);
-            var channel = _channelEntities.First(i => i.Id == id);
-            var channelProvider = GetChannelProvider(channel);
+            var queryChannelId = query.ChannelId;
+            var channels = string.IsNullOrWhiteSpace(queryChannelId)
+                ? _channelEntities
+                : _channelEntities.Where(i => i.Id == new Guid(queryChannelId));
 
-            var items = await GetChannelItems(channelProvider, user, query.CategoryId, cancellationToken)
-                        .ConfigureAwait(false);
+            var itemTasks = channels.Select(async channel =>
+            {
+                var channelProvider = GetChannelProvider(channel);
 
-            return await GetReturnItems(items, user, query, cancellationToken).ConfigureAwait(false);
+                var items = await GetChannelItems(channelProvider, user, query.CategoryId, cancellationToken)
+                            .ConfigureAwait(false);
+
+                var channelId = channel.Id.ToString("N");
+
+                var tasks = items.Select(i => GetChannelItemEntity(i, channelId, cancellationToken));
+
+                return await Task.WhenAll(tasks).ConfigureAwait(false);
+            });
+
+            var results = await Task.WhenAll(itemTasks).ConfigureAwait(false);
+
+            return await GetReturnItems(results.SelectMany(i => i), user, query, cancellationToken).ConfigureAwait(false);
         }
 
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
@@ -316,22 +330,13 @@ namespace MediaBrowser.Server.Implementations.Channels
             return Path.Combine(_config.ApplicationPaths.CachePath, channelId, categoryKey, user.Id.ToString("N") + ".json");
         }
 
-        private async Task<QueryResult<BaseItemDto>> GetReturnItems(IEnumerable<ChannelItemInfo> items, User user, ChannelItemQuery query, CancellationToken cancellationToken)
+        private async Task<QueryResult<BaseItemDto>> GetReturnItems(IEnumerable<BaseItem> items, User user, ChannelItemQuery query, CancellationToken cancellationToken)
         {
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            items = ApplyFilters(items, query.Filters, user);
 
-            var tasks = items.Select(i => GetChannelItemEntity(i, cancellationToken));
+            items = _libraryManager.Sort(items, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending);
 
-            IEnumerable<BaseItem> entities = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            entities = ApplyFilters(entities, query.Filters, user);
-
-            entities = _libraryManager.Sort(entities, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending);
-
-            var all = entities.ToList();
+            var all = items.ToList();
             var totalCount = all.Count;
 
             if (query.StartIndex.HasValue)
@@ -344,6 +349,11 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
 
             await RefreshIfNeeded(all, cancellationToken).ConfigureAwait(false);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields))
+                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+                    .ToList();
 
             var returnItemArray = all.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToArray();
@@ -358,10 +368,10 @@ namespace MediaBrowser.Server.Implementations.Channels
         private string GetIdToHash(string externalId)
         {
             // Increment this as needed to force new downloads
-            return externalId + "3";
+            return externalId + "4";
         }
 
-        private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, CancellationToken cancellationToken)
+        private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, string internalChannnelId, CancellationToken cancellationToken)
         {
             BaseItem item;
             Guid id;
@@ -434,6 +444,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             channelItem.OriginalImageUrl = info.ImageUrl;
             channelItem.ExternalId = info.Id;
+            channelItem.ChannelId = internalChannnelId;
             channelItem.ChannelItemType = info.Type;
 
             var channelMediaItem = item as IChannelMediaItem;

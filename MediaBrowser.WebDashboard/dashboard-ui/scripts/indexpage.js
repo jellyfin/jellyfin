@@ -16,10 +16,9 @@
 
             $('.myLibrary', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                preferBackdrop: true,
                 shape: 'backdrop',
-                overlayText: true,
-                showTitle: true
+                showTitle: true,
+                centerText: true
 
             })).createPosterItemMenus();
 

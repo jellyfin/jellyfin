@@ -110,6 +110,7 @@
     <Compile Include="LiveTv\SeriesTimerInfoDto.cs" />
     <Compile Include="LiveTv\TimerInfoDto.cs" />
     <Compile Include="Logging\NullLogger.cs" />
+    <Compile Include="MediaInfo\Constants.cs" />
     <Compile Include="News\NewsItem.cs" />
     <Compile Include="Providers\ExternalIdInfo.cs" />
     <Compile Include="Providers\ImageProviderInfo.cs" />

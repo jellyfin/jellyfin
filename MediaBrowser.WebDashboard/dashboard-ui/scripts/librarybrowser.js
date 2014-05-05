@@ -1,11 +1,11 @@
 ﻿var LibraryBrowser = (function (window, document, $, screen, localStorage) {
 
-    $(function() {
+    $(function () {
         $("body").on("create", function () {
             $(".lazy").unveil(200);
         });
     });
-    
+
     var defaultBackground = "#333";
 
     return {
@@ -346,7 +346,7 @@
             if (!item) {
                 throw new Error('item cannot be null');
             }
-            
+
             if (item.url) {
                 return item.url;
             }
@@ -361,6 +361,9 @@
             }
             if (item.Type == "Channel") {
                 return "channelitems.html?id=" + id;
+            }
+            if (item.Type == "ChannelCategoryItem") {
+                return "channelitems.html?id=" + item.ChannelId + '&categoryId=' + item.Id;
             }
             if (item.Type == "Program") {
                 return "livetvprogram.html?id=" + id;
@@ -440,9 +443,11 @@
 
             var html = "";
 
-            var primaryImageAspectRatio = options.shape == 'auto' ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
+            var primaryImageAspectRatio;
 
             if (options.shape == 'auto') {
+
+                primaryImageAspectRatio = options.shape == 'auto' ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
 
                 if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3) {
                     options.shape = 'backdrop';
