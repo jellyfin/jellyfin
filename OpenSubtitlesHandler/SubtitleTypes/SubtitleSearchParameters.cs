@@ -42,6 +42,17 @@ namespace OpenSubtitlesHandler
             this._query = "";
         }
 
+        public SubtitleSearchParameters(string subLanguageId, string query)
+        {
+            this.subLanguageId = subLanguageId;
+            this.movieHash = "";
+            this.movieByteSize = 0;
+            this.imdbid = "";
+            this._episode = "";
+            this._season = "";
+            this._query = query;
+        }
+
         public SubtitleSearchParameters(string subLanguageId, string query, string season, string episode)
         {
             this.subLanguageId = subLanguageId;
