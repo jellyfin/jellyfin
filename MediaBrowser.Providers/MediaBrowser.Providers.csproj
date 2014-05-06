@@ -95,7 +95,6 @@
     <Compile Include="LiveTv\ProgramMetadataService.cs" />
     <Compile Include="LiveTv\VideoRecordingService.cs" />
     <Compile Include="Manager\ImageSaver.cs" />
-    <Compile Include="Manager\ItemIdentifier.cs" />
     <Compile Include="Manager\ItemImageProvider.cs" />
     <Compile Include="Manager\ProviderManager.cs" />
     <Compile Include="Manager\MetadataService.cs" />
@@ -204,6 +203,7 @@
     <Compile Include="TV\SeriesMetadataService.cs" />
     <Compile Include="TV\TvdbEpisodeImageProvider.cs" />
     <Compile Include="People\TvdbPersonImageProvider.cs" />
+    <Compile Include="TV\TvdbSeasonIdentityProvider.cs" />
     <Compile Include="TV\TvdbSeasonImageProvider.cs" />
     <Compile Include="TV\TvdbSeriesImageProvider.cs" />
     <Compile Include="TV\SeasonMetadataService.cs" />

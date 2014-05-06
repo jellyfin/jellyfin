@@ -194,6 +194,7 @@
     <Compile Include="Security\IEncryptionManager.cs" />
     <Compile Include="Subtitles\ISubtitleManager.cs" />
     <Compile Include="Subtitles\ISubtitleProvider.cs" />
+    <Compile Include="Providers\ItemIdentifier.cs" />
     <Compile Include="Providers\ItemIdentities.cs" />
     <Compile Include="Providers\ItemLookupInfo.cs" />
     <Compile Include="Providers\MetadataRefreshOptions.cs" />

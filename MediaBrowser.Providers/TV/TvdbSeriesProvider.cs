@@ -23,7 +23,7 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
+    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IItemIdentityProvider<SeriesInfo, SeriesIdentity>, IHasOrder
     {
         private const string TvdbSeriesOffset = "TvdbSeriesOffset";
         private const string TvdbSeriesOffsetFormat = "{0}-{1}";
@@ -72,7 +72,15 @@ namespace MediaBrowser.Providers.TV
 
             if (string.IsNullOrEmpty(seriesId))
             {
-                seriesId = await FindSeries(itemId.Name, cancellationToken).ConfigureAwait(false);
+                seriesId = itemId.Identities
+                                 .Where(id => id.Type == MetadataProviders.Tvdb.ToString())
+                                 .Select(id => id.Id)
+                                 .FirstOrDefault();
+
+                if (string.IsNullOrEmpty(seriesId))
+                {
+                    seriesId = await FindSeries(itemId.Name, cancellationToken).ConfigureAwait(false);
+                }
 
                 if (string.IsNullOrEmpty(seriesId))
                 {
@@ -1119,6 +1127,20 @@ namespace MediaBrowser.Providers.TV
         public string Name
         {
             get { return "TheTVDB"; }
+        }
+
+        public async Task<SeriesIdentity> FindIdentity(SeriesInfo info)
+        {
+            string tvdbId;
+            if (!info.ProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out tvdbId))
+                tvdbId = await FindSeries(info.Name, CancellationToken.None);
+
+            if (!string.IsNullOrEmpty(tvdbId))
+            {
+                return new SeriesIdentity {Type = MetadataProviders.Tvdb.ToString(), Id = tvdbId};
+            }
+
+            return null;
         }
 
         public int Order
