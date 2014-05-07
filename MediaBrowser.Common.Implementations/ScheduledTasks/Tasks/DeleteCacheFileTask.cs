@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         private readonly ILogger _logger;
 
         private readonly IFileSystem _fileSystem;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteCacheFileTask" /> class.
         /// </summary>
@@ -74,9 +74,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
             progress.Report(90);
 
+            minDateModified = DateTime.UtcNow.AddDays(-3);
+
             try
             {
-                DeleteCacheFilesFromDirectory(cancellationToken, ApplicationPaths.TempDirectory, DateTime.MaxValue, progress);
+                DeleteCacheFilesFromDirectory(cancellationToken, ApplicationPaths.TempDirectory, minDateModified, progress);
             }
             catch (DirectoryNotFoundException)
             {

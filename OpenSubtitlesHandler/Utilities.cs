@@ -24,6 +24,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 
@@ -161,7 +162,7 @@ namespace OpenSubtitlesHandler
         /// <returns>Response of the server or stream of error message as string started with 'ERROR:' keyword.</returns>
         public static Stream SendRequest(byte[] request, string userAgent)
         {
-            return SendRequestAsync(request, userAgent).Result;
+            return SendRequestAsync(request, userAgent, CancellationToken.None).Result;
 
             //HttpWebRequest req = (HttpWebRequest)WebRequest.Create(XML_RPC_SERVER);
             //req.ContentType = "text/xml";
@@ -190,15 +191,26 @@ namespace OpenSubtitlesHandler
             //}
         }
 
-        public static async Task<Stream> SendRequestAsync(byte[] request, string userAgent)
+        public static async Task<Stream> SendRequestAsync(byte[] request, string userAgent, CancellationToken cancellationToken)
         {
             var options = new HttpRequestOptions
             {
                 RequestContentBytes = request,
                 RequestContentType = "text/xml",
-                UserAgent = "xmlrpc-epi-php/0.2 (PHP)",
-                Url = XML_RPC_SERVER
+                UserAgent = userAgent,
+                Host = "api.opensubtitles.org:80",
+                Url = XML_RPC_SERVER,
+
+                // Response parsing will fail with this enabled
+                EnableHttpCompression = false,
+
+                CancellationToken = cancellationToken
             };
+
+            if (string.IsNullOrEmpty(options.UserAgent))
+            {
+                options.UserAgent = "xmlrpc-epi-php/0.2 (PHP)";
+            }
 
             var result = await HttpClient.Post(options).ConfigureAwait(false);
 

@@ -31,11 +31,11 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.Themes;
 using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.Eventing;
 using MediaBrowser.Dlna.Main;
-using MediaBrowser.Dlna.PlayTo;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
@@ -44,6 +44,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Manager;
+using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.Channels;
 using MediaBrowser.Server.Implementations.Collections;
@@ -193,6 +194,7 @@ namespace MediaBrowser.ServerApplication
         private IProviderRepository ProviderRepository { get; set; }
 
         private INotificationManager NotificationManager { get; set; }
+        private ISubtitleManager SubtitleManager { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -531,6 +533,9 @@ namespace MediaBrowser.ServerApplication
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
             RegisterSingleInstance(NotificationManager);
 
+            SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor);
+            RegisterSingleInstance(SubtitleManager);
+
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
             var userdataTask = Task.Run(async () => await ConfigureUserDataRepositories().ConfigureAwait(false));
@@ -566,7 +571,7 @@ namespace MediaBrowser.ServerApplication
         {
             var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager).GetFFMpegInfo(progress).ConfigureAwait(false);
 
-            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.Path, info.ProbePath, info.Version, FileSystemManager);
+            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.EncoderPath, info.ProbePath, info.Version, FileSystemManager);
             RegisterSingleInstance(MediaEncoder);
         }
 
@@ -710,6 +715,8 @@ namespace MediaBrowser.ServerApplication
 
             LiveTvManager.AddParts(GetExports<ILiveTvService>());
 
+            SubtitleManager.AddParts(GetExports<ISubtitleProvider>());
+            
             SessionManager.AddParts(GetExports<ISessionControllerFactory>());
 
             ChannelManager.AddParts(GetExports<IChannel>(), GetExports<IChannelFactory>());

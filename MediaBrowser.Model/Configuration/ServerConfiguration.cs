@@ -221,6 +221,8 @@ namespace MediaBrowser.Model.Configuration
 
         public NotificationOptions NotificationOptions { get; set; }
 
+        public SubtitleOptions SubtitleOptions { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -284,6 +286,8 @@ namespace MediaBrowser.Model.Configuration
             UICulture = "en-us";
 
             NotificationOptions = new NotificationOptions();
+
+            SubtitleOptions = new SubtitleOptions();
         }
     }
 
@@ -310,5 +314,18 @@ namespace MediaBrowser.Model.Configuration
     {
         public string From { get; set; }
         public string To { get; set; }
+    }
+
+    public class SubtitleOptions
+    {
+        public bool RequireExternalSubtitles { get; set; }
+        public string[] SubtitleDownloadLanguages { get; set; }
+        public bool DownloadMovieSubtitles { get; set; }
+        public bool DownloadEpisodeSubtitles { get; set; }
+
+        public SubtitleOptions()
+        {
+            SubtitleDownloadLanguages = new string[] { };
+        }
     }
 }

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
-    public class SrtParser
+    public class SrtParser : ISubtitleParser
     {
-        public SubtitleInfo Parse(Stream stream)
+        public SubtitleTrackInfo Parse(Stream stream)
         {
             throw new NotImplementedException();
         }

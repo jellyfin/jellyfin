@@ -2,11 +2,11 @@
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
-    public class SubtitleInfo
+    public class SubtitleTrackInfo
     {
         public List<SubtitleTrackEvent> TrackEvents { get; set; }
 
-        public SubtitleInfo()
+        public SubtitleTrackInfo()
         {
             TrackEvents = new List<SubtitleTrackEvent>();
         }

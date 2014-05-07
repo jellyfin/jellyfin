@@ -64,7 +64,7 @@
     <Compile Include="Subtitles\ISubtitleParser.cs" />
     <Compile Include="Subtitles\SrtParser.cs" />
     <Compile Include="Subtitles\SsaParser.cs" />
-    <Compile Include="Subtitles\SubtitleInfo.cs" />
+    <Compile Include="Subtitles\SubtitleTrackInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

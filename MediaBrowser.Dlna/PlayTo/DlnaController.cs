@@ -51,6 +51,8 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
+        private Timer _updateTimer;
+
         public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IDtoService dtoService, IImageProcessor imageProcessor, SsdpHandler ssdpHandler, string serverAddress)
         {
             _session = session;
@@ -75,6 +77,24 @@ namespace MediaBrowser.Dlna.PlayTo
             _device.Start();
 
             _ssdpHandler.MessageReceived += _SsdpHandler_MessageReceived;
+
+            _updateTimer = new Timer(updateTimer_Elapsed, null, 60000, 60000);
+        }
+
+        private async void updateTimer_Elapsed(object state)
+        {
+            if (DateTime.UtcNow >= _device.DateLastActivity.AddSeconds(60))
+            {
+                try
+                {
+                    // Session is inactive, mark it for Disposal and don't start the elapsed timer.
+                    await _sessionManager.ReportSessionEnded(_session.Id).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in ReportSessionEnded", ex);
+                }
+            }
         }
 
         private string GetServerAddress()
@@ -571,7 +591,18 @@ namespace MediaBrowser.Dlna.PlayTo
                 _device.PlaybackStopped -= _device_PlaybackStopped;
                 _ssdpHandler.MessageReceived -= _SsdpHandler_MessageReceived;
 
+                DisposeUpdateTimer();
+
                 _device.Dispose();
+            }
+        }
+
+        private void DisposeUpdateTimer()
+        {
+            if (_updateTimer != null)
+            {
+                _updateTimer.Dispose();
+                _updateTimer = null;
             }
         }
 

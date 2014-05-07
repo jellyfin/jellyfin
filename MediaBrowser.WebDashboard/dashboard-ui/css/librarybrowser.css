@@ -56,6 +56,7 @@
 
 .viewSettings {
     margin: 0 0 .25em;
+    text-align: center;
 }
 
 .listPaging {
@@ -852,6 +853,9 @@ a.itemTag:hover {
 
 .timelineHeader {
     margin-bottom: .25em;
+}
+
+.itemsContainer {
 }
 
 .timelineItemsContainer {

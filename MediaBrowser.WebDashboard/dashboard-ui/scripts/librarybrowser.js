@@ -356,6 +356,33 @@
             // Handle search hints
             var id = item.Id || item.ItemId;
 
+            if (item.CollectionType == 'boxsets' || item.Type == 'ManualCollectionsFolder') {
+                return 'collections.html?topParentId=' + item.Id;
+            }
+
+            if (item.CollectionType == 'trailers' || item.Type == 'TrailerCollectionFolder') {
+                return 'movietrailers.html?topParentId=' + item.Id;
+            }
+
+            if (item.CollectionType == 'movies') {
+                return 'movieslatest.html?topParentId=' + item.Id;
+            }
+
+            if (item.CollectionType == 'tvshows') {
+                return 'tvrecommended.html?topParentId=' + item.Id;
+            }
+
+            if (item.CollectionType == 'music') {
+                return 'musicrecommended.html?topParentId=' + item.Id;
+            }
+
+            if (item.CollectionType == 'games') {
+                return 'gamesrecommended.html?topParentId=' + item.Id;
+            }
+            if (item.Type == 'CollectionFolder') {
+                return 'itemlist.html?topParentId=' + item.Id + '&parentid=' + item.Id;
+            }
+
             if (item.Type == "TvChannel") {
                 return "livetvchannel.html?id=" + id;
             }

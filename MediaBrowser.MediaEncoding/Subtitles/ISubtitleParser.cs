@@ -4,6 +4,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 {
     public interface ISubtitleParser
     {
-        SubtitleInfo Parse(Stream stream);
+        SubtitleTrackInfo Parse(Stream stream);
     }
 }

@@ -2,12 +2,16 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -35,10 +39,12 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IJsonSerializer _json;
         private readonly IEncodingManager _encodingManager;
         private readonly IFileSystem _fileSystem;
+        private readonly IServerConfigurationManager _config;
+        private readonly ISubtitleManager _subtitleManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem)
+        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -50,6 +56,8 @@ namespace MediaBrowser.Providers.MediaInfo
             _json = json;
             _encodingManager = encodingManager;
             _fileSystem = fileSystem;
+            _config = config;
+            _subtitleManager = subtitleManager;
         }
 
         public async Task<ItemUpdateType> ProbeVideo<T>(T item, IDirectoryService directoryService, CancellationToken cancellationToken)
@@ -118,7 +126,7 @@ namespace MediaBrowser.Providers.MediaInfo
             cancellationToken.ThrowIfCancellationRequested();
 
             var idString = item.Id.ToString("N");
-            var cachePath = Path.Combine(_appPaths.CachePath, 
+            var cachePath = Path.Combine(_appPaths.CachePath,
                 "ffprobe-video",
                 idString.Substring(0, 2), idString, "v" + SchemaVersion + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
 
@@ -200,7 +208,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchBdInfo(video, chapters, mediaStreams, blurayInfo);
             }
 
-            AddExternalSubtitles(video, mediaStreams, directoryService);
+            await AddExternalSubtitles(video, mediaStreams, directoryService, cancellationToken).ConfigureAwait(false);
 
             FetchWtvInfo(video, data);
 
@@ -247,7 +255,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            info.StartPositionTicks = chapter.start/100;
+            info.StartPositionTicks = chapter.start / 100;
 
             return info;
         }
@@ -450,11 +458,42 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="video">The video.</param>
         /// <param name="currentStreams">The current streams.</param>
-        private void AddExternalSubtitles(Video video, List<MediaStream> currentStreams, IDirectoryService directoryService)
+        private async Task AddExternalSubtitles(Video video, List<MediaStream> currentStreams, IDirectoryService directoryService, CancellationToken cancellationToken)
+        {
+            var externalSubtitleStreams = GetExternalSubtitleStreams(video, currentStreams.Count, directoryService).ToList();
+
+            if ((_config.Configuration.SubtitleOptions.DownloadEpisodeSubtitles &&
+                video is Episode) ||
+                (_config.Configuration.SubtitleOptions.DownloadMovieSubtitles &&
+                video is Movie))
+            {
+                var downloadedLanguages = await new SubtitleDownloader(_logger,
+                    _subtitleManager)
+                    .DownloadSubtitles(video,
+                    currentStreams,
+                    externalSubtitleStreams,
+                    _config.Configuration.SubtitleOptions.RequireExternalSubtitles,
+                    _config.Configuration.SubtitleOptions.SubtitleDownloadLanguages,
+                    cancellationToken).ConfigureAwait(false);
+
+                // Rescan
+                if (downloadedLanguages.Count > 0)
+                {
+                    externalSubtitleStreams = GetExternalSubtitleStreams(video, currentStreams.Count, directoryService).ToList();
+                }
+            }
+
+            video.SubtitleFiles = externalSubtitleStreams.Select(i => i.Path).OrderBy(i => i).ToList();
+
+            currentStreams.AddRange(externalSubtitleStreams);
+        }
+
+        private IEnumerable<MediaStream> GetExternalSubtitleStreams(Video video, 
+            int startIndex, 
+            IDirectoryService directoryService)
         {
             var files = GetSubtitleFiles(video, directoryService);
 
-            var startIndex = currentStreams.Count;
             var streams = new List<MediaStream>();
 
             var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
@@ -504,9 +543,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            video.SubtitleFiles = streams.Select(i => i.Path).OrderBy(i => i).ToList();
-
-            currentStreams.AddRange(streams);
+            return streams;
         }
 
         /// <summary>
@@ -627,7 +664,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var path = mount == null ? item.Path : mount.MountedPath;
             var dvd = new Dvd(path);
-            
+
             var primaryTitle = dvd.Titles.OrderByDescending(GetRuntime).FirstOrDefault();
 
             byte? titleNumber = null;

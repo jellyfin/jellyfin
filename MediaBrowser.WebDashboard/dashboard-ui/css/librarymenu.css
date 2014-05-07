@@ -12,14 +12,14 @@
     z-index: 1001;
     top: 54px;
     background-color: #181818;
-    width: 200px;
+    width: 180px;
     min-height: 100px;
     border-bottom-right-radius: 5px;
     padding-bottom: 10px;
 }
 
 .itemDetailPage .desktopLibraryMenu {
-    background-color: rgba(24,24,24,.6);
+    background-color: rgba(0,0,0,.6);
 }
 
 .metadataEditorPage .desktopLibraryMenu {
@@ -39,7 +39,7 @@
     left: 0;
     z-index: 1000;
     top: 0;
-    background: #181818;
+    background: #000;
     padding: 3px .25em 3px 1em;
     border-bottom: 1px solid #101010;
 }
@@ -75,7 +75,7 @@
 
 .viewMenuTextLink {
     display: block;
-    padding: .6em .5em .6em 35px!important;
+    padding: .6em .5em .6em 37px!important;
     font-size: 15px;
     font-weight: 300!important;
     font-family: Roboto;
@@ -85,63 +85,70 @@
     background-image: url(images/items/folders/music.png);
     background-repeat: no-repeat;
     background-size: 18px 18px;
-    background-position: 8px 8px;
+    background-position: 10px 8px;
 }
 
 .tvshowsViewMenu {
     background-image: url(images/items/folders/tv.png);
     background-repeat: no-repeat;
     background-size: 18px 18px;
-    background-position: 8px 8px;
+    background-position: 10px 8px;
 }
 
 .moviesViewMenu {
     background-image: url(images/items/folders/movies.png);
     background-repeat: no-repeat;
     background-size: 18px 18px;
-    background-position: 8px center;
+    background-position: 10px center;
 }
 
 .gamesViewMenu {
     background-image: url(images/items/folders/games.png);
     background-repeat: no-repeat;
     background-size: 18px 18px;
-    background-position: 8px 8px;
+    background-position: 10px 8px;
 }
 
 .channelsViewMenu {
     background-image: url(images/items/folders/channels.png);
     background-repeat: no-repeat;
     background-size: 18px 18px;
-    background-position: 8px center;
+    background-position: 10px center;
 }
 
 .booksViewMenu {
     background-image: url(images/items/folders/books.png);
     background-repeat: no-repeat;
     background-size: 18px 18px;
-    background-position: 8px center;
+    background-position: 10px center;
 }
 
 .musicvideosViewMenu {
     background-image: url(images/items/folders/musicvideos.png);
     background-repeat: no-repeat;
     background-size: 18px 18px;
-    background-position: 8px 8px;
+    background-position: 10px 8px;
 }
 
 .photosViewMenu {
     background-image: url(images/items/folders/photos.png);
     background-repeat: no-repeat;
     background-size: 18px 18px;
-    background-position: 8px 8px;
+    background-position: 10px 8px;
 }
 
-.collectionsViewMenu, .generalViewMenu, .homeVideosViewMenu {
+.homeVideosViewMenu {
     background-image: url(images/items/folders/homevideos.png);
     background-repeat: no-repeat;
     background-size: 18px 18px;
-    background-position: 8px center;
+    background-position: 10px center;
+}
+
+.generalViewMenu, .boxsetsViewMenu {
+    background-image: url(images/items/folders/folder.png);
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: 10px center;
 }
 
 .viewMenuSecondary {
@@ -170,7 +177,7 @@
 }
 
 .libraryViewNavInner {
-    text-align: left;
+    text-align: center;
     font-size: 14px;
     white-space: nowrap;
     padding: 0 0 0;
@@ -215,20 +222,16 @@
         vertical-align: middle;
     }
 
-@media all and (min-width: 1279px) {
+@media all and (min-width: 1099px) {
 
     .libraryMenuButton {
         display: none;
     }
 
     .libraryPage:not(.itemDetailPage):not(.metadataEditorPage) {
-        left: 215px !important;
+        left: 195px !important;
         width: auto !important;
         right: 0 !important;
-    }
-
-    .libraryPage .libraryViewNav {
-        padding-left: 232px !important;
     }
 
     .viewSettings {
@@ -236,7 +239,7 @@
     }
 }
 
-@media all and (max-width: 1278px) {
+@media all and (max-width: 1099px) {
 
     .desktopHomeLink {
         display: none;

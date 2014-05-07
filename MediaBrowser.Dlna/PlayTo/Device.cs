@@ -77,6 +77,8 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
 
+        public DateTime DateLastActivity { get; private set; }
+
         public Device(DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger, IServerConfigurationManager config)
         {
             Properties = deviceProperties;
@@ -385,6 +387,8 @@ namespace MediaBrowser.Dlna.PlayTo
             try
             {
                 var transportState = await GetTransportInfo().ConfigureAwait(false);
+
+                DateLastActivity = DateTime.UtcNow;
 
                 if (transportState.HasValue)
                 {

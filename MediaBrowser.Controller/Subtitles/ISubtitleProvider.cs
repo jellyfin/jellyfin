@@ -1,11 +1,12 @@
 ﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.Controller.Subtitles
 {
     public interface ISubtitleProvider
     {
@@ -22,12 +23,20 @@ namespace MediaBrowser.Controller.Providers
         IEnumerable<SubtitleMediaType> SupportedMediaTypes { get; }
 
         /// <summary>
-        /// Gets the subtitles.
+        /// Searches the subtitles.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{RemoteSubtitleInfo}}.</returns>
+        Task<IEnumerable<RemoteSubtitleInfo>> SearchSubtitles(SubtitleSearchRequest request, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the subtitles.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{SubtitleResponse}.</returns>
-        Task<SubtitleResponse> GetSubtitles(SubtitleRequest request, CancellationToken cancellationToken);
+        Task<SubtitleResponse> GetSubtitles(string id, CancellationToken cancellationToken);
     }
 
     public enum SubtitleMediaType
@@ -38,12 +47,12 @@ namespace MediaBrowser.Controller.Providers
 
     public class SubtitleResponse
     {
+        public string Language { get; set; }
         public string Format { get; set; }
-        public bool HasContent { get; set; }
         public Stream Stream { get; set; }
     }
 
-    public class SubtitleRequest : IHasProviderIds
+    public class SubtitleSearchRequest : IHasProviderIds
     {
         public string Language { get; set; }
 
@@ -58,7 +67,7 @@ namespace MediaBrowser.Controller.Providers
         public int? ProductionYear { get; set; }
         public Dictionary<string, string> ProviderIds { get; set; }
 
-        public SubtitleRequest()
+        public SubtitleSearchRequest()
         {
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }

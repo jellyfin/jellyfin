@@ -206,7 +206,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="message">The message.</param>
         public void Warn(object message)
         {
-            _logger.Warn(GetMesssage(message));
+            // Hide StringMapTypeDeserializer messages
+            // _logger.Warn(GetMesssage(message));
         }
 
         /// <summary>
@@ -216,7 +217,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="args">The args.</param>
         public void WarnFormat(string format, params object[] args)
         {
-            _logger.Warn(format, args);
+            // Hide StringMapTypeDeserializer messages
+            // _logger.Warn(format, args);
         }
 
         /// <summary>

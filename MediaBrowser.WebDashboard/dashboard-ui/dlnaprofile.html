@@ -17,51 +17,51 @@
 
                 <form class="dlnaProfileForm" style="max-width: 650px;">
 
-                    <p>Profile Information</p>
+                    <p>${HeaderProfileInformation}</p>
                     <div data-role="controlgroup" data-type="horizontal" data-mini="true">
                         <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioInfo" value="tabInfo">
-                        <label for="radioInfo">Info</label>
+                        <label for="radioInfo">${TabInfo}</label>
                         <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioIdentification" value="tabIdentification">
-                        <label for="radioIdentification">Identification</label>
+                        <label for="radioIdentification">${TabIdentification}</label>
                         <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioDirectPlay" value="tabDirectPlayProfiles">
-                        <label for="radioDirectPlay">Direct Play</label>
+                        <label for="radioDirectPlay">${TabDirectPlay}</label>
                         <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioTranscoding" value="tabTranscodingProfiles">
-                        <label for="radioTranscoding">Transcoding</label>
+                        <label for="radioTranscoding">${TabTranscoding}</label>
                         <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioContainers" value="tabContainerProfiles">
-                        <label for="radioContainers">Containers</label>
+                        <label for="radioContainers">${TabContainers}</label>
                         <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioCodecs" value="tabCodecProfiles">
-                        <label for="radioCodecs">Codecs</label>
+                        <label for="radioCodecs">${TabCodecs}</label>
                         <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioMediaProfiles" value="tabMediaProfiles">
-                        <label for="radioMediaProfiles">Responses</label>
+                        <label for="radioMediaProfiles">${TabResponses}</label>
                     </div>
                     <br />
                     <div class="tabContent tabInfo">
 
                         <ul data-role="listview" class="ulForm">
                             <li>
-                                <label for="txtName">Name</label>
+                                <label for="txtName">${LabelName}</label>
                                 <input type="text" id="txtName" data-mini="true" required="required" />
                             </li>
                         </ul>
 
                         <ul data-role="listview" class="ulForm">
                             <li>
-                                <label for="selectUser">User library:</label>
+                                <label for="selectUser">${LabelUserLibrary}</label>
                                 <select id="selectUser" data-mini="true"></select>
-                                <div class="fieldDescription">Select which user library to display to the device. Leave empty to inherit the default setting.</div>
+                                <div class="fieldDescription">${LabelUserLibraryHelp}</div>
                             </li>
                         </ul>
 
                         <fieldset data-role="controlgroup">
-                            <legend>Supported Media Types:</legend>
+                            <legend>${LabelSupportedMediaTypes}</legend>
                             <input type="checkbox" data-mini="true" id="chkAudio" data-value="Audio" class="chkMediaType" />
-                            <label for="chkAudio">Audio</label>
+                            <label for="chkAudio">${OptionProfileAudio}</label>
 
                             <input type="checkbox" data-mini="true" id="chkPhoto" data-value="Photo" class="chkMediaType" />
-                            <label for="chkPhoto">Photo</label>
+                            <label for="chkPhoto">${OptionProfilePhoto}</label>
 
                             <input type="checkbox" data-mini="true" id="chkVideo" data-value="Video" class="chkMediaType" />
-                            <label for="chkVideo">Video</label>
+                            <label for="chkVideo">${OptionProfileVideo}</label>
                         </fieldset>
 
 
@@ -72,14 +72,14 @@
                                 <br />
                                 <ul data-role="listview" class="ulForm">
                                     <li>
-                                        <label for="chkRequiresPlainFolders">Display all folders as plain storage folders</label>
+                                        <label for="chkRequiresPlainFolders">${OptionPlainStorageFolders}</label>
                                         <input type="checkbox" id="chkRequiresPlainFolders" data-mini="true" />
-                                        <div class="fieldDescription">If enabled, all folders are represented in DIDL as "object.container.storageFolder" instead of a more specific type, such as "object.container.person.musicArtist".</div>
+                                        <div class="fieldDescription">${OptionPlainStorageFoldersHelp}</div>
                                     </li>
                                     <li>
-                                        <label for="chkRequiresPlainVideoItems">Display all videos as plain video items</label>
+                                        <label for="chkRequiresPlainVideoItems">${OptionPlainVideoItems}</label>
                                         <input type="checkbox" id="chkRequiresPlainVideoItems" data-mini="true" />
-                                        <div class="fieldDescription">If enabled, all videos are represented in DIDL as "object.item.videoItem" instead of a more specific type, such as "object.item.videoItem.movie".</div>
+                                        <div class="fieldDescription">${OptionPlainVideoItemsHelp}</div>
                                     </li>
                                 </ul>
                             </div>
@@ -91,34 +91,34 @@
                                 <br />
                                 <ul data-role="listview" class="ulForm">
                                     <li>
-                                        <label for="chkEnableAlbumArtInDidl">Embed album art in Didl</label>
+                                        <label for="chkEnableAlbumArtInDidl">${LabelEmbedAlbumArtDidl}</label>
                                         <input type="checkbox" id="chkEnableAlbumArtInDidl" data-mini="true" />
-                                        <div class="fieldDescription">Some devices prefer this method for obtaining album art. Others may fail to play with this option enabled.</div>
+                                        <div class="fieldDescription">${LabelEmbedAlbumArtDidlHelp}</div>
                                     </li>
                                     <li>
-                                        <label for="txtAlbumArtPn">Album art PN:</label>
+                                        <label for="txtAlbumArtPn">${LabelAlbumArtPN}</label>
                                         <input type="text" id="txtAlbumArtPn" data-mini="true" />
-                                        <div class="fieldDescription">PN used for album art, within the dlna:profileID attribute on upnp:albumArtURI. Some clients require a specific value, regardless of the size of the image.</div>
+                                        <div class="fieldDescription">${LabelAlbumArtHelp}</div>
                                     </li>
                                     <li>
-                                        <label for="txtAlbumArtMaxWidth">Album art max width:</label>
+                                        <label for="txtAlbumArtMaxWidth">${LabelAlbumArtMaxWidth}</label>
                                         <input type="number" id="txtAlbumArtMaxWidth" pattern="[0-9]*" min="1" data-mini="true" />
-                                        <div class="fieldDescription">Max resolution of album art exposed via upnp:albumArtURI.</div>
+                                        <div class="fieldDescription">${LabelAlbumArtMaxWidthHelp}</div>
                                     </li>
                                     <li>
-                                        <label for="txtAlbumArtMaxHeight">Album art max height:</label>
+                                        <label for="txtAlbumArtMaxHeight">${LabelAlbumArtMaxHeight}</label>
                                         <input type="number" id="txtAlbumArtMaxHeight" pattern="[0-9]*" min="1" data-mini="true" />
-                                        <div class="fieldDescription">Max resolution of album art exposed via upnp:albumArtURI.</div>
+                                        <div class="fieldDescription">${LabelAlbumArtMaxHeightHelp}</div>
                                     </li>
                                     <li>
-                                        <label for="txtIconMaxWidth">Icon max width:</label>
+                                        <label for="txtIconMaxWidth">${LabelIconMaxWidth}</label>
                                         <input type="number" id="txtIconMaxWidth" pattern="[0-9]*" min="1" data-mini="true" />
-                                        <div class="fieldDescription">Max resolution of icons exposed via upnp:icon.</div>
+                                        <div class="fieldDescription">${LabelIconMaxWidthHelp}</div>
                                     </li>
                                     <li>
-                                        <label for="txtIconMaxHeight">Icon max height:</label>
+                                        <label for="txtIconMaxHeight">${LabelIconMaxHeight}</label>
                                         <input type="number" id="txtIconMaxHeight" pattern="[0-9]*" min="1" data-mini="true" />
-                                        <div class="fieldDescription">Max resolution of icons exposed via upnp:icon.</div>
+                                        <div class="fieldDescription">${LabelIconMaxHeightHelp}</div>
                                     </li>
                                 </ul>
                             </div>
@@ -130,14 +130,14 @@
                                 <br />
                                 <ul data-role="listview" class="ulForm">
                                     <li>
-                                        <label for="txtMaxAllowedBitrate">Max bitrate:</label>
+                                        <label for="txtMaxAllowedBitrate">${LabelMaxBitrate}</label>
                                         <input type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" data-mini="true" />
-                                        <div class="fieldDescription">Specify a max bitrate in bandwidth constrained environments, or if the device imposes it's own limit.</div>
+                                        <div class="fieldDescription">${LabelMaxBitrateHelp}</div>
                                     </li>
                                     <li>
-                                        <label for="chkIgnoreTranscodeByteRangeRequests">Ignore transcode byte range requests</label>
+                                        <label for="chkIgnoreTranscodeByteRangeRequests">${OptionIgnoreTranscodeByteRangeRequests}</label>
                                         <input type="checkbox" id="chkIgnoreTranscodeByteRangeRequests" data-mini="true" />
-                                        <div class="fieldDescription">If enabled, these requests will be honored but will ignore the byte range header.</div>
+                                        <div class="fieldDescription">${OptionIgnoreTranscodeByteRangeRequestsHelp}</div>
                                     </li>
                                 </ul>
                             </div>
@@ -145,55 +145,55 @@
                         <div data-role="collapsible">
                             <h2>${HeaderServerSettings}</h2>
                             <div>
-                                <p>These values control how Media Browser will present itself to the device.</p>
+                                <p>${HeaderProfileServerSettingsHelp}</p>
                                 <br />
                                 <ul data-role="listview" class="ulForm">
                                     <li>
-                                        <label for="txtInfoFriendlyName">Friendly name</label>
+                                        <label for="txtInfoFriendlyName">${LabelFriendlyName}</label>
                                         <input type="text" id="txtInfoFriendlyName" data-mini="true" required="required" />
                                     </li>
                                     <li>
-                                        <label for="txtInfoManufacturer">Manufacturer</label>
+                                        <label for="txtInfoManufacturer">${LabelManufacturer}</label>
                                         <input type="text" id="txtInfoManufacturer" data-mini="true" />
                                     </li>
                                     <li>
-                                        <label for="txtInfoManufacturerUrl">Manufacturer url</label>
+                                        <label for="txtInfoManufacturerUrl">${LabelManufacturerUrl}</label>
                                         <input type="text" id="txtInfoManufacturerUrl" data-mini="true" />
                                     </li>
                                     <li>
-                                        <label for="txtInfoModelName">Model name</label>
+                                        <label for="txtInfoModelName">${LabelModelName}</label>
                                         <input type="text" id="txtInfoModelName" data-mini="true" />
                                     </li>
                                     <li>
-                                        <label for="txtInfoModelNumber">Model number</label>
+                                        <label for="txtInfoModelNumber">${LabelModelNumber}</label>
                                         <input type="text" id="txtInfoModelNumber" data-mini="true" />
                                     </li>
                                     <li>
-                                        <label for="txtInfoModelDesription">Model description</label>
+                                        <label for="txtInfoModelDesription">${LabelModelDescription}</label>
                                         <input type="text" id="txtInfoModelDesription" data-mini="true" />
                                     </li>
                                     <li>
-                                        <label for="txtInfoModelUrl">Model url</label>
+                                        <label for="txtInfoModelUrl">${LabelModelUrl}</label>
                                         <input type="text" id="txtInfoModelUrl" data-mini="true" />
                                     </li>
                                     <li>
-                                        <label for="txtInfoSerialNumber">Serial number</label>
+                                        <label for="txtInfoSerialNumber">${LabelSerialNumber}</label>
                                         <input type="text" id="txtInfoSerialNumber" data-mini="true" />
                                     </li>
                                     <li>
-                                        <label for="txtXDlnaCap">X-Dlna cap:</label>
+                                        <label for="txtXDlnaCap">${LabelXDlnaCap}</label>
                                         <input type="text" id="txtXDlnaCap" data-mini="true" />
-                                        <div class="fieldDescription">Determines the content of the X_DLNACAP element in the urn:schemas-dlna-org:device-1-0 namespace.</div>
+                                        <div class="fieldDescription">${LabelXDlnaCapHelp}</div>
                                     </li>
                                     <li>
-                                        <label for="txtXDlnaDoc">X-Dlna doc:</label>
+                                        <label for="txtXDlnaDoc">${LabelXDlnaDoc}</label>
                                         <input type="text" id="txtXDlnaDoc" data-mini="true" />
-                                        <div class="fieldDescription">Determines the content of the X_DLNADOC element in the urn:schemas-dlna-org:device-1-0 namespace.</div>
+                                        <div class="fieldDescription">${LabelXDlnaDocHelp}</div>
                                     </li>
                                     <li>
-                                        <label for="txtSonyAggregationFlags">Sony aggregation flags:</label>
+                                        <label for="txtSonyAggregationFlags">${LabelSonyAggregationFlags}</label>
                                         <input type="text" id="txtSonyAggregationFlags" data-mini="true" />
-                                        <div class="fieldDescription">Determines the content of the aggregationFlags element in the urn:schemas-sonycom:av namespace.</div>
+                                        <div class="fieldDescription">${LabelSonyAggregationFlagsHelp}</div>
                                     </li>
                                 </ul>
                             </div>
@@ -202,85 +202,85 @@
                     </div>
                     <div class="tabContent tabIdentification">
 
-                        <p>Enter at least one identification criteria.</p>
+                        <p>${HeaderIdentificationCriteriaHelp}</p>
                         <br />
                         <ul data-role="listview" class="ulForm">
                             <li>
-                                <label for="txtIdFriendlyName">Friendly name</label>
+                                <label for="txtIdFriendlyName">${LabelFriendlyName}</label>
                                 <input type="text" id="txtIdFriendlyName" data-mini="true" />
-                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </li>
                             <li>
-                                <label for="txtIdManufacturer">Manufacturer</label>
+                                <label for="txtIdManufacturer">${LabelManufacturer}</label>
                                 <input type="text" id="txtIdManufacturer" data-mini="true" />
-                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </li>
                             <li>
-                                <label for="txtIdManufacturerUrl">Manufacturer url</label>
+                                <label for="txtIdManufacturerUrl">${LabelManufacturerUrl}</label>
                                 <input type="text" id="txtIdManufacturerUrl" data-mini="true" />
-                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </li>
                             <li>
-                                <label for="txtIdModelName">Model name</label>
+                                <label for="txtIdModelName">${LabelModelName}</label>
                                 <input type="text" id="txtIdModelName" data-mini="true" />
-                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </li>
                             <li>
-                                <label for="txtIdModelNumber">Model number</label>
+                                <label for="txtIdModelNumber">${LabelModelNumber}</label>
                                 <input type="text" id="txtIdModelNumber" data-mini="true" />
-                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </li>
                             <li>
-                                <label for="txtIdModelDesription">Model description</label>
+                                <label for="txtIdModelDesription">${LabelModelDescription}</label>
                                 <input type="text" id="txtIdModelDesription" data-mini="true" />
-                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </li>
                             <li>
-                                <label for="txtIdModelUrl">Model url</label>
+                                <label for="txtIdModelUrl">${LabelModelUrl}</label>
                                 <input type="text" id="txtIdModelUrl" data-mini="true" />
-                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </li>
                             <li>
-                                <label for="txtIdSerialNumber">Serial number</label>
+                                <label for="txtIdSerialNumber">${LabelSerialNumber}</label>
                                 <input type="text" id="txtIdSerialNumber" data-mini="true" />
-                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </li>
                             <li>
-                                <label for="txtIdDeviceDescription">Device description</label>
+                                <label for="txtIdDeviceDescription">${LabelDeviceDescription}</label>
                                 <input type="text" id="txtIdDeviceDescription" data-mini="true" />
-                                <div class="fieldDescription">A case-insensitive substring or regex expression.</div>
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </li>
                         </ul>
 
                     </div>
 
                     <div class="tabContent tabDirectPlayProfiles">
-                        <p>Add direct play profiles to indicate which formats the device can handle natively.</p>
-                        <button class="btnAddDirectPlayProfile" type="button" data-mini="true" data-icon="plus">New</button>
+                        <p>${HeaderDirectPlayProfileHelp}</p>
+                        <button class="btnAddDirectPlayProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
                         <br />
                         <div class="directPlayProfiles"></div>
                     </div>
                     <div class="tabContent tabTranscodingProfiles">
-                        <p>Add transcoding profiles to indicate which formats should be used when transcoding is required.</p>
-                        <button class="btnAddTranscodingProfile" type="button" data-mini="true" data-icon="plus">New</button>
+                        <p>${HeaderTranscodingProfileHelp}</p>
+                        <button class="btnAddTranscodingProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
                         <br />
                         <div class="transcodingProfiles"></div>
                     </div>
                     <div class="tabContent tabContainerProfiles">
-                        <p>Container profiles indicate the limitations of a device when playing specific formats. If a limitation applies then the media will be transcoded, even if the format is configured for direct play.</p>
-                        <button class="btnAddContainerProfile" type="button" data-mini="true" data-icon="plus">New</button>
+                        <p>${HeaderContainerProfileHelp}</p>
+                        <button class="btnAddContainerProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
                         <br />
                         <div class="containerProfiles"></div>
                     </div>
                     <div class="tabContent tabCodecProfiles">
-                        <p>Codec profiles indicate the limitations of a device when playing specific codecs. If a limitation applies then the media will be transcoded, even if the codec is configured for direct play.</p>
-                        <button class="btnAddCodecProfile" type="button" data-mini="true" data-icon="plus">New</button>
+                        <p>${HeaderCodecProfileHelp}</p>
+                        <button class="btnAddCodecProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
                         <br />
                         <div class="codecProfiles"></div>
                     </div>
                     <div class="tabContent tabMediaProfiles">
-                        <p>Response profiles provide a way to customize information sent to the device when playing certain kinds of media.</p>
-                        <button class="btnAddResponseProfile" type="button" data-mini="true" data-icon="plus">New</button>
+                        <p>${HeaderResponseProfileHelp}</p>
+                        <button class="btnAddResponseProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
                         <br />
                         <div class="mediaProfiles"></div>
                     </div>
@@ -288,10 +288,10 @@
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button class="btnSave" type="submit" data-theme="b" data-icon="check" data-mini="true">
-                                Save
+                                ${ButtonSave}
                             </button>
                             <button type="button" onclick="Dashboard.navigate('dlnaprofiles.html');" data-icon="delete" data-mini="true">
-                                Cancel
+                                ${ButtonCancel}
                             </button>
                         </li>
 
@@ -303,45 +303,45 @@
         <div data-role="popup" data-transition="slidefade" id="popupEditDirectPlayProfile" class="popup">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>Direct Play Profile</h3>
+                <h3>${HeaderDirectPlayProfile}</h3>
             </div>
 
             <div data-role="content">
                 <form class="editDirectPlayProfileForm">
 
                     <div style="margin: 1em 0;">
-                        <label for="selectDirectPlayProfileType">Type:</label>
+                        <label for="selectDirectPlayProfileType">${LabelType}</label>
                         <select id="selectDirectPlayProfileType" data-mini="true">
-                            <option value="Audio">Audio</option>
-                            <option value="Photo">Photo</option>
-                            <option value="Video">Video</option>
+                            <option value="Audio">${OptionProfileAudio}</option>
+                            <option value="Photo">${OptionProfilePhoto}</option>
+                            <option value="Video">${OptionProfileVideo}</option>
                         </select>
                     </div>
 
                     <div style="margin: 1em 0;">
-                        <label for="txtDirectPlayContainer">Container:</label>
+                        <label for="txtDirectPlayContainer">${LabelProfileContainer}</label>
                         <input type="text" id="txtDirectPlayContainer" data-mini="true" />
-                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                        <div class="fieldDescription">${LabelProfileContainersHelp}</div>
                     </div>
 
                     <div id="fldDirectPlayVideoCodec" style="margin: 1em 0;">
-                        <label for="txtDirectPlayVideoCodec">Video codecs:</label>
+                        <label for="txtDirectPlayVideoCodec">${LabelProfileVideoCodecs}</label>
                         <input type="text" id="txtDirectPlayVideoCodec" data-mini="true" />
-                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                        <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
                     </div>
 
                     <div id="fldDirectPlayAudioCodec" style="margin: 1em 0 2em;">
-                        <label for="txtDirectPlayAudioCodec">Audio codecs:</label>
+                        <label for="txtDirectPlayAudioCodec">${LabelProfileAudioCodecs}</label>
                         <input type="text" id="txtDirectPlayAudioCodec" data-mini="true" />
-                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                        <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
                     </div>
 
                     <p>
                         <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            Ok
+                            ${ButtonOk}
                         </button>
                         <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            Cancel
+                            ${ButtonCancel}
                         </button>
                     </p>
                 </form>
@@ -351,7 +351,7 @@
         <div data-role="popup" data-transition="slidefade" id="transcodingProfilePopup" class="popup">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>Transcoding Profile</h3>
+                <h3>${HeaderTranscodingProfile}</h3>
             </div>
 
             <div data-role="content">
@@ -359,67 +359,67 @@
 
                     <div data-role="controlgroup" data-type="horizontal" data-mini="true">
                         <input type="radio" name="radioTranscodingTab" class="radioTabButton" id="radioTranscodingBasics" value="tabTranscodingBasics">
-                        <label for="radioTranscodingBasics">Info</label>
+                        <label for="radioTranscodingBasics">${TabInfo}</label>
                         <input type="radio" name="radioTranscodingTab" class="radioTabButton" id="radioTranscodingAdvanced" value="tabTranscodingAdvanced">
                         <label for="radioTranscodingAdvanced">${TabAdvanced}</label>
                     </div>
 
                     <div class="tabContent tabTranscodingBasics" style="display: none;">
                         <div style="margin: 1em 0;">
-                            <label for="selectTranscodingProfileType">Type:</label>
+                            <label for="selectTranscodingProfileType">${LabelType}</label>
                             <select id="selectTranscodingProfileType" data-mini="true">
-                                <option value="Audio">Audio</option>
-                                <option value="Photo">Photo</option>
-                                <option value="Video">Video</option>
+                                <option value="Audio">${OptionProfileAudio}</option>
+                                <option value="Photo">${OptionProfilePhoto}</option>
+                                <option value="Video">${OptionProfileVideo}</option>
                             </select>
                         </div>
 
                         <div style="margin: 1em 0;">
-                            <label for="txtTranscodingContainer">Containers:</label>
+                            <label for="txtTranscodingContainer">${LabelTranscodingContainer}</label>
                             <input type="text" id="txtTranscodingContainer" data-mini="true" required="required" />
                         </div>
 
                         <div id="fldTranscodingVideoCodec" style="margin: 1em 0;">
-                            <label for="txtTranscodingVideoCodec">Video codec:</label>
+                            <label for="txtTranscodingVideoCodec">${LabelTranscodingVideoCodec}</label>
                             <input type="text" id="txtTranscodingVideoCodec" data-mini="true" />
                         </div>
 
                         <div id="fldTranscodingAudioCodec" style="margin: 1em 0;">
-                            <label for="txtTranscodingAudioCodec">Audio codec:</label>
+                            <label for="txtTranscodingAudioCodec">${LabelTranscodingAudioCodec}</label>
                             <input type="text" id="txtTranscodingAudioCodec" data-mini="true" />
                         </div>
                     </div>
                     <div class="tabContent tabTranscodingAdvanced" style="display: none;">
 
                         <div id="fldVideoProfile" style="margin: 1em 0;">
-                            <label for="txtTranscodingVideoProfile">Video profile:</label>
+                            <label for="txtTranscodingVideoProfile">${LabelTranscodingVideoProfile}</label>
                             <input type="text" id="txtTranscodingVideoProfile" data-mini="true" />
                         </div>
 
                         <div id="fldEnableMpegtsM2TsMode" style="margin: 1em 0;">
-                            <label for="chkEnableMpegtsM2TsMode">Enable M2ts mode</label>
+                            <label for="chkEnableMpegtsM2TsMode">${OptionEnableM2tsMode}</label>
                             <input type="checkbox" id="chkEnableMpegtsM2TsMode" data-mini="true" />
-                            <div class="fieldDescription">Enable m2ts mode when encoding to mpegts.</div>
+                            <div class="fieldDescription">${OptionEnableM2tsModeHelp}</div>
                         </div>
 
                         <div id="fldEstimateContentLength" style="margin: 1em 0;">
-                            <label for="chkEstimateContentLength">Estimate content length when transcoding</label>
+                            <label for="chkEstimateContentLength">${OptionEstimateContentLength}</label>
                             <input type="checkbox" id="chkEstimateContentLength" data-mini="true" />
                         </div>
 
                         <div id="fldReportByteRangeRequests" style="margin: 1em 0;">
-                            <label for="chkReportByteRangeRequests">Report that the server supports byte seeking when transcoding</label>
+                            <label for="chkReportByteRangeRequests">${OptionReportByteRangeSeekingWhenTranscoding}</label>
                             <input type="checkbox" id="chkReportByteRangeRequests" data-mini="true" />
-                            <div class="fieldDescription">This is required for some devices that don't time seek very well.</div>
+                            <div class="fieldDescription">${OptionReportByteRangeSeekingWhenTranscodingHelp}</div>
                         </div>
                     </div>
 
                     <p>
                         <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            Ok
+                            ${ButtonOk}
                         </button>
                         <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            Cancel
+                            ${ButtonCancel}
                         </button>
                     </p>
                 </form>
@@ -429,34 +429,34 @@
         <div data-role="popup" data-transition="slidefade" id="containerProfilePopup" class="popup">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>Container Profile</h3>
+                <h3>${HeaderContainerProfile}</h3>
             </div>
 
             <div data-role="content">
                 <form class="containerProfileForm" style="min-width: 250px;">
 
-                    <p>Define additional conditions that must be met in order for a file to be direct played.</p>
+                    <p>${HeaderContainerProfileHelp}</p>
 
                     <!--                    <div data-role="controlgroup" data-type="horizontal" data-mini="true">
                         <input type="radio" name="radioContainerProfileTab" class="radioTabButton" id="radioContainerProfileInfo" value="tabContainerBasics">
-                        <label for="radioContainerProfileInfo">Info</label>
+                        <label for="radioContainerProfileInfo">${TabInfo}</label>
                         <input type="radio" name="radioContainerProfileTab" class="radioTabButton" id="radioContainerProfileConditions" value="tabContainerConditions">
                         <label for="radioContainerProfileConditions">Conditions</label>
                     </div>-->
 
                     <div class="tabContent tabContainerBasics">
                         <div style="margin: 1em 0;">
-                            <label for="selectContainerProfileType">Type:</label>
+                            <label for="selectContainerProfileType">${LabelType}</label>
                             <select id="selectContainerProfileType" data-mini="true">
-                                <option value="Photo">Photo</option>
-                                <option value="Video">Video</option>
+                                <option value="Photo">${OptionProfilePhoto}</option>
+                                <option value="Video">${OptionProfileVideo}</option>
                             </select>
                         </div>
 
                         <div style="margin: 1em 0;">
                             <label for="txtContainerProfileContainer">Containers:</label>
                             <input type="text" id="txtContainerProfileContainer" data-mini="true" />
-                            <div>Separated by comma. This can be left empty to apply to all containers</div>
+                            <div class="fieldDescription">${LabelProfileContainersHelp}</div>
                         </div>
 
                     </div>
@@ -466,10 +466,10 @@
 
                     <p>
                         <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            Ok
+                            ${ButtonOk}
                         </button>
                         <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            Cancel
+                            ${ButtonCancel}
                         </button>
                     </p>
                 </form>
@@ -479,35 +479,35 @@
         <div data-role="popup" data-transition="slidefade" id="codecProfilePopup" class="popup">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>Codec Profile</h3>
+                <h3>${HeaderCodecProfile}</h3>
             </div>
 
             <div data-role="content">
                 <form class="codecProfileForm" style="min-width: 250px;">
 
-                    <p>Define additional conditions that must be met in order for a codec to be direct played.</p>
+                    <p>${HeaderCodecProfileHelp}</p>
 
                     <div style="margin: 1em 0;">
-                        <label for="selectCodecProfileType">Type:</label>
+                        <label for="selectCodecProfileType">${LabelType}</label>
                         <select id="selectCodecProfileType" data-mini="true">
-                            <option value="Video">Video</option>
-                            <option value="VideoAudio">Video Audio</option>
-                            <option value="Audio">Audio</option>
+                            <option value="Video">${OptionProfileVideo}</option>
+                            <option value="VideoAudio">${OptionProfileVideoAudio}</option>
+                            <option value="Audio">${OptionProfileAudio}</option>
                         </select>
                     </div>
 
                     <div style="margin: 1em 0;">
-                        <label for="txtCodecProfileCodec">Codecs:</label>
+                        <label for="txtCodecProfileCodec">${LabelProfileCodecs}</label>
                         <input type="text" id="txtCodecProfileCodec" data-mini="true" />
-                        <div>Separated by comma. This can be left empty to apply to all codecs</div>
+                        <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
                     </div>
 
                     <p>
                         <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            Ok
+                            ${ButtonOk}
                         </button>
                         <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            Cancel
+                            ${ButtonCancel}
                         </button>
                     </p>
                 </form>
@@ -517,37 +517,37 @@
         <div data-role="popup" data-transition="slidefade" id="responseProfilePopup" class="popup">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>Response Profile</h3>
+                <h3>${HeaderResponseProfile}</h3>
             </div>
 
             <div data-role="content">
                 <form class="editResponseProfileForm">
 
                     <div style="margin: 1em 0;">
-                        <label for="selectResponseProfileType">Type:</label>
+                        <label for="selectResponseProfileType">${LabelType}</label>
                         <select id="selectResponseProfileType" data-mini="true">
-                            <option value="Audio">Audio</option>
-                            <option value="Photo">Photo</option>
-                            <option value="Video">Video</option>
+                            <option value="Audio">${OptionProfileAudio}</option>
+                            <option value="Photo">${OptionProfilePhoto}</option>
+                            <option value="Video">${OptionProfileVideo}</option>
                         </select>
                     </div>
 
                     <div style="margin: 1em 0;">
-                        <label for="txtResponseProfileContainer">Container:</label>
+                        <label for="txtResponseProfileContainer">${LabelProfileContainer}</label>
                         <input type="text" id="txtResponseProfileContainer" data-mini="true" />
-                        <div>Separated by comma. This can be left empty to apply to all containers</div>
+                        <div class="fieldDescription">${LabelProfileContainersHelp}</div>
                     </div>
 
                     <div id="fldResponseProfileVideoCodec" style="margin: 1em 0;">
-                        <label for="txtResponseProfileVideoCodec">Video codecs:</label>
+                        <label for="txtResponseProfileVideoCodec">${LabelProfileVideoCodecs}</label>
                         <input type="text" id="txtResponseProfileVideoCodec" data-mini="true" />
-                        <div>Separated by comma. This can be left empty to apply to all codecs</div>
+                        <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
                     </div>
 
                     <div id="fldResponseProfileAudioCodec" style="margin: 1em 0 2em;">
-                        <label for="txtResponseProfileAudioCodec">Audio codecs:</label>
+                        <label for="txtResponseProfileAudioCodec">${LabelProfileAudioCodecs}</label>
                         <input type="text" id="txtResponseProfileAudioCodec" data-mini="true" />
-                        <div>Separated by comma. This can be left empty to apply to all codecs</div>
+                        <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
                     </div>
 
                     <p>

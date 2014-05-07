@@ -159,7 +159,7 @@
         public string DeviceId { get; set; }
     }
 
-    public class SubtitleOptions
+    public class SubtitleDownloadOptions
     {
         /// <summary>
         /// Gets or sets the item identifier.

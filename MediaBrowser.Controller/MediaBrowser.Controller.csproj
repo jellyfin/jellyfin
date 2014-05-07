@@ -191,7 +191,8 @@
     <Compile Include="Providers\IMetadataProvider.cs" />
     <Compile Include="Providers\IMetadataService.cs" />
     <Compile Include="Providers\IRemoteMetadataProvider.cs" />
-    <Compile Include="Providers\ISubtitleProvider.cs" />
+    <Compile Include="Subtitles\ISubtitleManager.cs" />
+    <Compile Include="Subtitles\ISubtitleProvider.cs" />
     <Compile Include="Providers\ItemLookupInfo.cs" />
     <Compile Include="Providers\MetadataRefreshOptions.cs" />
     <Compile Include="Providers\NameParser.cs" />

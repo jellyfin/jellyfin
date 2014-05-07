@@ -327,7 +327,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var categoryKey = string.IsNullOrWhiteSpace(categoryId) ? "root" : categoryId.GetMD5().ToString("N");
 
-            return Path.Combine(_config.ApplicationPaths.CachePath, channelId, categoryKey, user.Id.ToString("N") + ".json");
+            return Path.Combine(_config.ApplicationPaths.CachePath, "channels", channelId, categoryKey, user.Id.ToString("N") + ".json");
         }
 
         private async Task<QueryResult<BaseItemDto>> GetReturnItems(IEnumerable<BaseItem> items, User user, ChannelItemQuery query, CancellationToken cancellationToken)

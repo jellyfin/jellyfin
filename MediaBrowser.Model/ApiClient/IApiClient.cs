@@ -760,7 +760,7 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        string GetSubtitleUrl(SubtitleOptions options);
+        string GetSubtitleUrl(SubtitleDownloadOptions options);
         
         /// <summary>
         /// Gets an image url that can be used to download an image from the api

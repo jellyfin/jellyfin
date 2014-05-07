@@ -834,9 +834,9 @@ var Dashboard = {
 
         // Full list
         // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
-        
+
         switch (cmd.Name) {
-        
+
             case 'GoHome':
                 Dashboard.navigate('index.html');
                 break;
@@ -971,29 +971,27 @@ var Dashboard = {
 
     onBrowseCommand: function (cmd) {
 
-        var context = cmd.Context || "";
-
         var url;
 
         var type = (cmd.ItemType || "").toLowerCase();
 
         if (type == "genre") {
-            url = "itembynamedetails.html?genre=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
+            url = "itembynamedetails.html?genre=" + ApiClient.encodeName(cmd.ItemName);
         }
         else if (type == "musicgenre") {
-            url = "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "music");
+            url = "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(cmd.ItemName);
         }
         else if (type == "gamegenre") {
-            url = "itembynamedetails.html?gamegenre=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "games");
+            url = "itembynamedetails.html?gamegenre=" + ApiClient.encodeName(cmd.ItemName);
         }
         else if (type == "studio") {
-            url = "itembynamedetails.html?studio=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
+            url = "itembynamedetails.html?studio=" + ApiClient.encodeName(cmd.ItemName);
         }
         else if (type == "person") {
-            url = "itembynamedetails.html?person=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
+            url = "itembynamedetails.html?person=" + ApiClient.encodeName(cmd.ItemName);
         }
         else if (type == "musicartist") {
-            url = "itembynamedetails.html?musicartist=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "music");
+            url = "itembynamedetails.html?musicartist=" + ApiClient.encodeName(cmd.ItemName);
         }
 
         if (url) {
@@ -1003,7 +1001,7 @@ var Dashboard = {
 
         ApiClient.getItem(Dashboard.getCurrentUserId(), cmd.ItemId).done(function (item) {
 
-            Dashboard.navigate(LibraryBrowser.getHref(item, context));
+            Dashboard.navigate(LibraryBrowser.getHref(item));
 
         });
 
