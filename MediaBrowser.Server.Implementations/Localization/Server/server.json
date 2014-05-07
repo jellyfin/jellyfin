@@ -518,7 +518,7 @@
 	"ErrorConnectingToMediaBrowserRepository": "There was an error connecting to the remote Media Browser repository.",
 	"LabelComponentsUpdated": "The following components have been installed or updated:",
 	"MessagePleaseRestartServerToFinishUpdating": "Please restart the server to finish applying updates.",
-	"LabelDownMixAudioScale": "Down mix audio boost scale:",
+	"LabelDownMixAudioScale": "Audio boost when downmixing:",
 	"LabelDownMixAudioScaleHelp": "Boost audio when downmixing. Set to 1 to preserve original volume value.",
 	"ButtonLinkKeys": "Link Keys",
 	"LabelOldSupporterKey": "Old supporter key",
