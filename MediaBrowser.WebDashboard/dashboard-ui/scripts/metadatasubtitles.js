@@ -82,7 +82,11 @@
 
                 config.SubtitleOptions.OpenSubtitlesUsername = $('#txtOpenSubtitleUsername', form).val();
 
-                config.SubtitleOptions.OpenSubtitlesPasswordHash = $('#txtOpenSubtitlePassword', form).val();
+                var newPassword = $('#txtOpenSubtitlePassword', form).val();
+                
+                if (newPassword) {
+                    config.SubtitleOptions.OpenSubtitlesPasswordHash = newPassword;
+                }
 
                 config.SubtitleOptions.DownloadLanguages = $('.chkLang:checked', form).get().map(function (c) {
 

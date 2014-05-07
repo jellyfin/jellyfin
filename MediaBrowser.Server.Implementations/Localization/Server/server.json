@@ -705,7 +705,7 @@
 	"OptionEstimateContentLength": "Estimate content length when transcoding",
 	"OptionReportByteRangeSeekingWhenTranscoding": "Report that the server supports byte seeking when transcoding",
 	"OptionReportByteRangeSeekingWhenTranscodingHelp": "This is required for some devices that don't time seek very well.",
-	"HeaderSubtitleDownloadingHelp": "Media Browser can inspect your video files for missing subtitles, and download them using a subtitle provider such as OpenSubtitles.org.",
+	"HeaderSubtitleDownloadingHelp": "When Media Browser scans your video files it can search for missing subtitles, and download them using a subtitle provider such as OpenSubtitles.org.",
 	"HeaderDownloadSubtitlesFor": "Download subtitles for:",
 	"LabelRequireTextSubtitles": "Download even if the video already contains graphical subtitles",
 	"LabelRequireTextSubtitlesHelp": "Keeping text versions of subtitles will result in more efficient delivery to mobile clients.",
