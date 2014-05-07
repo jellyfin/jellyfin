@@ -111,6 +111,7 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Determines whether [is already running] [the specified current process].
         /// </summary>
+        /// <param name="applicationPath">The application path.</param>
         /// <param name="currentProcess">The current process.</param>
         /// <returns><c>true</c> if [is already running] [the specified current process]; otherwise, <c>false</c>.</returns>
         private static bool IsAlreadyRunning(string applicationPath, Process currentProcess)
@@ -131,7 +132,7 @@ namespace MediaBrowser.ServerApplication
             {
                 _logger.Info("Found a duplicate process. Giving it time to exit.");
 
-                if (!duplicate.WaitForExit(5000))
+                if (!duplicate.WaitForExit(10000))
                 {
                     _logger.Info("The duplicate process did not exit.");
                     return true;

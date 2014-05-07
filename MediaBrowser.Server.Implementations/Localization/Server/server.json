@@ -712,5 +712,8 @@
 	"TabSubtitles": "Subtitles",
 	"LabelOpenSubtitlesUsername": "Open Subtitles username:",
 	"LabelOpenSubtitlesPassword": "Open Subtitles password:",
-	"LabelAudioLanguagePreferenceHelp": "If empty, the default audio track will be selected, regardless of language."
+	"LabelAudioLanguagePreferenceHelp": "If empty, the default audio track will be selected, regardless of language.",
+	"LabelDownloadLanguages": "Download languages:",
+	"ButtonRegister": "Register",
+	"HeaderSubtitleDownloadingMoreHelp": "Subtitles are considered missing when the audio track is in a foreign language, and there are no subtitles available in the preferred language."
 }

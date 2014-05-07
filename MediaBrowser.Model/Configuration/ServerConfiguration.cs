@@ -319,7 +319,7 @@ namespace MediaBrowser.Model.Configuration
     public class SubtitleOptions
     {
         public bool RequireExternalSubtitles { get; set; }
-        public string[] SubtitleDownloadLanguages { get; set; }
+        public string[] DownloadLanguages { get; set; }
         public bool DownloadMovieSubtitles { get; set; }
         public bool DownloadEpisodeSubtitles { get; set; }
 
@@ -328,7 +328,7 @@ namespace MediaBrowser.Model.Configuration
 
         public SubtitleOptions()
         {
-            SubtitleDownloadLanguages = new string[] { };
+            DownloadLanguages = new string[] { };
         }
     }
 }

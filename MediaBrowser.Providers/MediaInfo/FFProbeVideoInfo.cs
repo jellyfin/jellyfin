@@ -473,7 +473,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     currentStreams,
                     externalSubtitleStreams,
                     _config.Configuration.SubtitleOptions.RequireExternalSubtitles,
-                    _config.Configuration.SubtitleOptions.SubtitleDownloadLanguages,
+                    _config.Configuration.SubtitleOptions.DownloadLanguages,
                     cancellationToken).ConfigureAwait(false);
 
                 // Rescan
