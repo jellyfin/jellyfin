@@ -323,6 +323,9 @@ namespace MediaBrowser.Model.Configuration
         public bool DownloadMovieSubtitles { get; set; }
         public bool DownloadEpisodeSubtitles { get; set; }
 
+        public string OpenSubtitlesUsername { get; set; }
+        public string OpenSubtitlesPasswordHash { get; set; }
+
         public SubtitleOptions()
         {
             SubtitleDownloadLanguages = new string[] { };

@@ -551,6 +551,117 @@ namespace OpenSubtitlesHandler
             }
             return new MethodResponseError("Fail", "DownloadSubtitles call failed !");
         }
+
+        public static async Task<IMethodResponse> DownloadSubtitlesAsync(int[] subIDS, CancellationToken cancellationToken)
+        {
+            if (TOKEN == "")
+            {
+                OSHConsole.WriteLine("Can't do this call, 'token' value not set. Please use Log In method first.", DebugCode.Error);
+                return new MethodResponseError("Fail", "Can't do this call, 'token' value not set. Please use Log In method first.");
+            }
+            if (subIDS == null)
+            {
+                OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
+                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+            }
+            if (subIDS.Length == 0)
+            {
+                OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
+                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+            }
+            // Method call ..
+            List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
+            // Add token param
+            parms.Add(new XmlRpcValueBasic(TOKEN, XmlRpcBasicValueType.String));
+            // Add subtitle search parameters. Each one will be like 'array' of structs.
+            XmlRpcValueArray array = new XmlRpcValueArray();
+            foreach (int id in subIDS)
+            {
+                array.Values.Add(new XmlRpcValueBasic(id, XmlRpcBasicValueType.Int));
+            }
+            // Add the array to the parameters
+            parms.Add(array);
+            // Call !
+            XmlRpcMethodCall call = new XmlRpcMethodCall("DownloadSubtitles", parms);
+            OSHConsole.WriteLine("Sending DownloadSubtitles request to the server ...", DebugCode.Good);
+            // Send the request to the server
+
+            var httpResponse = await Utilities.SendRequestAsync(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT, cancellationToken).ConfigureAwait(false);
+
+            string response = Utilities.GetStreamString(httpResponse);
+            if (!response.Contains("ERROR:"))
+            {
+                // No error occur, get and decode the response. 
+                XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
+                if (calls.Length > 0)
+                {
+                    if (calls[0].Parameters.Count > 0)
+                    {
+                        // We expect Struct of 3 members:
+                        //* the first is status
+                        //* the second is [array of structs, each one includes subtitle file].
+                        //* the third is [double basic value] represent seconds token by server.
+                        XmlRpcValueStruct mainStruct = (XmlRpcValueStruct)calls[0].Parameters[0];
+                        // Create the response, we'll need it later
+                        MethodResponseSubtitleDownload R = new MethodResponseSubtitleDownload();
+
+                        // To make sure response is not currepted by server, do it in loop
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
+                        {
+                            if (MEMBER.Name == "status")
+                            {
+                                R.Status = (string)MEMBER.Data.Data;
+                                OSHConsole.WriteLine("Status= " + R.Status);
+                            }
+                            else if (MEMBER.Name == "seconds")
+                            {
+                                R.Seconds = (double)MEMBER.Data.Data;
+                                OSHConsole.WriteLine("Seconds= " + R.Seconds);
+                            }
+                            else if (MEMBER.Name == "data")
+                            {
+                                if (MEMBER.Data is XmlRpcValueArray)
+                                {
+                                    OSHConsole.WriteLine("Download results:");
+                                    XmlRpcValueArray rarray = (XmlRpcValueArray)MEMBER.Data;
+                                    foreach (IXmlRpcValue subStruct in rarray.Values)
+                                    {
+                                        if (subStruct == null) continue;
+                                        if (!(subStruct is XmlRpcValueStruct)) continue;
+
+                                        SubtitleDownloadResult result = new SubtitleDownloadResult();
+                                        foreach (XmlRpcStructMember submember in ((XmlRpcValueStruct)subStruct).Members)
+                                        {
+                                            // To avoid errors of arranged info or missing ones, let's do it with switch..
+                                            switch (submember.Name)
+                                            {
+                                                case "idsubtitlefile": result.IdSubtitleFile = (string)submember.Data.Data; break;
+                                                case "data": result.Data = (string)submember.Data.Data; break;
+                                            }
+                                        }
+                                        R.Results.Add(result);
+                                        OSHConsole.WriteLine("> IDSubtilteFile= " + result.ToString());
+                                    }
+                                }
+                                else// Unknown data ?
+                                {
+                                    OSHConsole.WriteLine("Data= " + MEMBER.Data.Data.ToString(), DebugCode.Warning);
+                                }
+                            }
+                        }
+                        // Return the response to user !!
+                        return R;
+                    }
+                }
+            }
+            else
+            {
+                OSHConsole.WriteLine(response, DebugCode.Error);
+                return new MethodResponseError("Fail", response);
+            }
+            return new MethodResponseError("Fail", "DownloadSubtitles call failed !");
+        }
+        
         /// <summary>
         /// Returns comments for subtitles
         /// </summary>

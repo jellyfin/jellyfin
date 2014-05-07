@@ -147,10 +147,8 @@
 	"ScheduledTasksTitle": "Scheduled Tasks",
 	"TabMyPlugins": "My Plugins",
 	"TabCatalog": "Catalog",
-	"TabUpdates": "Updates",
 	"PluginsTitle": "Plugins",
 	"HeaderAutomaticUpdates": "Automatic Updates",
-	"HeaderUpdateLevel": "Update Level",
 	"HeaderNowPlaying": "Now Playing",
 	"HeaderLatestAlbums": "Latest Albums",
 	"HeaderLatestSongs": "Latest Songs",
@@ -706,5 +704,13 @@
 	"OptionEnableM2tsModeHelp": "Enable m2ts mode when encoding to mpegts.",
 	"OptionEstimateContentLength": "Estimate content length when transcoding",
 	"OptionReportByteRangeSeekingWhenTranscoding": "Report that the server supports byte seeking when transcoding",
-	"OptionReportByteRangeSeekingWhenTranscodingHelp": "This is required for some devices that don't time seek very well."
+	"OptionReportByteRangeSeekingWhenTranscodingHelp": "This is required for some devices that don't time seek very well.",
+	"HeaderSubtitleDownloadingHelp": "Media Browser can inspect your video files for missing subtitles, and download them using a subtitle provider such as OpenSubtitles.org.",
+	"HeaderDownloadSubtitlesFor": "Download subtitles for:",
+	"LabelRequireExternalSubtitles": "Download even if the video already contains graphical subtitles",
+	"LabelRequireExternalSubtitlesHelp": "Keeping text versions of subtitles will result in more efficient delivery to mobile clients.",
+	"TabSubtitles": "Subtitles",
+	"LabelOpenSubtitlesUsername": "Open Subtitles username:",
+	"LabelOpenSubtitlesPassword": "Open Subtitles password:",
+	"LabelAudioLanguagePreferenceHelp": "If empty, the default audio track will be selected, regardless of language."
 }
