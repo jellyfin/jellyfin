@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         public async Task<List<string>> DownloadSubtitles(Video video,
-            List<MediaStream> internalSubtitleStreams,
+            List<MediaStream> internalMediaStreams,
             List<MediaStream> externalSubtitleStreams,
             bool forceExternal,
             IEnumerable<string> languages,
@@ -58,7 +58,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 try
                 {
-                    var downloaded = await DownloadSubtitles(video, internalSubtitleStreams, externalSubtitleStreams, forceExternal, lang, mediaType, cancellationToken)
+                    var downloaded = await DownloadSubtitles(video, internalMediaStreams, externalSubtitleStreams, forceExternal, lang, mediaType, cancellationToken)
                         .ConfigureAwait(false);
 
                     if (downloaded)
@@ -76,7 +76,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         private async Task<bool> DownloadSubtitles(Video video,
-            IEnumerable<MediaStream> internalSubtitleStreams,
+            List<MediaStream> internalMediaStreams,
             IEnumerable<MediaStream> externalSubtitleStreams,
             bool forceExternal,
             string language,
@@ -89,8 +89,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 return false;
             }
 
+            var internalAudioStreams = internalMediaStreams.Where(i => i.Type == MediaStreamType.Audio)
+               .ToList();
+
             // There's an internal subtitle stream for this language
-            if (!forceExternal && internalSubtitleStreams.Any(i => string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+            if (!forceExternal &&
+                internalMediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }

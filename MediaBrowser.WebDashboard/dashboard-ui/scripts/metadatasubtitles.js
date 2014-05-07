@@ -5,7 +5,7 @@
         $('#chkSubtitlesMovies', page).checked(config.SubtitleOptions.DownloadMovieSubtitles).checkboxradio("refresh");
         $('#chkSubtitlesEpisodes', page).checked(config.SubtitleOptions.DownloadEpisodeSubtitles).checkboxradio("refresh");
 
-        $('#chkRequireExternalSubtitles', page).checked(config.SubtitleOptions.RequireExternalSubtitles).checkboxradio("refresh");
+        $('#chkRequireTextSubtitles', page).checked(config.SubtitleOptions.RequireTextSubtitles).checkboxradio("refresh");
 
         $('#txtOpenSubtitleUsername', page).val(config.SubtitleOptions.OpenSubtitlesUsername);
         $('#txtOpenSubtitlePassword', page).val('');
@@ -78,7 +78,7 @@
                 config.SubtitleOptions.DownloadMovieSubtitles = $('#chkSubtitlesMovies', form).checked();
                 config.SubtitleOptions.DownloadEpisodeSubtitles = $('#chkSubtitlesEpisodes', form).checked();
 
-                config.SubtitleOptions.RequireExternalSubtitles = $('#chkRequireExternalSubtitles', form).checked();
+                config.SubtitleOptions.RequireTextSubtitles = $('#chkRequireTextSubtitles', form).checked();
 
                 config.SubtitleOptions.OpenSubtitlesUsername = $('#txtOpenSubtitleUsername', form).val();
 
