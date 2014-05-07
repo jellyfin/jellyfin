@@ -4,7 +4,7 @@
     <title>${TitleMetadata}</title>
 </head>
 <body>
-    <div id="advancedMetadataConfigurationPage" data-role="page" class="page type-interior">
+    <div id="advancedMetadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage">
 
         <div data-role="content">
 
@@ -16,6 +16,7 @@
                     <a href="metadataimages.html?type=games" data-role="button">${TabGames}</a>
                     <a href="metadataimages.html?type=music" data-role="button">${TabMusic}</a>
                     <a href="metadataimages.html?type=others" data-role="button">${TabOthers}</a>
+                    <a href="metadatasubtitles.html" data-role="button">${TabSubtitles}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabAdvanced}</a>
                 </div>
 
@@ -24,41 +25,37 @@
                         <li>
                             <label>${HeaderExtractChapterImagesFor}</label>
                             <div data-role="controlgroup">
-                                <input type="checkbox" data-mini="true" id="chkMovies" name="chkMovies" />
-                                <label for="chkMovies">${OptionMovies}</label>
+                                <input type="checkbox" data-mini="true" id="chkChaptersMovies" />
+                                <label for="chkChaptersMovies">${OptionMovies}</label>
 
-                                <input type="checkbox" data-mini="true" id="chkEpisodes" name="chkEpisodes" />
-                                <label for="chkEpisodes">${OptionEpisodes}</label>
+                                <input type="checkbox" data-mini="true" id="chkChaptersEpisodes" />
+                                <label for="chkChaptersEpisodes">${OptionEpisodes}</label>
 
-                                <input type="checkbox" data-mini="true" id="chkOtherVideos" name="chkOtherVideos" />
-                                <label for="chkOtherVideos">${OptionOtherVideos}</label>
+                                <input type="checkbox" data-mini="true" id="chkChaptersOtherVideos" />
+                                <label for="chkChaptersOtherVideos">${OptionOtherVideos}</label>
                                 <div class="fieldDescription">${ExtractChapterImagesHelp}</div>
                             </div>
                         </li>
                     </ul>
 
-                    <div data-role="collapsible">
-                        <h2>${HeaderAutomaticUpdates}</h2>
-                        <div>
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <input type="checkbox" id="chkEnableFanartUpdates" name="chkEnableFanartUpdates" data-mini="true" />
-                                    <label for="chkEnableFanartUpdates">${LabelAutomaticUpdatesFanart}</label>
-                                    <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
-                                </li>
-                                <li>
-                                    <input type="checkbox" id="chkEnableTmdbPersonUpdates" name="chkEnableTmdbPersonUpdates" data-mini="true" />
-                                    <label for="chkEnableTmdbPersonUpdates">${LabelAutomaticUpdatesTmdb}</label>
-                                    <div class="fieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
-                                </li>
-                                <li>
-                                    <input type="checkbox" id="chkEnableTvdbUpdates" name="chkEnableTvdbUpdates" data-mini="true" />
-                                    <label for="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</label>
-                                    <div class="fieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+                    <h2>${HeaderAutomaticUpdates}</h2>
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <input type="checkbox" id="chkEnableFanartUpdates" data-mini="true" />
+                            <label for="chkEnableFanartUpdates">${LabelAutomaticUpdatesFanart}</label>
+                            <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="chkEnableTmdbPersonUpdates" data-mini="true" />
+                            <label for="chkEnableTmdbPersonUpdates">${LabelAutomaticUpdatesTmdb}</label>
+                            <div class="fieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="chkEnableTvdbUpdates" data-mini="true" />
+                            <label for="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</label>
+                            <div class="fieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
+                        </li>
+                    </ul>
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>

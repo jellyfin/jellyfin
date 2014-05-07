@@ -15,9 +15,9 @@
 
     load: function (page, config) {
 
-        $('#chkMovies', page).checked(config.EnableMovieChapterImageExtraction).checkboxradio("refresh");
-        $('#chkEpisodes', page).checked(config.EnableEpisodeChapterImageExtraction).checkboxradio("refresh");
-        $('#chkOtherVideos', page).checked(config.EnableOtherVideoChapterImageExtraction).checkboxradio("refresh");
+        $('#chkChaptersMovies', page).checked(config.EnableMovieChapterImageExtraction).checkboxradio("refresh");
+        $('#chkChaptersEpisodes', page).checked(config.EnableEpisodeChapterImageExtraction).checkboxradio("refresh");
+        $('#chkChaptersOtherVideos', page).checked(config.EnableOtherVideoChapterImageExtraction).checkboxradio("refresh");
 
         $('#chkEnableTmdbPersonUpdates', page).checked(config.EnableTmdbUpdates).checkboxradio("refresh");
         $('#chkEnableTvdbUpdates', page).checked(config.EnableTvDbUpdates).checkboxradio("refresh");
@@ -53,9 +53,9 @@
 
         ApiClient.getServerConfiguration().done(function (config) {
 
-            config.EnableMovieChapterImageExtraction = $('#chkMovies', form).checked();
-            config.EnableEpisodeChapterImageExtraction = $('#chkEpisodes', form).checked();
-            config.EnableOtherVideoChapterImageExtraction = $('#chkOtherVideos', form).checked();
+            config.EnableMovieChapterImageExtraction = $('#chkChaptersMovies', form).checked();
+            config.EnableEpisodeChapterImageExtraction = $('#chkChaptersEpisodes', form).checked();
+            config.EnableOtherVideoChapterImageExtraction = $('#chkChaptersOtherVideos', form).checked();
 
             config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
             config.EnableTmdbUpdates = $('#chkEnableTmdbPersonUpdates', form).checked();

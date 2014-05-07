@@ -28,7 +28,7 @@
 .listHeader {
     margin-top: .5em;
     margin-bottom: .2em;
-    padding-left: 7px;
+    padding-left: 4px;
 }
 
 .ehsContent {
@@ -1068,5 +1068,87 @@ a.itemTag:hover {
 
     .nowPlayingNavButtonContainer {
         width: 300px;
+    }
+}
+
+.spotlight {
+    position: absolute;
+    left: -220px;
+    right: 0;
+    background-size: cover;
+    background-position: center 25%;
+    background-repeat: no-repeat;
+}
+
+.spotlight, .spotlightPlaceHolder {
+    height: 340px;
+}
+
+.spotlightContainer {
+    min-height: 340px;
+}
+
+.spotlightPlaceHolder {
+    margin-bottom: 3em;
+}
+
+.spotlightTitle {
+    margin: 1em 0 .3em;
+}
+
+.spotlightContent {
+    position: absolute;
+    top: 60px;
+    bottom: 55px;
+    left: 210px;
+    width: 600px;
+    background: rgba(0,0,0,.6);
+    border-radius: 5px;
+}
+
+.rightSpotlightContent {
+    left: initial;
+    width: 400px;
+    right: 100px;
+}
+
+.spotlightPoster {
+    height: 100%;
+    background-size: 150px 100%;
+    background-position: left center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+.rightSpotlightContent .spotlightPoster {
+    background-size: 100% 180px;
+    background-position: center top;
+}
+
+.spotlightContentInner {
+    padding: 1em 1em 1em 170px;
+}
+
+.spotlightContentInner p {
+    max-height: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rightSpotlightContent .spotlightContentInner {
+    padding: 195px 1em 1em 1em;
+}
+
+@media all and (max-height: 1079px) and (max-width: 1400px) {
+
+    .spotlight, .spotlightPlaceHolder, .spotlightTitle {
+        display: none;
+    }
+}
+
+@media all and (min-height: 1079px) and (min-width: 1400px) {
+
+    .type-home {
+        overflow-x: visible!important;
     }
 }

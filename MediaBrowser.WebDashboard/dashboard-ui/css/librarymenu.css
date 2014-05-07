@@ -1,24 +1,20 @@
 ﻿.libraryPage {
-    padding-top: 54px !important;
+    padding-top: 53px !important;
 }
 
     .libraryPage:not(.metadataEditorPage):not(.noSecondaryNavPage) {
-        padding-top: 97px !important;
+        padding-top: 102px !important;
     }
 
 .desktopLibraryMenu {
     position: fixed;
     left: 0;
     z-index: 1001;
-    top: 54px;
-    background-color: #181818;
-    width: 180px;
+    top: 53px;
+    width: 200px;
     min-height: 100px;
     border-bottom-right-radius: 5px;
     padding-bottom: 10px;
-}
-
-.itemDetailPage .desktopLibraryMenu {
     background-color: rgba(0,0,0,.6);
 }
 
@@ -42,6 +38,9 @@
     background: #000;
     padding: 3px .25em 3px 1em;
     border-bottom: 1px solid #101010;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
 }
 
 .viewMenuLink {
@@ -165,15 +164,15 @@
 }
 
 .libraryViewNav {
-    height: 42px;
+    height: 48px;
     overflow: hidden;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #222;
     position: fixed;
     right: 0;
     left: 0;
-    top: 54px;
+    top: 53px;
     z-index: 1000;
-    background-color: #252525;
+    background-color: #181818;
 }
 
 .libraryViewNavInner {
@@ -182,7 +181,7 @@
     white-space: nowrap;
     padding: 0 0 0;
     overflow-x: auto;
-    height: 55px;
+    height: 61px;
 }
 
 .libraryViewNav .ui-btn-active .libraryViewNavLinkContent {
@@ -207,7 +206,7 @@
 .libraryViewNavLinkContent {
     border-bottom: 5px solid transparent;
     display: inline-block;
-    padding: 0 1em 7px;
+    padding: 2px 1em 11px;
     color: #ddd;
 }
 
@@ -229,7 +228,7 @@
     }
 
     .libraryPage:not(.itemDetailPage):not(.metadataEditorPage) {
-        left: 195px !important;
+        left: 215px !important;
         width: auto !important;
         right: 0 !important;
     }

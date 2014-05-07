@@ -745,7 +745,7 @@ var Dashboard = {
         }, {
             name: "Metadata",
             href: "metadata.html",
-            selected: pageElem.id == "metadataConfigurationPage" || pageElem.id == "advancedMetadataConfigurationPage" || pageElem.id == "metadataImagesConfigurationPage"
+            selected: page.hasClass('metadataConfigurationPage')
         }, {
             name: "Auto-Organize",
             href: "autoorganizelog.html",

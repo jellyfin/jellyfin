@@ -119,6 +119,11 @@ pre, textarea.pre {
     color: #1B58B8;
 }
 
+/* Bring these jqm font sizes down a little bit */
+.ui-controlgroup-controls label {
+    font-size: 14px;
+}
+
 .hide {
     display: none;
 }

@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
@@ -16,16 +18,52 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Subtitles
 {
-    public class OpenSubtitleDownloader : ISubtitleProvider
+    public class OpenSubtitleDownloader : ISubtitleProvider, IDisposable
     {
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public OpenSubtitleDownloader(ILogManager logManager, IHttpClient httpClient)
+        private readonly IServerConfigurationManager _config;
+        private readonly IEncryptionManager _encryption;
+
+        public OpenSubtitleDownloader(ILogManager logManager, IHttpClient httpClient, IServerConfigurationManager config, IEncryptionManager encryption)
         {
             _logger = logManager.GetLogger(GetType().Name);
             _httpClient = httpClient;
+            _config = config;
+            _encryption = encryption;
+
+            _config.ConfigurationUpdating += _config_ConfigurationUpdating;
+        }
+
+        private const string PasswordHashPrefix = "h:";
+        void _config_ConfigurationUpdating(object sender, GenericEventArgs<ServerConfiguration> e)
+        {
+            var options = e.Argument.SubtitleOptions;
+
+            if (options != null &&
+                !string.IsNullOrWhiteSpace(options.OpenSubtitlesPasswordHash) &&
+                !options.OpenSubtitlesPasswordHash.StartsWith(PasswordHashPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                options.OpenSubtitlesPasswordHash = EncryptPassword(options.OpenSubtitlesPasswordHash);
+            }
+        }
+
+        private string EncryptPassword(string password)
+        {
+            return PasswordHashPrefix + _encryption.EncryptString(password);
+        }
+
+        private string DecryptPassword(string password)
+        {
+            if (password == null ||
+                !password.StartsWith(PasswordHashPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Empty;
+            }
+
+            return _encryption.DecryptString(password.Substring(2));
         }
 
         public string Name
@@ -35,7 +73,16 @@ namespace MediaBrowser.Providers.Subtitles
 
         public IEnumerable<SubtitleMediaType> SupportedMediaTypes
         {
-            get { return new[] { SubtitleMediaType.Episode, SubtitleMediaType.Movie }; }
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_config.Configuration.SubtitleOptions.OpenSubtitlesUsername) ||
+                    string.IsNullOrWhiteSpace(_config.Configuration.SubtitleOptions.OpenSubtitlesPasswordHash))
+                {
+                    return new SubtitleMediaType[] { };
+                }
+
+                return new[] { SubtitleMediaType.Episode, SubtitleMediaType.Movie };
+            }
         }
 
         public Task<SubtitleResponse> GetSubtitles(string id, CancellationToken cancellationToken)
@@ -59,7 +106,10 @@ namespace MediaBrowser.Providers.Subtitles
 
             var downloadsList = new[] { int.Parse(ossId, _usCulture) };
 
-            var resultDownLoad = OpenSubtitles.DownloadSubtitles(downloadsList);
+            await Login(cancellationToken).ConfigureAwait(false);
+
+            var resultDownLoad = await OpenSubtitles.DownloadSubtitlesAsync(downloadsList, cancellationToken).ConfigureAwait(false);
+
             if (!(resultDownLoad is MethodResponseSubtitleDownload))
             {
                 throw new ApplicationException("Invalid response type");
@@ -75,6 +125,21 @@ namespace MediaBrowser.Providers.Subtitles
 
                 Stream = new MemoryStream(Utilities.Decompress(new MemoryStream(data)))
             };
+        }
+
+        private async Task Login(CancellationToken cancellationToken)
+        {
+            var options = _config.Configuration.SubtitleOptions ?? new SubtitleOptions();
+
+            var user = options.OpenSubtitlesUsername ?? string.Empty;
+            var password = DecryptPassword(options.OpenSubtitlesPasswordHash);
+
+            var loginResponse = await OpenSubtitles.LogInAsync(user, password, "en", cancellationToken).ConfigureAwait(false);
+
+            if (!(loginResponse is MethodResponseLogIn))
+            {
+                throw new UnauthorizedAccessException("Authentication to OpenSubtitles failed.");
+            }
         }
 
         public async Task<IEnumerable<RemoteSubtitleInfo>> SearchSubtitles(SubtitleSearchRequest request, CancellationToken cancellationToken)
@@ -116,13 +181,7 @@ namespace MediaBrowser.Providers.Subtitles
             Utilities.HttpClient = _httpClient;
             OpenSubtitles.SetUserAgent("OS Test User Agent");
 
-            var loginResponse = await OpenSubtitles.LogInAsync("", "", "en", cancellationToken).ConfigureAwait(false);
-
-            if (!(loginResponse is MethodResponseLogIn))
-            {
-                _logger.Debug("Login error");
-                return new List<RemoteSubtitleInfo>();
-            }
+            await Login(cancellationToken).ConfigureAwait(false);
 
             var subLanguageId = request.Language;
             var hash = Utilities.ComputeHash(request.MediaPath);
@@ -177,6 +236,11 @@ namespace MediaBrowser.Providers.Subtitles
                         DateCreated = DateTime.Parse(i.SubAddDate, _usCulture),
                         IsHashMatch = i.MovieHash == hasCopy
                     });
+        }
+
+        public void Dispose()
+        {
+            _config.ConfigurationUpdating -= _config_ConfigurationUpdating;
         }
     }
 }

@@ -60,7 +60,7 @@
             self.nextTrack();
         };
 
-        self.startProgressInterval = function (itemId, mediaSourceId) {
+        self.startProgressInterval = function () {
 
             clearProgressInterval();
 
@@ -69,7 +69,7 @@
             currentProgressInterval = setInterval(function () {
 
                 if (currentMediaElement) {
-                    sendProgressUpdate(itemId, mediaSourceId);
+                    sendProgressUpdate();
                 }
 
             }, intervalTime);
@@ -162,8 +162,8 @@
 
                     $(this).on('ended.playbackstopped', self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded);
 
-                    self.startProgressInterval(currentItem.Id, currentMediaSource.Id);
-                    sendProgressUpdate(currentItem.Id, currentMediaSource.Id);
+                    self.startProgressInterval();
+                    sendProgressUpdate();
 
                 });
 
@@ -1064,7 +1064,7 @@
 
             $(self).trigger('playbackstart', [state]);
 
-            self.startProgressInterval(item.Id, mediaSource.Id);
+            self.startProgressInterval();
         };
 
         self.onVolumeChanged = function (playerElement) {
@@ -1118,18 +1118,19 @@
             }
         });
 
-        function sendProgressUpdate(itemId, mediaSourceId) {
+        function sendProgressUpdate() {
 
-            ApiClient.reportPlaybackProgress({
-                itemId: itemId,
-                MediaSourceId: mediaSourceId,
-                IsPaused: currentMediaElement.paused,
-                IsMuted: currentMediaElement.volume == 0,
-                VolumeLevel: currentMediaElement.volume * 100,
-                PositionTicks: self.getCurrentTicks(),
+            var state = self.getPlayerStateInternal(currentMediaElement, currentItem, currentMediaSource);
+            
+            var info = {
+                QueueableMediaTypes: state.NowPlayingItem.MediaType,
+                ItemId: state.NowPlayingItem.Id,
+                NowPlayingItem: state.NowPlayingItem
+            };
 
-                CanSeek: currentMediaSource.RunTimeTicks && currentMediaSource.RunTimeTicks > 0
-            });
+            info = $.extend(info, state.PlayState);
+
+            ApiClient.reportPlaybackProgress(info);
         }
 
         function clearProgressInterval() {

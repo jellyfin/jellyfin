@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -28,6 +29,8 @@ namespace MediaBrowser.Server.Implementations.Configuration
             UpdateTranscodingTempPath();
             UpdateMetadataPath();
         }
+
+        public event EventHandler<GenericEventArgs<ServerConfiguration>> ConfigurationUpdating;
 
         /// <summary>
         /// Gets the type of the configuration.
@@ -73,8 +76,8 @@ namespace MediaBrowser.Server.Implementations.Configuration
         /// </summary>
         private void UpdateItemsByNamePath()
         {
-            ((ServerApplicationPaths) ApplicationPaths).ItemsByNamePath = string.IsNullOrEmpty(Configuration.ItemsByNamePath) ? 
-                null : 
+            ((ServerApplicationPaths)ApplicationPaths).ItemsByNamePath = string.IsNullOrEmpty(Configuration.ItemsByNamePath) ?
+                null :
                 Configuration.ItemsByNamePath;
         }
 
@@ -105,12 +108,14 @@ namespace MediaBrowser.Server.Implementations.Configuration
         /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
         public override void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
-            var newConfig = (ServerConfiguration) newConfiguration;
+            var newConfig = (ServerConfiguration)newConfiguration;
 
             ValidateItemByNamePath(newConfig);
             ValidateTranscodingTempPath(newConfig);
             ValidatePathSubstitutions(newConfig);
             ValidateMetadataPath(newConfig);
+
+            EventHelper.FireEventIfNotNull(ConfigurationUpdating, this, new GenericEventArgs<ServerConfiguration> { Argument = newConfig }, Logger);
 
             base.ReplaceConfiguration(newConfiguration);
         }

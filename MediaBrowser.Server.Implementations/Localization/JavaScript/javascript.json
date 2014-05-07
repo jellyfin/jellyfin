@@ -17,8 +17,6 @@
 	"PasswordResetConfirmation": "Are you sure you wish to reset the password?",
 	"PasswordSaved": "Password saved.",
 	"PasswordMatchError": "Password and password confirmation must match.",
-	"OptionOff": "Off",
-	"OptionOn": "On",
 	"OptionRelease": "Official Release",
 	"OptionBeta": "Beta",
 	"OptionDev": "Dev (Unstable)",
