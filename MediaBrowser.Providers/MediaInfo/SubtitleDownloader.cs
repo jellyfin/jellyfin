@@ -89,8 +89,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 return false;
             }
 
-            var internalAudioStreams = internalMediaStreams.Where(i => i.Type == MediaStreamType.Audio)
-               .ToList();
+            // There's already an audio stream for this language
+            if (internalMediaStreams.Any(i => i.Type == MediaStreamType.Audio && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+            {
+                return false;
+            }
 
             // There's an internal subtitle stream for this language
             if (!forceExternal &&
