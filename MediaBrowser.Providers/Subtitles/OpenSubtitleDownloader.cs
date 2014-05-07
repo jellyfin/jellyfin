@@ -127,8 +127,14 @@ namespace MediaBrowser.Providers.Subtitles
             };
         }
 
+        private DateTime _lastLogin;
         private async Task Login(CancellationToken cancellationToken)
         {
+            if ((DateTime.UtcNow - _lastLogin).TotalSeconds < 60)
+            {
+                return;
+            }
+
             var options = _config.Configuration.SubtitleOptions ?? new SubtitleOptions();
 
             var user = options.OpenSubtitlesUsername ?? string.Empty;
@@ -140,6 +146,8 @@ namespace MediaBrowser.Providers.Subtitles
             {
                 throw new UnauthorizedAccessException("Authentication to OpenSubtitles failed.");
             }
+
+            _lastLogin = DateTime.UtcNow;
         }
 
         public async Task<IEnumerable<RemoteSubtitleInfo>> SearchSubtitles(SubtitleSearchRequest request, CancellationToken cancellationToken)

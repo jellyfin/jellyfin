@@ -22,6 +22,7 @@
 
                 <form class="metadataSubtitlesForm">
                     <p>${HeaderSubtitleDownloadingHelp}</p>
+                    <p>${HeaderSubtitleDownloadingMoreHelp}</p>
                     <fieldset data-role="controlgroup">
                         <legend>${HeaderDownloadSubtitlesFor}</legend>
                         <input type="checkbox" data-mini="true" id="chkSubtitlesMovies" />
@@ -30,6 +31,12 @@
                         <input type="checkbox" data-mini="true" id="chkSubtitlesEpisodes" />
                         <label for="chkSubtitlesEpisodes">${OptionEpisodes}</label>
                     </fieldset>
+                    <br />
+                    <div>
+                        <label>${LabelDownloadLanguages}</label>
+                        <div class="downloadLanguages" style="max-height: 200px; overflow-y: auto; border: 1px solid #e8e8e8;">
+                        </div>
+                    </div>
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
@@ -40,6 +47,7 @@
                         <li>
                             <label for="txtOpenSubtitleUsername">${LabelOpenSubtitlesUsername}</label>
                             <input type="text" id="txtOpenSubtitleUsername" data-mini="true" required="required" />
+                            <div class="fieldDescription"><a target="_blank" href="http://www.opensubtitles.org/">${ButtonRegister}</a></div>
                         </li>
                         <li>
                             <label for="txtOpenSubtitlePassword">${LabelOpenSubtitlesPassword}</label>
