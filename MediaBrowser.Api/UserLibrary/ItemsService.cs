@@ -521,6 +521,9 @@ namespace MediaBrowser.Api.UserLibrary
 
                 case ItemFilter.IsNotFolder:
                     return items.Where(item => !item.IsFolder);
+
+                case ItemFilter.IsRecentlyAdded:
+                    return items.Where(item => (DateTime.UtcNow - item.DateCreated).TotalDays <= 10);
             }
 
             return items;

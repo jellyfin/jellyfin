@@ -403,6 +403,9 @@
     <Compile Include="..\MediaBrowser.Model\Providers\RemoteSearchResult.cs">
       <Link>Providers\RemoteSearchResult.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Providers\RemoteSubtitleInfo.cs">
+      <Link>Providers\RemoteSubtitleInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\ArtistsQuery.cs">
       <Link>Querying\ArtistsQuery.cs</Link>
     </Compile>

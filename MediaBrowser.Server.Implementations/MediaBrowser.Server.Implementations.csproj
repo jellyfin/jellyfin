@@ -169,7 +169,6 @@
     <Compile Include="Library\Validators\GenresValidator.cs" />
     <Compile Include="Library\Validators\MusicGenresPostScanTask.cs" />
     <Compile Include="Library\Validators\MusicGenresValidator.cs" />
-    <Compile Include="Library\Validators\PeoplePostScanTask.cs" />
     <Compile Include="Library\Validators\PeopleValidator.cs" />
     <Compile Include="Library\Validators\StudiosPostScanTask.cs" />
     <Compile Include="Library\Validators\StudiosValidator.cs" />
@@ -328,6 +327,8 @@
     <EmbeddedResource Include="Localization\Server\ms.json" />
     <EmbeddedResource Include="Localization\JavaScript\kk.json" />
     <EmbeddedResource Include="Localization\Server\kk.json" />
+    <EmbeddedResource Include="Localization\countries.json" />
+    <EmbeddedResource Include="Localization\cultures.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Serialization;
-using MoreLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -106,16 +105,13 @@ namespace MediaBrowser.Server.Implementations.Localization
         /// <returns>IEnumerable{CultureDto}.</returns>
         public IEnumerable<CultureDto> GetCultures()
         {
-            return CultureInfo.GetCultures(CultureTypes.AllCultures)
-                .OrderBy(c => c.DisplayName)
-                .DistinctBy(c => c.TwoLetterISOLanguageName + c.ThreeLetterISOLanguageName)
-                .Select(c => new CultureDto
-                {
-                    Name = c.Name,
-                    DisplayName = c.DisplayName,
-                    ThreeLetterISOLanguageName = c.ThreeLetterISOLanguageName,
-                    TwoLetterISOLanguageName = c.TwoLetterISOLanguageName
-                });
+            var type = GetType();
+            var path = type.Namespace + ".cultures.json";
+
+            using (var stream = type.Assembly.GetManifestResourceStream(path))
+            {
+                return _jsonSerializer.DeserializeFromStream<List<CultureDto>>(stream);
+            }
         }
 
         /// <summary>
@@ -124,28 +120,13 @@ namespace MediaBrowser.Server.Implementations.Localization
         /// <returns>IEnumerable{CountryInfo}.</returns>
         public IEnumerable<CountryInfo> GetCountries()
         {
-            return CultureInfo.GetCultures(CultureTypes.SpecificCultures)
-                .Select(c =>
-                {
-                    try
-                    {
-                        return new RegionInfo(c.LCID);
-                    }
-                    catch (CultureNotFoundException)
-                    {
-                        return null;
-                    }
-                })
-                .Where(i => i != null)
-                .OrderBy(c => c.DisplayName)
-                .DistinctBy(c => c.TwoLetterISORegionName)
-                .Select(c => new CountryInfo
-                {
-                    Name = c.Name,
-                    DisplayName = c.DisplayName,
-                    TwoLetterISORegionName = c.TwoLetterISORegionName,
-                    ThreeLetterISORegionName = c.ThreeLetterISORegionName
-                });
+            var type = GetType();
+            var path = type.Namespace + ".countries.json";
+
+            using (var stream = type.Assembly.GetManifestResourceStream(path))
+            {
+                return _jsonSerializer.DeserializeFromStream<List<CountryInfo>>(stream);
+            }
         }
 
         /// <summary>

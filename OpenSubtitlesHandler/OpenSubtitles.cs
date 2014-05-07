@@ -20,6 +20,8 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using OpenSubtitlesHandler.Console;
 using XmlRpcHandler;
 
@@ -96,6 +98,56 @@ namespace OpenSubtitlesHandler
             }
             return new MethodResponseError("Fail", "Log in failed !");
         }
+
+        public static async Task<IMethodResponse> LogInAsync(string userName, string password, string language, CancellationToken cancellationToken)
+        {
+            // Method call ..
+            List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
+            parms.Add(new XmlRpcValueBasic(userName));
+            parms.Add(new XmlRpcValueBasic(password));
+            parms.Add(new XmlRpcValueBasic(language));
+            parms.Add(new XmlRpcValueBasic(XML_PRC_USERAGENT));
+            XmlRpcMethodCall call = new XmlRpcMethodCall("LogIn", parms);
+            OSHConsole.WriteLine("Sending LogIn request to the server ...", DebugCode.Good);
+
+            //File.WriteAllText(".\\request.txt", Encoding.UTF8.GetString(XmlRpcGenerator.Generate(call)));
+            // Send the request to the server
+            var stream = await Utilities.SendRequestAsync(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT, cancellationToken)
+                .ConfigureAwait(false);
+
+            string response = Utilities.GetStreamString(stream);
+
+            if (!response.Contains("ERROR:"))
+            {
+                // No error occur, get and decode the response. We expect Struct here.
+                XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
+                if (calls.Length > 0)
+                {
+                    if (calls[0].Parameters.Count > 0)
+                    {
+                        XmlRpcValueStruct mainStruct = (XmlRpcValueStruct)calls[0].Parameters[0];
+                        MethodResponseLogIn re = new MethodResponseLogIn("Success", "Log in successful.");
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
+                        {
+                            switch (MEMBER.Name)
+                            {
+                                case "token": re.Token = TOKEN = MEMBER.Data.Data.ToString(); OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); break;
+                                case "seconds": re.Seconds = (double)MEMBER.Data.Data; OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); break;
+                                case "status": re.Status = MEMBER.Data.Data.ToString(); OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); break;
+                            }
+                        }
+                        return re;
+                    }
+                }
+            }
+            else
+            {
+                OSHConsole.WriteLine(response, DebugCode.Error);
+                return new MethodResponseError("Fail", response);
+            }
+            return new MethodResponseError("Fail", "Log in failed !");
+        }
+        
         /// <summary>
         /// Log out from the server. Call this to terminate the session.
         /// </summary>

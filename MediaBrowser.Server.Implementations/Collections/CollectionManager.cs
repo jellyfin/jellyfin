@@ -93,7 +93,13 @@ namespace MediaBrowser.Server.Implementations.Collections
                 // Find an actual physical folder
                 if (folder is CollectionFolder)
                 {
-                    return _libraryManager.RootFolder.Children.OfType<Folder>().First(i => folder.PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase));
+                    var child = _libraryManager.RootFolder.Children.OfType<Folder>()
+                        .FirstOrDefault(i => folder.PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase));
+
+                    if (child != null)
+                    {
+                        return child;
+                    }
                 }
             }
 

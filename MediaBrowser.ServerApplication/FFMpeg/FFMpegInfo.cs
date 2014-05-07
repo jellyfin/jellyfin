@@ -9,7 +9,7 @@
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
-        public string Path { get; set; }
+        public string EncoderPath { get; set; }
         /// <summary>
         /// Gets or sets the probe path.
         /// </summary>
