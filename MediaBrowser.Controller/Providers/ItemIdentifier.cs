@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.Providers
                 }
             } while (changesMade);
 
-            return identities.Select(id => id.Identity);
+            return identities.OrderBy(id => id.Order).Select(id => id.Identity);
         }
 
         private class IdentityPair
