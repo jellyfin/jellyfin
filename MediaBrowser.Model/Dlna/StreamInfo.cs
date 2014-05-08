@@ -1,11 +1,10 @@
 ﻿using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -134,14 +133,23 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (MediaSource != null)
                 {
-                    IEnumerable<MediaStream> audioStreams = MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio);
-
                     if (AudioStreamIndex.HasValue)
                     {
-                        return audioStreams.FirstOrDefault(i => i.Index == AudioStreamIndex.Value);
+                        foreach (MediaStream i in MediaSource.MediaStreams)
+                        {
+                            if (i.Index == AudioStreamIndex.Value && i.Type == MediaStreamType.Audio) 
+                                return i;
+                        }
+                        return null;
                     }
 
-                    return audioStreams.FirstOrDefault();
+                    foreach (MediaStream stream in MediaSource.MediaStreams)
+                    {
+                        if (stream.Type == MediaStreamType.Audio)
+                            return stream;
+                    }
+
+                    return null;
                 }
 
                 return null;
@@ -157,8 +165,12 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (MediaSource != null)
                 {
-                    return MediaSource.MediaStreams
-                        .FirstOrDefault(i => i.Type == MediaStreamType.Video && (i.Codec ?? string.Empty).IndexOf("jpeg", StringComparison.OrdinalIgnoreCase) == -1);
+                    foreach (MediaStream i in MediaSource.MediaStreams)
+                    {
+                        if (i.Type == MediaStreamType.Video && (i.Codec ?? string.Empty).IndexOf("jpeg", StringComparison.OrdinalIgnoreCase) == -1) 
+                            return i;
+                    }
+                    return null;
                 }
 
                 return null;

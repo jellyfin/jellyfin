@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Model.Dlna
@@ -20,7 +19,12 @@ namespace MediaBrowser.Model.Dlna
 
         public List<string> GetContainers()
         {
-            return (Container ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
+            List<string> list = new List<string>();
+            foreach (string i in (Container ?? string.Empty).Split(','))
+            {
+                if (!string.IsNullOrEmpty(i)) list.Add(i);
+            }
+            return list;
         }
     }
 }

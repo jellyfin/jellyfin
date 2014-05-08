@@ -22,7 +22,12 @@ namespace MediaBrowser.Model.Dlna
 
         public List<string> GetCodecs()
         {
-            return (Codec ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
+            List<string> list = new List<string>();
+            foreach (string i in (Codec ?? string.Empty).Split(','))
+            {
+                if (!string.IsNullOrEmpty(i)) list.Add(i);
+            }
+            return list;
         }
 
         public bool ContainsCodec(string codec)

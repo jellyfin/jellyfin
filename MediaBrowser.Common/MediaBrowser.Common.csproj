@@ -60,6 +60,7 @@
     <Compile Include="Events\EventHelper.cs" />
     <Compile Include="Extensions\BaseExtensions.cs" />
     <Compile Include="Extensions\ResourceNotFoundException.cs" />
+    <Compile Include="IDependencyContainer.cs" />
     <Compile Include="IO\FileSystemRepository.cs" />
     <Compile Include="IO\IFileSystem.cs" />
     <Compile Include="IO\ProgressStream.cs" />
@@ -78,9 +79,12 @@
     <Compile Include="Net\IWebSocketServer.cs" />
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Net\WebSocketConnectEventArgs.cs" />
+    <Compile Include="Net\WebSocketMessageInfo.cs" />
     <Compile Include="Plugins\IDependencyModule.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Progress\ActionableProgress.cs" />
+    <Compile Include="ScheduledTasks\IConfigurableScheduledTask.cs" />
+    <Compile Include="ScheduledTasks\IHasKey.cs" />
     <Compile Include="ScheduledTasks\IScheduledTask.cs" />
     <Compile Include="ScheduledTasks\IScheduledTaskWorker.cs" />
     <Compile Include="ScheduledTasks\ITaskManager.cs" />
@@ -98,6 +102,7 @@
     <Compile Include="Security\ISecurityManager.cs" />
     <Compile Include="Updates\IInstallationManager.cs" />
     <Compile Include="Updates\InstallationEventArgs.cs" />
+    <Compile Include="Updates\InstallationFailedEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

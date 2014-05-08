@@ -24,12 +24,17 @@ namespace MediaBrowser.Model.Dlna
                 // Avoid implicitly captured closure
                 string mediaSourceId = options.MediaSourceId;
 
-                mediaSources = mediaSources
-                    .Where(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                mediaSources = new List<MediaSourceInfo>();
+                foreach (MediaSourceInfo i in mediaSources)
+                {
+                    if (string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase)) 
+                        mediaSources.Add(i);
+                }
             }
 
-            List<StreamInfo> streams = mediaSources.Select(i => BuildAudioItem(i, options)).ToList();
+            List<StreamInfo> streams = new List<StreamInfo>();
+            foreach (MediaSourceInfo i in mediaSources)
+                streams.Add(BuildAudioItem(i, options));
 
             foreach (StreamInfo stream in streams)
             {
@@ -52,12 +57,17 @@ namespace MediaBrowser.Model.Dlna
                 // Avoid implicitly captured closure
                 string mediaSourceId = options.MediaSourceId;
 
-                mediaSources = mediaSources
-                    .Where(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                mediaSources = new List<MediaSourceInfo>();
+                foreach (MediaSourceInfo i in mediaSources)
+                {
+                    if (string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase)) 
+                        mediaSources.Add(i);
+                }
             }
 
-            List<StreamInfo> streams = mediaSources.Select(i => BuildVideoItem(i, options)).ToList();
+            List<StreamInfo> streams = new List<StreamInfo>();
+            foreach (MediaSourceInfo i in mediaSources)
+                streams.Add(BuildVideoItem(i, options));
 
             foreach (StreamInfo stream in streams)
             {
@@ -72,8 +82,19 @@ namespace MediaBrowser.Model.Dlna
         {
             // Grab the first one that can be direct streamed
             // If that doesn't produce anything, just take the first
-            return streams.FirstOrDefault(i => i.IsDirectStream) ??
-                streams.FirstOrDefault();
+            foreach (StreamInfo i in streams)
+            {
+                if (i.IsDirectStream)
+                {
+                    return i;
+                }
+            }
+
+            foreach (StreamInfo stream in streams)
+            {
+                return stream;
+            }
+            return null;
         }
 
         private StreamInfo BuildAudioItem(MediaSourceInfo item, AudioOptions options)
@@ -191,8 +212,15 @@ namespace MediaBrowser.Model.Dlna
             }
 
             // Can't direct play, find the transcoding profile
-            TranscodingProfile transcodingProfile = options.Profile.TranscodingProfiles
-                .FirstOrDefault(i => i.Type == playlistItem.MediaType);
+            TranscodingProfile transcodingProfile = null;
+            foreach (TranscodingProfile i in options.Profile.TranscodingProfiles)
+            {
+                if (i.Type == playlistItem.MediaType)
+                {
+                    transcodingProfile = i;
+                    break;
+                }
+            }
 
             if (transcodingProfile != null)
             {
@@ -200,7 +228,7 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.Container = transcodingProfile.Container;
                 playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
-                playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',').FirstOrDefault();
+                playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',')[0];
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.Protocol = transcodingProfile.Protocol;
                 playlistItem.AudioStreamIndex = options.AudioStreamIndex;
@@ -261,8 +289,15 @@ namespace MediaBrowser.Model.Dlna
             MediaStream audioStream)
         {
             // See if it can be direct played
-            DirectPlayProfile directPlay = profile.DirectPlayProfiles
-                .FirstOrDefault(i => i.Type == DlnaProfileType.Video && IsVideoDirectPlaySupported(i, mediaSource, videoStream, audioStream));
+            DirectPlayProfile directPlay = null;
+            foreach (DirectPlayProfile i in profile.DirectPlayProfiles)
+            {
+                if (i.Type == DlnaProfileType.Video && IsVideoDirectPlaySupported(i, mediaSource, videoStream, audioStream))
+                {
+                    directPlay = i;
+                    break;
+                }
+            }
 
             if (directPlay == null)
             {

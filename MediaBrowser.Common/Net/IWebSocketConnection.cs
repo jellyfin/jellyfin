@@ -65,16 +65,4 @@ namespace MediaBrowser.Common.Net
         /// <exception cref="System.ArgumentNullException">buffer</exception>
         Task SendAsync(byte[] buffer, WebSocketMessageType type, CancellationToken cancellationToken);
     }
-
-    /// <summary>
-    /// Class WebSocketMessageInfo
-    /// </summary>
-    public class WebSocketMessageInfo : WebSocketMessage<string>
-    {
-        /// <summary>
-        /// Gets or sets the connection.
-        /// </summary>
-        /// <value>The connection.</value>
-        public IWebSocketConnection Connection { get; set; }
-    }
 }

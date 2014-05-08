@@ -59,18 +59,22 @@
     <Compile Include="PlayTo\Device.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="PlayTo\DeviceEventArgs.cs" />
+    <Compile Include="PlayTo\PlaybackStartEventArgs.cs" />
     <Compile Include="PlayTo\DeviceInfo.cs" />
     <Compile Include="Common\DeviceService.cs" />
     <Compile Include="Didl\DidlBuilder.cs" />
-    <Compile Include="PlayTo\DlnaController.cs" />
+    <Compile Include="PlayTo\PlayToController.cs" />
     <Compile Include="PlayTo\Extensions.cs" />
+    <Compile Include="PlayTo\PlaybackProgressEventArgs.cs" />
+    <Compile Include="PlayTo\PlaybackStoppedEventArgs.cs" />
     <Compile Include="PlayTo\PlaylistItem.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlayTo\PlaylistItemFactory.cs" />
     <Compile Include="PlayTo\PlayToManager.cs" />
     <Compile Include="Common\ServiceAction.cs" />
+    <Compile Include="PlayTo\TRANSPORTSTATE.cs" />
+    <Compile Include="PlayTo\uParserObject.cs" />
     <Compile Include="Profiles\Foobar2000Profile.cs" />
     <Compile Include="Profiles\Windows81Profile.cs" />
     <Compile Include="Profiles\WindowsMediaCenterProfile.cs" />

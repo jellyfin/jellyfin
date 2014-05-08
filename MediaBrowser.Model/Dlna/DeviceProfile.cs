@@ -105,7 +105,12 @@ namespace MediaBrowser.Model.Dlna
 
         public List<string> GetSupportedMediaTypes()
         {
-            return (SupportedMediaTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
+            List<string> list = new List<string>();
+            foreach (string i in (SupportedMediaTypes ?? string.Empty).Split(','))
+            {
+                if (!string.IsNullOrEmpty(i)) list.Add(i);
+            }
+            return list;
         }
 
         public TranscodingProfile GetAudioTranscodingProfile(string container, string audioCodec)
