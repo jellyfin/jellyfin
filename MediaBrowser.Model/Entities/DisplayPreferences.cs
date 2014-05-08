@@ -122,34 +122,4 @@ namespace MediaBrowser.Model.Entities
             PrimaryImageHeight = Convert.ToInt32(size.Height);
         }
     }
-
-    /// <summary>
-    /// Enum ScrollDirection
-    /// </summary>
-    public enum ScrollDirection
-    {
-        /// <summary>
-        /// The horizontal
-        /// </summary>
-        Horizontal,
-        /// <summary>
-        /// The vertical
-        /// </summary>
-        Vertical
-    }
-
-    /// <summary>
-    /// Enum SortOrder
-    /// </summary>
-    public enum SortOrder
-    {
-        /// <summary>
-        /// The ascending
-        /// </summary>
-        Ascending,
-        /// <summary>
-        /// The descending
-        /// </summary>
-        Descending
-    }
 }

@@ -79,18 +79,4 @@ namespace MediaBrowser.Model.Configuration
             BlockUnratedItems = new UnratedItem[] { };
         }
     }
-
-    public enum UnratedItem
-    {
-        Movie,
-        Trailer,
-        Series,
-        Music,
-        Game,
-        Book,
-        LiveTvChannel,
-        LiveTvProgram,
-        ChannelContent,
-        Other
-    }
 }

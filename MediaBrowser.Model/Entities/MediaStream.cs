@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -146,50 +145,5 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The level.</value>
         public double? Level { get; set; }
-    }
-
-    /// <summary>
-    /// Enum MediaStreamType
-    /// </summary>
-    public enum MediaStreamType
-    {
-        /// <summary>
-        /// The audio
-        /// </summary>
-        Audio,
-        /// <summary>
-        /// The video
-        /// </summary>
-        Video,
-        /// <summary>
-        /// The subtitle
-        /// </summary>
-        Subtitle,
-        /// <summary>
-        /// The embedded image
-        /// </summary>
-        EmbeddedImage
-    }
-
-    public class MediaInfo
-    {
-        /// <summary>
-        /// Gets or sets the media streams.
-        /// </summary>
-        /// <value>The media streams.</value>
-        public List<MediaStream> MediaStreams { get; set; }
-
-        /// <summary>
-        /// Gets or sets the format.
-        /// </summary>
-        /// <value>The format.</value>
-        public string Format { get; set; }
-
-        public int? TotalBitrate { get; set; }
-
-        public MediaInfo()
-        {
-            MediaStreams = new List<MediaStream>();
-        }
     }
 }

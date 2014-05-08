@@ -33,20 +33,4 @@ namespace MediaBrowser.Model.Dlna
             return (VideoCodec ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
         }
     }
-
-    public class XmlAttribute
-    {
-        [XmlAttribute("name")]
-        public string Name { get; set; }
-
-        [XmlAttribute("value")]
-        public string Value { get; set; }
-    }
-
-    public enum DlnaProfileType
-    {
-        Audio = 0,
-        Video = 1,
-        Photo = 2
-    }
 }

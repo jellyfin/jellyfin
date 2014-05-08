@@ -38,10 +38,4 @@ namespace MediaBrowser.Model.Dlna
             return (AudioCodec ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
         }
     }
-
-    public enum TranscodeSeekInfo
-    {
-        Auto = 0,
-        Bytes = 1
-    }
 }

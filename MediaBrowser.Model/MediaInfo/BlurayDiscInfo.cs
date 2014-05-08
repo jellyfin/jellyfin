@@ -34,11 +34,4 @@ namespace MediaBrowser.Model.MediaInfo
         /// <value>The chapters.</value>
         public List<double> Chapters { get; set; }
     }
-
-    public enum TransportStreamTimestamp
-    {
-        None,
-        Zero,
-        Valid
-    }
 }

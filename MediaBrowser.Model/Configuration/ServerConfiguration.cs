@@ -290,48 +290,4 @@ namespace MediaBrowser.Model.Configuration
             SubtitleOptions = new SubtitleOptions();
         }
     }
-
-    public enum ImageSavingConvention
-    {
-        Legacy,
-        Compatible
-    }
-
-    public enum EncodingQuality
-    {
-        Auto,
-        HighSpeed,
-        HighQuality,
-        MaxQuality
-    }
-
-    public class LiveTvOptions
-    {
-        public int? GuideDays { get; set; }
-    }
-
-    public class PathSubstitution
-    {
-        public string From { get; set; }
-        public string To { get; set; }
-    }
-
-    public class SubtitleOptions
-    {
-        public bool SkipIfGraphicalSubtitlesPresent { get; set; }
-        public bool SkipIfAudioTrackMatches { get; set; }
-        public string[] DownloadLanguages { get; set; }
-        public bool DownloadMovieSubtitles { get; set; }
-        public bool DownloadEpisodeSubtitles { get; set; }
-
-        public string OpenSubtitlesUsername { get; set; }
-        public string OpenSubtitlesPasswordHash { get; set; }
-
-        public SubtitleOptions()
-        {
-            DownloadLanguages = new string[] { };
-
-            SkipIfAudioTrackMatches = true;
-        }
-    }
 }

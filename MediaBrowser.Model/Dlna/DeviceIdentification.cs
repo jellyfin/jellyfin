@@ -1,6 +1,4 @@
-﻿using System.Xml.Serialization;
-
-namespace MediaBrowser.Model.Dlna
+﻿namespace MediaBrowser.Model.Dlna
 {
     public class DeviceIdentification
     {
@@ -59,24 +57,5 @@ namespace MediaBrowser.Model.Dlna
         {
             Headers = new HttpHeaderInfo[] {};
         }
-    }
-
-    public class HttpHeaderInfo
-    {
-        [XmlAttribute("name")]
-        public string Name { get; set; }
-
-        [XmlAttribute("value")]
-        public string Value { get; set; }
-
-        [XmlAttribute("match")]
-        public HeaderMatchType Match { get; set; }
-    }
-
-    public enum HeaderMatchType
-    {
-        Equals = 0,
-        Regex = 1,
-        Substring = 2
     }
 }

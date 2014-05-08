@@ -25,8 +25,6 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
-    public delegate void DelReceiveWebRequest(HttpListenerContext context);
-
     public class HttpListenerHost : ServiceStackHost, IHttpServer
     {
         private string ServerName { get; set; }
