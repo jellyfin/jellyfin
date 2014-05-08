@@ -17,30 +17,30 @@ namespace MediaBrowser.Model.Dlna
             int? width,
             int? height)
         {
-            var orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetImageOrgOpValue();
+            string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetImageOrgOpValue();
 
             // 0 = native, 1 = transcoded
             const string orgCi = ";DLNA.ORG_CI=0";
 
-            var flagValue = DlnaFlags.StreamingTransferMode |
+            DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
                             DlnaFlags.BackgroundTransferMode |
                             DlnaFlags.DlnaV15;
 
-            var dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
+            string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              FlagsToString(flagValue));
 
-            var mediaProfile = _profile.GetImageMediaProfile(container,
+            ResponseProfile mediaProfile = _profile.GetImageMediaProfile(container,
                 width,
                 height);
 
-            var orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
+            string orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
 
             if (string.IsNullOrEmpty(orgPn))
             {
                 orgPn = GetImageOrgPnValue(container, width, height);
             }
 
-            var contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
+            string contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
 
             return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
         }
@@ -55,12 +55,12 @@ namespace MediaBrowser.Model.Dlna
             TranscodeSeekInfo transcodeSeekInfo)
         {
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
-            var orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(runtimeTicks.HasValue, isDirectStream, transcodeSeekInfo);
+            string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(runtimeTicks.HasValue, isDirectStream, transcodeSeekInfo);
 
             // 0 = native, 1 = transcoded
-            var orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
+            string orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            var flagValue = DlnaFlags.StreamingTransferMode |
+            DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
                             DlnaFlags.BackgroundTransferMode |
                             DlnaFlags.DlnaV15;
 
@@ -73,22 +73,22 @@ namespace MediaBrowser.Model.Dlna
                 //flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_TIME_BASED_SEEK;
             }
 
-            var dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
+            string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              FlagsToString(flagValue));
 
-            var mediaProfile = _profile.GetAudioMediaProfile(container,
+            ResponseProfile mediaProfile = _profile.GetAudioMediaProfile(container,
                 audioCodec,
                 audioChannels,
                 audioBitrate);
 
-            var orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
+            string orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
 
             if (string.IsNullOrEmpty(orgPn))
             {
                 orgPn = GetAudioOrgPnValue(container, audioBitrate, audioSampleRate, audioChannels);
             }
 
-            var contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
+            string contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
 
             return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
         }
@@ -118,12 +118,12 @@ namespace MediaBrowser.Model.Dlna
             TranscodeSeekInfo transcodeSeekInfo)
         {
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
-            var orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(runtimeTicks.HasValue, isDirectStream, transcodeSeekInfo);
+            string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(runtimeTicks.HasValue, isDirectStream, transcodeSeekInfo);
 
             // 0 = native, 1 = transcoded
-            var orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
+            string orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            var flagValue = DlnaFlags.StreamingTransferMode |
+            DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
                             DlnaFlags.BackgroundTransferMode |
                             DlnaFlags.DlnaV15;
 
@@ -136,10 +136,10 @@ namespace MediaBrowser.Model.Dlna
                 //flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_TIME_BASED_SEEK;
             }
 
-            var dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
+            string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              FlagsToString(flagValue));
 
-            var mediaProfile = _profile.GetVideoMediaProfile(container,
+            ResponseProfile mediaProfile = _profile.GetVideoMediaProfile(container,
                 audioCodec,
                 videoCodec,
                 audioBitrate,
@@ -154,7 +154,7 @@ namespace MediaBrowser.Model.Dlna
                 packetLength,
                 timestamp);
 
-            var orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
+            string orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
 
             if (string.IsNullOrEmpty(orgPn))
             {
@@ -165,14 +165,14 @@ namespace MediaBrowser.Model.Dlna
                 orgPn = (orgPn ?? string.Empty).Split(',').FirstOrDefault();
             }
 
-            var contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
+            string contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
 
             return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
         }
 
         private string GetImageOrgPnValue(string container, int? width, int? height)
         {
-            var format = new MediaFormatProfileResolver()
+            MediaFormatProfile? format = new MediaFormatProfileResolver()
                 .ResolveImageFormat(container,
                 width,
                 height);
@@ -182,7 +182,7 @@ namespace MediaBrowser.Model.Dlna
 
         private string GetAudioOrgPnValue(string container, int? audioBitrate, int? audioSampleRate, int? audioChannels)
         {
-            var format = new MediaFormatProfileResolver()
+            MediaFormatProfile? format = new MediaFormatProfileResolver()
                 .ResolveAudioFormat(container,
                 audioBitrate,
                 audioSampleRate,

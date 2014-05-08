@@ -25,7 +25,7 @@
         {
             if (hasKnownRuntime)
             {
-                var orgOp = string.Empty;
+                string orgOp = string.Empty;
 
                 // Time-based seeking currently only possible when transcoding
                 orgOp += isDirectStream ? "0" : "1";
@@ -42,7 +42,7 @@
 
         public static string GetImageOrgOpValue()
         {
-            var orgOp = string.Empty;
+            string orgOp = string.Empty;
 
             // Time-based seeking currently only possible when transcoding
             orgOp += "0";

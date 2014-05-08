@@ -174,19 +174,19 @@ namespace MediaBrowser.Model.Dlna
                     return false;
                 }
 
-                var containers = i.GetContainers().ToList();
+                List<string> containers = i.GetContainers().ToList();
                 if (containers.Count > 0 && !containers.Contains(container))
                 {
                     return false;
                 }
 
-                var audioCodecs = i.GetAudioCodecs().ToList();
+                List<string> audioCodecs = i.GetAudioCodecs().ToList();
                 if (audioCodecs.Count > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty))
                 {
                     return false;
                 }
 
-                var conditionProcessor = new ConditionProcessor();
+                ConditionProcessor conditionProcessor = new ConditionProcessor();
                 return i.Conditions.All(c => conditionProcessor.IsAudioConditionSatisfied(c,
                     audioChannels,
                     audioBitrate));
@@ -204,13 +204,13 @@ namespace MediaBrowser.Model.Dlna
                     return false;
                 }
 
-                var containers = i.GetContainers().ToList();
+                List<string> containers = i.GetContainers().ToList();
                 if (containers.Count > 0 && !containers.Contains(container))
                 {
                     return false;
                 }
 
-                var conditionProcessor = new ConditionProcessor();
+                ConditionProcessor conditionProcessor = new ConditionProcessor();
                 return i.Conditions.All(c => conditionProcessor.IsImageConditionSatisfied(c,
                     width,
                     height));
@@ -241,25 +241,25 @@ namespace MediaBrowser.Model.Dlna
                     return false;
                 }
 
-                var containers = i.GetContainers().ToList();
+                List<string> containers = i.GetContainers().ToList();
                 if (containers.Count > 0 && !containers.Contains(container))
                 {
                     return false;
                 }
 
-                var audioCodecs = i.GetAudioCodecs().ToList();
+                List<string> audioCodecs = i.GetAudioCodecs().ToList();
                 if (audioCodecs.Count > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty))
                 {
                     return false;
                 }
 
-                var videoCodecs = i.GetVideoCodecs().ToList();
+                List<string> videoCodecs = i.GetVideoCodecs().ToList();
                 if (videoCodecs.Count > 0 && !videoCodecs.Contains(videoCodec ?? string.Empty))
                 {
                     return false;
                 }
 
-                var conditionProcessor = new ConditionProcessor();
+                ConditionProcessor conditionProcessor = new ConditionProcessor();
                 return i.Conditions.All(c => conditionProcessor.IsVideoConditionSatisfied(c,
                     audioBitrate,
                     audioChannels,
@@ -286,13 +286,13 @@ namespace MediaBrowser.Model.Dlna
                     return false;
                 }
 
-                var containers = i.GetContainers().ToList();
+                List<string> containers = i.GetContainers().ToList();
                 if (containers.Count > 0 && !containers.Contains(container))
                 {
                     return false;
                 }
 
-                var conditionProcessor = new ConditionProcessor();
+                ConditionProcessor conditionProcessor = new ConditionProcessor();
                 return i.Conditions.All(c => conditionProcessor.IsImageConditionSatisfied(c,
                     width,
                     height));
