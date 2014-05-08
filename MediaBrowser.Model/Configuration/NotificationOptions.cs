@@ -75,14 +75,14 @@ namespace MediaBrowser.Model.Configuration
 
         public bool IsEnabled(string type)
         {
-            var opt = GetOptions(type);
+            NotificationOption opt = GetOptions(type);
 
             return opt != null && opt.Enabled;
         }
 
         public bool IsServiceEnabled(string service, string notificationType)
         {
-            var opt = GetOptions(notificationType);
+            NotificationOption opt = GetOptions(notificationType);
 
             return opt == null ||
                    !opt.DisabledServices.Contains(service, StringComparer.OrdinalIgnoreCase);
@@ -90,7 +90,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool IsEnabledToMonitorUser(string type, string userId)
         {
-            var opt = GetOptions(type);
+            NotificationOption opt = GetOptions(type);
 
             return opt != null && opt.Enabled &&
                    !opt.DisabledMonitorUsers.Contains(userId, StringComparer.OrdinalIgnoreCase);
@@ -98,7 +98,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool IsEnabledToSendToUser(string type, string userId, UserConfiguration userConfig)
         {
-            var opt = GetOptions(type);
+            NotificationOption opt = GetOptions(type);
 
             if (opt != null && opt.Enabled)
             {

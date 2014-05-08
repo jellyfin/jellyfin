@@ -164,7 +164,7 @@ namespace MediaBrowser.Model.Web
                 throw new ArgumentNullException("value");
             }
 
-            var paramValue = string.Join(",", value.ToArray());
+            string paramValue = string.Join(",", value.ToArray());
 
             Add(name, paramValue);
         }
@@ -196,7 +196,7 @@ namespace MediaBrowser.Model.Web
                 throw new ArgumentNullException("value");
             }
 
-            var paramValue = string.Join(delimiter, value.ToArray());
+            string paramValue = string.Join(delimiter, value.ToArray());
 
             Add(name, paramValue);
         }
@@ -221,7 +221,7 @@ namespace MediaBrowser.Model.Web
         /// <returns>System.String.</returns>
         public string GetQueryString()
         {
-            var queryParams = this.Select(i => string.Format("{0}={1}", i.Key, GetEncodedValue(i.Value))).ToArray();
+            string[] queryParams = this.Select(i => string.Format("{0}={1}", i.Key, GetEncodedValue(i.Value))).ToArray();
 
             return string.Join("&", queryParams);
         }
@@ -243,7 +243,7 @@ namespace MediaBrowser.Model.Web
         /// <returns>System.String.</returns>
         public string GetUrl(string prefix)
         {
-            var query = GetQueryString();
+            string query = GetQueryString();
 
             if (string.IsNullOrEmpty(query))
             {

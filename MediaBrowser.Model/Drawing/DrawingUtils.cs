@@ -30,7 +30,7 @@
         /// <returns>ImageSize.</returns>
         public static ImageSize Scale(ImageSize size, double scaleFactor)
         {
-            var newWidth = size.Width * scaleFactor;
+            double newWidth = size.Width * scaleFactor;
 
             return Resize(size.Width, size.Height, newWidth, null, null, null);
         }
@@ -120,7 +120,7 @@
         /// <returns>System.Double.</returns>
         private static double GetNewWidth(double currentHeight, double currentWidth, double newHeight)
         {
-            var scaleFactor = newHeight;
+            double scaleFactor = newHeight;
             scaleFactor /= currentHeight;
             scaleFactor *= currentWidth;
 
@@ -136,7 +136,7 @@
         /// <returns>System.Double.</returns>
         private static double GetNewHeight(double currentHeight, double currentWidth, double newWidth)
         {
-            var scaleFactor = newWidth;
+            double scaleFactor = newWidth;
             scaleFactor /= currentWidth;
             scaleFactor *= currentHeight;
 

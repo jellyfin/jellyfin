@@ -10,13 +10,13 @@ namespace MediaBrowser.Model.Dlna
         {
             if (string.Equals(container, "asf", StringComparison.OrdinalIgnoreCase))
             {
-                var val = ResolveVideoASFFormat(videoCodec, audioCodec, width, height);
+                MediaFormatProfile? val = ResolveVideoASFFormat(videoCodec, audioCodec, width, height);
                 return val.HasValue ? new List<MediaFormatProfile> { val.Value } : new List<MediaFormatProfile>();
             }
 
             if (string.Equals(container, "mp4", StringComparison.OrdinalIgnoreCase))
             {
-                var val = ResolveVideoMP4Format(videoCodec, audioCodec, width, height);
+                MediaFormatProfile? val = ResolveVideoMP4Format(videoCodec, audioCodec, width, height);
                 return val.HasValue ? new List<MediaFormatProfile> { val.Value } : new List<MediaFormatProfile>();
             }
 
@@ -50,7 +50,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (string.Equals(container, "3gp", StringComparison.OrdinalIgnoreCase))
             {
-                var val = ResolveVideo3GPFormat(videoCodec, audioCodec);
+                MediaFormatProfile? val = ResolveVideo3GPFormat(videoCodec, audioCodec);
                 return val.HasValue ? new List<MediaFormatProfile> { val.Value } : new List<MediaFormatProfile>();
             }
 
@@ -62,7 +62,7 @@ namespace MediaBrowser.Model.Dlna
 
         private IEnumerable<MediaFormatProfile> ResolveVideoMPEG2TSFormat(string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
         {
-            var suffix = "";
+            string suffix = "";
 
             switch (timestampType)
             {
@@ -74,7 +74,7 @@ namespace MediaBrowser.Model.Dlna
                     break;
             }
 
-            var resolution = "S";
+            string resolution = "S";
             if ((width.HasValue && width.Value > 720) || (height.HasValue && height.Value > 576))
             {
                 resolution = "H";
@@ -82,7 +82,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (string.Equals(videoCodec, "mpeg2video", StringComparison.OrdinalIgnoreCase))
             {
-                var list = new List<MediaFormatProfile>();
+                List<MediaFormatProfile> list = new List<MediaFormatProfile>();
 
                 list.Add(ValueOf("MPEG_TS_SD_NA" + suffix));
                 list.Add(ValueOf("MPEG_TS_SD_EU" + suffix));

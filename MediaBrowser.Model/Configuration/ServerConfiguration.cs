@@ -271,7 +271,7 @@ namespace MediaBrowser.Model.Configuration
 
             EnableRealtimeMonitor = true;
 
-            var options = new List<MetadataOptions>
+            List<MetadataOptions> options = new List<MetadataOptions>
             {
                 new MetadataOptions(1, 1280) {ItemType = "Book"},
                 new MetadataOptions(1, 1280) {ItemType = "MusicAlbum"},

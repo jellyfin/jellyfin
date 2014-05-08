@@ -103,9 +103,9 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public void IncreaseImageSize()
         {
-            var newWidth = PrimaryImageWidth / ImageScale;
+            double newWidth = PrimaryImageWidth / ImageScale;
 
-            var size = DrawingUtils.Resize(PrimaryImageWidth, PrimaryImageHeight, newWidth, null, null, null);
+            ImageSize size = DrawingUtils.Resize(PrimaryImageWidth, PrimaryImageHeight, newWidth, null, null, null);
 
             PrimaryImageWidth = Convert.ToInt32(size.Width);
             PrimaryImageHeight = Convert.ToInt32(size.Height);
@@ -116,7 +116,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public void DecreaseImageSize()
         {
-            var size = DrawingUtils.Scale(PrimaryImageWidth, PrimaryImageHeight, ImageScale);
+            ImageSize size = DrawingUtils.Scale(PrimaryImageWidth, PrimaryImageHeight, ImageScale);
 
             PrimaryImageWidth = Convert.ToInt32(size.Width);
             PrimaryImageHeight = Convert.ToInt32(size.Height);

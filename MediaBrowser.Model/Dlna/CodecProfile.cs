@@ -27,7 +27,7 @@ namespace MediaBrowser.Model.Dlna
 
         public bool ContainsCodec(string codec)
         {
-            var codecs = GetCodecs();
+            List<string> codecs = GetCodecs();
 
             return codecs.Count == 0 || codecs.Contains(codec, StringComparer.OrdinalIgnoreCase);
         }
