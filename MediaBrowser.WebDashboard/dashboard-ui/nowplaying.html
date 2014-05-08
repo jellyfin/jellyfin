@@ -39,7 +39,7 @@
                     <div data-role="controlgroup" data-type="horizontal">
                         <button data-icon="volume-up" data-inline="true" data-iconpos="notext" title="${ButtonVolumeUp}" class="btnCommand" data-command="VolumeUp">${ButtonVolumeUp}</button>
                         <button data-icon="volume-off" data-inline="true" data-iconpos="notext" title="${ButtonMute}" class="btnCommand" data-command="ToggleMute">${ButtonMute}</button>
-                        <button data-icon="expand" data-inline="true" data-iconpos="notext" title="${ButtonFullscreen}" class="btnToggleFullscreen btnPlayStateCommand" data-command="ToggleFullscreen" style="visibility:hidden;">${ButtonFullscreen}</button>
+                        <button data-icon="expand" data-inline="true" data-iconpos="notext" title="${ButtonFullscreen}" class="btnToggleFullscreen btnPlayStateCommand" data-command="ToggleFullscreen" style="visibility: hidden;">${ButtonFullscreen}</button>
                         <button data-icon="expand" data-inline="true" data-iconpos="notext" title="${ButtonFullscreen}" class="btnToggleFullscreen videoButton btnPlayStateCommand" data-command="ToggleFullscreen">${ButtonFullscreen}</button>
                     </div>
                     <div data-role="controlgroup" data-type="horizontal">
@@ -85,6 +85,25 @@
             </div>
         </div>
 
+        <div data-role="popup" id="popupAudioTrackMenu" data-history="false" data-transition="flip">
+            <ul data-role="listview" data-inset="true" style="min-width: 210px;">
+                <li data-role="list-divider">Select Audio</li>
+                <li><a href="#">View details</a></li>
+                <li><a href="#">Edit</a></li>
+                <li><a href="#">Disable</a></li>
+                <li><a href="#">Delete</a></li>
+            </ul>
+        </div>
+
+        <div data-role="popup" id="popupSubtitleTrackMenu" data-history="false" data-transition="flip">
+            <ul data-role="listview" data-inset="true" style="min-width: 210px;">
+                <li data-role="list-divider">Select Subtitles</li>
+                <li><a href="#">View details</a></li>
+                <li><a href="#">Edit</a></li>
+                <li><a href="#">Disable</a></li>
+                <li><a href="#">Delete</a></li>
+            </ul>
+        </div>
     </div>
 </body>
 </html>

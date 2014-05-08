@@ -48,6 +48,7 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly IMusicManager _musicManager;
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
+        private readonly IItemRepository _itemRepo;
 
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -90,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="userRepository">The user repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor)
+        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IItemRepository itemRepo)
         {
             _userDataRepository = userDataRepository;
             _configurationManager = configurationManager;
@@ -101,6 +102,7 @@ namespace MediaBrowser.Server.Implementations.Session
             _musicManager = musicManager;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -279,7 +281,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (!string.IsNullOrWhiteSpace(info.ItemId) && libraryItem != null)
             {
-                info.Item = GetItemInfo(libraryItem, runtimeTicks);
+                info.Item = GetItemInfo(libraryItem, runtimeTicks, libraryItem, info.MediaSourceId);
             }
 
             session.NowPlayingItem = info.Item;
@@ -1172,9 +1174,11 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="runtimeTicks">The now playing runtime ticks.</param>
+        /// <param name="chapterOwner">The chapter owner.</param>
+        /// <param name="mediaSourceId">The media source identifier.</param>
         /// <returns>BaseItemInfo.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        private BaseItemInfo GetItemInfo(BaseItem item, long? runtimeTicks)
+        private BaseItemInfo GetItemInfo(BaseItem item, long? runtimeTicks, BaseItem chapterOwner, string mediaSourceId)
         {
             if (item == null)
             {
@@ -1322,6 +1326,22 @@ namespace MediaBrowser.Server.Implementations.Session
                 info.LogoItemId = GetDtoId(logoItem);
             }
 
+            if (chapterOwner != null)
+            {
+                info.ChapterImagesItemId = chapterOwner.Id.ToString("N");
+
+                info.Chapters = _itemRepo.GetChapters(chapterOwner.Id).Select(i => _dtoService.GetChapterInfoDto(i, chapterOwner)).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(mediaSourceId))
+            {
+                info.MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
+                {
+                    ItemId = new Guid(mediaSourceId)
+
+                }).ToList();
+            }
+
             return info;
         }
 
@@ -1347,7 +1367,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var item = _libraryManager.GetItemById(new Guid(itemId));
 
-            var info = GetItemInfo(item, item.RunTimeTicks);
+            var info = GetItemInfo(item, item.RunTimeTicks, null, null);
 
             ReportNowViewingItem(sessionId, info);
         }

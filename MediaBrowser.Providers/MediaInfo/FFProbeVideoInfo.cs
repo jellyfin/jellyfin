@@ -417,7 +417,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        public IEnumerable<FileSystemInfo> GetSubtitleFiles(Video video, IDirectoryService directoryService)
+        public IEnumerable<FileSystemInfo> GetSubtitleFiles(Video video, IDirectoryService directoryService, bool clearCache)
         {
             var containingPath = video.ContainingFolderPath;
 
@@ -426,7 +426,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 throw new ArgumentException(string.Format("Cannot search for items that don't have a path: {0} {1}", video.Name, video.Id));
             }
 
-            var files = directoryService.GetFiles(containingPath);
+            var files = directoryService.GetFiles(containingPath, clearCache);
 
             var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
 
@@ -460,7 +460,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="currentStreams">The current streams.</param>
         private async Task AddExternalSubtitles(Video video, List<MediaStream> currentStreams, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
-            var externalSubtitleStreams = GetExternalSubtitleStreams(video, currentStreams.Count, directoryService).ToList();
+            var externalSubtitleStreams = GetExternalSubtitleStreams(video, currentStreams.Count, directoryService, false).ToList();
 
             if ((_config.Configuration.SubtitleOptions.DownloadEpisodeSubtitles &&
                 video is Episode) ||
@@ -480,7 +480,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Rescan
                 if (downloadedLanguages.Count > 0)
                 {
-                    externalSubtitleStreams = GetExternalSubtitleStreams(video, currentStreams.Count, directoryService).ToList();
+                    externalSubtitleStreams = GetExternalSubtitleStreams(video, currentStreams.Count, directoryService, true).ToList();
                 }
             }
 
@@ -491,9 +491,10 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private IEnumerable<MediaStream> GetExternalSubtitleStreams(Video video, 
             int startIndex, 
-            IDirectoryService directoryService)
+            IDirectoryService directoryService,
+            bool clearCache)
         {
-            var files = GetSubtitleFiles(video, directoryService);
+            var files = GetSubtitleFiles(video, directoryService, clearCache);
 
             var streams = new List<MediaStream>();
 

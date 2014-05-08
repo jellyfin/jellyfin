@@ -319,8 +319,10 @@
                     player.setVolume(cmd.Arguments.Volume);
                     break;
                 case 'SetAudioStreamIndex':
+                    player.setAudioStreamIndex(parseInt(cmd.Arguments.Index));
                     break;
                 case 'SetSubtitleStreamIndex':
+                    player.setSubtitleStreamIndex(parseInt(cmd.Arguments.Index));
                     break;
                 case 'ToggleFullscreen':
                     player.toggleFullscreen();

@@ -4,6 +4,102 @@
     var lastPlayerState;
     var isPositionSliderActive;
 
+    function showAudioMenu(page, item) {
+
+        var streams = (item.MediaStreams || []).filter(function (i) {
+
+            return i.Type == 'Audio';
+        });
+
+        var elem = $('#popupAudioTrackMenu', page);
+
+        var html = '<li data-role="list-divider">Select Audio</li>';
+
+        html += streams.map(function (s) {
+
+            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" style="font-size:13px;" class="lnkTrackOption">';
+
+            streamHtml += (s.Codec || '').toUpperCase();
+
+            if (s.Profile) {
+                streamHtml += ' ' + s.Profile;
+            }
+
+            streamHtml += '<br/>';
+
+            var extras = [];
+
+            if (s.Language) {
+                extras.push(s.Language);
+            }
+            if (s.Layout) {
+                extras.push(s.Layout);
+            }
+            else if (s.Channels) {
+                extras.push(s.Channels + ' ch');
+            }
+
+            if (s.BitRate) {
+                extras.push((parseInt(s.BitRate / 1000)) + ' kbps');
+            }
+
+            streamHtml += extras.join(' - ');
+
+            streamHtml += '</a></li>';
+
+            return streamHtml;
+
+        }).join('');
+
+        $('ul', elem).html(html).listview('refresh').trigger('create');
+
+        elem.popup('open');
+    }
+
+    function showSubtitleMenu(page, item) {
+
+        var streams = (item.MediaStreams || []).filter(function (i) {
+
+            return i.Type == 'Subtitle';
+        });
+
+        var elem = $('#popupSubtitleTrackMenu', page);
+
+        var html = '<li data-role="list-divider">Select Subtitles</li>';
+
+        html += '<li><a href="#" style="font-size:13px;" data-index="-1" class="lnkTrackOption">Off</a></li>';
+
+        html += streams.map(function (s) {
+
+            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" style="font-size:13px;" class="lnkTrackOption">';
+
+            streamHtml += (s.Language || 'Unknown language');
+
+            if (s.IsDefault && s.IsForced) {
+                streamHtml += ' (Default/Forced)';
+            }
+            else if (s.IsDefault) {
+                streamHtml += ' (Default)';
+            }
+            else if (s.IsForced) {
+                streamHtml += ' (Forced)';
+            }
+
+            streamHtml += '<br/>';
+
+            streamHtml += (s.Codec || '').toUpperCase();
+
+            streamHtml += '</a></li>';
+
+            return streamHtml;
+
+        }).join('');
+
+        $('ul', elem).html(html).listview('refresh').trigger('create');
+
+        elem.popup('open');
+    }
+
     function bindEvents(page) {
 
         $('.radioTabButton', page).on('change', function () {
@@ -16,35 +112,90 @@
 
         $('.btnCommand,.btnToggleFullscreen', page).on('click', function () {
 
-            MediaController.sendCommand({
-                Name: this.getAttribute('data-command')
-                
-            }, currentPlayer);
+            if (currentPlayer) {
+                MediaController.sendCommand({
+                    Name: this.getAttribute('data-command')
+
+                }, currentPlayer);
+            }
+        });
+
+        $('#popupAudioTrackMenu', page).on('click', '.lnkTrackOption', function () {
+
+            if (currentPlayer && lastPlayerState) {
+
+                var index = this.getAttribute('data-index');
+
+                currentPlayer.setAudioStreamIndex(parseInt(index));
+
+                $('#popupAudioTrackMenu', page).popup('close');
+            }
+        });
+
+        $('#popupSubtitleTrackMenu', page).on('click', '.lnkTrackOption', function () {
+
+            if (currentPlayer && lastPlayerState) {
+                var index = this.getAttribute('data-index');
+
+                currentPlayer.setSubtitleStreamIndex(parseInt(index));
+
+                $('#popupSubtitleTrackMenu', page).popup('close');
+            }
+        });
+
+        $('.btnAudioTracks', page).on('click', function () {
+
+            if (currentPlayer && lastPlayerState) {
+                showAudioMenu(page, lastPlayerState.NowPlayingItem);
+            }
+        });
+
+        $('.btnSubtitles', page).on('click', function () {
+
+            if (currentPlayer && lastPlayerState) {
+                showSubtitleMenu(page, lastPlayerState.NowPlayingItem);
+            }
+        });
+
+        $('.btnChapters', page).on('click', function () {
+
+            if (currentPlayer && lastPlayerState) {
+            }
         });
 
         $('.btnStop', page).on('click', function () {
 
-            currentPlayer.stop();
+            if (currentPlayer) {
+                currentPlayer.stop();
+            }
         });
 
         $('.btnPlay', page).on('click', function () {
 
-            currentPlayer.unpause();
+            if (currentPlayer) {
+                currentPlayer.unpause();
+            }
         });
 
         $('.btnPause', page).on('click', function () {
 
-            currentPlayer.pause();
+            if (currentPlayer) {
+                currentPlayer.pause();
+            }
         });
 
         $('.btnNextTrack', page).on('click', function () {
 
-            currentPlayer.nextTrack();
+            if (currentPlayer) {
+                currentPlayer.nextTrack();
+            }
         });
 
         $('.btnPreviousTrack', page).on('click', function () {
 
-            currentPlayer.previousTrack();
+            if (currentPlayer) {
+                currentPlayer.previousTrack();
+            }
         });
 
         $('.positionSlider', page).on('slidestart', function () {
@@ -96,6 +247,12 @@
         button.addClass('hide');
     }
 
+    function hasStreams(item, type) {
+        return item && item.MediaStreams && item.MediaStreams.filter(function (i) {
+            return i.Type == type;
+        }).length > 0;
+    }
+
     function updatePlayerState(page, state) {
 
         lastPlayerState = state;
@@ -108,17 +265,17 @@
 
         $('.btnToggleFullscreen', page).buttonEnabled(item && item.MediaType == 'Video' && supportedCommands.indexOf('ToggleFullscreen') != -1);
 
-        $('.btnAudioTracks', page).buttonEnabled(false);
-        $('.btnSubtitles', page).buttonEnabled(false);
-        $('.btnChapters', page).buttonEnabled(false);
+        $('.btnAudioTracks', page).buttonEnabled(hasStreams(item, 'Audio') && supportedCommands.indexOf('SetAudioStreamIndex') != -1);
+        $('.btnSubtitles', page).buttonEnabled(hasStreams(item, 'Subtitle') && supportedCommands.indexOf('SetSubtitleStreamIndex') != -1);
+        $('.btnChapters', page).buttonEnabled(item && item.Chapters && item.Chapters.length);
 
         $('.btnStop', page).buttonEnabled(item != null);
         $('.btnNextTrack', page).buttonEnabled(item != null);
         $('.btnPreviousTrack', page).buttonEnabled(item != null);
-        
+
         var btnPause = $('.btnPause', page).buttonEnabled(item != null);
         var btnPlay = $('.btnPlay', page).buttonEnabled(item != null);
-        
+
         var playState = state.PlayState || {};
 
         if (playState.IsPaused) {
@@ -147,7 +304,7 @@
 
                 positionSlider.val(0);
             }
-            
+
             if (playState.CanSeek) {
                 positionSlider.slider("enable");
             } else {
@@ -174,7 +331,7 @@
         } else {
             $('.videoButton', page).css('visibility', 'hidden');
         }
-        
+
         updateNowPlayingInfo(page, state);
     }
 
@@ -221,7 +378,7 @@
 
         setImageUrl(page, url);
     }
-    
+
     function setImageUrl(page, url) {
         currentImgUrl = url;
 
