@@ -472,7 +472,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     .DownloadSubtitles(video,
                     currentStreams,
                     externalSubtitleStreams,
-                    _config.Configuration.SubtitleOptions.RequireTextSubtitles,
+                    _config.Configuration.SubtitleOptions.SkipIfGraphicalSubtitlesPresent,
+                    _config.Configuration.SubtitleOptions.SkipIfAudioTrackMatches,
                     _config.Configuration.SubtitleOptions.DownloadLanguages,
                     cancellationToken).ConfigureAwait(false);
 
