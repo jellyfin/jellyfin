@@ -91,9 +91,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 return false;
             }
 
-            // There's already an audio stream for this language
+            // There's already a default audio stream for this language
             if (skipIfAudioTrackMatches &&
-                internalMediaStreams.Any(i => i.Type == MediaStreamType.Audio && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+                internalMediaStreams.Any(i => i.Type == MediaStreamType.Audio && i.IsDefault && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }

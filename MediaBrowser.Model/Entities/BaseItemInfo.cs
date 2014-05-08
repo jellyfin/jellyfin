@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Dto;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Serialization;
@@ -34,7 +35,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The type of the media.</value>
         public string MediaType { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the run time ticks.
         /// </summary>
@@ -64,7 +65,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The logo item identifier.</value>
         public string LogoItemId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the thumb image tag.
         /// </summary>
@@ -136,7 +137,25 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The artists.</value>
         public List<string> Artists { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the media streams.
+        /// </summary>
+        /// <value>The media streams.</value>
+        public List<MediaStream> MediaStreams { get; set; }
+
+        /// <summary>
+        /// Gets or sets the chapter images item identifier.
+        /// </summary>
+        /// <value>The chapter images item identifier.</value>
+        public string ChapterImagesItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the chapters.
+        /// </summary>
+        /// <value>The chapters.</value>
+        public List<ChapterInfoDto> Chapters { get; set; }
+
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>
@@ -150,6 +169,8 @@ namespace MediaBrowser.Model.Entities
         public BaseItemInfo()
         {
             Artists = new List<string>();
+            MediaStreams = new List<MediaStream>();
+            Chapters = new List<ChapterInfoDto>();
         }
     }
 }

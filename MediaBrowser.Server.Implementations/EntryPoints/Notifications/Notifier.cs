@@ -14,12 +14,12 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Updates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 {
@@ -39,6 +39,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private readonly ILibraryManager _libraryManager;
         private readonly ISessionManager _sessionManager;
         private readonly IServerApplicationHost _appHost;
+
+        private Timer LibraryUpdateTimer { get; set; }
+        private readonly object _libraryChangedSyncLock = new object();
 
         public Notifications(IInstallationManager installationManager, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, IServerConfigurationManager config, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost)
         {
@@ -210,20 +213,54 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             return null;
         }
 
-        async void _libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
+        private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
+        void _libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.LocationType == LocationType.FileSystem)
+            if (e.Item.LocationType == LocationType.FileSystem && !e.Item.IsFolder)
             {
-                var type = NotificationType.NewLibraryContent.ToString();
+                lock (_libraryChangedSyncLock)
+                {
+                    if (LibraryUpdateTimer == null)
+                    {
+                        LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, 5000,
+                                                       Timeout.Infinite);
+                    }
+                    else
+                    {
+                        LibraryUpdateTimer.Change(5000, Timeout.Infinite);
+                    }
 
-                var item = e.Item;
+                    _itemsAdded.Add(e.Item);
+                }
+            }
+        }
 
+        private async void LibraryUpdateTimerCallback(object state)
+        {
+            List<BaseItem> items;
+
+            lock (_libraryChangedSyncLock)
+            {
+                items = _itemsAdded.ToList();
+                _itemsAdded.Clear();
+                DisposeLibraryUpdateTimer();
+            }
+
+            var item = items.FirstOrDefault();
+
+            if (item != null)
+            {
                 var notification = new NotificationRequest
                 {
-                    NotificationType = type
+                    NotificationType = NotificationType.NewLibraryContent.ToString()
                 };
 
                 notification.Variables["Name"] = item.Name;
+
+                if (items.Count > 1)
+                {
+                    notification.Name = items.Count + " new library items.";
+                }
 
                 await SendNotification(notification).ConfigureAwait(false);
             }
@@ -313,6 +350,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
         public void Dispose()
         {
+            DisposeLibraryUpdateTimer();
+
             _installationManager.PluginInstalled -= _installationManager_PluginInstalled;
             _installationManager.PluginUpdated -= _installationManager_PluginUpdated;
             _installationManager.PackageInstallationFailed -= _installationManager_PackageInstallationFailed;
@@ -327,6 +366,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _appHost.HasPendingRestartChanged -= _appHost_HasPendingRestartChanged;
             _appHost.HasUpdateAvailableChanged -= _appHost_HasUpdateAvailableChanged;
             _appHost.ApplicationUpdated -= _appHost_ApplicationUpdated;
+        }
+
+        private void DisposeLibraryUpdateTimer()
+        {
+            if (LibraryUpdateTimer != null)
+            {
+                LibraryUpdateTimer.Dispose();
+                LibraryUpdateTimer = null;
+            }
         }
     }
 }

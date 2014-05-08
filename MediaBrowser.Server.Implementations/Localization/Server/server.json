@@ -715,6 +715,6 @@
 	"LabelAudioLanguagePreferenceHelp": "If empty, the default audio track will be selected, regardless of language.",
 	"LabelDownloadLanguages": "Download languages:",
 	"ButtonRegister": "Register",
-	"LabelSkipIfAudioTrackPresent": "Skip if the video has an audio track with the download language",
+	"LabelSkipIfAudioTrackPresent": "Skip if the default audio track matches the download language",
 	"LabelSkipIfAudioTrackPresentHelp": "Uncheck this to ensure all videos have subtitles, regardless of audio language."
 }

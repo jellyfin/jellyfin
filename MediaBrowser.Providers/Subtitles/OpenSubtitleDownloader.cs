@@ -120,7 +120,13 @@ namespace MediaBrowser.Providers.Subtitles
 
             if (results.Count == 0)
             {
-                throw new ResourceNotFoundException("Subtitle with Id " + ossId + " was not found.");
+                var msg = string.Format("Subtitle with Id {0} was not found. Name: {1}. Status: {2}. Message: {3}",
+                    ossId,
+                    resultDownLoad.Name ?? string.Empty,
+                    resultDownLoad.Message ?? string.Empty,
+                    resultDownLoad.Status ?? string.Empty);
+
+                throw new ResourceNotFoundException(msg);
             }
 
             var data = Convert.FromBase64String(results.First().Data);
@@ -245,7 +251,7 @@ namespace MediaBrowser.Providers.Subtitles
                         ProviderName = Name,
                         Language = i.SubLanguageID,
 
-                        Id = i.SubFormat + "-" + i.SubLanguageID + "-" + i.IDSubtitle,
+                        Id = i.SubFormat + "-" + i.SubLanguageID + "-" + i.IDSubtitleFile,
 
                         Name = i.SubFileName,
                         DateCreated = DateTime.Parse(i.SubAddDate, _usCulture),

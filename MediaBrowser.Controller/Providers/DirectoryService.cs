@@ -11,6 +11,7 @@ namespace MediaBrowser.Controller.Providers
     {
         List<FileSystemInfo> GetFileSystemEntries(string path);
         IEnumerable<FileSystemInfo> GetFiles(string path);
+        IEnumerable<FileSystemInfo> GetFiles(string path, bool clearCache);
         FileSystemInfo GetFile(string path);
     }
 
@@ -27,7 +28,19 @@ namespace MediaBrowser.Controller.Providers
 
         public List<FileSystemInfo> GetFileSystemEntries(string path)
         {
+            return GetFileSystemEntries(path, false);
+        }
+
+        private List<FileSystemInfo> GetFileSystemEntries(string path, bool clearCache)
+        {
             List<FileSystemInfo> entries;
+
+            if (clearCache)
+            {
+                List<FileSystemInfo> removed;
+
+                _cache.TryRemove(path, out removed);
+            }
 
             if (!_cache.TryGetValue(path, out entries))
             {
@@ -50,7 +63,12 @@ namespace MediaBrowser.Controller.Providers
 
         public IEnumerable<FileSystemInfo> GetFiles(string path)
         {
-            return GetFileSystemEntries(path).Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory);
+            return GetFiles(path, false);
+        }
+
+        public IEnumerable<FileSystemInfo> GetFiles(string path, bool clearCache)
+        {
+            return GetFileSystemEntries(path, clearCache).Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory);
         }
 
         public FileSystemInfo GetFile(string path)
