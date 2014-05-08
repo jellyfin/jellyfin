@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Common.Events
+namespace MediaBrowser.Model.Events
 {
     /// <summary>
     /// Provides a generic EventArgs subclass that can hold any kind of object

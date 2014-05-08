@@ -138,7 +138,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="notificationIdList">The notification id list.</param>
         /// <param name="isRead">if set to <c>true</c> [is read].</param>
         /// <returns>Task.</returns>
-        Task MarkNotificationsRead(string userId, IEnumerable<Guid> notificationIdList, bool isRead);
+        Task MarkNotificationsRead(string userId, IEnumerable<string> notificationIdList, bool isRead);
 
         /// <summary>
         /// Gets the notifications summary.
@@ -447,7 +447,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="id">The id.</param>
         /// <returns>Task{TaskInfo}.</returns>
         /// <exception cref="ArgumentNullException">id</exception>
-        Task<TaskInfo> GetScheduledTaskAsync(Guid id);
+        Task<TaskInfo> GetScheduledTaskAsync(string id);
 
         /// <summary>
         /// Gets a user by id
@@ -582,6 +582,38 @@ namespace MediaBrowser.Model.ApiClient
         Task SendCommandAsync(string sessionId, GeneralCommand command);
 
         /// <summary>
+        /// Sends the string.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="text">The text.</param>
+        /// <returns>Task.</returns>
+        Task SendString(string sessionId, string text);
+
+        /// <summary>
+        /// Sets the volume.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="volume">The volume.</param>
+        /// <returns>Task.</returns>
+        Task SetVolume(string sessionId, int volume);
+
+        /// <summary>
+        /// Sets the index of the audio stream.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="volume">The volume.</param>
+        /// <returns>Task.</returns>
+        Task SetAudioStreamIndex(string sessionId, int? volume);
+
+        /// <summary>
+        /// Sets the index of the subtitle stream.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="volume">The volume.</param>
+        /// <returns>Task.</returns>
+        Task SetSubtitleStreamIndex(string sessionId, int? volume);
+        
+        /// <summary>
         /// Instructs the client to display a message to the user
         /// </summary>
         /// <param name="sessionId">The session id.</param>
@@ -632,7 +664,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="triggers">The triggers.</param>
         /// <returns>Task{RequestResult}.</returns>
         /// <exception cref="ArgumentNullException">id</exception>
-        Task UpdateScheduledTaskTriggersAsync(Guid id, TaskTriggerInfo[] triggers);
+        Task UpdateScheduledTaskTriggersAsync(string id, TaskTriggerInfo[] triggers);
 
         /// <summary>
         /// Gets the display preferences.

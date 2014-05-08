@@ -55,7 +55,7 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the user primary image tag.
         /// </summary>
         /// <value>The user primary image tag.</value>
-        public Guid? UserPrimaryImageTag { get; set; }
+        public string UserPrimaryImageTag { get; set; }
         
         /// <summary>
         /// Gets or sets the name of the user.

@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Threading;

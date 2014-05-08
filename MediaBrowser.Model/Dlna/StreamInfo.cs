@@ -79,9 +79,9 @@ namespace MediaBrowser.Model.Dlna
                 throw new ArgumentNullException(baseUrl);
             }
 
-            var dlnaCommand = BuildDlnaParam(this);
+            string dlnaCommand = BuildDlnaParam(this);
 
-            var extension = string.IsNullOrEmpty(Container) ? string.Empty : "." + Container;
+            string extension = string.IsNullOrEmpty(Container) ? string.Empty : "." + Container;
 
             baseUrl = baseUrl.TrimEnd('/');
 
@@ -98,11 +98,11 @@ namespace MediaBrowser.Model.Dlna
             return string.Format("{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, dlnaCommand);
         }
 
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
         private static string BuildDlnaParam(StreamInfo item)
         {
-            var usCulture = new CultureInfo("en-US");
-
-            var list = new List<string>
+            List<string> list = new List<string>
             {
                 item.DeviceProfileId ?? string.Empty,
                 item.DeviceId ?? string.Empty,
@@ -110,16 +110,16 @@ namespace MediaBrowser.Model.Dlna
                 (item.IsDirectStream).ToString().ToLower(),
                 item.VideoCodec ?? string.Empty,
                 item.AudioCodec ?? string.Empty,
-                item.AudioStreamIndex.HasValue ? item.AudioStreamIndex.Value.ToString(usCulture) : string.Empty,
-                item.SubtitleStreamIndex.HasValue ? item.SubtitleStreamIndex.Value.ToString(usCulture) : string.Empty,
-                item.VideoBitrate.HasValue ? item.VideoBitrate.Value.ToString(usCulture) : string.Empty,
-                item.AudioBitrate.HasValue ? item.AudioBitrate.Value.ToString(usCulture) : string.Empty,
-                item.MaxAudioChannels.HasValue ? item.MaxAudioChannels.Value.ToString(usCulture) : string.Empty,
-                item.MaxFramerate.HasValue ? item.MaxFramerate.Value.ToString(usCulture) : string.Empty,
-                item.MaxWidth.HasValue ? item.MaxWidth.Value.ToString(usCulture) : string.Empty,
-                item.MaxHeight.HasValue ? item.MaxHeight.Value.ToString(usCulture) : string.Empty,
-                item.StartPositionTicks.ToString(usCulture),
-                item.VideoLevel.HasValue ? item.VideoLevel.Value.ToString(usCulture) : string.Empty
+                item.AudioStreamIndex.HasValue ? item.AudioStreamIndex.Value.ToString(UsCulture) : string.Empty,
+                item.SubtitleStreamIndex.HasValue ? item.SubtitleStreamIndex.Value.ToString(UsCulture) : string.Empty,
+                item.VideoBitrate.HasValue ? item.VideoBitrate.Value.ToString(UsCulture) : string.Empty,
+                item.AudioBitrate.HasValue ? item.AudioBitrate.Value.ToString(UsCulture) : string.Empty,
+                item.MaxAudioChannels.HasValue ? item.MaxAudioChannels.Value.ToString(UsCulture) : string.Empty,
+                item.MaxFramerate.HasValue ? item.MaxFramerate.Value.ToString(UsCulture) : string.Empty,
+                item.MaxWidth.HasValue ? item.MaxWidth.Value.ToString(UsCulture) : string.Empty,
+                item.MaxHeight.HasValue ? item.MaxHeight.Value.ToString(UsCulture) : string.Empty,
+                item.StartPositionTicks.ToString(UsCulture),
+                item.VideoLevel.HasValue ? item.VideoLevel.Value.ToString(UsCulture) : string.Empty
             };
 
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
@@ -134,7 +134,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (MediaSource != null)
                 {
-                    var audioStreams = MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio);
+                    IEnumerable<MediaStream> audioStreams = MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio);
 
                     if (AudioStreamIndex.HasValue)
                     {
@@ -172,7 +172,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var stream = TargetAudioStream;
+                MediaStream stream = TargetAudioStream;
                 return stream == null ? null : stream.SampleRate;
             }
         }
@@ -184,7 +184,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var stream = TargetVideoStream;
+                MediaStream stream = TargetVideoStream;
                 return stream == null || !IsDirectStream ? null : stream.BitDepth;
             }
         }
@@ -196,7 +196,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var stream = TargetVideoStream;
+                MediaStream stream = TargetVideoStream;
                 return MaxFramerate.HasValue && !IsDirectStream
                     ? MaxFramerate
                     : stream == null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
@@ -210,7 +210,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var stream = TargetVideoStream;
+                MediaStream stream = TargetVideoStream;
                 return VideoLevel.HasValue && !IsDirectStream
                     ? VideoLevel
                     : stream == null ? null : stream.Level;
@@ -224,7 +224,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var stream = TargetVideoStream;
+                MediaStream stream = TargetVideoStream;
                 return !IsDirectStream
                     ? null
                     : stream == null ? null : stream.PacketLength;
@@ -238,7 +238,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var stream = TargetVideoStream;
+                MediaStream stream = TargetVideoStream;
                 return !string.IsNullOrEmpty(VideoProfile) && !IsDirectStream
                     ? VideoProfile
                     : stream == null ? null : stream.Profile;
@@ -252,7 +252,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var stream = TargetAudioStream;
+                MediaStream stream = TargetAudioStream;
                 return AudioBitrate.HasValue && !IsDirectStream
                     ? AudioBitrate
                     : stream == null ? null : stream.BitRate;
@@ -266,8 +266,8 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var stream = TargetAudioStream;
-                var streamChannels = stream == null ? null : stream.Channels;
+                MediaStream stream = TargetAudioStream;
+                int? streamChannels = stream == null ? null : stream.Channels;
 
                 return MaxAudioChannels.HasValue && !IsDirectStream
                     ? (streamChannels.HasValue ? Math.Min(MaxAudioChannels.Value, streamChannels.Value) : MaxAudioChannels.Value)
@@ -282,7 +282,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var stream = TargetAudioStream;
+                MediaStream stream = TargetAudioStream;
 
                 return IsDirectStream
                  ? (stream == null ? null : stream.Codec)
@@ -304,10 +304,10 @@ namespace MediaBrowser.Model.Dlna
 
                 if (RunTimeTicks.HasValue)
                 {
-                    var totalBitrate = TargetTotalBitrate;
+                    int? totalBitrate = TargetTotalBitrate;
 
                     return totalBitrate.HasValue ?
-                        Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(RunTimeTicks.Value).TotalSeconds) :
+                        Convert.ToInt64(totalBitrate.Value * TimeSpan.FromTicks(RunTimeTicks.Value).TotalSeconds) :
                         (long?)null;
                 }
 
@@ -319,7 +319,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var stream = TargetVideoStream;
+                MediaStream stream = TargetVideoStream;
 
                 return VideoBitrate.HasValue && !IsDirectStream
                     ? VideoBitrate
@@ -331,7 +331,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var defaultValue = string.Equals(Container, "m2ts", StringComparison.OrdinalIgnoreCase)
+                TransportStreamTimestamp defaultValue = string.Equals(Container, "m2ts", StringComparison.OrdinalIgnoreCase)
                     ? TransportStreamTimestamp.Valid
                     : TransportStreamTimestamp.None;
 
@@ -353,17 +353,17 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var videoStream = TargetVideoStream;
+                MediaStream videoStream = TargetVideoStream;
 
                 if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
-                    var size = new ImageSize
+                    ImageSize size = new ImageSize
                     {
                         Width = videoStream.Width.Value,
                         Height = videoStream.Height.Value
                     };
 
-                    var newSize = DrawingUtils.Resize(size,
+                    ImageSize newSize = DrawingUtils.Resize(size,
                         null,
                         null,
                         MaxWidth,
@@ -380,17 +380,17 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var videoStream = TargetVideoStream;
+                MediaStream videoStream = TargetVideoStream;
 
                 if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
-                    var size = new ImageSize
+                    ImageSize size = new ImageSize
                     {
                         Width = videoStream.Width.Value,
                         Height = videoStream.Height.Value
                     };
 
-                    var newSize = DrawingUtils.Resize(size,
+                    ImageSize newSize = DrawingUtils.Resize(size,
                         null,
                         null,
                         MaxWidth,

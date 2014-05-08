@@ -30,7 +30,7 @@ namespace MediaBrowser.Model.Configuration
 
         public MetadataOptions(int backdropLimit, int minBackdropWidth)
         {
-            var imageOptions = new List<ImageOption>
+            List<ImageOption> imageOptions = new List<ImageOption>
             {
                 new ImageOption
                 {
@@ -52,14 +52,14 @@ namespace MediaBrowser.Model.Configuration
 
         public int GetLimit(ImageType type)
         {
-            var option = ImageOptions.FirstOrDefault(i => i.Type == type);
+            ImageOption option = ImageOptions.FirstOrDefault(i => i.Type == type);
 
             return option == null ? 1 : option.Limit;
         }
 
         public int GetMinWidth(ImageType type)
         {
-            var option = ImageOptions.FirstOrDefault(i => i.Type == type);
+            ImageOption option = ImageOptions.FirstOrDefault(i => i.Type == type);
 
             return option == null ? 0 : option.MinWidth;
         }

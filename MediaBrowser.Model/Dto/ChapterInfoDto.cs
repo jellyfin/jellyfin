@@ -27,7 +27,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the image tag.
         /// </summary>
         /// <value>The image tag.</value>
-        public Guid? ImageTag { get; set; }
+        public string ImageTag { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has image.
@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool HasImage
         {
-            get { return ImageTag.HasValue; }
+            get { return ImageTag != null; }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

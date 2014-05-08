@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Events;
 using System;
 
 namespace MediaBrowser.Controller.Configuration

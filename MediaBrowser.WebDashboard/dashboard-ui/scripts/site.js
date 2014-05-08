@@ -849,6 +849,25 @@ var Dashboard = {
             case 'GoToSearch':
                 Search.showSearchPanel($.mobile.activePage);
                 break;
+            case 'DisplayMessage':
+                {
+                    var args = cmd.Arguments;
+
+                    if (args.TimeoutMs && WebNotifications.supported()) {
+                        var notification = {
+                            title: args.Header,
+                            body: args.Text,
+                            timeout: args.TimeoutMs
+                        };
+
+                        WebNotifications.show(notification);
+                    }
+                    else {
+                        Dashboard.showFooterNotification({ html: "<b>" + args.Header + ":&nbsp;&nbsp;&nbsp;</b>" + args.Text, timeout: args.TimeoutMs });
+                    }
+
+                    break;
+                }
             case 'VolumeUp':
             case 'VolumeDown':
             case 'Mute':
@@ -948,25 +967,6 @@ var Dashboard = {
 
             Dashboard.processGeneralCommand(cmd);
         }
-        else if (msg.MessageType === "MessageCommand") {
-
-            var cmd = msg.Data;
-
-            if (cmd.TimeoutMs && WebNotifications.supported()) {
-                var notification = {
-                    title: cmd.Header,
-                    body: cmd.Text,
-                    timeout: cmd.TimeoutMs
-                };
-
-                WebNotifications.show(notification);
-            }
-            else {
-                Dashboard.showFooterNotification({ html: "<b>" + cmd.Header + ":&nbsp;&nbsp;&nbsp;</b>" + cmd.Text, timeout: cmd.TimeoutMs });
-            }
-
-        }
-
     },
 
     onBrowseCommand: function (cmd) {
@@ -1308,7 +1308,8 @@ var Dashboard = {
             "SetAudioStreamIndex",
             "SetSubtitleStreamIndex",
             "DisplayContent",
-            "GoToSearch"
+            "GoToSearch",
+            "DisplayMessage"
         ];
 
     }

@@ -23,7 +23,7 @@ namespace MediaBrowser.Model.Dto
         /// <summary>
         /// The image tag
         /// </summary>
-        public Guid ImageTag;
+        public string ImageTag;
 
         /// <summary>
         /// Gets or sets the path.

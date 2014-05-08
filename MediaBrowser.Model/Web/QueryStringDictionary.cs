@@ -128,50 +128,6 @@ namespace MediaBrowser.Model.Web
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         /// <exception cref="System.ArgumentNullException">value</exception>
-        public void Add(string name, Guid value)
-        {
-            if (value == Guid.Empty)
-            {
-                throw new ArgumentNullException("value");
-            }
-
-            Add(name, value.ToString());
-        }
-
-        /// <summary>
-        /// Adds if not empty.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
-        public void AddIfNotEmpty(string name, Guid value)
-        {
-            if (value != Guid.Empty)
-            {
-                Add(name, value);
-            }
-
-            Add(name, value);
-        }
-
-        /// <summary>
-        /// Adds if not null.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
-        public void AddIfNotNull(string name, Guid? value)
-        {
-            if (value.HasValue)
-            {
-                Add(name, value.Value);
-            }
-        }
-
-        /// <summary>
-        /// Adds the specified name.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
-        /// <exception cref="System.ArgumentNullException">value</exception>
         public void Add(string name, IEnumerable<int> value)
         {
             if (value == null)

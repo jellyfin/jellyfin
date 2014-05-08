@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Plugins;
+﻿using MediaBrowser.Common.Plugins;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Updates;
 using System;
 using System.Collections.Concurrent;

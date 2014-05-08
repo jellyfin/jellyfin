@@ -326,7 +326,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>List{System.String}.</returns>
-        private List<Guid> GetBackdropImageTags(BaseItem item)
+        private List<string> GetBackdropImageTags(BaseItem item)
         {
             return GetCacheTags(item, ImageType.Backdrop).ToList();
         }
@@ -336,26 +336,25 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>List{Guid}.</returns>
-        private List<Guid> GetScreenshotImageTags(BaseItem item)
+        private List<string> GetScreenshotImageTags(BaseItem item)
         {
             var hasScreenshots = item as IHasScreenshots;
             if (hasScreenshots == null)
             {
-                return new List<Guid>();
+                return new List<string>();
             }
             return GetCacheTags(item, ImageType.Screenshot).ToList();
         }
 
-        private IEnumerable<Guid> GetCacheTags(BaseItem item, ImageType type)
+        private IEnumerable<string> GetCacheTags(BaseItem item, ImageType type)
         {
             return item.GetImages(type)
                 .Select(p => GetImageCacheTag(item, p))
-                .Where(i => i.HasValue)
-                .Select(i => i.Value)
+                .Where(i => i != null)
                 .ToList();
         }
 
-        private Guid? GetImageCacheTag(BaseItem item, ImageType type)
+        private string GetImageCacheTag(BaseItem item, ImageType type)
         {
             try
             {
@@ -368,7 +367,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private Guid? GetImageCacheTag(BaseItem item, ItemImageInfo image)
+        private string GetImageCacheTag(BaseItem item, ItemImageInfo image)
         {
             try
             {
@@ -677,7 +676,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.Genres = item.Genres;
             }
 
-            dto.ImageTags = new Dictionary<ImageType, Guid>();
+            dto.ImageTags = new Dictionary<ImageType, string>();
 
             // Prevent implicitly captured closure
             var currentItem = item;
@@ -685,9 +684,9 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 var tag = GetImageCacheTag(item, image);
 
-                if (tag.HasValue)
+                if (tag != null)
                 {
-                    dto.ImageTags[image.Type] = tag.Value;
+                    dto.ImageTags[image.Type] = tag;
                 }
             }
 
@@ -1216,7 +1215,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            var bitrate = i.TotalBitrate ?? 
+            var bitrate = i.TotalBitrate ??
                 info.MediaStreams.Where(m => m.Type != MediaStreamType.Subtitle && !string.Equals(m.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
                 .Select(m => m.BitRate ?? 0)
                 .Sum();

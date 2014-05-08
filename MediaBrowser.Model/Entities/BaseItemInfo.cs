@@ -46,7 +46,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the primary image tag.
         /// </summary>
         /// <value>The primary image tag.</value>
-        public Guid? PrimaryImageTag { get; set; }
+        public string PrimaryImageTag { get; set; }
 
         /// <summary>
         /// Gets or sets the primary image item identifier.
@@ -58,7 +58,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the logo image tag.
         /// </summary>
         /// <value>The logo image tag.</value>
-        public Guid? LogoImageTag { get; set; }
+        public string LogoImageTag { get; set; }
 
         /// <summary>
         /// Gets or sets the logo item identifier.
@@ -70,7 +70,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the thumb image tag.
         /// </summary>
         /// <value>The thumb image tag.</value>
-        public Guid? ThumbImageTag { get; set; }
+        public string ThumbImageTag { get; set; }
 
         /// <summary>
         /// Gets or sets the thumb item identifier.
@@ -82,7 +82,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the thumb image tag.
         /// </summary>
         /// <value>The thumb image tag.</value>
-        public Guid? BackdropImageTag { get; set; }
+        public string BackdropImageTag { get; set; }
 
         /// <summary>
         /// Gets or sets the thumb item identifier.
@@ -163,7 +163,7 @@ namespace MediaBrowser.Model.Entities
         [IgnoreDataMember]
         public bool HasPrimaryImage
         {
-            get { return PrimaryImageTag.HasValue; }
+            get { return PrimaryImageTag != null; }
         }
 
         public BaseItemInfo()

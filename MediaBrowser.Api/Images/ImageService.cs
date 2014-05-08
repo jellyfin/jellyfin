@@ -548,7 +548,7 @@ namespace MediaBrowser.Api.Images
 
             var contentType = GetMimeType(request.Format, imageInfo.Path);
 
-            var cacheGuid = _imageProcessor.GetImageCacheTag(item, request.Type, imageInfo.Path, originalFileImageDateModified, supportedImageEnhancers);
+            var cacheGuid = new Guid(_imageProcessor.GetImageCacheTag(item, request.Type, imageInfo.Path, originalFileImageDateModified, supportedImageEnhancers));
 
             TimeSpan? cacheDuration = null;
 

@@ -4,21 +4,18 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-theme="b">
+    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage" data-theme="b">
+
+        <div class="libraryViewNav">
+            <a href="#" class="ui-btn-active tabButton" data-tab="tabNowPlaying">${TabNowPlaying}</a>
+            <a href="#" class="tabButton" data-tab="tabNavigation">${TabControls}</a>
+<!--            <a href="#" class="tabButton" data-tab="tabAdvanced">${TabAdvanced}</a>-->
+        </div>
 
         <div data-role="content" style="padding: 1em 0;">
 
-            <div data-role="controlgroup" data-type="horizontal" data-mini="true" style="text-align: center;">
-                <input type="radio" name="radioNowPlayingTab" class="radioTabButton" id="radioNowPlaying" value="tabNowPlaying">
-                <label for="radioNowPlaying">${TabNowPlaying}</label>
-                <input type="radio" name="radioNowPlayingTab" class="radioTabButton" id="radioNavigation" value="tabNavigation">
-                <label for="radioNavigation">${TabControls}</label>
-            </div>
-            <br />
-
             <div style="text-align: center;">
                 <div class="tabNowPlaying tabContent">
-
                     <div class="itemName" style="line-height: normal;"></div>
                     <div class="nowPlayingPageImage" style="margin: 1em 0;"></div>
                     <div>
@@ -81,6 +78,8 @@
                         <button data-inline="true" data-iconpos="right" title="${ButtonLetterDown}" data-icon="minus" class="btnLetterDown btnCommand ui-nodisc-icon" data-command="PreviousLetter">${LetterButtonAbbreviation}</button>
                         <button data-icon="camera" data-inline="true" data-iconpos="notext" title="${ButtonTakeScreenshot}" class="btnScreenshot btnCommand" data-command="TakeScreenshot">${ButtonTakeScreenshot}</button>
                     </div>
+                </div>
+                <div class="tabAdvanced tabContent" style="display: none;">
                 </div>
             </div>
         </div>

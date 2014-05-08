@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;

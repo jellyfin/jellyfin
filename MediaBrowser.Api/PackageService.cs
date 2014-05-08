@@ -112,7 +112,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Installation Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -221,7 +221,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Delete(CancelPackageInstallation request)
         {
-            var info = _installationManager.CurrentInstallations.FirstOrDefault(i => i.Item1.Id == request.Id);
+            var info = _installationManager.CurrentInstallations.FirstOrDefault(i => string.Equals(i.Item1.Id, request.Id));
 
             if (info != null)
             {

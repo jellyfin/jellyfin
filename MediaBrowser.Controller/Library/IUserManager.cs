@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Events;
 using System;
 using System.Collections.Generic;
 using System.Threading;

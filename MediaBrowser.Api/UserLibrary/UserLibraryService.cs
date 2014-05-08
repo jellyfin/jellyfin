@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -8,7 +7,6 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using ServiceStack;
 using System;

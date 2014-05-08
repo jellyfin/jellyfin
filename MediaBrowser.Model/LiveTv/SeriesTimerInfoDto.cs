@@ -43,7 +43,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the image tags.
         /// </summary>
         /// <value>The image tags.</value>
-        public Dictionary<ImageType, Guid> ImageTags { get; set; }
+        public Dictionary<ImageType, string> ImageTags { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.
@@ -57,7 +57,7 @@ namespace MediaBrowser.Model.LiveTv
 
         public SeriesTimerInfoDto()
         {
-            ImageTags = new Dictionary<ImageType, Guid>();
+            ImageTags = new Dictionary<ImageType, string>();
             Days = new List<DayOfWeek>();
         }
     }

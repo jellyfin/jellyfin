@@ -16,7 +16,12 @@ namespace MediaBrowser.Model.Drawing
         /// <returns>ImageSize.</returns>
         public static ImageSize Scale(double currentWidth, double currentHeight, double scaleFactor)
         {
-            return Scale(new ImageSize { Width = currentWidth, Height = currentHeight }, scaleFactor);
+            return Scale(new ImageSize
+            {
+                Width = currentWidth, 
+                Height = currentHeight
+
+            }, scaleFactor);
         }
 
         /// <summary>
@@ -29,7 +34,7 @@ namespace MediaBrowser.Model.Drawing
         {
             var newWidth = size.Width * scaleFactor;
 
-            return Resize(size.Width, size.Height, newWidth);
+            return Resize(size.Width, size.Height, newWidth, null, null, null);
         }
 
         /// <summary>
@@ -42,9 +47,19 @@ namespace MediaBrowser.Model.Drawing
         /// <param name="maxWidth">A max fixed width, if desired</param>
         /// <param name="maxHeight">A max fixed height, if desired</param>
         /// <returns>ImageSize.</returns>
-        public static ImageSize Resize(double currentWidth, double currentHeight, double? width = null, double? height = null, double? maxWidth = null, double? maxHeight = null)
+        public static ImageSize Resize(double currentWidth, 
+            double currentHeight, 
+            double? width, 
+            double? height, 
+            double? maxWidth,
+            double? maxHeight)
         {
-            return Resize(new ImageSize { Width = currentWidth, Height = currentHeight }, width, height, maxWidth, maxHeight);
+            return Resize(new ImageSize
+            {
+                Width = currentWidth, 
+                Height = currentHeight
+
+            }, width, height, maxWidth, maxHeight);
         }
 
         /// <summary>
@@ -56,7 +71,11 @@ namespace MediaBrowser.Model.Drawing
         /// <param name="maxWidth">A max fixed width, if desired</param>
         /// <param name="maxHeight">A max fixed height, if desired</param>
         /// <returns>A new size object</returns>
-        public static ImageSize Resize(ImageSize size, double? width = null, double? height = null, double? maxWidth = null, double? maxHeight = null)
+        public static ImageSize Resize(ImageSize size, 
+            double? width, 
+            double? height, 
+            double? maxWidth, 
+            double? maxHeight)
         {
             double newWidth = size.Width;
             double newHeight = size.Height;
@@ -79,13 +98,13 @@ namespace MediaBrowser.Model.Drawing
                 newWidth = width.Value;
             }
 
-            if (maxHeight.HasValue && maxHeight < newHeight)
+            if (maxHeight.HasValue && maxHeight.Value < newHeight)
             {
                 newWidth = GetNewWidth(newHeight, newWidth, maxHeight.Value);
                 newHeight = maxHeight.Value;
             }
 
-            if (maxWidth.HasValue && maxWidth < newWidth)
+            if (maxWidth.HasValue && maxWidth.Value < newWidth)
             {
                 newHeight = GetNewHeight(newHeight, newWidth, maxWidth.Value);
                 newWidth = maxWidth.Value;
@@ -186,7 +205,7 @@ namespace MediaBrowser.Model.Drawing
         {
             if (!string.IsNullOrEmpty(value))
             {
-                var parts = value.Split('-');
+                string[] parts = value.Split('-');
 
                 if (parts.Length == 2)
                 {

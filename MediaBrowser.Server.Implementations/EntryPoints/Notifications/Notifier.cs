@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Tasks;

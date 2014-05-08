@@ -77,14 +77,15 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Get(GetDisplayPreferences request)
         {
-            Guid displayPreferencesId;
+            var result = _displayPreferencesManager.GetDisplayPreferences(request.Id, request.UserId, request.Client);
 
-            if (!Guid.TryParse(request.Id, out displayPreferencesId))
+            if (result == null)
             {
-                displayPreferencesId = request.Id.GetMD5();
+                result = new DisplayPreferences
+                {
+                    Id = request.Id
+                };
             }
-
-            var result = _displayPreferencesManager.GetDisplayPreferences(displayPreferencesId, request.UserId, request.Client);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }

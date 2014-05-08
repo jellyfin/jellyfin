@@ -278,6 +278,9 @@
     <Compile Include="..\MediaBrowser.Model\Entities\VirtualFolderInfo.cs">
       <Link>Entities\VirtualFolderInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Events\GenericEventArgs.cs">
+      <Link>Events\GenericEventArgs.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\FileOrganization\FileOrganizationQuery.cs">
       <Link>FileOrganization\FileOrganizationQuery.cs</Link>
     </Compile>

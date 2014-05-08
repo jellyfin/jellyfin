@@ -17,7 +17,7 @@
 
         html += streams.map(function (s) {
 
-            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" style="font-size:13px;" class="lnkTrackOption">';
+            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" style="font-size:15px;" class="lnkTrackOption"><h3>';
 
             streamHtml += (s.Codec || '').toUpperCase();
 
@@ -25,7 +25,7 @@
                 streamHtml += ' ' + s.Profile;
             }
 
-            streamHtml += '<br/>';
+            streamHtml += '</h3><p>';
 
             var extras = [];
 
@@ -45,7 +45,7 @@
 
             streamHtml += extras.join(' - ');
 
-            streamHtml += '</a></li>';
+            streamHtml += '</p></a></li>';
 
             return streamHtml;
 
@@ -67,11 +67,11 @@
 
         var html = '<li data-role="list-divider">Select Subtitles</li>';
 
-        html += '<li><a href="#" style="font-size:13px;" data-index="-1" class="lnkTrackOption">Off</a></li>';
+        html += '<li><a href="#" style="font-size:15px;" data-index="-1" class="lnkTrackOption"><h3>Off</h3></a></li>';
 
         html += streams.map(function (s) {
 
-            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" style="font-size:13px;" class="lnkTrackOption">';
+            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" style="font-size:15px;" class="lnkTrackOption"><h3>';
 
             streamHtml += (s.Language || 'Unknown language');
 
@@ -85,11 +85,11 @@
                 streamHtml += ' (Forced)';
             }
 
-            streamHtml += '<br/>';
+            streamHtml += '</h3><p>';
 
             streamHtml += (s.Codec || '').toUpperCase();
 
-            streamHtml += '</a></li>';
+            streamHtml += '</p></a></li>';
 
             return streamHtml;
 
@@ -102,12 +102,15 @@
 
     function bindEvents(page) {
 
-        $('.radioTabButton', page).on('change', function () {
+        $('.tabButton', page).on('click', function () {
 
-            var elem = $('.' + this.value, page);
+            var elem = $('.' + this.getAttribute('data-tab'), page);
             elem.siblings('.tabContent').hide();
 
             elem.show();
+
+            $('.tabButton', page).removeClass('ui-btn-active');
+            $(this).addClass('ui-btn-active');
         });
 
         $('.btnCommand,.btnToggleFullscreen', page).on('click', function () {
@@ -442,8 +445,7 @@
 
         var page = this;
 
-        $('.radioTabButton', page).checked(false).checkboxradio('refresh');
-        $('.radioTabButton:first', page).checked(true).checkboxradio('refresh').trigger('change');
+        $('.tabButton:first', page).trigger('click');
 
         $(function () {
 
