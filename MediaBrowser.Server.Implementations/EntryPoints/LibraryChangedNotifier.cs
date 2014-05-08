@@ -252,15 +252,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             return new LibraryUpdateInfo
             {
-                ItemsAdded = itemsAdded.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList(),
+                ItemsAdded = itemsAdded.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
 
-                ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList(),
+                ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
 
-                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren, true)).Select(i => i.Id).Distinct().ToList(),
+                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren, true)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
 
-                FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList(),
+                FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
 
-                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList()
+                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id.ToString("N")).Distinct().ToList()
             };
         }
 

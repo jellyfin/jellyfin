@@ -355,11 +355,6 @@ namespace MediaBrowser.Dlna.PlayTo
             return Task.FromResult(true);
         }
 
-        public Task SendMessageCommand(MessageCommand command, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(true);
-        }
-
         #endregion
 
         #region Playlist

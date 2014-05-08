@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         /// <summary>
         /// Gets or sets the type of the view.
         /// </summary>
@@ -105,7 +105,7 @@ namespace MediaBrowser.Model.Entities
         {
             var newWidth = PrimaryImageWidth / ImageScale;
 
-            var size = DrawingUtils.Resize(PrimaryImageWidth, PrimaryImageHeight, newWidth);
+            var size = DrawingUtils.Resize(PrimaryImageWidth, PrimaryImageHeight, newWidth, null, null, null);
 
             PrimaryImageWidth = Convert.ToInt32(size.Width);
             PrimaryImageHeight = Convert.ToInt32(size.Height);

@@ -111,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 throw new ArgumentNullException("displayPreferences");
             }
-            if (displayPreferences.Id == Guid.Empty)
+            if (string.IsNullOrWhiteSpace(displayPreferences.Id))
             {
                 throw new ArgumentNullException("displayPreferences.Id");
             }
@@ -132,7 +132,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     cmd.CommandText = "replace into userdisplaypreferences (id, userid, client, data) values (@1, @2, @3, @4)";
 
-                    cmd.Parameters.Add(cmd, "@1", DbType.Guid).Value = displayPreferences.Id;
+                    cmd.Parameters.Add(cmd, "@1", DbType.Guid).Value = new Guid(displayPreferences.Id);
                     cmd.Parameters.Add(cmd, "@2", DbType.Guid).Value = userId;
                     cmd.Parameters.Add(cmd, "@3", DbType.String).Value = client;
                     cmd.Parameters.Add(cmd, "@4", DbType.Binary).Value = serialized;
@@ -183,9 +183,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <param name="client">The client.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public DisplayPreferences GetDisplayPreferences(Guid displayPreferencesId, Guid userId, string client)
+        public DisplayPreferences GetDisplayPreferences(string displayPreferencesId, Guid userId, string client)
         {
-            if (displayPreferencesId == Guid.Empty)
+            if (string.IsNullOrWhiteSpace(displayPreferencesId))
             {
                 throw new ArgumentNullException("displayPreferencesId");
             }
@@ -193,7 +193,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var cmd = _connection.CreateCommand();
             cmd.CommandText = "select data from userdisplaypreferences where id = @id and userId=@userId and client=@client";
 
-            cmd.Parameters.Add(cmd, "@id", DbType.Guid).Value = displayPreferencesId;
+            cmd.Parameters.Add(cmd, "@id", DbType.Guid).Value = new Guid(displayPreferencesId);
             cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
             cmd.Parameters.Add(cmd, "@client", DbType.String).Value = client;
 
@@ -208,7 +208,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
 
-            return new DisplayPreferences { Id = displayPreferencesId };
+            return null;
         }
 
         /// <summary>

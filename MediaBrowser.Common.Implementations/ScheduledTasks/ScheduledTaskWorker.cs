@@ -531,7 +531,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 EndTimeUtc = endTime,
                 Status = status,
                 Name = Name,
-                Id = Id
+                Id = Id.ToString("N")
             };
 
             if (ex != null)

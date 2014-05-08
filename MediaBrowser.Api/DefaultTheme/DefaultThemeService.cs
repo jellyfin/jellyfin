@@ -556,7 +556,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             // Avoid implicitly captured closure
             var currentUserId1 = user.Id;
-            
+
             view.LatestMovies = movies
                 .OrderByDescending(i => i.DateCreated)
                 .Where(i => !_userDataManager.GetUserData(currentUserId1, i.GetUserDataKey()).Played)
@@ -622,9 +622,9 @@ namespace MediaBrowser.Api.DefaultTheme
             {
                 var tag = _imageProcessor.GetImageCacheTag(item, imageType);
 
-                if (tag.HasValue)
+                if (tag != null)
                 {
-                    stub.ImageTag = tag.Value;
+                    stub.ImageTag = tag;
                 }
             }
             catch (Exception ex)

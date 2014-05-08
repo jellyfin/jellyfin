@@ -21,7 +21,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the primary image tag.
         /// </summary>
         /// <value>The primary image tag.</value>
-        public Guid? PrimaryImageTag { get; set; }
+        public string PrimaryImageTag { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.
@@ -32,7 +32,7 @@ namespace MediaBrowser.Model.Dto
         {
             get
             {
-                return PrimaryImageTag.HasValue;
+                return PrimaryImageTag != null;
             }
         }
 

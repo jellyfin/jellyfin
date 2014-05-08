@@ -649,7 +649,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="image">The image.</param>
         /// <returns>Guid.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Guid GetImageCacheTag(IHasImages item, ItemImageInfo image)
+        public string GetImageCacheTag(IHasImages item, ItemImageInfo image)
         {
             if (item == null)
             {
@@ -676,7 +676,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Guid GetImageCacheTag(IHasImages item, ImageType imageType, string originalImagePath, DateTime dateModified, List<IImageEnhancer> imageEnhancers)
+        public string GetImageCacheTag(IHasImages item, ImageType imageType, string originalImagePath, DateTime dateModified, List<IImageEnhancer> imageEnhancers)
         {
             if (item == null)
             {
@@ -696,14 +696,14 @@ namespace MediaBrowser.Server.Implementations.Drawing
             // Optimization
             if (imageEnhancers.Count == 0)
             {
-                return (originalImagePath + dateModified.Ticks).GetMD5();
+                return (originalImagePath + dateModified.Ticks).GetMD5().ToString("N");
             }
 
             // Cache name is created with supported enhancers combined with the last config change so we pick up new config changes
             var cacheKeys = imageEnhancers.Select(i => i.GetConfigurationCacheKey(item, imageType)).ToList();
             cacheKeys.Add(originalImagePath + dateModified.Ticks);
 
-            return string.Join("|", cacheKeys.ToArray()).GetMD5();
+            return string.Join("|", cacheKeys.ToArray()).GetMD5().ToString("N");
         }
 
         /// <summary>

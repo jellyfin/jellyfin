@@ -49,6 +49,7 @@ namespace MediaBrowser.Model.Session
         SetSubtitleStreamIndex = 24,
         ToggleFullscreen = 25,
         DisplayContent = 26,
-        GoToSearch = 27
+        GoToSearch = 27,
+        DisplayMessage = 28
     }
 }

@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="item">The item.</param>
         /// <param name="image">The image.</param>
         /// <returns>Guid.</returns>
-        Guid GetImageCacheTag(IHasImages item, ItemImageInfo image);
+        string GetImageCacheTag(IHasImages item, ItemImageInfo image);
 
         /// <summary>
         /// Gets the image cache tag.
@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="dateModified">The date modified.</param>
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
-        Guid GetImageCacheTag(IHasImages item, ImageType imageType, string originalImagePath, DateTime dateModified,
+        string GetImageCacheTag(IHasImages item, ImageType imageType, string originalImagePath, DateTime dateModified,
                               List<IImageEnhancer> imageEnhancers);
 
         /// <summary>
@@ -89,12 +89,12 @@ namespace MediaBrowser.Controller.Drawing
 
     public static class ImageProcessorExtensions
     {
-        public static Guid? GetImageCacheTag(this IImageProcessor processor, IHasImages item, ImageType imageType)
+        public static string GetImageCacheTag(this IImageProcessor processor, IHasImages item, ImageType imageType)
         {
             return processor.GetImageCacheTag(item, imageType, 0);
         }
         
-        public static Guid? GetImageCacheTag(this IImageProcessor processor, IHasImages item, ImageType imageType, int imageIndex)
+        public static string GetImageCacheTag(this IImageProcessor processor, IHasImages item, ImageType imageType, int imageIndex)
         {
             var imageInfo = item.GetImageInfo(imageType, imageIndex);
 

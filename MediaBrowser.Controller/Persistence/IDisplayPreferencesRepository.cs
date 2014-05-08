@@ -34,6 +34,6 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="userId">The user id.</param>
         /// <param name="client">The client.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
-        DisplayPreferences GetDisplayPreferences(Guid displayPreferencesId, Guid userId, string client);
+        DisplayPreferences GetDisplayPreferences(string displayPreferencesId, Guid userId, string client);
     }
 }

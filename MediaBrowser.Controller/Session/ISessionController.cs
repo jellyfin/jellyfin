@@ -20,14 +20,6 @@ namespace MediaBrowser.Controller.Session
         bool IsSessionActive { get; }
 
         /// <summary>
-        /// Sends the message command.
-        /// </summary>
-        /// <param name="command">The command.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SendMessageCommand(MessageCommand command, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Sends the play command.
         /// </summary>
         /// <param name="command">The command.</param>

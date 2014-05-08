@@ -57,18 +57,6 @@ namespace MediaBrowser.Server.Implementations.Session
             return socket;
         }
 
-        public Task SendMessageCommand(MessageCommand command, CancellationToken cancellationToken)
-        {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<MessageCommand>
-            {
-                MessageType = "MessageCommand",
-                Data = command
-
-            }, cancellationToken);
-        }
-
         public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
             var socket = GetActiveSocket();
