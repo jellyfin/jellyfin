@@ -403,47 +403,4 @@ namespace MediaBrowser.Model.Dlna
             }
         }
     }
-
-    /// <summary>
-    /// Class AudioOptions.
-    /// </summary>
-    public class AudioOptions
-    {
-        public string ItemId { get; set; }
-        public List<MediaSourceInfo> MediaSources { get; set; }
-        public DeviceProfile Profile { get; set; }
-
-        /// <summary>
-        /// Optional. Only needed if a specific AudioStreamIndex or SubtitleStreamIndex are requested.
-        /// </summary>
-        public string MediaSourceId { get; set; }
-
-        public string DeviceId { get; set; }
-
-        /// <summary>
-        /// Allows an override of supported number of audio channels
-        /// Example: DeviceProfile supports five channel, but user only has stereo speakers
-        /// </summary>
-        public int? MaxAudioChannels { get; set; }
-
-        /// <summary>
-        /// The application's configured quality setting
-        /// </summary>
-        public int? MaxBitrate { get; set; }
-    }
-
-    /// <summary>
-    /// Class VideoOptions.
-    /// </summary>
-    public class VideoOptions : AudioOptions
-    {
-        public int? AudioStreamIndex { get; set; }
-        public int? SubtitleStreamIndex { get; set; }
-        public int? MaxAudioTranscodingBitrate { get; set; }
-
-        public VideoOptions()
-        {
-            MaxAudioTranscodingBitrate = 128000;
-        }
-    }
 }

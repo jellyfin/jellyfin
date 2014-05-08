@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using System.IO;
-using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Collections
 {
@@ -24,32 +23,6 @@ namespace MediaBrowser.Server.Implementations.Collections
             {
                 Path = path
             };
-        }
-    }
-
-    public class ManualCollectionsFolder : BasePluginFolder
-    {
-        public ManualCollectionsFolder()
-        {
-            Name = "Collections";
-        }
-
-        public override bool IsVisible(User user)
-        {
-            if (!GetChildren(user, true).Any())
-            {
-                return false;
-            }
-
-            return base.IsVisible(user);
-        }
-
-        public override bool IsHidden
-        {
-            get
-            {
-                return !ActualChildren.Any() || base.IsHidden;
-            }
         }
     }
 }

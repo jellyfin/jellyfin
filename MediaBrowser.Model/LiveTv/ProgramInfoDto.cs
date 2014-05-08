@@ -216,13 +216,4 @@ namespace MediaBrowser.Model.LiveTv
 
         public event PropertyChangedEventHandler PropertyChanged;
     }
-
-    public enum ProgramAudio
-    {
-        Mono,
-        Stereo,
-        Dolby,
-        DolbyDigital,
-        Thx
-    }
 }

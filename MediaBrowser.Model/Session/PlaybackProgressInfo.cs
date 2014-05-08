@@ -1,25 +1,7 @@
 ﻿using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Session
 {
-    /// <summary>
-    /// Class PlaybackStartInfo.
-    /// </summary>
-    public class PlaybackStartInfo : PlaybackProgressInfo
-    {
-        public PlaybackStartInfo()
-        {
-            QueueableMediaTypes = new List<string>();
-        }
-
-        /// <summary>
-        /// Gets or sets the queueable media types.
-        /// </summary>
-        /// <value>The queueable media types.</value>
-        public List<string> QueueableMediaTypes { get; set; }
-    }
-
     /// <summary>
     /// Class PlaybackProgressInfo.
     /// </summary>
@@ -96,48 +78,5 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The play method.</value>
         public PlayMethod PlayMethod { get; set; }
-    }
-
-    public enum PlayMethod
-    {
-        Transcode = 0,
-        DirectStream = 1,
-        DirectPlay = 2
-    }
-
-    /// <summary>
-    /// Class PlaybackStopInfo.
-    /// </summary>
-    public class PlaybackStopInfo
-    {
-        /// <summary>
-        /// Gets or sets the item.
-        /// </summary>
-        /// <value>The item.</value>
-        public BaseItemInfo Item { get; set; }
-
-        /// <summary>
-        /// Gets or sets the item identifier.
-        /// </summary>
-        /// <value>The item identifier.</value>
-        public string ItemId { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the session id.
-        /// </summary>
-        /// <value>The session id.</value>
-        public string SessionId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the media version identifier.
-        /// </summary>
-        /// <value>The media version identifier.</value>
-        public string MediaSourceId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the position ticks.
-        /// </summary>
-        /// <value>The position ticks.</value>
-        public long? PositionTicks { get; set; }
     }
 }

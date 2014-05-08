@@ -20,12 +20,4 @@ namespace MediaBrowser.Model.ApiClient
         /// <value>The type of the known command.</value>
         public GeneralCommandType? KnownCommandType { get; set; }
     }
-
-    /// <summary>
-    /// Class SessionUpdatesEventArgs
-    /// </summary>
-    public class SessionUpdatesEventArgs : EventArgs
-    {
-        public SessionInfoDto[] Sessions { get; set; }
-    }
 }
