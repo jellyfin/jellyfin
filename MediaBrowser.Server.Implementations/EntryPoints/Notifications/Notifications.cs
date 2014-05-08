@@ -138,7 +138,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var notification = new NotificationRequest
             {
-                Description = "Please see mediabrowser3.com for details.",
+                Description = "Please see mediabrowser.tv for details.",
                 NotificationType = type
             };
 

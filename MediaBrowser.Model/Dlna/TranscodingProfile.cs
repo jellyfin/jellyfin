@@ -35,7 +35,12 @@ namespace MediaBrowser.Model.Dlna
 
         public List<string> GetAudioCodecs()
         {
-            return (AudioCodec ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
+            List<string> list = new List<string>();
+            foreach (string i in (AudioCodec ?? string.Empty).Split(','))
+            {
+                if (!string.IsNullOrEmpty(i)) list.Add(i);
+            }
+            return list;
         }
     }
 }

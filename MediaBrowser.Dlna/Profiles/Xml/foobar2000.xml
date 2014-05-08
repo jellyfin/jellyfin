@@ -9,11 +9,11 @@
   </Identification>
   <FriendlyName>Media Browser</FriendlyName>
   <Manufacturer>Media Browser</Manufacturer>
-  <ManufacturerUrl>http://mediabrowser3.com/</ManufacturerUrl>
+  <ManufacturerUrl>http://mediabrowser.tv/</ManufacturerUrl>
   <ModelName>Media Browser</ModelName>
   <ModelDescription>Media Browser</ModelDescription>
   <ModelNumber>Media Browser</ModelNumber>
-  <ModelUrl>http://mediabrowser3.com/</ModelUrl>
+  <ModelUrl>http://mediabrowser.tv/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <SupportedMediaTypes>Audio</SupportedMediaTypes>
