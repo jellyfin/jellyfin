@@ -53,8 +53,6 @@
         html += '<div class="spotlightPlaceHolder"></div>';
 
         $(elem).html(html);
-
-
     }
 
     function reloadSpotlight(page, allPromise) {

@@ -1086,6 +1086,7 @@ a.itemTag:hover {
 
 .spotlightContainer {
     min-height: 340px;
+    margin-top: 3em;
 }
 
 .spotlightPlaceHolder {
@@ -1093,7 +1094,7 @@ a.itemTag:hover {
 }
 
 .spotlightTitle {
-    margin: 1em 0 .3em;
+    margin: 1em 0 .2em;
 }
 
 .spotlightContent {
@@ -1141,7 +1142,7 @@ a.itemTag:hover {
 
 @media all and (max-height: 1079px) and (max-width: 1400px) {
 
-    .spotlight, .spotlightPlaceHolder, .spotlightTitle {
+    .spotlightContainer {
         display: none;
     }
 }

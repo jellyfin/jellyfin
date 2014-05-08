@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Security;
@@ -115,8 +116,14 @@ namespace MediaBrowser.Providers.Subtitles
                 throw new ApplicationException("Invalid response type");
             }
 
-            var res = ((MethodResponseSubtitleDownload)resultDownLoad).Results.First();
-            var data = Convert.FromBase64String(res.Data);
+            var results = ((MethodResponseSubtitleDownload)resultDownLoad).Results;
+
+            if (results.Count == 0)
+            {
+                throw new ResourceNotFoundException("Subtitle with Id " + ossId + " was not found.");
+            }
+
+            var data = Convert.FromBase64String(results.First().Data);
 
             return new SubtitleResponse
             {

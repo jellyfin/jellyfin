@@ -22,7 +22,6 @@
 
                 <form class="metadataSubtitlesForm">
                     <p>${HeaderSubtitleDownloadingHelp}</p>
-                    <p>${HeaderSubtitleDownloadingMoreHelp}</p>
                     <fieldset data-role="controlgroup">
                         <legend>${HeaderDownloadSubtitlesFor}</legend>
                         <input type="checkbox" data-mini="true" id="chkSubtitlesMovies" />
@@ -34,15 +33,21 @@
                     <br />
                     <div>
                         <label>${LabelDownloadLanguages}</label>
-                        <div class="downloadLanguages" style="max-height: 170px; overflow-y: auto; border: 1px solid #e8e8e8;">
+                        <div class="downloadLanguages" style="max-height: 150px; overflow-y: auto; border: 1px solid #e8e8e8;">
                         </div>
                     </div>
                     <br />
+
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <input type="checkbox" id="chkRequireTextSubtitles" data-mini="true" />
-                            <label for="chkRequireTextSubtitles">${LabelRequireTextSubtitles}</label>
-                            <div class="fieldDescription">${LabelRequireTextSubtitlesHelp}</div>
+                            <input type="checkbox" id="chkSkipIfAudioTrackPresent" data-mini="true" />
+                            <label for="chkSkipIfAudioTrackPresent">${LabelSkipIfAudioTrackPresent}</label>
+                            <div class="fieldDescription">${LabelSkipIfAudioTrackPresentHelp}</div>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="chkSkipIfGraphicalSubsPresent" data-mini="true" />
+                            <label for="chkSkipIfGraphicalSubsPresent">${LabelSkipIfGraphicalSubsPresent}</label>
+                            <div class="fieldDescription">${LabelSkipIfGraphicalSubsPresentHelp}</div>
                         </li>
                         <li>
                             <label for="txtOpenSubtitleUsername">${LabelOpenSubtitlesUsername}</label>
