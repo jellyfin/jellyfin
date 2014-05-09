@@ -225,7 +225,7 @@ namespace MediaBrowser.Providers.Subtitles
                                                                    imdbid: searchImdbId ),
                                                            };
             parms.AddRange(subtitleSearchParameters);
-            var result = OpenSubtitles.SearchSubtitles(parms.ToArray());
+            var result = await OpenSubtitles.SearchSubtitlesAsync(parms.ToArray(), cancellationToken).ConfigureAwait(false);
             if (!(result is MethodResponseSubtitleSearch))
             {
                 _logger.Debug("Invalid response type");
