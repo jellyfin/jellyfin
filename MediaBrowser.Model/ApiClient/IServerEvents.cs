@@ -19,10 +19,6 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         event EventHandler<GenericEventArgs<string>> UserDeleted;
         /// <summary>
-        /// Occurs when [scheduled task started].
-        /// </summary>
-        event EventHandler<GenericEventArgs<string>> ScheduledTaskStarted;
-        /// <summary>
         /// Occurs when [scheduled task ended].
         /// </summary>
         event EventHandler<GenericEventArgs<TaskResult>> ScheduledTaskEnded;
@@ -97,7 +93,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Occurs when [send text command].
         /// </summary>
-        event EventHandler<GenericEventArgs<string>> SendTextCommand;
+        event EventHandler<GenericEventArgs<string>> SendStringCommand;
         /// <summary>
         /// Occurs when [set volume command].
         /// </summary>
@@ -109,7 +105,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Occurs when [set video stream index command].
         /// </summary>
-        event EventHandler<GenericEventArgs<int>> SetVideoStreamIndexCommand;
+        event EventHandler<GenericEventArgs<int>> SetSubtitleStreamIndexCommand;
         /// <summary>
         /// Occurs when [sessions updated].
         /// </summary>
