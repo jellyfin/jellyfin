@@ -108,7 +108,8 @@ namespace MediaBrowser.Model.Dlna
             List<string> list = new List<string>();
             foreach (string i in (SupportedMediaTypes ?? string.Empty).Split(','))
             {
-                if (!string.IsNullOrEmpty(i)) list.Add(i);
+                if (!string.IsNullOrEmpty(i)) 
+                    list.Add(i);
             }
             return list;
         }
@@ -117,85 +118,102 @@ namespace MediaBrowser.Model.Dlna
         {
             container = (container ?? string.Empty).TrimStart('.');
 
-            return TranscodingProfiles.FirstOrDefault(i =>
+            foreach (var i in TranscodingProfiles)
             {
                 if (i.Type != DlnaProfileType.Audio)
                 {
-                    return false;
+                    continue;
                 }
 
                 if (!string.Equals(container, i.Container, StringComparison.OrdinalIgnoreCase))
                 {
-                    return false;
+                    continue;
                 }
 
-                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty))
+                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
-                    return false;
+                    continue;
                 }
 
-                return true;
-            });
+                return i;
+            }
+            return null;
         }
 
         public TranscodingProfile GetVideoTranscodingProfile(string container, string audioCodec, string videoCodec)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
-            return TranscodingProfiles.FirstOrDefault(i =>
+            foreach (var i in TranscodingProfiles)
             {
                 if (i.Type != DlnaProfileType.Video)
                 {
-                    return false;
+                    continue;
                 }
 
                 if (!string.Equals(container, i.Container, StringComparison.OrdinalIgnoreCase))
                 {
-                    return false;
+                    continue;
                 }
 
                 if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty))
                 {
-                    return false;
+                    continue;
                 }
 
                 if (!string.Equals(videoCodec, i.VideoCodec, StringComparison.OrdinalIgnoreCase))
                 {
-                    return false;
+                    continue;
                 }
 
-                return true;
-            });
+                return i;
+            }
+            return null;
         }
 
         public ResponseProfile GetAudioMediaProfile(string container, string audioCodec, int? audioChannels, int? audioBitrate)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
-            return ResponseProfiles.FirstOrDefault(i =>
+            foreach (var i in ResponseProfiles)
             {
                 if (i.Type != DlnaProfileType.Audio)
                 {
-                    return false;
+                    continue;
                 }
 
-                List<string> containers = i.GetContainers().ToList();
-                if (containers.Count > 0 && !containers.Contains(container))
+                List<string> containers = i.GetContainers();
+                if (containers.Count > 0 && !containers.Contains(container, StringComparer.OrdinalIgnoreCase))
                 {
-                    return false;
+                    continue;
                 }
 
-                List<string> audioCodecs = i.GetAudioCodecs().ToList();
-                if (audioCodecs.Count > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty))
+                List<string> audioCodecs = i.GetAudioCodecs();
+                if (audioCodecs.Count > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
-                    return false;
+                    continue;
                 }
 
                 ConditionProcessor conditionProcessor = new ConditionProcessor();
-                return i.Conditions.All(c => conditionProcessor.IsAudioConditionSatisfied(c,
-                    audioChannels,
-                    audioBitrate));
-            });
+
+                var anyOff = false;
+                foreach (ProfileCondition c in i.Conditions)
+                {
+                    if (!conditionProcessor.IsAudioConditionSatisfied(c, audioChannels, audioBitrate))
+                    {
+                        anyOff = true;
+                        break;
+                    }
+                }
+
+                if (anyOff)
+                {
+                    continue;
+                }
+
+                return i;
+            }
+            return null;
         }
 
         public ResponseProfile GetImageMediaProfile(string container, int? width, int? height)
@@ -209,16 +227,19 @@ namespace MediaBrowser.Model.Dlna
                     return false;
                 }
 
-                List<string> containers = i.GetContainers().ToList();
-                if (containers.Count > 0 && !containers.Contains(container))
+                List<string> containers = i.GetContainers();
+                if (containers.Count > 0 && !containers.Contains(container, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
                 ConditionProcessor conditionProcessor = new ConditionProcessor();
-                return i.Conditions.All(c => conditionProcessor.IsImageConditionSatisfied(c,
-                    width,
-                    height));
+                foreach (ProfileCondition c in i.Conditions)
+                {
+                    if (!conditionProcessor.IsImageConditionSatisfied(c, width, height)) 
+                        return false;
+                }
+                return true;
             });
         }
 
@@ -246,37 +267,31 @@ namespace MediaBrowser.Model.Dlna
                     return false;
                 }
 
-                List<string> containers = i.GetContainers().ToList();
-                if (containers.Count > 0 && !containers.Contains(container))
+                List<string> containers = i.GetContainers();
+                if (containers.Count > 0 && !containers.Contains(container, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
-                List<string> audioCodecs = i.GetAudioCodecs().ToList();
-                if (audioCodecs.Count > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty))
+                List<string> audioCodecs = i.GetAudioCodecs();
+                if (audioCodecs.Count > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
-                List<string> videoCodecs = i.GetVideoCodecs().ToList();
-                if (videoCodecs.Count > 0 && !videoCodecs.Contains(videoCodec ?? string.Empty))
+                List<string> videoCodecs = i.GetVideoCodecs();
+                if (videoCodecs.Count > 0 && !videoCodecs.Contains(videoCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
                 ConditionProcessor conditionProcessor = new ConditionProcessor();
-                return i.Conditions.All(c => conditionProcessor.IsVideoConditionSatisfied(c,
-                    audioBitrate,
-                    audioChannels,
-                    width,
-                    height,
-                    bitDepth,
-                    videoBitrate,
-                    videoProfile,
-                    videoLevel,
-                    videoFramerate,
-                    packetLength,
-                    timestamp));
+                foreach (ProfileCondition c in i.Conditions)
+                {
+                    if (!conditionProcessor.IsVideoConditionSatisfied(c, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp)) 
+                        return false;
+                }
+                return true;
             });
         }
 
@@ -292,15 +307,18 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 List<string> containers = i.GetContainers().ToList();
-                if (containers.Count > 0 && !containers.Contains(container))
+                if (containers.Count > 0 && !containers.Contains(container, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
                 ConditionProcessor conditionProcessor = new ConditionProcessor();
-                return i.Conditions.All(c => conditionProcessor.IsImageConditionSatisfied(c,
-                    width,
-                    height));
+                foreach (ProfileCondition c in i.Conditions)
+                {
+                    if (!conditionProcessor.IsImageConditionSatisfied(c, width, height)) 
+                        return false;
+                }
+                return true;
             });
         }
     }

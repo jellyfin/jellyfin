@@ -329,14 +329,14 @@ namespace MediaBrowser.Common.Implementations.Updates
             if (withAutoUpdateEnabled)
             {
                 plugins = plugins
-                    .Where(p => p.Configuration.EnableAutoUpdate)
+                    .Where(p => _config.CommonConfiguration.EnableAutoUpdate)
                     .ToList();
             }
 
             // Figure out what needs to be installed
             var packages = plugins.Select(p =>
             {
-                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Id.ToString(), applicationVersion, p.Configuration.UpdateClass);
+                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Id.ToString(), applicationVersion, _config.CommonConfiguration.SystemUpdateLevel);
 
                 return latestPluginInfo != null && latestPluginInfo.version != null && latestPluginInfo.version > p.Version ? latestPluginInfo : null;
 

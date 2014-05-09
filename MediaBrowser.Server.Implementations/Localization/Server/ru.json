@@ -564,6 +564,7 @@
     "NotificationOptionTaskFailed": "\u0421\u0431\u043e\u0439 \u043d\u0430\u0437\u043d\u0430\u0447\u0435\u043d\u043d\u043e\u0433\u043e \u0437\u0430\u0434\u0430\u043d\u0438\u044f",
     "NotificationOptionInstallationFailed": "\u0421\u0431\u043e\u0439 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0438",
     "NotificationOptionNewLibraryContent": "\u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u043e \u043d\u043e\u0432\u043e\u0435 \u0441\u043e\u0434\u0435\u0440\u0436\u0430\u043d\u0438\u0435",
+    "NotificationOptionNewLibraryContentMultiple": "New content added (multiple)",
     "SendNotificationHelp": "\u041f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u044e\u0442\u0441\u044f \u0432 \u044f\u0449\u0438\u043a \u0432\u0445\u043e\u0434\u044f\u0449\u0438\u0445 \u043f\u0430\u043d\u0435\u043b\u0438 \u043c\u043e\u043d\u0438\u0442\u043e\u0440\u0438\u043d\u0433\u0430. \u041f\u0435\u0440\u0435\u0439\u0434\u0438\u0442\u0435 \u0432 \u043a\u0430\u0442\u0430\u043b\u043e\u0433 \u043f\u043b\u0430\u0433\u0438\u043d\u043e\u0432, \u0447\u0442\u043e\u0431\u044b \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c \u0434\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0441\u0440\u0435\u0434\u0441\u0442\u0432\u0430 \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f.",
     "NotificationOptionServerRestartRequired": "\u0422\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044f \u043f\u0435\u0440\u0435\u0437\u0430\u043f\u0443\u0441\u043a \u0441\u0435\u0440\u0432\u0435\u0440\u0430",
     "LabelNotificationEnabled": "\u0412\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u0434\u0430\u043d\u043d\u043e\u0435 \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u0435",
@@ -698,13 +699,17 @@
     "OptionReportByteRangeSeekingWhenTranscodingHelp": "This is required for some devices that don't time seek very well.",
     "HeaderSubtitleDownloadingHelp": "When Media Browser scans your video files it can search for missing subtitles, and download them using a subtitle provider such as OpenSubtitles.org.",
     "HeaderDownloadSubtitlesFor": "Download subtitles for:",
-    "LabelRequireTextSubtitles": "Download even if the video already contains graphical subtitles",
-    "LabelRequireTextSubtitlesHelp": "Keeping text versions of subtitles will result in more efficient delivery to mobile clients.",
+    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains graphical subtitles",
+    "LabelSkipIfGraphicalSubsPresentHelp": "Keeping text versions of subtitles will result in more efficient delivery to mobile clients.",
     "TabSubtitles": "Subtitles",
     "LabelOpenSubtitlesUsername": "Open Subtitles username:",
     "LabelOpenSubtitlesPassword": "Open Subtitles password:",
     "LabelAudioLanguagePreferenceHelp": "If empty, the default audio track will be selected, regardless of language.",
     "LabelDownloadLanguages": "Download languages:",
     "ButtonRegister": "Register",
-    "HeaderSubtitleDownloadingMoreHelp": "Subtitles are considered missing when the audio track is in a foreign language, and there are no subtitles available in the preferred language."
+    "LabelSkipIfAudioTrackPresent": "Skip if the default audio track matches the download language",
+    "LabelSkipIfAudioTrackPresentHelp": "Uncheck this to ensure all videos have subtitles, regardless of audio language.",
+    "HeaderSendMessage": "Send Message",
+    "ButtonSend": "Send",
+    "LabelMessageText": "Message text:"
 }

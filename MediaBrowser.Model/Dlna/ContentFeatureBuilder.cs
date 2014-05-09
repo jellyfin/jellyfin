@@ -26,7 +26,7 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.DlnaV15;
 
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
-             FlagsToString(flagValue));
+             DlnaMaps.FlagsToString(flagValue));
 
             ResponseProfile mediaProfile = _profile.GetImageMediaProfile(container,
                 width,
@@ -73,7 +73,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
-             FlagsToString(flagValue));
+             DlnaMaps.FlagsToString(flagValue));
 
             ResponseProfile mediaProfile = _profile.GetAudioMediaProfile(container,
                 audioCodec,
@@ -90,12 +90,6 @@ namespace MediaBrowser.Model.Dlna
             string contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
 
             return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
-        }
-
-        private static string FlagsToString(DlnaFlags flags)
-        {
-            //return Enum.Format(typeof(DlnaFlags), flags, "x");
-            return string.Format("{0:X8}{1:D24}", (ulong)flags, 0);
         }
 
         public string BuildVideoHeader(string container,
@@ -136,7 +130,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
-             FlagsToString(flagValue));
+             DlnaMaps.FlagsToString(flagValue));
 
             ResponseProfile mediaProfile = _profile.GetVideoMediaProfile(container,
                 audioCodec,

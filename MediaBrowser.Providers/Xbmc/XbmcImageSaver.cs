@@ -266,7 +266,7 @@ namespace MediaBrowser.Providers.Xbmc
 
         public string Name
         {
-            get { return "MB3/Plex/Xbmc Images"; }
+            get { return "Media Browser/Plex/Xbmc Images"; }
         }
     }
 }

@@ -564,6 +564,7 @@
     "NotificationOptionTaskFailed": "\u05de\u05e9\u05d9\u05de\u05d4 \u05de\u05ea\u05d5\u05d6\u05de\u05e0\u05ea \u05e0\u05db\u05e9\u05dc\u05d4",
     "NotificationOptionInstallationFailed": "\u05d4\u05ea\u05e7\u05e0\u05d4 \u05e0\u05db\u05e9\u05dc\u05d4",
     "NotificationOptionNewLibraryContent": "\u05ea\u05d5\u05db\u05df \u05d7\u05d3\u05e9 \u05e0\u05d5\u05e1\u05e3",
+    "NotificationOptionNewLibraryContentMultiple": "New content added (multiple)",
     "SendNotificationHelp": "\u05d1\u05e8\u05d9\u05e8\u05ea \u05d4\u05de\u05d7\u05d3\u05dc \u05d4\u05d9\u05d0 \u05e9\u05d4\u05ea\u05e8\u05d0\u05d5\u05ea \u05de\u05d2\u05d9\u05e2\u05d5\u05ea \u05dc\u05ea\u05d9\u05d1\u05ea \u05d4\u05d3\u05d5\u05d0\u05e8 \u05d4\u05e0\u05db\u05e0\u05e1 \u05e9\u05dc \u05dc\u05d5\u05d7 \u05d4\u05d1\u05e7\u05e8\u05d4. \u05e2\u05d9\u05d9\u05df \u05d1\u05e7\u05d8\u05dc\u05d5\u05d2 \u05d4\u05ea\u05d5\u05e1\u05e4\u05d9\u05dd \u05db\u05d3\u05d9 \u05dc\u05d4\u05ea\u05e7\u05d9\u05df \u05d0\u05e4\u05e9\u05e8\u05d5\u05d9\u05d5\u05ea \u05e0\u05d5\u05e1\u05e4\u05d5\u05ea \u05dc\u05e7\u05d1\u05dc\u05ea \u05d4\u05ea\u05e8\u05d0\u05d5\u05ea",
     "NotificationOptionServerRestartRequired": "\u05e0\u05d3\u05e8\u05e9\u05ea \u05d4\u05e4\u05e2\u05dc\u05d4 \u05de\u05d7\u05d3\u05e9 \u05e9\u05dc \u05d4\u05e9\u05e8\u05ea",
     "LabelNotificationEnabled": "\u05d0\u05e4\u05e9\u05e8 \u05d4\u05ea\u05e8\u05d0\u05d4 \u05d6\u05d5",
@@ -698,13 +699,17 @@
     "OptionReportByteRangeSeekingWhenTranscodingHelp": "This is required for some devices that don't time seek very well.",
     "HeaderSubtitleDownloadingHelp": "When Media Browser scans your video files it can search for missing subtitles, and download them using a subtitle provider such as OpenSubtitles.org.",
     "HeaderDownloadSubtitlesFor": "Download subtitles for:",
-    "LabelRequireTextSubtitles": "Download even if the video already contains graphical subtitles",
-    "LabelRequireTextSubtitlesHelp": "Keeping text versions of subtitles will result in more efficient delivery to mobile clients.",
+    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains graphical subtitles",
+    "LabelSkipIfGraphicalSubsPresentHelp": "Keeping text versions of subtitles will result in more efficient delivery to mobile clients.",
     "TabSubtitles": "Subtitles",
     "LabelOpenSubtitlesUsername": "Open Subtitles username:",
     "LabelOpenSubtitlesPassword": "Open Subtitles password:",
     "LabelAudioLanguagePreferenceHelp": "If empty, the default audio track will be selected, regardless of language.",
     "LabelDownloadLanguages": "Download languages:",
     "ButtonRegister": "Register",
-    "HeaderSubtitleDownloadingMoreHelp": "Subtitles are considered missing when the audio track is in a foreign language, and there are no subtitles available in the preferred language."
+    "LabelSkipIfAudioTrackPresent": "Skip if the default audio track matches the download language",
+    "LabelSkipIfAudioTrackPresentHelp": "Uncheck this to ensure all videos have subtitles, regardless of audio language.",
+    "HeaderSendMessage": "Send Message",
+    "ButtonSend": "Send",
+    "LabelMessageText": "Message text:"
 }

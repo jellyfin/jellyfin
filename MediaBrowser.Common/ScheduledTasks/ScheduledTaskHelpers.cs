@@ -38,7 +38,7 @@ namespace MediaBrowser.Common.ScheduledTasks
                 Name = task.Name,
                 CurrentProgressPercentage = task.CurrentProgress,
                 State = task.State,
-                Id = task.Id.ToString("N"),
+                Id = task.Id,
                 LastExecutionResult = task.LastExecutionResult,
                 Triggers = task.Triggers.Select(GetTriggerInfo).ToList(),
                 Description = task.Description,
