@@ -22,7 +22,7 @@ We have several client apps released and in production:
 
 ## New Users ##
 
-If you're a new user looking to install Media Browser Server, please head over to [mediabrowser3.com](http://www.mediabrowser3.com/ "mediabrowser3.com")
+If you're a new user looking to install Media Browser Server, please head over to [mediabrowser3.com](http://www.mediabrowser.tv/ "mediabrowser.tv")
 
 ## Developer Info ##
 
