@@ -168,9 +168,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+1))" : 
                 " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+5))";
 
-            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsExternal &&
-                                 (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 ||
-                                  state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1);
+            var hasGraphicalSubs = state.SubtitleStream != null && state.SubtitleStream.IsGraphicalSubtitleStream;
 
             var args = "-codec:v:0 " + codec + " " + GetVideoQualityParam(state, "libx264", true) + keyFrameArg;
 

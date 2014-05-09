@@ -568,6 +568,7 @@
 	"NotificationOptionTaskFailed": "Scheduled task failure",
 	"NotificationOptionInstallationFailed": "Installation failure",
 	"NotificationOptionNewLibraryContent": "New content added",
+	"NotificationOptionNewLibraryContentMultiple": "New content added (multiple)",
 	"SendNotificationHelp": "By default, notifications are delivered to the dashboard inbox. Browse the plugin catalog to install additional notification options.",
 	"NotificationOptionServerRestartRequired": "Server restart required",
 	"LabelNotificationEnabled": "Enable this notification",
@@ -716,5 +717,9 @@
 	"LabelDownloadLanguages": "Download languages:",
 	"ButtonRegister": "Register",
 	"LabelSkipIfAudioTrackPresent": "Skip if the default audio track matches the download language",
-	"LabelSkipIfAudioTrackPresentHelp": "Uncheck this to ensure all videos have subtitles, regardless of audio language."
+	"LabelSkipIfAudioTrackPresentHelp": "Uncheck this to ensure all videos have subtitles, regardless of audio language.",
+	"HeaderSendMessage": "Send Message",
+	"ButtonSend": "Send",
+	"LabelMessageText": "Message text:",
+	"LabelMessageTitle": "Message title:"
 }

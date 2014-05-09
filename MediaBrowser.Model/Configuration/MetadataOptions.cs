@@ -52,14 +52,30 @@ namespace MediaBrowser.Model.Configuration
 
         public int GetLimit(ImageType type)
         {
-            ImageOption option = ImageOptions.FirstOrDefault(i => i.Type == type);
+            ImageOption option = null;
+            foreach (ImageOption i in ImageOptions)
+            {
+                if (i.Type == type)
+                {
+                    option = i;
+                    break;
+                }
+            }
 
             return option == null ? 1 : option.Limit;
         }
 
         public int GetMinWidth(ImageType type)
         {
-            ImageOption option = ImageOptions.FirstOrDefault(i => i.Type == type);
+            ImageOption option = null;
+            foreach (ImageOption i in ImageOptions)
+            {
+                if (i.Type == type)
+                {
+                    option = i;
+                    break;
+                }
+            }
 
             return option == null ? 0 : option.MinWidth;
         }

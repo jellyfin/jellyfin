@@ -70,7 +70,11 @@ namespace MediaBrowser.Model.Configuration
 
         public NotificationOption GetOptions(string type)
         {
-            return Options.FirstOrDefault(i => string.Equals(type, i.Type, StringComparison.OrdinalIgnoreCase));
+            foreach (NotificationOption i in Options)
+            {
+                if (string.Equals(type, i.Type, StringComparison.OrdinalIgnoreCase)) return i;
+            }
+            return null;
         }
 
         public bool IsEnabled(string type)

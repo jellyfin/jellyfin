@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace MediaBrowser.Model.Web
@@ -24,7 +25,7 @@ namespace MediaBrowser.Model.Web
         /// <param name="value">The value.</param>
         public void Add(string name, int value)
         {
-            Add(name, value.ToString());
+            Add(name, value.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -34,7 +35,7 @@ namespace MediaBrowser.Model.Web
         /// <param name="value">The value.</param>
         public void Add(string name, long value)
         {
-            Add(name, value.ToString());
+            Add(name, value.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -44,7 +45,7 @@ namespace MediaBrowser.Model.Web
         /// <param name="value">The value.</param>
         public void Add(string name, double value)
         {
-            Add(name, value.ToString());
+            Add(name, value.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -135,7 +136,7 @@ namespace MediaBrowser.Model.Web
                 throw new ArgumentNullException("value");
             }
 
-            Add(name, string.Join(",", value.Select(v => v.ToString()).ToArray()));
+            Add(name, string.Join(",", value.Select(v => v.ToString(CultureInfo.InvariantCulture)).ToArray()));
         }
 
         /// <summary>
@@ -188,7 +189,7 @@ namespace MediaBrowser.Model.Web
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         /// <param name="delimiter">The delimiter.</param>
-        /// <exception cref="System.ArgumentNullException">value</exception>
+        /// <exception cref="ArgumentNullException">value</exception>
         public void Add(string name, IEnumerable<string> value, string delimiter)
         {
             if (value == null)

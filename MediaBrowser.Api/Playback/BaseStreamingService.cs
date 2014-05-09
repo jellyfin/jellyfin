@@ -903,7 +903,7 @@ namespace MediaBrowser.Api.Playback
                 EnableRaisingEvents = true
             };
 
-            ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process, state.IsInputVideo, state.Request.StartTimeTicks, state.MediaPath, state.Request.DeviceId);
+            ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process, state.Request.StartTimeTicks, state.MediaPath, state.Request.DeviceId);
 
             var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
             Logger.Info(commandLineLogMessage);

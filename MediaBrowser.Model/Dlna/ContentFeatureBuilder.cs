@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -158,11 +157,21 @@ namespace MediaBrowser.Model.Dlna
 
             if (string.IsNullOrEmpty(orgPn))
             {
-                orgPn = GetVideoOrgPnValue(container, videoCodec, audioCodec, width, height, timestamp)
-                    .FirstOrDefault();
+                foreach (string s in GetVideoOrgPnValue(container, videoCodec, audioCodec, width, height, timestamp))
+                {
+                    orgPn = s;
+                    break;
+                }
+            }
 
+            if (string.IsNullOrEmpty(orgPn))
+            {
                 // TODO: Support multiple values and return multiple headers?
-                orgPn = (orgPn ?? string.Empty).Split(',').FirstOrDefault();
+                foreach (string s in (orgPn ?? string.Empty).Split(','))
+                {
+                    orgPn = s;
+                    break;
+                }
             }
 
             string contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
@@ -191,16 +200,12 @@ namespace MediaBrowser.Model.Dlna
             return format.HasValue ? format.Value.ToString() : null;
         }
 
-        private IEnumerable<string> GetVideoOrgPnValue(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestamp)
+        private List<string> GetVideoOrgPnValue(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestamp)
         {
-            return new MediaFormatProfileResolver()
-                .ResolveVideoFormat(container,
-                    videoCodec,
-                    audioCodec,
-                    width,
-                    height,
-                    timestamp)
-                    .Select(i => i.ToString());
+            List<string> list = new List<string>();
+            foreach (MediaFormatProfile i in new MediaFormatProfileResolver().ResolveVideoFormat(container, videoCodec, audioCodec, width, height, timestamp))
+                list.Add(i.ToString());
+            return list;
         }
     }
 }
