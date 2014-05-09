@@ -13,7 +13,7 @@
 
         var elem = $('#popupAudioTrackMenu', page);
 
-        var html = '<li data-role="list-divider">Select Audio</li>';
+        var html = '<ul data-role="listview" data-inset="true" style="min-width: 210px;"><li data-role="list-divider">Select Audio</li>';
 
         html += streams.map(function (s) {
 
@@ -51,7 +51,9 @@
 
         }).join('');
 
-        $('ul', elem).html(html).listview('refresh').trigger('create');
+        html += '</ul>';
+
+        $('.trackList', elem).html(html).listview('refresh').trigger('create');
 
         elem.popup('open');
     }
@@ -95,7 +97,7 @@
 
         }).join('');
 
-        $('ul', elem).html(html).listview('refresh').trigger('create');
+        $('.trackList', elem).html(html).listview('refresh').trigger('create');
 
         elem.popup('open');
     }
@@ -271,6 +273,8 @@
         $('.btnAudioTracks', page).buttonEnabled(hasStreams(item, 'Audio') && supportedCommands.indexOf('SetAudioStreamIndex') != -1);
         $('.btnSubtitles', page).buttonEnabled(hasStreams(item, 'Subtitle') && supportedCommands.indexOf('SetSubtitleStreamIndex') != -1);
         $('.btnChapters', page).buttonEnabled(item && item.Chapters && item.Chapters.length);
+
+        $('.sendMessageElement', page).buttonEnabled(supportedCommands.indexOf('DisplayMessage') != -1);
 
         $('.btnStop', page).buttonEnabled(item != null);
         $('.btnNextTrack', page).buttonEnabled(item != null);
@@ -466,5 +470,29 @@
 
         lastPlayerState = null;
     });
+
+    window.NowPlayingPage = {
+
+        onMessageSubmit: function () {
+
+            var form = this;
+
+            MediaController.sendCommand({
+                Name: 'DisplayMessage',
+                Arguments: {
+
+                    Header: $('#txtMessageTitle', form).val(),
+                    Text: $('#txtMessageText', form).val()
+                }
+
+            }, currentPlayer);
+
+            $('input', form).val('');
+            Dashboard.alert('Message sent.');
+
+            return false;
+        }
+
+    };
 
 })(window, document, jQuery, setTimeout, clearTimeout);

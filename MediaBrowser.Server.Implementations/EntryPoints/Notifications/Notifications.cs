@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Globalization;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
@@ -247,10 +248,10 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                 DisposeLibraryUpdateTimer();
             }
 
-            var item = items.FirstOrDefault();
-
-            if (item != null)
+            if (items.Count == 1)
             {
+                var item = items.First();
+
                 var notification = new NotificationRequest
                 {
                     NotificationType = NotificationType.NewLibraryContent.ToString()
@@ -258,10 +259,16 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
                 notification.Variables["Name"] = item.Name;
 
-                if (items.Count > 1)
+                await SendNotification(notification).ConfigureAwait(false);
+            }
+            else
+            {
+                var notification = new NotificationRequest
                 {
-                    notification.Name = items.Count + " new library items.";
-                }
+                    NotificationType = NotificationType.NewLibraryContentMultiple.ToString()
+                };
+
+                notification.Variables["ItemCount"] = items.Count.ToString(CultureInfo.InvariantCulture);
 
                 await SendNotification(notification).ConfigureAwait(false);
             }

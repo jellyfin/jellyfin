@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -127,6 +129,20 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is external; otherwise, <c>false</c>.</value>
         public bool IsExternal { get; set; }
+
+        [IgnoreDataMember]
+        public bool IsGraphicalSubtitleStream
+        {
+            get
+            {
+                if (IsExternal) return false;
+
+                var codec = Codec ?? string.Empty;
+
+                return codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 ||
+                       codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the filename.

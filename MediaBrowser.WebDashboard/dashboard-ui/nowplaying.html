@@ -9,7 +9,7 @@
         <div class="libraryViewNav">
             <a href="#" class="ui-btn-active tabButton" data-tab="tabNowPlaying">${TabNowPlaying}</a>
             <a href="#" class="tabButton" data-tab="tabNavigation">${TabControls}</a>
-<!--            <a href="#" class="tabButton" data-tab="tabAdvanced">${TabAdvanced}</a>-->
+            <a href="#" class="tabButton" data-tab="tabAdvanced">${TabAdvanced}</a>
         </div>
 
         <div data-role="content" style="padding: 1em 0;">
@@ -80,29 +80,48 @@
                     </div>
                 </div>
                 <div class="tabAdvanced tabContent" style="display: none;">
+
+                    <div class="readOnlyContent" style="margin: 0 auto; padding: 0 1em;">
+
+                        <div data-role="collapsible">
+                            <h2>${HeaderSendMessage}</h2>
+                            <div style="text-align: left;">
+
+                                <br />
+                                <form class="sendMessageForm">
+                                    <div>
+                                        <label for="txtMessageTitle">${LabelMessageTitle}</label>
+                                        <input class="sendMessageElement" type="text" id="txtMessageTitle" required="required" />
+                                    </div>
+                                    <br />
+                                    <div>
+                                        <label for="txtMessageText">${LabelMessageText}</label>
+                                        <input class="sendMessageElement" type="text" id="txtMessageText" required="required" />
+                                    </div>
+                                    <p>
+                                        <button class="sendMessageElement" type="submit" data-icon="mail">${ButtonSend}</button>
+                                    </p>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
 
         <div data-role="popup" id="popupAudioTrackMenu" data-history="false" data-transition="flip">
-            <ul data-role="listview" data-inset="true" style="min-width: 210px;">
-                <li data-role="list-divider">Select Audio</li>
-                <li><a href="#">View details</a></li>
-                <li><a href="#">Edit</a></li>
-                <li><a href="#">Disable</a></li>
-                <li><a href="#">Delete</a></li>
-            </ul>
+            <div class="trackList"></div>
         </div>
 
         <div data-role="popup" id="popupSubtitleTrackMenu" data-history="false" data-transition="flip">
-            <ul data-role="listview" data-inset="true" style="min-width: 210px;">
-                <li data-role="list-divider">Select Subtitles</li>
-                <li><a href="#">View details</a></li>
-                <li><a href="#">Edit</a></li>
-                <li><a href="#">Disable</a></li>
-                <li><a href="#">Delete</a></li>
-            </ul>
+            <div class="trackList"></div>
         </div>
+
+        <script type="text/javascript">
+            $('.sendMessageForm').off('submit', NowPlayingPage.onMessageSubmit).on('submit', NowPlayingPage.onMessageSubmit);
+        </script>
     </div>
 </body>
 </html>

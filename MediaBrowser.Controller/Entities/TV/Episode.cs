@@ -305,13 +305,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 if (!ParentIndexNumber.HasValue && !string.IsNullOrEmpty(Path))
                 {
-                    ParentIndexNumber = TVUtils.GetSeasonNumberFromPath(Path);
-
-                    // If a change was made record it
-                    if (ParentIndexNumber.HasValue)
-                    {
-                        hasChanges = true;
-                    }
+                    ParentIndexNumber = TVUtils.GetSeasonNumberFromEpisodeFile(Path);
                 }
 
                 // If a change was made record it

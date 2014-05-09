@@ -440,6 +440,187 @@ namespace OpenSubtitlesHandler
             }
             return new MethodResponseError("Fail", "Search Subtitles call failed !");
         }
+
+        public static async Task<IMethodResponse> SearchSubtitlesAsync(SubtitleSearchParameters[] parameters, CancellationToken cancellationToken)
+        {
+            if (TOKEN == "")
+            {
+                OSHConsole.WriteLine("Can't do this call, 'token' value not set. Please use Log In method first.", DebugCode.Error);
+                return new MethodResponseError("Fail", "Can't do this call, 'token' value not set. Please use Log In method first.");
+            }
+            if (parameters == null)
+            {
+                OSHConsole.UpdateLine("No subtitle search parameter passed !!", DebugCode.Error);
+                return new MethodResponseError("Fail", "No subtitle search parameter passed"); ;
+            }
+            if (parameters.Length == 0)
+            {
+                OSHConsole.UpdateLine("No subtitle search parameter passed !!", DebugCode.Error);
+                return new MethodResponseError("Fail", "No subtitle search parameter passed"); ;
+            }
+            // Method call ..
+            List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
+            // Add token param
+            parms.Add(new XmlRpcValueBasic(TOKEN, XmlRpcBasicValueType.String));
+            // Add subtitle search parameters. Each one will be like 'array' of structs.
+            XmlRpcValueArray array = new XmlRpcValueArray();
+            foreach (SubtitleSearchParameters param in parameters)
+            {
+                XmlRpcValueStruct strct = new XmlRpcValueStruct(new List<XmlRpcStructMember>());
+                // sublanguageid member
+                XmlRpcStructMember member = new XmlRpcStructMember("sublanguageid",
+                    new XmlRpcValueBasic(param.SubLangaugeID, XmlRpcBasicValueType.String));
+                strct.Members.Add(member);
+                // moviehash member
+                if (param.MovieHash.Length > 0 && param.MovieByteSize > 0)
+                {
+                    member = new XmlRpcStructMember("moviehash",
+                        new XmlRpcValueBasic(param.MovieHash, XmlRpcBasicValueType.String));
+                    strct.Members.Add(member);
+                    // moviehash member
+                    member = new XmlRpcStructMember("moviebytesize",
+                        new XmlRpcValueBasic(param.MovieByteSize, XmlRpcBasicValueType.Int));
+                    strct.Members.Add(member);
+                }
+                if (param.Query.Length > 0)
+                {
+                    member = new XmlRpcStructMember("query",
+                        new XmlRpcValueBasic(param.Query, XmlRpcBasicValueType.String));
+                    strct.Members.Add(member);
+                }
+
+                if (param.Episode.Length > 0 && param.Season.Length > 0)
+                {
+                    member = new XmlRpcStructMember("season",
+                        new XmlRpcValueBasic(param.Season, XmlRpcBasicValueType.String));
+                    strct.Members.Add(member);
+                    member = new XmlRpcStructMember("episode",
+                      new XmlRpcValueBasic(param.Episode, XmlRpcBasicValueType.String));
+                    strct.Members.Add(member);
+                }
+
+                // imdbid member
+                if (param.IMDbID.Length > 0)
+                {
+                    member = new XmlRpcStructMember("imdbid",
+                        new XmlRpcValueBasic(param.IMDbID, XmlRpcBasicValueType.String));
+                    strct.Members.Add(member);
+                }
+                // Add the struct to the array
+                array.Values.Add(strct);
+            }
+            // Add the array to the parameters
+            parms.Add(array);
+            // Call !
+            XmlRpcMethodCall call = new XmlRpcMethodCall("SearchSubtitles", parms);
+            OSHConsole.WriteLine("Sending SearchSubtitles request to the server ...", DebugCode.Good);
+            // Send the request to the server
+            string response = Utilities.GetStreamString(await Utilities.SendRequestAsync(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT, cancellationToken).ConfigureAwait(false));
+
+            if (!response.Contains("ERROR:"))
+            {
+                // No error occur, get and decode the response. 
+                XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
+                if (calls.Length > 0)
+                {
+                    if (calls[0].Parameters.Count > 0)
+                    {
+                        // We expect Struct of 3 members:
+                        //* the first is status
+                        //* the second is [array of structs, each one includes subtitle file].
+                        //* the third is [double basic value] represent seconds token by server.
+                        XmlRpcValueStruct mainStruct = (XmlRpcValueStruct)calls[0].Parameters[0];
+                        // Create the response, we'll need it later
+                        MethodResponseSubtitleSearch R = new MethodResponseSubtitleSearch();
+                        // To make sure response is not currepted by server, do it in loop
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
+                        {
+                            if (MEMBER.Name == "status")
+                            {
+                                R.Status = (string)MEMBER.Data.Data;
+                                OSHConsole.WriteLine("Status= " + R.Status);
+                            }
+                            else if (MEMBER.Name == "seconds")
+                            {
+                                R.Seconds = (double)MEMBER.Data.Data;
+                                OSHConsole.WriteLine("Seconds= " + R.Seconds);
+                            }
+                            else if (MEMBER.Name == "data")
+                            {
+                                if (MEMBER.Data is XmlRpcValueArray)
+                                {
+                                    OSHConsole.WriteLine("Search results: ");
+
+                                    XmlRpcValueArray rarray = (XmlRpcValueArray)MEMBER.Data;
+                                    foreach (IXmlRpcValue subStruct in rarray.Values)
+                                    {
+                                        if (subStruct == null) continue;
+                                        if (!(subStruct is XmlRpcValueStruct)) continue;
+
+                                        SubtitleSearchResult result = new SubtitleSearchResult();
+                                        foreach (XmlRpcStructMember submember in ((XmlRpcValueStruct)subStruct).Members)
+                                        {
+                                            // To avoid errors of arranged info or missing ones, let's do it with switch..
+                                            switch (submember.Name)
+                                            {
+                                                case "IDMovie": result.IDMovie = submember.Data.Data.ToString(); break;
+                                                case "IDMovieImdb": result.IDMovieImdb = submember.Data.Data.ToString(); break;
+                                                case "IDSubMovieFile": result.IDSubMovieFile = submember.Data.Data.ToString(); break;
+                                                case "IDSubtitle": result.IDSubtitle = submember.Data.Data.ToString(); break;
+                                                case "IDSubtitleFile": result.IDSubtitleFile = submember.Data.Data.ToString(); break;
+                                                case "ISO639": result.ISO639 = submember.Data.Data.ToString(); break;
+                                                case "LanguageName": result.LanguageName = submember.Data.Data.ToString(); break;
+                                                case "MovieByteSize": result.MovieByteSize = submember.Data.Data.ToString(); break;
+                                                case "MovieHash": result.MovieHash = submember.Data.Data.ToString(); break;
+                                                case "MovieImdbRating": result.MovieImdbRating = submember.Data.Data.ToString(); break;
+                                                case "MovieName": result.MovieName = submember.Data.Data.ToString(); break;
+                                                case "MovieNameEng": result.MovieNameEng = submember.Data.Data.ToString(); break;
+                                                case "MovieReleaseName": result.MovieReleaseName = submember.Data.Data.ToString(); break;
+                                                case "MovieTimeMS": result.MovieTimeMS = submember.Data.Data.ToString(); break;
+                                                case "MovieYear": result.MovieYear = submember.Data.Data.ToString(); break;
+                                                case "SubActualCD": result.SubActualCD = submember.Data.Data.ToString(); break;
+                                                case "SubAddDate": result.SubAddDate = submember.Data.Data.ToString(); break;
+                                                case "SubAuthorComment": result.SubAuthorComment = submember.Data.Data.ToString(); break;
+                                                case "SubBad": result.SubBad = submember.Data.Data.ToString(); break;
+                                                case "SubDownloadLink": result.SubDownloadLink = submember.Data.Data.ToString(); break;
+                                                case "SubDownloadsCnt": result.SubDownloadsCnt = submember.Data.Data.ToString(); break;
+                                                case "SeriesEpisode": result.SeriesEpisode = submember.Data.Data.ToString(); break;
+                                                case "SeriesSeason": result.SeriesSeason = submember.Data.Data.ToString(); break;
+                                                case "SubFileName": result.SubFileName = submember.Data.Data.ToString(); break;
+                                                case "SubFormat": result.SubFormat = submember.Data.Data.ToString(); break;
+                                                case "SubHash": result.SubHash = submember.Data.Data.ToString(); break;
+                                                case "SubLanguageID": result.SubLanguageID = submember.Data.Data.ToString(); break;
+                                                case "SubRating": result.SubRating = submember.Data.Data.ToString(); break;
+                                                case "SubSize": result.SubSize = submember.Data.Data.ToString(); break;
+                                                case "SubSumCD": result.SubSumCD = submember.Data.Data.ToString(); break;
+                                                case "UserID": result.UserID = submember.Data.Data.ToString(); break;
+                                                case "UserNickName": result.UserNickName = submember.Data.Data.ToString(); break;
+                                                case "ZipDownloadLink": result.ZipDownloadLink = submember.Data.Data.ToString(); break;
+                                            }
+                                        }
+                                        R.Results.Add(result);
+                                        OSHConsole.WriteLine(">" + result.ToString());
+                                    }
+                                }
+                                else// Unknown data ?
+                                {
+                                    OSHConsole.WriteLine("Data= " + MEMBER.Data.Data.ToString(), DebugCode.Warning);
+                                }
+                            }
+                        }
+                        // Return the response to user !!
+                        return R;
+                    }
+                }
+            }
+            else
+            {
+                OSHConsole.WriteLine(response, DebugCode.Error);
+                return new MethodResponseError("Fail", response);
+            }
+            return new MethodResponseError("Fail", "Search Subtitles call failed !");
+        }
+        
         /// <summary>
         /// Download subtitle file(s)
         /// </summary>

@@ -12,6 +12,7 @@ namespace MediaBrowser.Model.Configuration
         PluginUpdateInstalled,
         PluginUninstalled,
         NewLibraryContent,
+        NewLibraryContentMultiple,
         ServerRestartRequired,
         TaskFailed,
         VideoPlayback
