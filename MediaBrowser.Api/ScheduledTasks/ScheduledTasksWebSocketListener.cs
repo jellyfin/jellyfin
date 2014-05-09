@@ -39,8 +39,6 @@ namespace MediaBrowser.Api.ScheduledTasks
             TaskManager = taskManager;
         }
 
-        private bool _lastResponseHadTasksRunning = true;
-
         /// <summary>
         /// Gets the data to send.
         /// </summary>
@@ -48,25 +46,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<IEnumerable<TaskInfo>> GetDataToSend(object state)
         {
-            var tasks = TaskManager.ScheduledTasks.ToList();
-
-            var anyRunning = tasks.Any(i => i.State != TaskState.Idle);
-
-            if (anyRunning)
-            {
-                _lastResponseHadTasksRunning = true;
-            }
-            else
-            {
-                if (!_lastResponseHadTasksRunning)
-                {
-                    return Task.FromResult<IEnumerable<TaskInfo>>(null);
-                }
-
-                _lastResponseHadTasksRunning = false;
-            }
-
-            return Task.FromResult(tasks
+            return Task.FromResult(TaskManager.ScheduledTasks
                 .OrderBy(i => i.Name)
                 .Select(ScheduledTaskHelpers.GetTaskInfo)
                 .Where(i => !i.IsHidden));

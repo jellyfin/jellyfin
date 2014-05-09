@@ -109,15 +109,7 @@ namespace MediaBrowser.Model.Dlna
 
             int? maxBitrateSetting = options.MaxBitrate ?? options.Profile.MaxBitrate;
 
-            MediaStream audioStream = null;
-            foreach (MediaStream i in item.MediaStreams)
-            {
-                if (i.Type == MediaStreamType.Audio)
-                {
-                    audioStream = i;
-                    break;
-                }
-            }
+            MediaStream audioStream = item.DefaultAudioStream;
 
             // Honor the max bitrate setting
             if (IsAudioEligibleForDirectPlay(item, maxBitrateSetting))
@@ -191,11 +183,20 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec;
                 playlistItem.Protocol = transcodingProfile.Protocol;
 
-                List<ProfileCondition> audioTranscodingConditions = options.Profile.CodecProfiles
-                    .Where(i => i.Type == CodecType.Audio && i.ContainsCodec(transcodingProfile.AudioCodec))
-                    .Take(1)
-                    .SelectMany(i => i.Conditions)
-                    .ToList();
+                List<CodecProfile> audioCodecProfiles = new List<CodecProfile>();
+                foreach (CodecProfile i in options.Profile.CodecProfiles)
+                {
+                    if (i.Type == CodecType.Audio && i.ContainsCodec(transcodingProfile.AudioCodec))
+                    {
+                        audioCodecProfiles.Add(i);
+                    }
+
+                    if (audioCodecProfiles.Count >= 1) break;
+                }
+
+                List<ProfileCondition> audioTranscodingConditions = new List<ProfileCondition>();
+                foreach (CodecProfile i in audioCodecProfiles)
+                        audioTranscodingConditions.AddRange(i.Conditions);
 
                 ApplyTranscodingConditions(playlistItem, audioTranscodingConditions);
 
@@ -229,25 +230,8 @@ namespace MediaBrowser.Model.Dlna
                 RunTimeTicks = item.RunTimeTicks
             };
 
-            MediaStream audioStream = null;
-            foreach (MediaStream i in item.MediaStreams)
-            {
-                if (i.Type == MediaStreamType.Audio)
-                {
-                    audioStream = i;
-                    break;
-                }
-            }
-
-            MediaStream videoStream = null;
-            foreach (MediaStream i in item.MediaStreams)
-            {
-                if (i.Type == MediaStreamType.Video)
-                {
-                    videoStream = i;
-                    break;
-                }
-            }
+            MediaStream audioStream = item.DefaultAudioStream;
+            MediaStream videoStream = item.VideoStream;
 
             int? maxBitrateSetting = options.MaxBitrate ?? options.Profile.MaxBitrate;
 
@@ -288,18 +272,26 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.AudioStreamIndex = options.AudioStreamIndex;
                 playlistItem.SubtitleStreamIndex = options.SubtitleStreamIndex;
 
-                IEnumerable<ProfileCondition> videoTranscodingConditions = options.Profile.CodecProfiles
-                    .Where(i => i.Type == CodecType.Video && i.ContainsCodec(transcodingProfile.VideoCodec))
-                    .Take(1)
-                    .SelectMany(i => i.Conditions);
-
+                List<ProfileCondition> videoTranscodingConditions = new List<ProfileCondition>();
+                foreach (CodecProfile i in options.Profile.CodecProfiles)
+                {
+                    if (i.Type == CodecType.Video && i.ContainsCodec(transcodingProfile.VideoCodec))
+                    {
+                        videoTranscodingConditions.AddRange(i.Conditions);
+                        break;
+                    }
+                }
                 ApplyTranscodingConditions(playlistItem, videoTranscodingConditions);
 
-                IEnumerable<ProfileCondition> audioTranscodingConditions = options.Profile.CodecProfiles
-                    .Where(i => i.Type == CodecType.VideoAudio && i.ContainsCodec(transcodingProfile.AudioCodec))
-                    .Take(1)
-                    .SelectMany(i => i.Conditions);
-
+                List<ProfileCondition> audioTranscodingConditions = new List<ProfileCondition>();
+                foreach (CodecProfile i in options.Profile.CodecProfiles)
+                {
+                    if (i.Type == CodecType.VideoAudio && i.ContainsCodec(transcodingProfile.AudioCodec))
+                    {
+                        audioTranscodingConditions.AddRange(i.Conditions);
+                        break;
+                    }
+                }
                 ApplyTranscodingConditions(playlistItem, audioTranscodingConditions);
 
                 // Honor requested max channels
@@ -449,12 +441,6 @@ namespace MediaBrowser.Model.Dlna
         private bool IsEligibleForDirectPlay(MediaSourceInfo item, VideoOptions options, int? maxBitrate)
         {
             if (options.SubtitleStreamIndex.HasValue)
-            {
-                return false;
-            }
-
-            if (options.AudioStreamIndex.HasValue &&
-                item.MediaStreams.Count(i => i.Type == MediaStreamType.Audio) > 1)
             {
                 return false;
             }

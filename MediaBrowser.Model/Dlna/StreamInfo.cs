@@ -143,13 +143,7 @@ namespace MediaBrowser.Model.Dlna
                         return null;
                     }
 
-                    foreach (MediaStream stream in MediaSource.MediaStreams)
-                    {
-                        if (stream.Type == MediaStreamType.Audio)
-                            return stream;
-                    }
-
-                    return null;
+                    return MediaSource.DefaultAudioStream;
                 }
 
                 return null;
@@ -165,12 +159,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (MediaSource != null)
                 {
-                    foreach (MediaStream i in MediaSource.MediaStreams)
-                    {
-                        if (i.Type == MediaStreamType.Video && (i.Codec ?? string.Empty).IndexOf("jpeg", StringComparison.OrdinalIgnoreCase) == -1) 
-                            return i;
-                    }
-                    return null;
+                    return MediaSource.VideoStream;
                 }
 
                 return null;

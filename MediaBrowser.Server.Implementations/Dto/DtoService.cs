@@ -1165,7 +1165,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
             .ThenByDescending(i =>
             {
-                var stream = i.MediaStreams.FirstOrDefault(m => m.Type == MediaStreamType.Video);
+                var stream = i.VideoStream;
 
                 return stream == null || stream.Width == null ? 0 : stream.Width.Value;
             })

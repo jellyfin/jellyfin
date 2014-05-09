@@ -80,6 +80,7 @@
     font-family: Roboto;
     background-repeat: no-repeat;
     background-size: 18px 18px;
+    background-position: 14px center;
 }
 
 .musicViewMenu {
@@ -94,7 +95,6 @@
 
 .moviesViewMenu {
     background-image: url(images/items/folders/movies.png);
-    background-position: 14px center;
 }
 
 .gamesViewMenu {
@@ -104,12 +104,11 @@
 
 .channelsViewMenu {
     background-image: url(images/items/folders/channels.png);
-    background-position: 14px center;
+    background-position: 14px 9px;
 }
 
 .booksViewMenu {
     background-image: url(images/items/folders/books.png);
-    background-position: 14px center;
 }
 
 .musicvideosViewMenu {
@@ -124,12 +123,10 @@
 
 .homeVideosViewMenu {
     background-image: url(images/items/folders/homevideos.png);
-    background-position: 14px center;
 }
 
 .generalViewMenu, .boxsetsViewMenu {
     background-image: url(images/items/folders/folder.png);
-    background-position: 14px center;
 }
 
 .viewMenuSecondary {
