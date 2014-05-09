@@ -76,6 +76,12 @@ h1, h1 a {
 }
 
 .ui-loader h1 {
+    font-family: 'Open Sans';
+    font-weight: bold!important;
+    font-size: 18px;
+}
+
+.ui-loader h1 {
     font-weight: bold;
 }
 

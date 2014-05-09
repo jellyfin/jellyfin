@@ -49,25 +49,5 @@ namespace MediaBrowser.Model.Plugins
         /// </summary>
         /// <value>The unique id.</value>
         public string Id { get; set; }
-
-        /// <summary>
-        /// Whether or not this plug-in should be automatically updated when a
-        /// compatible new version is released
-        /// </summary>
-        /// <value><c>true</c> if [enable auto update]; otherwise, <c>false</c>.</value>
-        public bool EnableAutoUpdate { get; set; }
-
-        /// <summary>
-        /// The classification of updates to which to subscribe.
-        /// Options are: Dev, Beta or Release
-        /// </summary>
-        /// <value>The update class.</value>
-        public PackageVersionClass UpdateClass { get; set; }
-
-        /// <summary>
-        /// Gets or sets the minimum required UI version.
-        /// </summary>
-        /// <value>The minimum required UI version.</value>
-        public string MinimumRequiredUIVersion { get; set; }
     }
 }

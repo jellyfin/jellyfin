@@ -116,20 +116,22 @@
         return false;
 
     }
-    
+
     function renderRecordings(page, result) {
-        
+
+        var screenWidth = $(window).width();
+
         $('.recordingsTab', page).html(LibraryBrowser.getPosterViewHtml({
 
             items: result.Items,
             shape: "smallBackdrop",
             showTitle: true,
-            overlayText: true,
+            overlayText: screenWidth >= 600,
             coverImage: true
 
         })).createPosterItemMenus();
     }
-    
+
     function renderSchedule(page, result) {
 
         var timers = result.Items;
@@ -176,7 +178,7 @@
             html += '</h3>';
 
             html += '<p>';
-            
+
             if (program.IsLive) {
                 html += '<span class="liveTvProgram">LIVE&nbsp;&nbsp;</span>';
             }

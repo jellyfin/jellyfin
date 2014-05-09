@@ -62,6 +62,6 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Gets the unique id.
         /// </summary>
         /// <value>The unique id.</value>
-        Guid Id { get; }
+        string Id { get; }
     }
 }

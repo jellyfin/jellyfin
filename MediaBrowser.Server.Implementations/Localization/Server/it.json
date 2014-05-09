@@ -564,6 +564,7 @@
     "NotificationOptionTaskFailed": "Fallimento operazione pianificata",
     "NotificationOptionInstallationFailed": "errore di installazione",
     "NotificationOptionNewLibraryContent": "Nuovo contenuto aggiunto",
+    "NotificationOptionNewLibraryContentMultiple": "New content added (multiple)",
     "SendNotificationHelp": "Per impostazione predefinita, le notifiche vengono consegnate al cruscotto della Posta in arrivo . Sfoglia il catalogo plugin da installare opzioni di notifica aggiuntive.",
     "NotificationOptionServerRestartRequired": "Riavvio del server necessaria",
     "LabelNotificationEnabled": "Abilita questa notifica",
@@ -698,13 +699,17 @@
     "OptionReportByteRangeSeekingWhenTranscodingHelp": "Questo \u00e8 necessario per alcuni dispositivi che il tempo non cercano molto bene.",
     "HeaderSubtitleDownloadingHelp": "When Media Browser scans your video files it can search for missing subtitles, and download them using a subtitle provider such as OpenSubtitles.org.",
     "HeaderDownloadSubtitlesFor": "Download subtitles for:",
-    "LabelRequireTextSubtitles": "Download even if the video already contains graphical subtitles",
-    "LabelRequireTextSubtitlesHelp": "Keeping text versions of subtitles will result in more efficient delivery to mobile clients.",
+    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains graphical subtitles",
+    "LabelSkipIfGraphicalSubsPresentHelp": "Keeping text versions of subtitles will result in more efficient delivery to mobile clients.",
     "TabSubtitles": "Subtitles",
     "LabelOpenSubtitlesUsername": "Open Subtitles username:",
     "LabelOpenSubtitlesPassword": "Open Subtitles password:",
     "LabelAudioLanguagePreferenceHelp": "If empty, the default audio track will be selected, regardless of language.",
     "LabelDownloadLanguages": "Download languages:",
     "ButtonRegister": "Register",
-    "HeaderSubtitleDownloadingMoreHelp": "Subtitles are considered missing when the audio track is in a foreign language, and there are no subtitles available in the preferred language."
+    "LabelSkipIfAudioTrackPresent": "Skip if the default audio track matches the download language",
+    "LabelSkipIfAudioTrackPresentHelp": "Uncheck this to ensure all videos have subtitles, regardless of audio language.",
+    "HeaderSendMessage": "Send Message",
+    "ButtonSend": "Send",
+    "LabelMessageText": "Message text:"
 }

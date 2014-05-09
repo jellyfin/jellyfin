@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -193,7 +194,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var cmd = _connection.CreateCommand();
             cmd.CommandText = "select data from userdisplaypreferences where id = @id and userId=@userId and client=@client";
 
-            cmd.Parameters.Add(cmd, "@id", DbType.Guid).Value = new Guid(displayPreferencesId);
+            cmd.Parameters.Add(cmd, "@id", DbType.Guid).Value = displayPreferencesId.GetMD5();
             cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
             cmd.Parameters.Add(cmd, "@client", DbType.String).Value = client;
 

@@ -1069,12 +1069,7 @@
                 continue;
             }
 
-            var type;
-            if (item.MediaType == "Audio" && stream.Type == "Video") {
-                type = "Embedded Image";
-            } else {
-                type = stream.Type;
-            }
+            var type = stream.Type.replace('EmbeddedImage', 'Embedded Image');
 
             html += '<div class="mediaInfoStream">';
 

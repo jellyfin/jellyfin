@@ -35,7 +35,6 @@
                 items: result.Items,
                 shape: "backdrop",
                 showTitle: false,
-                overlayText: false,
                 context: 'tv',
                 preferThumb: true,
                 showItemCounts: true,

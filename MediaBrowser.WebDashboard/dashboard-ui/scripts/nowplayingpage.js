@@ -275,6 +275,7 @@
         $('.btnChapters', page).buttonEnabled(item && item.Chapters && item.Chapters.length);
 
         $('.sendMessageElement', page).buttonEnabled(supportedCommands.indexOf('DisplayMessage') != -1);
+        $('.typeTextElement', page).buttonEnabled(supportedCommands.indexOf('SendString') != -1);
 
         $('.btnStop', page).buttonEnabled(item != null);
         $('.btnNextTrack', page).buttonEnabled(item != null);
@@ -489,6 +490,25 @@
 
             $('input', form).val('');
             Dashboard.alert('Message sent.');
+
+            return false;
+        },
+        
+        onSendStringSubmit: function() {
+            
+            var form = this;
+
+            MediaController.sendCommand({
+                Name: 'SendString',
+                Arguments: {
+
+                    String: $('#txtTypeText', form).val()
+                }
+
+            }, currentPlayer);
+
+            $('input', form).val('');
+            Dashboard.alert('Text sent.');
 
             return false;
         }

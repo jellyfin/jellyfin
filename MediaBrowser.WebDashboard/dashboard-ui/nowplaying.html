@@ -36,7 +36,7 @@
                     <div data-role="controlgroup" data-type="horizontal">
                         <button data-icon="volume-up" data-inline="true" data-iconpos="notext" title="${ButtonVolumeUp}" class="btnCommand" data-command="VolumeUp">${ButtonVolumeUp}</button>
                         <button data-icon="volume-off" data-inline="true" data-iconpos="notext" title="${ButtonMute}" class="btnCommand" data-command="ToggleMute">${ButtonMute}</button>
-                        <button data-icon="expand" data-inline="true" data-iconpos="notext" title="${ButtonFullscreen}" class="btnToggleFullscreen btnPlayStateCommand" data-command="ToggleFullscreen" style="visibility: hidden;">${ButtonFullscreen}</button>
+                        <button data-icon="grid" data-inline="true" data-iconpos="notext" title="${ButtonOsd}" class="btnCommand" data-command="ToggleOsdMenu">${ButtonOsd}</button>
                         <button data-icon="expand" data-inline="true" data-iconpos="notext" title="${ButtonFullscreen}" class="btnToggleFullscreen videoButton btnPlayStateCommand" data-command="ToggleFullscreen">${ButtonFullscreen}</button>
                     </div>
                     <div data-role="controlgroup" data-type="horizontal">
@@ -105,6 +105,23 @@
 
                             </div>
                         </div>
+                        <div data-role="collapsible">
+                            <h2>${HeaderTypeText}</h2>
+                            <div style="text-align: left;">
+
+                                <br />
+                                <form class="typeTextForm">
+                                    <div>
+                                        <label for="txtTypeText">${LabelTypeText}</label>
+                                        <input class="typeTextElement" type="text" id="txtTypeText" required="required" />
+                                    </div>
+                                    <p>
+                                        <button class="typeTextElement" type="submit" data-icon="arrow-r">${ButtonSend}</button>
+                                    </p>
+                                </form>
+
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -121,7 +138,8 @@
 
         <script type="text/javascript">
             $('.sendMessageForm').off('submit', NowPlayingPage.onMessageSubmit).on('submit', NowPlayingPage.onMessageSubmit);
-        </script>
+            $('.typeTextForm').off('submit', NowPlayingPage.onSendStringSubmit).on('submit', NowPlayingPage.onSendStringSubmit);
+     </script>
     </div>
 </body>
 </html>

@@ -75,9 +75,9 @@
 
         return LibraryBrowser.getHref(item);
     }
-
-    function insertViews(page, user, counts, items, liveTvInfo) {
-
+    
+    function getViewsHtml(userId, counts, items, liveTvInfo) {
+        
         var html = '';
 
         html += items.map(function (i) {
@@ -89,10 +89,10 @@
         }).join('');
 
         var showChannels = counts.ChannelCount;
-        var showLiveTv = liveTvInfo.EnabledUsers.indexOf(user.Id) != -1;
+        var showLiveTv = liveTvInfo.EnabledUsers.indexOf(userId) != -1;
 
         if (showChannels || showLiveTv) {
-            html += '<div class="desktopLibraryMenuDivider"></div>';
+            html += '<div class="libraryMenuDivider"></div>';
         }
 
         if (showChannels) {
@@ -103,7 +103,7 @@
             html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder tvshowsViewMenu" data-itemid="livetv" href="livetvsuggested.html">Live TV</a>';
         }
 
-        $('.desktopLibraryMenu', page).html(html);
+        return html;
     }
 
     function showLibraryMenu() {
@@ -136,23 +136,10 @@
 
             html += '<p class="libraryPanelHeader"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
 
-            html += '<ul data-role="listview">';
+            html += '<div style="margin: 0 -1em;">';
+            html += getViewsHtml(Dashboard.getCurrentUserId(), counts, items, liveTvInfo);
+            html += '</div>';
 
-            html += items.map(function (i) {
-
-                return '<li><a data-itemid="' + i.Id + '" class="libraryPanelLink lnkMediaFolder" href="' + getItemHref(i) + '">' + i.Name + '</a></li>';
-
-            }).join('');
-
-            if (counts.ChannelCount) {
-                html += '<li><a class="libraryPanelLink lnkMediaFolder" data-itemid="channels" href="channels.html">Channels</a></li>';
-            }
-
-            if (liveTvInfo.EnabledUsers.indexOf(Dashboard.getCurrentUserId()) != -1) {
-                html += '<li><a class="libraryPanelLink lnkMediaFolder" data-itemid="livetv" href="livetvsuggested.html">Live TV</a></li>';
-            }
-
-            html += '</ul>';
             html += '</div>';
 
             $(page).append(html);
@@ -160,6 +147,8 @@
             panel = $('#libraryPanel', page).panel({}).trigger('create');
         }
 
+        updateLibraryNavLinks(page);
+        
         return panel;
     }
 
@@ -201,7 +190,7 @@
 
         sessionStorage.setItem('topParentId', id);
 
-        $('.lnkMediaFolder', page).each(function () {
+        $('.lnkMediaFolder').each(function () {
 
             var itemId = this.getAttribute('data-itemid');
 
@@ -266,7 +255,8 @@
                         var items = response2[0].Items;
                         var liveTvInfo = response3[0];
 
-                        insertViews(page, user, counts, items, liveTvInfo);
+                        var html = getViewsHtml(user.Id, counts, items, liveTvInfo);
+                        $('.desktopLibraryMenu', page).html(html);
 
                         updateLibraryNavLinks(page);
 

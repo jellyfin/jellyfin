@@ -269,22 +269,22 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <summary>
         /// The _id
         /// </summary>
-        private Guid? _id;
+        private string _id;
 
         /// <summary>
         /// Gets the unique id.
         /// </summary>
         /// <value>The unique id.</value>
-        public Guid Id
+        public string Id
         {
             get
             {
-                if (!_id.HasValue)
+                if (_id == null)
                 {
-                    _id = ScheduledTask.GetType().FullName.GetMD5();
+                    _id = ScheduledTask.GetType().FullName.GetMD5().ToString("N");
                 }
 
-                return _id.Value;
+                return _id;
             }
         }
 
@@ -464,7 +464,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <value>The history file path.</value>
         private string GetHistoryFilePath()
         {
-            return Path.Combine(GetScheduledTasksDataDirectory(), Id + ".js");
+            return Path.Combine(GetScheduledTasksDataDirectory(), new Guid(Id) + ".js");
         }
 
         /// <summary>
@@ -473,7 +473,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <returns>System.String.</returns>
         private string GetConfigurationFilePath()
         {
-            return Path.Combine(GetScheduledTasksConfigurationDirectory(), Id + ".js");
+            return Path.Combine(GetScheduledTasksConfigurationDirectory(), new Guid(Id) + ".js");
         }
 
         /// <summary>
@@ -531,7 +531,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 EndTimeUtc = endTime,
                 Status = status,
                 Name = Name,
-                Id = Id.ToString("N")
+                Id = Id
             };
 
             if (ex != null)

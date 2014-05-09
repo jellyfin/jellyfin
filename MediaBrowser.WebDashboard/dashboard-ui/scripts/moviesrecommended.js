@@ -68,7 +68,7 @@
                 items: result.Items,
                 preferBackdrop: true,
                 shape: 'backdrop',
-                overlayText: true,
+                overlayText: screenWidth >= 600,
                 showTitle: true
                 
             })).createPosterItemMenus();

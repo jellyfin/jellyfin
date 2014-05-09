@@ -458,7 +458,7 @@ a.itemTag:hover {
 }
 
 .libraryPanelHeader {
-    margin: 5px 0 25px 0;
+    margin: 5px 0 15px 0;
 }
 
     .libraryPanelHeader a {
@@ -515,7 +515,7 @@ a.itemTag:hover {
     .detailImageProgressContainer progress {
         width: 100%;
         margin: 0 auto;
-        height: 7px;
+        height: 6px;
     }
 
 .viewControls, .listTopPaging {

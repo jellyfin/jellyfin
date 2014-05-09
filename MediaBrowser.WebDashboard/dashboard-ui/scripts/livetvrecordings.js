@@ -43,6 +43,8 @@
 
     function renderRecordings(elem, recordings) {
 
+        var screenWidth = $(window).width();
+
         if (recordings.length) {
             elem.show();
         } else {
@@ -55,7 +57,7 @@
             shape: "backdrop",
             showTitle: true,
             showParentTitle: true,
-            overlayText: true,
+            overlayText: screenWidth >= 600,
             coverImage: true
 
         })).createPosterItemMenus();

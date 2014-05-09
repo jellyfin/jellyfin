@@ -32,7 +32,7 @@
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: true
+                overlayText: screenWidth >= 600
 
             })).createPosterItemMenus();
 
@@ -40,6 +40,8 @@
     }
 
     function loadNextUp(page) {
+
+        var screenWidth = $(window).width();
 
         var parentId = LibraryMenu.getTopParentId();
 
@@ -65,7 +67,7 @@
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: true
+                overlayText: screenWidth >= 600
 
             })).createPosterItemMenus();
 

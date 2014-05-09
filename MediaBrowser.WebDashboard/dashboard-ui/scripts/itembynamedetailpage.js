@@ -415,6 +415,8 @@
                 $('.viewSettings', page).hide();
             }
 
+            var screenWidth = $(window).width();
+
             if (query.IncludeItemTypes == "Audio") {
 
                 html += LibraryBrowser.getSongTableHtml(result.Items, {
@@ -442,7 +444,7 @@
                     shape: "backdrop",
                     showTitle: true,
                     showParentTitle: true,
-                    overlayText: true
+                    overlayText: screenWidth >= 600
                 });
 
             }
