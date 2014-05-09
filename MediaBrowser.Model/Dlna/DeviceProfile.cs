@@ -220,27 +220,39 @@ namespace MediaBrowser.Model.Dlna
         {
             container = (container ?? string.Empty).TrimStart('.');
 
-            return ResponseProfiles.FirstOrDefault(i =>
+            foreach (var i in ResponseProfiles)
             {
                 if (i.Type != DlnaProfileType.Photo)
                 {
-                    return false;
+                    continue;
                 }
 
                 List<string> containers = i.GetContainers();
                 if (containers.Count > 0 && !containers.Contains(container, StringComparer.OrdinalIgnoreCase))
                 {
-                    return false;
+                    continue;
                 }
 
                 ConditionProcessor conditionProcessor = new ConditionProcessor();
+
+                var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!conditionProcessor.IsImageConditionSatisfied(c, width, height)) 
-                        return false;
+                    if (!conditionProcessor.IsImageConditionSatisfied(c, width, height))
+                    {
+                        anyOff = true;
+                        break;
+                    }
                 }
-                return true;
-            });
+
+                if (anyOff)
+                {
+                    continue;
+                }
+
+                return i;
+            }
+            return null;
         }
 
         public ResponseProfile GetVideoMediaProfile(string container, 
@@ -260,66 +272,90 @@ namespace MediaBrowser.Model.Dlna
         {
             container = (container ?? string.Empty).TrimStart('.');
 
-            return ResponseProfiles.FirstOrDefault(i =>
+            foreach (var i in ResponseProfiles)
             {
                 if (i.Type != DlnaProfileType.Video)
                 {
-                    return false;
+                    continue;
                 }
 
                 List<string> containers = i.GetContainers();
                 if (containers.Count > 0 && !containers.Contains(container, StringComparer.OrdinalIgnoreCase))
                 {
-                    return false;
+                    continue;
                 }
 
                 List<string> audioCodecs = i.GetAudioCodecs();
                 if (audioCodecs.Count > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
-                    return false;
+                    continue;
                 }
 
                 List<string> videoCodecs = i.GetVideoCodecs();
                 if (videoCodecs.Count > 0 && !videoCodecs.Contains(videoCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
-                    return false;
+                    continue;
                 }
 
                 ConditionProcessor conditionProcessor = new ConditionProcessor();
+
+                var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!conditionProcessor.IsVideoConditionSatisfied(c, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp)) 
-                        return false;
+                    if (!conditionProcessor.IsVideoConditionSatisfied(c, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp))
+                    {
+                        anyOff = true;
+                        break;
+                    }
                 }
-                return true;
-            });
+
+                if (anyOff)
+                {
+                    continue;
+                }
+
+                return i;
+            }
+            return null;
         }
 
         public ResponseProfile GetPhotoMediaProfile(string container, int? width, int? height)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
-            return ResponseProfiles.FirstOrDefault(i =>
+            foreach (var i in ResponseProfiles)
             {
                 if (i.Type != DlnaProfileType.Photo)
                 {
-                    return false;
+                    continue;
                 }
 
                 List<string> containers = i.GetContainers().ToList();
                 if (containers.Count > 0 && !containers.Contains(container, StringComparer.OrdinalIgnoreCase))
                 {
-                    return false;
+                    continue;
                 }
 
                 ConditionProcessor conditionProcessor = new ConditionProcessor();
+
+                var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!conditionProcessor.IsImageConditionSatisfied(c, width, height)) 
-                        return false;
+                    if (!conditionProcessor.IsImageConditionSatisfied(c, width, height))
+                    {
+                        anyOff = true;
+                        break;
+                    }
                 }
-                return true;
-            });
+
+                if (anyOff)
+                {
+                    continue;
+                }
+
+                return i;
+            }
+            return null;
         }
     }
 }
