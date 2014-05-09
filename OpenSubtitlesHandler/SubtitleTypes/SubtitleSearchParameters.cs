@@ -25,61 +25,15 @@ namespace OpenSubtitlesHandler
     /// </summary>
     public struct SubtitleSearchParameters
     {
-        /// <summary>
-        /// Paramaters for subtitle search call
-        /// </summary>
-        /// <param name="subLanguageId">List of language ISO639-3 language codes to search for, divided by ',' (e.g. 'cze,eng,slo')</param>
-        /// <param name="movieHash">Video file hash as calculated by one of the implementation functions as seen on http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes</param>
-        /// <param name="movieByteSize">Size of video file in bytes </param>
-        public SubtitleSearchParameters(string subLanguageId, string movieHash, long movieByteSize)
-        {
-            this.subLanguageId = subLanguageId;
-            this.movieHash = movieHash;
-            this.movieByteSize = movieByteSize;
-            this.imdbid = "";
-            this._episode = "";
-            this._season = "";
-            this._query = "";
-        }
-
-        public SubtitleSearchParameters(string subLanguageId, string query)
-        {
-            this.subLanguageId = subLanguageId;
-            this.movieHash = "";
-            this.movieByteSize = 0;
-            this.imdbid = "";
-            this._episode = "";
-            this._season = "";
-            this._query = query;
-        }
-
-        public SubtitleSearchParameters(string subLanguageId, string query, string season, string episode)
-        {
-            this.subLanguageId = subLanguageId;
-            this.movieHash = "";
-            this.movieByteSize = 0;
-            this.imdbid = "";
-            this._episode = episode;
-            this._season = season;
-            this._query = query;
-        }
-
-        /// <summary>
-        /// Paramaters for subtitle search call
-        /// </summary>
-        /// <param name="subLanguageId">List of language ISO639-3 language codes to search for, divided by ',' (e.g. 'cze,eng,slo')</param>
-        /// <param name="movieHash">Video file hash as calculated by one of the implementation functions as seen on http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes</param>
-        /// <param name="movieByteSize">Size of video file in bytes </param>
-        /// <param name="imdbid"> IMDb ID of movie this video is part of, belongs to.</param>
-        public SubtitleSearchParameters(string subLanguageId, string movieHash, long movieByteSize, string imdbid)
+        public SubtitleSearchParameters(string subLanguageId, string query = "", string season = "", string episode = "", string movieHash = "", long movieByteSize = 0, string imdbid = "")
         {
             this.subLanguageId = subLanguageId;
             this.movieHash = movieHash;
             this.movieByteSize = movieByteSize;
             this.imdbid = imdbid;
-            this._episode = "";
-            this._season = "";
-            this._query = "";
+            this._episode = episode;
+            this._season = season;
+            this._query = query;
         }
 
         private string subLanguageId;
