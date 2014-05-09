@@ -601,17 +601,17 @@ namespace MediaBrowser.Model.ApiClient
         /// Sets the index of the audio stream.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
-        /// <param name="volume">The volume.</param>
+        /// <param name="index">The index.</param>
         /// <returns>Task.</returns>
-        Task SetAudioStreamIndex(string sessionId, int? volume);
+        Task SetAudioStreamIndex(string sessionId, int index);
 
         /// <summary>
         /// Sets the index of the subtitle stream.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
-        /// <param name="volume">The volume.</param>
+        /// <param name="index">The index.</param>
         /// <returns>Task.</returns>
-        Task SetSubtitleStreamIndex(string sessionId, int? volume);
+        Task SetSubtitleStreamIndex(string sessionId, int? index);
         
         /// <summary>
         /// Instructs the client to display a message to the user

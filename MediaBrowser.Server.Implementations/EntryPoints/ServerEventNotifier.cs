@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
@@ -54,8 +53,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// Initializes a new instance of the <see cref="ServerEventNotifier" /> class.
         /// </summary>
         /// <param name="serverManager">The server manager.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="appHost">The application host.</param>
         /// <param name="userManager">The user manager.</param>
+        /// <param name="installationManager">The installation manager.</param>
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="dtoService">The dto service.</param>
+        /// <param name="sessionManager">The session manager.</param>
         public ServerEventNotifier(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, IDtoService dtoService, ISessionManager sessionManager)
         {
             _serverManager = serverManager;
@@ -80,7 +83,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _installationManager.PackageInstallationCompleted += _installationManager_PackageInstallationCompleted;
             _installationManager.PackageInstallationFailed += _installationManager_PackageInstallationFailed;
 
-            _taskManager.TaskExecuting += _taskManager_TaskExecuting;
             _taskManager.TaskCompleted += _taskManager_TaskCompleted;
         }
 
@@ -107,12 +109,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         void _taskManager_TaskCompleted(object sender, GenericEventArgs<TaskResult> e)
         {
             _serverManager.SendWebSocketMessage("ScheduledTaskEnded", e.Argument);
-        }
-
-        void _taskManager_TaskExecuting(object sender, EventArgs e)
-        {
-            var task = (IScheduledTask)sender;
-            _serverManager.SendWebSocketMessage("ScheduledTaskStarted", task.Name);
         }
 
         /// <summary>
