@@ -51,5 +51,10 @@ namespace MediaBrowser.ServerApplication.Native
 		{
 			get { return false; }
 		}
+
+        public static void PreventSystemStandby()
+        {
+            
+        }
     }
 }

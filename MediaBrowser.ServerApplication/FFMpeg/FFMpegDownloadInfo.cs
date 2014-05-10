@@ -194,12 +194,12 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             var uname = new Uname();
 
 #if __MonoCS__
-                Utsname uname;
-                var callResult = Syscall.uname(out uname);
+                Utsname utsname;
+                var callResult = Syscall.uname(out utsname);
                 if (callResult == 0)
                 {
-                    uname.sysname= uname.sysname;
-                    uname.machine= uname.machine;
+                    uname.sysname= utsname.sysname;
+                    uname.machine= utsname.machine;
                 }
 #endif
             return uname;

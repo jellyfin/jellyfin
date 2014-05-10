@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -50,7 +49,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         void Cancel(IScheduledTaskWorker task);
         Task Execute(IScheduledTaskWorker task);
 
-        event EventHandler<EventArgs> TaskExecuting;
-        event EventHandler<GenericEventArgs<TaskResult>> TaskCompleted;
+        event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
+        event EventHandler<TaskCompletionEventArgs> TaskCompleted;
     }
 }

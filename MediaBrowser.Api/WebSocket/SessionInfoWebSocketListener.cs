@@ -11,7 +11,7 @@ namespace MediaBrowser.Api.WebSocket
     /// <summary>
     /// Class SessionInfoWebSocketListener
     /// </summary>
-    class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfoDto>, object>
+    class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfoDto>, WebSocketListenerState>
     {
         /// <summary>
         /// Gets the name.
@@ -43,7 +43,7 @@ namespace MediaBrowser.Api.WebSocket
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>Task{SystemInfo}.</returns>
-        protected override Task<IEnumerable<SessionInfoDto>> GetDataToSend(object state)
+        protected override Task<IEnumerable<SessionInfoDto>> GetDataToSend(WebSocketListenerState state)
         {
             return Task.FromResult(_sessionManager.Sessions.Where(i => i.IsActive).Select(_sessionManager.GetSessionInfoDto));
         }
