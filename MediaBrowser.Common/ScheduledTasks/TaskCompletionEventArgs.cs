@@ -5,7 +5,7 @@ namespace MediaBrowser.Common.ScheduledTasks
 {
     public class TaskCompletionEventArgs : EventArgs
     {
-        public IScheduledTask Task { get; set; }
+        public IScheduledTaskWorker Task { get; set; }
 
         public TaskResult Result { get; set; }
     }

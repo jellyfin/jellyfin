@@ -221,7 +221,7 @@ var Dashboard = {
         if (!Dashboard.installRefreshInterval) {
 
             if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("SystemInfoStart", "0,350");
+                ApiClient.sendWebSocketMessage("SystemInfoStart", "0,500");
             }
             Dashboard.installRefreshInterval = 1;
         }

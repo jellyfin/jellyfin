@@ -191,10 +191,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("displayPreferencesId");
             }
 
+            var guidId = displayPreferencesId.GetMD5();
+
             var cmd = _connection.CreateCommand();
             cmd.CommandText = "select data from userdisplaypreferences where id = @id and userId=@userId and client=@client";
 
-            cmd.Parameters.Add(cmd, "@id", DbType.Guid).Value = displayPreferencesId.GetMD5();
+            cmd.Parameters.Add(cmd, "@id", DbType.Guid).Value = guidId;
             cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
             cmd.Parameters.Add(cmd, "@client", DbType.String).Value = client;
 
@@ -209,7 +211,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
 
-            return null;
+            return new DisplayPreferences
+            {
+                Id = guidId.ToString("N")
+            };
         }
 
         /// <summary>

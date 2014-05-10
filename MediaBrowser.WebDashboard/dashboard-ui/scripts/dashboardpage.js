@@ -128,7 +128,7 @@
 
         if (ApiClient.isWebSocketOpen()) {
             ApiClient.sendWebSocketMessage("SessionsStart", "0,1500");
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "0,1500");
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "0,1000");
         }
     },
 
@@ -257,15 +257,10 @@
 
             html += '</div>';
 
-            if (nowPlayingItem) {
+            var nowPlayingName = DashboardPage.getNowPlayingName(connection);
 
-                var nowPlayingName = DashboardPage.getNowPlayingName(connection);
-
-                html += '<div class="sessionNowPlayingInfo" data-imgsrc="' + nowPlayingName.image + '">';
-                html += nowPlayingName.html;
-            } else {
-                html += '<div class="sessionNowPlayingInfo">';
-            }
+            html += '<div class="sessionNowPlayingInfo" data-imgsrc="' + nowPlayingName.image + '">';
+            html += nowPlayingName.html;
             html += '</div>';
 
             if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {

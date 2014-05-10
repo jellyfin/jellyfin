@@ -782,50 +782,38 @@
 
                 cssClass = options.centerText ? "posterItemText posterItemTextCentered" : "posterItemText";
 
+                var lines = [];
+                
                 if (options.showParentTitle) {
 
-                    html += "<div class='" + cssClass + "'>";
-                    html += item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "&nbsp;");
-                    html += "</div>";
+                    lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
                 }
 
                 if (options.showTitle || forceName) {
 
-                    html += "<div class='" + cssClass + " posterItemName'>";
-                    html += name;
-                    html += "</div>";
+                    lines.push(name);
                 }
 
                 if (options.showItemCounts) {
 
                     var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
 
-                    if (item.Type == "Person" && !itemCountHtml) {
-                        itemCountHtml = "&nbsp;";
-                    }
-
-                    if (itemCountHtml) {
-                        html += "<div class='" + cssClass + "'>";
-                        html += itemCountHtml;
-                        html += "</div>";
-                    }
+                    lines.push(itemCountHtml);
                 }
 
                 if (options.showPremiereDate && item.PremiereDate) {
 
                     try {
 
-                        //var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
-
-                        html += "<div class='posterItemText'>";
-                        html += LibraryBrowser.getPremiereDateText(item);
-                        html += "</div>";
+                        lines.push(LibraryBrowser.getPremiereDateText(item));
 
                     } catch (err) {
+                        lines.push('');
 
                     }
-
                 }
+
+                html += LibraryBrowser.getPosterItemTextLines(lines, cssClass, !options.overlayText);
 
                 if (options.overlayText) {
 
@@ -842,6 +830,35 @@
 
                 html += "</a>";
 
+            }
+
+            return html;
+        },
+
+        getPosterItemTextLines: function (lines, cssClass, forceLines) {
+
+            var html = '';
+
+            var valid = 0;
+            var i, length;
+
+            for (i = 0, length = lines.length; i < length; i++) {
+
+                var text = lines[i];
+
+                if (text) {
+                    html += "<div class='" + cssClass + "'>";
+                    html += text;
+                    html += "</div>";
+                    valid++;
+                }
+            }
+
+            if (forceLines) {
+                while (valid < length) {
+                    html += "<div class='" + cssClass + "'>&nbsp;</div>";
+                    valid++;
+                }
             }
 
             return html;

@@ -4,7 +4,7 @@
     var lastPlayerState;
     var isPositionSliderActive;
 
-    function showAudioMenu(page, item) {
+    function showAudioMenu(page, item, currentIndex) {
 
         var streams = (item.MediaStreams || []).filter(function (i) {
 
@@ -17,7 +17,13 @@
 
         html += streams.map(function (s) {
 
-            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" style="font-size:15px;" class="lnkTrackOption"><h3>';
+            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" class="lnkTrackOption">';
+
+            streamHtml += '<h3>';
+            
+            if (s.Index == currentIndex) {
+                streamHtml += '<img src="css/images/checkmarkgreen.png" style="width:18px;border-radius:3px;margin-right:.5em;vertical-align:top;" />';
+            }
 
             streamHtml += (s.Codec || '').toUpperCase();
 
@@ -53,13 +59,15 @@
 
         html += '</ul>';
 
-        $('.trackList', elem).html(html).listview('refresh').trigger('create');
+        $('.trackList', elem).html(html).trigger('create');
 
         elem.popup('open');
     }
 
-    function showSubtitleMenu(page, item) {
+    function showSubtitleMenu(page, item, currentIndex) {
 
+        var currentStreamImage = '<img src="css/images/checkmarkgreen.png" style="width:18px;border-radius:3px;margin-right:.5em;vertical-align:top;" />';
+        
         var streams = (item.MediaStreams || []).filter(function (i) {
 
             return i.Type == 'Subtitle';
@@ -67,13 +75,26 @@
 
         var elem = $('#popupSubtitleTrackMenu', page);
 
-        var html = '<li data-role="list-divider">Select Subtitles</li>';
+        var html = '<ul data-role="listview" data-inset="true" style="min-width: 210px;"><li data-role="list-divider">Select Subtitles</li>';
 
-        html += '<li><a href="#" style="font-size:15px;" data-index="-1" class="lnkTrackOption"><h3>Off</h3></a></li>';
+        html += '<li><a href="#" data-index="-1" class="lnkTrackOption"><h3>';
+
+        if (currentIndex == null) {
+            html += currentStreamImage;
+        }
+
+        html += 'Off';
+        html += '</h3></a></li>';
 
         html += streams.map(function (s) {
 
-            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" style="font-size:15px;" class="lnkTrackOption"><h3>';
+            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" class="lnkTrackOption">';
+
+            streamHtml += '<h3>';
+
+            if (s.Index == currentIndex) {
+                streamHtml += currentStreamImage;
+            }
 
             streamHtml += (s.Language || 'Unknown language');
 
@@ -97,7 +118,9 @@
 
         }).join('');
 
-        $('.trackList', elem).html(html).listview('refresh').trigger('create');
+        html += '</ul>';
+
+        $('.trackList', elem).html(html).trigger('create');
 
         elem.popup('open');
     }
@@ -150,15 +173,19 @@
 
         $('.btnAudioTracks', page).on('click', function () {
 
-            if (currentPlayer && lastPlayerState) {
-                showAudioMenu(page, lastPlayerState.NowPlayingItem);
+            if (currentPlayer && lastPlayerState && lastPlayerState.PlayState) {
+
+                var currentIndex = lastPlayerState.PlayState.AudioStreamIndex;
+                showAudioMenu(page, lastPlayerState.NowPlayingItem, currentIndex);
             }
         });
 
         $('.btnSubtitles', page).on('click', function () {
 
-            if (currentPlayer && lastPlayerState) {
-                showSubtitleMenu(page, lastPlayerState.NowPlayingItem);
+            if (currentPlayer && lastPlayerState && lastPlayerState.PlayState) {
+
+                var currentIndex = lastPlayerState.PlayState.SubtitleStreamIndex;
+                showSubtitleMenu(page, lastPlayerState.NowPlayingItem, currentIndex);
             }
         });
 

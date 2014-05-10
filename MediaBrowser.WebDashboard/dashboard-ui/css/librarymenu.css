@@ -6,22 +6,6 @@
         padding-top: 102px !important;
     }
 
-.desktopLibraryMenu {
-    position: fixed;
-    left: 0;
-    z-index: 1001;
-    top: 53px;
-    width: 200px;
-    min-height: 100px;
-    border-bottom-right-radius: 5px;
-    padding-bottom: 10px;
-    background-color: rgba(0,0,0,.6);
-}
-
-.metadataEditorPage .desktopLibraryMenu {
-    display: none;
-}
-
 .libraryMenuDivider {
     height: 1px;
     background: #333;
@@ -52,7 +36,8 @@
 }
 
     .viewMenuLink:hover {
-        background-color: #555;
+        background-color: #52B54B;
+        color: #fff!important;
     }
 
 .viewMenuBar .btnCurrentUser {
@@ -142,10 +127,6 @@
     background-color: rgba(51,136,204,.8)!important;
 }
 
-.ui-panel.ui-body-b {
-    background-color: #181818;
-}
-
 .libraryViewNav {
     height: 48px;
     overflow: hidden;
@@ -155,6 +136,10 @@
     left: 0;
     top: 53px;
     z-index: 1000;
+    background-color: #181818;
+}
+
+.ui-panel.ui-body-b {
     background-color: #181818;
 }
 
@@ -206,37 +191,21 @@
 
 @media all and (min-width: 1099px) {
 
-    .libraryMenuButton {
-        display: none;
-    }
-
-    .libraryPage:not(.itemDetailPage):not(.metadataEditorPage) {
+    /*.type-home {
         left: 215px !important;
         width: auto !important;
         right: 0 !important;
-    }
+    }*/
 
     .viewSettings {
         padding-left: .4em;
     }
 }
 
-@media all and (max-width: 1099px) {
+@media all and (max-width: 459px) {
 
     .desktopHomeLink {
         display: none;
-    }
-
-    .desktopLibraryMenu {
-        display: none;
-    }
-
-    .viewSettings {
-        text-align: center;
-    }
-
-    .itemsContainer {
-        text-align: center;
     }
 }
 

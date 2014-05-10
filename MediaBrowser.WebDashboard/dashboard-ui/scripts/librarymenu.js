@@ -18,15 +18,11 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        html += '<button type="button" data-icon="bars" data-iconpos="notext" data-inline="true" title="Menu" class="libraryMenuButton" onclick="LibraryMenu.showLibraryMenu();">Menu</button>';
+        html += '<button type="button" data-icon="bars" data-iconpos="notext" data-inline="true" title="Menu" class="libraryMenuButton" onclick="LibraryMenu.showLibraryMenu();" data-corners="false">Menu</button>';
 
-        html += '<a class="desktopHomeLink" href="index.html"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a>';
+        html += '<a class="desktopHomeLink" href="index.html"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a>';
 
         html += '<a class="viewMenuRemoteControlButton" href="nowplaying.html" data-role="button" data-icon="play" data-inline="true" data-iconpos="notext" title="Now Playing">Remote Control</a>';
-
-        if (user.Configuration.IsAdministrator) {
-            html += '<a class="editorMenuLink" href="edititemmetadata.html" data-role="button" data-icon="edit" data-inline="true" data-iconpos="notext" title="Metadata Manager">Metadata Manager</a>';
-        }
 
         html += '<div class="viewMenuSecondary">';
 
@@ -59,14 +55,11 @@
 
         html += '</div>';
 
-        html += '<div class="desktopLibraryMenu">';
-        html += '</div>';
-
         var $page = $(page);
 
         $page.prepend(html);
 
-        $('.viewMenuBar,.desktopLibraryMenu', page).trigger('create');
+        $('.viewMenuBar', page).trigger('create');
 
         $page.trigger('headercreated');
     }
@@ -76,7 +69,7 @@
         return LibraryBrowser.getHref(item);
     }
     
-    function getViewsHtml(userId, counts, items, liveTvInfo) {
+    function getViewsHtml(user, counts, items, liveTvInfo) {
         
         var html = '';
 
@@ -89,7 +82,7 @@
         }).join('');
 
         var showChannels = counts.ChannelCount;
-        var showLiveTv = liveTvInfo.EnabledUsers.indexOf(userId) != -1;
+        var showLiveTv = liveTvInfo.EnabledUsers.indexOf(user.Id) != -1;
 
         if (showChannels || showLiveTv) {
             html += '<div class="libraryMenuDivider"></div>';
@@ -103,6 +96,11 @@
             html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder tvshowsViewMenu" data-itemid="livetv" href="livetvsuggested.html">Live TV</a>';
         }
 
+        if (user.Configuration.IsAdministrator) {
+            html += '<div class="libraryMenuDivider"></div>';
+            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder tvshowsViewMenu" data-itemid="editor" href="edititemmetadata.html">Metadata Manager</a>';
+        }
+
         return html;
     }
 
@@ -110,21 +108,24 @@
 
         ensurePromises();
 
-        $.when(itemCountsPromise, itemsPromise, liveTvInfoPromise).done(function (response1, response2, response3) {
+        var userPromise = Dashboard.getCurrentUser();
+
+        $.when(itemCountsPromise, itemsPromise, liveTvInfoPromise, userPromise).done(function (response1, response2, response3, response4) {
 
             var counts = response1[0];
             var items = response2[0].Items;
             var liveTvInfo = response3[0];
+            var user = response4[0];
 
             var page = $.mobile.activePage;
 
-            var panel = getLibraryMenu(page, counts, items, liveTvInfo);
+            var panel = getLibraryMenu(page, user, counts, items, liveTvInfo);
 
             $(panel).panel('toggle');
         });
     }
 
-    function getLibraryMenu(page, counts, items, liveTvInfo) {
+    function getLibraryMenu(page, user, counts, items, liveTvInfo) {
 
         var panel = $('#libraryPanel', page);
 
@@ -137,7 +138,7 @@
             html += '<p class="libraryPanelHeader"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
 
             html += '<div style="margin: 0 -1em;">';
-            html += getViewsHtml(Dashboard.getCurrentUserId(), counts, items, liveTvInfo);
+            html += getViewsHtml(user, counts, items, liveTvInfo);
             html += '</div>';
 
             html += '</div>';
@@ -247,20 +248,7 @@
 
                     renderHeader(page, user);
 
-                    ensurePromises();
-
-                    $.when(itemCountsPromise, itemsPromise, liveTvInfoPromise).done(function (response1, response2, response3) {
-
-                        var counts = response1[0];
-                        var items = response2[0].Items;
-                        var liveTvInfo = response3[0];
-
-                        var html = getViewsHtml(user.Id, counts, items, liveTvInfo);
-                        $('.desktopLibraryMenu', page).html(html);
-
-                        updateLibraryNavLinks(page);
-
-                    });
+                    updateLibraryNavLinks(page);
                 });
             }
 

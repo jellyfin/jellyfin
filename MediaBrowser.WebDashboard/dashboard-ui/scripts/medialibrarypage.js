@@ -411,13 +411,13 @@ $(document).on('pageshow', ".mediaLibraryPage", MediaLibraryPage.onPageShow);
         pollTasks(page);
 
         if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1500,1500");
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
         }
 
         $(ApiClient).on("websocketmessage", onWebSocketMessage).on('websocketopen', function () {
 
             if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1500,1500");
+                ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
             }
         });
 

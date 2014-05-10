@@ -6,6 +6,7 @@ using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
@@ -257,7 +258,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                     NotificationType = NotificationType.NewLibraryContent.ToString()
                 };
 
-                notification.Variables["Name"] = item.Name;
+                notification.Variables["Name"] = GetItemName(item);
 
                 await SendNotification(notification).ConfigureAwait(false);
             }
@@ -274,6 +275,31 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             }
         }
 
+        private string GetItemName(BaseItem item)
+        {
+            var name = item.Name;
+
+            var hasSeries = item as IHasSeries;
+
+            if (hasSeries != null)
+            {
+                name = hasSeries.SeriesName + " - " + name;
+            }
+
+            var hasArtist = item as IHasArtist;
+            if (hasArtist != null)
+            {
+                var artists = hasArtist.AllArtists;
+
+                if (artists.Count > 0)
+                {
+                    name = hasArtist.AllArtists[0] + " - " + name;
+                }
+            }
+
+            return name;
+        }
+
         async void _userManager_UserCreated(object sender, GenericEventArgs<User> e)
         {
             var notification = new NotificationRequest
@@ -286,9 +312,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             await SendNotification(notification).ConfigureAwait(false);
         }
 
-        async void _taskManager_TaskCompleted(object sender, GenericEventArgs<TaskResult> e)
+        async void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
         {
-            var result = e.Argument;
+            var result = e.Result;
 
             if (result.Status == TaskCompletionStatus.Failed)
             {
@@ -301,8 +327,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                     NotificationType = type
                 };
 
-                notification.Variables["Name"] = e.Argument.Name;
-                notification.Variables["ErrorMessage"] = e.Argument.ErrorMessage;
+                notification.Variables["Name"] = result.Name;
+                notification.Variables["ErrorMessage"] = result.ErrorMessage;
 
                 await SendNotification(notification).ConfigureAwait(false);
             }

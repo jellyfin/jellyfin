@@ -282,7 +282,18 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (!string.IsNullOrWhiteSpace(info.ItemId) && libraryItem != null)
             {
-                info.Item = GetItemInfo(libraryItem, runtimeTicks, libraryItem, info.MediaSourceId);
+                var current = session.NowPlayingItem;
+
+                if (current == null || !string.Equals(current.Id, info.ItemId, StringComparison.OrdinalIgnoreCase))
+                {
+                    info.Item = GetItemInfo(libraryItem, libraryItem, info.MediaSourceId);
+                }
+                else
+                {
+                    info.Item = current;
+                }
+
+                info.Item.RunTimeTicks = runtimeTicks;
             }
 
             session.NowPlayingItem = info.Item;
@@ -1182,12 +1193,11 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Converts a BaseItem to a BaseItemInfo
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="runtimeTicks">The now playing runtime ticks.</param>
         /// <param name="chapterOwner">The chapter owner.</param>
         /// <param name="mediaSourceId">The media source identifier.</param>
         /// <returns>BaseItemInfo.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        private BaseItemInfo GetItemInfo(BaseItem item, long? runtimeTicks, BaseItem chapterOwner, string mediaSourceId)
+        private BaseItemInfo GetItemInfo(BaseItem item, BaseItem chapterOwner, string mediaSourceId)
         {
             if (item == null)
             {
@@ -1200,7 +1210,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 Name = item.Name,
                 MediaType = item.MediaType,
                 Type = item.GetClientTypeName(),
-                RunTimeTicks = runtimeTicks,
+                RunTimeTicks = item.RunTimeTicks,
                 IndexNumber = item.IndexNumber,
                 ParentIndexNumber = item.ParentIndexNumber,
                 PremiereDate = item.PremiereDate,
@@ -1376,7 +1386,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var item = _libraryManager.GetItemById(new Guid(itemId));
 
-            var info = GetItemInfo(item, item.RunTimeTicks, null, null);
+            var info = GetItemInfo(item, null, null);
 
             ReportNowViewingItem(sessionId, info);
         }

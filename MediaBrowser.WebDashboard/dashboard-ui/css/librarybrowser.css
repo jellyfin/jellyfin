@@ -35,12 +35,18 @@
     padding: 0;
     border-spacing: 0;
     border-collapse: collapse;
+    margin: 0 auto;
+    max-width: 1540px;
 }
 
     .ehsContent td {
         padding: 0;
         border-spacing: 0;
     }
+
+.squareEhsContent {
+    max-width: 1420px;
+}
 
 .detailPageContent {
     margin: 0 auto;
@@ -330,7 +336,7 @@ a.itemTag:hover {
 }
 
 .lnkPreviousItem {
-    left: 210px;
+    left: 10px;
 }
 
 .lnkNextItem {
@@ -474,7 +480,6 @@ a.itemTag:hover {
     .libraryPanelHeader span {
         color: #fff;
         vertical-align: middle;
-        font-size: 16px;
         font-weight: 300;
     }
 
@@ -496,12 +501,6 @@ a.itemTag:hover {
     font-size: 14px;
     font-weight: 300!important;
     font-family: 'Open Sans', Arial, Helvetica, sans-serif;
-}
-
-.desktopHomeLink img {
-    height: 24px;
-    vertical-align: middle;
-    margin-right: 5px;
 }
 
 .detailImageProgressContainer {
@@ -856,6 +855,7 @@ a.itemTag:hover {
 }
 
 .itemsContainer {
+    text-align: center;
 }
 
 .timelineItemsContainer {
@@ -1130,11 +1130,11 @@ a.itemTag:hover {
     padding: 1em 1em 1em 170px;
 }
 
-.spotlightContentInner p {
-    max-height: 130px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+    .spotlightContentInner p {
+        max-height: 130px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
 .rightSpotlightContent .spotlightContentInner {
     padding: 195px 1em 1em 1em;

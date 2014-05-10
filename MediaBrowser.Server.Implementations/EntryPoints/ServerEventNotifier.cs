@@ -106,9 +106,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _serverManager.SendWebSocketMessage("PackageInstallationFailed", e.InstallationInfo);
         }
 
-        void _taskManager_TaskCompleted(object sender, GenericEventArgs<TaskResult> e)
+        void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
         {
-            _serverManager.SendWebSocketMessage("ScheduledTaskEnded", e.Argument);
+            _serverManager.SendWebSocketMessage("ScheduledTaskEnded", e.Result);
         }
 
         /// <summary>
