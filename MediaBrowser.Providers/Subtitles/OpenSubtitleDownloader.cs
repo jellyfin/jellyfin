@@ -235,8 +235,10 @@ namespace MediaBrowser.Providers.Subtitles
             Predicate<SubtitleSearchResult> mediaFilter =
                 x =>
                     request.ContentType == SubtitleMediaType.Episode
-                        ? int.Parse(x.SeriesSeason, _usCulture) == request.ParentIndexNumber && int.Parse(x.SeriesEpisode, _usCulture) == request.IndexNumber
-                        : long.Parse(x.IDMovieImdb, _usCulture) == imdbId;
+                        ? !string.IsNullOrEmpty(x.SeriesSeason) && !string.IsNullOrEmpty(x.SeriesEpisode) &&
+                          int.Parse(x.SeriesSeason, _usCulture) == request.ParentIndexNumber &&
+                          int.Parse(x.SeriesEpisode, _usCulture) == request.IndexNumber
+                        : !string.IsNullOrEmpty(x.IDMovieImdb) && long.Parse(x.IDMovieImdb, _usCulture) == imdbId;
 
             var results = ((MethodResponseSubtitleSearch)result).Results;
 
