@@ -39,7 +39,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         multiline.Add(line);
                     }
                     subEvent.Text = string.Join(@"\N", multiline);
-                    subEvent.Text = Regex.Replace(subEvent.Text, "\\{(\\\\[\\w]+\\(?([\\w\\d]+,?)+\\)?)+\\}", string.Empty, RegexOptions.IgnoreCase);
+                    subEvent.Text = Regex.Replace(subEvent.Text, @"\{(\\[\w]+\(?([\w\d]+,?)+\)?)+\}", string.Empty, RegexOptions.IgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, "<", "&lt;", RegexOptions.IgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, ">", "&gt;", RegexOptions.IgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, "&lt;(\\/?(font|b|u|i|s))((\\s+(\\w|\\w[\\w\\-]*\\w)(\\s*=\\s*(?:\\\".*?\\\"|'.*?'|[^'\\\">\\s]+))?)+\\s*|\\s*)(\\/?)&gt;", "<$1$3$7>", RegexOptions.IgnoreCase);
