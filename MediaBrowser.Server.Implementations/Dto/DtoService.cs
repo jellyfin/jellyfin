@@ -429,6 +429,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 if (dictionary.TryGetValue(person.Name, out entity))
                 {
                     baseItemPerson.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary);
+                    baseItemPerson.Id = entity.Id.ToString("N");
                 }
 
                 dto.People[i] = baseItemPerson;

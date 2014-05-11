@@ -517,7 +517,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "librarymenu.js",
                                 "mediacontroller.js",
                                 "chromecast.js",
-                                "contextmenu.js",
                                 "backdrops.js",
 
                                 "mediaplayer.js",
