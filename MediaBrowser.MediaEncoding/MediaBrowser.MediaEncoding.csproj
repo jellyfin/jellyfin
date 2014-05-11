@@ -62,9 +62,11 @@
     <Compile Include="Encoder\MediaEncoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Subtitles\ISubtitleParser.cs" />
+    <Compile Include="Subtitles\ISubtitleWriter.cs" />
     <Compile Include="Subtitles\SrtParser.cs" />
     <Compile Include="Subtitles\SsaParser.cs" />
     <Compile Include="Subtitles\SubtitleTrackInfo.cs" />
+    <Compile Include="Subtitles\VttWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
