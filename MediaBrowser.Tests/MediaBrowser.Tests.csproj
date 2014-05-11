@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="MediaEncoding\Subtitles\SsaParserTests.cs" />
     <Compile Include="MediaEncoding\Subtitles\SrtParserTests.cs" />
+    <Compile Include="MediaEncoding\Subtitles\VttWriterTest.cs" />
     <Compile Include="Providers\MovieDbProviderTests.cs" />
     <Compile Include="Resolvers\MovieResolverTests.cs" />
     <Compile Include="Resolvers\TvUtilTests.cs" />
@@ -84,6 +85,9 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="MediaEncoding\Subtitles\TestSubtitles\expected.vtt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="MediaEncoding\Subtitles\TestSubtitles\data.ssa">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
