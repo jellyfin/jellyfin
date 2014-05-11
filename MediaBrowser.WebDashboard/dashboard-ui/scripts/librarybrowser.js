@@ -704,7 +704,7 @@
                 html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-mediasourcecount="' + mediaSourceCount + '" href="' + href + '">';
 
                 var style = "";
-                options.lazy = false;
+
                 if (imgUrl && !options.lazy) {
                     style += 'background-image:url(\'' + imgUrl + '\');';
                 }

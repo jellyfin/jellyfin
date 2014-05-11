@@ -4,14 +4,16 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="boxsetsPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-theme="b" data-view="boxsets">
+    <div id="boxsetsPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="movie,boxset" data-theme="b" data-view="boxsets">
+
+        <div class="libraryViewNav scopedLibraryViewNav">
+            <a href="#" class="ui-btn-active">${TabCollections}</a>
+        </div>
 
         <div class="alphabetPicker">
         </div>
         <div data-role="content">
             <div class="viewSettings">
-
-                <h1 style="margin: 0 1em 0 0; display: inline-block; vertical-align: middle;">${HeaderCollections}</h1>
 
                 <div class="viewControls" data-role="controlgroup" data-type="horizontal">
                     <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="${ButtonSort}" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>

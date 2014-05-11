@@ -1,15 +1,82 @@
 ﻿.libraryPage {
-    padding-top: 53px !important;
+    padding-top: 50px !important;
 }
 
     .libraryPage:not(.metadataEditorPage):not(.noSecondaryNavPage) {
-        padding-top: 102px !important;
+        padding-top: 100px !important;
     }
 
 .libraryMenuDivider {
     height: 1px;
     background: #333;
     margin: .5em 0;
+}
+
+.viewMenuBar, .headerButton {
+    height: 50px;
+}
+
+.headerButton {
+    line-height: 50px;
+}
+
+.headerButton {
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    top: 0;
+    bottom: 0;
+    vertical-align: middle;
+    text-align: center;
+    border: 1px solid #1b1b1b!important;
+    cursor: pointer;
+    outline: none;
+    padding: 0 20px;
+}
+
+    .headerButton img {
+        height: 18px;
+        vertical-align: middle;
+    }
+
+.headerSearchButton img {
+    height: 16px;
+}
+
+.headerButtonLeft {
+    border-width: 0 1px 0 0 !important;
+    float: left;
+    padding: 0 15px;
+}
+
+.headerButtonRight {
+    border-width: 0 !important;
+    float: left;
+    border-width: 0 0 0 1px !important;
+}
+
+    .headerButtonRight:first-child {
+        border-width: 0 !important;
+    }
+
+    .headerButtonRight:last-child {
+    }
+
+.desktopHomeLink {
+    color: #ddd !important;
+    text-decoration: none;
+    font-weight: 400!important;
+    font-size: 15px;
+    border-right: 0 !important;
+}
+
+    .desktopHomeLink span {
+        vertical-align: middle;
+    }
+
+.libraryMenuButton {
+    left: 0;
+    opacity: .8;
 }
 
 .viewMenuBar {
@@ -20,11 +87,52 @@
     z-index: 1000;
     top: 0;
     background: #000;
-    padding: 3px .25em 3px 1em;
     border-bottom: 1px solid #101010;
     border-top: 0;
     border-left: 0;
     border-right: 0;
+}
+
+.libraryViewNav {
+    height: 48px;
+    overflow: hidden;
+    border-bottom: 1px solid #222;
+    position: fixed;
+    right: 0;
+    left: 0;
+    top: 51px;
+    z-index: 1000;
+    background-color: #181818;
+}
+
+@media all and (max-width: 460px) {
+    .viewMenuBar, .headerButton {
+        height: 46px;
+    }
+
+    .headerButton {
+        line-height: 46px;
+    }
+
+    .libraryPage {
+        padding-top: 46px !important;
+    }
+
+        .libraryPage:not(.metadataEditorPage):not(.noSecondaryNavPage) {
+            padding-top: 96px !important;
+        }
+
+    .libraryViewNav {
+        top: 47px;
+    }
+
+    .headerButtonLeft img {
+        height: 15px;
+    }
+
+    .btnCastImage {
+        width: 26px !important;
+    }
 }
 
 .viewMenuLink {
@@ -35,13 +143,14 @@
     vertical-align: middle;
 }
 
-    .viewMenuLink:hover {
-        background-color: #52B54B;
-        color: #fff!important;
-    }
+.viewMenuTextLink:hover, .libraryMenuButton:hover {
+    background-color: #38c;
+    color: #fff!important;
+    opacity: 1;
+}
 
-.viewMenuBar .btnCurrentUser {
-    padding: 7px 1em 6px;
+.headerButtonRight:hover {
+    opacity: .5;
 }
 
 .viewMenuLink:hover {
@@ -59,23 +168,23 @@
 
 .viewMenuTextLink {
     display: block;
-    padding: .6em .5em .6em 41px!important;
+    padding: .6em .5em .6em 43px!important;
     font-size: 15px;
     font-weight: 300!important;
     font-family: Roboto;
     background-repeat: no-repeat;
     background-size: 18px 18px;
-    background-position: 14px center;
+    background-position: 16px center;
 }
 
 .musicViewMenu {
     background-image: url(images/items/folders/music.png);
-    background-position: 14px 8px;
+    background-position: 16px 8px;
 }
 
 .tvshowsViewMenu {
     background-image: url(images/items/folders/tv.png);
-    background-position: 14px 8px;
+    background-position: 16px 8px;
 }
 
 .moviesViewMenu {
@@ -84,12 +193,12 @@
 
 .gamesViewMenu {
     background-image: url(images/items/folders/games.png);
-    background-position: 14px 8px;
+    background-position: 16px 8px;
 }
 
 .channelsViewMenu {
     background-image: url(images/items/folders/channels.png);
-    background-position: 14px 9px;
+    background-position: 16px 9px;
 }
 
 .booksViewMenu {
@@ -98,12 +207,12 @@
 
 .musicvideosViewMenu {
     background-image: url(images/items/folders/musicvideos.png);
-    background-position: 14px 8px;
+    background-position: 16px 8px;
 }
 
 .photosViewMenu {
     background-image: url(images/items/folders/photos.png);
-    background-position: 14px 8px;
+    background-position: 16px 8px;
 }
 
 .homeVideosViewMenu {
@@ -114,29 +223,30 @@
     background-image: url(images/items/folders/folder.png);
 }
 
+.editorViewMenu {
+    background-image: url(images/items/folders/edit.png);
+    background-position: 16px 8px;
+}
+
+.dashboardViewMenu {
+    background-image: url(images/items/folders/settings.png);
+    background-position: 16px 8px;
+}
+
 .viewMenuSecondary {
-    float: right;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
 }
 
 .selectedMediaFolder {
-    background-color: #38c!important;
+    background-color: #52B54B!important;
     color: #fff!important;
 }
 
 .itemDetailPage .selectedMediaFolder {
     background-color: rgba(51,136,204,.8)!important;
-}
-
-.libraryViewNav {
-    height: 48px;
-    overflow: hidden;
-    border-bottom: 1px solid #222;
-    position: fixed;
-    right: 0;
-    left: 0;
-    top: 53px;
-    z-index: 1000;
-    background-color: #181818;
 }
 
 .ui-panel.ui-body-b {
@@ -178,40 +288,13 @@
     color: #ddd;
 }
 
-.desktopHomeLink {
-    color: #ddd !important;
-    margin-right: 2em;
-    text-decoration: none;
-    font-weight: 400!important;
-}
-
-    .desktopHomeLink span {
-        vertical-align: middle;
-    }
-
-@media all and (min-width: 1099px) {
-
-    /*.type-home {
-        left: 215px !important;
-        width: auto !important;
-        right: 0 !important;
-    }*/
-
-    .viewSettings {
-        padding-left: .4em;
-    }
-}
-
-@media all and (max-width: 459px) {
+@media all and (max-width: 600px) {
 
     .desktopHomeLink {
         display: none;
     }
-}
 
-@media all and (min-width: 750px) {
-
-    .viewMenuBar .btnCurrentUser {
-        padding-right: 1.5em;
+    .headerSettingsButton {
+        display: none;
     }
 }

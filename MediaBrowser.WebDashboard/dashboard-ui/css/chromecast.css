@@ -1,35 +1,22 @@
-﻿.btnCast {
-    width: 28px;
-    height: 28px;
-    padding: 0;
+﻿.btnCastImage {
     background-color: transparent;
-    border: 0;
-    background-size: 100%;
-    vertical-align: middle;
-    margin: 0 .6em;
-    cursor: pointer;
-    border: 0 !important;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 28px;
+    height: 100%;
+    position: relative;
+    top: 1px;
 }
 
-    .btnCast:hover {
-        opacity: .5;
-    }
-
-.btnDefaultCast {
+.btnDefaultCast .btnCastImage {
     background-image: url(images/chromecast/ic_media_route_off_holo_dark.png);
 }
 
-.btnActiveCast {
+.btnActiveCast .btnCastImage {
     background-image: url(images/chromecast/ic_media_route_on_holo_dark.png);
 }
 
-.btnDisabledCast {
+.btnDisabledCast .btnCastImage {
     background-image: url(images/chromecast/ic_media_route_disabled_holo_dark.png);
-}
-
-.ui-icon-ccast {
-    background-image: url(images/chromecast/ic_media_route_off_holo_dark.png);
-    background-position: 5px 5px;
-    background-repeat: no-repeat;
-	background-size: 18px 18px;
 }

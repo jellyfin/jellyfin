@@ -1175,6 +1175,8 @@ var Dashboard = {
     getDisplayTime: function (ticks) {
 
         var ticksPerHour = 36000000000;
+        var ticksPerMinute = 600000000;
+        var ticksPerSecond = 10000000;
 
         var parts = [];
 
@@ -1187,8 +1189,6 @@ var Dashboard = {
 
         ticks -= (hours * ticksPerHour);
 
-        var ticksPerMinute = 600000000;
-
         var minutes = ticks / ticksPerMinute;
         minutes = Math.floor(minutes);
 
@@ -1199,10 +1199,8 @@ var Dashboard = {
         }
         parts.push(minutes);
 
-        var ticksPerSecond = 10000000;
-
         var seconds = ticks / ticksPerSecond;
-        seconds = Math.round(seconds);
+        seconds = Math.floor(seconds);
 
         if (seconds < 10) {
             seconds = '0' + seconds;

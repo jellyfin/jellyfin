@@ -5,9 +5,9 @@
         var html = '';
 
         var title = '';
-        
+
         switch (recommendation.RecommendationType) {
-        
+
             case 'SimilarToRecentlyPlayed':
                 title = 'Because you watched ' + recommendation.BaselineItemName;
                 break;
@@ -23,7 +23,7 @@
                 title = 'Starring ' + recommendation.BaselineItemName;
                 break;
         }
-        
+
         html += '<h1 class="listHeader">' + title + '</h1>';
 
         html += '<div>';
@@ -34,7 +34,7 @@
 
         return html;
     }
-    
+
     $(document).on('pagebeforeshow', "#moviesRecommendedPage", function () {
 
         var parentId = LibraryMenu.getTopParentId();
@@ -42,7 +42,7 @@
         var screenWidth = $(window).width();
 
         var page = this;
-        
+
         var options = {
 
             SortBy: "DatePlayed",
@@ -63,20 +63,20 @@
             } else {
                 $('#resumableSection', page).hide();
             }
-            
+
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 preferBackdrop: true,
                 shape: 'backdrop',
                 overlayText: screenWidth >= 600,
                 showTitle: true
-                
+
             })).createPosterItemMenus();
 
         });
 
         var url = ApiClient.getUrl("Movies/Recommendations", {
-            
+
             userId: Dashboard.getCurrentUserId(),
             categoryLimit: screenWidth >= 1200 ? 6 : 3,
             itemLimit: screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6),
@@ -84,7 +84,7 @@
             ParentId: parentId
         });
 
-        $.getJSON(url).done(function(recommendations) {
+        $.getJSON(url).done(function (recommendations) {
 
             if (!recommendations.length) {
 
@@ -96,6 +96,7 @@
 
             $('.recommendations', page).html(html).createPosterItemMenus();
         });
+
     });
 
 

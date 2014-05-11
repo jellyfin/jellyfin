@@ -18,22 +18,30 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        html += '<button type="button" data-icon="bars" data-iconpos="notext" data-inline="true" title="Menu" class="libraryMenuButton" onclick="LibraryMenu.showLibraryMenu();" data-corners="false">Menu</button>';
+        html += '<button type="button" data-role="none" title="Menu" onclick="LibraryMenu.showLibraryMenu();" class="headerButton libraryMenuButton headerButtonLeft"><img src="css/images/menu.png" /></button>';
 
-        html += '<a class="desktopHomeLink" href="index.html"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a>';
+        html += '<a class="desktopHomeLink headerButton headerButtonLeft" href="index.html"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a>';
 
-        html += '<a class="viewMenuRemoteControlButton" href="nowplaying.html" data-role="button" data-icon="play" data-inline="true" data-iconpos="notext" title="Now Playing">Remote Control</a>';
+        //html += '<a class="viewMenuRemoteControlButton" href="nowplaying.html" data-role="button" data-icon="play" data-inline="true" data-iconpos="notext" title="Now Playing">Remote Control</a>';
 
         html += '<div class="viewMenuSecondary">';
 
-        html += '<button id="btnCast" class="btnCast btnDefaultCast" type="button" data-role="none"></button>';
+        html += '<a href="nowplaying.html" class="headerButton headerButtonRight headerRemoteButton"><img src="css/images/remote.png" /></a>';
 
-        html += '<a class="viewMenuLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout(this);">';
+        html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none"><div class="btnCastImage"></div></button>';
+
+        html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><img src="css/images/headersearch.png" /></button>';
+
+        if (user.Configuration.IsAdministrator) {
+            html += '<a href="dashboard.html" class="headerButton headerButtonRight headerSettingsButton"><img src="css/images/items/folders/settings.png" /></a>';
+        }
+
+        html += '<a class="headerButton headerButtonRight" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
         if (user.PrimaryImageTag) {
 
             var url = ApiClient.getUserImageUrl(user.Id, {
-                height: 24,
+                height: 18,
                 tag: user.PrimaryImageTag,
                 type: "Primary"
             });
@@ -44,12 +52,6 @@
         }
 
         html += '</a>';
-
-        html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-icon="search" data-inline="true" data-iconpos="notext">Search</button>';
-
-        if (user.Configuration.IsAdministrator) {
-            html += '<a href="dashboard.html" data-role="button" data-icon="gear" data-inline="true" data-iconpos="notext">Dashboard</a>';
-        }
 
         html += '</div>';
 
@@ -68,9 +70,9 @@
 
         return LibraryBrowser.getHref(item);
     }
-    
+
     function getViewsHtml(user, counts, items, liveTvInfo) {
-        
+
         var html = '';
 
         html += items.map(function (i) {
@@ -98,7 +100,8 @@
 
         if (user.Configuration.IsAdministrator) {
             html += '<div class="libraryMenuDivider"></div>';
-            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder tvshowsViewMenu" data-itemid="editor" href="edititemmetadata.html">Metadata Manager</a>';
+            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder dashboardViewMenu" data-itemid="editor" href="dashboard.html">Dashboard</a>';
+            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html">Metadata Manager</a>';
         }
 
         return html;
@@ -149,7 +152,7 @@
         }
 
         updateLibraryNavLinks(page);
-        
+
         return panel;
     }
 
@@ -178,7 +181,7 @@
         }
     }
 
-    function updateLibraryNavLinks(page) {
+    function updateLibraryNavLinks(page, updateElements) {
 
         page = $(page);
 
@@ -236,22 +239,22 @@
 
         });
 
-    }).on('pagebeforeshow', ".page", function () {
+    }).on('pagebeforeshow', ".libraryPage", function () {
 
         var page = this;
 
-        if ($(page).hasClass('libraryPage')) {
+        updateLibraryNavLinks(page);
 
-            if (!$('.viewMenuBar', page).length) {
+        if (!$('.viewMenuBar', page).length) {
 
-                Dashboard.getCurrentUser().done(function (user) {
+            Dashboard.getCurrentUser().done(function (user) {
 
-                    renderHeader(page, user);
+                renderHeader(page, user);
 
-                    updateLibraryNavLinks(page);
-                });
-            }
-
+                updateCastIcon();
+                
+                updateLibraryNavLinks(page);
+            });
         }
 
     }).on('pageshow', ".libraryPage", function () {

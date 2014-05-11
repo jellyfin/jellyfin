@@ -12,6 +12,26 @@
     margin-left: .5em;
 }
 
+.libraryPage {
+    background-color: #202020;
+}
+
+.backdropPage {
+    background-color: rgba(0, 0, 0, .86);
+}
+
+.backdropContainer {
+    position: fixed;
+    top: 50px;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+
+
 .libraryPage .header {
     padding-bottom: 0;
 }
@@ -26,8 +46,8 @@
 }
 
 .listHeader {
-    margin-top: .5em;
-    margin-bottom: .2em;
+    margin-top: .7em;
+    margin-bottom: 0;
     padding-left: 4px;
 }
 
@@ -465,6 +485,7 @@ a.itemTag:hover {
 
 .libraryPanelHeader {
     margin: 5px 0 15px 0;
+    font-size: 15px;
 }
 
     .libraryPanelHeader a {
@@ -1073,7 +1094,7 @@ a.itemTag:hover {
 
 .spotlight {
     position: absolute;
-    left: -220px;
+    left: 0;
     right: 0;
     background-size: cover;
     background-position: center 25%;
@@ -1103,7 +1124,7 @@ a.itemTag:hover {
     bottom: 55px;
     left: 210px;
     width: 600px;
-    background: rgba(0,0,0,.6);
+    background: rgba(0,0,0,.8);
     border-radius: 5px;
 }
 

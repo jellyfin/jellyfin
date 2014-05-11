@@ -184,6 +184,14 @@
             $('#movieTabs', page).show();
         }
 
+        if (item.Type == "ChannelVideoItem" || item.Type == "ChannelAudioItem" || item.Type == "ChannelCategoryItem") {
+            $('#channelTabs', page).show();
+        }
+
+        if (item.Type == "BoxSet") {
+            $('#boxsetTabs', page).show();
+        }
+
         if (item.MediaType == "Game") {
             $('#gameTabs', page).show();
         }

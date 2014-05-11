@@ -518,6 +518,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "mediacontroller.js",
                                 "chromecast.js",
                                 "contextmenu.js",
+                                "backdrops.js",
 
                                 "mediaplayer.js",
                                 "mediaplayer-video.js",
