@@ -326,12 +326,6 @@ namespace MediaBrowser.Model.Dto
         public UserItemDataDto UserData { get; set; }
 
         /// <summary>
-        /// Gets or sets the recently added item count.
-        /// </summary>
-        /// <value>The recently added item count.</value>
-        public int? RecentlyAddedItemCount { get; set; }
-
-        /// <summary>
         /// Gets or sets the played percentage.
         /// </summary>
         /// <value>The played percentage.</value>

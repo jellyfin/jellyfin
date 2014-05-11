@@ -1419,7 +1419,6 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <returns>Task.</returns>
         private void SetSpecialCounts(Folder folder, User user, BaseItemDto dto, List<ItemFields> fields)
         {
-            var rcentlyAddedItemCount = 0;
             var recursiveItemCount = 0;
             var unplayed = 0;
             long runtime = 0;
@@ -1456,12 +1455,6 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 recursiveItemCount++;
 
-                // Check is recently added
-                //if (child.IsRecentlyAdded())
-                //{
-                //    rcentlyAddedItemCount++;
-                //}
-
                 var isUnplayed = true;
 
                 // Incrememt totalPercentPlayed
@@ -1490,7 +1483,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             dto.RecursiveItemCount = recursiveItemCount;
-            dto.RecentlyAddedItemCount = rcentlyAddedItemCount;
             dto.RecursiveUnplayedItemCount = unplayed;
 
             if (recursiveItemCount > 0)
