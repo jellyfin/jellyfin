@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,29 +58,5 @@ namespace MediaBrowser.Controller.Channels
         /// </summary>
         /// <returns>IEnumerable{ImageType}.</returns>
         IEnumerable<ImageType> GetSupportedChannelImages();
-    }
-
-    public interface IChannelFactory
-    {
-        IEnumerable<IChannel> GetChannels();
-    }
-
-    public class ChannelSearchInfo
-    {
-        public string SearchTerm { get; set; }
-    }
-
-    public class InternalChannelItemQuery
-    {
-        public string CategoryId { get; set; }
-
-        public User User { get; set; }
-    }
-
-    public class ChannelItemResult
-    {
-        public List<ChannelItemInfo> Items { get; set; }
-
-        public TimeSpan CacheLength { get; set; }
     }
 }

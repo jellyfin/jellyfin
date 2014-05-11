@@ -8,11 +8,4 @@ namespace MediaBrowser.Controller.LiveTv
     public class LiveTvException : Exception
     {
     }
-
-    /// <summary>
-    /// Class LiveTvConflictException.
-    /// </summary>
-    public class LiveTvConflictException : LiveTvException
-    {
-    }
 }

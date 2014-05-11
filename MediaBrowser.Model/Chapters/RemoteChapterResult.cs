@@ -32,5 +32,11 @@ namespace MediaBrowser.Model.Chapters
         /// </summary>
         /// <value>The chapter count.</value>
         public int? ChapterCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the three letter iso language.
+        /// </summary>
+        /// <value>The name of the three letter iso language.</value>
+        public string ThreeLetterISOLanguageName { get; set; }
     }
 }
