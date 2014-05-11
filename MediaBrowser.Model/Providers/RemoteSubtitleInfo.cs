@@ -4,7 +4,7 @@ namespace MediaBrowser.Model.Providers
 {
     public class RemoteSubtitleInfo
     {
-        public string Language { get; set; }
+        public string ThreeLetterISOLanguageName { get; set; }
         public string Id { get; set; }
         public string ProviderName { get; set; }
         public string Name { get; set; }

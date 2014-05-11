@@ -2,17 +2,15 @@
 
 namespace MediaBrowser.Controller.Dlna
 {
-    public class ControlRequest
+    public class ControlResponse
     {
         public IDictionary<string, string> Headers { get; set; }
 
-        public string InputXml { get; set; }
+        public string Xml { get; set; }
 
-        public string TargetServerUuId { get; set; }
+        public bool IsSuccessful { get; set; }
 
-        public string RequestedUrl { get; set; }
-
-        public ControlRequest()
+        public ControlResponse()
         {
             Headers = new Dictionary<string, string>();
         }

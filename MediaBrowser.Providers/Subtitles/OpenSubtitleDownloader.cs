@@ -259,7 +259,7 @@ namespace MediaBrowser.Providers.Subtitles
                         DownloadCount = int.Parse(i.SubDownloadsCnt, _usCulture),
                         Format = i.SubFormat,
                         ProviderName = Name,
-                        Language = i.SubLanguageID,
+                        ThreeLetterISOLanguageName = i.SubLanguageID,
 
                         Id = i.SubFormat + "-" + i.SubLanguageID + "-" + i.IDSubtitleFile,
 
