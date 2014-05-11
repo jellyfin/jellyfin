@@ -262,23 +262,6 @@
             return this;
         }
 
-        var sequence = this;
-
-        if (options.contextMenu !== false) {
-            Dashboard.getCurrentUser().done(function (user) {
-
-                if (user.Configuration.IsAdministrator) {
-
-                    sequence.createContextMenu({
-                        getOptions: getContextMenuOptions,
-                        command: onMenuCommand,
-                        selector: '.posterItem'
-                    });
-                }
-
-            });
-        }
-
         return this.off('.posterItemHoverMenu').on('mouseenter.posterItemHoverMenu', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverIn)
             .on('mouseleave.posterItemHoverMenu', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverOut);
     };

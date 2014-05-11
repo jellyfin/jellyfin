@@ -1,12 +1,12 @@
 ﻿using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Chapters;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Subtitles
+namespace MediaBrowser.Controller.Chapters
 {
-    public interface ISubtitleProvider
+    public interface IChapterProvider
     {
         /// <summary>
         /// Gets the name.
@@ -21,19 +21,19 @@ namespace MediaBrowser.Controller.Subtitles
         IEnumerable<VideoContentType> SupportedMediaTypes { get; }
 
         /// <summary>
-        /// Searches the subtitles.
+        /// Searches the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{RemoteSubtitleInfo}}.</returns>
-        Task<IEnumerable<RemoteSubtitleInfo>> Search(SubtitleSearchRequest request, CancellationToken cancellationToken);
+        /// <returns>Task{IEnumerable{RemoteChapterResult}}.</returns>
+        Task<IEnumerable<RemoteChapterResult>> Search(ChapterSearchRequest request, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the subtitles.
+        /// Gets the chapters.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{SubtitleResponse}.</returns>
-        Task<SubtitleResponse> GetSubtitles(string id, CancellationToken cancellationToken);
+        /// <returns>Task{ChapterResponse}.</returns>
+        Task<ChapterResponse> GetChapters(string id, CancellationToken cancellationToken);
     }
 }

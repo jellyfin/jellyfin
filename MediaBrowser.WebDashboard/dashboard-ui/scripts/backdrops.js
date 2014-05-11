@@ -22,7 +22,7 @@
 
         var deferred = $.Deferred();
 
-        var data = localStorage.getItem(key);
+        var data = sessionStorage.getItem(key);
 
         if (data) {
 
@@ -51,7 +51,7 @@
                     };
                 });
 
-                localStorage.setItem(key, JSON.stringify(images));
+                sessionStorage.setItem(key, JSON.stringify(images));
                 deferred.resolveWith(null, [images]);
             });
         }

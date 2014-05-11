@@ -61,8 +61,6 @@
 
         $page.prepend(html);
 
-        $('.viewMenuBar', page).trigger('create');
-
         $page.trigger('headercreated');
     }
 

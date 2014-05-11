@@ -77,6 +77,9 @@
     <Compile Include="Channels\ChannelAudioItem.cs" />
     <Compile Include="Channels\ChannelVideoItem.cs" />
     <Compile Include="Channels\Channel.cs" />
+    <Compile Include="Chapters\ChapterSearchRequest.cs" />
+    <Compile Include="Chapters\IChapterProvider.cs" />
+    <Compile Include="Chapters\ChapterResponse.cs" />
     <Compile Include="Collections\CollectionCreationOptions.cs" />
     <Compile Include="Collections\ICollectionManager.cs" />
     <Compile Include="Dlna\ControlRequest.cs" />
@@ -191,6 +194,7 @@
     <Compile Include="Providers\IMetadataProvider.cs" />
     <Compile Include="Providers\IMetadataService.cs" />
     <Compile Include="Providers\IRemoteMetadataProvider.cs" />
+    <Compile Include="Providers\VideoContentType.cs" />
     <Compile Include="Security\IEncryptionManager.cs" />
     <Compile Include="Subtitles\ISubtitleManager.cs" />
     <Compile Include="Subtitles\ISubtitleProvider.cs" />
@@ -269,6 +273,8 @@
     <Compile Include="Sorting\IUserBaseItemComparer.cs" />
     <Compile Include="Providers\BaseItemXmlParser.cs" />
     <Compile Include="Sorting\SortExtensions.cs" />
+    <Compile Include="Subtitles\SubtitleResponse.cs" />
+    <Compile Include="Subtitles\SubtitleSearchRequest.cs" />
     <Compile Include="Themes\IAppThemeManager.cs" />
     <Compile Include="Themes\InternalThemeImage.cs" />
   </ItemGroup>

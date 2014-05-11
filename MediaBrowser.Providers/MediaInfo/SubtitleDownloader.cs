@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -37,15 +38,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 return new List<string>();
             }
 
-            SubtitleMediaType mediaType;
+            VideoContentType mediaType;
 
             if (video is Episode)
             {
-                mediaType = SubtitleMediaType.Episode;
+                mediaType = VideoContentType.Episode;
             }
             else if (video is Movie)
             {
-                mediaType = SubtitleMediaType.Movie;
+                mediaType = VideoContentType.Movie;
             }
             else
             {
@@ -82,7 +83,7 @@ namespace MediaBrowser.Providers.MediaInfo
             bool skipIfGraphicalSubtitlesPresent,
             bool skipIfAudioTrackMatches,
             string language,
-            SubtitleMediaType mediaType,
+            VideoContentType mediaType,
             CancellationToken cancellationToken)
         {
             // There's already subtitles for this language

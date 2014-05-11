@@ -70,6 +70,12 @@
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelQuery.cs">
       <Link>Channels\ChannelQuery.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Chapters\RemoteChapterInfo.cs">
+      <Link>Chapters\RemoteChapterInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Chapters\RemoteChapterResult.cs">
+      <Link>Chapters\RemoteChapterResult.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
     </Compile>

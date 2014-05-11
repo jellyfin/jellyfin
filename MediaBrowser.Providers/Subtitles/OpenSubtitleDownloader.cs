@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
@@ -72,17 +73,17 @@ namespace MediaBrowser.Providers.Subtitles
             get { return "Open Subtitles"; }
         }
 
-        public IEnumerable<SubtitleMediaType> SupportedMediaTypes
+        public IEnumerable<VideoContentType> SupportedMediaTypes
         {
             get
             {
                 if (string.IsNullOrWhiteSpace(_config.Configuration.SubtitleOptions.OpenSubtitlesUsername) ||
                     string.IsNullOrWhiteSpace(_config.Configuration.SubtitleOptions.OpenSubtitlesPasswordHash))
                 {
-                    return new SubtitleMediaType[] { };
+                    return new VideoContentType[] { };
                 }
 
-                return new[] { SubtitleMediaType.Episode, SubtitleMediaType.Movie };
+                return new[] { VideoContentType.Episode, VideoContentType.Movie };
             }
         }
 
@@ -163,21 +164,21 @@ namespace MediaBrowser.Providers.Subtitles
             _lastLogin = DateTime.UtcNow;
         }
 
-        public async Task<IEnumerable<RemoteSubtitleInfo>> SearchSubtitles(SubtitleSearchRequest request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteSubtitleInfo>> Search(SubtitleSearchRequest request, CancellationToken cancellationToken)
         {
             var imdbIdText = request.GetProviderId(MetadataProviders.Imdb);
             long imdbId = 0;
 
             switch (request.ContentType)
             {
-                case SubtitleMediaType.Episode:
+                case VideoContentType.Episode:
                     if (!request.IndexNumber.HasValue || !request.ParentIndexNumber.HasValue || string.IsNullOrEmpty(request.SeriesName))
                     {
                         _logger.Debug("Episode information missing");
                         return new List<RemoteSubtitleInfo>();
                     }
                     break;
-                case SubtitleMediaType.Movie:
+                case VideoContentType.Movie:
                     if (string.IsNullOrEmpty(request.Name))
                     {
                         _logger.Debug("Movie name missing");
@@ -206,8 +207,8 @@ namespace MediaBrowser.Providers.Subtitles
             var hash = Utilities.ComputeHash(request.MediaPath);
             var fileInfo = new FileInfo(request.MediaPath);
             var movieByteSize = fileInfo.Length;
-            var searchImdbId = request.ContentType == SubtitleMediaType.Movie ? imdbId.ToString(_usCulture) : "";
-            var subtitleSearchParameters = request.ContentType == SubtitleMediaType.Episode
+            var searchImdbId = request.ContentType == VideoContentType.Movie ? imdbId.ToString(_usCulture) : "";
+            var subtitleSearchParameters = request.ContentType == VideoContentType.Episode
                 ? new List<SubtitleSearchParameters> {
                                                          new SubtitleSearchParameters(subLanguageId, 
                                                              query: request.SeriesName,
@@ -234,7 +235,7 @@ namespace MediaBrowser.Providers.Subtitles
 
             Predicate<SubtitleSearchResult> mediaFilter =
                 x =>
-                    request.ContentType == SubtitleMediaType.Episode
+                    request.ContentType == VideoContentType.Episode
                         ? !string.IsNullOrEmpty(x.SeriesSeason) && !string.IsNullOrEmpty(x.SeriesEpisode) &&
                           int.Parse(x.SeriesSeason, _usCulture) == request.ParentIndexNumber &&
                           int.Parse(x.SeriesEpisode, _usCulture) == request.IndexNumber

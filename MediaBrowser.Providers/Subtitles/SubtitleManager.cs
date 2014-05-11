@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -45,7 +46,7 @@ namespace MediaBrowser.Providers.Subtitles
             {
                 try
                 {
-                    return await i.SearchSubtitles(request, cancellationToken).ConfigureAwait(false);
+                    return await i.Search(request, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -99,15 +100,15 @@ namespace MediaBrowser.Providers.Subtitles
                 return Task.FromResult<IEnumerable<RemoteSubtitleInfo>>(new List<RemoteSubtitleInfo>());
             }
 
-            SubtitleMediaType mediaType;
+            VideoContentType mediaType;
 
             if (video is Episode)
             {
-                mediaType = SubtitleMediaType.Episode;
+                mediaType = VideoContentType.Episode;
             }
             else if (video is Movie)
             {
-                mediaType = SubtitleMediaType.Movie;
+                mediaType = VideoContentType.Movie;
             }
             else
             {
@@ -124,7 +125,8 @@ namespace MediaBrowser.Providers.Subtitles
                 Name = video.Name,
                 ParentIndexNumber = video.ParentIndexNumber,
                 ProductionYear = video.ProductionYear,
-                ProviderIds = video.ProviderIds
+                ProviderIds = video.ProviderIds,
+                RuntimeTicks = video.RunTimeTicks
             };
 
             var episode = video as Episode;
