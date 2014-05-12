@@ -172,6 +172,7 @@
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="MediaInfo\AudioCodec.cs" />
     <Compile Include="MediaInfo\Container.cs" />
+    <Compile Include="MediaInfo\MediaStreamSelector.cs" />
     <Compile Include="MediaInfo\SubtitleFormat.cs" />
     <Compile Include="MediaInfo\TransportStreamTimestamp.cs" />
     <Compile Include="MediaInfo\VideoCodec.cs" />
