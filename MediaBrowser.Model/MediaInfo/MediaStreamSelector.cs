@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.MediaInfo
     {
         public static int? GetDefaultAudioStreamIndex(List<MediaStream> streams, IEnumerable<string> preferredLanguages, bool preferDefaultTrack)
         {
-            streams = GetSortedStreams(streams, MediaStreamType.Audio, preferredLanguages.FirstOrDefault())
+            streams = GetSortedStreams(streams, MediaStreamType.Audio, preferredLanguages.ToList())
                .ToList();
 
             if (preferDefaultTrack)
@@ -38,24 +38,35 @@ namespace MediaBrowser.Model.MediaInfo
             SubtitlePlaybackMode mode,
             string audioTrackLanguage)
         {
-            streams = GetSortedStreams(streams, MediaStreamType.Subtitle, preferredLanguages.FirstOrDefault())
-                .ToList();
+            var languages = preferredLanguages as List<string> ?? preferredLanguages.ToList();
+            streams = GetSortedStreams(streams, MediaStreamType.Subtitle, languages).ToList();
+
+            var full = streams.Where(s => !s.IsForced);
+            var forced = streams.Where(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase));
 
             MediaStream stream = null;
 
+            if (mode == SubtitlePlaybackMode.None)
+            {
+                return null;
+            }
+
             if (mode == SubtitlePlaybackMode.Default)
             {
-                stream = streams.FirstOrDefault(i => i.IsDefault);
+                // if the audio language is not understood by the user, load their preferred subs, if there are any
+                if (!ContainsOrdinal(languages, audioTrackLanguage))
+                {
+                    stream = full.FirstOrDefault(s => ContainsOrdinal(languages, s.Language));
+                }
             }
             else if (mode == SubtitlePlaybackMode.Always)
             {
-                stream = streams.FirstOrDefault(i => i.IsDefault) ??
-                    streams.FirstOrDefault();
+                // always load the most suitable full subtitles
+                stream = full.FirstOrDefault();
             }
-            else if (mode == SubtitlePlaybackMode.OnlyForced)
-            {
-                stream = streams.FirstOrDefault(i => i.IsForced);
-            }
+            
+            // load forced subs if we have found no suitable full subtitles
+            stream = stream ?? forced.FirstOrDefault();
 
             if (stream != null)
             {
@@ -65,19 +76,24 @@ namespace MediaBrowser.Model.MediaInfo
             return null;
         }
 
-        private static IEnumerable<MediaStream> GetSortedStreams(IEnumerable<MediaStream> streams, MediaStreamType type, string defaultLanguage)
+        private static bool ContainsOrdinal(IEnumerable<string> list, string item)
+        {
+            return list.Any(i => string.Equals(i, item, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static IEnumerable<MediaStream> GetSortedStreams(IEnumerable<MediaStream> streams, MediaStreamType type, List<string> languagePreferences)
         {
             var orderStreams = streams
                 .Where(i => i.Type == type);
 
-            if (string.IsNullOrEmpty(defaultLanguage))
+            if (languagePreferences.Count == 0)
             {
                 return orderStreams.OrderBy(i => i.IsDefault)
                     .ThenBy(i => i.Index)
                     .ToList();
             }
 
-            return orderStreams.OrderBy(i => string.Equals(i.Language, defaultLanguage, StringComparison.OrdinalIgnoreCase))
+            return orderStreams.OrderBy(i => languagePreferences.FindIndex(l => string.Equals(i.Language, l, StringComparison.OrdinalIgnoreCase)))
                 .ThenBy(i => i.IsDefault)
                 .ThenBy(i => i.Index)
                 .ToList();
