@@ -12,6 +12,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -109,6 +110,15 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             AttachBasicFields(dto, item, owner, fields);
+
+            if (user != null && dto.MediaSources != null && item is Video)
+            {
+                foreach (var source in dto.MediaSources)
+                {
+                    //source.DefaultAudioStreamIndex = GetDefaultAudioStreamIndex(source, user.Configuration);
+                    //source.DefaultSubtitleStreamIndex = GetDefaultSubtitleStreamIndex(source, user.Configuration);
+                }
+            }
 
             if (fields.Contains(ItemFields.SoundtrackIds))
             {

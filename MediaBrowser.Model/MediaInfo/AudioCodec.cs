@@ -2,7 +2,8 @@
 {
     public class AudioCodec
     {
-        public const string AAC = "AAC";
-        public const string MP3 = "MP3";
+        public const string AAC = "aac";
+        public const string MP3 = "mp3";
+        public const string AC3 = "ac3";
     }
 }

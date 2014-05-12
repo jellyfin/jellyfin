@@ -25,6 +25,12 @@ namespace MediaBrowser.Model.Configuration
         public string AudioLanguagePreference { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [play default audio track].
+        /// </summary>
+        /// <value><c>true</c> if [play default audio track]; otherwise, <c>false</c>.</value>
+        public bool PlayDefaultAudioTrack { get; set; }
+
+        /// <summary>
         /// Gets or sets the subtitle language preference.
         /// </summary>
         /// <value>The subtitle language preference.</value>
@@ -61,6 +67,8 @@ namespace MediaBrowser.Model.Configuration
 
         public UnratedItem[] BlockUnratedItems { get; set; }
 
+        public SubtitlePlaybackMode SubtitleMode { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -68,6 +76,7 @@ namespace MediaBrowser.Model.Configuration
         {
             IsAdministrator = true;
 
+            PlayDefaultAudioTrack = true;
             EnableRemoteControlOfOtherUsers = true;
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
@@ -78,5 +87,13 @@ namespace MediaBrowser.Model.Configuration
             BlockedChannels = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
         }
+    }
+
+    public enum SubtitlePlaybackMode
+    {
+        Default = 0,
+        Always = 1,
+        OnlyForced = 2,
+        None = 3
     }
 }
