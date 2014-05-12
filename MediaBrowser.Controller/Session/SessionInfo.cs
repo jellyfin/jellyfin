@@ -139,23 +139,6 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether [supports remote control].
-        /// </summary>
-        /// <value><c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>
-        public bool SupportsRemoteControl
-        {
-            get
-            {
-                if (SessionController != null)
-                {
-                    return SessionController.SupportsMediaRemoteControl;
-                }
-
-                return false;
-            }
-        }
-
         public bool ContainsUser(Guid userId)
         {
             return (UserId ?? Guid.Empty) == UserId || AdditionalUsers.Any(i => userId == new Guid(i.UserId));

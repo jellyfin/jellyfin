@@ -38,11 +38,6 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly SsdpHandler _ssdpHandler;
         private readonly string _serverAddress;
 
-        public bool SupportsMediaRemoteControl
-        {
-            get { return true; }
-        }
-
         public bool IsSessionActive
         {
             get

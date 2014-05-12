@@ -111,6 +111,7 @@
     <Compile Include="Drawing\PlayedIndicatorDrawer.cs" />
     <Compile Include="Drawing\UnplayedCountIndicator.cs" />
     <Compile Include="Dto\DtoService.cs" />
+    <Compile Include="Dto\MediaStreamSelector.cs" />
     <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
     <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />

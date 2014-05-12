@@ -48,11 +48,15 @@
                         <li>
                             <label for="selectSubtitlePlaybackMode">${LabelSubtitlePlaybackMode}</label>
                             <select id="selectSubtitlePlaybackMode" data-mini="true">
-                                <option value="Default">{OptionDefaultSubtitles}</option>
-                                <option value="Always">Always</option>
-                                <option value="OnlyForced">OnlyForced</option>
-                                <option value="None">None</option>
+                                <option value="Default">${OptionDefaultSubtitles}</option>
+                                <option value="OnlyForced">${OptionOnlyForcedSubtitles}</option>
+                                <option value="Always">${OptionAlwaysPlaySubtitles}</option>
+                                <option value="None">${OptionNoSubtitles}</option>
                             </select>
+                            <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp" style="display:none;">${OptionDefaultSubtitlesHelp}</div>
+                            <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp" style="display:none;">${OptionAlwaysPlaySubtitlesHelp}</div>
+                            <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp" style="display:none;">${OptionOnlyForcedSubtitlesHelp}</div>
+                            <div class="fieldDescription subtitlesNoneHelp subtitlesHelp" style="display:none;">${OptionNoSubtitlesHelp}</div>
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">

@@ -704,24 +704,6 @@ namespace MediaBrowser.Server.Implementations.Session
             return session;
         }
 
-        /// <summary>
-        /// Gets the session for remote control.
-        /// </summary>
-        /// <param name="sessionId">The session id.</param>
-        /// <returns>SessionInfo.</returns>
-        /// <exception cref="ResourceNotFoundException"></exception>
-        private SessionInfo GetSessionForRemoteControl(string sessionId)
-        {
-            var session = GetSession(sessionId);
-
-            if (!session.SupportsRemoteControl)
-            {
-                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
-            }
-
-            return session;
-        }
-
         public Task SendMessageCommand(string controllingSessionId, string sessionId, MessageCommand command, CancellationToken cancellationToken)
         {
             var generalCommand = new GeneralCommand
@@ -742,7 +724,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendGeneralCommand(string controllingSessionId, string sessionId, GeneralCommand command, CancellationToken cancellationToken)
         {
-            var session = GetSessionForRemoteControl(sessionId);
+            var session = GetSession(sessionId);
 
             var controllingSession = GetSession(controllingSessionId);
             AssertCanControl(session, controllingSession);
@@ -752,7 +734,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken)
         {
-            var session = GetSessionForRemoteControl(sessionId);
+            var session = GetSession(sessionId);
 
             var user = session.UserId.HasValue ? _userManager.GetUserById(session.UserId.Value) : null;
 
@@ -886,7 +868,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlaystateCommand(string controllingSessionId, string sessionId, PlaystateRequest command, CancellationToken cancellationToken)
         {
-            var session = GetSessionForRemoteControl(sessionId);
+            var session = GetSession(sessionId);
 
             var controllingSession = GetSession(controllingSessionId);
             AssertCanControl(session, controllingSession);
@@ -1157,7 +1139,6 @@ namespace MediaBrowser.Server.Implementations.Session
                 Id = session.Id,
                 LastActivityDate = session.LastActivityDate,
                 NowPlayingPositionTicks = session.PlayState.PositionTicks,
-                SupportsRemoteControl = session.SupportsRemoteControl,
                 IsPaused = session.PlayState.IsPaused,
                 IsMuted = session.PlayState.IsMuted,
                 NowViewingItem = session.NowViewingItem,

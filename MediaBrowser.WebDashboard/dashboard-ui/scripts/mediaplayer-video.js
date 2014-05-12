@@ -760,6 +760,8 @@
                 audioBitrate: mp4Quality.audioBitrate,
                 VideoCodec: mp4Quality.videoCodec,
                 AudioCodec: mp4Quality.audioCodec,
+                profile: 'baseline',
+                level: '3',
 
                 // None of the browsers seem to like this
                 EnableAutoStreamCopy: false
@@ -783,7 +785,9 @@
                 videoBitrate: m3U8Quality.videoBitrate,
                 audioBitrate: m3U8Quality.audioBitrate,
                 VideoCodec: m3U8Quality.videoCodec,
-                AudioCodec: m3U8Quality.audioCodec
+                AudioCodec: m3U8Quality.audioCodec,
+                profile: 'baseline',
+                level: '3'
 
             })) + seekParam;
 

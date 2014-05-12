@@ -34,7 +34,7 @@
 
         $('#chkGroupMoviesIntoCollections', page).checked(user.Configuration.GroupMoviesIntoBoxSets || false).checkboxradio("refresh");
 
-        $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").selectmenu("refresh");
+        $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").selectmenu("refresh").trigger('change');
         $('#chkPlayDefaultAudioTrack', page).checked(user.Configuration.PlayDefaultAudioTrack || false).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
@@ -94,7 +94,17 @@
 
     window.UserSettingsPage = new userSettingsPage();
 
-    $(document).on('pagebeforeshow', "#userSettingsPage", function () {
+    $(document).on('pageinit', "#userSettingsPage", function () {
+
+        var page = this;
+
+        $('#selectSubtitlePlaybackMode', page).on('change', function () {
+
+            $('.subtitlesHelp', page).hide();
+            $('.subtitles' + this.value + 'Help', page).show();
+        });
+
+    }).on('pagebeforeshow', "#userSettingsPage", function () {
 
         var page = this;
 

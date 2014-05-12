@@ -240,7 +240,6 @@
             var deferred = $.Deferred();
 
             var sessionQuery = {
-                SupportsRemoteControl: true,
                 ControllableByUserId: Dashboard.getCurrentUserId()
             };
 
