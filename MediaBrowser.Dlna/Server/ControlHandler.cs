@@ -133,7 +133,7 @@ namespace MediaBrowser.Dlna.Server
                 throw new ResourceNotFoundException("Unexpected control request name: " + method.LocalName);
 
             var env = new XmlDocument();
-            env.AppendChild(env.CreateXmlDeclaration("1.0", "utf-8", "yes"));
+            env.AppendChild(env.CreateXmlDeclaration("1.0", "utf-8", string.Empty));
             var envelope = env.CreateElement("SOAP-ENV", "Envelope", NS_SOAPENV);
             env.AppendChild(envelope);
             envelope.SetAttribute("encodingStyle", NS_SOAPENV, "http://schemas.xmlsoap.org/soap/encoding/");
@@ -222,7 +222,9 @@ namespace MediaBrowser.Dlna.Server
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSystemUpdateID()
         {
-            return new Headers { { "Id", _systemUpdateId.ToString(_usCulture) } };
+            var headers = new Headers(true);
+            headers.Add("Id", _systemUpdateId.ToString(_usCulture));
+            return headers;           
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleXGetFeatureList()
