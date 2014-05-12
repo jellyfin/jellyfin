@@ -111,16 +111,7 @@
                 nodes.push({ attr: { id: name, rel: 'folder', itemtype: 'livetvservice' }, data: htmlName, state: 'closed' });
             }
 
-            nodes.push({ attr: { id: 'libraryreport', rel: 'default', itemtype: 'libraryreport' }, data: 'Reports' });
-
             callback(nodes);
-            
-            if (!selectedId) {
-                
-                if (window.location.toString().toLowerCase().indexOf('report.html') != -1) {
-                    selectedId = 'libraryreport';
-                }
-            }
 
             if (selectedId && nodes.filter(function (f) {
 
@@ -162,11 +153,6 @@
         var id = node.attr("id");
 
         var itemtype = node.attr("itemtype");
-
-        if (itemtype == 'libraryreport') {
-
-            return;
-        }
 
         if (itemtype == 'livetvservice') {
 

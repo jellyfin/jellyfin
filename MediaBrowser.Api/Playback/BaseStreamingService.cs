@@ -444,18 +444,11 @@ namespace MediaBrowser.Api.Playback
 
             var pts = string.Empty;
 
-            if (state.SubtitleStream != null)
+            if (state.SubtitleStream != null && !state.SubtitleStream.IsGraphicalSubtitleStream)
             {
-                if (state.SubtitleStream.Codec.IndexOf("srt", StringComparison.OrdinalIgnoreCase) != -1 ||
-                   state.SubtitleStream.Codec.IndexOf("subrip", StringComparison.OrdinalIgnoreCase) != -1 ||
-                   string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase))
-                {
-                    var seconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds;
+                var seconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds;
 
-                    pts = string.Format(",asetpts=PTS-{0}/TB",
-                Math.Round(seconds).ToString(UsCulture));
-                }
+                pts = string.Format(",asetpts=PTS-{0}/TB", Math.Round(seconds).ToString(UsCulture));
             }
 
             return string.Format("-af \"{0}aresample={1}async={4}{2}{3}\"",
@@ -484,16 +477,10 @@ namespace MediaBrowser.Api.Playback
 
             var request = state.VideoRequest;
 
-            if (state.SubtitleStream != null)
+            if (state.SubtitleStream != null && !state.SubtitleStream.IsGraphicalSubtitleStream)
             {
-                if (state.SubtitleStream.Codec.IndexOf("srt", StringComparison.OrdinalIgnoreCase) != -1 ||
-                    state.SubtitleStream.Codec.IndexOf("subrip", StringComparison.OrdinalIgnoreCase) != -1 ||
-                    string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase))
-                {
-                    assSubtitleParam = GetTextSubtitleParam(state, performTextSubtitleConversion);
-                    copyTsParam = " -copyts";
-                }
+                assSubtitleParam = GetTextSubtitleParam(state, performTextSubtitleConversion);
+                copyTsParam = " -copyts";
             }
 
             // If fixed dimensions were supplied
@@ -713,12 +700,11 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the probe size argument.
         /// </summary>
-        /// <param name="mediaPath">The media path.</param>
         /// <param name="isVideo">if set to <c>true</c> [is video].</param>
         /// <param name="videoType">Type of the video.</param>
         /// <param name="isoType">Type of the iso.</param>
         /// <returns>System.String.</returns>
-        private string GetProbeSizeArgument(string mediaPath, bool isVideo, VideoType? videoType, IsoType? isoType)
+        private string GetProbeSizeArgument(bool isVideo, VideoType? videoType, IsoType? isoType)
         {
             var type = !isVideo ? MediaEncoderHelpers.GetInputType(null, null) :
                 MediaEncoderHelpers.GetInputType(videoType, isoType);
@@ -1831,7 +1817,7 @@ namespace MediaBrowser.Api.Playback
         {
             var inputModifier = string.Empty;
 
-            var probeSize = GetProbeSizeArgument(state.MediaPath, state.IsInputVideo, state.VideoType, state.IsoType);
+            var probeSize = GetProbeSizeArgument(state.IsInputVideo, state.VideoType, state.IsoType);
             inputModifier += " " + probeSize;
             inputModifier = inputModifier.Trim();
 

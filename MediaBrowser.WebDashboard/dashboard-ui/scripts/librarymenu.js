@@ -98,8 +98,9 @@
 
         if (user.Configuration.IsAdministrator) {
             html += '<div class="libraryMenuDivider"></div>';
-            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder dashboardViewMenu" data-itemid="editor" href="dashboard.html">Dashboard</a>';
+            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder dashboardViewMenu" data-itemid="dashboard" href="dashboard.html">Dashboard</a>';
             html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html">Metadata Manager</a>';
+            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder reportsViewMenu" data-itemid="reports" href="reports.html">Reports</a>';
         }
 
         return html;
@@ -128,7 +129,7 @@
 
     function getLibraryMenu(page, user, counts, items, liveTvInfo) {
 
-        var panel = $('#libraryPanel', page);
+        var panel = $('#libraryPanel');
 
         if (!panel.length) {
 
@@ -144,9 +145,9 @@
 
             html += '</div>';
 
-            $(page).append(html);
+            $(document.body).append(html);
 
-            panel = $('#libraryPanel', page).panel({}).trigger('create');
+            panel = $('#libraryPanel').panel({}).trigger('create');
         }
 
         updateLibraryNavLinks(page);
@@ -179,14 +180,16 @@
         }
     }
 
-    function updateLibraryNavLinks(page, updateElements) {
+    function updateLibraryNavLinks(page) {
 
         page = $(page);
 
         var isLiveTvPage = page.hasClass('liveTvPage');
         var isChannelsPage = page.hasClass('channelsPage');
+        var isEditorPage = page.hasClass('metadataEditorPage');
+        var isReportsPage = page.hasClass('reportsPage');
 
-        var id = isLiveTvPage || isChannelsPage || page.hasClass('allLibraryPage') ?
+        var id = isLiveTvPage || isChannelsPage || isEditorPage || isReportsPage || page.hasClass('allLibraryPage') ?
             '' :
             getTopParentId() || '';
 
@@ -200,6 +203,12 @@
                 $(this).addClass('selectedMediaFolder');
             }
             else if (isLiveTvPage && itemId == 'livetv') {
+                $(this).addClass('selectedMediaFolder');
+            }
+            else if (isEditorPage && itemId == 'editor') {
+                $(this).addClass('selectedMediaFolder');
+            }
+            else if (isReportsPage && itemId == 'reports') {
                 $(this).addClass('selectedMediaFolder');
             }
             else if (id && itemId == id) {

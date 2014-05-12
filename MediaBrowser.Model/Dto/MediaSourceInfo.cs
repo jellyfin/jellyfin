@@ -1,8 +1,8 @@
-﻿using System;
-using System.Runtime.Serialization;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -41,11 +41,27 @@ namespace MediaBrowser.Model.Dto
             MediaStreams = new List<MediaStream>();
         }
 
+        public int? DefaultAudioStreamIndex { get; set; }
+        public int? DefaultSubtitleStreamIndex { get; set; }
+
         [IgnoreDataMember]
         public MediaStream DefaultAudioStream
         {
             get
             {
+                if (DefaultAudioStreamIndex.HasValue)
+                {
+                    var val = DefaultAudioStreamIndex.Value;
+
+                    foreach (MediaStream i in MediaStreams)
+                    {
+                        if (i.Type == MediaStreamType.Audio && i.Index == val)
+                        {
+                            return i;
+                        }
+                    }
+                }
+
                 foreach (MediaStream i in MediaStreams)
                 {
                     if (i.Type == MediaStreamType.Audio && i.IsDefault)

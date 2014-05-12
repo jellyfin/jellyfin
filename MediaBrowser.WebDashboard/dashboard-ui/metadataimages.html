@@ -11,24 +11,20 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true" style="margin-bottom: 20px!important;">
                     <a href="metadata.html" data-role="button">${TabBasics}</a>
-                    <a href="metadataimages.html?type=movies" data-role="button" class="categoryTab moviesTab">${TabMovies}</a>
-                    <a href="metadataimages.html?type=tv" data-role="button" class="categoryTab tvTab">${TabTV}</a>
-                    <a href="metadataimages.html?type=games" data-role="button" class="categoryTab gamesTab">${TabGames}</a>
-                    <a href="metadataimages.html?type=music" data-role="button" class="categoryTab musicTab">${TabMusic}</a>
-                    <a href="metadataimages.html?type=others" data-role="button" class="categoryTab othersTab">${TabOthers}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabCustomizations}</a>
                     <a href="metadatasubtitles.html" data-role="button">${TabSubtitles}</a>
                     <a href="metadataadvanced.html" data-role="button">${TabAdvanced}</a>
                 </div>
 
-                <p>${HeaderCustomizeOptionsPerMediaType}</p>
-
-                <div class="tabs">
-                </div>
-
-                <br />
                 <div class="tabContent">
                     <form class="metadataImagesConfigurationForm" style="margin-top: 10px; max-width: 800px;">
-
+                        <br />
+                        <div style="width: 75%;">
+                            <label for="selectItemType">${LabelCustomizeOptionsPerMediaType}</label>
+                            <select id="selectItemType" data-mini="true"></select>
+                        </div>
+                        <br />
+                        <br />
                         <div class="metadataReaders" style="margin-bottom: 2em; width: 75%;">
                         </div>
                         <div class="metadataFetchers" style="margin-bottom: 2em;">

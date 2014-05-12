@@ -1,0 +1,97 @@
+﻿.nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+    font-size: 30px;
+}
+
+.nowPlayingPageImage img {
+    max-height: 300px;
+    max-width: 300px;
+}
+
+.nowPlayingPage .positionSliderContainer {
+    width: 350px;
+}
+
+.nowPlayingNavButtonContainer {
+    width: 400px;
+}
+
+.chapterMenuOverlay {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.chapterMenu {
+    position: fixed;
+    top: 30%;
+    height: 180px;
+    left: 0;
+    right: 0;
+    background-color: rgba(0,0,0,.9);
+    overflow-x: auto;
+    overflow-y: hidden;
+    z-index: 1001;
+}
+
+.chapterMenuInner {
+    padding: 1em 0;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.chapterPosterItem {
+    width: 240px!important;
+    cursor: pointer;
+}
+
+    .chapterPosterItem .posterItemImage {
+        height: 135px!important;
+    }
+
+.currentChapter {
+    -moz-box-shadow: 0 0 12px 7px #cc3333;
+    -webkit-box-shadow: 0 0 12px 7px #cc3333;
+    box-shadow: 0 0 12px 7px #cc3333;
+}
+
+@media all and (max-width: 600px) {
+
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        font-size: 26px;
+    }
+
+    .nowPlayingPageImage img {
+        max-height: 160px;
+        max-width: 250px;
+    }
+
+    .nowPlayingPage .positionSliderContainer {
+        width: 300px;
+    }
+}
+
+
+@media all and (max-width: 500px) {
+
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        font-size: 24px;
+    }
+}
+
+@media all and (max-width: 400px) {
+
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        font-size: 19px;
+    }
+
+    .nowPlayingPage .positionSliderContainer {
+        width: 220px;
+    }
+
+    .nowPlayingNavButtonContainer {
+        width: 300px;
+    }
+}

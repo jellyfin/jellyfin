@@ -135,11 +135,17 @@
         <div data-role="popup" id="popupSubtitleTrackMenu" data-history="false" data-transition="flip">
             <div class="trackList"></div>
         </div>
+        
+        <div class="chapterMenuOverlay" style="display: none;"></div>
+        <div class="chapterMenu" style="display: none;">
+            <div class="chapterMenuInner">
+            </div>
+        </div>
 
         <script type="text/javascript">
             $('.sendMessageForm').off('submit', NowPlayingPage.onMessageSubmit).on('submit', NowPlayingPage.onMessageSubmit);
             $('.typeTextForm').off('submit', NowPlayingPage.onSendStringSubmit).on('submit', NowPlayingPage.onSendStringSubmit);
-     </script>
+        </script>
     </div>
 </body>
 </html>

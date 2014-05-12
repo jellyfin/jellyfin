@@ -92,15 +92,10 @@
     .posterItemTextOverlay .posterItemText {
         background-color: transparent;
         padding-left: 5px;
-        padding: 0 5px 3px;
+        padding: 0 5px 4px;
     }
 
-        .posterItemTextOverlay .posterItemText:first-child {
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .posterItemTextOverlay .posterItemText:last-child {
+        .posterItemTextOverlay .posterItemText:last-child:not(.posterItemProgress) {
             padding-bottom: 8px;
         }
 
@@ -165,11 +160,15 @@
         height: 51.8px;
     }
 
-.posterItemProgress .itemProgressBar {
-    height: 8px;
-    width: 100%;
-    opacity: .8;
+.posterItemProgress {
+    line-height: 7px;
 }
+
+    .posterItemProgress .itemProgressBar {
+        height: 7px;
+        width: 100%;
+        opacity: .8;
+    }
 
 .miniPosterItemProgress {
     /* Make sure it's on top of the fade gradient '*/

@@ -4,6 +4,106 @@
     var lastPlayerState;
     var isPositionSliderActive;
 
+    function populateChapters(elem, chapters, itemId, runtimeTicks) {
+
+        var html = '';
+
+        for (var i = 0, length = chapters.length; i < length; i++) {
+
+            var chapter = chapters[i];
+
+            html += '<div data-positionticks="' + chapter.StartPositionTicks + '" class="posterItem backdropPosterItem chapterPosterItem">';
+
+            var imgUrl;
+
+            if (chapter.ImageTag) {
+
+                imgUrl = ApiClient.getImageUrl(itemId, {
+                    maxwidth: 600,
+                    tag: chapter.ImageTag,
+                    type: "Chapter",
+                    index: i
+                });
+
+            } else {
+                imgUrl = "css/images/items/list/chapter.png";
+            }
+
+            var dataSrc = ' data-src="' + imgUrl + '"';
+
+            html += '<div class="posterItemImage lazy"' + dataSrc + '>';
+
+            html += '<div class="posterItemTextOverlay">';
+
+            if (chapter.Name) {
+                html += "<div class='posterItemText'>";
+                html += chapter.Name;
+                html += "</div>";
+            }
+
+            html += "<div class='posterItemProgress posterItemText'>";
+            var pct = 100 * (chapter.StartPositionTicks / runtimeTicks);
+            html += '<progress class="itemProgressBar" min="0" max="100" value="' + pct + '" style="opacity:.8;"></progress>';
+            html += "</div>";
+
+            html += "</div>";
+
+            html += "</div>";
+
+            html += "</div>";
+        }
+
+        elem.html(html).trigger('create');
+    }
+
+    function selectCurrentChapter(elem, positionTicks) {
+
+        var elems = $('.chapterPosterItem', elem).removeClass('currentChapter');
+
+        var matches = elems.get().filter(function (i) {
+
+            var ticks = i.getAttribute('data-positionticks');
+
+            return positionTicks >= ticks;
+
+        });
+
+        var chapterElem = matches[matches.length - 1];
+
+        $(chapterElem).addClass('currentChapter');
+
+        chapterElem.scrollIntoView();
+
+        elem[0].scrollLeft += 50;
+    }
+
+    function showChapterMenu(page, item, currentPositionTicks) {
+
+        $('.chapterMenuOverlay', page).show();
+
+        var elem = $('.chapterMenu', page).show();
+
+        if (item.Id == elem.attr('data-itemid')) {
+
+            selectCurrentChapter(elem, currentPositionTicks);
+            return;
+        }
+
+        var innerElem = $('.chapterMenuInner', elem);
+
+        populateChapters(innerElem, item.Chapters, item.Id, item.RunTimeTicks);
+
+        elem.attr('data-itemid', item.Id);
+
+        selectCurrentChapter(elem, currentPositionTicks);
+    }
+
+    function hideChapterMenu(page) {
+
+        $('.chapterMenuOverlay', page).hide();
+        $('.chapterMenu', page).hide();
+    }
+
     function showAudioMenu(page, item, currentIndex) {
 
         var streams = (item.MediaStreams || []).filter(function (i) {
@@ -20,7 +120,7 @@
             var streamHtml = '<li><a data-index="' + s.Index + '" href="#" class="lnkTrackOption">';
 
             streamHtml += '<h3>';
-            
+
             if (s.Index == currentIndex) {
                 streamHtml += '<img src="css/images/checkmarkgreen.png" style="width:18px;border-radius:3px;margin-right:.5em;vertical-align:top;" />';
             }
@@ -67,7 +167,7 @@
     function showSubtitleMenu(page, item, currentIndex) {
 
         var currentStreamImage = '<img src="css/images/checkmarkgreen.png" style="width:18px;border-radius:3px;margin-right:.5em;vertical-align:top;" />';
-        
+
         var streams = (item.MediaStreams || []).filter(function (i) {
 
             return i.Type == 'Subtitle';
@@ -138,6 +238,22 @@
             $(this).addClass('ui-btn-active');
         });
 
+        $('.chapterMenuOverlay', page).on('click', function () {
+
+            hideChapterMenu(page);
+        });
+
+        $('.chapterMenu', page).on('click', '.chapterPosterItem', function () {
+
+            if (currentPlayer) {
+                var ticks = this.getAttribute('data-positionticks');
+
+                currentPlayer.seek(parseInt(ticks));
+            }
+
+            hideChapterMenu(page);
+        });
+
         $('.btnCommand,.btnToggleFullscreen', page).on('click', function () {
 
             if (currentPlayer) {
@@ -192,6 +308,9 @@
         $('.btnChapters', page).on('click', function () {
 
             if (currentPlayer && lastPlayerState) {
+
+                var currentPositionTicks = lastPlayerState.PlayState.PositionTicks;
+                showChapterMenu(page, lastPlayerState.NowPlayingItem, currentPositionTicks);
             }
         });
 
@@ -299,7 +418,14 @@
 
         $('.btnAudioTracks', page).buttonEnabled(hasStreams(item, 'Audio') && supportedCommands.indexOf('SetAudioStreamIndex') != -1);
         $('.btnSubtitles', page).buttonEnabled(hasStreams(item, 'Subtitle') && supportedCommands.indexOf('SetSubtitleStreamIndex') != -1);
-        $('.btnChapters', page).buttonEnabled(item && item.Chapters && item.Chapters.length);
+
+        if (item && item.Chapters && item.Chapters.length) {
+            $('.btnChapters', page).buttonEnabled(true);
+
+        } else {
+            $('.btnChapters', page).buttonEnabled(false);
+            hideChapterMenu(page);
+        }
 
         $('.sendMessageElement', page).buttonEnabled(supportedCommands.indexOf('DisplayMessage') != -1);
         $('.typeTextElement', page).buttonEnabled(supportedCommands.indexOf('SendString') != -1);
@@ -520,9 +646,9 @@
 
             return false;
         },
-        
-        onSendStringSubmit: function() {
-            
+
+        onSendStringSubmit: function () {
+
             var form = this;
 
             MediaController.sendCommand({

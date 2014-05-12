@@ -31,7 +31,7 @@
         var currentTimeElement;
 
         self.initVideoPlayer = function () {
-            video = playVideo(item, mediaSource, startPosition, user);
+            video = playVideo(item, mediaSource, startPosition);
 
             return video;
         };
@@ -640,75 +640,6 @@
             return html;
         }
 
-        function getInitialSubtitleStreamIndex(mediaStreams, user) {
-
-            var i, length, mediaStream;
-
-            // Find the first forced subtitle stream
-            for (i = 0, length = mediaStreams.length; i < length; i++) {
-                mediaStream = mediaStreams[i];
-
-                if (mediaStream.Type == "Subtitle" && mediaStream.IsForced) {
-                    return mediaStream.Index;
-                }
-
-            }
-
-            // If none then look at user configuration
-            if (user.Configuration.SubtitleLanguagePreference) {
-
-                for (i = 0, length = mediaStreams.length; i < length; i++) {
-                    mediaStream = mediaStreams[i];
-
-                    if (mediaStream.Type == "Subtitle" && mediaStream.Language == user.Configuration.SubtitleLanguagePreference) {
-
-                        if (user.Configuration.UseForcedSubtitlesOnly) {
-
-                            if (mediaStream.IsForced) {
-                                return mediaStream.Index;
-                            }
-
-                        } else {
-                            return mediaStream.Index;
-                        }
-                    }
-
-                }
-            }
-
-            return null;
-        }
-
-        function getInitialAudioStreamIndex(mediaStreams, user) {
-
-            // Find all audio streams
-            var audioStreams = mediaStreams.filter(function (stream) {
-                return stream.Type == "Audio";
-
-            }).sort(function (a, b) {
-
-                var av = a.IsDefault ? 0 : 1;
-                var bv = b.IsDefault ? 0 : 1;
-
-                return av - bv;
-            });
-
-            if (user.Configuration.AudioLanguagePreference) {
-
-                for (var i = 0, length = audioStreams.length; i < length; i++) {
-                    var mediaStream = audioStreams[i];
-
-                    if (mediaStream.Language == user.Configuration.AudioLanguagePreference) {
-                        return mediaStream.Index;
-                    }
-
-                }
-            }
-
-            // Just use the first audio stream
-            return audioStreams.length ? audioStreams[0].Index : null;
-        }
-
         function getVideoQualityOptions(mediaStreams) {
 
             var videoStream = mediaStreams.filter(function (stream) {
@@ -787,15 +718,15 @@
             return options;
         }
 
-        function playVideo(item, mediaSource, startPosition, user) {
+        function playVideo(item, mediaSource, startPosition) {
 
             var mediaStreams = mediaSource.MediaStreams || [];
 
             var baseParams = {
                 audioChannels: 2,
                 StartTimeTicks: startPosition,
-                SubtitleStreamIndex: getInitialSubtitleStreamIndex(mediaStreams, user),
-                AudioStreamIndex: getInitialAudioStreamIndex(mediaStreams, user),
+                SubtitleStreamIndex: mediaSource.DefaultSubtitleStreamIndex,
+                AudioStreamIndex: mediaSource.DefaultAudioStreamIndex,
                 deviceId: ApiClient.deviceId(),
                 Static: false,
                 mediaSourceId: mediaSource.Id

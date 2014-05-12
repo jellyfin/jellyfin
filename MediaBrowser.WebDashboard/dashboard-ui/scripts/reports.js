@@ -484,9 +484,9 @@
                 if (c.sortField == currentSortField) {
 
                     if (currentSortDirection == "Descending") {
-                        cellHtml += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:12px;">&darr;</span>';
+                        cellHtml += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:14px">&darr;</span>';
                     } else {
-                        cellHtml += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:12px;">&uarr;</span>';
+                        cellHtml += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:14px;">&uarr;</span>';
                     }
                 }
             }
@@ -622,19 +622,6 @@
     $(document).on('pageinit', "#libraryReportPage", function () {
 
         var page = this;
-
-        $('.libraryTree', page).on('itemclicked', function (event, data) {
-
-            if (data.itemType == "libraryreport") {
-                return;
-            }
-
-            if (data.itemType == "livetvservice") {
-                return;
-            }
-
-            Dashboard.navigate('edititemmetadata.html?id=' + data.id);
-        });
 
         $('#radioBasicFilters', page).on('change', function () {
 

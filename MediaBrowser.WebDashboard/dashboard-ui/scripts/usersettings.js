@@ -29,11 +29,13 @@
             $('#selectSubtitleLanguage', page).val(user.Configuration.SubtitleLanguagePreference || "").selectmenu("refresh");
         });
 
-        $('#chkForcedSubtitlesOnly', page).checked(user.Configuration.UseForcedSubtitlesOnly || false).checkboxradio("refresh");
         $('#chkDisplayMissingEpisodes', page).checked(user.Configuration.DisplayMissingEpisodes || false).checkboxradio("refresh");
         $('#chkDisplayUnairedEpisodes', page).checked(user.Configuration.DisplayUnairedEpisodes || false).checkboxradio("refresh");
 
         $('#chkGroupMoviesIntoCollections', page).checked(user.Configuration.GroupMoviesIntoBoxSets || false).checkboxradio("refresh");
+
+        $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").selectmenu("refresh");
+        $('#chkPlayDefaultAudioTrack', page).checked(user.Configuration.PlayDefaultAudioTrack || false).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -57,10 +59,12 @@
 
         user.Configuration.AudioLanguagePreference = $('#selectAudioLanguage', page).val();
         user.Configuration.SubtitleLanguagePreference = $('#selectSubtitleLanguage', page).val();
-        user.Configuration.UseForcedSubtitlesOnly = $('#chkForcedSubtitlesOnly', page).checked();
         user.Configuration.DisplayMissingEpisodes = $('#chkDisplayMissingEpisodes', page).checked();
         user.Configuration.DisplayUnairedEpisodes = $('#chkDisplayUnairedEpisodes', page).checked();
         user.Configuration.GroupMoviesIntoBoxSets = $('#chkGroupMoviesIntoCollections', page).checked();
+
+        user.Configuration.SubtitleMode = $('#selectSubtitlePlaybackMode', page).val();
+        user.Configuration.PlayDefaultAudioTrack = $('#chkPlayDefaultAudioTrack', page).checked();
 
         ApiClient.updateUser(user).done(function () {
             onSaveComplete(page);

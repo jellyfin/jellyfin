@@ -1139,11 +1139,6 @@
 
         $('.libraryTree', page).on('itemclicked', function (event, data) {
 
-            if (data.itemType == "libraryreport") {
-                Dashboard.navigate('libraryreport.html');
-                return;
-            }
-
             if (data.itemType == "livetvservice") {
                 return;
             }

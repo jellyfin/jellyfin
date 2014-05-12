@@ -12,12 +12,12 @@
     margin-left: .5em;
 }
 
-.libraryPage {
+.page[data-theme=b] {
     background-color: #202020;
 }
 
 .backdropPage {
-    background-color: rgba(0, 0, 0, .85);
+    background-color: rgba(0, 0, 0, .85)!important;
 }
 
 .backdropContainer {
@@ -1034,62 +1034,6 @@ a.itemTag:hover {
         .playerSelectionPanel + .ui-panel-dismiss {
             right: 300px;
         }
-}
-
-.nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-    font-size: 30px;
-}
-
-.nowPlayingPageImage img {
-    max-height: 300px;
-    max-width: 300px;
-}
-
-.nowPlayingPage .positionSliderContainer {
-    width: 350px;
-}
-
-.nowPlayingNavButtonContainer {
-    width: 400px;
-}
-
-@media all and (max-width: 600px) {
-
-    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-        font-size: 26px;
-    }
-
-    .nowPlayingPageImage img {
-        max-height: 200px;
-        max-width: 250px;
-    }
-
-    .nowPlayingPage .positionSliderContainer {
-        width: 300px;
-    }
-}
-
-
-@media all and (max-width: 500px) {
-
-    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-        font-size: 22px;
-    }
-}
-
-@media all and (max-width: 400px) {
-
-    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-        font-size: 19px;
-    }
-
-    .nowPlayingPage .positionSliderContainer {
-        width: 220px;
-    }
-
-    .nowPlayingNavButtonContainer {
-        width: 300px;
-    }
 }
 
 .spotlight {

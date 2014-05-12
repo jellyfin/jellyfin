@@ -378,7 +378,7 @@ namespace MediaBrowser.WebDashboard.Api
             //sb.Append("<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">");
 
             sb.Append("<link rel=\"icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\" />");
-            
+
             // http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
             sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
             sb.Append("<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"css/images/touchicon72.png\" />");
@@ -469,7 +469,7 @@ namespace MediaBrowser.WebDashboard.Api
                     builder.Append(Environment.NewLine);
                 }
             }
-            
+
             foreach (var file in GetScriptFiles())
             {
                 var path = GetDashboardResourcePath("scripts/" + file);
@@ -563,7 +563,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "itemgallery.js",
                                 "itemlistpage.js",
                                 "librarypathmapping.js",
-                                "libraryreport.js",
+                                "reports.js",
                                 "librarysettings.js",
                                 "livetvchannel.js",
                                 "livetvchannels.js",
@@ -670,6 +670,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "remotecontrol.css",
                                       "userimage.css",
                                       "livetv.css",
+                                      "nowplaying.css",
                                       "icons.css"
                                   };
 

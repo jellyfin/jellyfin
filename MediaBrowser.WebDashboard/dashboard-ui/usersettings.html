@@ -36,15 +36,23 @@
                         <li>
                             <label for="selectAudioLanguage">${LabelAudioLanguagePreference}</label>
                             <select id="selectAudioLanguage" data-mini="true"></select>
-                            <div class="fieldDescription">${LabelAudioLanguagePreferenceHelp}</div>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="chkPlayDefaultAudioTrack" data-mini="true" />
+                            <label for="chkPlayDefaultAudioTrack">${LabelPlayDefaultAudioTrack}</label>
                         </li>
                         <li>
                             <label for="selectSubtitleLanguage">${LabelSubtitleLanguagePreference}</label>
                             <select id="selectSubtitleLanguage" data-mini="true"></select>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkForcedSubtitlesOnly" data-mini="true" />
-                            <label for="chkForcedSubtitlesOnly">${LabelDisplayForcedSubtitlesOnly}</label>
+                            <label for="selectSubtitlePlaybackMode">${LabelSubtitlePlaybackMode}</label>
+                            <select id="selectSubtitlePlaybackMode" data-mini="true">
+                                <option value="Default">{OptionDefaultSubtitles}</option>
+                                <option value="Always">Always</option>
+                                <option value="OnlyForced">OnlyForced</option>
+                                <option value="None">None</option>
+                            </select>
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">

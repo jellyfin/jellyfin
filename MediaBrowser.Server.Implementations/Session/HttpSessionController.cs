@@ -10,9 +10,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Roku
+namespace MediaBrowser.Server.Implementations.Session
 {
-    public class RokuSessionController : ISessionController
+    public class HttpSessionController : ISessionController
     {
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _json;
@@ -20,12 +20,21 @@ namespace MediaBrowser.Server.Implementations.Roku
 
         public SessionInfo Session { get; private set; }
 
-        public RokuSessionController(IHttpClient httpClient, IJsonSerializer json, IServerApplicationHost appHost, SessionInfo session)
+        //var postUrl = string.Format("http://{0}/mediabrowser/message", session.RemoteEndPoint);
+        
+        private readonly string _postUrl;
+
+        public HttpSessionController(IHttpClient httpClient, 
+            IJsonSerializer json, 
+            IServerApplicationHost appHost, 
+            SessionInfo session, 
+            string postUrl)
         {
             _httpClient = httpClient;
             _json = json;
             _appHost = appHost;
             Session = session;
+            _postUrl = postUrl;
         }
 
         public bool SupportsMediaRemoteControl
@@ -39,6 +48,19 @@ namespace MediaBrowser.Server.Implementations.Roku
             {
                 return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 10;
             }
+        }
+
+        private Task SendMessage(object obj, CancellationToken cancellationToken)
+        {
+            var json = _json.SerializeToString(obj);
+
+            return _httpClient.Post(new HttpRequestOptions
+            {
+                Url = _postUrl,
+                CancellationToken = cancellationToken,
+                RequestContent = json,
+                RequestContentType = "application/json"
+            });
         }
 
         public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
@@ -58,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Roku
 
         public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
-            return SendCommand(new WebSocketMessage<PlayRequest>
+            return SendMessage(new WebSocketMessage<PlayRequest>
             {
                 MessageType = "Play",
                 Data = command
@@ -68,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.Roku
 
         public Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken)
         {
-            return SendCommand(new WebSocketMessage<PlaystateRequest>
+            return SendMessage(new WebSocketMessage<PlaystateRequest>
             {
                 MessageType = "Playstate",
                 Data = command
@@ -78,13 +100,12 @@ namespace MediaBrowser.Server.Implementations.Roku
 
         public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)
         {
-            // Roku probably won't care about this
             return Task.FromResult(true);
         }
 
         public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
-            return SendCommand(new WebSocketMessage<SystemInfo>
+            return SendMessage(new WebSocketMessage<SystemInfo>
             {
                 MessageType = "RestartRequired",
                 Data = _appHost.GetSystemInfo()
@@ -94,13 +115,12 @@ namespace MediaBrowser.Server.Implementations.Roku
 
         public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
         {
-            // Roku probably won't care about this
             return Task.FromResult(true);
         }
 
         public Task SendServerShutdownNotification(CancellationToken cancellationToken)
         {
-            return SendCommand(new WebSocketMessage<string>
+            return SendMessage(new WebSocketMessage<string>
             {
                 MessageType = "ServerShuttingDown",
                 Data = string.Empty
@@ -110,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.Roku
 
         public Task SendServerRestartNotification(CancellationToken cancellationToken)
         {
-            return SendCommand(new WebSocketMessage<string>
+            return SendMessage(new WebSocketMessage<string>
             {
                 MessageType = "ServerRestarting",
                 Data = string.Empty
@@ -118,24 +138,11 @@ namespace MediaBrowser.Server.Implementations.Roku
             }, cancellationToken);
         }
 
-        private Task SendCommand(object obj, CancellationToken cancellationToken)
-        {
-            var json = _json.SerializeToString(obj);
-
-            return _httpClient.Post(new HttpRequestOptions
-            {
-                Url = "http://" + Session.RemoteEndPoint + "/mb/remotecontrol",
-                CancellationToken = cancellationToken,
-                RequestContent = json,
-                RequestContentType = "application/json"
-            });
-        }
-
         public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
-            return SendCommand(new WebSocketMessage<GeneralCommand>
+            return SendMessage(new WebSocketMessage<GeneralCommand>
             {
-                MessageType = "Command",
+                MessageType = "GeneralCommand",
                 Data = command
 
             }, cancellationToken);

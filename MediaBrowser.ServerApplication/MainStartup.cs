@@ -481,7 +481,7 @@ namespace MediaBrowser.ServerApplication
         private static bool PerformUpdateIfNeeded(ServerApplicationPaths appPaths, ILogger logger)
         {
             // Look for the existence of an update archive
-            var updateArchive = Path.Combine(appPaths.TempUpdatePath, Constants.MbServerPkgName + ".zip");
+            var updateArchive = Path.Combine(appPaths.TempUpdatePath, "MBServer" + ".zip");
             if (File.Exists(updateArchive))
             {
                 logger.Info("An update is available from {0}", updateArchive);

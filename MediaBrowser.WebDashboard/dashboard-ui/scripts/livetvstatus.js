@@ -123,7 +123,7 @@
             versionHtml += '<img src="css/images/checkmarkgreen.png" style="height: 17px; margin-left: 10px; margin-right: 0; position: relative; top: 5px; border-radius:3px;" /> Up to date!';
         }
 
-        $('#activeServiceVersion', page).html(versionHtml);
+        $('#activeServiceVersion', page).html(versionHtml).trigger('create');
 
         var status = liveTvInfo.Status;
 

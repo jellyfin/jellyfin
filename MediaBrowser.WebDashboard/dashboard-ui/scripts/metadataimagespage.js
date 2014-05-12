@@ -6,32 +6,18 @@
 
         var html = '';
 
-        html += '<div data-role="controlgroup" data-type="horizontal" data-mini="true">';
-
         for (var i = 0, length = tabs.length; i < length; i++) {
 
             var tab = tabs[i];
 
-            var isChecked = i == 0 ? ' checked="checked"' : '';
+            var isChecked = i == 0 ? ' selected="selected"' : '';
 
-            html += '<input type="radio" name="radioTypeTab" class="radioTypeTab" id="' + tab.type + '" value="' + tab.type + '"' + isChecked + '>';
-            html += '<label for="' + tab.type + '">' + tab.name + '</label>';
+            html += '<option value="' + tab.type + '"' + isChecked + '>' + tab.name + '</option>';
         }
 
-        html += '</div>';
-
-        var elem = $('.tabs', page).html(html).trigger('create');
+        $('#selectItemType', page).html(html).selectmenu('refresh').trigger('change');
 
         Dashboard.hideLoadingMsg();
-
-        $('.radioTypeTab', elem).on('change', function () {
-
-            if (this.checked) {
-
-                loadType(page, this.id);
-            }
-
-        }).trigger('change');
     }
 
     function loadType(page, type) {
@@ -416,70 +402,29 @@
 
     function loadPage(page) {
 
-        var type = getParameterByName('type');
+        loadTabs(page, [
 
-        $('.categoryTab', page).removeClass('ui-btn-active');
-
-        if (type == 'games') {
-
-            loadTabs(page, [
-
-                { name: 'Games', type: 'Game' },
-                { name: 'Game Systems', type: 'GameSystem' },
-                { name: 'Game Genres', type: 'GameGenre' }
-            ]);
-
-            $('.gamesTab', page).addClass('ui-btn-active');
-        }
-        else if (type == 'movies') {
-
-            loadTabs(page, [
-
-                { name: 'Movies', type: 'Movie' },
-                { name: 'Trailers', type: 'Trailer' },
-                { name: 'Collections', type: 'BoxSet' }
-            ]);
-
-            $('.moviesTab', page).addClass('ui-btn-active');
-        }
-        else if (type == 'tv') {
-
-            loadTabs(page, [
-
-                { name: 'Series', type: 'Series' },
-                { name: 'Seasons', type: 'Season' },
-                { name: 'Episodes', type: 'Episode' }
-            ]);
-
-            $('.tvTab', page).addClass('ui-btn-active');
-        }
-        else if (type == 'music') {
-
-            loadTabs(page, [
-
-                { name: 'Artists', type: 'MusicArtist' },
-                { name: 'Albums', type: 'MusicAlbum' },
-                { name: 'Songs', type: 'Audio' },
-                { name: 'Music Videos', type: 'MusicVideo' },
-                { name: 'Music Genres', type: 'MusicGenre' }
-            ]);
-
-            $('.musicTab', page).addClass('ui-btn-active');
-        }
-        else if (type == 'others') {
-
-            loadTabs(page, [
-
-                { name: 'People', type: 'Person' },
-                { name: 'Genres', type: 'Genre' },
-                { name: 'Studios', type: 'Studio' },
-                { name: 'Books', type: 'Book' },
-                { name: 'Home Videos', type: 'Video' },
-                { name: 'Adult Videos', type: 'AdultVideo' }
-            ]);
-
-            $('.othersTab', page).addClass('ui-btn-active');
-        }
+            { name: 'Movies', type: 'Movie' },
+            { name: 'Trailers', type: 'Trailer' },
+            { name: 'Collections', type: 'BoxSet' },
+            { name: 'TV Series', type: 'Series' },
+            { name: 'TV Seasons', type: 'Season' },
+            { name: 'TV Episodes', type: 'Episode' },
+            { name: 'Games', type: 'Game' },
+            { name: 'Game Systems', type: 'GameSystem' },
+            { name: 'Game Genres', type: 'GameGenre' },
+            { name: 'Music Artists', type: 'MusicArtist' },
+            { name: 'Music Albums', type: 'MusicAlbum' },
+            { name: 'Music Videos', type: 'MusicVideo' },
+            { name: 'Music Genres', type: 'MusicGenre' },
+            { name: 'Songs', type: 'Audio' },
+            { name: 'Home Videos', type: 'Video' },
+            { name: 'Books', type: 'Book' },
+            { name: 'Adult Videos', type: 'AdultVideo' },
+            { name: 'People', type: 'Person' },
+            { name: 'Genres', type: 'Genre' },
+            { name: 'Studios', type: 'Studio' }
+        ]);
     }
 
     function saveSettingsIntoConfig(form, config) {
@@ -614,7 +559,12 @@
 
             ul.listview('destroy').listview({});
         });
-        
+
+        $('#selectItemType', page).on('change', function () {
+
+            loadType(page, this.value);
+        });
+
     }).on('pageshow', "#metadataImagesConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();

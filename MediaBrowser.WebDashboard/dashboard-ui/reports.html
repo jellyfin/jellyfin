@@ -4,47 +4,38 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="libraryReportPage" data-role="page" data-theme="b" class="page libraryPage metadataEditorPage">
-        <div data-role="content editPageContent">
-            <div class="editPageSidebar">
-                <div class="libraryTree">
-                    <ul>
-                    </ul>
+    <div id="libraryReportPage" data-role="page" data-theme="b" class="page libraryPage noSecondaryNavPage reportsPage">
+        <div data-role="content">
+            <div style="text-align: center;">
+                <div class="viewControls">
+                    <span style="margin-right: 10px; vertical-align: middle;">Report:</span>
+                    <div style="display: inline-block;">
+                        <select data-mini="true" data-inline="true" id="selectView" name="selectView">
+                            <option value="AdultVideo">Adult Videos</option>
+                            <option value="MusicAlbum">Albums</option>
+                            <option value="MusicArtist">Artists</option>
+                            <option value="Book">Books</option>
+                            <option value="BoxSet">Collections</option>
+                            <option value="Episode">Episodes</option>
+                            <option value="Game">Games</option>
+                            <option value="Video">Home Videos</option>
+                            <option value="Movie">Movies</option>
+                            <option value="MusicVideo">Music Videos</option>
+                            <option value="Trailer">Trailers</option>
+                            <option value="Season">Seasons</option>
+                            <option value="Series">Series</option>
+                            <option value="Audio">Songs</option>
+                        </select>
+                    </div>
+                    <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
+                </div>
+                <div class="listTopPaging">
                 </div>
             </div>
-            <div class="editPageInnerContent">
+            <br />
+            <div class="reportContainer"></div>
 
-                <div style="text-align: center;">
-                    <div class="viewControls">
-                        <span style="margin-right: 10px; vertical-align: middle;">Report:</span>
-                        <div style="display: inline-block;">
-                            <select data-mini="true" data-inline="true" id="selectView" name="selectView">
-                                <option value="AdultVideo">Adult Videos</option>
-                                <option value="MusicAlbum">Albums</option>
-                                <option value="MusicArtist">Artists</option>
-                                <option value="Book">Books</option>
-                                <option value="BoxSet">Collections</option>
-                                <option value="Episode">Episodes</option>
-                                <option value="Game">Games</option>
-                                <option value="Video">Home Videos</option>
-                                <option value="Movie">Movies</option>
-                                <option value="MusicVideo">Music Videos</option>
-                                <option value="Trailer">Trailers</option>
-                                <option value="Season">Seasons</option>
-                                <option value="Series">Series</option>
-                                <option value="Audio">Songs</option>
-                            </select>
-                        </div>
-                        <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
-                    </div>
-                    <div class="listTopPaging">
-                    </div>
-                </div>
-                <br />
-                <div class="reportContainer"></div>
-
-                <div class="listBottomPaging">
-                </div>
+            <div class="listBottomPaging">
             </div>
         </div>
 
