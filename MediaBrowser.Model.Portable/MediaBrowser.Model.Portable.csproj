@@ -560,6 +560,9 @@
     <Compile Include="..\MediaBrowser.Model\MediaInfo\IBlurayExaminer.cs">
       <Link>MediaInfo\IBlurayExaminer.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\MediaStreamSelector.cs">
+      <Link>MediaInfo\MediaStreamSelector.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\SubtitleFormat.cs">
       <Link>MediaInfo\SubtitleFormat.cs</Link>
     </Compile>
