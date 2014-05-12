@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Persistence;
+﻿using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
@@ -77,14 +76,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Get(GetDisplayPreferences request)
         {
-            Guid displayPreferencesId;
-
-            if (!Guid.TryParse(request.Id, out displayPreferencesId))
-            {
-                displayPreferencesId = request.Id.GetMD5();
-            }
-
-            var result = _displayPreferencesManager.GetDisplayPreferences(displayPreferencesId, request.UserId, request.Client);
+            var result = _displayPreferencesManager.GetDisplayPreferences(request.Id, request.UserId, request.Client);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }

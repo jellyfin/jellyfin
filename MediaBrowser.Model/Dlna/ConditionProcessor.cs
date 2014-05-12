@@ -136,7 +136,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            var expected = condition.Value;
+            string expected = condition.Value;
 
             switch (condition.Condition)
             {
@@ -186,7 +186,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
             
-            var expected = (TransportStreamTimestamp)Enum.Parse(typeof(TransportStreamTimestamp), condition.Value, true);
+            TransportStreamTimestamp expected = (TransportStreamTimestamp)Enum.Parse(typeof(TransportStreamTimestamp), condition.Value, true);
             
             switch (condition.Condition)
             {

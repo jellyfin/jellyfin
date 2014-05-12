@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -129,6 +130,20 @@ namespace MediaBrowser.Model.Entities
         /// <value><c>true</c> if this instance is external; otherwise, <c>false</c>.</value>
         public bool IsExternal { get; set; }
 
+        [IgnoreDataMember]
+        public bool IsGraphicalSubtitleStream
+        {
+            get
+            {
+                if (IsExternal) return false;
+
+                var codec = Codec ?? string.Empty;
+
+                return codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 ||
+                       codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the filename.
         /// </summary>
@@ -146,50 +161,5 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The level.</value>
         public double? Level { get; set; }
-    }
-
-    /// <summary>
-    /// Enum MediaStreamType
-    /// </summary>
-    public enum MediaStreamType
-    {
-        /// <summary>
-        /// The audio
-        /// </summary>
-        Audio,
-        /// <summary>
-        /// The video
-        /// </summary>
-        Video,
-        /// <summary>
-        /// The subtitle
-        /// </summary>
-        Subtitle,
-        /// <summary>
-        /// The embedded image
-        /// </summary>
-        EmbeddedImage
-    }
-
-    public class MediaInfo
-    {
-        /// <summary>
-        /// Gets or sets the media streams.
-        /// </summary>
-        /// <value>The media streams.</value>
-        public List<MediaStream> MediaStreams { get; set; }
-
-        /// <summary>
-        /// Gets or sets the format.
-        /// </summary>
-        /// <value>The format.</value>
-        public string Format { get; set; }
-
-        public int? TotalBitrate { get; set; }
-
-        public MediaInfo()
-        {
-            MediaStreams = new List<MediaStream>();
-        }
     }
 }

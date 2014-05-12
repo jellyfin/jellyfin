@@ -114,15 +114,18 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             request.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
 
-            request.CachePolicy = options.CachePolicy == Net.HttpRequestCachePolicy.None ?
-                new RequestCachePolicy(RequestCacheLevel.BypassCache) :
-                new RequestCachePolicy(RequestCacheLevel.Revalidate);
+            request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
 
             request.ConnectionGroupName = GetHostFromUrl(options.Url);
             request.KeepAlive = true;
             request.Method = method;
             request.Pipelined = true;
             request.Timeout = 20000;
+
+            if (!string.IsNullOrEmpty(options.Host))
+            {
+                request.Host = options.Host;
+            }
 
 #if !__MonoCS__
             // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
@@ -230,12 +233,15 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             var httpWebRequest = GetRequest(options, httpMethod, options.EnableHttpCompression);
 
-            if (!string.IsNullOrEmpty(options.RequestContent) || string.Equals(httpMethod, "post", StringComparison.OrdinalIgnoreCase))
+            if (options.RequestContentBytes != null ||
+                !string.IsNullOrEmpty(options.RequestContent) ||
+                string.Equals(httpMethod, "post", StringComparison.OrdinalIgnoreCase))
             {
-                var content = options.RequestContent ?? string.Empty;
-                var bytes = Encoding.UTF8.GetBytes(content);
+                var bytes = options.RequestContentBytes ?? 
+                    Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
 
                 httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
+                
                 httpWebRequest.ContentLength = bytes.Length;
                 httpWebRequest.GetRequestStream().Write(bytes, 0, bytes.Length);
             }

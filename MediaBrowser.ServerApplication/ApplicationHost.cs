@@ -29,13 +29,14 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.Themes;
 using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.Eventing;
 using MediaBrowser.Dlna.Main;
-using MediaBrowser.Dlna.PlayTo;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
@@ -44,6 +45,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Manager;
+using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.Channels;
 using MediaBrowser.Server.Implementations.Collections;
@@ -60,6 +62,7 @@ using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.MediaEncoder;
 using MediaBrowser.Server.Implementations.Notifications;
 using MediaBrowser.Server.Implementations.Persistence;
+using MediaBrowser.Server.Implementations.Security;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.Themes;
@@ -193,6 +196,7 @@ namespace MediaBrowser.ServerApplication
         private IProviderRepository ProviderRepository { get; set; }
 
         private INotificationManager NotificationManager { get; set; }
+        private ISubtitleManager SubtitleManager { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -492,7 +496,7 @@ namespace MediaBrowser.ServerApplication
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager);
             RegisterSingleInstance(DtoService);
 
-            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor);
+            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository);
             RegisterSingleInstance(SessionManager);
 
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
@@ -507,7 +511,7 @@ namespace MediaBrowser.ServerApplication
                 MediaEncoder);
             RegisterSingleInstance(EncodingManager);
 
-            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager, UserDataManager);
+            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer);
             RegisterSingleInstance(ChannelManager);
 
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
@@ -530,6 +534,11 @@ namespace MediaBrowser.ServerApplication
 
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
             RegisterSingleInstance(NotificationManager);
+
+            RegisterSingleInstance<IEncryptionManager>(new EncryptionManager());
+
+            SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor);
+            RegisterSingleInstance(SubtitleManager);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
@@ -566,7 +575,7 @@ namespace MediaBrowser.ServerApplication
         {
             var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager).GetFFMpegInfo(progress).ConfigureAwait(false);
 
-            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.Path, info.ProbePath, info.Version, FileSystemManager);
+            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.EncoderPath, info.ProbePath, info.Version, FileSystemManager);
             RegisterSingleInstance(MediaEncoder);
         }
 
@@ -710,9 +719,11 @@ namespace MediaBrowser.ServerApplication
 
             LiveTvManager.AddParts(GetExports<ILiveTvService>());
 
+            SubtitleManager.AddParts(GetExports<ISubtitleProvider>());
+            
             SessionManager.AddParts(GetExports<ISessionControllerFactory>());
 
-            ChannelManager.AddParts(GetExports<IChannel>());
+            ChannelManager.AddParts(GetExports<IChannel>(), GetExports<IChannelFactory>());
 
             NotificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
         }
@@ -1026,16 +1037,12 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-#if DEBUG
-            return new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
-#endif
-
             var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
             var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, null, ApplicationVersion,
                                                            ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
 
-            HasUpdateAvailable = version != null;
+            HasUpdateAvailable = version != null && version.version >= ApplicationVersion;
 
             return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
                        new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };

@@ -24,6 +24,8 @@ namespace MediaBrowser.Api.DefaultTheme
 
         [ApiMember(Name = "RecentlyPlayedGamesLimit", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int RecentlyPlayedGamesLimit { get; set; }
+
+        public string ParentId { get; set; }
     }
 
     [Route("/MBT/DefaultTheme/TV", "GET")]
@@ -49,6 +51,8 @@ namespace MediaBrowser.Api.DefaultTheme
 
         [ApiMember(Name = "LatestEpisodeLimit", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int LatestEpisodeLimit { get; set; }
+
+        public string ParentId { get; set; }
     }
 
     [Route("/MBT/DefaultTheme/Movies", "GET")]
@@ -71,6 +75,8 @@ namespace MediaBrowser.Api.DefaultTheme
 
         [ApiMember(Name = "LatestTrailersLimit", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int LatestTrailersLimit { get; set; }
+
+        public string ParentId { get; set; }
     }
 
     [Route("/MBT/DefaultTheme/Favorites", "GET")]
@@ -224,7 +230,7 @@ namespace MediaBrowser.Api.DefaultTheme
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = user.RootFolder.GetRecursiveChildren(user, i => i is Game || i is GameSystem)
+            var items = GetAllLibraryItems(user.Id, _userManager, _libraryManager, request.ParentId).Where(i => i is Game || i is GameSystem)
                 .ToList();
 
             var gamesWithImages = items.OfType<Game>().Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath)).ToList();
@@ -280,7 +286,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var series = user.RootFolder.GetRecursiveChildren(user)
+            var series = GetAllLibraryItems(user.Id, _userManager, _libraryManager, request.ParentId)
                 .OfType<Series>()
                 .ToList();
 
@@ -403,7 +409,8 @@ namespace MediaBrowser.Api.DefaultTheme
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = user.RootFolder.GetRecursiveChildren(user, i => i is Movie || i is Trailer || i is BoxSet)
+            var items = GetAllLibraryItems(user.Id, _userManager, _libraryManager, request.ParentId)
+                .Where(i => i is Movie || i is Trailer || i is BoxSet)
                 .ToList();
 
             var view = new MoviesView();
@@ -556,7 +563,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             // Avoid implicitly captured closure
             var currentUserId1 = user.Id;
-            
+
             view.LatestMovies = movies
                 .OrderByDescending(i => i.DateCreated)
                 .Where(i => !_userDataManager.GetUserData(currentUserId1, i.GetUserDataKey()).Played)
@@ -622,9 +629,9 @@ namespace MediaBrowser.Api.DefaultTheme
             {
                 var tag = _imageProcessor.GetImageCacheTag(item, imageType);
 
-                if (tag.HasValue)
+                if (tag != null)
                 {
-                    stub.ImageTag = tag.Value;
+                    stub.ImageTag = tag;
                 }
             }
             catch (Exception ex)

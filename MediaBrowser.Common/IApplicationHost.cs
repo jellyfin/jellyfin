@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Plugins;
+﻿using MediaBrowser.Common.Plugins;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Updates;
 using System;
 using System.Collections.Generic;
@@ -151,16 +151,5 @@ namespace MediaBrowser.Common
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
         object CreateInstance(Type type);
-    }
-
-    public interface IDependencyContainer
-    {
-        void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
-            where T : class;
-
-        void RegisterSingleInstance<T>(Func<T> func)
-            where T : class;
-
-        void Register(Type typeInterface, Type typeImplementation);
     }
 }

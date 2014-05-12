@@ -95,11 +95,12 @@
     <Compile Include="ScheduledTasks\Tasks\DeleteCacheFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\DeleteLogFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\PluginUpdateTask.cs" />
-    <Compile Include="ScheduledTasks\Tasks\ReloadLoggerTask.cs" />
+    <Compile Include="ScheduledTasks\Tasks\ReloadLoggerFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\SystemUpdateTask.cs" />
     <Compile Include="Security\MBLicenseFile.cs" />
     <Compile Include="Security\MBRegistration.cs" />
     <Compile Include="Security\PluginSecurityManager.cs" />
+    <Compile Include="Security\RegRecord.cs" />
     <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Serialization\XmlSerializer.cs" />
     <Compile Include="Updates\InstallationManager.cs" />

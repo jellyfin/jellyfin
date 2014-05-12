@@ -7,7 +7,7 @@ namespace MediaBrowser.Model.Dto
     /// </summary>
     public class ItemByNameCounts
     {
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the total count.

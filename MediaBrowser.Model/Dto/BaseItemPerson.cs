@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 
@@ -18,6 +17,12 @@ namespace MediaBrowser.Model.Dto
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>The identifier.</value>
+        public string Id { get; set; }
+
+        /// <summary>
         /// Gets or sets the role.
         /// </summary>
         /// <value>The role.</value>
@@ -33,7 +38,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the primary image tag.
         /// </summary>
         /// <value>The primary image tag.</value>
-        public Guid? PrimaryImageTag { get; set; }
+        public string PrimaryImageTag { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.
@@ -44,7 +49,7 @@ namespace MediaBrowser.Model.Dto
         {
             get
             {
-                return PrimaryImageTag.HasValue;
+                return PrimaryImageTag != null;
             }
         }
 

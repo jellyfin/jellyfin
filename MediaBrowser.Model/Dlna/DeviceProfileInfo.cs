@@ -21,10 +21,4 @@ namespace MediaBrowser.Model.Dlna
         /// <value>The type.</value>
         public DeviceProfileType Type { get; set; }
     }
-
-    public enum DeviceProfileType
-    {
-        System = 0,
-        User = 1
-    }
 }

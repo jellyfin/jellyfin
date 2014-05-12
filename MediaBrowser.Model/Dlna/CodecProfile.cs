@@ -22,66 +22,19 @@ namespace MediaBrowser.Model.Dlna
 
         public List<string> GetCodecs()
         {
-            return (Codec ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
+            List<string> list = new List<string>();
+            foreach (string i in (Codec ?? string.Empty).Split(','))
+            {
+                if (!string.IsNullOrEmpty(i)) list.Add(i);
+            }
+            return list;
         }
 
         public bool ContainsCodec(string codec)
         {
-            var codecs = GetCodecs();
+            List<string> codecs = GetCodecs();
 
             return codecs.Count == 0 || codecs.Contains(codec, StringComparer.OrdinalIgnoreCase);
         }
-    }
-
-    public enum CodecType
-    {
-        Video = 0,
-        VideoAudio = 1,
-        Audio = 2
-    }
-
-    public class ProfileCondition
-    {
-        [XmlAttribute("condition")]
-        public ProfileConditionType Condition { get; set; }
-
-        [XmlAttribute("property")]
-        public ProfileConditionValue Property { get; set; }
-
-        [XmlAttribute("value")]
-        public string Value { get; set; }
-
-        [XmlAttribute("isRequired")]
-        public bool IsRequired { get; set; }
-
-        public ProfileCondition()
-        {
-            IsRequired = true;
-        }
-    }
-
-    public enum ProfileConditionType
-    {
-        Equals = 0,
-        NotEquals = 1,
-        LessThanEqual = 2,
-        GreaterThanEqual = 3
-    }
-
-    public enum ProfileConditionValue
-    {
-        AudioChannels,
-        AudioBitrate,
-        AudioProfile,
-        Width,
-        Height,
-        Has64BitOffsets,
-        PacketLength,
-        VideoBitDepth,
-        VideoBitrate,
-        VideoFramerate,
-        VideoLevel,
-        VideoProfile,
-        VideoTimestamp
     }
 }

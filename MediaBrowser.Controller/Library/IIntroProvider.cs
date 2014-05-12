@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Entities;
-using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Library
@@ -22,20 +21,5 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <returns>IEnumerable{System.String}.</returns>
         IEnumerable<string> GetAllIntroFiles();
-    }
-
-    public class IntroInfo
-    {
-        /// <summary>
-        /// Gets or sets the path.
-        /// </summary>
-        /// <value>The path.</value>
-        public string Path { get; set; }
-
-        /// <summary>
-        /// Gets or sets the item id.
-        /// </summary>
-        /// <value>The item id.</value>
-        public Guid? ItemId { get; set; }
     }
 }

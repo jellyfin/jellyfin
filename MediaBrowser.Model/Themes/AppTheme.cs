@@ -20,11 +20,4 @@ namespace MediaBrowser.Model.Themes
             Images = new List<ThemeImage>();
         }
     }
-
-    public class AppThemeInfo
-    {
-        public string AppName { get; set; }
-        
-        public string Name { get; set; }
-    }
 }

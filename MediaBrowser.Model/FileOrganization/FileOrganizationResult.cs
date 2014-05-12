@@ -100,18 +100,4 @@ namespace MediaBrowser.Model.FileOrganization
             DuplicatePaths = new List<string>();
         }
     }
-
-    public enum FileSortingStatus
-    {
-        Success,
-        Failure,
-        SkippedExisting
-    }
-
-    public enum FileOrganizerType
-    {
-        Movie,
-        Episode,
-        Song
-    }
 }

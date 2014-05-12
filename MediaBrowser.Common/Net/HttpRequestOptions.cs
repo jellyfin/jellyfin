@@ -53,6 +53,12 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
+        /// Gets or sets the host.
+        /// </summary>
+        /// <value>The host.</value>
+        public string Host { get; set; }
+
+        /// <summary>
         /// Gets or sets the progress.
         /// </summary>
         /// <value>The progress.</value>
@@ -69,14 +75,13 @@ namespace MediaBrowser.Common.Net
         public string RequestContentType { get; set; }
 
         public string RequestContent { get; set; }
+        public byte[] RequestContentBytes { get; set; }
 
         public bool BufferContent { get; set; }
 
         public bool LogRequest { get; set; }
 
         public bool LogErrorResponseBody { get; set; }
-        
-        public HttpRequestCachePolicy CachePolicy { get; set; }
 
         private string GetHeaderValue(string name)
         {
@@ -95,17 +100,9 @@ namespace MediaBrowser.Common.Net
             EnableHttpCompression = true;
             BufferContent = true;
 
-            CachePolicy = HttpRequestCachePolicy.None;
-
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             LogRequest = true;
         }
-    }
-
-    public enum HttpRequestCachePolicy
-    {
-        None = 1,
-        Validate = 2
     }
 }

@@ -1,24 +1,10 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Net;
-using ServiceStack;
 using ServiceStack.Web;
 using System.IO;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
-    /// <summary>
-    /// Class GetDashboardResource
-    /// </summary>
-    [Route("/swagger-ui/{ResourceName*}", "GET")]
-    public class GetSwaggerResource
-    {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string ResourceName { get; set; }
-    }
-
     public class SwaggerService : IHasResultFactory, IRestfulService
     {
         private readonly IApplicationPaths _appPaths;

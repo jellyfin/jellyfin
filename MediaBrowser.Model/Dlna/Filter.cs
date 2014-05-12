@@ -19,9 +19,10 @@ namespace MediaBrowser.Model.Dlna
         {
             _all = string.Equals(filter, "*", StringComparison.OrdinalIgnoreCase);
 
-            _fields = (filter ?? string.Empty)
-                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                .ToList();
+            List<string> list = new List<string>();
+            foreach (string s in (filter ?? string.Empty).Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries))
+                list.Add(s);
+            _fields = list;
         }
 
         public bool Contains(string field)

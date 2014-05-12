@@ -13,7 +13,8 @@ namespace MediaBrowser.Controller.Channels
         /// Adds the parts.
         /// </summary>
         /// <param name="channels">The channels.</param>
-        void AddParts(IEnumerable<IChannel> channels);
+        /// <param name="factories">The factories.</param>
+        void AddParts(IEnumerable<IChannel> channels, IEnumerable<IChannelFactory> factories);
 
         /// <summary>
         /// Gets the channels.

@@ -56,16 +56,6 @@ namespace MediaBrowser.Server.Implementations.Roku
             return Task.FromResult(true);
         }
 
-        public Task SendMessageCommand(MessageCommand command, CancellationToken cancellationToken)
-        {
-            return SendCommand(new WebSocketMessage<MessageCommand>
-            {
-                MessageType = "MessageCommand",
-                Data = command
-
-            }, cancellationToken);
-        }
-
         public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
             return SendCommand(new WebSocketMessage<PlayRequest>

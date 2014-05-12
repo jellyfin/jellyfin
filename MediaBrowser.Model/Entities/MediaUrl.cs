@@ -8,10 +8,4 @@ namespace MediaBrowser.Model.Entities
         public VideoSize? VideoSize { get; set; }
         public bool IsDirectLink { get; set; }
     }
-
-    public enum VideoSize
-    {
-        StandardDefinition,
-        HighDefinition
-    }
 }

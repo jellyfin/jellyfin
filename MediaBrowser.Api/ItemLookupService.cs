@@ -1,13 +1,13 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using ServiceStack;
@@ -30,6 +30,16 @@ namespace MediaBrowser.Api
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
+
+    [Route("/Items/{Id}/RemoteSearch/Subtitles/{Language}", "GET")]
+    public class SearchRemoteSubtitles : IReturn<List<RemoteSubtitleInfo>>
+    {
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "Language", Description = "Language", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Language { get; set; }
     }
 
     [Route("/Items/RemoteSearch/Movie", "POST")]
@@ -107,19 +117,28 @@ namespace MediaBrowser.Api
 
     public class ItemLookupService : BaseApiService
     {
-        private readonly IDtoService _dtoService;
         private readonly IProviderManager _providerManager;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
+        private readonly ISubtitleManager _subtitleManager;
 
-        public ItemLookupService(IDtoService dtoService, IProviderManager providerManager, IServerApplicationPaths appPaths, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public ItemLookupService(IProviderManager providerManager, IServerApplicationPaths appPaths, IFileSystem fileSystem, ILibraryManager libraryManager, ISubtitleManager subtitleManager)
         {
-            _dtoService = dtoService;
             _providerManager = providerManager;
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
+            _subtitleManager = subtitleManager;
+        }
+
+        public object Get(SearchRemoteSubtitles request)
+        {
+            var video = (Video)_libraryManager.GetItemById(request.Id);
+
+            var response = _subtitleManager.SearchSubtitles(video, request.Language, CancellationToken.None).Result;
+
+            return ToOptimizedResult(response);
         }
 
         public object Get(GetExternalIdInfos request)

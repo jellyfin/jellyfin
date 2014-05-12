@@ -94,11 +94,4 @@ namespace MediaBrowser.Common.Implementations.Security
             return new MBRegistrationRecord { IsRegistered = reg.registered, ExpirationDate = reg.expDate, RegChecked = true };
         }
     }
-
-    class RegRecord
-    {
-        public string featId { get; set; }
-        public bool registered { get; set; }
-        public DateTime expDate { get; set; }
-    }
 }

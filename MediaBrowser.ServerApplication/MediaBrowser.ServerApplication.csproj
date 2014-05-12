@@ -96,6 +96,7 @@
     <Compile Include="BackgroundServiceInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="EntryPoints\KeepServerAwake.cs" />
     <Compile Include="EntryPoints\ResourceEntryPoint.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />
     <Compile Include="EntryPoints\WanAddressEntryPoint.cs" />

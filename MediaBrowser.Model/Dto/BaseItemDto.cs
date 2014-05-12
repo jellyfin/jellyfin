@@ -311,7 +311,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent backdrop image tags.
         /// </summary>
         /// <value>The parent backdrop image tags.</value>
-        public List<Guid> ParentBackdropImageTags { get; set; }
+        public List<string> ParentBackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the local trailer count.
@@ -324,12 +324,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
-
-        /// <summary>
-        /// Gets or sets the recently added item count.
-        /// </summary>
-        /// <value>The recently added item count.</value>
-        public int? RecentlyAddedItemCount { get; set; }
 
         /// <summary>
         /// Gets or sets the played percentage.
@@ -466,13 +460,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the album image tag.
         /// </summary>
         /// <value>The album image tag.</value>
-        public Guid? AlbumPrimaryImageTag { get; set; }
+        public string AlbumPrimaryImageTag { get; set; }
 
         /// <summary>
         /// Gets or sets the series primary image tag.
         /// </summary>
         /// <value>The series primary image tag.</value>
-        public Guid? SeriesPrimaryImageTag { get; set; }
+        public string SeriesPrimaryImageTag { get; set; }
         
         /// <summary>
         /// Gets or sets the album artist.
@@ -529,25 +523,25 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the image tags.
         /// </summary>
         /// <value>The image tags.</value>
-        public Dictionary<ImageType, Guid> ImageTags { get; set; }
+        public Dictionary<ImageType, string> ImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the backdrop image tags.
         /// </summary>
         /// <value>The backdrop image tags.</value>
-        public List<Guid> BackdropImageTags { get; set; }
+        public List<string> BackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the screenshot image tags.
         /// </summary>
         /// <value>The screenshot image tags.</value>
-        public List<Guid> ScreenshotImageTags { get; set; }
+        public List<string> ScreenshotImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the parent logo image tag.
         /// </summary>
         /// <value>The parent logo image tag.</value>
-        public Guid? ParentLogoImageTag { get; set; }
+        public string ParentLogoImageTag { get; set; }
 
         /// <summary>
         /// If the item does not have a art, this will hold the Id of the Parent that has one.
@@ -559,13 +553,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent art image tag.
         /// </summary>
         /// <value>The parent art image tag.</value>
-        public Guid? ParentArtImageTag { get; set; }
+        public string ParentArtImageTag { get; set; }
 
         /// <summary>
         /// Gets or sets the series thumb image tag.
         /// </summary>
         /// <value>The series thumb image tag.</value>
-        public Guid? SeriesThumbImageTag { get; set; }
+        public string SeriesThumbImageTag { get; set; }
 
         /// <summary>
         /// Gets or sets the series studio.
@@ -583,7 +577,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent thumb image tag.
         /// </summary>
         /// <value>The parent thumb image tag.</value>
-        public Guid? ParentThumbImageTag { get; set; }
+        public string ParentThumbImageTag { get; set; }
         
         /// <summary>
         /// Gets or sets the chapters.

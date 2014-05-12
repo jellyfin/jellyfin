@@ -64,6 +64,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="MoreLinq">
@@ -103,6 +104,7 @@
     <Compile Include="Channels\RefreshChannelsScheduledTask.cs" />
     <Compile Include="Collections\CollectionManager.cs" />
     <Compile Include="Collections\CollectionsDynamicFolder.cs" />
+    <Compile Include="Collections\ManualCollectionsFolder.cs" />
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\PercentPlayedDrawer.cs" />
@@ -113,7 +115,7 @@
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
     <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />
     <Compile Include="EntryPoints\LoadRegistrations.cs" />
-    <Compile Include="EntryPoints\Notifications\Notifier.cs" />
+    <Compile Include="EntryPoints\Notifications\Notifications.cs" />
     <Compile Include="EntryPoints\Notifications\RemoteNotifications.cs" />
     <Compile Include="EntryPoints\Notifications\WebSocketNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
@@ -127,6 +129,8 @@
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
     <Compile Include="HttpServer\ContainerAdapter.cs" />
+    <Compile Include="HttpServer\DelReceiveWebRequest.cs" />
+    <Compile Include="HttpServer\GetSwaggerResource.cs" />
     <Compile Include="HttpServer\HttpListenerHost.cs" />
     <Compile Include="HttpServer\HttpResultFactory.cs" />
     <Compile Include="HttpServer\LoggerUtils.cs" />
@@ -134,6 +138,7 @@
     <Compile Include="HttpServer\RangeRequestWriter.cs" />
     <Compile Include="HttpServer\ResponseFilter.cs" />
     <Compile Include="HttpServer\ServerFactory.cs" />
+    <Compile Include="HttpServer\ServerLogFactory.cs" />
     <Compile Include="HttpServer\ServerLogger.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
@@ -148,7 +153,7 @@
     <Compile Include="Library\Resolvers\Audio\AudioResolver.cs" />
     <Compile Include="Library\Resolvers\Audio\MusicAlbumResolver.cs" />
     <Compile Include="Library\Resolvers\Audio\MusicArtistResolver.cs" />
-    <Compile Include="Library\Resolvers\BaseItemResolver.cs" />
+    <Compile Include="Library\Resolvers\ItemResolver.cs" />
     <Compile Include="Library\Resolvers\FolderResolver.cs" />
     <Compile Include="Library\Resolvers\LocalTrailerResolver.cs" />
     <Compile Include="Library\Resolvers\Movies\BoxSetResolver.cs" />
@@ -162,14 +167,12 @@
     <Compile Include="Library\Validators\ArtistsPostScanTask.cs" />
     <Compile Include="Library\Validators\ArtistsValidator.cs" />
     <Compile Include="Library\Validators\BoxSetPostScanTask.cs" />
-    <Compile Include="Library\Validators\CountHelpers.cs" />
     <Compile Include="Library\Validators\GameGenresPostScanTask.cs" />
     <Compile Include="Library\Validators\GameGenresValidator.cs" />
     <Compile Include="Library\Validators\GenresPostScanTask.cs" />
     <Compile Include="Library\Validators\GenresValidator.cs" />
     <Compile Include="Library\Validators\MusicGenresPostScanTask.cs" />
     <Compile Include="Library\Validators\MusicGenresValidator.cs" />
-    <Compile Include="Library\Validators\PeoplePostScanTask.cs" />
     <Compile Include="Library\Validators\PeopleValidator.cs" />
     <Compile Include="Library\Validators\StudiosPostScanTask.cs" />
     <Compile Include="Library\Validators\StudiosValidator.cs" />
@@ -202,6 +205,7 @@
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
     <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
+    <Compile Include="Security\EncryptionManager.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="ServerManager\ServerManager.cs" />
     <Compile Include="ServerManager\WebSocketConnection.cs" />
@@ -224,6 +228,7 @@
     <Compile Include="Sorting\DatePlayedComparer.cs" />
     <Compile Include="Sorting\GameSystemComparer.cs" />
     <Compile Include="Sorting\IsFolderComparer.cs" />
+    <Compile Include="Sorting\IsPlayedComparer.cs" />
     <Compile Include="Sorting\IsUnplayedComparer.cs" />
     <Compile Include="Sorting\MetascoreComparer.cs" />
     <Compile Include="Sorting\NameComparer.cs" />
@@ -328,6 +333,8 @@
     <EmbeddedResource Include="Localization\Server\ms.json" />
     <EmbeddedResource Include="Localization\JavaScript\kk.json" />
     <EmbeddedResource Include="Localization\Server\kk.json" />
+    <EmbeddedResource Include="Localization\countries.json" />
+    <EmbeddedResource Include="Localization\cultures.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -56,7 +56,7 @@ namespace MediaBrowser.Model.Dto
         /// If set this will result in strong, unconditional response caching
         /// </summary>
         /// <value>The hash.</value>
-        public Guid? Tag { get; set; }
+        public string Tag { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [crop whitespace].

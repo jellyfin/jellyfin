@@ -5,46 +5,6 @@ using System;
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
     /// <summary>
-    /// Class ServerLogFactory
-    /// </summary>
-    public class ServerLogFactory : ILogFactory
-    {
-        /// <summary>
-        /// The _log manager
-        /// </summary>
-        private readonly ILogManager _logManager;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServerLogFactory"/> class.
-        /// </summary>
-        /// <param name="logManager">The log manager.</param>
-        public ServerLogFactory(ILogManager logManager)
-        {
-            _logManager = logManager;
-        }
-
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <param name="typeName">Name of the type.</param>
-        /// <returns>ILog.</returns>
-        public ILog GetLogger(string typeName)
-        {
-            return new ServerLogger(_logManager.GetLogger(typeName));
-        }
-
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>ILog.</returns>
-        public ILog GetLogger(Type type)
-        {
-            return GetLogger(type.Name);
-        }
-    }
-
-    /// <summary>
     /// Class ServerLogger
     /// </summary>
     public class ServerLogger : ILog
@@ -206,7 +166,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="message">The message.</param>
         public void Warn(object message)
         {
-            _logger.Warn(GetMesssage(message));
+            // Hide StringMapTypeDeserializer messages
+            // _logger.Warn(GetMesssage(message));
         }
 
         /// <summary>
@@ -216,7 +177,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="args">The args.</param>
         public void WarnFormat(string format, params object[] args)
         {
-            _logger.Warn(format, args);
+            // Hide StringMapTypeDeserializer messages
+            // _logger.Warn(format, args);
         }
 
         /// <summary>

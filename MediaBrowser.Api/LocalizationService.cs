@@ -67,14 +67,14 @@ namespace MediaBrowser.Api
         {
             var result = _localization.GetParentalRatings().ToList();
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         public object Get(GetLocalizationOptions request)
         {
             var result = _localization.GetLocalizationOptions().ToList();
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace MediaBrowser.Api
         {
             var result = _localization.GetCountries().ToList();
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace MediaBrowser.Api
         {
             var result = _localization.GetCultures().ToList();
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
     }
 

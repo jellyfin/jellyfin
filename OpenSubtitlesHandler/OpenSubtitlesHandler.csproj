@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4A4402D4-E910-443B-B8FC-2C18286A2CA0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>OpenSubtitlesHandler</RootNamespace>
+    <AssemblyName>OpenSubtitlesHandler</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Mono|AnyCPU' ">
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release Mono</OutputPath>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Console\OSHConsole.cs" />
+    <Compile Include="Interfaces\IMethodResponse.cs" />
+    <Compile Include="Interfaces\MethodResponseAttr.cs" />
+    <Compile Include="Languages\DetectLanguageResult.cs" />
+    <Compile Include="MethodResponses\MethodResponseAddComment.cs" />
+    <Compile Include="MethodResponses\MethodResponseAddRequest.cs" />
+    <Compile Include="MethodResponses\MethodResponseAutoUpdate.cs" />
+    <Compile Include="MethodResponses\MethodResponseCheckMovieHash.cs" />
+    <Compile Include="MethodResponses\MethodResponseCheckMovieHash2.cs" />
+    <Compile Include="MethodResponses\MethodResponseCheckSubHash.cs" />
+    <Compile Include="MethodResponses\MethodResponseDetectLanguage.cs" />
+    <Compile Include="MethodResponses\MethodResponseError.cs" />
+    <Compile Include="MethodResponses\MethodResponseGetAvailableTranslations.cs" />
+    <Compile Include="MethodResponses\MethodResponseGetComments.cs" />
+    <Compile Include="MethodResponses\MethodResponseGetSubLanguages.cs" />
+    <Compile Include="MethodResponses\MethodResponseGetTranslation.cs" />
+    <Compile Include="MethodResponses\MethodResponseInsertMovie.cs" />
+    <Compile Include="MethodResponses\MethodResponseInsertMovieHash.cs" />
+    <Compile Include="MethodResponses\MethodResponseLogIn.cs" />
+    <Compile Include="MethodResponses\MethodResponseMovieDetails.cs" />
+    <Compile Include="MethodResponses\MethodResponseMovieSearch.cs" />
+    <Compile Include="MethodResponses\MethodResponseNoOperation.cs" />
+    <Compile Include="MethodResponses\MethodResponseReportWrongImdbMovie.cs" />
+    <Compile Include="MethodResponses\MethodResponseReportWrongMovieHash.cs" />
+    <Compile Include="MethodResponses\MethodResponseSearchToMail.cs" />
+    <Compile Include="MethodResponses\MethodResponseServerInfo.cs" />
+    <Compile Include="MethodResponses\MethodResponseSubtitleDownload.cs" />
+    <Compile Include="MethodResponses\MethodResponseSubtitleSearch.cs" />
+    <Compile Include="MethodResponses\MethodResponseSubtitlesVote.cs" />
+    <Compile Include="MethodResponses\MethodResponseTryUploadSubtitles.cs" />
+    <Compile Include="MethodResponses\MethodResponseUploadSubtitles.cs" />
+    <Compile Include="MovieHasher.cs" />
+    <Compile Include="Movies\CheckMovieHash2Data.cs" />
+    <Compile Include="Movies\CheckMovieHash2Result.cs" />
+    <Compile Include="Movies\CheckMovieHashResult.cs" />
+    <Compile Include="Movies\InsertMovieHashParameters.cs" />
+    <Compile Include="Movies\MovieSearchResult.cs" />
+    <Compile Include="Movies\SearchToMailMovieParameter.cs" />
+    <Compile Include="OpenSubtitles.cs" />
+    <Compile Include="OtherTypes\GetAvailableTranslationsResult.cs" />
+    <Compile Include="OtherTypes\GetCommentsResult.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SubtitleTypes\CheckSubHashResult.cs" />
+    <Compile Include="SubtitleTypes\SubtitleDownloadResult.cs" />
+    <Compile Include="SubtitleTypes\SubtitleLanguage.cs" />
+    <Compile Include="SubtitleTypes\SubtitleSearchParameters.cs" />
+    <Compile Include="SubtitleTypes\SubtitleSearchResult.cs" />
+    <Compile Include="SubtitleTypes\TryUploadSubtitlesParameters.cs" />
+    <Compile Include="SubtitleTypes\UploadSubtitleInfoParameter.cs" />
+    <Compile Include="SubtitleTypes\UploadSubtitleParameters.cs" />
+    <Compile Include="Utilities.cs" />
+    <Compile Include="XML-RPC\Enums\XmlRpcValueType.cs" />
+    <Compile Include="XML-RPC\Types\XmlRpcMethodCall.cs" />
+    <Compile Include="XML-RPC\Values\IXmlRpcValue.cs" />
+    <Compile Include="XML-RPC\Values\XmlRpcStructMember.cs" />
+    <Compile Include="XML-RPC\Values\XmlRpcValueArray.cs" />
+    <Compile Include="XML-RPC\Values\XmlRpcValueBasic.cs" />
+    <Compile Include="XML-RPC\Values\XmlRpcValueStruct.cs" />
+    <Compile Include="XML-RPC\XmlRpcGenerator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
+      <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
+      <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="XML-RPC\Docs\XML-RPC.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
