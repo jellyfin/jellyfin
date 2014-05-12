@@ -79,7 +79,6 @@ namespace MediaBrowser.Model.MediaInfo
 
             return orderStreams.OrderBy(i => string.Equals(i.Language, defaultLanguage, StringComparison.OrdinalIgnoreCase))
                 .ThenBy(i => i.IsDefault)
-                .ThenBy(i => !i.IsGraphicalSubtitleStream)
                 .ThenBy(i => i.Index)
                 .ToList();
         }
