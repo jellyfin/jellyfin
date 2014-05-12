@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -9,10 +8,10 @@ namespace MediaBrowser.Model.MediaInfo
 {
     public static class MediaStreamSelector
     {
-        public static int? GetDefaultAudioStreamIndex(MediaSourceInfo mediaSource, IEnumerable<string> preferredLanguages, bool preferDefaultTrack)
+        public static int? GetDefaultAudioStreamIndex(List<MediaStream> streams, IEnumerable<string> preferredLanguages, bool preferDefaultTrack)
         {
-            var streams = GetSortedStreams(mediaSource.MediaStreams, MediaStreamType.Audio, preferredLanguages.FirstOrDefault())
-                .ToList();
+            streams = GetSortedStreams(streams, MediaStreamType.Audio, preferredLanguages.FirstOrDefault())
+               .ToList();
 
             if (preferDefaultTrack)
             {
@@ -34,12 +33,12 @@ namespace MediaBrowser.Model.MediaInfo
             return null;
         }
 
-        public static int? GetDefaultSubtitleStreamIndex(MediaSourceInfo mediaSource, 
-            IEnumerable<string> preferredLanguages, 
+        public static int? GetDefaultSubtitleStreamIndex(List<MediaStream> streams,
+            IEnumerable<string> preferredLanguages,
             SubtitlePlaybackMode mode,
             string audioTrackLanguage)
         {
-            var streams = GetSortedStreams(mediaSource.MediaStreams, MediaStreamType.Subtitle, preferredLanguages.FirstOrDefault())
+            streams = GetSortedStreams(streams, MediaStreamType.Subtitle, preferredLanguages.FirstOrDefault())
                 .ToList();
 
             MediaStream stream = null;
@@ -65,7 +64,7 @@ namespace MediaBrowser.Model.MediaInfo
 
             return null;
         }
-        
+
         private static IEnumerable<MediaStream> GetSortedStreams(IEnumerable<MediaStream> streams, MediaStreamType type, string defaultLanguage)
         {
             var orderStreams = streams
