@@ -560,9 +560,6 @@
     <Compile Include="..\MediaBrowser.Model\MediaInfo\IBlurayExaminer.cs">
       <Link>MediaInfo\IBlurayExaminer.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\MediaInfo\MediaStreamSelector.cs">
-      <Link>MediaInfo\MediaStreamSelector.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\SubtitleFormat.cs">
       <Link>MediaInfo\SubtitleFormat.cs</Link>
     </Compile>
@@ -838,9 +835,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Weather\WeatherUnits.cs">
       <Link>Weather\WeatherUnits.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Web\QueryStringDictionary.cs">
-      <Link>Web\QueryStringDictionary.cs</Link>
     </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>

@@ -27,14 +27,6 @@ namespace MediaBrowser.Server.Implementations.Session
             Sockets = new List<IWebSocketConnection>();
         }
 
-        public bool SupportsMediaRemoteControl
-        {
-            get
-            {
-                return Sockets.Any(i => i.State == WebSocketState.Open);
-            }
-        }
-
         public bool IsSessionActive
         {
             get

@@ -16,13 +16,6 @@ namespace MediaBrowser.Api
     [Route("/Sessions", "GET", Summary = "Gets a list of sessions")]
     public class GetSessions : IReturn<List<SessionInfoDto>>
     {
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports remote control].
-        /// </summary>
-        /// <value><c>null</c> if [supports remote control] contains no value, <c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>
-        [ApiMember(Name = "SupportsRemoteControl", Description = "Optional. Filter by sessions that can be remote controlled.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool? SupportsRemoteControl { get; set; }
-
         [ApiMember(Name = "ControllableByUserId", Description = "Optional. Filter by sessions that a given user is allowed to remote control.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? ControllableByUserId { get; set; }
 
@@ -257,11 +250,6 @@ namespace MediaBrowser.Api
         public object Get(GetSessions request)
         {
             var result = _sessionManager.Sessions.Where(i => i.IsActive);
-
-            if (request.SupportsRemoteControl.HasValue)
-            {
-                result = result.Where(i => i.SupportsRemoteControl == request.SupportsRemoteControl.Value);
-            }
 
             if (!string.IsNullOrEmpty(request.DeviceId))
             {

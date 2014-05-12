@@ -113,10 +113,26 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (user != null && dto.MediaSources != null && item is Video)
             {
+                var preferredAudio = string.IsNullOrEmpty(user.Configuration.AudioLanguagePreference)
+                    ? new string[] { }
+                    : new[] { user.Configuration.AudioLanguagePreference };
+
+                var preferredSubs = string.IsNullOrEmpty(user.Configuration.SubtitleLanguagePreference)
+                    ? new string[] { }
+                    : new[] { user.Configuration.SubtitleLanguagePreference };
+
                 foreach (var source in dto.MediaSources)
                 {
-                    //source.DefaultAudioStreamIndex = GetDefaultAudioStreamIndex(source, user.Configuration);
-                    //source.DefaultSubtitleStreamIndex = GetDefaultSubtitleStreamIndex(source, user.Configuration);
+                    source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(
+                        source.MediaStreams, preferredAudio, user.Configuration.PlayDefaultAudioTrack);
+
+                    var defaultAudioIndex = source.DefaultAudioStreamIndex;
+                    var audioLangage = defaultAudioIndex == null
+                        ? null
+                        : source.MediaStreams.Where(i => i.Type == MediaStreamType.Audio && i.Index == defaultAudioIndex).Select(i => i.Language).FirstOrDefault();
+
+                    source.DefaultSubtitleStreamIndex = MediaStreamSelector.GetDefaultSubtitleStreamIndex(source.MediaStreams, preferredSubs,
+                            user.Configuration.SubtitleMode, audioLangage);
                 }
             }
 

@@ -8,12 +8,6 @@ namespace MediaBrowser.Controller.Session
     public interface ISessionController
     {
         /// <summary>
-        /// Gets a value indicating whether [supports media remote control].
-        /// </summary>
-        /// <value><c>true</c> if [supports media remote control]; otherwise, <c>false</c>.</value>
-        bool SupportsMediaRemoteControl { get; }
-
-        /// <summary>
         /// Gets a value indicating whether this instance is session active.
         /// </summary>
         /// <value><c>true</c> if this instance is session active; otherwise, <c>false</c>.</value>

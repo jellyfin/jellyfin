@@ -172,7 +172,6 @@
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="MediaInfo\AudioCodec.cs" />
     <Compile Include="MediaInfo\Container.cs" />
-    <Compile Include="MediaInfo\MediaStreamSelector.cs" />
     <Compile Include="MediaInfo\SubtitleFormat.cs" />
     <Compile Include="MediaInfo\TransportStreamTimestamp.cs" />
     <Compile Include="MediaInfo\VideoCodec.cs" />
@@ -314,7 +313,6 @@
     <Compile Include="Updates\PackageVersionInfo.cs" />
     <Compile Include="Users\AuthenticationResult.cs" />
     <Compile Include="Weather\WeatherUnits.cs" />
-    <Compile Include="Web\QueryStringDictionary.cs" />
     <None Include="Fody.targets" />
     <None Include="FodyWeavers.xml" />
     <None Include="packages.config" />

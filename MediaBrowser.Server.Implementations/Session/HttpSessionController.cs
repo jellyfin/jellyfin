@@ -37,11 +37,6 @@ namespace MediaBrowser.Server.Implementations.Session
             _postUrl = postUrl;
         }
 
-        public bool SupportsMediaRemoteControl
-        {
-            get { return false; }
-        }
-
         public bool IsSessionActive
         {
             get
