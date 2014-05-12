@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -10,15 +11,16 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -45,6 +47,8 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IJsonSerializer _json;
         private readonly IEncodingManager _encodingManager;
         private readonly IFileSystem _fileSystem;
+        private readonly IServerConfigurationManager _config;
+        private readonly ISubtitleManager _subtitleManager;
 
         public string Name
         {
@@ -96,7 +100,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return FetchAudioInfo(item, cancellationToken);
         }
 
-        public FFProbeProvider(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem)
+        public FFProbeProvider(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -108,6 +112,8 @@ namespace MediaBrowser.Providers.MediaInfo
             _json = json;
             _encodingManager = encodingManager;
             _fileSystem = fileSystem;
+            _config = config;
+            _subtitleManager = subtitleManager;
         }
 
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
@@ -134,7 +140,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
-            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem);
+            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager);
 
             return prober.ProbeVideo(item, directoryService, cancellationToken);
         }
@@ -165,9 +171,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (video != null && !video.IsPlaceHolder)
                 {
-                    var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem);
+                    var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager);
 
-                    return !video.SubtitleFiles.SequenceEqual(prober.GetSubtitleFiles(video, directoryService).Select(i => i.FullName).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
+                    return !video.SubtitleFiles.SequenceEqual(prober.GetSubtitleFiles(video, directoryService, false).Select(i => i.FullName).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
                 }
             }
 

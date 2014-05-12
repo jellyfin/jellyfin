@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Model.Dlna
@@ -35,13 +34,12 @@ namespace MediaBrowser.Model.Dlna
 
         public List<string> GetAudioCodecs()
         {
-            return (AudioCodec ?? string.Empty).Split(',').Where(i => !string.IsNullOrEmpty(i)).ToList();
+            List<string> list = new List<string>();
+            foreach (string i in (AudioCodec ?? string.Empty).Split(','))
+            {
+                if (!string.IsNullOrEmpty(i)) list.Add(i);
+            }
+            return list;
         }
-    }
-
-    public enum TranscodeSeekInfo
-    {
-        Auto = 0,
-        Bytes = 1
     }
 }

@@ -9,7 +9,7 @@ namespace MediaBrowser.Api.DefaultTheme
     {
         public string Name { get; set; }
         public string Id { get; set; }
-        public Guid ImageTag { get; set; }
+        public string ImageTag { get; set; }
         public ImageType ImageType { get; set; }
     }
 

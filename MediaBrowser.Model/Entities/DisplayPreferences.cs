@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         /// <summary>
         /// Gets or sets the type of the view.
         /// </summary>
@@ -103,9 +103,9 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public void IncreaseImageSize()
         {
-            var newWidth = PrimaryImageWidth / ImageScale;
+            double newWidth = PrimaryImageWidth / ImageScale;
 
-            var size = DrawingUtils.Resize(PrimaryImageWidth, PrimaryImageHeight, newWidth);
+            ImageSize size = DrawingUtils.Resize(PrimaryImageWidth, PrimaryImageHeight, newWidth, null, null, null);
 
             PrimaryImageWidth = Convert.ToInt32(size.Width);
             PrimaryImageHeight = Convert.ToInt32(size.Height);
@@ -116,40 +116,10 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public void DecreaseImageSize()
         {
-            var size = DrawingUtils.Scale(PrimaryImageWidth, PrimaryImageHeight, ImageScale);
+            ImageSize size = DrawingUtils.Scale(PrimaryImageWidth, PrimaryImageHeight, ImageScale);
 
             PrimaryImageWidth = Convert.ToInt32(size.Width);
             PrimaryImageHeight = Convert.ToInt32(size.Height);
         }
-    }
-
-    /// <summary>
-    /// Enum ScrollDirection
-    /// </summary>
-    public enum ScrollDirection
-    {
-        /// <summary>
-        /// The horizontal
-        /// </summary>
-        Horizontal,
-        /// <summary>
-        /// The vertical
-        /// </summary>
-        Vertical
-    }
-
-    /// <summary>
-    /// Enum SortOrder
-    /// </summary>
-    public enum SortOrder
-    {
-        /// <summary>
-        /// The ascending
-        /// </summary>
-        Ascending,
-        /// <summary>
-        /// The descending
-        /// </summary>
-        Descending
     }
 }

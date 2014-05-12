@@ -147,7 +147,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
                     SendDatagram(header, values, endpoint, null);
 
-                    _logger.Info("{1} - Responded to a {0} request to {2}", d.Type, endpoint, d.Address.ToString());
+                    _logger.Debug("{1} - Responded to a {0} request to {2}", d.Type, endpoint, d.Address.ToString());
                 }
             }
         }

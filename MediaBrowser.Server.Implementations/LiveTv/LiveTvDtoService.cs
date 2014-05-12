@@ -241,9 +241,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var imageTag = GetImageTag(recording);
 
-            if (imageTag.HasValue)
+            if (imageTag != null)
             {
-                dto.ImageTags[ImageType.Primary] = imageTag.Value;
+                dto.ImageTags[ImageType.Primary] = imageTag;
             }
 
             if (user != null)
@@ -328,9 +328,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var imageTag = GetImageTag(info);
 
-            if (imageTag.HasValue)
+            if (imageTag != null)
             {
-                dto.ImageTags[ImageType.Primary] = imageTag.Value;
+                dto.ImageTags[ImageType.Primary] = imageTag;
             }
 
             if (currentProgram != null)
@@ -389,9 +389,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var imageTag = GetImageTag(item);
 
-            if (imageTag.HasValue)
+            if (imageTag != null)
             {
-                dto.ImageTags[ImageType.Primary] = imageTag.Value;
+                dto.ImageTags[ImageType.Primary] = imageTag;
             }
 
             if (user != null)
@@ -404,7 +404,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return dto;
         }
 
-        private Guid? GetImageTag(IHasImages info)
+        private string GetImageTag(IHasImages info)
         {
             try
             {

@@ -1,25 +1,12 @@
 ﻿(function ($, document, window) {
 
-    function reloadList(page, updateInterval) {
-
-        if (updateInterval) {
-            stopInterval();
-        }
+    function reloadList(page) {
 
         ApiClient.getScheduledTasks({isHidden: false}).done(function (tasks) {
 
-            if (updateInterval) {
-                populateList(page, tasks);
-            } else {
-                updateTasks(page, tasks);
-            }
+            populateList(page, tasks);
 
             Dashboard.hideLoadingMsg();
-
-            if (updateInterval) {
-                startInterval();
-            }
-
         });
     }
 
@@ -173,13 +160,15 @@
         }
     }
 
-    function onWebSocketConnectionChange() {
-        reloadList($.mobile.activePage, true);
+    function onWebSocketConnectionOpen() {
+        
+        startInterval();
+        reloadList($.mobile.activePage);
     }
 
     function startInterval() {
         if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1500,1500");
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
         }
     }
 
@@ -195,9 +184,10 @@
 
         Dashboard.showLoadingMsg();
 
-        reloadList(page, true);
+        startInterval();
+        reloadList(page);
 
-        $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionChange);
+        $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionOpen);
 
         $('#divScheduledTasks', page).on('click', '.btnStartTask', function () {
 
@@ -224,7 +214,7 @@
 
         var page = this;
 
-        $(ApiClient).off("websocketmessage", onWebSocketMessage).off("websocketopen", onWebSocketConnectionChange).off("websocketerror", onWebSocketConnectionChange).off("websocketclose", onWebSocketConnectionChange);
+        $(ApiClient).off("websocketmessage", onWebSocketMessage).off("websocketopen", onWebSocketConnectionOpen);
         stopInterval();
 
         $('#divScheduledTasks', page).off('click', '.btnStartTask').off('click', '.btnStopTask');

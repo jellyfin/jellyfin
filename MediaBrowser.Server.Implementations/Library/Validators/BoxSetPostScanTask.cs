@@ -27,7 +27,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             foreach (var boxset in boxsets)
             {
-                foreach (var child in boxset.GetLinkedChildren().OfType<ISupportsBoxSetGrouping>())
+                foreach (var child in boxset.Children.Concat(boxset.GetLinkedChildren()).OfType<ISupportsBoxSetGrouping>())
                 {
                     var boxsetIdList = child.BoxSetIdList.ToList();
                     if (!boxsetIdList.Contains(boxset.Id))

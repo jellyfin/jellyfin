@@ -221,7 +221,7 @@ var Dashboard = {
         if (!Dashboard.installRefreshInterval) {
 
             if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("SystemInfoStart", "0,350");
+                ApiClient.sendWebSocketMessage("SystemInfoStart", "0,500");
             }
             Dashboard.installRefreshInterval = 1;
         }
@@ -745,7 +745,7 @@ var Dashboard = {
         }, {
             name: "Metadata",
             href: "metadata.html",
-            selected: pageElem.id == "metadataConfigurationPage" || pageElem.id == "advancedMetadataConfigurationPage" || pageElem.id == "metadataImagesConfigurationPage"
+            selected: page.hasClass('metadataConfigurationPage')
         }, {
             name: "Auto-Organize",
             href: "autoorganizelog.html",
@@ -834,9 +834,9 @@ var Dashboard = {
 
         // Full list
         // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
-        
+
         switch (cmd.Name) {
-        
+
             case 'GoHome':
                 Dashboard.navigate('index.html');
                 break;
@@ -849,6 +849,25 @@ var Dashboard = {
             case 'GoToSearch':
                 Search.showSearchPanel($.mobile.activePage);
                 break;
+            case 'DisplayMessage':
+                {
+                    var args = cmd.Arguments;
+
+                    if (args.TimeoutMs && WebNotifications.supported()) {
+                        var notification = {
+                            title: args.Header,
+                            body: args.Text,
+                            timeout: args.TimeoutMs
+                        };
+
+                        WebNotifications.show(notification);
+                    }
+                    else {
+                        Dashboard.showFooterNotification({ html: "<b>" + args.Header + ":&nbsp;&nbsp;&nbsp;</b>" + args.Text, timeout: args.TimeoutMs });
+                    }
+
+                    break;
+                }
             case 'VolumeUp':
             case 'VolumeDown':
             case 'Mute':
@@ -948,52 +967,31 @@ var Dashboard = {
 
             Dashboard.processGeneralCommand(cmd);
         }
-        else if (msg.MessageType === "MessageCommand") {
-
-            var cmd = msg.Data;
-
-            if (cmd.TimeoutMs && WebNotifications.supported()) {
-                var notification = {
-                    title: cmd.Header,
-                    body: cmd.Text,
-                    timeout: cmd.TimeoutMs
-                };
-
-                WebNotifications.show(notification);
-            }
-            else {
-                Dashboard.showFooterNotification({ html: "<b>" + cmd.Header + ":&nbsp;&nbsp;&nbsp;</b>" + cmd.Text, timeout: cmd.TimeoutMs });
-            }
-
-        }
-
     },
 
     onBrowseCommand: function (cmd) {
-
-        var context = cmd.Context || "";
 
         var url;
 
         var type = (cmd.ItemType || "").toLowerCase();
 
         if (type == "genre") {
-            url = "itembynamedetails.html?genre=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
+            url = "itembynamedetails.html?genre=" + ApiClient.encodeName(cmd.ItemName);
         }
         else if (type == "musicgenre") {
-            url = "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "music");
+            url = "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(cmd.ItemName);
         }
         else if (type == "gamegenre") {
-            url = "itembynamedetails.html?gamegenre=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "games");
+            url = "itembynamedetails.html?gamegenre=" + ApiClient.encodeName(cmd.ItemName);
         }
         else if (type == "studio") {
-            url = "itembynamedetails.html?studio=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
+            url = "itembynamedetails.html?studio=" + ApiClient.encodeName(cmd.ItemName);
         }
         else if (type == "person") {
-            url = "itembynamedetails.html?person=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
+            url = "itembynamedetails.html?person=" + ApiClient.encodeName(cmd.ItemName);
         }
         else if (type == "musicartist") {
-            url = "itembynamedetails.html?musicartist=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "music");
+            url = "itembynamedetails.html?musicartist=" + ApiClient.encodeName(cmd.ItemName);
         }
 
         if (url) {
@@ -1003,7 +1001,7 @@ var Dashboard = {
 
         ApiClient.getItem(Dashboard.getCurrentUserId(), cmd.ItemId).done(function (item) {
 
-            Dashboard.navigate(LibraryBrowser.getHref(item, context));
+            Dashboard.navigate(LibraryBrowser.getHref(item));
 
         });
 
@@ -1177,6 +1175,8 @@ var Dashboard = {
     getDisplayTime: function (ticks) {
 
         var ticksPerHour = 36000000000;
+        var ticksPerMinute = 600000000;
+        var ticksPerSecond = 10000000;
 
         var parts = [];
 
@@ -1189,8 +1189,6 @@ var Dashboard = {
 
         ticks -= (hours * ticksPerHour);
 
-        var ticksPerMinute = 600000000;
-
         var minutes = ticks / ticksPerMinute;
         minutes = Math.floor(minutes);
 
@@ -1201,10 +1199,8 @@ var Dashboard = {
         }
         parts.push(minutes);
 
-        var ticksPerSecond = 10000000;
-
         var seconds = ticks / ticksPerSecond;
-        seconds = Math.round(seconds);
+        seconds = Math.floor(seconds);
 
         if (seconds < 10) {
             seconds = '0' + seconds;
@@ -1310,7 +1306,8 @@ var Dashboard = {
             "SetAudioStreamIndex",
             "SetSubtitleStreamIndex",
             "DisplayContent",
-            "GoToSearch"
+            "GoToSearch",
+            "DisplayMessage"
         ];
 
     }

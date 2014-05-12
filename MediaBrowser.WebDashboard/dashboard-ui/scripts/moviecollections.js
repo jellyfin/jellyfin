@@ -11,6 +11,11 @@
         StartIndex: 0
     };
 
+    function getSavedQueryKey() {
+
+        return 'collections' + (query.ParentId || '');
+    }
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -62,7 +67,7 @@
                 reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues('boxsets', query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.getCurrentUser().done(function(user) {
                 
@@ -192,6 +197,8 @@
 
     }).on('pagebeforeshow', "#boxsetsPage", function () {
 
+        query.ParentId = LibraryMenu.getTopParentId();
+
         var limit = LibraryBrowser.getDefaultPageSize();
 
         // If the default page size has changed, the start index will have to be reset
@@ -200,7 +207,7 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues('boxsets', query);
+        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
 
@@ -220,7 +227,9 @@
             var url = ApiClient.getUrl("Collections", {
                 
                 Name: $('#txtNewCollectionName', page).val(),
-                IsLocked: !$('#chkEnableInternetMetadata', page).checked()
+                IsLocked: !$('#chkEnableInternetMetadata', page).checked(),
+                
+                ParentId: getParameterByName('parentId') || getParameterByName('topParentId')
 
             });
 

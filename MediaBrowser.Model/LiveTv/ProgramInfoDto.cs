@@ -45,7 +45,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the channel primary image tag.
         /// </summary>
         /// <value>The channel primary image tag.</value>
-        public Guid? ChannelPrimaryImageTag { get; set; }
+        public string ChannelPrimaryImageTag { get; set; }
 
         /// <summary>
         /// Gets or sets the play access.
@@ -136,7 +136,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the image tags.
         /// </summary>
         /// <value>The image tags.</value>
-        public Dictionary<ImageType, Guid> ImageTags { get; set; }
+        public Dictionary<ImageType, string> ImageTags { get; set; }
         
         /// <summary>
         /// Gets or sets the user data.
@@ -211,18 +211,9 @@ namespace MediaBrowser.Model.LiveTv
         public ProgramInfoDto()
         {
             Genres = new List<string>();
-            ImageTags = new Dictionary<ImageType, Guid>();
+            ImageTags = new Dictionary<ImageType, string>();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-    }
-
-    public enum ProgramAudio
-    {
-        Mono,
-        Stereo,
-        Dolby,
-        DolbyDigital,
-        Thx
     }
 }

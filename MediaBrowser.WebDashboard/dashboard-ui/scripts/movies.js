@@ -7,7 +7,7 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        IncludeItemTypes: "Movie",
+        IncludeItemTypes: "Movie,BoxSet",
         Recursive: true,
         Fields: "PrimaryImageAspectRatio",
         StartIndex: 0

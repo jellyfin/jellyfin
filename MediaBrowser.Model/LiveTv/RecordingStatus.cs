@@ -13,11 +13,4 @@ namespace MediaBrowser.Model.LiveTv
         ConflictedNotOk,
         Error
     }
-
-    public enum DayPattern
-    {
-        Daily,
-        Weekdays,
-        Weekends
-    }
 }

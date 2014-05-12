@@ -5,9 +5,9 @@
         var html = '';
 
         var title = '';
-        
+
         switch (recommendation.RecommendationType) {
-        
+
             case 'SimilarToRecentlyPlayed':
                 title = 'Because you watched ' + recommendation.BaselineItemName;
                 break;
@@ -23,7 +23,7 @@
                 title = 'Starring ' + recommendation.BaselineItemName;
                 break;
         }
-        
+
         html += '<h1 class="listHeader">' + title + '</h1>';
 
         html += '<div>';
@@ -34,7 +34,7 @@
 
         return html;
     }
-    
+
     $(document).on('pagebeforeshow', "#moviesRecommendedPage", function () {
 
         var parentId = LibraryMenu.getTopParentId();
@@ -42,14 +42,14 @@
         var screenWidth = $(window).width();
 
         var page = this;
-        
+
         var options = {
 
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 4 : (screenWidth >= 1440 ? 4 : 3),
+            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1440 ? 4 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             CollapseBoxSetItems: false,
@@ -63,28 +63,28 @@
             } else {
                 $('#resumableSection', page).hide();
             }
-            
+
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 preferBackdrop: true,
                 shape: 'backdrop',
-                overlayText: true,
+                overlayText: screenWidth >= 600,
                 showTitle: true
-                
+
             })).createPosterItemMenus();
 
         });
 
         var url = ApiClient.getUrl("Movies/Recommendations", {
-            
+
             userId: Dashboard.getCurrentUserId(),
             categoryLimit: screenWidth >= 1200 ? 6 : 3,
-            itemLimit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 6),
+            itemLimit: screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6),
             Fields: "PrimaryImageAspectRatio",
             ParentId: parentId
         });
 
-        $.getJSON(url).done(function(recommendations) {
+        $.getJSON(url).done(function (recommendations) {
 
             if (!recommendations.length) {
 
@@ -96,6 +96,7 @@
 
             $('.recommendations', page).html(html).createPosterItemMenus();
         });
+
     });
 
 

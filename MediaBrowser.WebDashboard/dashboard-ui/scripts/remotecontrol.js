@@ -143,6 +143,18 @@
             sendCommandByName('ToggleFullscreen');
         };
 
+        self.setAudioStreamIndex = function (index) {
+            sendCommandByName('SetAudioStreamIndex', {
+                Index: index
+            });
+        };
+
+        self.setSubtitleStreamIndex = function (index) {
+            sendCommandByName('SetSubtitleStreamIndex', {
+                Index: index
+            });
+        };
+
         self.displayContent = function (options) {
 
             sendCommandByName('DisplayContent', {
@@ -276,7 +288,7 @@
     }
 
     function onWebSocketConnectionChange() {
-        
+
         // Reconnect
         if (player.isUpdating) {
             player.subscribeToPlayerUpdates();

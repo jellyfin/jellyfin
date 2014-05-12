@@ -13,6 +13,7 @@ using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;

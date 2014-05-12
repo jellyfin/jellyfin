@@ -4,7 +4,14 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="indexPage" data-role="page" class="page type-home libraryPage noLibraryMenuSelectionPage noSecondaryNavPage" data-theme="b">
+    <div id="indexPage" data-role="page" class="page type-home libraryPage allLibraryPage noSecondaryNavPage backdropPage" data-theme="b" data-backdroptype="movie,series,game,book">
+
+<!--        <div class="libraryViewNav scopedLibraryViewNav">
+            <a href="#" class="ui-btn-active">${TabHome}</a>
+            <a href="#">${TabMyLibrary}</a>
+            <a href="#">${TabFavorites}</a>
+        </div>-->
+
         <div data-role="content">
 
             <table class="ehsContent">
@@ -21,6 +28,8 @@
 
                         <div id="recentlyAddedItems">
                         </div>
+
+                        <div class="spotlightContainer"></div>
                     </td>
                 </tr>
             </table>

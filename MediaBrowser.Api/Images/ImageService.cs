@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -14,6 +13,7 @@ using ServiceStack.Text.Controller;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -548,7 +548,7 @@ namespace MediaBrowser.Api.Images
 
             var contentType = GetMimeType(request.Format, imageInfo.Path);
 
-            var cacheGuid = _imageProcessor.GetImageCacheTag(item, request.Type, imageInfo.Path, originalFileImageDateModified, supportedImageEnhancers);
+            var cacheGuid = new Guid(_imageProcessor.GetImageCacheTag(item, request.Type, imageInfo.Path, originalFileImageDateModified, supportedImageEnhancers));
 
             TimeSpan? cacheDuration = null;
 

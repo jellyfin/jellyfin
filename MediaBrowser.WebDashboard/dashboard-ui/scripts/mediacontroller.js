@@ -52,6 +52,11 @@
         var currentPlayer;
         var currentTargetInfo;
         var players = [];
+        
+        var keys = new bindKeys(self);
+
+        $(window).on("keydown", keys.keyBinding);
+        $(window).on("keypress keyup", keys.keyPrevent);
 
         self.registerPlayer = function (player) {
 
@@ -314,8 +319,10 @@
                     player.setVolume(cmd.Arguments.Volume);
                     break;
                 case 'SetAudioStreamIndex':
+                    player.setAudioStreamIndex(parseInt(cmd.Arguments.Index));
                     break;
                 case 'SetSubtitleStreamIndex':
+                    player.setSubtitleStreamIndex(parseInt(cmd.Arguments.Index));
                     break;
                 case 'ToggleFullscreen':
                     player.toggleFullscreen();
@@ -509,7 +516,61 @@
         });
     }
 
-    $(document).on('headercreated', function () {
+    function bindKeys(controller) {
+
+        var self = this;
+        var keyResult = {};
+
+        self.keyBinding = function(e) {
+
+            if (bypass()) return;
+
+            console.log("keyCode", e.keyCode);
+
+            if (keyResult[e.keyCode]) {
+                e.preventDefault();
+                keyResult[e.keyCode](e);
+            }
+        };
+
+        self.keyPrevent = function(e) {
+
+            if (bypass()) return;
+
+            var codes = [32, 38, 40, 37, 39, 81, 77, 65, 84, 83, 70];
+
+            if (codes.indexOf(e.keyCode) != -1) {
+                e.preventDefault();
+            }
+        };
+
+        keyResult[32] = function() { // spacebar
+
+            var player = controller.getCurrentPlayer();
+            
+            player.getPlayerState().done(function (result) {
+
+                var state = result;
+
+                if (state.NowPlayingItem && state.PlayState) {
+                    if (state.PlayState.IsPaused) {
+                        player.unpause();
+                    } else {
+                        player.pause();
+                    }
+                }
+            });
+        };
+
+        var bypass = function() {
+            // Get active elem to see what type it is
+            var active = document.activeElement;
+            var type = active.type || active.tagName.toLowerCase();
+            return (type === "text" || type === "select" || type === "textarea");
+        };
+    }
+
+    $(document).on('headercreated', '.libraryPage', function () {
 
         $('.btnCast').on('click', function () {
 

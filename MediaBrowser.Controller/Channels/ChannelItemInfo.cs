@@ -52,45 +52,4 @@ namespace MediaBrowser.Controller.Channels
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
-
-    public enum ChannelItemType
-    {
-        Media = 0,
-
-        Category = 1
-    }
-
-    public enum ChannelMediaType
-    {
-        Audio = 0,
-
-        Video = 1
-    }
-
-    public enum ChannelMediaContentType
-    {
-        Clip = 0,
-
-        Podcast = 1,
-
-        Trailer = 2,
-
-        Movie = 3,
-
-        Episode = 4,
-
-        Song = 5
-    }
-
-    public class ChannelMediaInfo
-    {
-        public string Path { get; set; }
-
-        public Dictionary<string, string> RequiredHttpHeaders { get; set; }
-
-        public ChannelMediaInfo()
-        {
-            RequiredHttpHeaders = new Dictionary<string, string>();
-        }
-    }
 }

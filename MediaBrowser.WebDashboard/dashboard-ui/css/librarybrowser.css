@@ -12,6 +12,26 @@
     margin-left: .5em;
 }
 
+.libraryPage {
+    background-color: #202020;
+}
+
+.backdropPage {
+    background-color: rgba(0, 0, 0, .85);
+}
+
+.backdropContainer {
+    position: fixed;
+    top: 50px;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+
+
 .libraryPage .header {
     padding-bottom: 0;
 }
@@ -26,23 +46,27 @@
 }
 
 .listHeader {
-    margin-top: .5em;
-    margin-bottom: .2em;
-    padding-left: 7px;
+    margin-top: .7em;
+    margin-bottom: 0;
+    padding-left: 4px;
 }
 
 .ehsContent {
-    max-width: 640px;
-    margin: 0 auto;
     padding: 0;
     border-spacing: 0;
     border-collapse: collapse;
+    margin: 0 auto;
+    max-width: 1540px;
 }
 
     .ehsContent td {
         padding: 0;
         border-spacing: 0;
     }
+
+.squareEhsContent {
+    max-width: 1420px;
+}
 
 .detailPageContent {
     margin: 0 auto;
@@ -57,8 +81,8 @@
 }
 
 .viewSettings {
-    text-align: center;
     margin: 0 0 .25em;
+    text-align: center;
 }
 
 .listPaging {
@@ -332,7 +356,7 @@ a.itemTag:hover {
 }
 
 .lnkPreviousItem {
-    left: 5px;
+    left: 10px;
 }
 
 .lnkNextItem {
@@ -460,7 +484,8 @@ a.itemTag:hover {
 }
 
 .libraryPanelHeader {
-    margin: 5px 0 25px 0;
+    margin: 5px 0 15px 0;
+    font-size: 15px;
 }
 
     .libraryPanelHeader a {
@@ -476,7 +501,6 @@ a.itemTag:hover {
     .libraryPanelHeader span {
         color: #fff;
         vertical-align: middle;
-        font-size: 16px;
         font-weight: 300;
     }
 
@@ -500,12 +524,6 @@ a.itemTag:hover {
     font-family: 'Open Sans', Arial, Helvetica, sans-serif;
 }
 
-.desktopHomeLink img {
-    height: 24px;
-    vertical-align: middle;
-    margin-right: 5px;
-}
-
 .detailImageProgressContainer {
     position: absolute;
     bottom: 10px;
@@ -517,7 +535,7 @@ a.itemTag:hover {
     .detailImageProgressContainer progress {
         width: 100%;
         margin: 0 auto;
-        height: 7px;
+        height: 6px;
     }
 
 .viewControls, .listTopPaging {
@@ -611,25 +629,7 @@ a.itemTag:hover {
     }
 }
 
-@media all and (min-width: 800px) {
-
-    .ehsContent {
-        max-width: 700px;
-    }
-}
-
-@media all and (min-width: 900px) {
-
-    .ehsContent {
-        max-width: 880px;
-    }
-}
-
 @media all and (min-width: 1000px) {
-
-    .ehsContent {
-        max-width: 880px;
-    }
 
     .detailPageContent {
         max-width: 900px;
@@ -642,23 +642,12 @@ a.itemTag:hover {
 
 @media all and (min-width: 1200px) {
 
-    .ehsContent {
-        max-width: 950px;
-    }
-
     .detailPageContent {
         max-width: 930px;
     }
 
     .primaryDetailPageContent {
         max-width: 850px;
-    }
-}
-
-@media all and (min-width: 1440px) {
-
-    .ehsContent {
-        max-width: 1240px;
     }
 }
 
@@ -797,10 +786,6 @@ a.itemTag:hover {
     }
 }
 
-.itemsContainer {
-    text-align: center;
-}
-
 @media all and (min-width: 1200px) {
 
     .scenePosterViewItem img {
@@ -890,6 +875,10 @@ a.itemTag:hover {
     margin-bottom: .25em;
 }
 
+.itemsContainer {
+    text-align: center;
+}
+
 .timelineItemsContainer {
     text-align: left;
 }
@@ -959,6 +948,17 @@ a.itemTag:hover {
 .selectionCommandsControlGroup {
     display: inline-block;
     margin-left: .5em;
+}
+
+@media all and (min-width: 750px) {
+
+    .lnkSibling:not(.hide) {
+        display: block;
+    }
+
+    .itemBackdrop:not(.noBackdrop) {
+        border-bottom: 1px solid #111;
+    }
 }
 
 @media all and (min-height: 500px) {
@@ -1089,5 +1089,88 @@ a.itemTag:hover {
 
     .nowPlayingNavButtonContainer {
         width: 300px;
+    }
+}
+
+.spotlight {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background-size: cover;
+    background-position: center 25%;
+    background-repeat: no-repeat;
+}
+
+.spotlight, .spotlightPlaceHolder {
+    height: 340px;
+}
+
+.spotlightContainer {
+    min-height: 340px;
+    margin-top: 3em;
+}
+
+.spotlightPlaceHolder {
+    margin-bottom: 3em;
+}
+
+.spotlightTitle {
+    margin: 1em 0 .2em;
+}
+
+.spotlightContent {
+    position: absolute;
+    top: 60px;
+    bottom: 55px;
+    left: 210px;
+    width: 600px;
+    background: rgba(0,0,0,.8);
+    border-radius: 5px;
+}
+
+.rightSpotlightContent {
+    left: initial;
+    width: 400px;
+    right: 100px;
+}
+
+.spotlightPoster {
+    height: 100%;
+    background-size: 150px 100%;
+    background-position: left center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+.rightSpotlightContent .spotlightPoster {
+    background-size: 100% 180px;
+    background-position: center top;
+}
+
+.spotlightContentInner {
+    padding: 1em 1em 1em 170px;
+}
+
+    .spotlightContentInner p {
+        max-height: 130px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+.rightSpotlightContent .spotlightContentInner {
+    padding: 195px 1em 1em 1em;
+}
+
+@media all and (max-height: 1079px) and (max-width: 1400px) {
+
+    .spotlightContainer {
+        display: none;
+    }
+}
+
+@media all and (min-height: 1079px) and (min-width: 1400px) {
+
+    .type-home {
+        overflow-x: visible!important;
     }
 }

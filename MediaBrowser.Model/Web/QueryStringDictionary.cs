@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace MediaBrowser.Model.Web
@@ -24,7 +25,7 @@ namespace MediaBrowser.Model.Web
         /// <param name="value">The value.</param>
         public void Add(string name, int value)
         {
-            Add(name, value.ToString());
+            Add(name, value.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -34,7 +35,7 @@ namespace MediaBrowser.Model.Web
         /// <param name="value">The value.</param>
         public void Add(string name, long value)
         {
-            Add(name, value.ToString());
+            Add(name, value.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -44,7 +45,7 @@ namespace MediaBrowser.Model.Web
         /// <param name="value">The value.</param>
         public void Add(string name, double value)
         {
-            Add(name, value.ToString());
+            Add(name, value.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -128,50 +129,6 @@ namespace MediaBrowser.Model.Web
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         /// <exception cref="System.ArgumentNullException">value</exception>
-        public void Add(string name, Guid value)
-        {
-            if (value == Guid.Empty)
-            {
-                throw new ArgumentNullException("value");
-            }
-
-            Add(name, value.ToString());
-        }
-
-        /// <summary>
-        /// Adds if not empty.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
-        public void AddIfNotEmpty(string name, Guid value)
-        {
-            if (value != Guid.Empty)
-            {
-                Add(name, value);
-            }
-
-            Add(name, value);
-        }
-
-        /// <summary>
-        /// Adds if not null.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
-        public void AddIfNotNull(string name, Guid? value)
-        {
-            if (value.HasValue)
-            {
-                Add(name, value.Value);
-            }
-        }
-
-        /// <summary>
-        /// Adds the specified name.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
-        /// <exception cref="System.ArgumentNullException">value</exception>
         public void Add(string name, IEnumerable<int> value)
         {
             if (value == null)
@@ -179,7 +136,7 @@ namespace MediaBrowser.Model.Web
                 throw new ArgumentNullException("value");
             }
 
-            Add(name, string.Join(",", value.Select(v => v.ToString()).ToArray()));
+            Add(name, string.Join(",", value.Select(v => v.ToString(CultureInfo.InvariantCulture)).ToArray()));
         }
 
         /// <summary>
@@ -208,7 +165,7 @@ namespace MediaBrowser.Model.Web
                 throw new ArgumentNullException("value");
             }
 
-            var paramValue = string.Join(",", value.ToArray());
+            string paramValue = string.Join(",", value.ToArray());
 
             Add(name, paramValue);
         }
@@ -232,7 +189,7 @@ namespace MediaBrowser.Model.Web
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         /// <param name="delimiter">The delimiter.</param>
-        /// <exception cref="System.ArgumentNullException">value</exception>
+        /// <exception cref="ArgumentNullException">value</exception>
         public void Add(string name, IEnumerable<string> value, string delimiter)
         {
             if (value == null)
@@ -240,7 +197,7 @@ namespace MediaBrowser.Model.Web
                 throw new ArgumentNullException("value");
             }
 
-            var paramValue = string.Join(delimiter, value.ToArray());
+            string paramValue = string.Join(delimiter, value.ToArray());
 
             Add(name, paramValue);
         }
@@ -265,7 +222,7 @@ namespace MediaBrowser.Model.Web
         /// <returns>System.String.</returns>
         public string GetQueryString()
         {
-            var queryParams = this.Select(i => string.Format("{0}={1}", i.Key, GetEncodedValue(i.Value))).ToArray();
+            string[] queryParams = this.Select(i => string.Format("{0}={1}", i.Key, GetEncodedValue(i.Value))).ToArray();
 
             return string.Join("&", queryParams);
         }
@@ -287,7 +244,7 @@ namespace MediaBrowser.Model.Web
         /// <returns>System.String.</returns>
         public string GetUrl(string prefix)
         {
-            var query = GetQueryString();
+            string query = GetQueryString();
 
             if (string.IsNullOrEmpty(query))
             {

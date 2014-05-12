@@ -39,7 +39,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the image tags.
         /// </summary>
         /// <value>The image tags.</value>
-        public Dictionary<ImageType, Guid> ImageTags { get; set; }
+        public Dictionary<ImageType, string> ImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the number.
@@ -113,7 +113,7 @@ namespace MediaBrowser.Model.LiveTv
 
         public ChannelInfoDto()
         {
-            ImageTags = new Dictionary<ImageType, Guid>();
+            ImageTags = new Dictionary<ImageType, string>();
             MediaSources = new List<MediaSourceInfo>();
         }
 

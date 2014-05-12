@@ -19,16 +19,16 @@
                     <div class="liveTvStatusContent" style="display: none;">
 
                         <div style="margin-top: 2.5em;">
-                            <p>Service: <span id="activeServiceName"></span></p>
-                            <p>Status: <span id="activeServiceStatus"></span></p>
-                            <p>Version: <span id="activeServiceVersion"></span></p>
+                            <p>${LabelService} <span id="activeServiceName"></span></p>
+                            <p>${LabelStatus} <span id="activeServiceStatus"></span></p>
+                            <p>${LabelVersion} <span id="activeServiceVersion"></span></p>
                         </div>
                         <br />
 
                         <div class="readOnlyContent refreshGuidePanel hide">
                             <button type="button" class="btnRefreshGuide" data-icon="refresh" data-mini="true">${ButtonRefreshGuideData}</button>
                             <progress max="100" min="0" style="width: 100%;" class="refreshGuideProgress"></progress>
-                            <div style="margin-top: 5px;">Last Result: <span class="lastRefreshGuideResult"></span></div>
+                            <div style="margin-top: 5px;">${LabelLastResult} <span class="lastRefreshGuideResult"></span></div>
                         </div>
 
                         <br />

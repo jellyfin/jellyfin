@@ -9,7 +9,7 @@ namespace MediaBrowser.Api.WebSocket
     /// <summary>
     /// Class SystemInfoWebSocketListener
     /// </summary>
-    public class SystemInfoWebSocketListener : BasePeriodicWebSocketListener<SystemInfo, object>
+    public class SystemInfoWebSocketListener : BasePeriodicWebSocketListener<SystemInfo, WebSocketListenerState>
     {
         /// <summary>
         /// Gets the name.
@@ -41,7 +41,7 @@ namespace MediaBrowser.Api.WebSocket
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>Task{SystemInfo}.</returns>
-        protected override Task<SystemInfo> GetDataToSend(object state)
+        protected override Task<SystemInfo> GetDataToSend(WebSocketListenerState state)
         {
             return Task.FromResult(_appHost.GetSystemInfo());
         }

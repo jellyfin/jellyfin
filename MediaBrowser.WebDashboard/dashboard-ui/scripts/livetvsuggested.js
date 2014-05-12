@@ -3,6 +3,7 @@
     function reload(page) {
 
         Dashboard.showLoadingMsg();
+        var screenWidth = $(window).width();
 
         apiClient.getLiveTvRecommendedPrograms({
 
@@ -11,14 +12,14 @@
             limit: 12
 
         }).done(function (result) {
-            
+
             var html = LibraryBrowser.getPosterViewHtml({
 
                 items: result.Items,
                 shape: "square",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: true,
+                overlayText: screenWidth >= 600,
                 coverImage: true
 
             });
@@ -41,7 +42,7 @@
                 shape: "square",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: true,
+                overlayText: screenWidth >= 600,
                 coverImage: true
 
             });

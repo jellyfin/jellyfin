@@ -5,7 +5,7 @@
       <File FileName="MediaBrowser.Server.Mono\app.config" Line="1" Column="1" />
       <File FileName="MediaBrowser.ServerApplication\ApplicationHost.cs" Line="1" Column="1" />
       <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="36" Column="37" />
+      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="24" Column="15" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using ServiceStack;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -70,6 +72,32 @@ namespace MediaBrowser.Api.Images
         public string Theme { get; set; }
     }
 
+    [Route("/Images/MediaInfo", "GET")]
+    [Api(Description = "Gets all media info image by name")]
+    public class GetMediaInfoImages : IReturn<List<ImageByNameInfo>>
+    {
+    }
+
+    [Route("/Images/Ratings", "GET")]
+    [Api(Description = "Gets all rating images by name")]
+    public class GetRatingImages : IReturn<List<ImageByNameInfo>>
+    {
+    }
+
+    [Route("/Images/General", "GET")]
+    [Api(Description = "Gets all general images by name")]
+    public class GetGeneralImages : IReturn<List<ImageByNameInfo>>
+    {
+    }
+
+    public class ImageByNameInfo
+    {
+        public string Name { get; set; }
+        public string Theme { get; set; }
+        public long FileLength { get; set; }
+        public string Format { get; set; }
+    }
+
     /// <summary>
     /// Class ImageByNameService
     /// </summary>
@@ -87,6 +115,60 @@ namespace MediaBrowser.Api.Images
         public ImageByNameService(IServerApplicationPaths appPaths)
         {
             _appPaths = appPaths;
+        }
+
+        public object Get(GetMediaInfoImages request)
+        {
+            return ToOptimizedResult(GetImageList(_appPaths.MediaInfoImagesPath));
+        }
+
+        public object Get(GetRatingImages request)
+        {
+            return ToOptimizedResult(GetImageList(_appPaths.RatingsPath));
+        }
+
+        public object Get(GetGeneralImages request)
+        {
+            return ToOptimizedResult(GetImageList(_appPaths.GeneralPath));
+        }
+
+        private List<ImageByNameInfo> GetImageList(string path)
+        {
+            try
+            {
+                return new DirectoryInfo(path)
+                    .GetFiles("*", SearchOption.AllDirectories)
+                    .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.Ordinal))
+                    .Select(i => new ImageByNameInfo
+                    {
+                        Name = Path.GetFileNameWithoutExtension(i.FullName),
+                        FileLength = i.Length,
+                        Theme = GetThemeName(i.FullName, path),
+                        Format = i.Extension.ToLower().TrimStart('.')
+                    })
+                    .OrderBy(i => i.Name)
+                    .ToList();
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new List<ImageByNameInfo>();
+            }
+        }
+
+        private string GetThemeName(string path, string rootImagePath)
+        {
+            var parentName = Path.GetDirectoryName(path);
+
+            if (string.Equals(parentName, rootImagePath, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            parentName = Path.GetFileName(parentName);
+
+            return string.Equals(parentName, "all", StringComparison.OrdinalIgnoreCase) ?
+                null :
+                parentName;
         }
 
         /// <summary>
@@ -118,7 +200,8 @@ namespace MediaBrowser.Api.Images
 
             if (Directory.Exists(themeFolder))
             {
-                var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(themeFolder, request.Name + i))
+                var path = BaseItem.SupportedImageExtensions
+                    .Select(i => Path.Combine(themeFolder, request.Name + i))
                     .FirstOrDefault(File.Exists);
 
                 if (!string.IsNullOrEmpty(path))
@@ -134,7 +217,8 @@ namespace MediaBrowser.Api.Images
                 // Avoid implicitly captured closure
                 var currentRequest = request;
 
-                var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(allFolder, currentRequest.Name + i))
+                var path = BaseItem.SupportedImageExtensions
+                    .Select(i => Path.Combine(allFolder, currentRequest.Name + i))
                     .FirstOrDefault(File.Exists);
 
                 if (!string.IsNullOrEmpty(path))
@@ -175,7 +259,7 @@ namespace MediaBrowser.Api.Images
 
                 var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(allFolder, currentRequest.Name + i))
                     .FirstOrDefault(File.Exists);
-                
+
                 if (!string.IsNullOrEmpty(path))
                 {
                     return ToStaticFileResult(path);

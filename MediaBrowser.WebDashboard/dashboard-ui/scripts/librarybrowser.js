@@ -1,11 +1,11 @@
 ﻿var LibraryBrowser = (function (window, document, $, screen, localStorage) {
 
-    $(function() {
+    $(function () {
         $("body").on("create", function () {
             $(".lazy").unveil(200);
         });
     });
-    
+
     var defaultBackground = "#333";
 
     return {
@@ -346,7 +346,7 @@
             if (!item) {
                 throw new Error('item cannot be null');
             }
-            
+
             if (item.url) {
                 return item.url;
             }
@@ -356,11 +356,41 @@
             // Handle search hints
             var id = item.Id || item.ItemId;
 
+            if (item.CollectionType == 'boxsets' || item.Type == 'ManualCollectionsFolder') {
+                return 'collections.html?topParentId=' + item.Id;
+            }
+
+            if (item.CollectionType == 'trailers' || item.Type == 'TrailerCollectionFolder') {
+                return 'movietrailers.html?topParentId=' + item.Id;
+            }
+
+            if (item.CollectionType == 'movies') {
+                return 'movieslatest.html?topParentId=' + item.Id;
+            }
+
+            if (item.CollectionType == 'tvshows') {
+                return 'tvrecommended.html?topParentId=' + item.Id;
+            }
+
+            if (item.CollectionType == 'music') {
+                return 'musicrecommended.html?topParentId=' + item.Id;
+            }
+
+            if (item.CollectionType == 'games') {
+                return 'gamesrecommended.html?topParentId=' + item.Id;
+            }
+            if (item.Type == 'CollectionFolder') {
+                return 'itemlist.html?topParentId=' + item.Id + '&parentid=' + item.Id;
+            }
+
             if (item.Type == "TvChannel") {
                 return "livetvchannel.html?id=" + id;
             }
             if (item.Type == "Channel") {
                 return "channelitems.html?id=" + id;
+            }
+            if (item.Type == "ChannelCategoryItem") {
+                return "channelitems.html?id=" + item.ChannelId + '&categoryId=' + item.Id;
             }
             if (item.Type == "Program") {
                 return "livetvprogram.html?id=" + id;
@@ -440,9 +470,11 @@
 
             var html = "";
 
-            var primaryImageAspectRatio = options.shape == 'auto' ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
+            var primaryImageAspectRatio;
 
             if (options.shape == 'auto') {
+
+                primaryImageAspectRatio = options.shape == 'auto' ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
 
                 if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3) {
                     options.shape = 'backdrop';
@@ -672,7 +704,7 @@
                 html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-mediasourcecount="' + mediaSourceCount + '" href="' + href + '">';
 
                 var style = "";
-                options.lazy = false;
+
                 if (imgUrl && !options.lazy) {
                     style += 'background-image:url(\'' + imgUrl + '\');';
                 }
@@ -750,50 +782,38 @@
 
                 cssClass = options.centerText ? "posterItemText posterItemTextCentered" : "posterItemText";
 
+                var lines = [];
+                
                 if (options.showParentTitle) {
 
-                    html += "<div class='" + cssClass + "'>";
-                    html += item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "&nbsp;");
-                    html += "</div>";
+                    lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
                 }
 
                 if (options.showTitle || forceName) {
 
-                    html += "<div class='" + cssClass + " posterItemName'>";
-                    html += name;
-                    html += "</div>";
+                    lines.push(name);
                 }
 
                 if (options.showItemCounts) {
 
                     var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
 
-                    if (item.Type == "Person" && !itemCountHtml) {
-                        itemCountHtml = "&nbsp;";
-                    }
-
-                    if (itemCountHtml) {
-                        html += "<div class='" + cssClass + "'>";
-                        html += itemCountHtml;
-                        html += "</div>";
-                    }
+                    lines.push(itemCountHtml);
                 }
 
                 if (options.showPremiereDate && item.PremiereDate) {
 
                     try {
 
-                        //var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
-
-                        html += "<div class='posterItemText'>";
-                        html += LibraryBrowser.getPremiereDateText(item);
-                        html += "</div>";
+                        lines.push(LibraryBrowser.getPremiereDateText(item));
 
                     } catch (err) {
+                        lines.push('');
 
                     }
-
                 }
+
+                html += LibraryBrowser.getPosterItemTextLines(lines, cssClass, !options.overlayText);
 
                 if (options.overlayText) {
 
@@ -810,6 +830,35 @@
 
                 html += "</a>";
 
+            }
+
+            return html;
+        },
+
+        getPosterItemTextLines: function (lines, cssClass, forceLines) {
+
+            var html = '';
+
+            var valid = 0;
+            var i, length;
+
+            for (i = 0, length = lines.length; i < length; i++) {
+
+                var text = lines[i];
+
+                if (text) {
+                    html += "<div class='" + cssClass + "'>";
+                    html += text;
+                    html += "</div>";
+                    valid++;
+                }
+            }
+
+            if (forceLines) {
+                while (valid < length) {
+                    html += "<div class='" + cssClass + "'>&nbsp;</div>";
+                    valid++;
+                }
             }
 
             return html;

@@ -305,8 +305,6 @@ namespace MediaBrowser.Common.Plugins
                 ConfigurationDateLastModified = ConfigurationDateLastModified,
                 Description = Description,
                 Id = Id.ToString("N"),
-                EnableAutoUpdate = Configuration.EnableAutoUpdate,
-                UpdateClass = Configuration.UpdateClass,
                 ConfigurationFileName = ConfigurationFileName
             };
 

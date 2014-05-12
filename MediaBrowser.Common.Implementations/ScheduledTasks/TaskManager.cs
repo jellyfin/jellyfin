@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
@@ -16,8 +17,8 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
     /// </summary>
     public class TaskManager : ITaskManager
     {
-        public event EventHandler<EventArgs> TaskExecuting;
-        public event EventHandler<GenericEventArgs<TaskResult>> TaskCompleted;
+        public event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
+        public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
 
         /// <summary>
         /// Gets the list of Scheduled Tasks
@@ -124,7 +125,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 // If it's idle just execute immediately
                 if (task.State == TaskState.Idle)
                 {
-                    ((ScheduledTaskWorker)task).Execute();
+                    Execute(task);
                     return;
                 }
 
@@ -148,7 +149,8 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             var myTasks = ScheduledTasks.ToList();
 
-            myTasks.AddRange(tasks.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger)));
+            var list = tasks.ToList();
+            myTasks.AddRange(list.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger)));
 
             ScheduledTasks = myTasks.ToArray();
         }
@@ -188,9 +190,13 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// Called when [task executing].
         /// </summary>
         /// <param name="task">The task.</param>
-        internal void OnTaskExecuting(IScheduledTask task)
+        internal void OnTaskExecuting(IScheduledTaskWorker task)
         {
-            EventHelper.QueueEventIfNotNull(TaskExecuting, task, EventArgs.Empty, Logger);
+            EventHelper.QueueEventIfNotNull(TaskExecuting, this, new GenericEventArgs<IScheduledTaskWorker>
+            {
+                Argument = task
+
+            }, Logger);
         }
 
         /// <summary>
@@ -198,9 +204,15 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="task">The task.</param>
         /// <param name="result">The result.</param>
-        internal void OnTaskCompleted(IScheduledTask task, TaskResult result)
+        internal void OnTaskCompleted(IScheduledTaskWorker task, TaskResult result)
         {
-            EventHelper.QueueEventIfNotNull(TaskCompleted, task, new GenericEventArgs<TaskResult> { Argument = result }, Logger);
+            EventHelper.QueueEventIfNotNull(TaskCompleted, task, new TaskCompletionEventArgs
+            {
+                Result = result,
+                Task = task
+
+            }, Logger);
+
             ExecuteQueuedTasks();
         }
 
@@ -218,7 +230,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
                     if (scheduledTask.State == TaskState.Idle)
                     {
-                        ((ScheduledTaskWorker)scheduledTask).Execute();
+                        Execute(scheduledTask);
 
                         _taskQueue.Remove(type);
                     }

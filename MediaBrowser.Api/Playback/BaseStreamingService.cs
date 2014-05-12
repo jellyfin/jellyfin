@@ -542,7 +542,7 @@ namespace MediaBrowser.Api.Playback
                 var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
 
                 return isH264Output ?
-                    string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):trunc(ow/a/2)*2{2}\"", yadifParam, maxWidthParam, assSubtitleParam, copyTsParam) :
+                    string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):trunc(ow/dar/2)*2{2}\"", yadifParam, maxWidthParam, assSubtitleParam, copyTsParam) :
                     string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):-1{2}\"", yadifParam, maxWidthParam, assSubtitleParam, copyTsParam);
             }
 
@@ -903,7 +903,7 @@ namespace MediaBrowser.Api.Playback
                 EnableRaisingEvents = true
             };
 
-            ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process, state.IsInputVideo, state.Request.StartTimeTicks, state.MediaPath, state.Request.DeviceId);
+            ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process, state.Request.StartTimeTicks, state.MediaPath, state.Request.DeviceId);
 
             var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
             Logger.Info(commandLineLogMessage);

@@ -20,7 +20,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// </summary>
         /// <value>The task id.</value>
         [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -145,7 +145,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <exception cref="MediaBrowser.Common.Extensions.ResourceNotFoundException">Task not found</exception>
         public object Get(GetScheduledTask request)
         {
-            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
+            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => string.Equals(i.Id, request.Id));
 
             if (task == null)
             {
@@ -164,7 +164,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <exception cref="MediaBrowser.Common.Extensions.ResourceNotFoundException">Task not found</exception>
         public void Post(StartScheduledTask request)
         {
-            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
+            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => string.Equals(i.Id, request.Id));
 
             if (task == null)
             {
@@ -181,7 +181,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <exception cref="MediaBrowser.Common.Extensions.ResourceNotFoundException">Task not found</exception>
         public void Delete(StopScheduledTask request)
         {
-            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
+            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => string.Equals(i.Id, request.Id));
 
             if (task == null)
             {
@@ -201,9 +201,9 @@ namespace MediaBrowser.Api.ScheduledTasks
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var id = new Guid(pathInfo.GetArgumentValue<string>(1));
+            var id = pathInfo.GetArgumentValue<string>(1);
 
-            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == id);
+            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => string.Equals(i.Id, id));
 
             if (task == null)
             {

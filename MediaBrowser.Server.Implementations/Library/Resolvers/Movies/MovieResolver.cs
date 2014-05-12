@@ -381,7 +381,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 {
                     firstMovie.IsMultiPart = true;
 
-                    _logger.Info("Multi-part video found: " + firstMovie.Path);
+                    _logger.Debug("Multi-part video found: " + firstMovie.Path);
 
                     return firstMovie;
                 }
@@ -411,7 +411,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 {
                     firstMovie.HasLocalAlternateVersions = true;
 
-                    _logger.Info("Multi-version video found: " + firstMovie.Path);
+                    _logger.Debug("Multi-version video found: " + firstMovie.Path);
 
                     return firstMovie;
                 }

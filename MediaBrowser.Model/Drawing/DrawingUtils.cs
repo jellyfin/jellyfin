@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace MediaBrowser.Model.Drawing
+﻿namespace MediaBrowser.Model.Drawing
 {
     /// <summary>
     /// Class DrawingUtils
@@ -16,7 +14,12 @@ namespace MediaBrowser.Model.Drawing
         /// <returns>ImageSize.</returns>
         public static ImageSize Scale(double currentWidth, double currentHeight, double scaleFactor)
         {
-            return Scale(new ImageSize { Width = currentWidth, Height = currentHeight }, scaleFactor);
+            return Scale(new ImageSize
+            {
+                Width = currentWidth, 
+                Height = currentHeight
+
+            }, scaleFactor);
         }
 
         /// <summary>
@@ -27,9 +30,9 @@ namespace MediaBrowser.Model.Drawing
         /// <returns>ImageSize.</returns>
         public static ImageSize Scale(ImageSize size, double scaleFactor)
         {
-            var newWidth = size.Width * scaleFactor;
+            double newWidth = size.Width * scaleFactor;
 
-            return Resize(size.Width, size.Height, newWidth);
+            return Resize(size.Width, size.Height, newWidth, null, null, null);
         }
 
         /// <summary>
@@ -42,9 +45,19 @@ namespace MediaBrowser.Model.Drawing
         /// <param name="maxWidth">A max fixed width, if desired</param>
         /// <param name="maxHeight">A max fixed height, if desired</param>
         /// <returns>ImageSize.</returns>
-        public static ImageSize Resize(double currentWidth, double currentHeight, double? width = null, double? height = null, double? maxWidth = null, double? maxHeight = null)
+        public static ImageSize Resize(double currentWidth, 
+            double currentHeight, 
+            double? width, 
+            double? height, 
+            double? maxWidth,
+            double? maxHeight)
         {
-            return Resize(new ImageSize { Width = currentWidth, Height = currentHeight }, width, height, maxWidth, maxHeight);
+            return Resize(new ImageSize
+            {
+                Width = currentWidth, 
+                Height = currentHeight
+
+            }, width, height, maxWidth, maxHeight);
         }
 
         /// <summary>
@@ -56,7 +69,11 @@ namespace MediaBrowser.Model.Drawing
         /// <param name="maxWidth">A max fixed width, if desired</param>
         /// <param name="maxHeight">A max fixed height, if desired</param>
         /// <returns>A new size object</returns>
-        public static ImageSize Resize(ImageSize size, double? width = null, double? height = null, double? maxWidth = null, double? maxHeight = null)
+        public static ImageSize Resize(ImageSize size, 
+            double? width, 
+            double? height, 
+            double? maxWidth, 
+            double? maxHeight)
         {
             double newWidth = size.Width;
             double newHeight = size.Height;
@@ -79,13 +96,13 @@ namespace MediaBrowser.Model.Drawing
                 newWidth = width.Value;
             }
 
-            if (maxHeight.HasValue && maxHeight < newHeight)
+            if (maxHeight.HasValue && maxHeight.Value < newHeight)
             {
                 newWidth = GetNewWidth(newHeight, newWidth, maxHeight.Value);
                 newHeight = maxHeight.Value;
             }
 
-            if (maxWidth.HasValue && maxWidth < newWidth)
+            if (maxWidth.HasValue && maxWidth.Value < newWidth)
             {
                 newHeight = GetNewHeight(newHeight, newWidth, maxWidth.Value);
                 newWidth = maxWidth.Value;
@@ -103,7 +120,7 @@ namespace MediaBrowser.Model.Drawing
         /// <returns>System.Double.</returns>
         private static double GetNewWidth(double currentHeight, double currentWidth, double newHeight)
         {
-            var scaleFactor = newHeight;
+            double scaleFactor = newHeight;
             scaleFactor /= currentHeight;
             scaleFactor *= currentWidth;
 
@@ -119,90 +136,11 @@ namespace MediaBrowser.Model.Drawing
         /// <returns>System.Double.</returns>
         private static double GetNewHeight(double currentHeight, double currentWidth, double newWidth)
         {
-            var scaleFactor = newWidth;
+            double scaleFactor = newWidth;
             scaleFactor /= currentWidth;
             scaleFactor *= currentHeight;
 
             return scaleFactor;
-        }
-    }
-
-    /// <summary>
-    /// Struct ImageSize
-    /// </summary>
-    public struct ImageSize
-    {
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        private double _height;
-        private double _width;
-
-        /// <summary>
-        /// Gets or sets the height.
-        /// </summary>
-        /// <value>The height.</value>
-        public double Height
-        {
-            get
-            {
-                return _height;
-            }
-            set
-            {
-                _height = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the width.
-        /// </summary>
-        /// <value>The width.</value>
-        public double Width
-        {
-            get { return _width; }
-            set { _width = value; }
-        }
-
-        public bool Equals(ImageSize size)
-        {
-            return Width.Equals(size.Width) && Height.Equals(size.Height);
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0}-{1}", Width, Height);
-        }
-
-        public ImageSize(string value)
-        {
-            _width = 0;
-
-            _height = 0;
-
-            ParseValue(value);
-        }
-
-        private void ParseValue(string value)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                var parts = value.Split('-');
-
-                if (parts.Length == 2)
-                {
-                    double val;
-
-                    if (double.TryParse(parts[0], NumberStyles.Any, UsCulture, out val))
-                    {
-                        _width = val;
-                    }
-
-                    if (double.TryParse(parts[1], NumberStyles.Any, UsCulture, out val))
-                    {
-                        _height = val;
-                    }
-                }
-            }
         }
     }
 }

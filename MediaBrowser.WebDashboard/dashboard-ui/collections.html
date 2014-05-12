@@ -4,17 +4,23 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="boxsetsPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-theme="b" data-view="boxsets">
+    <div id="boxsetsPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="movie,boxset" data-theme="b" data-view="boxsets">
+
+        <div class="libraryViewNav scopedLibraryViewNav">
+            <a href="#" class="ui-btn-active">${TabCollections}</a>
+        </div>
 
         <div class="alphabetPicker">
         </div>
         <div data-role="content">
             <div class="viewSettings">
+
                 <div class="viewControls" data-role="controlgroup" data-type="horizontal">
                     <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="${ButtonSort}" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
                     <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="${ButtonFilter}" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
                 </div>
                 <div class="listTopPaging">
+                    &nbsp;
                 </div>
                 <button id="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" class="hide">${ButtonNew}</button>
             </div>

@@ -71,8 +71,7 @@ namespace MediaBrowser.Api
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            foreach (var file in Directory.EnumerateFiles(_appPaths.TranscodingTempPath)
-                .Where(i => EntityResolutionHelper.VideoFileExtensions.Contains(Path.GetExtension(i)))
+            foreach (var file in Directory.EnumerateFiles(_appPaths.TranscodingTempPath, "*", SearchOption.AllDirectories)
                 .ToList())
             {
                 File.Delete(file);
@@ -116,11 +115,10 @@ namespace MediaBrowser.Api
         /// <param name="path">The path.</param>
         /// <param name="type">The type.</param>
         /// <param name="process">The process.</param>
-        /// <param name="isVideo">if set to <c>true</c> [is video].</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
         /// <param name="sourcePath">The source path.</param>
         /// <param name="deviceId">The device id.</param>
-        public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process, bool isVideo, long? startTimeTicks, string sourcePath, string deviceId)
+        public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process, long? startTimeTicks, string sourcePath, string deviceId)
         {
             lock (_activeTranscodingJobs)
             {
@@ -130,7 +128,6 @@ namespace MediaBrowser.Api
                     Path = path,
                     Process = process,
                     ActiveRequestCount = 1,
-                    IsVideo = isVideo,
                     StartTimeTicks = startTimeTicks,
                     SourcePath = sourcePath,
                     DeviceId = deviceId
@@ -261,7 +258,7 @@ namespace MediaBrowser.Api
             {
                 // This is really only needed for HLS. 
                 // Progressive streams can stop on their own reliably
-                jobs.AddRange(_activeTranscodingJobs.Where(i => isVideo == i.IsVideo && string.Equals(deviceId, i.DeviceId, StringComparison.OrdinalIgnoreCase)));
+                jobs.AddRange(_activeTranscodingJobs.Where(i => string.Equals(deviceId, i.DeviceId, StringComparison.OrdinalIgnoreCase)));
             }
 
             foreach (var job in jobs)
@@ -325,37 +322,15 @@ namespace MediaBrowser.Api
                 }
             }
 
-            // Determine if it exited successfully
-            var hasExitedSuccessfully = false;
-
-            try
-            {
-                hasExitedSuccessfully = process.ExitCode == 0;
-            }
-            catch (InvalidOperationException)
-            {
-
-            }
-            catch (NotSupportedException)
-            {
-
-            }
-
             // Dispose the process
             process.Dispose();
 
-            // If it didn't complete successfully cleanup the partial files
-            // Also don't cache output from resume points
-            // Also don't cache video
-            if (!hasExitedSuccessfully || job.StartTimeTicks.HasValue || job.IsVideo)
-            {
-                DeletePartialStreamFiles(job.Path, job.Type, 0, 1500);
-            }
+            DeletePartialStreamFiles(job.Path, job.Type, 0, 1500);
         }
 
         private async void DeletePartialStreamFiles(string path, TranscodingJobType jobType, int retryCount, int delayMs)
         {
-            if (retryCount >= 5)
+            if (retryCount >= 10)
             {
                 return;
             }
@@ -455,7 +430,6 @@ namespace MediaBrowser.Api
         /// <value>The kill timer.</value>
         public Timer KillTimer { get; set; }
 
-        public bool IsVideo { get; set; }
         public long? StartTimeTicks { get; set; }
         public string SourcePath { get; set; }
         public string DeviceId { get; set; }

@@ -16,8 +16,9 @@
             isApp: true,
             tileColor: "#050810",
             thumbImage: "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/images/mbkinect/thumb.png",
-            externalUrl: "http://mediabrowser3.com/community/index.php?/topic/850-media-browser-kinect-sensor-plug-in-support/",
-            isPremium: false
+            externalUrl: "http://mediabrowser.tv/community/index.php?/topic/850-media-browser-kinect-sensor-plug-in-support/",
+            isPremium: false,
+            isExternal: true
         });
 
         return apps;
@@ -108,15 +109,17 @@
 
             html += "</div>";
 
-            html += "<div class='posterItemText packageReviewText' style='color:#000;'>";
-            html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : "Free";
-            html += Dashboard.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
+            if (!plugin.isExternal) {
+                html += "<div class='posterItemText packageReviewText' style='color:#000;'>";
+                html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : "Free";
+                html += Dashboard.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
 
-            html += "<span class='storeReviewCount'>";
-            html += " " + plugin.totalRatings + " Reviews";
-            html += "</span>";
+                html += "<span class='storeReviewCount'>";
+                html += " " + plugin.totalRatings + " Reviews";
+                html += "</span>";
 
-            html += "</div>";
+                html += "</div>";
+            }
 
             var installedPlugin = plugin.isApp ? null : installedPlugins.filter(function (ip) {
                 return ip.Name == plugin.name;

@@ -5,6 +5,7 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
@@ -328,14 +329,14 @@ namespace MediaBrowser.Common.Implementations.Updates
             if (withAutoUpdateEnabled)
             {
                 plugins = plugins
-                    .Where(p => p.Configuration.EnableAutoUpdate)
+                    .Where(p => _config.CommonConfiguration.EnableAutoUpdate)
                     .ToList();
             }
 
             // Figure out what needs to be installed
             var packages = plugins.Select(p =>
             {
-                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Id.ToString(), applicationVersion, p.Configuration.UpdateClass);
+                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Id.ToString(), applicationVersion, _config.CommonConfiguration.SystemUpdateLevel);
 
                 return latestPluginInfo != null && latestPluginInfo.version != null && latestPluginInfo.version > p.Version ? latestPluginInfo : null;
 
@@ -367,7 +368,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             var installationInfo = new InstallationInfo
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.NewGuid().ToString("N"),
                 Name = package.name,
                 AssemblyGuid = package.guid,
                 UpdateClass = package.classification,
@@ -510,13 +511,14 @@ namespace MediaBrowser.Common.Implementations.Updates
             cancellationToken.ThrowIfCancellationRequested();
 
             // Validate with a checksum
-            if (package.checksum != Guid.Empty) // support for legacy uploads for now
+            var packageChecksum = string.IsNullOrWhiteSpace(package.checksum) ? Guid.Empty : new Guid(package.checksum);
+            if (packageChecksum != Guid.Empty) // support for legacy uploads for now
             {
                 using (var crypto = new MD5CryptoServiceProvider())
                 using (var stream = new BufferedStream(File.OpenRead(tempFile), 100000))
                 {
                     var check = Guid.Parse(BitConverter.ToString(crypto.ComputeHash(stream)).Replace("-", String.Empty));
-                    if (check != package.checksum)
+                    if (check != packageChecksum)
                     {
                         throw new ApplicationException(string.Format("Download validation failed for {0}.  Probably corrupted during transfer.", package.name));
                     }

@@ -22,13 +22,15 @@
 
             updateFilterControls();
 
+            var screenWidth = $(window).width();
+
             html += LibraryBrowser.getPosterViewHtml({
 
                 items: result.Items,
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: true,
+                overlayText: screenWidth >= 600,
                 coverImage: true
 
             });

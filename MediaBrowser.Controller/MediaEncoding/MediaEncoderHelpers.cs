@@ -187,7 +187,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (string.Equals(streamInfo.codec_type, "video", StringComparison.OrdinalIgnoreCase))
             {
-                stream.Type = MediaStreamType.Video;
+                stream.Type = (streamInfo.codec_name ?? string.Empty).IndexOf("mjpeg", StringComparison.OrdinalIgnoreCase) != -1
+                    ? MediaStreamType.EmbeddedImage
+                    : MediaStreamType.Video;
 
                 stream.Width = streamInfo.width;
                 stream.Height = streamInfo.height;

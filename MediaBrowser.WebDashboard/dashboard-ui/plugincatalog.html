@@ -9,24 +9,20 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" data-mini="true">
                     <a href="plugins.html" data-role="button">${TabMyPlugins}</a>
-                    <a href="plugincatalog.html" data-role="button" class="ui-btn-active">${TabCatalog}</a>
-                    <a href="pluginupdates.html" data-role="button">${TabUpdates}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabCatalog}</a>
                 </div>
-                <p style="margin: 2em 0;">
-                    Types: <a data-rel="popup" data-position-to="origin" href="#freePlugins">Free</a>, 
-                        <a data-rel="popup" data-position-to="origin" href="#supporterPlugins">Supporter-Only</a>, and <a data-rel="popup" data-position-to="origin" href="#premiumPlugins">Premium</a>.
-                </p>
                 
+                <br />
                 <fieldset data-role="controlgroup" data-type="horizontal">
-                    <legend>Display plugins for:</legend>
+                    <legend>${LabelDisplayPluginsFor}</legend>
                     <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radioServer" value="Server" data-mini="true">
-                    <label for="radioServer">Server</label>
+                    <label for="radioServer">${TabServer}</label>
                     <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radioClassic" value="MBClassic" data-mini="true">
-                    <label for="radioClassic">MB Classic</label>
+                    <label for="radioClassic">${PluginTabMediaBrowserClassic}</label>
                     <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radopTheater" value="MBTheater" data-mini="true">
-                    <label for="radopTheater">MB Theater</label>
+                    <label for="radopTheater">${PluginTabMediaBrowserTheater}</label>
                     <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radioOthers" value="Apps" data-mini="true">
-                    <label for="radioOthers">Others</label>
+                    <label for="radioOthers">${TabOtherPlugins}</label>
                 </fieldset>
 
                 <p style="display: none;">
@@ -35,40 +31,12 @@
                 </p>
                 <br />
                 <div id="noPlugins" class="hide">
-                    <div style="text-align: center; margin: 10px;">No available plugins</div>
+                    <div style="text-align: center; margin: 10px;">${MessageNoAvailablePlugins}</div>
                 </div>
 
                 <div id="pluginTiles"></div>
 
             </div>
-        </div>
-
-        <div data-role="popup" class="ui-content" id="freePlugins" style="max-width: 250px;">
-            <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
-            <p>
-                Free plug-ins can be installed and used by anyone for free. They will appear in the catalog without any banners.<p>
-        </div>
-
-        <div data-role="popup" class="ui-content" id="supporterPlugins" style="max-width: 250px;">
-            <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
-            <p>Supporter-Only plug-ins are free for anyone who is an <strong>MB3 Supporter</strong> (with a valid MB3 key who has donated the minimum amount to the overall project).</p>
-            <p>
-                Anyone can install them and enjoy a free trial period of 14 days in most instances.  The trial period may commence as soon as you install the plug-in.<p>
-            <p>These plug-ins will appear in the catalog with a "Supporter" banner.</p>
-        </div>
-
-        <div data-role="popup" class="ui-content" id="premiumPlugins" style="max-width: 250px;">
-            <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
-            <p>
-                Premium plug-ins are developed by third-parties and require that you be an <strong>MB3 Supporter <em>and</em> also register the plug-in with its creator.</strong>
-                The cost of registering these plug-ins is set for each one by its creator and all revenues go to that person.
-            </p>
-            <p>Anyone can install them and enjoy a free trial period of 14 days in most instances.  The trial period may commence as soon as you install the plug-in.</p>
-            <p>
-                You should install premium plug-ins without registering them first to take advantage of this trial period.  Then, if you find the functionality useful,
-                                                                                                                                                                         you can register it via its detail page here in the catalog.
-            </p>
-            <p>These plug-ins will appear in the catalog with a "Premium" banner.</p>
         </div>
     </div>
 </body>

@@ -10,6 +10,8 @@ namespace MediaBrowser.Controller.Channels
     {
         public string ExternalId { get; set; }
 
+        public string ChannelId { get; set; }
+        
         public ChannelItemType ChannelItemType { get; set; }
 
         public bool IsInfiniteStream { get; set; }

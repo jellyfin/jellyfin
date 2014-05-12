@@ -131,24 +131,22 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             var args = "-vcodec " + codec;
 
+            if (state.EnableMpegtsM2TsMode)
+            {
+                args += " -mpegts_m2ts_mode 1";
+            }
+
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
                 return state.VideoStream != null && IsH264(state.VideoStream) ? args + " -bsf h264_mp4toannexb" : args;
             }
 
-            if (state.EnableMpegtsM2TsMode)
-            {
-                args += " -mpegts_m2ts_mode 1";
-            }
-
             const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+5))";
 
             args += keyFrameArg;
 
-            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsExternal &&
-                                   (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 ||
-                                    state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1);
+            var hasGraphicalSubs = state.SubtitleStream != null && state.SubtitleStream.IsGraphicalSubtitleStream;
 
             var request = state.VideoRequest;
 

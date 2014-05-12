@@ -1,8 +1,6 @@
 ﻿.detailTableContainer {
     width: 100%;
-    max-width: 1050px;
     text-align: center;
-    margin: 0 auto;
 }
 
 .detailTable {

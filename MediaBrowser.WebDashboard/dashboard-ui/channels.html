@@ -4,12 +4,14 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="channelsPage" data-role="page" class="page libraryPage noSecondaryNavPage channelsPage" data-theme="b" data-view="channels">
+    <div id="channelsPage" data-role="page" class="page libraryPage channelsPage" data-theme="b" data-view="channels">
+
+        <div class="libraryViewNav scopedLibraryViewNav">
+            <a href="#" class="ui-btn-active">${TabChannels}</a>
+        </div>
 
         <div data-role="content">
             <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
             </div>
             <div id="items" class="itemsContainer"></div>
         </div>

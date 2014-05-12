@@ -221,6 +221,8 @@ namespace MediaBrowser.Model.Configuration
 
         public NotificationOptions NotificationOptions { get; set; }
 
+        public SubtitleOptions SubtitleOptions { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -269,7 +271,7 @@ namespace MediaBrowser.Model.Configuration
 
             EnableRealtimeMonitor = true;
 
-            var options = new List<MetadataOptions>
+            List<MetadataOptions> options = new List<MetadataOptions>
             {
                 new MetadataOptions(1, 1280) {ItemType = "Book"},
                 new MetadataOptions(1, 1280) {ItemType = "MusicAlbum"},
@@ -284,31 +286,8 @@ namespace MediaBrowser.Model.Configuration
             UICulture = "en-us";
 
             NotificationOptions = new NotificationOptions();
+
+            SubtitleOptions = new SubtitleOptions();
         }
-    }
-
-    public enum ImageSavingConvention
-    {
-        Legacy,
-        Compatible
-    }
-
-    public enum EncodingQuality
-    {
-        Auto,
-        HighSpeed,
-        HighQuality,
-        MaxQuality
-    }
-
-    public class LiveTvOptions
-    {
-        public int? GuideDays { get; set; }
-    }
-
-    public class PathSubstitution
-    {
-        public string From { get; set; }
-        public string To { get; set; }
     }
 }

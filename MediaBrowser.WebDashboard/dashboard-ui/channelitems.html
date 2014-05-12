@@ -4,12 +4,16 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="channelItemsPage" data-role="page" class="page libraryPage noSecondaryNavPage channelsPage" data-theme="b" data-view="channels">
+    <div id="channelItemsPage" data-role="page" class="page libraryPage channelsPage" data-theme="b" data-view="channels">
+
+        <div class="libraryViewNav scopedLibraryViewNav">
+            <a href="channels.html" class="ui-btn-active">${TabChannels}</a>
+        </div>
 
         <div data-role="content">
             <div class="viewSettings">
 
-                <h1 style="margin: 0 1em 0 0; display: inline-block; vertical-align: middle;">Trailers</h1>
+                <h1 class="categoryTitle" style="margin: 0 1em 0 0; display: inline-block; vertical-align: middle;"></h1>
 
                 <div class="viewControls" data-role="controlgroup" data-type="horizontal">
                     <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="${ButtonSort}" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>

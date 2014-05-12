@@ -30,7 +30,7 @@ namespace MediaBrowser.Model.Configuration
 
         public MetadataOptions(int backdropLimit, int minBackdropWidth)
         {
-            var imageOptions = new List<ImageOption>
+            List<ImageOption> imageOptions = new List<ImageOption>
             {
                 new ImageOption
                 {
@@ -52,14 +52,30 @@ namespace MediaBrowser.Model.Configuration
 
         public int GetLimit(ImageType type)
         {
-            var option = ImageOptions.FirstOrDefault(i => i.Type == type);
+            ImageOption option = null;
+            foreach (ImageOption i in ImageOptions)
+            {
+                if (i.Type == type)
+                {
+                    option = i;
+                    break;
+                }
+            }
 
             return option == null ? 1 : option.Limit;
         }
 
         public int GetMinWidth(ImageType type)
         {
-            var option = ImageOptions.FirstOrDefault(i => i.Type == type);
+            ImageOption option = null;
+            foreach (ImageOption i in ImageOptions)
+            {
+                if (i.Type == type)
+                {
+                    option = i;
+                    break;
+                }
+            }
 
             return option == null ? 0 : option.MinWidth;
         }
@@ -72,31 +88,6 @@ namespace MediaBrowser.Model.Configuration
         public bool IsMetadataSaverEnabled(string name)
         {
             return !DisabledMetadataSavers.Contains(name, StringComparer.OrdinalIgnoreCase);
-        }
-    }
-
-    public class ImageOption
-    {
-        /// <summary>
-        /// Gets or sets the type.
-        /// </summary>
-        /// <value>The type.</value>
-        public ImageType Type { get; set; }
-        /// <summary>
-        /// Gets or sets the limit.
-        /// </summary>
-        /// <value>The limit.</value>
-        public int Limit { get; set; }
-
-        /// <summary>
-        /// Gets or sets the minimum width.
-        /// </summary>
-        /// <value>The minimum width.</value>
-        public int MinWidth { get; set; }
-
-        public ImageOption()
-        {
-            Limit = 1;
         }
     }
 }

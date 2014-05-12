@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleMetadata}</title>
+</head>
+<body>
+    <div id="metadataSubtitlesPage" data-role="page" class="page type-interior metadataConfigurationPage">
+
+        <div data-role="content">
+
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="metadata.html" data-role="button">${TabBasics}</a>
+                    <a href="metadataimages.html?type=movies" data-role="button">${TabMovies}</a>
+                    <a href="metadataimages.html?type=tv" data-role="button">${TabTV}</a>
+                    <a href="metadataimages.html?type=games" data-role="button">${TabGames}</a>
+                    <a href="metadataimages.html?type=music" data-role="button">${TabMusic}</a>
+                    <a href="metadataimages.html?type=others" data-role="button">${TabOthers}</a>
+                    <a href="#" class="ui-btn-active" data-role="button">${TabSubtitles}</a>
+                    <a href="metadataadvanced.html" data-role="button">${TabAdvanced}</a>
+                </div>
+
+                <form class="metadataSubtitlesForm">
+                    <p>${HeaderSubtitleDownloadingHelp}</p>
+                    <fieldset data-role="controlgroup">
+                        <legend>${HeaderDownloadSubtitlesFor}</legend>
+                        <input type="checkbox" data-mini="true" id="chkSubtitlesMovies" />
+                        <label for="chkSubtitlesMovies">${OptionMovies}</label>
+
+                        <input type="checkbox" data-mini="true" id="chkSubtitlesEpisodes" />
+                        <label for="chkSubtitlesEpisodes">${OptionEpisodes}</label>
+                    </fieldset>
+                    <br />
+                    <div>
+                        <label>${LabelDownloadLanguages}</label>
+                        <div class="downloadLanguages" style="max-height: 150px; overflow-y: auto; border: 1px solid #e8e8e8;">
+                        </div>
+                    </div>
+                    <br />
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <input type="checkbox" id="chkSkipIfAudioTrackPresent" data-mini="true" />
+                            <label for="chkSkipIfAudioTrackPresent">${LabelSkipIfAudioTrackPresent}</label>
+                            <div class="fieldDescription">${LabelSkipIfAudioTrackPresentHelp}</div>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="chkSkipIfGraphicalSubsPresent" data-mini="true" />
+                            <label for="chkSkipIfGraphicalSubsPresent">${LabelSkipIfGraphicalSubsPresent}</label>
+                            <div class="fieldDescription">${LabelSkipIfGraphicalSubsPresentHelp}</div>
+                        </li>
+                        <li>
+                            <label for="txtOpenSubtitleUsername">${LabelOpenSubtitlesUsername}</label>
+                            <input type="text" id="txtOpenSubtitleUsername" data-mini="true" required="required" />
+                            <div class="fieldDescription"><a target="_blank" href="http://www.opensubtitles.org/">${ButtonRegister}</a></div>
+                        </li>
+                        <li>
+                            <label for="txtOpenSubtitlePassword">${LabelOpenSubtitlesPassword}</label>
+                            <input type="password" id="txtOpenSubtitlePassword" data-mini="true" />
+                        </li>
+                    </ul>
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                ${ButtonSave}
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                                ${ButtonCancel}
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+        </div>
+
+        <script type="text/javascript">
+            $('.metadataSubtitlesForm').off('submit', MetadataSubtitlesPage.onSubmit).on('submit', MetadataSubtitlesPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

@@ -9,7 +9,7 @@
     };
 
     function getSavedQueryId() {
-        return 'channels-' + getParameterByName('id');
+        return 'channels-' + getParameterByName('id') + (getParameterByName('categoryId') || '');
     }
 
     function showLoadingMessage(page) {
@@ -26,8 +26,14 @@
         showLoadingMessage(page);
 
         var channelId = getParameterByName('id');
+        var categoryId = getParameterByName('categoryId');
 
         query.UserId = Dashboard.getCurrentUserId();
+
+        ApiClient.getItem(query.UserId, categoryId || channelId).done(function (item) {
+
+            $('.categoryTitle', page).html(item.Name);
+        });
 
         $.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
 
@@ -42,11 +48,13 @@
 
             html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "portrait",
+                shape: "auto",
                 context: 'channels',
                 showTitle: true,
                 centerText: true
             });
+
+            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
             $('#items', page).html(html).trigger('create').createPosterItemMenus();
 

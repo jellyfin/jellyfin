@@ -171,9 +171,9 @@ namespace MediaBrowser.Api
 
             var primaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary);
 
-            if (primaryImageTag.HasValue)
+            if (primaryImageTag != null)
             {
-                result.PrimaryImageTag = primaryImageTag.Value;
+                result.PrimaryImageTag = primaryImageTag;
             }
 
             SetThumbImageInfo(result, item);
@@ -250,9 +250,9 @@ namespace MediaBrowser.Api
             {
                 var tag = _imageProcessor.GetImageCacheTag(itemWithImage, ImageType.Thumb);
 
-                if (tag.HasValue)
+                if (tag != null)
                 {
-                    hint.ThumbImageTag = tag.Value;
+                    hint.ThumbImageTag = tag;
                     hint.ThumbImageItemId = itemWithImage.Id.ToString("N");
                 }
             }
@@ -271,9 +271,9 @@ namespace MediaBrowser.Api
             {
                 var tag = _imageProcessor.GetImageCacheTag(itemWithImage, ImageType.Backdrop);
 
-                if (tag.HasValue)
+                if (tag != null)
                 {
-                    hint.BackdropImageTag = tag.Value;
+                    hint.BackdropImageTag = tag;
                     hint.BackdropImageItemId = itemWithImage.Id.ToString("N");
                 }
             }

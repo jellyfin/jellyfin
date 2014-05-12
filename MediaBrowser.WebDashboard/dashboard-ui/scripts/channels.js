@@ -19,8 +19,6 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
-
             updateFilterControls(page);
 
             html = LibraryBrowser.getPosterViewHtml({
@@ -34,22 +32,6 @@
 
             $('#items', page).html(html).trigger('create').createPosterItemMenus();
 
-            $('.btnNextPage', page).on('click', function () {
-                query.StartIndex += query.Limit;
-                reloadItems(page);
-            });
-
-            $('.btnPreviousPage', page).on('click', function () {
-                query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
-                reloadItems(page);
-            });
-
             LibraryBrowser.saveQueryValues('channels', query);
 
             Dashboard.hideLoadingMsg();
@@ -61,14 +43,6 @@
     }
 
     $(document).on('pagebeforeshow', "#channelsPage", function () {
-
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
 
         LibraryBrowser.loadSavedQueryValues('channels', query);
 

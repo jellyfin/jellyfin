@@ -77,7 +77,6 @@
             $("#videoControls").removeClass("inactive");
             $("video").remove();
             $("html").css("cursor", "default");
-            $(".ui-loader").hide();
         };
 
         self.exitFullScreen = function () {
@@ -147,6 +146,14 @@
             }
         };
 
+        self.setAudioStreamIndex = function (index) {
+            self.changeStream(self.getCurrentTicks(), { AudioStreamIndex: index });
+        };
+
+        self.setSubtitleStreamIndex = function (index) {
+            self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: index });
+        };
+
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function (e) {
 
             var videoControls = $('#videoControls');
@@ -209,7 +216,7 @@
                 if (!$(this).hasClass('selectedMediaFlyoutOption')) {
                     var index = parseInt(this.getAttribute('data-index'));
 
-                    self.changeStream(self.getCurrentTicks(), { AudioStreamIndex: index });
+                    self.setAudioStreamIndex(index);
                 }
 
                 hideFlyout($('#video-audioTracksFlyout'));
@@ -220,7 +227,7 @@
                 if (!$(this).hasClass('selectedMediaFlyoutOption')) {
                     var index = parseInt(this.getAttribute('data-index'));
 
-                    self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: index });
+                    self.setSubtitleStreamIndex(index);
                 }
 
                 hideFlyout($('#video-subtitleFlyout'));
@@ -852,7 +859,6 @@
             //======================================================================================>
 
             // Show loading animation
-            $(".ui-loader").show();
             $("html").css("cursor", "wait");
 
             // Create video player
@@ -988,7 +994,6 @@
                 self.clearPauseStop();
 
                 $("html").css("cursor", "default");
-                $(".ui-loader").hide();
                 self.resetEnhancements();
 
                 var errorCode = this.error ? this.error.code : '';
@@ -1031,7 +1036,6 @@
 
             }).on("canplay", function () {
 
-                $(".ui-loader").hide();
                 $("html").css("cursor", "default");
 
             }).on("ended.playbackstopped", function () {

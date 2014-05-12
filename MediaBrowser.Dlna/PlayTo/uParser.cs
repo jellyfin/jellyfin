@@ -44,9 +44,4 @@ namespace MediaBrowser.Dlna.PlayTo
             return UpnpContainer.Create(uItem.Element);
         }
     }
-
-    public class uParserObject
-    {
-        public XElement Element { get; set; }
-    }
 }

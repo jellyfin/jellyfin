@@ -4,6 +4,8 @@ using Mono.Unix.Native;
 using System.Text.RegularExpressions;
 using System.IO;
 #endif
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MediaBrowser.ServerApplication.FFMpeg
 {
@@ -32,7 +34,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     switch (arg)
                     {
                         case "Version":
-                            return "20140304";
+                            return "20140506";
                         case "FFMpegFilename":
                             return "ffmpeg.exe";
                         case "FFProbeFilename":
@@ -42,7 +44,6 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     }
                     break;
 
-                #if __MonoCS__
                 case PlatformID.Unix:
                     if (PlatformDetection.IsMac)
                     {
@@ -69,7 +70,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             switch (arg)
                             {
                                 case "Version":
-                                    return "20140304";
+                                    return "20140506";
                                 case "FFMpegFilename":
                                     return "ffmpeg";
                                 case "FFProbeFilename":
@@ -85,7 +86,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             switch (arg)
                             {
                                 case "Version":
-                                    return "20140304";
+                                    return "20140505";
                                 case "FFMpegFilename":
                                     return "ffmpeg";
                                 case "FFProbeFilename":
@@ -98,7 +99,6 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     }
                     // Unsupported Unix platform
                     return "";
-#endif
             }
             return "";
         }
@@ -106,18 +106,17 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         private static string[] GetDownloadUrls()
         {
             var pid = Environment.OSVersion.Platform;
-            
+
             switch (pid)
             {
                 case PlatformID.Win32NT:
                     return new[]
                     {
-                        "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20140304-git-f34cceb-win32-static.7z",
-                        "https://www.dropbox.com/s/6brdetuzbld93jk/ffmpeg-20140304-git-f34cceb-win32-static.7z?dl=1"
+                        "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20140506-git-2baf1c8-win32-static.7z",
+                        "https://www.dropbox.com/s/lxlzxs0r83iatsv/ffmpeg-20140506-git-2baf1c8-win32-static.7z?dl=1"
                     };
-           
-                    #if __MonoCS__
-                case PlatformID.Unix: 
+
+                case PlatformID.Unix:
                     if (PlatformDetection.IsMac && PlatformDetection.IsX86_64)
                     {
                         return new[]
@@ -132,8 +131,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                         {
                             return new[]
                             {
-                                "http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.2014-03-04.tar.gz",
-                                "https://www.dropbox.com/s/0l76mcauqqkta31/ffmpeg.static.32bit.2014-03-04.tar.gz?dl=1"
+                                "http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.latest.tar.gz",
+                                "https://www.dropbox.com/s/k9s02pv5to6slfb/ffmpeg.static.32bit.2014-05-06.tar.gz?dl=1"
                             };
                         }
 
@@ -141,22 +140,20 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                         {
                             return new[]
                             {
-                                "http://ffmpeg.gusari.org/static/64bit/ffmpeg.static.64bit.2014-03-04.tar.gz",
-                                "https://www.dropbox.com/s/9wlxz440mdejuqe/ffmpeg.static.64bit.2014-03-04.tar.gz?dl=1"
+                                "http://ffmpeg.gusari.org/static/64bit/ffmpeg.static.64bit.latest.tar.gz",
+                                "https://www.dropbox.com/s/onuregwghywnzjo/ffmpeg.static.64bit.2014-05-05.tar.gz?dl=1"
                             };
                         }
 
                     }
 
                     //No Unix version available 
-                    return new string[] {};
-#endif
+                    return new string[] { };
             }
-            return new string[] {};
+            return new string[] { };
         }
     }
 
-    #if __MonoCS__
     public static class PlatformDetection
     {
         public readonly static bool IsWindows;
@@ -166,34 +163,52 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         public readonly static bool IsX86_64;
         public readonly static bool IsArm;
 
-        static PlatformDetection ()
+        static PlatformDetection()
         {
             IsWindows = Path.DirectorySeparatorChar == '\\';
 
             //Don't call uname on windows
             if (!IsWindows)
             {
-                Utsname uname;
-                var callResult = Syscall.uname(out uname);
-                if (callResult == 0)
-                {
-                    IsMac = uname.sysname == "Darwin";
-                    IsLinux = !IsMac && uname.sysname == "Linux";
+                var uname = GetUnixName();
 
-                    Regex archX86 = new Regex("(i|I)[3-6]86");
-                    IsX86 = archX86.IsMatch(uname.machine);
-                    IsX86_64 = !IsX86 && uname.machine == "x86_64";
-                    IsArm = !IsX86 && !IsX86 && uname.machine.StartsWith("arm");
-                }
+                IsMac = uname.sysname == "Darwin";
+                IsLinux = uname.sysname == "Linux";
+
+                var archX86 = new Regex("(i|I)[3-6]86");
+                IsX86 = archX86.IsMatch(uname.machine);
+                IsX86_64 = !IsX86 && uname.machine == "x86_64";
+                IsArm = !IsX86 && !IsX86_64 && uname.machine.StartsWith("arm");
             }
             else
             {
-                if (System.Environment.Is64BitOperatingSystem)
+                if (Environment.Is64BitOperatingSystem)
                     IsX86_64 = true;
                 else
                     IsX86 = true;
             }
         }
+
+        private static Uname GetUnixName()
+        {
+            var uname = new Uname();
+
+#if __MonoCS__
+                Utsname utsname;
+                var callResult = Syscall.uname(out utsname);
+                if (callResult == 0)
+                {
+                    uname.sysname= utsname.sysname;
+                    uname.machine= utsname.machine;
+                }
+#endif
+            return uname;
+        }
     }
-    #endif
+
+    public class Uname
+    {
+        public string sysname = string.Empty;
+        public string machine = string.Empty;
+    }
 }

@@ -184,6 +184,14 @@
             $('#movieTabs', page).show();
         }
 
+        if (item.Type == "ChannelVideoItem" || item.Type == "ChannelAudioItem" || item.Type == "ChannelCategoryItem") {
+            $('#channelTabs', page).show();
+        }
+
+        if (item.Type == "BoxSet") {
+            $('#boxsetTabs', page).show();
+        }
+
         if (item.MediaType == "Game") {
             $('#gameTabs', page).show();
         }
@@ -1069,12 +1077,7 @@
                 continue;
             }
 
-            var type;
-            if (item.MediaType == "Audio" && stream.Type == "Video") {
-                type = "Embedded Image";
-            } else {
-                type = stream.Type;
-            }
+            var type = stream.Type.replace('EmbeddedImage', 'Embedded Image');
 
             html += '<div class="mediaInfoStream">';
 

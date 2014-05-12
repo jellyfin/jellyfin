@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the primary image tag.
         /// </summary>
         /// <value>The primary image tag.</value>
-        public Guid? PrimaryImageTag { get; set; }
+        public string PrimaryImageTag { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has password.
@@ -73,7 +73,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool HasPrimaryImage
         {
-            get { return PrimaryImageTag.HasValue; }
+            get { return PrimaryImageTag != null; }
         }
 
         /// <summary>

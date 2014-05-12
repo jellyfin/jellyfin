@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Tasks;
+﻿using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
 
@@ -9,6 +10,11 @@ namespace MediaBrowser.Common.ScheduledTasks
     /// </summary>
     public interface IScheduledTaskWorker : IDisposable
     {
+        /// <summary>
+        /// Occurs when [task progress].
+        /// </summary>
+        event EventHandler<GenericEventArgs<double>> TaskProgress;
+
         /// <summary>
         /// Gets or sets the scheduled task.
         /// </summary>
@@ -62,6 +68,6 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Gets the unique id.
         /// </summary>
         /// <value>The unique id.</value>
-        Guid Id { get; }
+        string Id { get; }
     }
 }

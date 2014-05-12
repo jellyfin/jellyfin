@@ -47,7 +47,7 @@ namespace MediaBrowser.Model.Updates
         /// <param name="str">The STR.</param>
         /// <param name="def">The def.</param>
         /// <returns>System.String.</returns>
-        private static string ValueOrDefault(string str, string def = "")
+        private static string ValueOrDefault(string str, string def)
         {
             return string.IsNullOrEmpty(str) ? def : str;
         }
@@ -80,7 +80,7 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the source URL.
         /// </summary>
         /// <value>The source URL.</value>
-        public Guid checksum { get; set; }
+        public string checksum { get; set; }
 
         /// <summary>
         /// Gets or sets the target filename.

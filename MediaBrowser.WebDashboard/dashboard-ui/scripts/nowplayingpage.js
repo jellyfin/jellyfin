@@ -4,47 +4,230 @@
     var lastPlayerState;
     var isPositionSliderActive;
 
+    function showAudioMenu(page, item, currentIndex) {
+
+        var streams = (item.MediaStreams || []).filter(function (i) {
+
+            return i.Type == 'Audio';
+        });
+
+        var elem = $('#popupAudioTrackMenu', page);
+
+        var html = '<ul data-role="listview" data-inset="true" style="min-width: 210px;"><li data-role="list-divider">Select Audio</li>';
+
+        html += streams.map(function (s) {
+
+            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" class="lnkTrackOption">';
+
+            streamHtml += '<h3>';
+            
+            if (s.Index == currentIndex) {
+                streamHtml += '<img src="css/images/checkmarkgreen.png" style="width:18px;border-radius:3px;margin-right:.5em;vertical-align:top;" />';
+            }
+
+            streamHtml += (s.Codec || '').toUpperCase();
+
+            if (s.Profile) {
+                streamHtml += ' ' + s.Profile;
+            }
+
+            streamHtml += '</h3><p>';
+
+            var extras = [];
+
+            if (s.Language) {
+                extras.push(s.Language);
+            }
+            if (s.Layout) {
+                extras.push(s.Layout);
+            }
+            else if (s.Channels) {
+                extras.push(s.Channels + ' ch');
+            }
+
+            if (s.BitRate) {
+                extras.push((parseInt(s.BitRate / 1000)) + ' kbps');
+            }
+
+            streamHtml += extras.join(' - ');
+
+            streamHtml += '</p></a></li>';
+
+            return streamHtml;
+
+        }).join('');
+
+        html += '</ul>';
+
+        $('.trackList', elem).html(html).trigger('create');
+
+        elem.popup('open');
+    }
+
+    function showSubtitleMenu(page, item, currentIndex) {
+
+        var currentStreamImage = '<img src="css/images/checkmarkgreen.png" style="width:18px;border-radius:3px;margin-right:.5em;vertical-align:top;" />';
+        
+        var streams = (item.MediaStreams || []).filter(function (i) {
+
+            return i.Type == 'Subtitle';
+        });
+
+        var elem = $('#popupSubtitleTrackMenu', page);
+
+        var html = '<ul data-role="listview" data-inset="true" style="min-width: 210px;"><li data-role="list-divider">Select Subtitles</li>';
+
+        html += '<li><a href="#" data-index="-1" class="lnkTrackOption"><h3>';
+
+        if (currentIndex == null) {
+            html += currentStreamImage;
+        }
+
+        html += 'Off';
+        html += '</h3></a></li>';
+
+        html += streams.map(function (s) {
+
+            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" class="lnkTrackOption">';
+
+            streamHtml += '<h3>';
+
+            if (s.Index == currentIndex) {
+                streamHtml += currentStreamImage;
+            }
+
+            streamHtml += (s.Language || 'Unknown language');
+
+            if (s.IsDefault && s.IsForced) {
+                streamHtml += ' (Default/Forced)';
+            }
+            else if (s.IsDefault) {
+                streamHtml += ' (Default)';
+            }
+            else if (s.IsForced) {
+                streamHtml += ' (Forced)';
+            }
+
+            streamHtml += '</h3><p>';
+
+            streamHtml += (s.Codec || '').toUpperCase();
+
+            streamHtml += '</p></a></li>';
+
+            return streamHtml;
+
+        }).join('');
+
+        html += '</ul>';
+
+        $('.trackList', elem).html(html).trigger('create');
+
+        elem.popup('open');
+    }
+
     function bindEvents(page) {
 
-        $('.radioTabButton', page).on('change', function () {
+        $('.tabButton', page).on('click', function () {
 
-            var elem = $('.' + this.value, page);
+            var elem = $('.' + this.getAttribute('data-tab'), page);
             elem.siblings('.tabContent').hide();
 
             elem.show();
+
+            $('.tabButton', page).removeClass('ui-btn-active');
+            $(this).addClass('ui-btn-active');
         });
 
         $('.btnCommand,.btnToggleFullscreen', page).on('click', function () {
 
-            MediaController.sendCommand({
-                Name: this.getAttribute('data-command')
-                
-            }, currentPlayer);
+            if (currentPlayer) {
+                MediaController.sendCommand({
+                    Name: this.getAttribute('data-command')
+
+                }, currentPlayer);
+            }
+        });
+
+        $('#popupAudioTrackMenu', page).on('click', '.lnkTrackOption', function () {
+
+            if (currentPlayer && lastPlayerState) {
+
+                var index = this.getAttribute('data-index');
+
+                currentPlayer.setAudioStreamIndex(parseInt(index));
+
+                $('#popupAudioTrackMenu', page).popup('close');
+            }
+        });
+
+        $('#popupSubtitleTrackMenu', page).on('click', '.lnkTrackOption', function () {
+
+            if (currentPlayer && lastPlayerState) {
+                var index = this.getAttribute('data-index');
+
+                currentPlayer.setSubtitleStreamIndex(parseInt(index));
+
+                $('#popupSubtitleTrackMenu', page).popup('close');
+            }
+        });
+
+        $('.btnAudioTracks', page).on('click', function () {
+
+            if (currentPlayer && lastPlayerState && lastPlayerState.PlayState) {
+
+                var currentIndex = lastPlayerState.PlayState.AudioStreamIndex;
+                showAudioMenu(page, lastPlayerState.NowPlayingItem, currentIndex);
+            }
+        });
+
+        $('.btnSubtitles', page).on('click', function () {
+
+            if (currentPlayer && lastPlayerState && lastPlayerState.PlayState) {
+
+                var currentIndex = lastPlayerState.PlayState.SubtitleStreamIndex;
+                showSubtitleMenu(page, lastPlayerState.NowPlayingItem, currentIndex);
+            }
+        });
+
+        $('.btnChapters', page).on('click', function () {
+
+            if (currentPlayer && lastPlayerState) {
+            }
         });
 
         $('.btnStop', page).on('click', function () {
 
-            currentPlayer.stop();
+            if (currentPlayer) {
+                currentPlayer.stop();
+            }
         });
 
         $('.btnPlay', page).on('click', function () {
 
-            currentPlayer.unpause();
+            if (currentPlayer) {
+                currentPlayer.unpause();
+            }
         });
 
         $('.btnPause', page).on('click', function () {
 
-            currentPlayer.pause();
+            if (currentPlayer) {
+                currentPlayer.pause();
+            }
         });
 
         $('.btnNextTrack', page).on('click', function () {
 
-            currentPlayer.nextTrack();
+            if (currentPlayer) {
+                currentPlayer.nextTrack();
+            }
         });
 
         $('.btnPreviousTrack', page).on('click', function () {
 
-            currentPlayer.previousTrack();
+            if (currentPlayer) {
+                currentPlayer.previousTrack();
+            }
         });
 
         $('.positionSlider', page).on('slidestart', function () {
@@ -96,6 +279,12 @@
         button.addClass('hide');
     }
 
+    function hasStreams(item, type) {
+        return item && item.MediaStreams && item.MediaStreams.filter(function (i) {
+            return i.Type == type;
+        }).length > 0;
+    }
+
     function updatePlayerState(page, state) {
 
         lastPlayerState = state;
@@ -108,17 +297,20 @@
 
         $('.btnToggleFullscreen', page).buttonEnabled(item && item.MediaType == 'Video' && supportedCommands.indexOf('ToggleFullscreen') != -1);
 
-        $('.btnAudioTracks', page).buttonEnabled(false);
-        $('.btnSubtitles', page).buttonEnabled(false);
-        $('.btnChapters', page).buttonEnabled(false);
+        $('.btnAudioTracks', page).buttonEnabled(hasStreams(item, 'Audio') && supportedCommands.indexOf('SetAudioStreamIndex') != -1);
+        $('.btnSubtitles', page).buttonEnabled(hasStreams(item, 'Subtitle') && supportedCommands.indexOf('SetSubtitleStreamIndex') != -1);
+        $('.btnChapters', page).buttonEnabled(item && item.Chapters && item.Chapters.length);
+
+        $('.sendMessageElement', page).buttonEnabled(supportedCommands.indexOf('DisplayMessage') != -1);
+        $('.typeTextElement', page).buttonEnabled(supportedCommands.indexOf('SendString') != -1);
 
         $('.btnStop', page).buttonEnabled(item != null);
         $('.btnNextTrack', page).buttonEnabled(item != null);
         $('.btnPreviousTrack', page).buttonEnabled(item != null);
-        
+
         var btnPause = $('.btnPause', page).buttonEnabled(item != null);
         var btnPlay = $('.btnPlay', page).buttonEnabled(item != null);
-        
+
         var playState = state.PlayState || {};
 
         if (playState.IsPaused) {
@@ -147,7 +339,7 @@
 
                 positionSlider.val(0);
             }
-            
+
             if (playState.CanSeek) {
                 positionSlider.slider("enable");
             } else {
@@ -174,7 +366,7 @@
         } else {
             $('.videoButton', page).css('visibility', 'hidden');
         }
-        
+
         updateNowPlayingInfo(page, state);
     }
 
@@ -221,7 +413,7 @@
 
         setImageUrl(page, url);
     }
-    
+
     function setImageUrl(page, url) {
         currentImgUrl = url;
 
@@ -285,8 +477,7 @@
 
         var page = this;
 
-        $('.radioTabButton', page).checked(false).checkboxradio('refresh');
-        $('.radioTabButton:first', page).checked(true).checkboxradio('refresh').trigger('change');
+        $('.tabButton:first', page).trigger('click');
 
         $(function () {
 
@@ -307,5 +498,48 @@
 
         lastPlayerState = null;
     });
+
+    window.NowPlayingPage = {
+
+        onMessageSubmit: function () {
+
+            var form = this;
+
+            MediaController.sendCommand({
+                Name: 'DisplayMessage',
+                Arguments: {
+
+                    Header: $('#txtMessageTitle', form).val(),
+                    Text: $('#txtMessageText', form).val()
+                }
+
+            }, currentPlayer);
+
+            $('input', form).val('');
+            Dashboard.alert('Message sent.');
+
+            return false;
+        },
+        
+        onSendStringSubmit: function() {
+            
+            var form = this;
+
+            MediaController.sendCommand({
+                Name: 'SendString',
+                Arguments: {
+
+                    String: $('#txtTypeText', form).val()
+                }
+
+            }, currentPlayer);
+
+            $('input', form).val('');
+            Dashboard.alert('Text sent.');
+
+            return false;
+        }
+
+    };
 
 })(window, document, jQuery, setTimeout, clearTimeout);

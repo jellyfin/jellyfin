@@ -133,7 +133,7 @@ namespace MediaBrowser.Api.WebSocket
     /// <summary>
     /// Class LogFileWebSocketState
     /// </summary>
-    public class LogFileWebSocketState
+    public class LogFileWebSocketState : WebSocketListenerState
     {
         /// <summary>
         /// Gets or sets the last log file path.
