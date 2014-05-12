@@ -70,12 +70,9 @@ namespace MediaBrowser.Model.MediaInfo
             var orderStreams = streams
                 .Where(i => i.Type == type);
 
-            // For subs give a preference to text for performance
-
             if (string.IsNullOrEmpty(defaultLanguage))
             {
                 return orderStreams.OrderBy(i => i.IsDefault)
-                    .ThenBy(i => !i.IsGraphicalSubtitleStream)
                     .ThenBy(i => i.Index)
                     .ToList();
             }
