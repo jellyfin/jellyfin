@@ -484,29 +484,29 @@
 
             var url = "";
 
-            if (state.primaryImageTag) {
+            if (state.NowPlayingItem.PrimaryImageTag) {
 
-                url = ApiClient.getImageUrl(state.primaryImageItemId, {
+                url = ApiClient.getImageUrl(state.NowPlayingItem.PrimaryImageItemId, {
                     type: "Primary",
                     height: 80,
-                    tag: state.primaryImageTag
+                    tag: state.NowPlayingItem.PrimaryImageTag
                 });
             }
-            else if (state.backdropImageTag) {
+            else if (state.NowPlayingItem.BackdropImageTag) {
 
-                url = ApiClient.getImageUrl(state.backdropItemId, {
+                url = ApiClient.getImageUrl(state.NowPlayingItem.BackdropItemId, {
                     type: "Backdrop",
                     height: 80,
-                    tag: state.backdropImageTag,
+                    tag: state.NowPlayingItem.BackdropImageTag,
                     index: 0
                 });
 
-            } else if (state.thumbImageTag) {
+            } else if (state.NowPlayingItem.ThumbImageTag) {
 
-                url = ApiClient.getImageUrl(state.thumbImageItemId, {
+                url = ApiClient.getImageUrl(state.NowPlayingItem.ThumbImageItemId, {
                     type: "Thumb",
                     height: 80,
-                    tag: state.thumbImageTag
+                    tag: state.NowPlayingItem.ThumbImageTag
                 });
             }
 
