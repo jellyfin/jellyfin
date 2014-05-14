@@ -255,7 +255,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            info.StartPositionTicks = chapter.start / 100;
+            // Limit accuracy to milliseconds to match xml saving
+            var ms = Math.Round(TimeSpan.FromTicks(chapter.start / 100).TotalMilliseconds);
+            info.StartPositionTicks = TimeSpan.FromMilliseconds(ms).Ticks;
 
             return info;
         }
