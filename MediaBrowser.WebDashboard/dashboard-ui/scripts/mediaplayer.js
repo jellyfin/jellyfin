@@ -520,8 +520,6 @@
                 url = "css/images/items/detail/video.png";
             }
 
-            console.log("debug", state, url);
-
             var nowPlayingTextElement = $('.nowPlayingText', mediaControls);
             var nameHtml = self.getNowPlayingNameHtml(state);
 
