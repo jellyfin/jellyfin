@@ -566,7 +566,7 @@
             // Get active elem to see what type it is
             var active = document.activeElement;
             var type = active.type || active.tagName.toLowerCase();
-            return (type === "text" || type === "select" || type === "textarea");
+            return (type === "text" || type === "select" || type === "textarea" || type == "password");
         };
     }
 
