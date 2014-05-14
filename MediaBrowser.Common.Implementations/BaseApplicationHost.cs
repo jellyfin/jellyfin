@@ -765,7 +765,7 @@ namespace MediaBrowser.Common.Implementations
         {
             Logger.Info("Application has been updated to version {0}", package.versionStr);
 
-            EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<PackageVersionInfo>
+            EventHelper.FireEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<PackageVersionInfo>
             {
                 Argument = package
 

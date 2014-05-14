@@ -1422,22 +1422,34 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentException("Cannot call AddImages with chapter images");
             }
 
-            var existingImagePaths = GetImages(imageType)
-                .Select(i => i.Path)
+            var existingImages = GetImages(imageType)
                 .ToList();
 
-            var newImages = images
-                .Where(i => !existingImagePaths.Contains(i.FullName, StringComparer.OrdinalIgnoreCase))
-                .ToList();
+            var newImageList = new List<FileSystemInfo>();
 
-            ImageInfos.AddRange(newImages.Select(i => new ItemImageInfo
+            foreach (var newImage in images)
+            {
+                var existing = existingImages
+                    .FirstOrDefault(i => string.Equals(i.Path, newImage.FullName, StringComparison.OrdinalIgnoreCase));
+
+                if (existing == null)
+                {
+                    newImageList.Add(newImage);
+                }
+                else
+                {
+                    existing.DateModified = FileSystem.GetLastWriteTimeUtc(newImage);
+                }
+            }
+
+            ImageInfos.AddRange(newImageList.Select(i => new ItemImageInfo
             {
                 Path = i.FullName,
                 Type = imageType,
                 DateModified = FileSystem.GetLastWriteTimeUtc(i)
             }));
 
-            return newImages.Count > 0;
+            return newImageList.Count > 0;
         }
 
         /// <summary>

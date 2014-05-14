@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="user">The user.</param>
         private void OnUserUpdated(User user)
         {
-            EventHelper.QueueEventIfNotNull(UserUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+            EventHelper.FireEventIfNotNull(UserUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
         }
         #endregion
 

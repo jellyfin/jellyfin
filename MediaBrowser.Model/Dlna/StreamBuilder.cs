@@ -269,8 +269,8 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',')[0];
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.Protocol = transcodingProfile.Protocol;
-                playlistItem.AudioStreamIndex = options.AudioStreamIndex;
-                playlistItem.SubtitleStreamIndex = options.SubtitleStreamIndex;
+                playlistItem.AudioStreamIndex = options.AudioStreamIndex ?? item.DefaultAudioStreamIndex;
+                playlistItem.SubtitleStreamIndex = options.SubtitleStreamIndex ?? item.DefaultSubtitleStreamIndex;
 
                 List<ProfileCondition> videoTranscodingConditions = new List<ProfileCondition>();
                 foreach (CodecProfile i in options.Profile.CodecProfiles)

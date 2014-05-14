@@ -52,7 +52,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <param name="plugin">The plugin.</param>
         private void OnPluginUninstalled(IPlugin plugin)
         {
-            EventHelper.QueueEventIfNotNull(PluginUninstalled, this, new GenericEventArgs<IPlugin> { Argument = plugin }, _logger);
+            EventHelper.FireEventIfNotNull(PluginUninstalled, this, new GenericEventArgs<IPlugin> { Argument = plugin }, _logger);
         }
         #endregion
 
@@ -70,7 +70,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         {
             _logger.Info("Plugin updated: {0} {1} {2}", newVersion.name, newVersion.version, newVersion.classification);
 
-            EventHelper.QueueEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) }, _logger);
+            EventHelper.FireEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) }, _logger);
 
             _applicationHost.NotifyPendingRestart();
         }
@@ -89,7 +89,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         {
             _logger.Info("New plugin installed: {0} {1} {2}", package.name, package.version, package.classification);
 
-            EventHelper.QueueEventIfNotNull(PluginInstalled, this, new GenericEventArgs<PackageVersionInfo> { Argument = package }, _logger);
+            EventHelper.FireEventIfNotNull(PluginInstalled, this, new GenericEventArgs<PackageVersionInfo> { Argument = package }, _logger);
 
             _applicationHost.NotifyPendingRestart();
         }
@@ -403,7 +403,7 @@ namespace MediaBrowser.Common.Implementations.Updates
                 PackageVersionInfo = package
             };
 
-            EventHelper.QueueEventIfNotNull(PackageInstalling, this, installationEventArgs, _logger);
+            EventHelper.FireEventIfNotNull(PackageInstalling, this, installationEventArgs, _logger);
 
             try
             {
@@ -418,7 +418,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
                 CompletedInstallations.Add(installationInfo);
 
-                EventHelper.QueueEventIfNotNull(PackageInstallationCompleted, this, installationEventArgs, _logger);
+                EventHelper.FireEventIfNotNull(PackageInstallationCompleted, this, installationEventArgs, _logger);
             }
             catch (OperationCanceledException)
             {
@@ -429,7 +429,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
                 _logger.Info("Package installation cancelled: {0} {1}", package.name, package.versionStr);
 
-                EventHelper.QueueEventIfNotNull(PackageInstallationCancelled, this, installationEventArgs, _logger);
+                EventHelper.FireEventIfNotNull(PackageInstallationCancelled, this, installationEventArgs, _logger);
 
                 throw;
             }
@@ -442,7 +442,7 @@ namespace MediaBrowser.Common.Implementations.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
-                EventHelper.QueueEventIfNotNull(PackageInstallationFailed, this, new InstallationFailedEventArgs
+                EventHelper.FireEventIfNotNull(PackageInstallationFailed, this, new InstallationFailedEventArgs
                 {
                     InstallationInfo = installationInfo,
                     Exception = ex

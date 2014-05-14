@@ -77,8 +77,9 @@ namespace MediaBrowser.Server.Implementations.Session
         public event EventHandler<PlaybackStopEventArgs> PlaybackStopped;
 
         public event EventHandler<SessionEventArgs> SessionStarted;
-
+        public event EventHandler<SessionEventArgs> CapabilitiesChanged;
         public event EventHandler<SessionEventArgs> SessionEnded;
+        public event EventHandler<SessionEventArgs> SessionActivity;
 
         private IEnumerable<ISessionControllerFactory> _sessionFactories = new List<ISessionControllerFactory>();
 
@@ -224,9 +225,15 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 return session;
             }
-
+            
             // Save this directly. No need to fire off all the events for this.
             await _userRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
+
+            EventHelper.FireEventIfNotNull(SessionActivity, this, new SessionEventArgs
+            {
+                SessionInfo = session
+
+            }, _logger);
 
             return session;
         }
@@ -517,7 +524,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 }
             }
 
-            EventHelper.QueueEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
+            EventHelper.FireEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
             {
                 Item = libraryItem,
                 Users = users,
@@ -1127,6 +1134,12 @@ namespace MediaBrowser.Server.Implementations.Session
 
             session.PlayableMediaTypes = capabilities.PlayableMediaTypes;
             session.SupportedCommands = capabilities.SupportedCommands;
+
+            EventHelper.FireEventIfNotNull(CapabilitiesChanged, this, new SessionEventArgs
+            {
+                SessionInfo = session
+
+            }, _logger);
         }
 
         public SessionInfoDto GetSessionInfoDto(SessionInfo session)
