@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using System.Collections.Generic;
 using System.Threading;
 using System.Xml;
 
@@ -12,13 +14,20 @@ namespace MediaBrowser.Providers.Movies
     /// </summary>
     public class MovieXmlParser : BaseItemXmlParser<Video>
     {
+        private List<ChapterInfo> _chaptersFound;
+
         public MovieXmlParser(ILogger logger)
             : base(logger)
         {
         }
 
-        public void FetchAsync(Video item, string metadataFile, CancellationToken cancellationToken)
+        public void Fetch(Video item, 
+            List<ChapterInfo> chapters, 
+            string metadataFile, 
+            CancellationToken cancellationToken)
         {
+            _chaptersFound = chapters;
+
             Fetch(item, metadataFile, cancellationToken);
         }
 
@@ -32,7 +41,6 @@ namespace MediaBrowser.Providers.Movies
             switch (reader.Name)
             {
                 case "TmdbCollectionName":
-
                     {
                         var val = reader.ReadElementContentAsString();
                         var movie = item as Movie;
@@ -41,13 +49,13 @@ namespace MediaBrowser.Providers.Movies
                         {
                             movie.TmdbCollectionName = val;
                         }
-                        
+
                         break;
                     }
 
                 case "Chapters":
 
-                    //_chaptersTask = FetchChaptersFromXmlNode(item, reader.ReadSubtree(), _itemRepo, CancellationToken.None);
+                    _chaptersFound.AddRange(FetchChaptersFromXmlNode(item, reader.ReadSubtree()));
                     break;
 
                 default:
