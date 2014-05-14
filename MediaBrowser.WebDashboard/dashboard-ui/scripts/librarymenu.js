@@ -1,24 +1,5 @@
 ﻿(function (window, document, $) {
 
-    var channelsPromise;
-    var liveTvInfoPromise;
-    var itemsPromise;
-
-    function ensurePromises() {
-        itemsPromise = itemsPromise || ApiClient.getItems(Dashboard.getCurrentUserId(), {
-
-            SortBy: "SortName"
-
-        });
-        channelsPromise = channelsPromise || $.getJSON(ApiClient.getUrl("Channels", {
-            userId: Dashboard.getCurrentUserId(),
-
-            // We just want the total record count
-            limit: 0
-        }));
-        liveTvInfoPromise = liveTvInfoPromise || ApiClient.getLiveTvInfo();
-    }
-
     function renderHeader(page, user) {
 
         var html = '<div class="viewMenuBar ui-bar-b">';
@@ -72,63 +53,92 @@
         return LibraryBrowser.getHref(item);
     }
 
-    function getViewsHtml(user, channelCount, items, liveTvInfo) {
+    function getViewsHtml() {
 
         var html = '';
 
-        html += items.map(function (i) {
+        html += '<div class="libraryMenuOptions">';
+        html += '</div>';
 
-            var viewMenuCssClass = (i.CollectionType || 'general') + 'ViewMenu';
+        html += '<div class="libraryMenuDivider secondaryDivider" style="display:none;"></div>';
 
-            return '<a data-itemid="' + i.Id + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink ' + viewMenuCssClass + '" href="' + getItemHref(i) + '">' + i.Name + '</a>';
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder channelsViewMenu channelsMenuOption" style="display:none;" data-itemid="channels" href="channels.html">Channels</a>';
 
-        }).join('');
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder tvshowsViewMenu liveTvMenuOption" style="display:none;" data-itemid="livetv" href="livetvsuggested.html">Live TV</a>';
 
-        var showChannels = channelCount;
-        var showLiveTv = liveTvInfo.EnabledUsers.indexOf(user.Id) != -1;
-
-        if (showChannels || showLiveTv) {
-            html += '<div class="libraryMenuDivider"></div>';
-        }
-
-        if (showChannels) {
-            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder channelsViewMenu" data-itemid="channels" href="channels.html">Channels</a>';
-        }
-
-        if (showLiveTv) {
-            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder tvshowsViewMenu" data-itemid="livetv" href="livetvsuggested.html">Live TV</a>';
-        }
-
-        if (user.Configuration.IsAdministrator) {
-            html += '<div class="libraryMenuDivider"></div>';
-            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder dashboardViewMenu" data-itemid="dashboard" href="dashboard.html">Dashboard</a>';
-            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html">Metadata Manager</a>';
-            html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder reportsViewMenu" data-itemid="reports" href="reports.html">Reports</a>';
-        }
+        html += '<div class="adminMenuOptions">';
+        html += '<div class="libraryMenuDivider"></div>';
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder dashboardViewMenu" data-itemid="dashboard" href="dashboard.html">Dashboard</a>';
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html">Metadata Manager</a>';
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder reportsViewMenu" data-itemid="reports" href="reports.html">Reports</a>';
+        html += '</div>';
 
         return html;
     }
 
     function showLibraryMenu() {
 
-        ensurePromises();
+        var userId = Dashboard.getCurrentUserId();
 
-        var userPromise = Dashboard.getCurrentUser();
+        ApiClient.getItems(userId, {
 
-        $.when(channelsPromise, itemsPromise, liveTvInfoPromise, userPromise).done(function (response1, response2, response3, response4) {
+            SortBy: "SortName"
 
-            var channelCount = response1[0].TotalRecordCount;
-            var items = response2[0].Items;
-            var liveTvInfo = response3[0];
-            var user = response4[0];
+        }).done(function (result) {
 
-            var page = $.mobile.activePage;
+            var items = result.Items;
 
-            var panel = getLibraryMenu(user, channelCount, items, liveTvInfo);
+            var html = items.map(function (i) {
 
-            updateLibraryNavLinks(page);
+                var viewMenuCssClass = (i.CollectionType || 'general') + 'ViewMenu';
 
-            $(panel).panel('toggle');
+                return '<a data-itemid="' + i.Id + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink ' + viewMenuCssClass + '" href="' + getItemHref(i) + '">' + i.Name + '</a>';
+
+            }).join('');
+
+            $('.libraryMenuOptions').html(html);
+        });
+
+        var page = $.mobile.activePage;
+
+        var panel = getLibraryMenu();
+
+        updateLibraryNavLinks(page);
+
+        $(panel).panel('toggle');
+
+        ApiClient.getLiveTvInfo().done(function (liveTvInfo) {
+
+            var showLiveTv = liveTvInfo.EnabledUsers.indexOf(userId) != -1;
+
+            if (showLiveTv) {
+                $('.liveTvMenuOption').show();
+                $('.secondaryDivider').show();
+            }
+        });
+
+        $.getJSON(ApiClient.getUrl("Channels", {
+            userId: userId,
+
+            // We just want the total record count
+            limit: 0
+
+        })).done(function (response) {
+
+            if (response.TotalRecordCount) {
+                $('.channelsMenuOption').show();
+                $('.secondaryDivider').show();
+            }
+
+        });
+
+        Dashboard.getCurrentUser().done(function (user) {
+
+            if (user.Configuration.IsAdministrator) {
+                $('.adminMenuOptions').show();
+            } else {
+                $('.adminMenuOptions').hide();
+            }
         });
     }
 
