@@ -32,6 +32,18 @@
 
         DashboardPage.reloadSystemInfo(page);
         DashboardPage.reloadNews(page);
+
+        DashboardPage.sessionUpdateTimer = setInterval(DashboardPage.refreshSessionsLocally, 60000);
+    },
+
+    refreshSessionsLocally: function () {
+
+        var list = DashboardPage.sessionsList;
+
+        if (list) {
+            console.log('refreshSessionsLocally');
+            DashboardPage.renderActiveConnections($.mobile.activePage, list);
+        }
     },
 
     reloadSystemInfo: function (page) {
@@ -122,6 +134,10 @@
 
         $(ApiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
         DashboardPage.stopInterval();
+        
+        if (DashboardPage.sessionUpdateTimer) {
+            clearInterval(DashboardPage.sessionUpdateTimer);
+        }
     },
 
     startInterval: function () {
@@ -189,6 +205,8 @@
     renderActiveConnections: function (page, sessions) {
 
         var html = '';
+
+        DashboardPage.sessionsList = sessions;
 
         var parentElement = $('.activeDevices', page);
 

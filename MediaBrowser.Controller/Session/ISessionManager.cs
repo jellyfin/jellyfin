@@ -38,6 +38,13 @@ namespace MediaBrowser.Controller.Session
         /// Occurs when [session ended].
         /// </summary>
         event EventHandler<SessionEventArgs> SessionEnded;
+
+        event EventHandler<SessionEventArgs> SessionActivity;
+        
+        /// <summary>
+        /// Occurs when [capabilities changed].
+        /// </summary>
+        event EventHandler<SessionEventArgs> CapabilitiesChanged;
         
         /// <summary>
         /// Gets the sessions.

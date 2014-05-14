@@ -38,7 +38,7 @@
 
 .libraryPage > .ui-content {
     padding-top: 10px;
-    padding-bottom: 100px;
+    padding-bottom: 50px;
 }
 
 .libraryPage .currentUsername {
@@ -56,7 +56,7 @@
     border-spacing: 0;
     border-collapse: collapse;
     margin: 0 auto;
-    max-width: 1540px;
+    max-width: 650px;
 }
 
     .ehsContent td {
@@ -65,7 +65,51 @@
     }
 
 .squareEhsContent {
-    max-width: 1420px;
+    max-width: 750px;
+}
+
+@media all and (min-width: 1000px) {
+
+    .ehsContent {
+        max-width: 905px;
+    }
+
+    .squareEhsContent {
+        max-width: 750px;
+    }
+}
+
+@media all and (min-width: 1200px) {
+
+    .ehsContent {
+        max-width: 925px;
+    }
+
+    .squareEhsContent {
+        max-width: 900px;
+    }
+}
+
+@media all and (min-width: 1400px) {
+
+    .ehsContent {
+        max-width: 1240px;
+    }
+
+    .squareEhsContent {
+        max-width: 1240px;
+    }
+}
+
+@media all and (min-width: 1600px) {
+
+    .ehsContent {
+        max-width: 1540px;
+    }
+
+    .squareEhsContent {
+        max-width: 1420px;
+    }
 }
 
 .detailPageContent {

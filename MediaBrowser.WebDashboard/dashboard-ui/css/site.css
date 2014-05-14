@@ -90,13 +90,13 @@ h2 {
     font-size: 1.68em;
 }
 
-a, a.ui-link {
+/*a, a.ui-link {
     font-weight: normal;
 }
 
 .ui-controlgroup a, a.ui-btn {
     font-weight: bold;
-}
+}*/
 
 h1 a {
     text-decoration: none;

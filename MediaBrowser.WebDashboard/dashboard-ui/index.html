@@ -6,17 +6,16 @@
 <body>
     <div id="indexPage" data-role="page" class="page type-home libraryPage allLibraryPage noSecondaryNavPage backdropPage" data-theme="b" data-backdroptype="movie,series,game,book">
 
-<!--        <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="#" class="ui-btn-active">${TabHome}</a>
-            <a href="#">${TabMyLibrary}</a>
-            <a href="#">${TabFavorites}</a>
-        </div>-->
-
         <div data-role="content">
 
             <table class="ehsContent">
                 <tr>
                     <td>
+                        <h1 class="listHeader">${HeaderMyLibrary}</h1>
+
+                        <div class="myLibrary">
+                        </div>
+
                         <div id="resumableSection" style="display: none;">
                             <h1 class="listHeader">${HeaderResume}</h1>
 
@@ -28,8 +27,6 @@
 
                         <div id="recentlyAddedItems">
                         </div>
-
-                        <div class="spotlightContainer"></div>
                     </td>
                 </tr>
             </table>

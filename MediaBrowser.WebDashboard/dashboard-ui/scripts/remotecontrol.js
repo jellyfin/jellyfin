@@ -197,7 +197,7 @@
 
             if (ApiClient.isWebSocketOpen()) {
 
-                ApiClient.sendWebSocketMessage("SessionsStart", "100,900");
+                ApiClient.sendWebSocketMessage("SessionsStart", "100,800");
             }
         };
 

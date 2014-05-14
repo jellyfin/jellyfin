@@ -80,5 +80,13 @@ namespace MediaBrowser.Api.ScheduledTasks
                 return false;
             }
         }
+
+        protected override void Dispose(bool dispose)
+        {
+            TaskManager.TaskExecuting -= TaskManager_TaskExecuting;
+            TaskManager.TaskCompleted -= TaskManager_TaskCompleted;
+            
+            base.Dispose(dispose);
+        }
     }
 }

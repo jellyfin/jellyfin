@@ -27,9 +27,9 @@
 
         html += '</div>';
         html += '</div>';
-        
+
         if (nextUp && nextUp.ImageTags && nextUp.ImageTags.Primary) {
-            
+
             html += '<div class="spotlightContent rightSpotlightContent">';
 
             imgUrl = ApiClient.getImageUrl(nextUp.Id, {
@@ -113,6 +113,24 @@
 
         var options = {
 
+            SortBy: "SortName",
+            Fields: "PrimaryImageAspectRatio"
+        };
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+
+            $('.myLibrary', page).html(LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                shape: 'smallBackdrop',
+                showTitle: true,
+                centerText: true
+
+            })).createPosterItemMenus();
+
+        });
+
+        options = {
+
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             MediaTypes: "Video",
@@ -124,7 +142,7 @@
             ExcludeLocationTypes: "Virtual"
         };
 
-        var promise1 = ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
             if (result.Items.length) {
                 $('#resumableSection', page).show();
@@ -156,7 +174,7 @@
             ExcludeLocationTypes: "Virtual,Remote"
         };
 
-        var promise2 = ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
 
@@ -168,9 +186,6 @@
 
             })).createPosterItemMenus();
         });
-
-        //var allPromise = $.when(promise1, promise2);
-        //reloadSpotlight(page, allPromise);
     });
 
 })(jQuery, document, ApiClient);

@@ -267,40 +267,55 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var currentImage = item.GetImageInfo(type, 0);
 
-                    if (currentImage == null || !string.Equals(currentImage.Path, image.FileInfo.FullName, StringComparison.OrdinalIgnoreCase))
+                    if (currentImage == null)
                     {
                         item.SetImagePath(type, image.FileInfo);
                         changed = true;
                     }
+                    else if (!string.Equals(currentImage.Path, image.FileInfo.FullName,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        item.SetImagePath(type, image.FileInfo);
+                        changed = true;
+                    }
+                    else
+                    {
+                        currentImage.DateModified = _fileSystem.GetLastWriteTimeUtc(image.FileInfo);
+                    }
                 }
             }
 
-            var backdrops = images.Where(i => i.Type == ImageType.Backdrop).ToList();
-            if (backdrops.Count > 0)
+            if (UpdateMultiImages(item, images, ImageType.Backdrop))
             {
-                var foundImages = images.Where(i => i.Type == ImageType.Backdrop)
-                    .Select(i => i.FileInfo)
-                    .ToList();
-
-                if (foundImages.Count > 0)
-                {
-                    if (item.AddImages(ImageType.Backdrop, foundImages))
-                    {
-                        changed = true;
-                    }
-                }
+                changed = true;
             }
 
             var hasScreenshots = item as IHasScreenshots;
             if (hasScreenshots != null)
             {
-                var foundImages = images.Where(i => i.Type == ImageType.Screenshot)
+                if (UpdateMultiImages(item, images, ImageType.Screenshot))
+                {
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
+        private bool UpdateMultiImages(IHasImages item, List<LocalImageInfo> images, ImageType type)
+        {
+            var changed = false;
+
+            var backdrops = images.Where(i => i.Type == type).ToList();
+            if (backdrops.Count > 0)
+            {
+                var foundImages = images.Where(i => i.Type == type)
                     .Select(i => i.FileInfo)
                     .ToList();
 
                 if (foundImages.Count > 0)
                 {
-                    if (item.AddImages(ImageType.Screenshot, foundImages))
+                    if (item.AddImages(type, foundImages))
                     {
                         changed = true;
                     }

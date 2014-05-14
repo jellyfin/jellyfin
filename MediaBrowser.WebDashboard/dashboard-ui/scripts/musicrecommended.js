@@ -13,7 +13,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "MusicAlbum",
-            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 5),
+            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 7 : 5),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             ParentId: parentId
@@ -36,7 +36,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Audio",
-            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 5),
+            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 7 : 5),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo",
             ParentId: parentId
@@ -59,7 +59,7 @@
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             IncludeItemTypes: "Audio",
-            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 5),
+            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 7 : 5),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo",
             Filters: "IsPlayed",
