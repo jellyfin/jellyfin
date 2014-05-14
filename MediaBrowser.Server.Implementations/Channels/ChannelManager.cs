@@ -87,18 +87,30 @@ namespace MediaBrowser.Server.Implementations.Channels
                     .ToList();
             }
 
+            var all = channels;
+            var totalCount = all.Count;
+
+            if (query.StartIndex.HasValue)
+            {
+                all = all.Skip(query.StartIndex.Value).ToList();
+            }
+            if (query.Limit.HasValue)
+            {
+                all = all.Take(query.Limit.Value).ToList();
+            }
+            
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var returnItems = channels.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var returnItems = all.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
             {
                 Items = returnItems,
-                TotalRecordCount = returnItems.Length
+                TotalRecordCount = totalCount
             };
 
             return Task.FromResult(result);

@@ -348,7 +348,7 @@
 	"OptionDownloadPrimaryImage": "Primary",
 	"HeaderFetchImages": "Fetch Images:",
 	"HeaderImageSettings": "Image Settings",
-	"TabCustomizations": "Customizations",
+	"TabOther": "Other",
 	"LabelMaxBackdropsPerItem": "Maximum number of backdrops per item:",
 	"LabelMaxScreenshotsPerItem": "Maximum number of screenshots per item:",
 	"LabelMinBackdropDownloadWidth": "Minimum backdrop download width:",

@@ -1,6 +1,6 @@
 ﻿(function (window, document, $) {
 
-    var itemCountsPromise;
+    var channelsPromise;
     var liveTvInfoPromise;
     var itemsPromise;
 
@@ -10,7 +10,12 @@
             SortBy: "SortName"
 
         });
-        itemCountsPromise = itemCountsPromise || ApiClient.getItemCounts(Dashboard.getCurrentUserId());
+        channelsPromise = channelsPromise || $.getJSON(ApiClient.getUrl("Channels", {
+            userId: Dashboard.getCurrentUserId(),
+
+            // We just want the total record count
+            limit: 0
+        }));
         liveTvInfoPromise = liveTvInfoPromise || ApiClient.getLiveTvInfo();
     }
 
@@ -21,8 +26,6 @@
         html += '<button type="button" data-role="none" title="Menu" onclick="LibraryMenu.showLibraryMenu();" class="headerButton libraryMenuButton headerButtonLeft"><img src="css/images/menu.png" /></button>';
 
         html += '<a class="desktopHomeLink headerButton headerButtonLeft" href="index.html"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a>';
-
-        //html += '<a class="viewMenuRemoteControlButton" href="nowplaying.html" data-role="button" data-icon="play" data-inline="true" data-iconpos="notext" title="Now Playing">Remote Control</a>';
 
         html += '<div class="viewMenuSecondary">';
 
@@ -69,7 +72,7 @@
         return LibraryBrowser.getHref(item);
     }
 
-    function getViewsHtml(user, counts, items, liveTvInfo) {
+    function getViewsHtml(user, channelCount, items, liveTvInfo) {
 
         var html = '';
 
@@ -81,7 +84,7 @@
 
         }).join('');
 
-        var showChannels = counts.ChannelCount;
+        var showChannels = channelCount;
         var showLiveTv = liveTvInfo.EnabledUsers.indexOf(user.Id) != -1;
 
         if (showChannels || showLiveTv) {
@@ -112,22 +115,24 @@
 
         var userPromise = Dashboard.getCurrentUser();
 
-        $.when(itemCountsPromise, itemsPromise, liveTvInfoPromise, userPromise).done(function (response1, response2, response3, response4) {
+        $.when(channelsPromise, itemsPromise, liveTvInfoPromise, userPromise).done(function (response1, response2, response3, response4) {
 
-            var counts = response1[0];
+            var channelCount = response1[0].TotalRecordCount;
             var items = response2[0].Items;
             var liveTvInfo = response3[0];
             var user = response4[0];
 
             var page = $.mobile.activePage;
 
-            var panel = getLibraryMenu(page, user, counts, items, liveTvInfo);
+            var panel = getLibraryMenu(user, channelCount, items, liveTvInfo);
+
+            updateLibraryNavLinks(page);
 
             $(panel).panel('toggle');
         });
     }
 
-    function getLibraryMenu(page, user, counts, items, liveTvInfo) {
+    function getLibraryMenu(user, channelCount, items, liveTvInfo) {
 
         var panel = $('#libraryPanel');
 
@@ -140,7 +145,7 @@
             html += '<p class="libraryPanelHeader"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
 
             html += '<div style="margin: 0 -1em;">';
-            html += getViewsHtml(user, counts, items, liveTvInfo);
+            html += getViewsHtml(user, channelCount, items, liveTvInfo);
             html += '</div>';
 
             html += '</div>';
@@ -149,8 +154,6 @@
 
             panel = $('#libraryPanel').panel({}).trigger('create');
         }
-
-        updateLibraryNavLinks(page);
 
         return panel;
     }
@@ -259,7 +262,7 @@
                 renderHeader(page, user);
 
                 updateCastIcon();
-                
+
                 updateLibraryNavLinks(page);
             });
         }

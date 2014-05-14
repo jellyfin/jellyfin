@@ -1348,8 +1348,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 UpdateItemInLibraryCache(item);
             }
 
-            UpdateCollectionFolders();
-
             if (ItemAdded != null)
             {
                 foreach (var item in list)
@@ -1412,8 +1410,6 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="item">The item.</param>
         public void ReportItemRemoved(BaseItem item)
         {
-            UpdateCollectionFolders();
-
             if (ItemRemoved != null)
             {
                 try
@@ -1424,14 +1420,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     _logger.ErrorException("Error in ItemRemoved event handler", ex);
                 }
-            }
-        }
-
-        private void UpdateCollectionFolders()
-        {
-            foreach (var folder in _userManager.Users.SelectMany(i => i.RootFolder.Children).OfType<CollectionFolder>().ToList())
-            {
-                folder.ResetDynamicChildren();
             }
         }
 

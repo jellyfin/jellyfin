@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -432,21 +431,6 @@ namespace MediaBrowser.Api.Library
             var songs = filteredItems.OfType<Audio>().ToList();
             var series = filteredItems.OfType<Series>().ToList();
 
-            var channelCount = 0;
-
-            try
-            {
-                channelCount = _channelManager.GetChannels(new ChannelQuery
-                {
-                    UserId = request.UserId.HasValue ? request.UserId.Value.ToString("N") : null
-
-                }, CancellationToken.None).Result.TotalRecordCount;
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error getting channels", ex);
-            }
-
             var counts = new ItemCounts
             {
                 AlbumCount = albums.Count,
@@ -462,9 +446,7 @@ namespace MediaBrowser.Api.Library
                 BoxSetCount = boxsets.Count,
                 BookCount = books.Count,
 
-                UniqueTypes = items.Select(i => i.GetClientTypeName()).Distinct().ToList(),
-
-                ChannelCount = channelCount
+                UniqueTypes = items.Select(i => i.GetClientTypeName()).Distinct().ToList()
             };
 
             return ToOptimizedSerializedResultUsingCache(counts);
