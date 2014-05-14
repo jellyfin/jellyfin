@@ -158,7 +158,7 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The actual children.</value>
         protected override IEnumerable<BaseItem> ActualChildren
         {
-            get { return _actualChildren ?? (_actualChildren = GetActualChildren()); }
+            get { return GetActualChildren(); }
         }
 
         private IEnumerable<BaseItem> GetActualChildren()
