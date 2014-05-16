@@ -52,9 +52,9 @@
 
             var id = 'mediaFolder' + i;
 
-            var checkedAttribute = user.Configuration.BlockedMediaFolders.indexOf(folder.Name) == -1 ? ' checked="checked"' : '';
+            var checkedAttribute = user.Configuration.BlockedMediaFolders.indexOf(folder.Id) == -1 && user.Configuration.BlockedMediaFolders.indexOf(folder.Name) == -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkMediaFolder" data-foldername="' + folder.Name + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkMediaFolder" data-foldername="' + folder.Id + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
         }
 
@@ -77,9 +77,9 @@
 
             var id = 'channels' + i;
 
-            var checkedAttribute = user.Configuration.BlockedChannels.indexOf(folder.Name) == -1 ? ' checked="checked"' : '';
+            var checkedAttribute = user.Configuration.BlockedChannels.indexOf(folder.Id) == -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkChannel" data-foldername="' + folder.Name + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkChannel" data-foldername="' + folder.Id + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
         }
 

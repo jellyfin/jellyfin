@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Plugins;
+﻿using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
@@ -20,6 +18,7 @@ using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,6 +70,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _userManager.UserCreated += _userManager_UserCreated;
             _libraryManager.ItemAdded += _libraryManager_ItemAdded;
             _sessionManager.PlaybackStart += _sessionManager_PlaybackStart;
+            _sessionManager.PlaybackStopped += _sessionManager_PlaybackStopped;
             _appHost.HasPendingRestartChanged += _appHost_HasPendingRestartChanged;
             _appHost.HasUpdateAvailableChanged += _appHost_HasUpdateAvailableChanged;
             _appHost.ApplicationUpdated += _appHost_ApplicationUpdated;
@@ -164,17 +164,41 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             await SendNotification(notification).ConfigureAwait(false);
         }
 
-        async void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
-        {
-            var user = e.Users.FirstOrDefault();
+         void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
+         {
+             var item = e.MediaInfo;
 
+             if (item == null)
+             {
+                 _logger.Warn("PlaybackStart reported with null media info.");
+                 return;
+             }
+
+             var type = GetPlaybackNotificationType(item.MediaType);
+
+             SendPlaybackNotification(type, e);
+         }
+
+        void _sessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)
+        {
             var item = e.MediaInfo;
 
             if (item == null)
             {
-                _logger.Warn("PlaybackStart reported with null media info.");
+                _logger.Warn("PlaybackStopped reported with null media info.");
                 return;
             }
+
+            var type = GetPlaybackStoppedNotificationType(item.MediaType);
+
+            SendPlaybackNotification(type, e);
+        }
+
+        private async void SendPlaybackNotification(string type, PlaybackProgressEventArgs e)
+        {
+            var user = e.Users.FirstOrDefault();
+
+            var item = e.MediaInfo;
 
             if (e.Item != null && e.Item.Parent == null)
             {
@@ -185,7 +209,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var notification = new NotificationRequest
             {
-                NotificationType = GetPlaybackNotificationType(item.MediaType),
+                NotificationType = type,
 
                 ExcludeUserIds = e.Users.Select(i => i.Id.ToString("N")).ToList()
             };
@@ -211,6 +235,24 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
                 return NotificationType.VideoPlayback.ToString();
+            }
+
+            return null;
+        }
+
+        private string GetPlaybackStoppedNotificationType(string mediaType)
+        {
+            if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
+            {
+                return NotificationType.AudioPlaybackStopped.ToString();
+            }
+            if (string.Equals(mediaType, MediaType.Game, StringComparison.OrdinalIgnoreCase))
+            {
+                return NotificationType.GamePlaybackStopped.ToString();
+            }
+            if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+            {
+                return NotificationType.VideoPlaybackStopped.ToString();
             }
 
             return null;

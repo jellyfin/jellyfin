@@ -281,7 +281,10 @@ namespace MediaBrowser.Controller.Entities
         {
             if (this is ICollectionFolder)
             {
-                if (user.Configuration.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
+                if (user.Configuration.BlockedMediaFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase) ||
+
+                    // Backwards compatibility
+                    user.Configuration.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }

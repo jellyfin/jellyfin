@@ -140,7 +140,13 @@
             var deferred = $.Deferred();
 
             deferred.resolveWith(null, [{
-                Configuration: { IsAdministrator: true }
+                Configuration: {
+                    IsAdministrator: true,
+                    EnableLiveTvManagement: true,
+                    EnableLiveTvAccess: true,
+                    EnableRemoteControlOfOtherUsers: true,
+                    EnableMediaPlayback: true
+                }
             }]);
 
             promise1 = deferred.promise();

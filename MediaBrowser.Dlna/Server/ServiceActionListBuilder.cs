@@ -9,11 +9,11 @@ namespace MediaBrowser.Dlna.Server
         {
             var list = new List<ServiceAction>
             {
-                GetGetSystemUpdateIDAction(),
                 GetSearchCapabilitiesAction(),
                 GetSortCapabilitiesAction(),
-                GetSearchAction(),
+                GetGetSystemUpdateIDAction(),
                 GetBrowseAction(),
+                GetSearchAction(),
                 GetX_GetFeatureListAction(),
                 GetXSetBookmarkAction(),
                 GetBrowseByLetterAction()
