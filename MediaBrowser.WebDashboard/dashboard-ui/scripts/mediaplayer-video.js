@@ -803,9 +803,11 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresControls) {
-                
-
-                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay controls>';
+                if ($.browser.msie) {
+                    html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay">';
+                } else {
+                    html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay controls>';
+                }
             } else {
                 
                 // Chrome 35 won't play with preload none
