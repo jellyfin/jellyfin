@@ -14,7 +14,6 @@
 
         var query = MetadataEditor.getEditQueryString(item);
 
-        $('#btnEditPeople', page).attr('href', 'edititempeople.html?' + query);
         $('#btnEditImages', page).attr('href', 'edititemimages.html?' + query);
         $('#btnEditCollectionTitles', page).attr('href', 'editcollectionitems.html?' + query);
     }
@@ -70,20 +69,14 @@
             setFieldVisibilities(page, item);
             fillItemInfo(page, item);
 
-            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist" || item.Type == "GameGenre" || item.Type == "TvChannel" || item.Type == "BoxSet") {
-                $('#btnEditPeople', page).hide();
-            } else {
-                $('#btnEditPeople', page).show();
-            }
-
             if (item.Type == "BoxSet") {
                 $('#btnEditCollectionTitles', page).show();
             } else {
                 $('#btnEditCollectionTitles', page).hide();
             }
 
-            Dashboard.getCurrentUser().done(function(user) {
-                
+            Dashboard.getCurrentUser().done(function (user) {
+
                 if (user.Configuration.EnableContentDeletion &&
                     item.Type != "TvChannel" &&
                     item.Type != "Genre" &&
@@ -259,6 +252,8 @@
             $('#fldCommunityRating', page).hide();
             $('#fldCommunityVoteCount', page).hide();
             $('#genresCollapsible', page).hide();
+            $('#countriesCollapsible', page).hide();
+            $('#peopleCollapsible', page).hide();
             $('#studiosCollapsible', page).hide();
 
             if (item.Type == "TvChannel") {
@@ -271,6 +266,8 @@
             $('#fldCommunityRating', page).show();
             $('#fldCommunityVoteCount', page).show();
             $('#genresCollapsible', page).show();
+            $('#peopleCollapsible', page).show();
+            $('#countriesCollapsible', page).show();
             $('#studiosCollapsible', page).show();
             $('#fldOfficialRating', page).show();
             $('#fldCustomRating', page).show();
@@ -302,7 +299,7 @@
             item.Type == "Book" ||
             item.Type == "MusicAlbum" ||
             item.Type == "MusicArtist") {
-            
+
             $('#btnIdentify', page).show();
         } else {
             $('#btnIdentify', page).hide();
@@ -424,7 +421,9 @@
 
         }).checkboxradio('refresh');
 
+        populateListView($('#listCountries', page), item.ProductionLocations || []);
         populateListView($('#listGenres', page), item.Genres);
+        populatePeople($('#peopleList', page), item.People || []);
 
         populateListView($('#listStudios', page), (item.Studios || []).map(function (element) { return element.Name || ''; }));
 
@@ -536,6 +535,47 @@
         } else {
             $('#txtSeriesRuntime', page).val("");
         }
+    }
+
+    function populatePeople(elem, people) {
+
+        var lastType = '';
+        var html = '';
+
+        for (var i = 0, length = people.length; i < length; i++) {
+
+            var person = people[i];
+
+            var type = person.Type || 'Person';
+
+            if (type != lastType) {
+                html += '<li data-role="list-divider">' + type + '</li>';
+                lastType = type;
+            }
+
+            html += '<li><a href="#">';
+
+            html += '<h3>' + (person.Name || 'Unknown name') + '</h3>';
+
+            if (person.Role && person.Role != lastType) {
+                html += '<p>' + (person.Role) + '</p>';
+            }
+            html += '</a>';
+
+            html += '<a class="btnDeletePerson" href="#" data-icon="delete" data-index="' + i + '">Delete</a>';
+
+            html += '</li>';
+        }
+
+        elem.html(html).listview('refresh');
+
+        $('.btnDeletePerson', elem).on('click', function () {
+
+            var index = parseInt(this.getAttribute('data-index'));
+            currentItem.People.splice(index, 1);
+
+            populatePeople(elem, currentItem.People);
+        });
     }
 
     function convertTo24HourFormat(time) {
@@ -760,6 +800,7 @@
                 AirDays: getSelectedAirDays(form),
                 AirTime: convertTo12HourFormat($('#txtAirTime', form).val()),
                 Genres: editableListViewValues($("#listGenres", form)),
+                ProductionLocations: editableListViewValues($("#listCountries", form)),
                 Tags: editableListViewValues($("#listTags", form)),
                 Keywords: editableListViewValues($("#listKeywords", form)),
                 Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),

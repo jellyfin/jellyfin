@@ -133,6 +133,18 @@ namespace MediaBrowser.Providers.Movies
                 }
             }
 
+            if (movieData.production_countries != null)
+            {
+                var hasProductionLocations = movie as IHasProductionLocations;
+                if (hasProductionLocations != null)
+                {
+                    hasProductionLocations.ProductionLocations = movieData
+                        .production_countries
+                        .Select(i => i.name)
+                        .ToList();
+                }
+            }
+
             movie.SetProviderId(MetadataProviders.Tmdb, movieData.id.ToString(_usCulture));
             movie.SetProviderId(MetadataProviders.Imdb, movieData.imdb_id);
 

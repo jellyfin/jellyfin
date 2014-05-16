@@ -34,6 +34,7 @@ namespace MediaBrowser.Providers.Savers
                     
                     "Chapters",
                     "ContentRating",
+                    "Countries",
                     "CustomRating",
                     "CriticRating",
                     "CriticRatingSummary",
@@ -315,6 +316,22 @@ namespace MediaBrowser.Providers.Savers
                     }
 
                     builder.Append("</Trailers>");
+                }
+            }
+
+            var hasProductionLocations = item as IHasProductionLocations;
+            if (hasProductionLocations != null)
+            {
+                if (hasProductionLocations.ProductionLocations.Count > 0)
+                {
+                    builder.Append("<Countries>");
+
+                    foreach (var name in hasProductionLocations.ProductionLocations)
+                    {
+                        builder.Append("<Country>" + SecurityElement.Escape(name) + "</Country>");
+                    }
+
+                    builder.Append("</Countries>");
                 }
             }
 

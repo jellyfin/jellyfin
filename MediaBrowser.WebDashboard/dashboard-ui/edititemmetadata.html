@@ -17,7 +17,6 @@
                 <br />
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabMetadata}</a>
-                    <a id="btnEditPeople" style="display: none;" href="#" data-role="button">${TabPeople}</a>
                     <a id="btnEditCollectionTitles" style="display: none;" href="editcollectionitems.html" data-role="button">${TabCollectionTitles}</a>
                     <a href="#" data-role="button" id="btnEditImages">${TabImages}</a>
                 </div>
@@ -269,6 +268,18 @@
                                 </div>
                             </div>
                         </div>
+                        <div data-role="collapsible" data-mini="true" id="countriesCollapsible" style="display: none; margin-top: 1em;">
+                            <h3>Countries</h3>
+                            <div data-role="editableListviewContainer">
+                                <div data-role="fieldcontain">
+                                    <div style="display: inline-block; width: 80%;">
+                                        <input type="text" data-mini="true" />
+                                    </div>
+                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
+                                </div>
+                                <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listCountries"></ul>
+                            </div>
+                        </div>
                         <div data-role="collapsible" data-mini="true" id="genresCollapsible" style="display: none; margin-top: 1em;">
                             <h3>Genres</h3>
                             <div data-role="editableListviewContainer">
@@ -279,6 +290,24 @@
                                     <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
                                 </div>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listGenres"></ul>
+                            </div>
+                        </div>
+                        <div data-mini="true" data-role="collapsible" id="peopleCollapsible" style="display: none; margin-top: 1em;">
+                            <h3>People</h3>
+                            <div>
+                                <ul data-role="listview" data-inset="true" data-split-icon="delete" id="peopleList"></ul>
+                            </div>
+                        </div>
+                        <div data-mini="true" data-role="collapsible" id="keywordsCollapsible" style="display: none; margin-top: 1em;">
+                            <h3>Plot Keywords</h3>
+                            <div data-role="editableListviewContainer">
+                                <div data-role="fieldcontain">
+                                    <div style="display: inline-block; width: 80%;">
+                                        <input type="text" data-mini="true" />
+                                    </div>
+                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
+                                </div>
+                                <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listKeywords"></ul>
                             </div>
                         </div>
                         <div data-role="collapsible" data-mini="true" id="studiosCollapsible" style="display: none; margin-top: 1em;">
@@ -303,18 +332,6 @@
                                     <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
                                 </div>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listTags"></ul>
-                            </div>
-                        </div>
-                        <div data-mini="true" data-role="collapsible" id="keywordsCollapsible" style="display: none; margin-top: 1em;">
-                            <h3>Plot Keywords</h3>
-                            <div data-role="editableListviewContainer">
-                                <div data-role="fieldcontain">
-                                    <div style="display: inline-block; width: 80%;">
-                                        <input type="text" data-mini="true" />
-                                    </div>
-                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
-                                </div>
-                                <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listKeywords"></ul>
                             </div>
                         </div>
                         <div data-role="collapsible" data-mini="true" id="metadataSettingsCollapsible" style="display: none; margin-top: 1em;">

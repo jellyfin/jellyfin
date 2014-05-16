@@ -12,7 +12,6 @@
 
         var query = MetadataEditor.getEditQueryString(item);
 
-        $('#btnEditPeople', page).attr('href', 'edititempeople.html?' + query);
         $('#btnEditMetadata', page).attr('href', 'edititemmetadata.html?' + query);
         $('#btnEditCollectionTitles', page).attr('href', 'editcollectionitems.html?' + query);
     }
@@ -268,12 +267,6 @@
             LibraryBrowser.renderName(item, $('.itemName', page), true);
 
             updateTabs(page, item);
-
-            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist" || item.Type == "GameGenre" || item.Type == "TvChannel" || item.Type == "BoxSet") {
-                $('#btnEditPeople', page).hide();
-            } else {
-                $('#btnEditPeople', page).show();
-            }
 
             if (item.Type == "BoxSet") {
                 $('#btnEditCollectionTitles', page).show();
