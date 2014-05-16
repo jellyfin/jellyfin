@@ -549,7 +549,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "dlnaserversettings.js",
                                 "editcollectionitems.js",
                                 "edititemmetadata.js",
-                                "edititempeople.js",
                                 "edititemimages.js",
                                 "encodingsettings.js",
                                 "gamesrecommendedpage.js",

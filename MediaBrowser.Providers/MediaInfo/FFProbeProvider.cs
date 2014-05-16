@@ -173,7 +173,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager);
 
-                    return !video.SubtitleFiles.SequenceEqual(prober.GetSubtitleFiles(video, directoryService, false).Select(i => i.FullName).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
+                    return !video.SubtitleFiles.SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, directoryService, false).Select(i => i.FullName).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
                 }
             }
 

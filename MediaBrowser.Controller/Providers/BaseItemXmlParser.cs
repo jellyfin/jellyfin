@@ -62,34 +62,6 @@ namespace MediaBrowser.Controller.Providers
                 ValidationType = ValidationType.None
             };
 
-            var hasTaglines = item as IHasTaglines;
-            if (hasTaglines != null)
-            {
-                hasTaglines.Taglines.Clear();
-            }
-
-            item.Studios.Clear();
-            item.Genres.Clear();
-            item.People.Clear();
-
-            var hasTags = item as IHasTags;
-            if (hasTags != null)
-            {
-                hasTags.Tags.Clear();
-            }
-
-            var hasKeywords = item as IHasKeywords;
-            if (hasKeywords != null)
-            {
-                hasKeywords.Keywords.Clear();
-            }
-
-            var hasTrailers = item as IHasTrailers;
-            if (hasTrailers != null)
-            {
-                hasTrailers.RemoteTrailers.Clear();
-            }
-
             //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
             Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
         }
@@ -369,6 +341,15 @@ namespace MediaBrowser.Controller.Providers
                         using (var subtree = reader.ReadSubtree())
                         {
                             FetchFromTaglinesNode(subtree, item);
+                        }
+                        break;
+                    }
+
+                case "Countries":
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            FetchFromCountriesNode(subtree, item);
                         }
                         break;
                     }
@@ -854,6 +835,42 @@ namespace MediaBrowser.Controller.Providers
                 default:
                     reader.Skip();
                     break;
+            }
+        }
+
+        private void FetchFromCountriesNode(XmlReader reader, T item)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Country":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    var hasProductionLocations = item as IHasProductionLocations;
+                                    if (hasProductionLocations != null)
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            hasProductionLocations.AddProductionLocation(val);
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
             }
         }
 

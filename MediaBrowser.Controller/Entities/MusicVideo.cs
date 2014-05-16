@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasBudget, IHasLookupInfo<MusicVideoInfo>
+    public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasProductionLocations, IHasBudget, IHasLookupInfo<MusicVideoInfo>
     {
         /// <summary>
         /// Gets or sets the artist.
@@ -34,6 +34,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The revenue.</value>
         public double? Revenue { get; set; }
+        public List<string> ProductionLocations { get; set; }
+
+        public MusicVideo()
+        {
+            ProductionLocations = new List<string>();
+        }
 
         [IgnoreDataMember]
         public List<string> AllArtists
