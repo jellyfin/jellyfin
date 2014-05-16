@@ -497,7 +497,7 @@ namespace MediaBrowser.Dlna
             var profile = GetProfile(headers) ??
                           GetDefaultProfile();
 
-            return new DescriptionXmlBuilder(profile, serverUuId).GetXml();
+            return new DescriptionXmlBuilder(profile, serverUuId, "").GetXml();
         }
 
         public DlnaIconResponse GetIcon(string filename)

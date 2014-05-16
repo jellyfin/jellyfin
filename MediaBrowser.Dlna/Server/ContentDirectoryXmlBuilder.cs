@@ -101,27 +101,6 @@ namespace MediaBrowser.Dlna.Server
 
             list.Add(new StateVariable
             {
-                Name = "A_ARG_TYPE_SortCriteria",
-                DataType = "string",
-                SendsEvents = false
-            });
-
-            list.Add(new StateVariable
-            {
-                Name = "A_ARG_TYPE_UpdateID",
-                DataType = "ui4",
-                SendsEvents = false
-            });
-
-            list.Add(new StateVariable
-            {
-                Name = "A_ARG_TYPE_SearchCriteria",
-                DataType = "string",
-                SendsEvents = false
-            });
-
-            list.Add(new StateVariable
-            {
                 Name = "A_ARG_TYPE_Filter",
                 DataType = "string",
                 SendsEvents = false
@@ -129,7 +108,7 @@ namespace MediaBrowser.Dlna.Server
 
             list.Add(new StateVariable
             {
-                Name = "A_ARG_TYPE_Result",
+                Name = "A_ARG_TYPE_SortCriteria",
                 DataType = "string",
                 SendsEvents = false
             });
@@ -143,7 +122,21 @@ namespace MediaBrowser.Dlna.Server
 
             list.Add(new StateVariable
             {
-                Name = "A_ARG_TYPE_ObjectID",
+                Name = "A_ARG_TYPE_Count",
+                DataType = "ui4",
+                SendsEvents = false
+            });
+
+            list.Add(new StateVariable
+            {
+                Name = "A_ARG_TYPE_UpdateID",
+                DataType = "ui4",
+                SendsEvents = false
+            });
+
+            list.Add(new StateVariable
+            {
+                Name = "SearchCapabilities",
                 DataType = "string",
                 SendsEvents = false
             });
@@ -157,15 +150,29 @@ namespace MediaBrowser.Dlna.Server
 
             list.Add(new StateVariable
             {
-                Name = "SearchCapabilities",
+                Name = "SystemUpdateID",
+                DataType = "ui4",
+                SendsEvents = true
+            });
+
+            list.Add(new StateVariable
+            {
+                Name = "A_ARG_TYPE_SearchCriteria",
                 DataType = "string",
                 SendsEvents = false
             });
 
             list.Add(new StateVariable
             {
-                Name = "A_ARG_TYPE_Count",
-                DataType = "ui4",
+                Name = "A_ARG_TYPE_Result",
+                DataType = "string",
+                SendsEvents = false
+            });
+
+            list.Add(new StateVariable
+            {
+                Name = "A_ARG_TYPE_ObjectID",
+                DataType = "string",
                 SendsEvents = false
             });
 
@@ -180,13 +187,6 @@ namespace MediaBrowser.Dlna.Server
                     "BrowseMetadata",
                     "BrowseDirectChildren"
                 }
-            });
-
-            list.Add(new StateVariable
-            {
-                Name = "SystemUpdateID",
-                DataType = "ui4",
-                SendsEvents = true
             });
 
             list.Add(new StateVariable
