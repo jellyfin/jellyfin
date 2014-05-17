@@ -479,8 +479,13 @@
                 if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3) {
                     options.shape = 'backdrop';
                 }
-                else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .3) {
+                else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .34) {
+                    options.coverImage = true;
                     options.shape = 'square';
+                }
+                else if (primaryImageAspectRatio && primaryImageAspectRatio > 1.9) {
+                    options.shape = 'banner';
+                    options.coverImage = true;
                 }
                 else {
                     options.shape = 'portrait';

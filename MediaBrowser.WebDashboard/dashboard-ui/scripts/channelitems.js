@@ -9,7 +9,7 @@
     };
 
     function getSavedQueryId() {
-        return 'channels-' + getParameterByName('id') + (getParameterByName('categoryId') || '');
+        return 'channels-' + (getParameterByName('categoryId') || '');
     }
 
     function showLoadingMessage(page) {
@@ -34,6 +34,10 @@
 
             $('.categoryTitle', page).html(item.Name);
         });
+        
+        if (categoryId) {
+            query.categoryId = categoryId;
+        }
 
         $.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
 

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
-    public class WebSocketController : ISessionController
+    public class WebSocketController : ISessionController, IDisposable
     {
         public SessionInfo Session { get; private set; }
         public IReadOnlyList<IWebSocketConnection> Sockets { get; private set; }
@@ -243,6 +243,14 @@ namespace MediaBrowser.Server.Implementations.Session
             }, cancellationToken));
 
             return Task.WhenAll(tasks);
+        }
+
+        public void Dispose()
+        {
+            foreach (var socket in Sockets.ToList())
+            {
+                socket.Closed -= connection_Closed;
+            }
         }
     }
 }

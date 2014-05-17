@@ -385,6 +385,11 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, string internalChannnelId, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(internalChannnelId))
+            {
+                throw new ArgumentNullException("internalChannnelId");
+            }
+
             BaseItem item;
             Guid id;
             var isNew = false;
