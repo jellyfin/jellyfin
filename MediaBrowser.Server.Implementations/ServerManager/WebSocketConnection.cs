@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -14,6 +15,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
     /// </summary>
     public class WebSocketConnection : IWebSocketConnection
     {
+        public event EventHandler<EventArgs> Closed;
+        
         /// <summary>
         /// The _socket
         /// </summary>
@@ -96,6 +99,13 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             _socket.OnReceive = OnReceiveInternal;
             RemoteEndPoint = remoteEndPoint;
             _logger = logger;
+
+            socket.Closed += socket_Closed;
+        }
+
+        void socket_Closed(object sender, EventArgs e)
+        {
+            EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
         }
 
         /// <summary>

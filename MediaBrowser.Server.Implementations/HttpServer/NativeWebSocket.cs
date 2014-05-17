@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Net.WebSockets;
@@ -18,6 +19,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// The logger
         /// </summary>
         private readonly ILogger _logger;
+
+        public event EventHandler<EventArgs> Closed;
 
         /// <summary>
         /// Gets or sets the web socket.
@@ -97,6 +100,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 if (bytes == null)
                 {
                     // Connection closed
+                    EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
                     break;
                 }
 

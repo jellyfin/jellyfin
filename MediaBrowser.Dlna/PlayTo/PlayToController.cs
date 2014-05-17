@@ -46,6 +46,11 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
+        public bool SupportsMediaControl
+        {
+            get { return IsSessionActive; }
+        }
+
         private Timer _updateTimer;
 
         public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IDtoService dtoService, IImageProcessor imageProcessor, SsdpHandler ssdpHandler, string serverAddress)

@@ -217,6 +217,9 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "SupportedCommands", Description = "A list of supported remote control commands, comma delimited", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string SupportedCommands { get; set; }
+
+        [ApiMember(Name = "SupportsMediaControl", Description = "Determines whether media can be played remotely.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        public bool SupportsMediaControl { get; set; }
     }
 
     /// <summary>
@@ -258,6 +261,8 @@ namespace MediaBrowser.Api
 
             if (request.ControllableByUserId.HasValue)
             {
+                result = result.Where(i => i.SupportsMediaControl);
+
                 var user = _userManager.GetUserById(request.ControllableByUserId.Value);
 
                 if (!user.Configuration.EnableRemoteControlOfOtherUsers)
@@ -407,7 +412,9 @@ namespace MediaBrowser.Api
             {
                 PlayableMediaTypes = request.PlayableMediaTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
 
-                SupportedCommands = request.SupportedCommands.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
+                SupportedCommands = request.SupportedCommands.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
+
+                SupportsMediaControl = request.SupportsMediaControl
             });
         }
 

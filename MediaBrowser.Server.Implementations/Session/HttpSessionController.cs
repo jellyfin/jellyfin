@@ -45,6 +45,11 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
+        public bool SupportsMediaControl
+        {
+            get { return true; }
+        }
+
         private Task SendMessage(object obj, CancellationToken cancellationToken)
         {
             var json = _json.SerializeToString(obj);

@@ -139,6 +139,19 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
+        public bool SupportsMediaControl
+        {
+            get
+            {
+                if (SessionController != null)
+                {
+                    return SessionController.SupportsMediaControl;
+                }
+
+                return false;
+            }
+        }
+
         public bool ContainsUser(Guid userId)
         {
             return (UserId ?? Guid.Empty) == UserId || AdditionalUsers.Any(i => userId == new Guid(i.UserId));

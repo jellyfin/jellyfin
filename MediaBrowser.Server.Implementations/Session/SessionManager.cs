@@ -1164,7 +1164,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 SupportedCommands = session.SupportedCommands,
                 UserName = session.UserName,
                 NowPlayingItem = session.NowPlayingItem,
-
+                SupportsRemoteControl = session.SupportsMediaControl,
                 PlayState = session.PlayState
             };
 
