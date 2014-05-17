@@ -138,10 +138,10 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (controller == null)
                 {
-                    controller = new WebSocketController(session, _appHost, _logger);
+                    controller = new WebSocketController(session, _appHost, _logger, _sessionManager);
                 }
 
-                controller.Sockets.Add(message.Connection);
+                controller.AddWebSocket(message.Connection);
 
                 session.SessionController = controller;
             }

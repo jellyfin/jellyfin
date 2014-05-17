@@ -1,4 +1,5 @@
 ﻿using Alchemy.Classes;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -18,6 +19,8 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// </summary>
         private readonly ILogger _logger;
 
+        public event EventHandler<EventArgs> Closed;
+        
         /// <summary>
         /// Gets or sets the web socket.
         /// </summary>
@@ -66,6 +69,8 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         private void OnDisconnected(UserContext context)
         {
             _disconnected = true;
+
+            EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
         }
 
         /// <summary>

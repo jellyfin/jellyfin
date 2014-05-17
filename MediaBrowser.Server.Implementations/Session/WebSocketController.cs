@@ -17,16 +17,19 @@ namespace MediaBrowser.Server.Implementations.Session
     public class WebSocketController : ISessionController
     {
         public SessionInfo Session { get; private set; }
-        public List<IWebSocketConnection> Sockets { get; private set; }
+        public IReadOnlyList<IWebSocketConnection> Sockets { get; private set; }
 
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
 
-        public WebSocketController(SessionInfo session, IServerApplicationHost appHost, ILogger logger)
+        private readonly ISessionManager _sessionManager;
+
+        public WebSocketController(SessionInfo session, IServerApplicationHost appHost, ILogger logger, ISessionManager sessionManager)
         {
             Session = session;
             _appHost = appHost;
             _logger = logger;
+            _sessionManager = sessionManager;
             Sockets = new List<IWebSocketConnection>();
         }
 
@@ -38,11 +41,38 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
+        public bool SupportsMediaControl
+        {
+            get { return GetActiveSockets().Any(); }
+        }
+
         private IEnumerable<IWebSocketConnection> GetActiveSockets()
         {
             return Sockets
                 .OrderByDescending(i => i.LastActivityDate)
                 .Where(i => i.State == WebSocketState.Open);
+        }
+
+        public void AddWebSocket(IWebSocketConnection connection)
+        {
+            var sockets = Sockets.ToList();
+            sockets.Add(connection);
+
+            Sockets = sockets;
+
+            connection.Closed += connection_Closed;
+        }
+
+        void connection_Closed(object sender, EventArgs e)
+        {
+            var capabilities = new SessionCapabilities
+            {
+                PlayableMediaTypes = Session.PlayableMediaTypes,
+                SupportedCommands = Session.SupportedCommands,
+                SupportsMediaControl = SupportsMediaControl
+            };
+
+            _sessionManager.ReportCapabilities(Session.Id, capabilities);
         }
 
         private IWebSocketConnection GetActiveSocket()

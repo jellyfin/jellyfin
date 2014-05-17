@@ -306,7 +306,9 @@ namespace MediaBrowser.Dlna.PlayTo
                             GeneralCommandType.Unmute.ToString(),
                             GeneralCommandType.ToggleMute.ToString(),
                             GeneralCommandType.SetVolume.ToString()
-                        }
+                        },
+
+                        SupportsMediaControl = true
                     });
 
                     _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);

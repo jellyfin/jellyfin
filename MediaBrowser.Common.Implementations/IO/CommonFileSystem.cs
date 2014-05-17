@@ -351,18 +351,21 @@ namespace MediaBrowser.Common.Implementations.IO
                 throw new ArgumentNullException("to");
             }
 
-            path = path.Replace(from, to, StringComparison.OrdinalIgnoreCase);
+            var newPath = path.Replace(from, to, StringComparison.OrdinalIgnoreCase);
 
-            if (to.IndexOf('/') != -1)
+            if (!string.Equals(newPath, path))
             {
-                path = path.Replace('\\', '/');
-            }
-            else
-            {
-                path = path.Replace('/', '\\');
+                if (to.IndexOf('/') != -1)
+                {
+                    newPath = path.Replace('\\', '/');
+                }
+                else
+                {
+                    newPath = path.Replace('/', '\\');
+                }
             }
 
-            return path;
+            return newPath;
         }
     }
 }

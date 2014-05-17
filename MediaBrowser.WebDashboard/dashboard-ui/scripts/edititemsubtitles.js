@@ -130,13 +130,14 @@
             if (s.Path) {
                 itemHtml += '<a href="#" data-icon="delete" class="btnDelete" data-index="' + s.Index + '">Delete</a>';
             } else {
-                itemHtml += '<a href="#" data-icon="delete" style="visibility:hidden;" class="btnDelete" data-index="' + s.Index + '">Delete</a>';
+                itemHtml += '<a href="#" data-icon="delete" style="display:none;" class="btnDelete" data-index="' + s.Index + '">Delete</a>';
             }
 
             itemHtml += '</li>';
 
             return itemHtml;
-        });
+            
+        }).join('');
 
         html += '</ul>';
 

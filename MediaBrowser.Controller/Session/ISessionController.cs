@@ -14,6 +14,12 @@ namespace MediaBrowser.Controller.Session
         bool IsSessionActive { get; }
 
         /// <summary>
+        /// Gets a value indicating whether [supports media remote control].
+        /// </summary>
+        /// <value><c>true</c> if [supports media remote control]; otherwise, <c>false</c>.</value>
+        bool SupportsMediaControl { get; }
+        
+        /// <summary>
         /// Sends the play command.
         /// </summary>
         /// <param name="command">The command.</param>
