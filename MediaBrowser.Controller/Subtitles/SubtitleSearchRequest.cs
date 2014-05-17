@@ -21,8 +21,11 @@ namespace MediaBrowser.Controller.Subtitles
         public long? RuntimeTicks { get; set; }
         public Dictionary<string, string> ProviderIds { get; set; }
 
+        public bool SearchAllProviders { get; set; }
+
         public SubtitleSearchRequest()
         {
+            SearchAllProviders = true;
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }

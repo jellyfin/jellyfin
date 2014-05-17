@@ -60,7 +60,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _subtitleManager = subtitleManager;
         }
 
-        public async Task<ItemUpdateType> ProbeVideo<T>(T item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> ProbeVideo<T>(T item, IDirectoryService directoryService, bool enableSubtitleDownloading, CancellationToken cancellationToken)
             where T : Video
         {
             var isoMount = await MountIsoIfNeeded(item, cancellationToken).ConfigureAwait(false);
@@ -105,7 +105,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Fetch(item, cancellationToken, result, isoMount, blurayDiscInfo, directoryService).ConfigureAwait(false);
+                await Fetch(item, cancellationToken, result, isoMount, blurayDiscInfo, directoryService, enableSubtitleDownloading).ConfigureAwait(false);
 
             }
             finally
@@ -160,7 +160,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return result;
         }
 
-        protected async Task Fetch(Video video, CancellationToken cancellationToken, InternalMediaInfoResult data, IIsoMount isoMount, BlurayDiscInfo blurayInfo, IDirectoryService directoryService)
+        protected async Task Fetch(Video video, CancellationToken cancellationToken, InternalMediaInfoResult data, IIsoMount isoMount, BlurayDiscInfo blurayInfo, IDirectoryService directoryService, bool enableSubtitleDownloading)
         {
             var mediaInfo = MediaEncoderHelpers.GetMediaInfo(data);
             var mediaStreams = mediaInfo.MediaStreams;
@@ -208,7 +208,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchBdInfo(video, chapters, mediaStreams, blurayInfo);
             }
 
-            await AddExternalSubtitles(video, mediaStreams, directoryService, cancellationToken).ConfigureAwait(false);
+            await AddExternalSubtitles(video, mediaStreams, directoryService, enableSubtitleDownloading, cancellationToken).ConfigureAwait(false);
 
             FetchWtvInfo(video, data);
 
@@ -416,13 +416,17 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="video">The video.</param>
         /// <param name="currentStreams">The current streams.</param>
-        private async Task AddExternalSubtitles(Video video, List<MediaStream> currentStreams, IDirectoryService directoryService, CancellationToken cancellationToken)
+        /// <param name="directoryService">The directory service.</param>
+        /// <param name="enableSubtitleDownloading">if set to <c>true</c> [enable subtitle downloading].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task AddExternalSubtitles(Video video, List<MediaStream> currentStreams, IDirectoryService directoryService, bool enableSubtitleDownloading, CancellationToken cancellationToken)
         {
             var subtitleResolver = new SubtitleResolver(_localization);
 
             var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, currentStreams.Count, directoryService, false).ToList();
 
-            if ((_config.Configuration.SubtitleOptions.DownloadEpisodeSubtitles &&
+            if (enableSubtitleDownloading && (_config.Configuration.SubtitleOptions.DownloadEpisodeSubtitles &&
                 video is Episode) ||
                 (_config.Configuration.SubtitleOptions.DownloadMovieSubtitles &&
                 video is Movie))

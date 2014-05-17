@@ -550,6 +550,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "editcollectionitems.js",
                                 "edititemmetadata.js",
                                 "edititemimages.js",
+                                "edititemsubtitles.js",
                                 "encodingsettings.js",
                                 "gamesrecommendedpage.js",
                                 "gamesystemspage.js",
