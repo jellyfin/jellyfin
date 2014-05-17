@@ -15,6 +15,7 @@
         var query = MetadataEditor.getEditQueryString(item);
 
         $('#btnEditImages', page).attr('href', 'edititemimages.html?' + query);
+        $('#btnEditSubtitles', page).attr('href', 'edititemsubtitles.html?' + query);
         $('#btnEditCollectionTitles', page).attr('href', 'editcollectionitems.html?' + query);
     }
 
@@ -73,6 +74,12 @@
                 $('#btnEditCollectionTitles', page).show();
             } else {
                 $('#btnEditCollectionTitles', page).hide();
+            }
+
+            if (item.MediaType == "Video" && item.LocationType == "FileSystem") {
+                $('#btnEditSubtitles', page).show();
+            } else {
+                $('#btnEditSubtitles', page).hide();
             }
 
             Dashboard.getCurrentUser().done(function (user) {

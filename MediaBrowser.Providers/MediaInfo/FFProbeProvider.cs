@@ -142,7 +142,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager);
 
-            return prober.ProbeVideo(item, directoryService, cancellationToken);
+            return prober.ProbeVideo(item, directoryService, true, cancellationToken);
         }
 
         public Task<ItemUpdateType> FetchAudioInfo<T>(T item, CancellationToken cancellationToken)

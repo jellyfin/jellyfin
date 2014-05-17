@@ -207,10 +207,34 @@
     margin-right: 10px;
 }
 
+.subtitleViewerContent {
+    overflow: auto;
+    width: 200px;
+    height: 200px;
+}
+
+@media all and (min-width: 400px) {
+
+    .subtitleViewerContent {
+        width: 300px;
+    }
+}
+
+@media all and (min-width: 500px) {
+
+    .subtitleViewerContent {
+        width: 400px;
+    }
+}
+
 @media all and (min-width: 600px) {
 
     .popupIdentify {
         width: 400px;
+    }
+
+    .subtitleViewerContent {
+        width: 500px;
     }
 }
 
@@ -222,6 +246,10 @@
 
     .popupIdentify {
         width: 500px;
+    }
+
+    .subtitleViewerContent {
+        width: 600px;
     }
 }
 
@@ -344,6 +372,10 @@
     .popupIdentify form, .identificationSearchResults {
         height: 350px;
     }
+
+    .subtitleViewerContent {
+        height: 400px;
+    }
 }
 
 @media all and (min-height: 600px) {
@@ -355,6 +387,10 @@
     .collectionItemSearchResults {
         max-height: 70%;
     }
+
+    .subtitleViewerContent {
+        height: 500px;
+    }
 }
 
 @media all and (min-height: 700px) {
@@ -365,6 +401,10 @@
 
     .collectionItemSearchResults {
         max-height: 75%;
+    }
+
+    .subtitleViewerContent {
+        height: 600px;
     }
 }
 

@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleMediaBrowser}</title>
+</head>
+<body>
+    <div id="editItemSubtitlesPage" data-role="page" data-theme="b" class="page libraryPage metadataEditorPage">
+        <div data-role="content editPageContent">
+            <div class="editPageSidebar">
+                <div class="libraryTree">
+                    <ul>
+                    </ul>
+                </div>
+            </div>
+            <div class="editPageInnerContent">
+                <h1 class="itemName editPageName">&nbsp;</h1>
+                <br />
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a id="btnEditMetadata" href="#" data-role="button">${TabMetadata}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabSubtitles}</a>
+                    <a id="btnEditImages" href="#" data-role="button">${TabImages}</a>
+                </div>
+
+                <div class="readOnlyContent" style="max-width: 700px;">
+                    <div class="subtitleList"></div>
+                </div>
+                <br />
+                <h1>${HeaderSearchForSubtitles}</h1>
+
+                <form class="subtitleSearchForm">
+                    <div style="display: inline-block; width: 85%;">
+                        <label for="selectLanguage">${LabelLanguage}</label>
+                        <select id="selectLanguage" required="required" data-mini="true"></select>
+                    </div>
+                    <button type="submit" data-icon="search" class="btnSearchSubtitles" data-inline="true" data-iconpos="notext" data-mini="true" style="vertical-align: bottom;">${ButtonSearch}</button>
+                </form>
+                <br />
+                <div class="readOnlyContent" style="max-width: 700px;">
+                    <div class="subtitleResults"></div>
+                    <div class="noSearchResults" style="display: none;">
+                        ${MessageNoSubtitleSearchResultsFound}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div data-role="popup" class="ui-content popupSubtitleViewer" data-history="false">
+            <a href="#" data-rel="back" data-role="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+            <div class="subtitleViewerContent">
+                <pre class="subtitleContent" style="margin: 0; border-radius: 0;"></pre>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.subtitleSearchForm').off('submit', EditItemSubtitlesPage.onSearchSubmit).on('submit', EditItemSubtitlesPage.onSearchSubmit);
+        </script>
+
+    </div>
+</body>
+</html>

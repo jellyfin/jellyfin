@@ -759,5 +759,7 @@
 	"LabelEpisodeNumber": "Episode number",
 	"LabelEndingEpisodeNumber": "Ending episode number",
 	"HeaderTypeText": "Enter Text",
-	"LabelTypeText": "Text"
+	"LabelTypeText": "Text",
+	"HeaderSearchForSubtitles": "Search for Subtitles",
+	"MessageNoSubtitleSearchResultsFound": "No search results founds."
 }
