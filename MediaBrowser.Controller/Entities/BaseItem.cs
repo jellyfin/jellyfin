@@ -1501,6 +1501,13 @@ namespace MediaBrowser.Controller.Entities
             return userdata != null && userdata.Played;
         }
 
+        public bool IsFavoriteOrLiked(User user)
+        {
+            var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
+
+            return userdata != null && (userdata.IsFavorite || (userdata.Likes ?? false));
+        }
+
         public virtual bool IsUnplayed(User user)
         {
             var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());

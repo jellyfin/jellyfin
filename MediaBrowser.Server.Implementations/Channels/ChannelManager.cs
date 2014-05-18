@@ -162,8 +162,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var channelGuid = new Guid(item.ChannelId);
             var channel = _channelEntities.First(i => i.Id == channelGuid);
+            var internalChannel = _channels.First(i => string.Equals(i.Name, channel.OriginalChannelName, StringComparison.OrdinalIgnoreCase));
 
-            var requiresCallback = channel as IRequiresMediaInfoCallback;
+            var requiresCallback = internalChannel as IRequiresMediaInfoCallback;
 
             if (requiresCallback != null)
             {
@@ -403,7 +404,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         private string GetIdToHash(string externalId)
         {
             // Increment this as needed to force new downloads
-            return externalId + "7";
+            return externalId + "8";
         }
 
         private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, string internalChannnelId, CancellationToken cancellationToken)
