@@ -31,5 +31,13 @@ namespace MediaBrowser.Controller.Channels
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{BaseItemDto}}.</returns>
         Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the channel item media sources.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{ChannelMediaInfo}}.</returns>
+        Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaSources(string id, CancellationToken cancellationToken);
     }
 }

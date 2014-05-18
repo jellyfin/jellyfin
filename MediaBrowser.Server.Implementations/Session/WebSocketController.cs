@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -19,15 +18,13 @@ namespace MediaBrowser.Server.Implementations.Session
         public SessionInfo Session { get; private set; }
         public IReadOnlyList<IWebSocketConnection> Sockets { get; private set; }
 
-        private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
 
         private readonly ISessionManager _sessionManager;
 
-        public WebSocketController(SessionInfo session, IServerApplicationHost appHost, ILogger logger, ISessionManager sessionManager)
+        public WebSocketController(SessionInfo session, ILogger logger, ISessionManager sessionManager)
         {
             Session = session;
-            _appHost = appHost;
             _logger = logger;
             _sessionManager = sessionManager;
             Sockets = new List<IWebSocketConnection>();
@@ -121,14 +118,15 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// Sends the restart required message.
         /// </summary>
+        /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken)
         {
             return SendMessages(new WebSocketMessage<SystemInfo>
             {
                 MessageType = "RestartRequired",
-                Data = _appHost.GetSystemInfo()
+                Data = info
 
             }, cancellationToken);
         }

@@ -218,6 +218,9 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "SupportedCommands", Description = "A list of supported remote control commands, comma delimited", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string SupportedCommands { get; set; }
 
+        [ApiMember(Name = "MessageCallbackUrl", Description = "A url to post messages to, including remote control commands.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MessageCallbackUrl { get; set; }
+
         [ApiMember(Name = "SupportsMediaControl", Description = "Determines whether media can be played remotely.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool SupportsMediaControl { get; set; }
     }
@@ -414,7 +417,9 @@ namespace MediaBrowser.Api
 
                 SupportedCommands = request.SupportedCommands.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
 
-                SupportsMediaControl = request.SupportsMediaControl
+                SupportsMediaControl = request.SupportsMediaControl,
+
+                MessageCallbackUrl = request.MessageCallbackUrl
             });
         }
 

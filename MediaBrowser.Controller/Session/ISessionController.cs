@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -54,9 +55,10 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Sends the restart required message.
         /// </summary>
+        /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendRestartRequiredNotification(CancellationToken cancellationToken);
+        Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the user data change info.
