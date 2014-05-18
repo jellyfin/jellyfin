@@ -18,7 +18,7 @@
 
     function getBackdropItemIds(userId, types, parentId) {
 
-        var key = 'backdrops_' + userId + (types || '') + (parentId || '');
+        var key = 'backdrops2_' + userId + (types || '') + (parentId || '');
 
         var deferred = $.Deferred();
 
@@ -33,7 +33,7 @@
 
             var options = {
 
-                SortBy: "Random",
+                SortBy: "IsFavoriteOrLiked,Random",
                 Limit: 50,
                 Recursive: true,
                 IncludeItemTypes: types,

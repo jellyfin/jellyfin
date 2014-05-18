@@ -227,6 +227,7 @@
     <Compile Include="Sorting\DateCreatedComparer.cs" />
     <Compile Include="Sorting\DatePlayedComparer.cs" />
     <Compile Include="Sorting\GameSystemComparer.cs" />
+    <Compile Include="Sorting\IsFavoriteOrLikeComparer.cs" />
     <Compile Include="Sorting\IsFolderComparer.cs" />
     <Compile Include="Sorting\IsPlayedComparer.cs" />
     <Compile Include="Sorting\IsUnplayedComparer.cs" />

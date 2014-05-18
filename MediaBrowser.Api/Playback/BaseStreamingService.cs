@@ -1535,16 +1535,6 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            var headers = new Dictionary<string, string>();
-            foreach (var key in Request.Headers.AllKeys)
-            {
-                headers[key] = Request.Headers[key];
-            }
-
-            state.DeviceProfile = string.IsNullOrWhiteSpace(state.Request.DeviceProfileId) ?
-                DlnaManager.GetProfile(headers) :
-                DlnaManager.GetProfile(state.Request.DeviceProfileId);
-
             return state;
         }
 
@@ -1669,6 +1659,16 @@ namespace MediaBrowser.Api.Playback
 
         private void ApplyDeviceProfileSettings(StreamState state)
         {
+            var headers = new Dictionary<string, string>();
+            foreach (var key in Request.Headers.AllKeys)
+            {
+                headers[key] = Request.Headers[key];
+            }
+
+            state.DeviceProfile = string.IsNullOrWhiteSpace(state.Request.DeviceProfileId) ?
+                DlnaManager.GetProfile(headers) :
+                DlnaManager.GetProfile(state.Request.DeviceProfileId);
+
             var profile = state.DeviceProfile;
 
             if (profile == null)
