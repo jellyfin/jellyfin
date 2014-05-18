@@ -34,6 +34,8 @@
 
             $('.categoryTitle', page).html(item.Name);
         });
+        
+        query.categoryId = categoryId;
 
         $.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
 
@@ -51,7 +53,8 @@
                 shape: "auto",
                 context: 'channels',
                 showTitle: true,
-                centerText: true
+                centerText: true,
+                coverImage: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
@@ -76,6 +79,9 @@
 
             LibraryBrowser.saveQueryValues(getSavedQueryId(), query);
 
+            
+        }).always(function() {
+            
             hideLoadingMessage(page);
         });
     }

@@ -35,19 +35,17 @@ namespace MediaBrowser.Server.Implementations.Session
         /// The _dto service
         /// </summary>
         private readonly IJsonSerializer _json;
-        private readonly IServerApplicationHost _appHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionWebSocketListener" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="logManager">The log manager.</param>
-        /// <param name="appHost">The application host.</param>
-        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, IServerApplicationHost appHost, IJsonSerializer json)
+        /// <param name="json">The json.</param>
+        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, IJsonSerializer json)
         {
             _sessionManager = sessionManager;
             _logger = logManager.GetLogger(GetType().Name);
-            _appHost = appHost;
             _json = json;
         }
 
@@ -138,10 +136,10 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (controller == null)
                 {
-                    controller = new WebSocketController(session, _appHost);
+                    controller = new WebSocketController(session, _logger, _sessionManager);
                 }
 
-                controller.Sockets.Add(message.Connection);
+                controller.AddWebSocket(message.Connection);
 
                 session.SessionController = controller;
             }

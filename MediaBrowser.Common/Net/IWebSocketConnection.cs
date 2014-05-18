@@ -8,6 +8,11 @@ namespace MediaBrowser.Common.Net
     public interface IWebSocketConnection : IDisposable
     {
         /// <summary>
+        /// Occurs when [closed].
+        /// </summary>
+        event EventHandler<EventArgs> Closed;
+        
+        /// <summary>
         /// Gets the id.
         /// </summary>
         /// <value>The id.</value>

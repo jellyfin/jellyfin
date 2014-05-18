@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +14,12 @@ namespace MediaBrowser.Controller.Session
         /// <value><c>true</c> if this instance is session active; otherwise, <c>false</c>.</value>
         bool IsSessionActive { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether [supports media remote control].
+        /// </summary>
+        /// <value><c>true</c> if [supports media remote control]; otherwise, <c>false</c>.</value>
+        bool SupportsMediaControl { get; }
+        
         /// <summary>
         /// Sends the play command.
         /// </summary>
@@ -48,9 +55,10 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Sends the restart required message.
         /// </summary>
+        /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendRestartRequiredNotification(CancellationToken cancellationToken);
+        Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the user data change info.

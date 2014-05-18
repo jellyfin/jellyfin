@@ -390,7 +390,7 @@ namespace MediaBrowser.Common.Implementations
                 FileSystemManager = CreateFileSystemManager();
                 RegisterSingleInstance(FileSystemManager);
 
-                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, FileSystemManager);
+                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, FileSystemManager, ConfigurationManager);
                 RegisterSingleInstance(HttpClient);
 
                 NetworkManager = CreateNetworkManager();

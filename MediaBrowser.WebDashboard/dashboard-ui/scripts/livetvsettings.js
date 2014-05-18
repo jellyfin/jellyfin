@@ -18,7 +18,7 @@
             return '<option value="' + s.Name + '">' + s.Name + '</option>';
         });
 
-        $('#selectActiveService', page).html(serviceOptions).selectmenu('refresh');
+        $('#selectActiveService', page).html(serviceOptions).val(config.LiveTvOptions.ActiveService || '').selectmenu('refresh');
 
         Dashboard.hideLoadingMsg();
     }
@@ -53,6 +53,7 @@
 
 
                 config.LiveTvOptions.GuideDays = $('#selectGuideDays', form).val() || null;
+                config.LiveTvOptions.ActiveService = $('#selectActiveService', form).val() || null;
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });

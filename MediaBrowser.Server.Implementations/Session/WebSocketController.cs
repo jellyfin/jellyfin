@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
@@ -13,17 +13,20 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
-    public class WebSocketController : ISessionController
+    public class WebSocketController : ISessionController, IDisposable
     {
         public SessionInfo Session { get; private set; }
-        public List<IWebSocketConnection> Sockets { get; private set; }
+        public IReadOnlyList<IWebSocketConnection> Sockets { get; private set; }
 
-        private readonly IServerApplicationHost _appHost;
+        private readonly ILogger _logger;
 
-        public WebSocketController(SessionInfo session, IServerApplicationHost appHost)
+        private readonly ISessionManager _sessionManager;
+
+        public WebSocketController(SessionInfo session, ILogger logger, ISessionManager sessionManager)
         {
             Session = session;
-            _appHost = appHost;
+            _logger = logger;
+            _sessionManager = sessionManager;
             Sockets = new List<IWebSocketConnection>();
         }
 
@@ -35,11 +38,44 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
+        public bool SupportsMediaControl
+        {
+            get { return GetActiveSockets().Any(); }
+        }
+
+        private IEnumerable<IWebSocketConnection> GetActiveSockets()
+        {
+            return Sockets
+                .OrderByDescending(i => i.LastActivityDate)
+                .Where(i => i.State == WebSocketState.Open);
+        }
+
+        public void AddWebSocket(IWebSocketConnection connection)
+        {
+            var sockets = Sockets.ToList();
+            sockets.Add(connection);
+
+            Sockets = sockets;
+
+            connection.Closed += connection_Closed;
+        }
+
+        void connection_Closed(object sender, EventArgs e)
+        {
+            var capabilities = new SessionCapabilities
+            {
+                PlayableMediaTypes = Session.PlayableMediaTypes,
+                SupportedCommands = Session.SupportedCommands,
+                SupportsMediaControl = SupportsMediaControl
+            };
+
+            _sessionManager.ReportCapabilities(Session.Id, capabilities);
+        }
+
         private IWebSocketConnection GetActiveSocket()
         {
-            var socket = Sockets
-                .OrderByDescending(i => i.LastActivityDate)
-                .FirstOrDefault(i => i.State == WebSocketState.Open);
+            var socket = GetActiveSockets()
+                .FirstOrDefault();
 
             if (socket == null)
             {
@@ -51,9 +87,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<PlayRequest>
+            return SendMessage(new WebSocketMessage<PlayRequest>
             {
                 MessageType = "Play",
                 Data = command
@@ -63,9 +97,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken)
         {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<PlaystateRequest>
+            return SendMessage(new WebSocketMessage<PlaystateRequest>
             {
                 MessageType = "Playstate",
                 Data = command
@@ -75,9 +107,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)
         {
-            var socket = GetActiveSocket();
-            
-            return socket.SendAsync(new WebSocketMessage<LibraryUpdateInfo>
+            return SendMessages(new WebSocketMessage<LibraryUpdateInfo>
             {
                 MessageType = "LibraryChanged",
                 Data = info
@@ -88,16 +118,15 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// Sends the restart required message.
         /// </summary>
+        /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken)
         {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<SystemInfo>
+            return SendMessages(new WebSocketMessage<SystemInfo>
             {
                 MessageType = "RestartRequired",
-                Data = _appHost.GetSystemInfo()
+                Data = info
 
             }, cancellationToken);
         }
@@ -111,9 +140,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
         {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<UserDataChangeInfo>
+            return SendMessages(new WebSocketMessage<UserDataChangeInfo>
             {
                 MessageType = "UserDataChanged",
                 Data = info
@@ -128,9 +155,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         public Task SendServerShutdownNotification(CancellationToken cancellationToken)
         {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<string>
+            return SendMessages(new WebSocketMessage<string>
             {
                 MessageType = "ServerShuttingDown",
                 Data = string.Empty
@@ -145,9 +170,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         public Task SendServerRestartNotification(CancellationToken cancellationToken)
         {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<string>
+            return SendMessages(new WebSocketMessage<string>
             {
                 MessageType = "ServerRestarting",
                 Data = string.Empty
@@ -157,9 +180,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<GeneralCommand>
+            return SendMessage(new WebSocketMessage<GeneralCommand>
             {
                 MessageType = "GeneralCommand",
                 Data = command
@@ -169,9 +190,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
         {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<SessionInfoDto>
+            return SendMessages(new WebSocketMessage<SessionInfoDto>
             {
                 MessageType = "SessionEnded",
                 Data = sessionInfo
@@ -181,9 +200,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlaybackStartNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
         {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<SessionInfoDto>
+            return SendMessages(new WebSocketMessage<SessionInfoDto>
             {
                 MessageType = "PlaybackStart",
                 Data = sessionInfo
@@ -193,14 +210,45 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlaybackStoppedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
         {
-            var socket = GetActiveSocket();
-
-            return socket.SendAsync(new WebSocketMessage<SessionInfoDto>
+            return SendMessages(new WebSocketMessage<SessionInfoDto>
             {
                 MessageType = "PlaybackStopped",
                 Data = sessionInfo
 
             }, cancellationToken);
+        }
+
+        private Task SendMessage<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+
+            return socket.SendAsync(message, cancellationToken);
+        }
+
+        private Task SendMessages<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
+        {
+            var tasks = GetActiveSockets().Select(i => Task.Run(async () =>
+            {
+                try
+                {
+                    await i.SendAsync(message, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error sending web socket message", ex);
+                }
+
+            }, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
+
+        public void Dispose()
+        {
+            foreach (var socket in Sockets.ToList())
+            {
+                socket.Closed -= connection_Closed;
+            }
         }
     }
 }

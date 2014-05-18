@@ -8,6 +8,10 @@ namespace MediaBrowser.Model.Session
 
         public List<string> SupportedCommands { get; set; }
 
+        public bool SupportsMediaControl { get; set; }
+
+        public string MessageCallbackUrl { get; set; }
+
         public SessionCapabilities()
         {
             PlayableMediaTypes = new List<string>();

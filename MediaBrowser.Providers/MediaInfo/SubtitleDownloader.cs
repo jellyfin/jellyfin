@@ -124,7 +124,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 Name = video.Name,
                 ParentIndexNumber = video.ParentIndexNumber,
                 ProductionYear = video.ProductionYear,
-                ProviderIds = video.ProviderIds
+                ProviderIds = video.ProviderIds,
+
+                // Stop as soon as we find something
+                SearchAllProviders = false
             };
 
             var episode = video as Episode;
@@ -143,7 +146,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (result != null)
                 {
-                    await _subtitleManager.DownloadSubtitles(video, result.Id, result.ProviderName, cancellationToken)
+                    await _subtitleManager.DownloadSubtitles(video, result.Id, cancellationToken)
                             .ConfigureAwait(false);
 
                     return true;

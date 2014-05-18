@@ -579,9 +579,12 @@
 	"NotificationOptionPluginUpdateInstalled": "Plugin update installed",
 	"NotificationOptionPluginInstalled": "Plugin installed",
 	"NotificationOptionPluginUninstalled": "Plugin uninstalled",
-	"NotificationOptionVideoPlayback": "Video playback",
-	"NotificationOptionAudioPlayback": "Audio playback",
-	"NotificationOptionGamePlayback": "Game playback",
+	"NotificationOptionVideoPlayback": "Video playback started",
+	"NotificationOptionAudioPlayback": "Audio playback started",
+	"NotificationOptionGamePlayback": "Game playback started",
+	"NotificationOptionVideoPlaybackStopped": "Video playback stopped",
+	"NotificationOptionAudioPlaybackStopped": "Audio playback stopped",
+	"NotificationOptionGamePlaybackStopped": "Game playback stopped",
 	"NotificationOptionTaskFailed": "Scheduled task failure",
 	"NotificationOptionInstallationFailed": "Installation failure",
 	"NotificationOptionNewLibraryContent": "New content added",
@@ -756,5 +759,7 @@
 	"LabelEpisodeNumber": "Episode number",
 	"LabelEndingEpisodeNumber": "Ending episode number",
 	"HeaderTypeText": "Enter Text",
-	"LabelTypeText": "Text"
+	"LabelTypeText": "Text",
+	"HeaderSearchForSubtitles": "Search for Subtitles",
+	"MessageNoSubtitleSearchResultsFound": "No search results founds."
 }

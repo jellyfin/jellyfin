@@ -78,6 +78,14 @@
 
     function showLibraryMenu() {
 
+        var panel = getLibraryMenu();
+
+        updateLibraryNavLinks($.mobile.activePage);
+
+        $(panel).panel('toggle');
+    }
+    
+    function updateLibraryMenu(panel) {
         var userId = Dashboard.getCurrentUserId();
 
         ApiClient.getItems(userId, {
@@ -98,14 +106,6 @@
 
             $('.libraryMenuOptions').html(html);
         });
-
-        var page = $.mobile.activePage;
-
-        var panel = getLibraryMenu();
-
-        updateLibraryNavLinks(page);
-
-        $(panel).panel('toggle');
 
         ApiClient.getLiveTvInfo().done(function (liveTvInfo) {
 
@@ -163,6 +163,8 @@
             $(document.body).append(html);
 
             panel = $('#libraryPanel').panel({}).trigger('create');
+
+            updateLibraryMenu();
         }
 
         return panel;
@@ -289,6 +291,7 @@
             // Scroll back up so in case vertical scroll was messed with
             $(document).scrollTop(0);
         }
+
 
     });
 

@@ -1165,7 +1165,7 @@
         }
 
         if (version.Path) {
-            html += '<div><span class="mediaInfoLabel">Path</span><span class="mediaInfoAttribute">' + version.Path + '</span></div>';
+            html += '<div style="max-width:600px;overflow:hidden;"><span class="mediaInfoLabel">Path</span><span class="mediaInfoAttribute">' + version.Path + '</span></div>';
         }
 
         if (version.Container) {

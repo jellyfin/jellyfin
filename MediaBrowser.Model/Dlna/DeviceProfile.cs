@@ -318,44 +318,5 @@ namespace MediaBrowser.Model.Dlna
             }
             return null;
         }
-
-        public ResponseProfile GetPhotoMediaProfile(string container, int? width, int? height)
-        {
-            container = (container ?? string.Empty).TrimStart('.');
-
-            foreach (var i in ResponseProfiles)
-            {
-                if (i.Type != DlnaProfileType.Photo)
-                {
-                    continue;
-                }
-
-                List<string> containers = i.GetContainers().ToList();
-                if (containers.Count > 0 && !containers.Contains(container, StringComparer.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                ConditionProcessor conditionProcessor = new ConditionProcessor();
-
-                var anyOff = false;
-                foreach (ProfileCondition c in i.Conditions)
-                {
-                    if (!conditionProcessor.IsImageConditionSatisfied(c, width, height))
-                    {
-                        anyOff = true;
-                        break;
-                    }
-                }
-
-                if (anyOff)
-                {
-                    continue;
-                }
-
-                return i;
-            }
-            return null;
-        }
     }
 }

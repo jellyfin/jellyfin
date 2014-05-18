@@ -14,8 +14,9 @@ namespace MediaBrowser.Dlna.Server
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _serverUdn;
+        private readonly string _serverAddress;
 
-        public DescriptionXmlBuilder(DeviceProfile profile, string serverUdn)
+        public DescriptionXmlBuilder(DeviceProfile profile, string serverUdn, string serverAddress)
         {
             if (string.IsNullOrWhiteSpace(serverUdn))
             {
@@ -24,6 +25,7 @@ namespace MediaBrowser.Dlna.Server
 
             _profile = profile;
             _serverUdn = serverUdn;
+            _serverAddress = serverAddress;
         }
 
         public string GetXml()
@@ -67,6 +69,7 @@ namespace MediaBrowser.Dlna.Server
             builder.Append("<dlna:X_DLNACAP>" + SecurityElement.Escape(_profile.XDlnaCap ?? string.Empty) + "</dlna:X_DLNACAP>");
 
             builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + SecurityElement.Escape(_profile.XDlnaDoc ?? string.Empty) + "</dlna:X_DLNADOC>");
+            builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">M-DMS-1.50</dlna:X_DLNADOC>");
 
             builder.Append("<friendlyName>" + SecurityElement.Escape(_profile.FriendlyName ?? string.Empty) + "</friendlyName>");
             builder.Append("<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>");
@@ -78,6 +81,8 @@ namespace MediaBrowser.Dlna.Server
             builder.Append("<modelURL>" + SecurityElement.Escape(_profile.ModelUrl ?? string.Empty) + "</modelURL>");
             builder.Append("<serialNumber>" + SecurityElement.Escape(_profile.SerialNumber ?? string.Empty) + "</serialNumber>");
 
+            //builder.Append("<URLBase>" + SecurityElement.Escape(_serverAddress) + "</URLBase>");
+            
             if (!string.IsNullOrWhiteSpace(_profile.SonyAggregationFlags))
             {
                 builder.Append("<av:aggregationFlags xmlns:av=\"urn:schemas-sony-com:av\">" + SecurityElement.Escape(_profile.SonyAggregationFlags) + "</av:aggregationFlags>");

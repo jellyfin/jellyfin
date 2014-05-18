@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -22,6 +22,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
+        public List<string> ProductionLocations { get; set; }
 
         /// <summary>
         /// This is just a cache to enable quick access by Id
@@ -48,6 +49,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             BoxSetIdList = new List<Guid>();
             Taglines = new List<string>();
             Keywords = new List<string>();
+            ProductionLocations = new List<string>();
         }
 
         public string AwardSummary { get; set; }

@@ -5,66 +5,63 @@
     },
 
     load: function (page) {
-        
+
         Dashboard.showLoadingMsg();
 
         ApiClient.getPluginSecurityInfo().done(function (info) {
-            
-            $('#txtSupporterKey', page).val(info.SupporterKey);
-            $('#txtLegacyKey', page).val(info.LegacyKey);
 
-            if ((info.LegacyKey || info.SupporterKey) && !info.IsMBSupporter) {
+            $('#txtSupporterKey', page).val(info.SupporterKey);
+
+            if (info.SupporterKey && !info.IsMBSupporter) {
                 $('#txtSupporterKey', page).addClass("invalidEntry");
                 $('.notSupporter', page).show();
             } else {
                 $('#txtSupporterKey', page).removeClass("invalidEntry");
                 $('.notSupporter', page).hide();
             }
-            
+
             Dashboard.hideLoadingMsg();
         });
     },
-    
+
     updateSupporterKey: function () {
 
         Dashboard.showLoadingMsg();
         var form = this;
-        
+
         var key = $('#txtSupporterKey', form).val();
-        var legacyKey = $('#txtLegacyKey', form).val();
 
-            var info = {
-                SupporterKey: key,
-                LegacyKey: legacyKey
-            };
+        var info = {
+            SupporterKey: key
+        };
 
-            ApiClient.updatePluginSecurityInfo(info).done(function () {
-                
-                Dashboard.resetPluginSecurityInfo();
-                Dashboard.hideLoadingMsg();
-                
-                if (key) {
+        ApiClient.updatePluginSecurityInfo(info).done(function () {
 
-                    Dashboard.alert({                        
-                        message: "Thank you. Your supporter key has been updated.",
-                        title: "Confirmation"
-                    });
+            Dashboard.resetPluginSecurityInfo();
+            Dashboard.hideLoadingMsg();
 
-                } else {
-                    Dashboard.alert({
-                        message: "Thank you. Your supporter key has been removed.",
-                        title: "Confirmation"
-                    });
-                }
+            if (key) {
 
-                var page = $(form).parents('.page');
+                Dashboard.alert({
+                    message: "Thank you. Your supporter key has been updated.",
+                    title: "Confirmation"
+                });
 
-                SupporterKeyPage.load(page);
-            });
+            } else {
+                Dashboard.alert({
+                    message: "Thank you. Your supporter key has been removed.",
+                    title: "Confirmation"
+                });
+            }
+
+            var page = $(form).parents('.page');
+
+            SupporterKeyPage.load(page);
+        });
 
         return false;
     },
-    
+
     linkSupporterKeys: function () {
 
         Dashboard.showLoadingMsg();
@@ -96,7 +93,7 @@
 
         return false;
     },
-    
+
     retrieveSupporterKey: function () {
 
         Dashboard.showLoadingMsg();
@@ -104,13 +101,13 @@
 
         var email = $('#txtEmail', form).val();
 
-        var url = "http://mb3admin.com/admin/service/supporter/retrievekey?email="+email;
+        var url = "http://mb3admin.com/admin/service/supporter/retrievekey?email=" + email;
         console.log(url);
         $.post(url).done(function (res) {
             var result = JSON.parse(res);
             Dashboard.hideLoadingMsg();
             if (result.Success) {
-                Dashboard.alert("Key emailed to "+email);
+                Dashboard.alert("Key emailed to " + email);
             } else {
                 Dashboard.showError(result.ErrorMessage);
             }

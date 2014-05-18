@@ -1330,6 +1330,8 @@ $(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened).on("websocketmessa
 
 $(function () {
 
+    ApiClient.currentUserId(Dashboard.getCurrentUserId());
+
     var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
 
     videoPlayerHtml += '<div id="videoBackdrop">';

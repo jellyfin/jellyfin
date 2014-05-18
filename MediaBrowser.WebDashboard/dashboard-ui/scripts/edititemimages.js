@@ -12,8 +12,8 @@
 
         var query = MetadataEditor.getEditQueryString(item);
 
-        $('#btnEditPeople', page).attr('href', 'edititempeople.html?' + query);
         $('#btnEditMetadata', page).attr('href', 'edititemmetadata.html?' + query);
+        $('#btnEditSubtitles', page).attr('href', 'edititemsubtitles.html?' + query);
         $('#btnEditCollectionTitles', page).attr('href', 'editcollectionitems.html?' + query);
     }
 
@@ -269,16 +269,16 @@
 
             updateTabs(page, item);
 
-            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist" || item.Type == "GameGenre" || item.Type == "TvChannel" || item.Type == "BoxSet") {
-                $('#btnEditPeople', page).hide();
-            } else {
-                $('#btnEditPeople', page).show();
-            }
-
             if (item.Type == "BoxSet") {
                 $('#btnEditCollectionTitles', page).show();
             } else {
                 $('#btnEditCollectionTitles', page).hide();
+            }
+
+            if (item.MediaType == "Video" && item.LocationType == "FileSystem") {
+                $('#btnEditSubtitles', page).show();
+            } else {
+                $('#btnEditSubtitles', page).hide();
             }
 
             ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function (providers) {
