@@ -39,12 +39,33 @@ namespace MediaBrowser.Controller.Subtitles
         /// </summary>
         /// <param name="video">The video.</param>
         /// <param name="subtitleId">The subtitle identifier.</param>
-        /// <param name="providerName">Name of the provider.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task DownloadSubtitles(Video video, 
             string subtitleId, 
-            string providerName, 
             CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the remote subtitles.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{SubtitleResponse}.</returns>
+        Task<SubtitleResponse> GetRemoteSubtitles(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Deletes the subtitles.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="index">The index.</param>
+        /// <returns>Task.</returns>
+        Task DeleteSubtitles(string itemId, int index);
+
+        /// <summary>
+        /// Gets the providers.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <returns>IEnumerable{SubtitleProviderInfo}.</returns>
+        IEnumerable<SubtitleProviderInfo> GetProviders(string itemId);
     }
 }

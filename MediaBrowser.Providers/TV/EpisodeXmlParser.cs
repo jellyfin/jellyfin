@@ -17,6 +17,7 @@ namespace MediaBrowser.Providers.TV
     public class EpisodeXmlParser : BaseItemXmlParser<Episode>
     {
         private List<LocalImageInfo> _imagesFound;
+        private List<ChapterInfo> _chaptersFound;
 
         public EpisodeXmlParser(ILogger logger)
             : base(logger)
@@ -25,9 +26,14 @@ namespace MediaBrowser.Providers.TV
 
         private string _xmlPath;
 
-        public void Fetch(Episode item, List<LocalImageInfo> images, string metadataFile, CancellationToken cancellationToken)
+        public void Fetch(Episode item, 
+            List<LocalImageInfo> images,
+            List<ChapterInfo> chapters, 
+            string metadataFile, 
+            CancellationToken cancellationToken)
         {
             _imagesFound = images;
+            _chaptersFound = chapters;
             _xmlPath = metadataFile;
 
             Fetch(item, metadataFile, cancellationToken);
@@ -46,7 +52,7 @@ namespace MediaBrowser.Providers.TV
             {
                 case "Chapters":
 
-                    //_chaptersTask = FetchChaptersFromXmlNode(item, reader.ReadSubtree(), _itemRepo, CancellationToken.None);
+                    _chaptersFound.AddRange(FetchChaptersFromXmlNode(item, reader.ReadSubtree()));
                     break;
 
                 case "Episode":

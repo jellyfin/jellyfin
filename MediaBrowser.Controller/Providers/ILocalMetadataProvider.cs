@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,10 +36,12 @@ namespace MediaBrowser.Controller.Providers
         public T Item { get; set; }
         
         public List<LocalImageInfo> Images { get; set; }
+        public List<ChapterInfo> Chapters { get; set; }
 
         public LocalMetadataResult()
         {
             Images = new List<LocalImageInfo>();
+            Chapters = new List<ChapterInfo>();
         }
     }
 }

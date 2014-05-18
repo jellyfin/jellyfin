@@ -34,17 +34,22 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Providers will be executed based on default rules
         /// </summary>
-        EnsureMetadata,
+        EnsureMetadata = 0,
 
         /// <summary>
         /// No providers will be executed
         /// </summary>
-        None,
+        None = 1,
 
         /// <summary>
         /// All providers will be executed to search for new metadata
         /// </summary>
-        FullRefresh
+        FullRefresh = 2,
+
+        /// <summary>
+        /// The validation only
+        /// </summary>
+        ValidationOnly = 3
     }
 
     public enum ImageRefreshMode
@@ -52,16 +57,16 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// The default
         /// </summary>
-        Default,
+        Default = 0,
 
         /// <summary>
         /// Existing images will be validated
         /// </summary>
-        ValidationOnly,
+        ValidationOnly = 1,
 
         /// <summary>
         /// All providers will be executed to search for new metadata
         /// </summary>
-        FullRefresh
+        FullRefresh = 2
     }
 }

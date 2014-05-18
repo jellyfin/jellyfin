@@ -6,6 +6,10 @@ namespace MediaBrowser.Model.Configuration
         ApplicationUpdateInstalled,
         AudioPlayback,
         GamePlayback,
+        VideoPlayback,
+        AudioPlaybackStopped,
+        GamePlaybackStopped,
+        VideoPlaybackStopped,
         InstallationFailed,
         PluginError,
         PluginInstalled,
@@ -14,7 +18,6 @@ namespace MediaBrowser.Model.Configuration
         NewLibraryContent,
         NewLibraryContentMultiple,
         ServerRestartRequired,
-        TaskFailed,
-        VideoPlayback
+        TaskFailed
     }
 }

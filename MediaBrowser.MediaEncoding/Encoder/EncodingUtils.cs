@@ -64,77 +64,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return string.Format("\"{0}\"", url);
         }
 
-        public static string GetAudioInputModifier(InternalEncodingTask options)
-        {
-            return GetCommonInputModifier(options);
-        }
-
-        public static string GetInputModifier(InternalEncodingTask options)
-        {
-            var inputModifier = GetCommonInputModifier(options);
-
-            //if (state.VideoRequest != null)
-            //{
-            //    inputModifier += " -fflags genpts";
-            //}
-
-            //if (!string.IsNullOrEmpty(state.InputVideoCodec))
-            //{
-            //    inputModifier += " -vcodec " + state.InputVideoCodec;
-            //}
-
-            //if (!string.IsNullOrEmpty(state.InputVideoSync))
-            //{
-            //    inputModifier += " -vsync " + state.InputVideoSync;
-            //}
-
-            return inputModifier;
-        }
-
-        private static string GetCommonInputModifier(InternalEncodingTask options)
-        {
-            var inputModifier = string.Empty;
-
-            if (options.EnableDebugLogging)
-            {
-                inputModifier += "-loglevel debug";
-            }
-
-            var probeSize = GetProbeSizeArgument(options.InputVideoType.HasValue && options.InputVideoType.Value == VideoType.Dvd);
-            inputModifier += " " + probeSize;
-            inputModifier = inputModifier.Trim();
-
-            if (!string.IsNullOrWhiteSpace(options.UserAgent))
-            {
-                inputModifier += " -user-agent \"" + options.UserAgent + "\"";
-            }
-
-            inputModifier += " " + GetFastSeekValue(options.Request);
-            inputModifier = inputModifier.Trim();
-
-            if (!string.IsNullOrEmpty(options.InputFormat))
-            {
-                inputModifier += " -f " + options.InputFormat;
-            }
-
-            if (!string.IsNullOrEmpty(options.InputAudioCodec))
-            {
-                inputModifier += " -acodec " + options.InputAudioCodec;
-            }
-
-            if (!string.IsNullOrEmpty(options.InputAudioSync))
-            {
-                inputModifier += " -async " + options.InputAudioSync;
-            }
-
-            if (options.ReadInputAtNativeFramerate)
-            {
-                inputModifier += " -re";
-            }
-
-            return inputModifier;
-        }
-
         private static string GetFastSeekValue(EncodingOptions options)
         {
             var time = options.StartTimeTicks;
@@ -155,19 +84,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public static string GetProbeSizeArgument(bool isDvd)
         {
             return isDvd ? "-probesize 1G -analyzeduration 200M" : string.Empty;
-        }
-
-        public static int? GetAudioBitrateParam(InternalEncodingTask task)
-        {
-            if (task.Request.AudioBitRate.HasValue)
-            {
-                // Make sure we don't request a bitrate higher than the source
-                var currentBitrate = task.AudioStream == null ? task.Request.AudioBitRate.Value : task.AudioStream.BitRate ?? task.Request.AudioBitRate.Value;
-
-                return Math.Min(currentBitrate, task.Request.AudioBitRate.Value);
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -200,36 +116,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return request.AudioChannels;
-        }
-
-        public static int GetNumberOfThreads(InternalEncodingTask state, bool isWebm)
-        {
-            // Use more when this is true. -re will keep cpu usage under control
-            if (state.ReadInputAtNativeFramerate)
-            {
-                if (isWebm)
-                {
-                    return Math.Max(Environment.ProcessorCount - 1, 2);
-                }
-
-                return 0;
-            }
-
-            // Webm: http://www.webmproject.org/docs/encoder-parameters/
-            // The decoder will usually automatically use an appropriate number of threads according to how many cores are available but it can only use multiple threads 
-            // for the coefficient data if the encoder selected --token-parts > 0 at encode time.
-
-            switch (state.QualitySetting)
-            {
-                case EncodingQuality.HighSpeed:
-                    return 2;
-                case EncodingQuality.HighQuality:
-                    return 2;
-                case EncodingQuality.MaxQuality:
-                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 2) : 0;
-                default:
-                    throw new Exception("Unrecognized MediaEncodingQuality value.");
-            }
         }
     }
 }

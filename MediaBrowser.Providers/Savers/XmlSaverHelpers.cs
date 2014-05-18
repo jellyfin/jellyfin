@@ -34,6 +34,7 @@ namespace MediaBrowser.Providers.Savers
                     
                     "Chapters",
                     "ContentRating",
+                    "Countries",
                     "CustomRating",
                     "CriticRating",
                     "CriticRatingSummary",
@@ -315,6 +316,22 @@ namespace MediaBrowser.Providers.Savers
                     }
 
                     builder.Append("</Trailers>");
+                }
+            }
+
+            var hasProductionLocations = item as IHasProductionLocations;
+            if (hasProductionLocations != null)
+            {
+                if (hasProductionLocations.ProductionLocations.Count > 0)
+                {
+                    builder.Append("<Countries>");
+
+                    foreach (var name in hasProductionLocations.ProductionLocations)
+                    {
+                        builder.Append("<Country>" + SecurityElement.Escape(name) + "</Country>");
+                    }
+
+                    builder.Append("</Countries>");
                 }
             }
 
@@ -636,22 +653,27 @@ namespace MediaBrowser.Providers.Savers
         {
             var video = item as Video;
 
-            if (video != null && video.Video3DFormat.HasValue)
+            if (video != null)
             {
-                switch (video.Video3DFormat.Value)
+                AddChapters(video, builder, itemRepository);
+
+                if (video.Video3DFormat.HasValue)
                 {
-                    case Video3DFormat.FullSideBySide:
-                        builder.Append("<Format3D>FSBS</Format3D>");
-                        break;
-                    case Video3DFormat.FullTopAndBottom:
-                        builder.Append("<Format3D>FTAB</Format3D>");
-                        break;
-                    case Video3DFormat.HalfSideBySide:
-                        builder.Append("<Format3D>HSBS</Format3D>");
-                        break;
-                    case Video3DFormat.HalfTopAndBottom:
-                        builder.Append("<Format3D>HTAB</Format3D>");
-                        break;
+                    switch (video.Video3DFormat.Value)
+                    {
+                        case Video3DFormat.FullSideBySide:
+                            builder.Append("<Format3D>FSBS</Format3D>");
+                            break;
+                        case Video3DFormat.FullTopAndBottom:
+                            builder.Append("<Format3D>FTAB</Format3D>");
+                            break;
+                        case Video3DFormat.HalfSideBySide:
+                            builder.Append("<Format3D>HSBS</Format3D>");
+                            break;
+                        case Video3DFormat.HalfTopAndBottom:
+                            builder.Append("<Format3D>HTAB</Format3D>");
+                            break;
+                    }
                 }
             }
         }

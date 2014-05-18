@@ -1,6 +1,7 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -14,10 +15,12 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,6 +53,10 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
         private readonly IItemRepository _itemRepo;
+
+        private readonly IHttpClient _httpClient;
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IServerApplicationHost _appHost;
 
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -93,7 +100,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="userRepository">The user repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IItemRepository itemRepo)
+        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IItemRepository itemRepo, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient)
         {
             _userDataRepository = userDataRepository;
             _configurationManager = configurationManager;
@@ -105,6 +112,9 @@ namespace MediaBrowser.Server.Implementations.Session
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
             _itemRepo = itemRepo;
+            _jsonSerializer = jsonSerializer;
+            _appHost = appHost;
+            _httpClient = httpClient;
         }
 
         /// <summary>
@@ -908,11 +918,13 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
 
+            var info = _appHost.GetSystemInfo();
+
             var tasks = sessions.Select(session => Task.Run(async () =>
             {
                 try
                 {
-                    await session.SessionController.SendRestartRequiredNotification(cancellationToken).ConfigureAwait(false);
+                    await session.SessionController.SendRestartRequiredNotification(info, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -1135,6 +1147,18 @@ namespace MediaBrowser.Server.Implementations.Session
             session.PlayableMediaTypes = capabilities.PlayableMediaTypes;
             session.SupportedCommands = capabilities.SupportedCommands;
 
+            if (!string.IsNullOrWhiteSpace(capabilities.MessageCallbackUrl))
+            {
+                var postUrl = string.Format("http://{0}{1}", session.RemoteEndPoint, capabilities.MessageCallbackUrl);
+
+                var controller = session.SessionController as HttpSessionController;
+
+                if (controller == null)
+                {
+                    session.SessionController = new HttpSessionController(_httpClient, _jsonSerializer, session, postUrl);
+                }
+            }
+
             EventHelper.FireEventIfNotNull(CapabilitiesChanged, this, new SessionEventArgs
             {
                 SessionInfo = session
@@ -1164,7 +1188,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 SupportedCommands = session.SupportedCommands,
                 UserName = session.UserName,
                 NowPlayingItem = session.NowPlayingItem,
-
+                SupportsRemoteControl = session.SupportsMediaControl,
                 PlayState = session.PlayState
             };
 

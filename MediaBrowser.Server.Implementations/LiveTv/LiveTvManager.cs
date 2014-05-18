@@ -84,7 +84,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             _services.AddRange(services);
 
-            SetActiveService(_services.FirstOrDefault());
+            SetActiveService(_config.Configuration.LiveTvOptions.ActiveService);
+        }
+
+        private void SetActiveService(string name)
+        {
+            var service = _services.FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase)) ??
+                _services.FirstOrDefault();
+
+            SetActiveService(service);
         }
 
         private void SetActiveService(ILiveTvService service)

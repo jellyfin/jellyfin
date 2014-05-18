@@ -2,7 +2,7 @@
 
 namespace MediaBrowser.Controller.Channels
 {
-    public interface IChannelItem : IHasImages
+    public interface IChannelItem : IHasImages, IHasTags
     {
         string ChannelId { get; set; }
 

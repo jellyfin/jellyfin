@@ -44,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <summary>
         /// The library update duration
         /// </summary>
-        private const int LibraryUpdateDuration = 20000;
+        private const int LibraryUpdateDuration = 5000;
 
         public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger)
         {

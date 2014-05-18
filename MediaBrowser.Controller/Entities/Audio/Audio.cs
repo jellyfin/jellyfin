@@ -10,16 +10,18 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class Audio
     /// </summary>
-    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<SongInfo>
+    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<SongInfo>, IHasTags
     {
         public string FormatName { get; set; }
         public long? Size { get; set; }
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
+        public List<string> Tags { get; set; }
 
         public Audio()
         {
             Artists = new List<string>();
+            Tags = new List<string>();
         }
 
         /// <summary>

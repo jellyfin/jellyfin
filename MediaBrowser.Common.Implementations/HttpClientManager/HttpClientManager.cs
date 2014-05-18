@@ -1,5 +1,4 @@
-﻿using System.Collections.Specialized;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
@@ -7,6 +6,7 @@ using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -41,6 +41,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         private readonly IApplicationPaths _appPaths;
 
         private readonly IFileSystem _fileSystem;
+        private readonly IConfigurationManager _config;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
@@ -51,7 +52,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <exception cref="System.ArgumentNullException">appPaths
         /// or
         /// logger</exception>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem, IConfigurationManager config)
         {
             if (appPaths == null)
             {
@@ -64,6 +65,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             _logger = logger;
             _fileSystem = fileSystem;
+            _config = config;
             _appPaths = appPaths;
 
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
@@ -116,8 +118,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
 
-            request.ConnectionGroupName = GetHostFromUrl(options.Url);
-            request.KeepAlive = true;
+            request.KeepAlive = options.EnableKeepAlive;
             request.Method = method;
             request.Pipelined = true;
             request.Timeout = 20000;
@@ -128,14 +129,18 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
 #if !__MonoCS__
-            // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
-            // May need to remove this for mono
-            var sp = request.ServicePoint;
-            if (_httpBehaviorPropertyInfo == null)
+            if (options.EnableKeepAlive)
             {
-                _httpBehaviorPropertyInfo = sp.GetType().GetProperty("HttpBehaviour", BindingFlags.Instance | BindingFlags.NonPublic);
+                // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
+                // May need to remove this for mono
+                var sp = request.ServicePoint;
+                if (_httpBehaviorPropertyInfo == null)
+                {
+                    _httpBehaviorPropertyInfo = sp.GetType().GetProperty("HttpBehaviour", BindingFlags.Instance | BindingFlags.NonPublic);
+                }
+
+                _httpBehaviorPropertyInfo.SetValue(sp, (byte)0, null);
             }
-            _httpBehaviorPropertyInfo.SetValue(sp, (byte)0, null);
 #endif
 
             return request;

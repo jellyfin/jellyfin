@@ -62,34 +62,6 @@ namespace MediaBrowser.Controller.Providers
                 ValidationType = ValidationType.None
             };
 
-            var hasTaglines = item as IHasTaglines;
-            if (hasTaglines != null)
-            {
-                hasTaglines.Taglines.Clear();
-            }
-
-            item.Studios.Clear();
-            item.Genres.Clear();
-            item.People.Clear();
-
-            var hasTags = item as IHasTags;
-            if (hasTags != null)
-            {
-                hasTags.Tags.Clear();
-            }
-
-            var hasKeywords = item as IHasKeywords;
-            if (hasKeywords != null)
-            {
-                hasKeywords.Keywords.Clear();
-            }
-
-            var hasTrailers = item as IHasTrailers;
-            if (hasTrailers != null)
-            {
-                hasTrailers.RemoteTrailers.Clear();
-            }
-
             //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
             Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
         }
@@ -369,6 +341,15 @@ namespace MediaBrowser.Controller.Providers
                         using (var subtree = reader.ReadSubtree())
                         {
                             FetchFromTaglinesNode(subtree, item);
+                        }
+                        break;
+                    }
+
+                case "Countries":
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            FetchFromCountriesNode(subtree, item);
                         }
                         break;
                     }
@@ -857,6 +838,42 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
+        private void FetchFromCountriesNode(XmlReader reader, T item)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Country":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    var hasProductionLocations = item as IHasProductionLocations;
+                                    if (hasProductionLocations != null)
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            hasProductionLocations.AddProductionLocation(val);
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Fetches from taglines node.
         /// </summary>
@@ -1059,16 +1076,13 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        protected async Task FetchChaptersFromXmlNode(BaseItem item, XmlReader reader, IItemRepository repository, CancellationToken cancellationToken)
+        protected List<ChapterInfo> FetchChaptersFromXmlNode(BaseItem item, XmlReader reader)
         {
-            var runtime = item.RunTimeTicks ?? 0;
-
             using (reader)
             {
-                var chapters = GetChaptersFromXmlNode(reader)
-                    .Where(i => i.StartPositionTicks >= 0 && i.StartPositionTicks < runtime);
-
-                await repository.SaveChapters(item.Id, chapters, cancellationToken).ConfigureAwait(false);
+                return GetChaptersFromXmlNode(reader)
+                    .Where(i => i.StartPositionTicks >= 0)
+                    .ToList();
             }
         }
 

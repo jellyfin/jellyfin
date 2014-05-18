@@ -82,6 +82,7 @@ namespace MediaBrowser.Common.Net
         public bool LogRequest { get; set; }
 
         public bool LogErrorResponseBody { get; set; }
+        public bool EnableKeepAlive { get; set; }
 
         private string GetHeaderValue(string name)
         {
@@ -99,6 +100,7 @@ namespace MediaBrowser.Common.Net
         {
             EnableHttpCompression = true;
             BufferContent = true;
+            EnableKeepAlive = true;
 
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

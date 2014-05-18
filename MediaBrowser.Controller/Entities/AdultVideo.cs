@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class AdultVideo : Video, IHasPreferredMetadataLanguage, IHasTaglines
+    public class AdultVideo : Video, IHasProductionLocations, IHasPreferredMetadataLanguage, IHasTaglines
     {
         /// <summary>
         /// Gets or sets the preferred metadata language.
@@ -16,12 +16,14 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The preferred metadata country code.</value>
         public string PreferredMetadataCountryCode { get; set; }
+        public List<string> ProductionLocations { get; set; }
 
         public List<string> Taglines { get; set; }
 
         public AdultVideo()
         {
             Taglines = new List<string>();
+            ProductionLocations = new List<string>();
         }
 
         public override bool BeforeMetadataRefresh()

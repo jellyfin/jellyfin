@@ -68,6 +68,7 @@
     <Compile Include="ChannelService.cs" />
     <Compile Include="Dlna\DlnaServerService.cs" />
     <Compile Include="Dlna\DlnaService.cs" />
+    <Compile Include="Library\SubtitleService.cs" />
     <Compile Include="Movies\CollectionService.cs" />
     <Compile Include="Music\AlbumsService.cs" />
     <Compile Include="AppThemeService.cs" />

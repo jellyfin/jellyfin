@@ -12,11 +12,12 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
-    public class Trailer : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasTrailers, IHasKeywords, IHasTaglines, IHasPreferredMetadataLanguage, IHasMetascore, IHasLookupInfo<TrailerInfo>
+    public class Trailer : Video, IHasCriticRating, IHasSoundtracks, IHasProductionLocations, IHasBudget, IHasTrailers, IHasKeywords, IHasTaglines, IHasPreferredMetadataLanguage, IHasMetascore, IHasLookupInfo<TrailerInfo>
     {
         public List<Guid> SoundtrackIds { get; set; }
 
         public string PreferredMetadataLanguage { get; set; }
+        public List<string> ProductionLocations { get; set; }
 
         /// <summary>
         /// Gets or sets the preferred metadata country code.
@@ -31,6 +32,7 @@ namespace MediaBrowser.Controller.Entities
             SoundtrackIds = new List<Guid>();
             LocalTrailerIds = new List<Guid>();
             Keywords = new List<string>();
+            ProductionLocations = new List<string>();
         }
 
         public float? Metascore { get; set; }

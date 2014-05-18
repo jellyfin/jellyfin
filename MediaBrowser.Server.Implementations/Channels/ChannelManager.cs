@@ -98,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 all = all.Take(query.Limit.Value).ToList();
             }
-            
+
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
@@ -154,6 +154,24 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             _channelEntities = list.ToList();
             progress.Report(100);
+        }
+
+        public Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaSources(string id, CancellationToken cancellationToken)
+        {
+            var item = (IChannelMediaItem)_libraryManager.GetItemById(id);
+
+            var channelGuid = new Guid(item.ChannelId);
+            var channel = _channelEntities.First(i => i.Id == channelGuid);
+            var channelPlugin = GetChannelProvider(channel);
+
+            var requiresCallback = channelPlugin as IRequiresMediaInfoCallback;
+
+            if (requiresCallback != null)
+            {
+                return requiresCallback.GetChannelItemMediaInfo(item.ExternalId, cancellationToken);
+            }
+
+            return Task.FromResult<IEnumerable<ChannelMediaInfo>>(item.ChannelMediaSources);
         }
 
         private async Task<Channel> GetChannel(IChannel channelInfo, CancellationToken cancellationToken)
@@ -246,7 +264,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 var channelId = channel.Id.ToString("N");
 
-                var tasks = items.Select(i => GetChannelItemEntity(i, channelId, cancellationToken));
+                var channelPlugin = GetChannelProvider(channel);
+
+                var tasks = items.Select(i => GetChannelItemEntity(i, channelPlugin, channelId, cancellationToken));
 
                 return await Task.WhenAll(tasks).ConfigureAwait(false);
             });
@@ -303,9 +323,15 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 var query = new InternalChannelItemQuery
                 {
-                    User = user,
-                    CategoryId = categoryId
+                    User = user
                 };
+
+                if (!string.IsNullOrWhiteSpace(categoryId))
+                {
+                    var categoryItem = (IChannelItem)_libraryManager.GetItemById(new Guid(categoryId));
+
+                    query.CategoryId = categoryItem.ExternalId;
+                }
 
                 var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
 
@@ -339,7 +365,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var categoryKey = string.IsNullOrWhiteSpace(categoryId) ? "root" : categoryId.GetMD5().ToString("N");
 
-            return Path.Combine(_config.ApplicationPaths.CachePath, "channels", channelId, categoryKey, user.Id.ToString("N") + ".json");
+            var version = string.IsNullOrWhiteSpace(channel.DataVersion) ? "0" : channel.DataVersion;
+
+            return Path.Combine(_config.ApplicationPaths.CachePath, "channels", channelId, version, categoryKey, user.Id.ToString("N") + ".json");
         }
 
         private async Task<QueryResult<BaseItemDto>> GetReturnItems(IEnumerable<BaseItem> items, User user, ChannelItemQuery query, CancellationToken cancellationToken)
@@ -377,21 +405,29 @@ namespace MediaBrowser.Server.Implementations.Channels
             };
         }
 
-        private string GetIdToHash(string externalId)
+        private string GetIdToHash(string externalId, IChannel channelProvider)
         {
             // Increment this as needed to force new downloads
-            return externalId + "4";
+            // Incorporate Name because it's being used to convert channel entity to provider
+            return externalId + (channelProvider.DataVersion ?? string.Empty) + (channelProvider.Name ?? string.Empty) + "11";
         }
 
-        private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, string internalChannnelId, CancellationToken cancellationToken)
+        private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, string internalChannnelId, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(internalChannnelId))
+            {
+                throw new ArgumentNullException("internalChannnelId");
+            }
+
             BaseItem item;
             Guid id;
             var isNew = false;
 
+            var idToHash = GetIdToHash(info.Id, channelProvider);
+
             if (info.Type == ChannelItemType.Category)
             {
-                id = GetIdToHash(info.Id).GetMBId(typeof(ChannelCategoryItem));
+                id = idToHash.GetMBId(typeof(ChannelCategoryItem));
 
                 item = _libraryManager.GetItemById(id) as ChannelCategoryItem;
 
@@ -403,7 +439,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             else if (info.MediaType == ChannelMediaType.Audio)
             {
-                id = GetIdToHash(info.Id).GetMBId(typeof(ChannelCategoryItem));
+                id = idToHash.GetMBId(typeof(ChannelCategoryItem));
 
                 item = _libraryManager.GetItemById(id) as ChannelAudioItem;
 
@@ -415,7 +451,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             else
             {
-                id = GetIdToHash(info.Id).GetMBId(typeof(ChannelVideoItem));
+                id = idToHash.GetMBId(typeof(ChannelVideoItem));
 
                 item = _libraryManager.GetItemById(id) as ChannelVideoItem;
 
@@ -428,10 +464,6 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             item.Id = id;
             item.RunTimeTicks = info.RunTimeTicks;
-
-            var mediaSource = info.MediaSources.FirstOrDefault();
-
-            item.Path = mediaSource == null ? null : mediaSource.Path;
 
             if (isNew)
             {
@@ -459,12 +491,22 @@ namespace MediaBrowser.Server.Implementations.Channels
             channelItem.ChannelId = internalChannnelId;
             channelItem.ChannelItemType = info.Type;
 
+            if (isNew)
+            {
+                channelItem.Tags = info.Tags;
+            }
+
             var channelMediaItem = item as IChannelMediaItem;
 
             if (channelMediaItem != null)
             {
                 channelMediaItem.IsInfiniteStream = info.IsInfiniteStream;
                 channelMediaItem.ContentType = info.ContentType;
+                channelMediaItem.ChannelMediaSources = info.MediaSources;
+
+                var mediaSource = info.MediaSources.FirstOrDefault();
+
+                item.Path = mediaSource == null ? null : mediaSource.Path;
             }
 
             if (isNew)

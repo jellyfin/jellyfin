@@ -116,6 +116,27 @@ namespace MediaBrowser.Server.Implementations.Notifications
                      Type = NotificationType.VideoPlayback.ToString(),
                      DefaultTitle = "{UserName} is playing {ItemName} on {DeviceName}.",
                      Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
+                },
+
+                new NotificationTypeInfo
+                {
+                     Type = NotificationType.AudioPlaybackStopped.ToString(),
+                     DefaultTitle = "{UserName} has finished playing {ItemName} on {DeviceName}.",
+                     Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
+                },
+
+                new NotificationTypeInfo
+                {
+                     Type = NotificationType.GamePlaybackStopped.ToString(),
+                     DefaultTitle = "{UserName} has finished playing {ItemName} on {DeviceName}.",
+                     Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
+                },
+
+                new NotificationTypeInfo
+                {
+                     Type = NotificationType.VideoPlaybackStopped.ToString(),
+                     DefaultTitle = "{UserName} has finished playing {ItemName} on {DeviceName}.",
+                     Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
                 }
             };
 
