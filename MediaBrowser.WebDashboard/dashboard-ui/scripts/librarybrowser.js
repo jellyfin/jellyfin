@@ -479,7 +479,11 @@
                 if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3) {
                     options.shape = 'backdrop';
                 }
-                else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .34) {
+                else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33) {
+                    options.coverImage = true;
+                    options.shape = 'square';
+                }
+                else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.3333334) < .01) {
                     options.coverImage = true;
                     options.shape = 'square';
                 }

@@ -19,6 +19,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -320,7 +321,7 @@ namespace MediaBrowser.Dlna.PlayTo
             return Task.FromResult(true);
         }
 
-        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }

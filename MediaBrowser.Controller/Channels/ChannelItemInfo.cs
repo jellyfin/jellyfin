@@ -19,6 +19,7 @@ namespace MediaBrowser.Controller.Channels
 
         public List<string> Genres { get; set; }
         public List<string> Studios { get; set; }
+        public List<string> Tags { get; set; }
 
         public List<PersonInfo> People { get; set; }
         
@@ -49,6 +50,7 @@ namespace MediaBrowser.Controller.Channels
             Genres = new List<string>();
             Studios = new List<string>();
             People = new List<PersonInfo>();
+            Tags = new List<string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }

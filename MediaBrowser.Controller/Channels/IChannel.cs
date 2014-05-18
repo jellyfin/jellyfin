@@ -59,4 +59,15 @@ namespace MediaBrowser.Controller.Channels
         /// <returns>IEnumerable{ImageType}.</returns>
         IEnumerable<ImageType> GetSupportedChannelImages();
     }
+
+    public interface IRequiresMediaInfoCallback
+    {
+        /// <summary>
+        /// Gets the channel item media information.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{ChannelMediaInfo}}.</returns>
+        Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo(string id, CancellationToken cancellationToken);
+    }
 }

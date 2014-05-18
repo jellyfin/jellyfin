@@ -9,7 +9,7 @@
     };
 
     function getSavedQueryId() {
-        return 'channels-' + (getParameterByName('categoryId') || '');
+        return 'channels-' + getParameterByName('id') + (getParameterByName('categoryId') || '');
     }
 
     function showLoadingMessage(page) {
@@ -35,9 +35,7 @@
             $('.categoryTitle', page).html(item.Name);
         });
         
-        if (categoryId) {
-            query.categoryId = categoryId;
-        }
+        query.categoryId = categoryId;
 
         $.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
 
@@ -55,7 +53,8 @@
                 shape: "auto",
                 context: 'channels',
                 showTitle: true,
-                centerText: true
+                centerText: true,
+                coverImage: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
@@ -80,6 +79,9 @@
 
             LibraryBrowser.saveQueryValues(getSavedQueryId(), query);
 
+            
+        }).always(function() {
+            
             hideLoadingMessage(page);
         });
     }

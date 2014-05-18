@@ -28,6 +28,11 @@ namespace MediaBrowser.Api.Playback
             get { return Request as VideoStreamRequest; }
         }
 
+        public StreamState()
+        {
+            PlayableStreamFileNames = new List<string>();
+        }
+
         /// <summary>
         /// Gets or sets the log file stream.
         /// </summary>
@@ -56,8 +61,6 @@ namespace MediaBrowser.Api.Playback
         public IsoType? IsoType { get; set; }
 
         public List<string> PlayableStreamFileNames { get; set; }
-
-        public bool HasMediaStreams { get; set; }
 
         public string LiveTvStreamId { get; set; }
 

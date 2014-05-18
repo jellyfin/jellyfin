@@ -1,5 +1,8 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
+﻿using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Net;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
@@ -16,23 +19,18 @@ namespace MediaBrowser.Server.Implementations.Session
     {
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _json;
-        private readonly IServerApplicationHost _appHost;
 
         public SessionInfo Session { get; private set; }
 
-        //var postUrl = string.Format("http://{0}/mediabrowser/message", session.RemoteEndPoint);
-        
         private readonly string _postUrl;
 
-        public HttpSessionController(IHttpClient httpClient, 
-            IJsonSerializer json, 
-            IServerApplicationHost appHost, 
-            SessionInfo session, 
+        public HttpSessionController(IHttpClient httpClient,
+            IJsonSerializer json,
+            SessionInfo session,
             string postUrl)
         {
             _httpClient = httpClient;
             _json = json;
-            _appHost = appHost;
             Session = session;
             _postUrl = postUrl;
         }
@@ -63,6 +61,21 @@ namespace MediaBrowser.Server.Implementations.Session
             });
         }
 
+        private Task SendMessage(string name, CancellationToken cancellationToken)
+        {
+            return SendMessage(name, new NameValueCollection(), cancellationToken);
+        }
+
+        private Task SendMessage(string name, NameValueCollection args, CancellationToken cancellationToken)
+        {
+            return SendMessage(new WebSocketMessage<string>
+            {
+                MessageType = name,
+                Data = string.Empty
+
+            }, cancellationToken);
+        }
+
         public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
@@ -80,22 +93,25 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
-            return SendMessage(new WebSocketMessage<PlayRequest>
-            {
-                MessageType = "Play",
-                Data = command
+            return Task.FromResult(true);
+            //return SendMessage(new WebSocketMessage<PlayRequest>
+            //{
+            //    MessageType = "Play",
+            //    Data = command
 
-            }, cancellationToken);
+            //}, cancellationToken);
         }
 
         public Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken)
         {
-            return SendMessage(new WebSocketMessage<PlaystateRequest>
-            {
-                MessageType = "Playstate",
-                Data = command
+            var args = new Dictionary<string, string>();
 
-            }, cancellationToken);
+            if (command.Command == PlaystateCommand.Seek)
+            {
+
+            }
+
+            return SendMessage(command.Command.ToString(), cancellationToken);
         }
 
         public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)
@@ -103,14 +119,9 @@ namespace MediaBrowser.Server.Implementations.Session
             return Task.FromResult(true);
         }
 
-        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken)
         {
-            return SendMessage(new WebSocketMessage<SystemInfo>
-            {
-                MessageType = "RestartRequired",
-                Data = _appHost.GetSystemInfo()
-
-            }, cancellationToken);
+            return SendMessage("RestartRequired", cancellationToken);
         }
 
         public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
@@ -120,22 +131,12 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendServerShutdownNotification(CancellationToken cancellationToken)
         {
-            return SendMessage(new WebSocketMessage<string>
-            {
-                MessageType = "ServerShuttingDown",
-                Data = string.Empty
-
-            }, cancellationToken);
+            return SendMessage("ServerShuttingDown", cancellationToken);
         }
 
         public Task SendServerRestartNotification(CancellationToken cancellationToken)
         {
-            return SendMessage(new WebSocketMessage<string>
-            {
-                MessageType = "ServerRestarting",
-                Data = string.Empty
-
-            }, cancellationToken);
+            return SendMessage("ServerRestarting", cancellationToken);
         }
 
         public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
@@ -146,6 +147,14 @@ namespace MediaBrowser.Server.Implementations.Session
                 Data = command
 
             }, cancellationToken);
+        }
+
+        private string ToQueryString(Dictionary<string, string> nvc)
+        {
+            var array = (from item in nvc
+                         select string.Format("{0}={1}", WebUtility.UrlEncode(item.Key), WebUtility.UrlEncode(item.Value)))
+                .ToArray();
+            return "?" + string.Join("&", array);
         }
     }
 }

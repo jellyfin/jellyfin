@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Dto;
@@ -25,7 +26,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -71,6 +71,7 @@ namespace MediaBrowser.Api.Playback
         protected IItemRepository ItemRepository { get; private set; }
         protected ILiveTvManager LiveTvManager { get; private set; }
         protected IDlnaManager DlnaManager { get; private set; }
+        protected IChannelManager ChannelManager { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
@@ -83,8 +84,9 @@ namespace MediaBrowser.Api.Playback
         /// <param name="dtoService">The dto service.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="itemRepository">The item repository.</param>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IChannelManager channelManager)
         {
+            ChannelManager = channelManager;
             DlnaManager = dlnaManager;
             EncodingManager = encodingManager;
             LiveTvManager = liveTvManager;
@@ -169,12 +171,27 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected virtual string GetMapArgs(StreamState state)
         {
-            var args = string.Empty;
-
-            if (!state.HasMediaStreams)
+            // If we don't have known media info
+            // If input is video, use -sn to drop subtitles
+            // Otherwise just return empty
+            if (state.VideoStream == null && state.AudioStream == null)
             {
                 return state.IsInputVideo ? "-sn" : string.Empty;
             }
+
+            // We have media info, but we don't know the stream indexes
+            if (state.VideoStream != null && state.VideoStream.Index == -1)
+            {
+                return "-sn";
+            }
+
+            // We have media info, but we don't know the stream indexes
+            if (state.AudioStream != null && state.AudioStream.Index == -1)
+            {
+                return state.IsInputVideo ? "-sn" : string.Empty;
+            }
+
+            var args = string.Empty;
 
             if (state.VideoStream != null)
             {
@@ -1329,13 +1346,14 @@ namespace MediaBrowser.Api.Playback
                 throw new ArgumentException(string.Format("{0} is not allowed to play media.", user.Name));
             }
 
+            List<MediaStream> mediaStreams = null;
+
             if (item is ILiveTvRecording)
             {
                 var recording = await LiveTvManager.GetInternalRecording(request.Id, cancellationToken).ConfigureAwait(false);
 
                 state.VideoType = VideoType.VideoFile;
                 state.IsInputVideo = string.Equals(recording.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
-                state.PlayableStreamFileNames = new List<string>();
 
                 var path = recording.RecordingInfo.Path;
                 var mediaUrl = recording.RecordingInfo.Url;
@@ -1345,6 +1363,7 @@ namespace MediaBrowser.Api.Playback
                     var streamInfo = await LiveTvManager.GetRecordingStream(request.Id, cancellationToken).ConfigureAwait(false);
 
                     state.LiveTvStreamId = streamInfo.Id;
+                    mediaStreams = streamInfo.MediaStreams;
 
                     path = streamInfo.Path;
                     mediaUrl = streamInfo.Url;
@@ -1381,11 +1400,11 @@ namespace MediaBrowser.Api.Playback
 
                 state.VideoType = VideoType.VideoFile;
                 state.IsInputVideo = string.Equals(channel.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
-                state.PlayableStreamFileNames = new List<string>();
 
                 var streamInfo = await LiveTvManager.GetChannelStream(request.Id, cancellationToken).ConfigureAwait(false);
 
                 state.LiveTvStreamId = streamInfo.Id;
+                mediaStreams = streamInfo.MediaStreams;
 
                 if (!string.IsNullOrEmpty(streamInfo.Path))
                 {
@@ -1406,6 +1425,16 @@ namespace MediaBrowser.Api.Playback
                 state.InputVideoSync = "-1";
                 state.InputAudioSync = "1";
             }
+            else if (item is IChannelMediaItem)
+            {
+                var channelMediaSources = await ChannelManager.GetChannelItemMediaSources(request.Id, CancellationToken.None).ConfigureAwait(false);
+
+                var source = channelMediaSources.First();
+                state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
+                state.IsRemote = source.IsRemote;
+                state.MediaPath = source.Path;
+                state.RunTimeTicks = item.RunTimeTicks;
+            }
             else
             {
                 state.MediaPath = item.Path;
@@ -1424,7 +1453,11 @@ namespace MediaBrowser.Api.Playback
                         : video.PlayableStreamFileNames.ToList();
 
                     state.DeInterlace = string.Equals(video.Container, "wtv", StringComparison.OrdinalIgnoreCase);
-                    state.InputTimestamp = video.Timestamp ?? TransportStreamTimestamp.None;
+
+                    if (video.Timestamp.HasValue)
+                    {
+                        state.InputTimestamp = video.Timestamp.Value;
+                    }
 
                     state.InputContainer = video.Container;
                 }
@@ -1440,7 +1473,7 @@ namespace MediaBrowser.Api.Playback
 
             var videoRequest = request as VideoStreamRequest;
 
-            var mediaStreams = ItemRepository.GetMediaStreams(new MediaStreamQuery
+            mediaStreams = mediaStreams ?? ItemRepository.GetMediaStreams(new MediaStreamQuery
             {
                 ItemId = item.Id
 
@@ -1468,8 +1501,6 @@ namespace MediaBrowser.Api.Playback
             {
                 state.AudioStream = GetMediaStream(mediaStreams, null, MediaStreamType.Audio, true);
             }
-
-            state.HasMediaStreams = mediaStreams.Count > 0;
 
             state.SegmentLength = state.ReadInputAtNativeFramerate ? 5 : 10;
             state.HlsListSize = state.ReadInputAtNativeFramerate ? 100 : 1440;

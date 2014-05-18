@@ -496,7 +496,7 @@ namespace MediaBrowser.ServerApplication
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager);
             RegisterSingleInstance(DtoService);
 
-            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository);
+            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient);
             RegisterSingleInstance(SessionManager);
 
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);

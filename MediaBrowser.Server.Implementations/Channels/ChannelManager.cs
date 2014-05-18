@@ -98,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 all = all.Take(query.Limit.Value).ToList();
             }
-            
+
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
@@ -154,6 +154,23 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             _channelEntities = list.ToList();
             progress.Report(100);
+        }
+
+        public Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaSources(string id, CancellationToken cancellationToken)
+        {
+            var item = (IChannelMediaItem)_libraryManager.GetItemById(id);
+
+            var channelGuid = new Guid(item.ChannelId);
+            var channel = _channelEntities.First(i => i.Id == channelGuid);
+
+            var requiresCallback = channel as IRequiresMediaInfoCallback;
+
+            if (requiresCallback != null)
+            {
+                return requiresCallback.GetChannelItemMediaInfo(item.ExternalId, cancellationToken);
+            }
+
+            return Task.FromResult<IEnumerable<ChannelMediaInfo>>(item.ChannelMediaSources);
         }
 
         private async Task<Channel> GetChannel(IChannel channelInfo, CancellationToken cancellationToken)
@@ -303,9 +320,15 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 var query = new InternalChannelItemQuery
                 {
-                    User = user,
-                    CategoryId = categoryId
+                    User = user
                 };
+
+                if (!string.IsNullOrWhiteSpace(categoryId))
+                {
+                    var categoryItem = (IChannelItem)_libraryManager.GetItemById(new Guid(categoryId));
+
+                    query.CategoryId = categoryItem.ExternalId;
+                }
 
                 var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
 
@@ -380,7 +403,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         private string GetIdToHash(string externalId)
         {
             // Increment this as needed to force new downloads
-            return externalId + "4";
+            return externalId + "7";
         }
 
         private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, string internalChannnelId, CancellationToken cancellationToken)
@@ -434,10 +457,6 @@ namespace MediaBrowser.Server.Implementations.Channels
             item.Id = id;
             item.RunTimeTicks = info.RunTimeTicks;
 
-            var mediaSource = info.MediaSources.FirstOrDefault();
-
-            item.Path = mediaSource == null ? null : mediaSource.Path;
-
             if (isNew)
             {
                 item.Name = info.Name;
@@ -464,12 +483,22 @@ namespace MediaBrowser.Server.Implementations.Channels
             channelItem.ChannelId = internalChannnelId;
             channelItem.ChannelItemType = info.Type;
 
+            if (isNew)
+            {
+                channelItem.Tags = info.Tags;
+            }
+
             var channelMediaItem = item as IChannelMediaItem;
 
             if (channelMediaItem != null)
             {
                 channelMediaItem.IsInfiniteStream = info.IsInfiniteStream;
                 channelMediaItem.ContentType = info.ContentType;
+                channelMediaItem.ChannelMediaSources = info.MediaSources;
+
+                var mediaSource = info.MediaSources.FirstOrDefault();
+
+                item.Path = mediaSource == null ? null : mediaSource.Path;
             }
 
             if (isNew)

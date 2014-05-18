@@ -18,9 +18,12 @@ namespace MediaBrowser.Controller.Channels
         public int? Height { get; set; }
         public int? AudioChannels { get; set; }
 
+        public bool IsRemote { get; set; }
+
         public ChannelMediaInfo()
         {
             RequiredHttpHeaders = new Dictionary<string, string>();
+            IsRemote = true;
         }
     }
 }
