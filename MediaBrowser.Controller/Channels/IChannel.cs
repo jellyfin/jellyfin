@@ -16,6 +16,12 @@ namespace MediaBrowser.Controller.Channels
         string Name { get; }
 
         /// <summary>
+        /// Gets the data version.
+        /// </summary>
+        /// <value>The data version.</value>
+        string DataVersion { get; }
+
+        /// <summary>
         /// Gets the channel information.
         /// </summary>
         /// <returns>ChannelInfo.</returns>
