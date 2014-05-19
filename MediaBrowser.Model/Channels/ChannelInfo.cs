@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.Channels
+namespace MediaBrowser.Model.Channels
 {
     public class ChannelInfo
     {
@@ -19,6 +19,11 @@ namespace MediaBrowser.Controller.Channels
         public List<ChannelMediaType> MediaTypes { get; set; }
 
         public List<ChannelMediaContentType> ContentTypes { get; set; }
+
+        /// <summary>
+        /// Represents the maximum number of records the channel allows retrieving at a time
+        /// </summary>
+        public int? MaxPageSize { get; set; }
 
         public ChannelInfo()
         {

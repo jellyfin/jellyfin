@@ -7,5 +7,9 @@ namespace MediaBrowser.Controller.Channels
         public string CategoryId { get; set; }
 
         public User User { get; set; }
+
+        public int? StartIndex { get; set; }
+
+        public int? Limit { get; set; }
     }
 }

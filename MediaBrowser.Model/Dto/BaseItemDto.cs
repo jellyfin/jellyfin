@@ -138,7 +138,8 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The channel identifier.</value>
         public string ChannelId { get; set; }
-        
+        public string ChannelName { get; set; }
+
         /// <summary>
         /// Gets or sets the overview.
         /// </summary>

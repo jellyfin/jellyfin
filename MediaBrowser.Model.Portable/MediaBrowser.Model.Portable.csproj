@@ -77,8 +77,17 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\SessionUpdatesEventArgs.cs">
       <Link>ApiClient\SessionUpdatesEventArgs.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Channels\ChannelInfo.cs">
+      <Link>Channels\ChannelInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelItemQuery.cs">
       <Link>Channels\ChannelItemQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Channels\ChannelMediaContentType.cs">
+      <Link>Channels\ChannelMediaContentType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Channels\ChannelMediaType.cs">
+      <Link>Channels\ChannelMediaType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelQuery.cs">
       <Link>Channels\ChannelQuery.cs</Link>

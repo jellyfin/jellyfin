@@ -17,6 +17,13 @@ namespace MediaBrowser.Controller.Channels
         void AddParts(IEnumerable<IChannel> channels, IEnumerable<IChannelFactory> factories);
 
         /// <summary>
+        /// Gets the channel.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Channel.</returns>
+        Channel GetChannel(string id);
+
+        /// <summary>
         /// Gets the channels.
         /// </summary>
         /// <param name="query">The query.</param>

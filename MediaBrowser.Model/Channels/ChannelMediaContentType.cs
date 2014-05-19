@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Controller.Channels
+﻿namespace MediaBrowser.Model.Channels
 {
     public enum ChannelMediaContentType
     {
