@@ -538,6 +538,8 @@
                 var background = null;
                 var width = null;
                 var height = null;
+                var backgroundSize = null;
+                var backgroundPosition = null;
 
                 var forceName = false;
 
@@ -691,8 +693,47 @@
                         imgUrl = 'css/images/items/list/collection.png';
                     }
                     background = defaultBackground;
+
+                    // "My Library" backgrounds
+                    if (item.Type == "CollectionFolder" || item.Type == "ManualCollectionsFolder") {
+
+                        backgroundSize = "90px 90px";
+                        backgroundPosition = "center center";
+
+                        switch (item.CollectionType) {
+                            case "movies":
+                                imgUrl = "css/images/items/folders/movies.png";
+                                break;
+                            case "music":
+                                imgUrl = "css/images/items/folders/music.png";
+                                break;
+                            case "photos":
+                                imgUrl = "css/images/items/folders/photos.png";
+                                break;
+                            case "tvshows":
+                                imgUrl = "css/images/items/folders/tv.png";
+                                break;
+                            case "games":
+                                imgUrl = "css/images/items/folders/games.png";
+                                break;
+                            case "trailers":
+                                imgUrl = "css/images/items/folders/games.png";
+                                break;
+                            case "homevideos":
+                                imgUrl = "css/images/items/folders/homevideos.png";
+                                break;
+                            case "musicvideos":
+                                imgUrl = "css/images/items/folders/musicvideos.png";
+                                break;
+                            case "boxsets":
+                            default:
+                                imgUrl = "css/images/items/folders/folder.png";
+                                break;
+                        }
+                    }
                 }
 
+                console.log("item", item);
 
                 var cssClass = "posterItem";
 
@@ -720,6 +761,14 @@
 
                 if (background) {
                     style += "background-color:" + background + ";";
+                }
+
+                if (backgroundPosition) {
+                    style += "background-position:" + backgroundPosition + ";";
+                }
+
+                if (backgroundSize) {
+                    style += "background-size:" + backgroundSize + ";";
                 }
 
                 var imageCssClass = 'posterItemImage';
