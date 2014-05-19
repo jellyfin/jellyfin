@@ -136,6 +136,25 @@
         height: 83.25px;
     }
 
+.myLibraryPosterItem {
+    width: 157px;
+}
+
+    .myLibraryPosterItem .posterItemImage {
+        height: 65px;
+        background-position: 20px center;
+        background-size: 25px 25px;
+        background-color: rgba(51, 51, 51, 0.5);
+    }
+
+    .myLibraryPosterItem .posterItemDefaultText {
+        top: 0;
+        left: 0;
+        line-height: 65px;
+        text-align: left;
+        padding-left: 60px;
+    }
+
 .smallBackdropPosterItem {
     width: 157px;
 }
