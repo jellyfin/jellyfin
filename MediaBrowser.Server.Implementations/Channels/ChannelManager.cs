@@ -234,6 +234,11 @@ namespace MediaBrowser.Server.Implementations.Channels
             return item;
         }
 
+        public Channel GetChannel(string id)
+        {
+            return (Channel)_libraryManager.GetItemById(new Guid(id));
+        }
+
         private Guid GetInternalChannelId(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -246,48 +251,70 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
         {
+            var queryChannelId = query.ChannelId;
+            // Get the internal channel entity
+            var channel = _channelEntities.First(i => i.Id == new Guid(queryChannelId));
+
+            // Find the corresponding channel provider plugin
+            var channelProvider = GetChannelProvider(channel);
+
+            var channelInfo = channelProvider.GetChannelInfo();
+
+            int? providerStartIndex = null;
+            int? providerLimit = null;
+
+            if (channelInfo.MaxPageSize.HasValue)
+            {
+                providerStartIndex = query.StartIndex;
+
+                if (!query.Limit.HasValue || query.Limit.Value > channelInfo.MaxPageSize.Value)
+                {
+                    throw new ArgumentException(string.Format("Channel {0} only supports a maximum of {1} records at a time.", channel.Name, channelInfo.MaxPageSize.Value));
+                }
+                providerLimit = query.Limit;
+            }
+
             var user = string.IsNullOrWhiteSpace(query.UserId)
                 ? null
                 : _userManager.GetUserById(new Guid(query.UserId));
 
-            var queryChannelId = query.ChannelId;
-            var channels = string.IsNullOrWhiteSpace(queryChannelId)
-                ? _channelEntities
-                : _channelEntities.Where(i => i.Id == new Guid(queryChannelId));
+            var itemsResult = await GetChannelItems(channelProvider, user, query.CategoryId, providerStartIndex, providerLimit, cancellationToken)
+                        .ConfigureAwait(false);
 
-            var itemTasks = channels.Select(async channel =>
+            var providerTotalRecordCount = providerLimit.HasValue ? itemsResult.TotalRecordCount : null;
+
+            var tasks = itemsResult.Items.Select(i => GetChannelItemEntity(i, channelProvider, channel, cancellationToken));
+
+            var internalItems = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            if (user != null)
             {
-                var channelProvider = GetChannelProvider(channel);
+                internalItems = internalItems.Where(i => i.IsVisible(user)).ToArray();
 
-                var items = await GetChannelItems(channelProvider, user, query.CategoryId, cancellationToken)
-                            .ConfigureAwait(false);
+                if (providerTotalRecordCount.HasValue)
+                {
+                    providerTotalRecordCount = providerTotalRecordCount.Value;
+                }
+            }
 
-                var channelId = channel.Id.ToString("N");
-
-                var channelPlugin = GetChannelProvider(channel);
-
-                var tasks = items.Select(i => GetChannelItemEntity(i, channelPlugin, channelId, cancellationToken));
-
-                return await Task.WhenAll(tasks).ConfigureAwait(false);
-            });
-
-            var results = await Task.WhenAll(itemTasks).ConfigureAwait(false);
-
-            return await GetReturnItems(results.SelectMany(i => i), user, query, cancellationToken).ConfigureAwait(false);
+            return await GetReturnItems(internalItems, providerTotalRecordCount, user, query, cancellationToken).ConfigureAwait(false);
         }
 
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
-        private async Task<IEnumerable<ChannelItemInfo>> GetChannelItems(IChannel channel, User user, string categoryId, CancellationToken cancellationToken)
+        private async Task<ChannelItemResult> GetChannelItems(IChannel channel, User user, string categoryId, int? startIndex, int? limit, CancellationToken cancellationToken)
         {
             var cachePath = GetChannelDataCachePath(channel, user, categoryId);
 
             try
             {
-                var channelItemResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
-
-                if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(channelItemResult.CacheLength) > DateTime.UtcNow)
+                if (!startIndex.HasValue && !limit.HasValue)
                 {
-                    return channelItemResult.Items;
+                    var channelItemResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+
+                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(channelItemResult.CacheLength) > DateTime.UtcNow)
+                    {
+                        return channelItemResult;
+                    }
                 }
             }
             catch (FileNotFoundException)
@@ -305,11 +332,14 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 try
                 {
-                    var channelItemResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
-
-                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(channelItemResult.CacheLength) > DateTime.UtcNow)
+                    if (!startIndex.HasValue && !limit.HasValue)
                     {
-                        return channelItemResult.Items;
+                        var channelItemResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+
+                        if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(channelItemResult.CacheLength) > DateTime.UtcNow)
+                        {
+                            return channelItemResult;
+                        }
                     }
                 }
                 catch (FileNotFoundException)
@@ -323,7 +353,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 var query = new InternalChannelItemQuery
                 {
-                    User = user
+                    User = user,
+                    StartIndex = startIndex,
+                    Limit = limit
                 };
 
                 if (!string.IsNullOrWhiteSpace(categoryId))
@@ -335,9 +367,12 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
 
-                CacheResponse(result, cachePath);
+                if (!startIndex.HasValue && !limit.HasValue)
+                {
+                    CacheResponse(result, cachePath);
+                }
 
-                return result.Items;
+                return result;
             }
             finally
             {
@@ -370,22 +405,26 @@ namespace MediaBrowser.Server.Implementations.Channels
             return Path.Combine(_config.ApplicationPaths.CachePath, "channels", channelId, version, categoryKey, user.Id.ToString("N") + ".json");
         }
 
-        private async Task<QueryResult<BaseItemDto>> GetReturnItems(IEnumerable<BaseItem> items, User user, ChannelItemQuery query, CancellationToken cancellationToken)
+        private async Task<QueryResult<BaseItemDto>> GetReturnItems(IEnumerable<BaseItem> items, int? totalCountFromProvider, User user, ChannelItemQuery query, CancellationToken cancellationToken)
         {
             items = ApplyFilters(items, query.Filters, user);
 
-            items = _libraryManager.Sort(items, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending);
+            var sortBy = query.SortBy.Length == 0 ? new[] { ItemSortBy.SortName } : query.SortBy;
+            items = _libraryManager.Sort(items, user, sortBy, query.SortOrder ?? SortOrder.Ascending);
 
             var all = items.ToList();
-            var totalCount = all.Count;
+            var totalCount = totalCountFromProvider ?? all.Count;
 
-            if (query.StartIndex.HasValue)
+            if (!totalCountFromProvider.HasValue)
             {
-                all = all.Skip(query.StartIndex.Value).ToList();
-            }
-            if (query.Limit.HasValue)
-            {
-                all = all.Take(query.Limit.Value).ToList();
+                if (query.StartIndex.HasValue)
+                {
+                    all = all.Skip(query.StartIndex.Value).ToList();
+                }
+                if (query.Limit.HasValue)
+                {
+                    all = all.Take(query.Limit.Value).ToList();
+                }
             }
 
             await RefreshIfNeeded(all, cancellationToken).ConfigureAwait(false);
@@ -412,13 +451,8 @@ namespace MediaBrowser.Server.Implementations.Channels
             return externalId + (channelProvider.DataVersion ?? string.Empty) + (channelProvider.Name ?? string.Empty) + "11";
         }
 
-        private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, string internalChannnelId, CancellationToken cancellationToken)
+        private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Channel internalChannel, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(internalChannnelId))
-            {
-                throw new ArgumentNullException("internalChannnelId");
-            }
-
             BaseItem item;
             Guid id;
             var isNew = false;
@@ -488,7 +522,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             channelItem.OriginalImageUrl = info.ImageUrl;
             channelItem.ExternalId = info.Id;
-            channelItem.ChannelId = internalChannnelId;
+            channelItem.ChannelId = internalChannel.Id.ToString("N");
             channelItem.ChannelItemType = info.Type;
 
             if (isNew)

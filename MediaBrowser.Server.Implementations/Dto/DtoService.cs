@@ -12,14 +12,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Session;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
@@ -41,7 +38,9 @@ namespace MediaBrowser.Server.Implementations.Dto
         private readonly IFileSystem _fileSystem;
         private readonly IProviderManager _providerManager;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager)
+        private readonly Func<IChannelManager> _channelManagerFactory;
+
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -52,6 +51,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             _config = config;
             _fileSystem = fileSystem;
             _providerManager = providerManager;
+            _channelManagerFactory = channelManagerFactory;
         }
 
         /// <summary>
@@ -1147,6 +1147,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (channelItem != null)
             {
                 dto.ChannelId = channelItem.ChannelId;
+                dto.ChannelName = _channelManagerFactory().GetChannel(channelItem.ChannelId).Name;
             }
         }
 

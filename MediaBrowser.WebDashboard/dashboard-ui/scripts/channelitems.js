@@ -30,13 +30,26 @@
 
         query.UserId = Dashboard.getCurrentUserId();
 
-        ApiClient.getItem(query.UserId, categoryId || channelId).done(function (item) {
 
-            $('.categoryTitle', page).html(item.Name);
-        });
-        
+        if (categoryId) {
+
+            ApiClient.getItem(query.UserId, categoryId).done(function (item) {
+
+                $('.categoryTitle', page).show().html(item.Name);
+                $('.channelHeader', page).show().html('<a href="channelitems.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
+            });
+
+        } else {
+
+            ApiClient.getItem(query.UserId, channelId).done(function (item) {
+
+                $('.categoryTitle', page).hide().html(item.Name);
+                $('.channelHeader', page).show().html('<a href="channelitems.html?id=' + item.Id + '">' + item.Name + '</a>');
+            });
+        }
+
         query.categoryId = categoryId;
-
+        query.Limit = 50;
         $.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
@@ -79,9 +92,9 @@
 
             LibraryBrowser.saveQueryValues(getSavedQueryId(), query);
 
-            
-        }).always(function() {
-            
+
+        }).always(function () {
+
             hideLoadingMessage(page);
         });
     }
@@ -171,8 +184,8 @@
         // If the default page size has changed, the start index will have to be reset
         if (limit != query.Limit) {
             query.Limit = limit;
-            query.StartIndex = 0;
         }
+        query.StartIndex = 0;
 
         LibraryBrowser.loadSavedQueryValues(getSavedQueryId(), query);
 

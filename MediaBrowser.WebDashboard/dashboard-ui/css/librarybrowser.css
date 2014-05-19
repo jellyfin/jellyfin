@@ -103,7 +103,7 @@
 
 @media all and (min-width: 1600px) {
 
-    .ehsContent {
+    .homeEhsContent {
         max-width: 1540px;
     }
 
@@ -1162,3 +1162,12 @@ a.itemTag:hover {
         overflow-x: visible!important;
     }
 }
+
+.channelHeader {
+    padding: 1em;
+    text-align: center;
+}
+
+    .channelHeader a {
+        text-decoration: none;
+    }

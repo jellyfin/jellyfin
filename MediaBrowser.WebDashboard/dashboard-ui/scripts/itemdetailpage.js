@@ -186,6 +186,9 @@
 
         if (item.Type == "ChannelVideoItem" || item.Type == "ChannelAudioItem" || item.Type == "ChannelCategoryItem") {
             $('#channelTabs', page).show();
+            $('.channelHeader', page).show().html('<a href="channelitems.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
+        } else {
+            $('.channelHeader', page).hide();
         }
 
         if (item.Type == "BoxSet") {
@@ -350,7 +353,7 @@
             tabsHtml += '<label for="radioDetails" class="lblDetailTab">Details</label>';
         }
 
-        if (item.MediaSources && item.MediaSources.length) {
+        if (item.MediaSources && item.MediaSources.length && item.Path) {
             tabsHtml += '<input type="radio" name="radioDetailTab" class="radioDetailTab" id="radioMediaInfo" value="tabMediaInfo">';
             tabsHtml += '<label for="radioMediaInfo" class="lblDetailTab">Media Info</label>';
         }

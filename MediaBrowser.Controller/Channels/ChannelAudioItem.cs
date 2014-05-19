@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace MediaBrowser.Controller.Channels
         public string ExternalId { get; set; }
 
         public string ChannelId { get; set; }
-        
+
         public ChannelItemType ChannelItemType { get; set; }
 
         public bool IsInfiniteStream { get; set; }

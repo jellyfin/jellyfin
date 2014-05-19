@@ -8,5 +8,7 @@ namespace MediaBrowser.Controller.Channels
         public List<ChannelItemInfo> Items { get; set; }
 
         public TimeSpan CacheLength { get; set; }
+
+        public int? TotalRecordCount { get; set; }
     }
 }

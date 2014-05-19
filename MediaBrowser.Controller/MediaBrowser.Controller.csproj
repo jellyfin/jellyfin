@@ -69,13 +69,10 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Channels\ChannelCategoryItem.cs" />
-    <Compile Include="Channels\ChannelInfo.cs" />
     <Compile Include="Channels\ChannelItemInfo.cs" />
     <Compile Include="Channels\ChannelItemResult.cs" />
     <Compile Include="Channels\ChannelItemType.cs" />
-    <Compile Include="Channels\ChannelMediaContentType.cs" />
     <Compile Include="Channels\ChannelMediaInfo.cs" />
-    <Compile Include="Channels\ChannelMediaType.cs" />
     <Compile Include="Channels\ChannelSearchInfo.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelFactory.cs" />

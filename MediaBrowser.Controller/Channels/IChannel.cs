@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Threading;
