@@ -12,6 +12,56 @@
             <a href="#" class="ui-btn-active lnkWebClientPreferences">${TabWebClient}</a>
         </div>
 
+        <br />
+        <br />
+        <form class="webClientPreferencesForm" style="margin: 0 auto;">
+
+            <div class="detailSectionHeader" style="margin: 0 .5em;">
+                ${HeaderAllDevices}
+            </div>
+
+            <br />
+
+            <div class="detailSectionHeader" style="margin: 0 .5em;">
+                ${HeaderThisDevice}
+            </div>
+            <br />
+            <ul data-role="listview" class="ulForm">
+                <li>
+                    <label for="selectThemeSong">${LabelEnableThemeSongs}</label>
+                    <select id="selectThemeSong" data-mini="true">
+                        <option value="">${OptionAuto}</option>
+                        <option value="1">${OptionYes}</option>
+                        <option value="0">${OptionNo}</option>
+                    </select>
+                    <div class="fieldDescription">${LabelEnableThemeSongsHelp}</div>
+                </li>
+                <li>
+                    <label for="selectBackdrop">${LabelEnableBackdrops}</label>
+                    <select id="selectBackdrop" data-mini="true">
+                        <option value="">${OptionAuto}</option>
+                        <option value="1">${OptionYes}</option>
+                        <option value="0">${OptionNo}</option>
+                    </select>
+                    <div class="fieldDescription">${LabelEnableBackdropsHelp}</div>
+                </li>
+            </ul>
+
+
+            <ul data-role="listview" class="ulForm">
+                <li>
+                    <button type="submit" data-theme="a" data-icon="check" data-mini="true">
+                        ${ButtonOk}
+                    </button>
+                    <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
+                        ${ButtonCancel}
+                    </button>
+                </li>
+            </ul>
+        </form>
+        <script type="text/javascript">
+            $('.webClientPreferencesForm').off('submit', WebClientPreferencesPage.onSubmit).on('submit', WebClientPreferencesPage.onSubmit);
+        </script>
     </div>
 </body>
 </html>

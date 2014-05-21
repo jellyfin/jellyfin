@@ -69,6 +69,12 @@
 
         var page = this;
 
+        $('#selectSubtitlePlaybackMode', page).on('change', function () {
+
+            $('.subtitlesHelp', page).hide();
+            $('.subtitles' + this.value + 'Help', page).show();
+        });
+
     }).on('pageshow', "#languagePreferencesPage", function () {
 
         var page = this;

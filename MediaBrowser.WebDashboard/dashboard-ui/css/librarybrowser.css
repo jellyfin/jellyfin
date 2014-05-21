@@ -493,7 +493,7 @@ a.itemTag:hover {
 
 .detailSectionHeader {
     background-clip: border-box;
-    background-color: rgb(51, 51, 51);
+    background-color: rgb(20, 20, 20);
     border-bottom-color: rgb(31, 31, 31);
     border-bottom-style: solid;
     border-bottom-width: 1px;

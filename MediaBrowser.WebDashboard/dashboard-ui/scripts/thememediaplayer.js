@@ -40,20 +40,11 @@
         }
     }
 
-    function enabled(isEnabled) {
+    function enabled() {
 
-        var userId = Dashboard.getCurrentUserId();
+        var val = LocalSettings.val('enableThemeSongs', userId);
 
-        var key = userId + '-themesongs';
-
-        if (isEnabled == null) {
-            return localStorage.getItem(key) == '1';
-        }
-        
-
-        var val = isEnabled ? '1' : '0';
-
-        localStorage.setItem(key, val);
+        return val == '1';
     }
 
     function getPlayer() {
@@ -72,11 +63,5 @@
             playThemeSongs(themeMediaResult.ThemeSongsResult.Items, ownerId);
         }
     });
-
-    window.ThemeSongManager = {
-        enabled: function (isEnabled) {
-            return enabled(isEnabled);
-        }
-    };
 
 })(document, jQuery, window.localStorage);

@@ -580,6 +580,9 @@ namespace MediaBrowser.WebDashboard.Api
                                 "livetvsuggested.js",
                                 "livetvstatus.js",
                                 "livetvtimers.js",
+
+                                "localsettings.js",
+
                                 "loginpage.js",
                                 "logpage.js",
                                 "medialibrarypage.js",

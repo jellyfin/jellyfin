@@ -764,5 +764,14 @@
 	"MessageNoSubtitleSearchResultsFound": "No search results founds.",
 	"TabDisplay": "Display",
 	"TabLanguages": "Languages",
-	"TabWebClient": "Web Client"
+	"TabWebClient": "Web Client",
+	"LabelEnableThemeSongs": "Enable theme songs",
+	"LabelEnableBackdrops": "Enable backdrops",
+	"LabelEnableThemeSongsHelp": "If enabled, theme songs will be played in the background while browsing the library.",
+	"LabelEnableBackdropsHelp": "If enabled, backdrops will be displayed in the background of some pages while browsing the library.",
+	"HeaderAllDevices": "All Devices",
+	"HeaderThisDevice": "This Device",
+	"OptionAuto": "Auto",
+	"OptionYes": "Yes",
+	"OptionNo": "No"
 }

@@ -87,18 +87,32 @@
         $('.backdropContainer').css('backgroundImage', '');
     }
 
-    $(document).on('pagebeforeshow', ".backdropPage", function () {
-
-        var page = this;
+    function enabled() {
 
         // Gets real messy and jumps around the page when scrolling
         // Can be reviewed later.
         if ($.browser.msie) {
-            $(page).removeClass('backdropPage');
-        } else {
+            return false;
+        }
+
+        var userId = Dashboard.getCurrentUserId();
+        
+        var val = LocalSettings.val('enableBackdrops', userId);
+
+        return val != '0';
+    }
+
+    $(document).on('pagebeforeshow', ".backdropPage", function () {
+
+        var page = this;
+
+        if (enabled()) {
             var type = page.getAttribute('data-backdroptype');
 
             showBackdrop(type);
+        } else {
+            $(page).removeClass('backdropPage');
+            clearBackdrop();
         }
 
     });
