@@ -1,21 +1,24 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Dlna.Service;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Dlna.ConnectionManager
 {
-    public class ConnectionManager : IConnectionManager
+    public class ConnectionManager : BaseService, IConnectionManager
     {
         private readonly IDlnaManager _dlna;
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
 
-        public ConnectionManager(IDlnaManager dlna, ILogManager logManager, IServerConfigurationManager config)
+        public ConnectionManager(IDlnaManager dlna, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient)
+            : base(logger, httpClient)
         {
             _dlna = dlna;
             _config = config;
-            _logger = logManager.GetLogger("UpnpConnectionManager");
+            _logger = logger;
         }
 
         public string GetServiceXml(IDictionary<string, string> headers)

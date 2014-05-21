@@ -50,8 +50,14 @@ namespace MediaBrowser.Api.Dlna
     }
 
     [Route("/Dlna/contentdirectory/{UuId}/events", Summary = "Processes an event subscription request")]
+    public class ProcessContentDirectoryEventRequest
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
+    }
+
     [Route("/Dlna/connectionmanager/{UuId}/events", Summary = "Processes an event subscription request")]
-    public class ProcessEventRequest
+    public class ProcessConnectionManagerEventRequest
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string UuId { get; set; }
@@ -68,14 +74,12 @@ namespace MediaBrowser.Api.Dlna
     {
         private readonly IDlnaManager _dlnaManager;
         private readonly IContentDirectory _contentDirectory;
-        private readonly IEventManager _eventManager;
         private readonly IConnectionManager _connectionManager;
 
-        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IEventManager eventManager, IConnectionManager connectionManager)
+        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager)
         {
             _dlnaManager = dlnaManager;
             _contentDirectory = contentDirectory;
-            _eventManager = eventManager;
             _connectionManager = connectionManager;
         }
 
@@ -158,7 +162,17 @@ namespace MediaBrowser.Api.Dlna
             }
         }
 
-        public object Any(ProcessEventRequest request)
+        public object Any(ProcessContentDirectoryEventRequest request)
+        {
+            return ProcessEventRequest(_contentDirectory);
+        }
+
+        public object Any(ProcessConnectionManagerEventRequest request)
+        {
+            return ProcessEventRequest(_connectionManager);
+        }
+
+        private object ProcessEventRequest(IEventManager eventManager)
         {
             var subscriptionId = GetHeader("SID");
             var notificationType = GetHeader("NT");
@@ -171,13 +185,13 @@ namespace MediaBrowser.Api.Dlna
             {
                 if (string.IsNullOrEmpty(notificationType))
                 {
-                    return GetSubscriptionResponse(_eventManager.RenewEventSubscription(subscriptionId, timeout));
+                    return GetSubscriptionResponse(eventManager.RenewEventSubscription(subscriptionId, timeout));
                 }
 
-                return GetSubscriptionResponse(_eventManager.CreateEventSubscription(notificationType, timeout, callback));
+                return GetSubscriptionResponse(eventManager.CreateEventSubscription(notificationType, timeout, callback));
             }
 
-            return GetSubscriptionResponse(_eventManager.CancelEventSubscription(subscriptionId));
+            return GetSubscriptionResponse(eventManager.CancelEventSubscription(subscriptionId));
         }
 
         private object GetSubscriptionResponse(EventSubscriptionResponse response)

@@ -88,6 +88,7 @@
     <Compile Include="ContentDirectory\ServiceActionListBuilder.cs" />
     <Compile Include="ContentDirectory\ContentDirectoryXmlBuilder.cs" />
     <Compile Include="Service\BaseControlHandler.cs" />
+    <Compile Include="Service\BaseService.cs" />
     <Compile Include="Service\ControlErrorHandler.cs" />
     <Compile Include="Service\ServiceXmlBuilder.cs" />
     <Compile Include="Ssdp\Datagram.cs" />

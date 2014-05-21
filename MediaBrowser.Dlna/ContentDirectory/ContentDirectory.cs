@@ -1,9 +1,11 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Dlna.Service;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
 using System;
@@ -12,9 +14,8 @@ using System.Linq;
 
 namespace MediaBrowser.Dlna.ContentDirectory
 {
-    public class ContentDirectory : IContentDirectory, IDisposable
+    public class ContentDirectory : BaseService, IContentDirectory, IDisposable
     {
-        private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
@@ -23,17 +24,16 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly IServerConfigurationManager _config;
         private readonly IUserManager _userManager;
 
-        private readonly IEventManager _eventManager;
-
         public ContentDirectory(IDlnaManager dlna,
             IUserDataManager userDataManager,
             IImageProcessor imageProcessor,
             IDtoService dtoService,
             ILibraryManager libraryManager,
-            ILogManager logManager,
             IServerConfigurationManager config,
             IUserManager userManager,
-            IEventManager eventManager)
+            ILogger logger,
+            IHttpClient httpClient)
+            : base(logger, httpClient)
         {
             _dlna = dlna;
             _userDataManager = userDataManager;
@@ -42,8 +42,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _libraryManager = libraryManager;
             _config = config;
             _userManager = userManager;
-            _eventManager = eventManager;
-            _logger = logManager.GetLogger("UpnpContentDirectory");
         }
 
         private int SystemUpdateId
@@ -71,7 +69,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             var user = GetUser(profile);
 
             return new ControlHandler(
-                _logger,
+                Logger,
                 _libraryManager,
                 profile,
                 serverAddress,
