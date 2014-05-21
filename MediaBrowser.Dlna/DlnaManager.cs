@@ -74,6 +74,7 @@ namespace MediaBrowser.Dlna
                 new LinksysDMA2100Profile(),
                 new LgTvProfile(),
                 new Foobar2000Profile(),
+                new MediaMonkeyProfile(),
                 new DefaultProfile()
             };
 

@@ -80,6 +80,7 @@
     <Compile Include="PlayTo\TRANSPORTSTATE.cs" />
     <Compile Include="PlayTo\uParserObject.cs" />
     <Compile Include="Profiles\Foobar2000Profile.cs" />
+    <Compile Include="Profiles\MediaMonkeyProfile.cs" />
     <Compile Include="Profiles\Windows81Profile.cs" />
     <Compile Include="Profiles\WindowsMediaCenterProfile.cs" />
     <Compile Include="Profiles\WindowsPhoneProfile.cs" />
@@ -167,7 +168,9 @@
     <EmbeddedResource Include="Images\logo48.jpg" />
     <EmbeddedResource Include="Images\logo48.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\MediaMonkey.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

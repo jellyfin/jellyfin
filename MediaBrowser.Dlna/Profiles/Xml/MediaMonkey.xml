@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <Name>foobar2000</Name>
+  <Name>MediaMonkey</Name>
   <Identification>
-    <FriendlyName>foobar</FriendlyName>
+    <FriendlyName>MediaMonkey</FriendlyName>
     <Headers>
-      <HttpHeaderInfo name="User-Agent" value="foobar" match="Substring" />
+      <HttpHeaderInfo name="User-Agent" value="MediaMonkey" match="Substring" />
     </Headers>
   </Identification>
   <FriendlyName>Media Browser</FriendlyName>
