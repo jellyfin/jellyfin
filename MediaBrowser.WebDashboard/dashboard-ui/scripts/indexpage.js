@@ -82,7 +82,23 @@
         return html;
     }
 
-    function refreshMediaLibrary(page) {
+    function getDefaultSection(index) {
+
+        switch (index) {
+
+            case 0:
+                return 'librarybuttons';
+            case 1:
+                return 'resume';
+            case 2:
+                return 'latestmedia';
+            default:
+                return '';
+        }
+
+    }
+
+    function loadlibraryButtons(elem, userId, index) {
 
         var options = {
 
@@ -90,10 +106,8 @@
             Fields: "PrimaryImageAspectRatio"
         };
 
-        var userId = Dashboard.getCurrentUserId();
-
         var promise1 = ApiClient.getItems(userId, options);
-        
+
         var promise2 = ApiClient.getLiveTvInfo();
 
         var promise3 = $.getJSON(ApiClient.getUrl("Channels", {
@@ -103,7 +117,7 @@
             limit: 0
         }));
 
-        $.when(promise1, promise2, promise3).done(function(r1, r2, r3) {
+        $.when(promise1, promise2, promise3).done(function (r1, r2, r3) {
 
             var result = r1[0];
             var liveTvInfo = r2[0];
@@ -122,7 +136,7 @@
             var showLiveTv = liveTvInfo.EnabledUsers.indexOf(userId) != -1;
 
             if (showLiveTv) {
-                
+
                 result.Items.push({
                     Name: 'Live TV',
                     CollectionType: 'livetv',
@@ -131,58 +145,30 @@
                 });
             }
 
-            $('.myLibrary', page).html(createMediaLinks({
+            var html = '';
+
+            if (index) {
+                html += '<h1 class="listHeader">My Library</h1>';
+            }
+            html += '<div>';
+            html += createMediaLinks({
                 items: result.Items,
                 shape: 'myLibrary',
                 showTitle: true,
                 centerText: true
 
-            }));
+            });
+            html += '</div>';
+
+            $(elem).html(html);
         });
     }
 
-    $(document).on('pagebeforeshow', "#indexPage", function () {
+    function loadRecentlyAdded(elem, userId) {
 
         var screenWidth = $(window).width();
 
-        var page = this;
-
-        refreshMediaLibrary(page);
-
         var options = {
-
-            SortBy: "DatePlayed",
-            SortOrder: "Descending",
-            MediaTypes: "Video",
-            Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1440 ? 4 : 3),
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio",
-            CollapseBoxSetItems: false,
-            ExcludeLocationTypes: "Virtual"
-        };
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
-
-            if (result.Items.length) {
-                $('#resumableSection', page).show();
-            } else {
-                $('#resumableSection', page).hide();
-            }
-
-            $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                preferBackdrop: true,
-                shape: 'backdrop',
-                overlayText: screenWidth >= 600,
-                showTitle: true,
-                showParentTitle: true
-
-            })).createPosterItemMenus();
-
-        });
-
-        options = {
 
             SortBy: "DateCreated",
             SortOrder: "Descending",
@@ -194,18 +180,139 @@
             ExcludeLocationTypes: "Virtual,Remote"
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(userId, options).done(function (result) {
 
-            $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
+            var html = '';
 
+            html += '<h1 class="listHeader">Latest Media</h1>';
+            html += '<div>';
+            html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 preferThumb: true,
                 shape: 'backdrop',
                 showTitle: true,
                 centerText: true
+            });
+            html += '</div>';
 
-            })).createPosterItemMenus();
+            $(elem).html(html).createPosterItemMenus();
         });
+    }
+
+    function loadLibraryTiles(elem, userId) {
+
+        var options = {
+
+            SortBy: "SortName",
+            Fields: "PrimaryImageAspectRatio"
+        };
+
+        ApiClient.getItems(userId, options).done(function (result) {
+
+            var html = '';
+
+            html += '<h1 class="listHeader">My Library</h1>';
+            html += '<div>';
+            html += LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                preferThumb: true,
+                shape: 'backdrop',
+                showTitle: true,
+                centerText: true
+            });
+            html += '</div>';
+
+            $(elem).html(html).createPosterItemMenus();
+        });
+    }
+
+    function loadResume(elem, userId) {
+
+        var screenWidth = $(window).width();
+
+        var options = {
+
+            SortBy: "DatePlayed",
+            SortOrder: "Descending",
+            MediaTypes: "Video",
+            Filters: "IsResumable",
+            Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6),
+            Recursive: true,
+            Fields: "PrimaryImageAspectRatio",
+            CollapseBoxSetItems: false,
+            ExcludeLocationTypes: "Virtual"
+        };
+
+        ApiClient.getItems(userId, options).done(function (result) {
+
+            var html = '';
+
+            html += '<h1 class="listHeader">Resume</h1>';
+            html += '<div>';
+            html += LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                preferBackdrop: true,
+                shape: 'backdrop',
+                overlayText: screenWidth >= 600,
+                showTitle: true,
+                showParentTitle: true
+            });
+            html += '</div>';
+
+            $(elem).html(html).createPosterItemMenus();
+        });
+    }
+
+    function loadSection(page, userId, displayPreferences, index) {
+
+        var section = displayPreferences.CustomPrefs['home' + index] || getDefaultSection(index);
+
+        var elem = $('.section' + index, page);
+
+        if (section == 'latestmedia') {
+            loadRecentlyAdded(elem, userId);
+        }
+        else if (section == 'librarytiles') {
+            loadLibraryTiles(elem, userId);
+        }
+        else if (section == 'resume') {
+            loadResume(elem, userId);
+        }
+        else if (section == 'librarybuttons') {
+            loadlibraryButtons(elem, userId, index);
+        }
+    }
+
+    function loadSections(page, userId, displayPreferences) {
+
+        var i, length;
+        var sectionCount = 3;
+        var html = '';
+
+        for (i = 0, length = sectionCount; i < length; i++) {
+
+            html += '<div class="section' + i + '"></div>';
+        }
+
+        $('.sections', page).html(html);
+
+        for (i = 0, length = sectionCount; i < length; i++) {
+
+            loadSection(page, userId, displayPreferences, i);
+        }
+    }
+
+    $(document).on('pagebeforeshow', "#indexPage", function () {
+
+        var page = this;
+
+        var userId = Dashboard.getCurrentUserId();
+
+        ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
+
+            loadSections(page, userId, result);
+        });
+
     });
 
 })(jQuery, document, ApiClient);

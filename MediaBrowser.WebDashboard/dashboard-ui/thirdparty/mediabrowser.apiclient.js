@@ -162,7 +162,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                     self.sendWebSocketMessage("Identity", clientName + "|" + deviceId + "|" + applicationVersion + "|" + deviceName);
 
                     $(self).trigger("websocketopen");
-                    
+
                 }, 500);
             };
             webSocket.onerror = function () {
@@ -186,7 +186,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         self.sendWebSocketMessage = function (name, data) {
 
             console.log('Sending web socket message: ' + name);
-            
+
             var msg = { MessageType: name };
 
             if (data) {
@@ -870,6 +870,35 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 type: "GET",
                 url: url,
                 dataType: "json"
+            });
+        };
+
+        self.getDisplayPreferences = function (id, userId, app) {
+
+            var url = self.getUrl("DisplayPreferences/" + id, {
+                userId: userId,
+                client: app
+            });
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.updateDisplayPreferences = function (id, obj, userId, app) {
+
+            var url = self.getUrl("DisplayPreferences/" + id, {
+                userId: userId,
+                client: app
+            });
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(obj),
+                contentType: "application/json"
             });
         };
 
@@ -1761,7 +1790,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("File must be an image.");
             }
 
-            var url  = self.getUrl("Items/" + itemId + "/Images");
+            var url = self.getUrl("Items/" + itemId + "/Images");
 
             url += "/" + imageType;
 
@@ -2044,7 +2073,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             if (ratio) {
 
                 if (options.width) {
-                    
+
                     options.width = Math.round(options.width * ratio);
                 }
                 if (options.height) {

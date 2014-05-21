@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Windows.Forms;
-using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -10,6 +7,9 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.ServerApplication.Logging;
 using MediaBrowser.ServerApplication.Native;
+using System;
+using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -40,7 +40,6 @@ namespace MediaBrowser.ServerApplication
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IDisplayPreferencesRepository _displayPreferencesManager;
         private readonly IItemRepository _itemRepository;
         private readonly ILocalizationManager _localization;
         private LogForm _logForm;
@@ -63,7 +62,6 @@ namespace MediaBrowser.ServerApplication
             IServerConfigurationManager configurationManager, 
             IUserManager userManager, ILibraryManager libraryManager, 
             IJsonSerializer jsonSerializer, 
-            IDisplayPreferencesRepository displayPreferencesManager, 
             IItemRepository itemRepo, ILocalizationManager localization)
         {
             _logger = logManager.GetLogger("MainWindow");
@@ -75,7 +73,6 @@ namespace MediaBrowser.ServerApplication
             _userManager = userManager;
             _libraryManager = libraryManager;
             _jsonSerializer = jsonSerializer;
-            _displayPreferencesManager = displayPreferencesManager;
             
             var components = new System.ComponentModel.Container();
             

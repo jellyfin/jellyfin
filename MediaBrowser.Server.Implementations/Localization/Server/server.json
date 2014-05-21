@@ -773,5 +773,12 @@
 	"HeaderThisDevice": "This Device",
 	"OptionAuto": "Auto",
 	"OptionYes": "Yes",
-	"OptionNo": "No"
+	"OptionNo": "No",
+	"LabelHomePageSection1": "Home page section one:",
+	"LabelHomePageSection2": "Home page section two:",
+	"LabelHomePageSection3": "Home page section three:",
+	"OptionLibraryButtons": "Library buttons",
+	"OptionLibraryTiles": "Library tiles",
+	"OptionResumablemedia": "Resume",
+	"OptionLatestMedia": "Latest media"
 }
