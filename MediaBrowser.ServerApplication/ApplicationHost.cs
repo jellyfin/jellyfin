@@ -522,13 +522,10 @@ namespace MediaBrowser.ServerApplication
             var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("Dlna"), JsonSerializer);
             RegisterSingleInstance<IDlnaManager>(dlnaManager);
 
-            var dlnaEventManager = new EventManager(LogManager, HttpClient);
-            RegisterSingleInstance<IEventManager>(dlnaEventManager);
-
-            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, DtoService, LibraryManager, LogManager, ServerConfigurationManager, UserManager, dlnaEventManager);
+            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, DtoService, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient);
             RegisterSingleInstance<IContentDirectory>(contentDirectory);
 
-            var connectionManager = new ConnectionManager(dlnaManager, LogManager, ServerConfigurationManager);
+            var connectionManager = new ConnectionManager(dlnaManager, ServerConfigurationManager, LogManager.GetLogger("UpnpConnectionManager"), HttpClient);
             RegisterSingleInstance<IConnectionManager>(connectionManager);
 
             var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);

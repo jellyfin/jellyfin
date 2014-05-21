@@ -21,10 +21,10 @@ namespace MediaBrowser.Dlna.Eventing
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
 
-        public EventManager(ILogManager logManager, IHttpClient httpClient)
+        public EventManager(ILogger logger, IHttpClient httpClient)
         {
             _httpClient = httpClient;
-            _logger = logManager.GetLogger("DlnaEventManager");
+            _logger = logger;
         }
 
         public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, int? timeoutSeconds)
