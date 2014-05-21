@@ -4,24 +4,24 @@ using System.Xml.Serialization;
 namespace MediaBrowser.Dlna.Profiles
 {
     [XmlRoot("Profile")]
-    public class Foobar2000Profile : DefaultProfile
+    public class MediaMonkeyProfile : DefaultProfile
     {
-        public Foobar2000Profile()
+        public MediaMonkeyProfile()
         {
-            Name = "foobar2000";
+            Name = "MediaMonkey";
 
             SupportedMediaTypes = "Audio";
-            
+
             Identification = new DeviceIdentification
             {
-                FriendlyName = @"foobar",
+               FriendlyName = @"MediaMonkey",
 
                 Headers = new[]
                {
                    new HttpHeaderInfo
                    {
                        Name = "User-Agent",
-                       Value = "foobar",
+                       Value = "MediaMonkey",
                        Match = HeaderMatchType.Substring
                    }
                }
