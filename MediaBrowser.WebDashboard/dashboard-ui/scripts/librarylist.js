@@ -205,6 +205,8 @@
 
         options = options || {};
 
+        var preventHover = false;
+
         function onShowTimerExpired(elem) {
 
             if ($(elem).hasClass('hasContextMenu')) {
@@ -240,6 +242,11 @@
 
         function onHoverIn() {
 
+            if (preventHover === true) {
+                preventHover = false;
+                return;
+            }
+
             if (showOverlayTimeout) {
                 clearTimeout(showOverlayTimeout);
                 showOverlayTimeout = null;
@@ -254,16 +261,16 @@
             }, 1000);
         }
 
-        // https://hacks.mozilla.org/2013/04/detecting-touch-its-the-why-not-the-how/
-
-        if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)) {
-            /* browser with either Touch Events of Pointer Events
-               running on touch-capable device */
-            return this;
+        function preventTouchHover() {
+            preventHover = true;
         }
 
-        return this.off('.posterItemHoverMenu').on('mouseenter.posterItemHoverMenu', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverIn)
-            .on('mouseleave.posterItemHoverMenu', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverOut);
+        var elems = '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem';
+
+        return this.off('.posterItemHoverMenu')
+            .on('mouseenter.posterItemHoverMenu', elems, onHoverIn)
+            .on('mouseleave.posterItemHoverMenu', elems, onHoverOut)
+            .on("touchstart.posterItemHoverMenu", elems, preventTouchHover);
     };
 
     function toggleSelections(page) {
