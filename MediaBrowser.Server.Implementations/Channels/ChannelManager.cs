@@ -267,7 +267,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 providerStartIndex = query.StartIndex;
 
-                if (!query.Limit.HasValue || query.Limit.Value > channelInfo.MaxPageSize.Value)
+                if (query.Limit.HasValue && query.Limit.Value > channelInfo.MaxPageSize.Value)
                 {
                     throw new ArgumentException(string.Format("Channel {0} only supports a maximum of {1} records at a time.", channel.Name, channelInfo.MaxPageSize.Value));
                 }

@@ -1,7 +1,7 @@
 ﻿
 namespace MediaBrowser.Controller.Dlna
 {
-    public interface IContentDirectory : IUpnpService
+    public interface IConnectionManager : IUpnpService
     {
     }
 }

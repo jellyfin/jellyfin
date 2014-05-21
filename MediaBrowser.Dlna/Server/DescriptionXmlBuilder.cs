@@ -185,6 +185,15 @@ namespace MediaBrowser.Dlna.Server
                 EventSubUrl = "/mediabrowser/dlna/contentdirectory/" + _serverUdn + "/events"
             });
 
+            list.Add(new DeviceService
+            {
+                ServiceType = "urn:schemas-upnp-org:service:ConnectionManager:1",
+                ServiceId = "urn:upnp-org:serviceId:ConnectionManager",
+                ScpdUrl = "/mediabrowser/dlna/connectionmanager/connectionmanager.xml",
+                ControlUrl = "/mediabrowser/dlna/connectionmanager/" + _serverUdn + "/control",
+                EventSubUrl = "/mediabrowser/dlna/connectionmanager/" + _serverUdn + "/events"
+            });
+
             return list;
         }
 

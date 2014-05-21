@@ -1,123 +1,17 @@
 ﻿(function ($, document, apiClient) {
 
-    function fillSeriesSpotlight(elem, item, nextUp) {
-
-        var html = '<h1 class="spotlightTitle">' + item.Name + '</h1>';
-
-        var imgUrl = ApiClient.getImageUrl(item.Id, {
-            type: "Backdrop",
-            tag: item.BackdropImageTags[0]
-        });
-
-        html += '<div class="spotlight" style="background-image:url(\'' + imgUrl + '\');">';
-
-        imgUrl = ApiClient.getImageUrl(item.Id, {
-            type: "Primary",
-            tag: item.ImageTags.Primary,
-            EnableImageEnhancers: false
-        });
-
-        html += '<div class="spotlightContent">';
-        html += '<div class="spotlightPoster" style="background-image:url(\'' + imgUrl + '\');">';
-
-        html += '<div class="spotlightContentInner">';
-        html += '<p>' + LibraryBrowser.getMiscInfoHtml(item) + '</p>';
-        html += '<p>' + (item.Overview || '') + '</p>';
-        html += '</div>';
-
-        html += '</div>';
-        html += '</div>';
-
-        if (nextUp && nextUp.ImageTags && nextUp.ImageTags.Primary) {
-
-            html += '<div class="spotlightContent rightSpotlightContent">';
-
-            imgUrl = ApiClient.getImageUrl(nextUp.Id, {
-                type: "Primary",
-                tag: nextUp.ImageTags.Primary,
-                EnableImageEnhancers: false
-            });
-
-            html += '<div class="spotlightPoster" style="background-image:url(\'' + imgUrl + '\');">';
-
-            html += '<div class="spotlightContentInner">';
-            html += LibraryBrowser.getPosterViewDisplayName(nextUp);
-            html += '</div>';
-
-            html += '</div>';
-            html += '</div>';
-        }
-
-        html += '</div>';
-
-        html += '<div class="spotlightPlaceHolder"></div>';
-
-        $(elem).html(html);
-    }
-
-    function reloadSpotlight(page, allPromise) {
-
-        var options = {
-
-            SortBy: "Random",
-            SortOrder: "Descending",
-            Limit: 1,
-            Recursive: true,
-            IncludeItemTypes: "Series",
-            ImageTypes: "Backdrop,Primary",
-            Fields: "Overview"
-        };
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
-
-            allPromise.done(function () {
-
-                var index = 0;
-                $('.spotlightContainer', page).each(function () {
-
-                    var elem = this;
-                    var item = result.Items[index];
-                    index++;
-
-                    if (item && item.Type == 'Series') {
-
-                        options = {
-
-                            Limit: 1,
-                            UserId: Dashboard.getCurrentUserId(),
-                            SeriesId: item.Id
-                        };
-
-                        ApiClient.getNextUpEpisodes(options).done(function (nextUpResult) {
-
-                            fillSeriesSpotlight(elem, item, nextUpResult.Items[0]);
-                        });
-
-                    } else {
-                        $(this).hide();
-                    }
-
-                });
-
-            });
-        });
-    }
-
     function createMediaLinks(options) {
 
         var html = "";
 
         var items = options.items;
 
-        console.log("options", options);
-
         // "My Library" backgrounds
         for (var i = 0, length = items.length; i < length; i++) {
 
             var item = items[i];
-            var background = "#333";
-            var backgroundSize = "45px 45px";
-            var backgroundPosition = "20px center";
+
+            var imgUrl;
 
             switch (item.CollectionType) {
                 case "movies":
@@ -129,6 +23,7 @@
                 case "photos":
                     imgUrl = "css/images/items/folders/photos.png";
                     break;
+                case "livetv":
                 case "tvshows":
                     imgUrl = "css/images/items/folders/tv.png";
                     break;
@@ -144,6 +39,9 @@
                 case "musicvideos":
                     imgUrl = "css/images/items/folders/musicvideos.png";
                     break;
+                case "channels":
+                    imgUrl = "css/images/items/folders/channels.png";
+                    break;
                 case "boxsets":
                 default:
                     imgUrl = "css/images/items/folders/folder.png";
@@ -153,11 +51,13 @@
             var cssClass = "posterItem";
             cssClass += ' ' + options.shape + 'PosterItem';
 
-            var mediaSourceCount = item.MediaSourceCount || 1;
+            if (item.CollectionType) {
+                cssClass += ' ' + item.CollectionType + 'PosterItem';
+            }
 
-            var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
+            var href = item.url || LibraryBrowser.getHref(item, options.context);
 
-            html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-mediasourcecount="' + mediaSourceCount + '" href="' + href + '">';
+            html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
 
             var style = "";
 
@@ -170,31 +70,19 @@
             html += '<div class="' + imageCssClass + '" style="' + style + '">';
             html += '</div>';
 
-            var name = LibraryBrowser.getPosterViewDisplayName(item, options.displayAsSpecial);
-
             if (options.showTitle) {
                 html += "<div class='posterItemDefaultText'>";
-                html += name;
+                html += item.Name;
                 html += "</div>";
             }
-
-            cssClass = options.centerText ? "posterItemText posterItemTextCentered" : "posterItemText";
 
             html += "</a>";
         }
 
-        console.log("html", html);
-
         return html;
     }
 
-    $(document).on('pagebeforeshow', "#indexPage", function () {
-
-        var screenWidth = $(window).width();
-
-        var page = this;
-
-        $('.spotlightContainer', page).empty();
+    function refreshMediaLibrary(page) {
 
         var options = {
 
@@ -202,7 +90,46 @@
             Fields: "PrimaryImageAspectRatio"
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        var userId = Dashboard.getCurrentUserId();
+
+        var promise1 = ApiClient.getItems(userId, options);
+        
+        var promise2 = ApiClient.getLiveTvInfo();
+
+        var promise3 = $.getJSON(ApiClient.getUrl("Channels", {
+            userId: userId,
+
+            // We just want the total record count
+            limit: 0
+        }));
+
+        $.when(promise1, promise2, promise3).done(function(r1, r2, r3) {
+
+            var result = r1[0];
+            var liveTvInfo = r2[0];
+            var channelResponse = r3[0];
+
+            if (channelResponse.TotalRecordCount) {
+
+                result.Items.push({
+                    Name: 'Channels',
+                    CollectionType: 'channels',
+                    Id: 'channels',
+                    url: 'channels.html'
+                });
+            }
+
+            var showLiveTv = liveTvInfo.EnabledUsers.indexOf(userId) != -1;
+
+            if (showLiveTv) {
+                
+                result.Items.push({
+                    Name: 'Live TV',
+                    CollectionType: 'livetv',
+                    Id: 'livetv',
+                    url: 'livetvsuggested.html'
+                });
+            }
 
             $('.myLibrary', page).html(createMediaLinks({
                 items: result.Items,
@@ -211,10 +138,18 @@
                 centerText: true
 
             }));
-
         });
+    }
 
-        options = {
+    $(document).on('pagebeforeshow', "#indexPage", function () {
+
+        var screenWidth = $(window).width();
+
+        var page = this;
+
+        refreshMediaLibrary(page);
+
+        var options = {
 
             SortBy: "DatePlayed",
             SortOrder: "Descending",

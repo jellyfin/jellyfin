@@ -1166,6 +1166,7 @@ a.itemTag:hover {
 .channelHeader {
     padding: 1em;
     text-align: center;
+    border-bottom: 1px solid #333;
 }
 
     .channelHeader a {

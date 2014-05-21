@@ -35,6 +35,8 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.Themes;
 using MediaBrowser.Dlna;
+using MediaBrowser.Dlna.ConnectionManager;
+using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Dlna.Eventing;
 using MediaBrowser.Dlna.Main;
 using MediaBrowser.Dlna.Server;
@@ -525,6 +527,9 @@ namespace MediaBrowser.ServerApplication
 
             var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, DtoService, LibraryManager, LogManager, ServerConfigurationManager, UserManager, dlnaEventManager);
             RegisterSingleInstance<IContentDirectory>(contentDirectory);
+
+            var connectionManager = new ConnectionManager(dlnaManager, LogManager, ServerConfigurationManager);
+            RegisterSingleInstance<IConnectionManager>(connectionManager);
 
             var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);
             RegisterSingleInstance<ICollectionManager>(collectionManager);

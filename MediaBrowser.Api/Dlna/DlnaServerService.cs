@@ -25,8 +25,23 @@ namespace MediaBrowser.Api.Dlna
     {
     }
 
+    [Route("/Dlna/connectionmanager/connectionmanager.xml", "GET", Summary = "Gets dlna connection manager xml")]
+    [Route("/Dlna/connectionmanager/connectionmanager", "GET", Summary = "Gets dlna connection manager xml")]
+    public class GetConnnectionManager
+    {
+    }
+
     [Route("/Dlna/contentdirectory/{UuId}/control", "POST", Summary = "Processes a control request")]
-    public class ProcessControlRequest : IRequiresRequestStream
+    public class ProcessContentDirectoryControlRequest : IRequiresRequestStream
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
+
+        public Stream RequestStream { get; set; }
+    }
+
+    [Route("/Dlna/connectionmanager/{UuId}/control", "POST", Summary = "Processes a control request")]
+    public class ProcessConnectionManagerControlRequest : IRequiresRequestStream
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string UuId { get; set; }
@@ -35,6 +50,7 @@ namespace MediaBrowser.Api.Dlna
     }
 
     [Route("/Dlna/contentdirectory/{UuId}/events", Summary = "Processes an event subscription request")]
+    [Route("/Dlna/connectionmanager/{UuId}/events", Summary = "Processes an event subscription request")]
     public class ProcessEventRequest
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -53,12 +69,14 @@ namespace MediaBrowser.Api.Dlna
         private readonly IDlnaManager _dlnaManager;
         private readonly IContentDirectory _contentDirectory;
         private readonly IEventManager _eventManager;
+        private readonly IConnectionManager _connectionManager;
 
-        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IEventManager eventManager)
+        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IEventManager eventManager, IConnectionManager connectionManager)
         {
             _dlnaManager = dlnaManager;
             _contentDirectory = contentDirectory;
             _eventManager = eventManager;
+            _connectionManager = connectionManager;
         }
 
         public object Get(GetDescriptionXml request)
@@ -70,26 +88,40 @@ namespace MediaBrowser.Api.Dlna
 
         public object Get(GetContentDirectory request)
         {
-            var xml = _contentDirectory.GetContentDirectoryXml(GetRequestHeaders());
+            var xml = _contentDirectory.GetServiceXml(GetRequestHeaders());
 
             return ResultFactory.GetResult(xml, "text/xml");
         }
 
-        public object Post(ProcessControlRequest request)
+        public object Get(GetConnnectionManager request)
         {
-            var response = PostAsync(request).Result;
+            var xml = _connectionManager.GetServiceXml(GetRequestHeaders());
+
+            return ResultFactory.GetResult(xml, "text/xml");
+        }
+
+        public object Post(ProcessContentDirectoryControlRequest request)
+        {
+            var response = PostAsync(request.RequestStream, _contentDirectory).Result;
 
             return ResultFactory.GetResult(response.Xml, "text/xml");
         }
 
-        private async Task<ControlResponse> PostAsync(ProcessControlRequest request)
+        public object Post(ProcessConnectionManagerControlRequest request)
+        {
+            var response = PostAsync(request.RequestStream, _connectionManager).Result;
+
+            return ResultFactory.GetResult(response.Xml, "text/xml");
+        }
+
+        private async Task<ControlResponse> PostAsync(Stream requestStream, IUpnpService service)
         {
             var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = pathInfo.GetArgumentValue<string>(2);
 
-            using (var reader = new StreamReader(request.RequestStream))
+            using (var reader = new StreamReader(requestStream))
             {
-                return _contentDirectory.ProcessControlRequest(new ControlRequest
+                return service.ProcessControlRequest(new ControlRequest
                 {
                     Headers = GetRequestHeaders(),
                     InputXml = await reader.ReadToEndAsync().ConfigureAwait(false),

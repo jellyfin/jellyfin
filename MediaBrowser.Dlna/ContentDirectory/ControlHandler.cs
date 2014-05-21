@@ -1,15 +1,16 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Dlna.Didl;
+using MediaBrowser.Dlna.Server;
+using MediaBrowser.Dlna.Service;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -21,20 +22,17 @@ using System.Text;
 using System.Threading;
 using System.Xml;
 
-namespace MediaBrowser.Dlna.Server
+namespace MediaBrowser.Dlna.ContentDirectory
 {
-    public class ControlHandler
+    public class ControlHandler : BaseControlHandler
     {
-        private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataManager;
-        private readonly IServerConfigurationManager _config;
         private readonly User _user;
 
         private const string NS_DC = "http://purl.org/dc/elements/1.1/";
         private const string NS_DIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
         private const string NS_DLNA = "urn:schemas-dlna-org:metadata-1-0/";
-        private const string NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/";
         private const string NS_UPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
 
         private readonly int _systemUpdateId;
@@ -45,151 +43,45 @@ namespace MediaBrowser.Dlna.Server
         private readonly DeviceProfile _profile;
 
         public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config)
+            : base(config, logger)
         {
-            _logger = logger;
             _libraryManager = libraryManager;
             _userDataManager = userDataManager;
             _user = user;
             _systemUpdateId = systemUpdateId;
-            _config = config;
             _profile = profile;
 
             _didlBuilder = new DidlBuilder(profile, imageProcessor, serverAddress, dtoService);
         }
 
-        public ControlResponse ProcessControlRequest(ControlRequest request)
+        protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
         {
-            try
-            {
-                if (_config.Configuration.DlnaOptions.EnableDebugLogging)
-                {
-                    LogRequest(request);
-                }
-
-                return ProcessControlRequestInternal(request);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error processing control request", ex);
-
-                return GetErrorResponse(ex);
-            }
-        }
-
-        private void LogRequest(ControlRequest request)
-        {
-            var builder = new StringBuilder();
-
-            var headers = string.Join(", ", request.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
-            builder.AppendFormat("Headers: {0}", headers);
-            builder.AppendLine();
-            builder.Append(request.InputXml);
-
-            _logger.LogMultiline("Control request", LogSeverity.Debug, builder);
-        }
-
-        private ControlResponse ProcessControlRequestInternal(ControlRequest request)
-        {
-            var soap = new XmlDocument();
-            soap.LoadXml(request.InputXml);
-            var sparams = new Headers();
-            var body = soap.GetElementsByTagName("Body", NS_SOAPENV).Item(0);
-
-            var method = body.FirstChild;
-
-            foreach (var p in method.ChildNodes)
-            {
-                var e = p as XmlElement;
-                if (e == null)
-                {
-                    continue;
-                }
-                sparams.Add(e.LocalName, e.InnerText.Trim());
-            }
-
             var deviceId = "test";
-
-            IEnumerable<KeyValuePair<string, string>> result;
-
-            _logger.Debug("Received control request {0}", method.Name);
 
             var user = _user;
 
-            if (string.Equals(method.LocalName, "GetSearchCapabilities", StringComparison.OrdinalIgnoreCase))
-                result = HandleGetSearchCapabilities();
-            else if (string.Equals(method.LocalName, "GetSortCapabilities", StringComparison.OrdinalIgnoreCase))
-                result = HandleGetSortCapabilities();
-            else if (string.Equals(method.LocalName, "GetSystemUpdateID", StringComparison.OrdinalIgnoreCase))
-                result = HandleGetSystemUpdateID();
-            else if (string.Equals(method.LocalName, "Browse", StringComparison.OrdinalIgnoreCase))
-                result = HandleBrowse(sparams, user, deviceId);
-            else if (string.Equals(method.LocalName, "X_GetFeatureList", StringComparison.OrdinalIgnoreCase))
-                result = HandleXGetFeatureList();
-            else if (string.Equals(method.LocalName, "X_SetBookmark", StringComparison.OrdinalIgnoreCase))
-                result = HandleXSetBookmark(sparams, user);
-            else if (string.Equals(method.LocalName, "Search", StringComparison.OrdinalIgnoreCase))
-                result = HandleSearch(sparams, user, deviceId);
-            else
-                throw new ResourceNotFoundException("Unexpected control request name: " + method.LocalName);
+            if (string.Equals(methodName, "GetSearchCapabilities", StringComparison.OrdinalIgnoreCase))
+                return HandleGetSearchCapabilities();
 
-            var env = new XmlDocument();
-            env.AppendChild(env.CreateXmlDeclaration("1.0", "utf-8", string.Empty));
-            var envelope = env.CreateElement("SOAP-ENV", "Envelope", NS_SOAPENV);
-            env.AppendChild(envelope);
-            envelope.SetAttribute("encodingStyle", NS_SOAPENV, "http://schemas.xmlsoap.org/soap/encoding/");
+            if (string.Equals(methodName, "GetSortCapabilities", StringComparison.OrdinalIgnoreCase))
+                return HandleGetSortCapabilities();
 
-            var rbody = env.CreateElement("SOAP-ENV:Body", NS_SOAPENV);
-            env.DocumentElement.AppendChild(rbody);
+            if (string.Equals(methodName, "GetSystemUpdateID", StringComparison.OrdinalIgnoreCase))
+                return HandleGetSystemUpdateID();
 
-            var response = env.CreateElement(String.Format("u:{0}Response", method.LocalName), method.NamespaceURI);
-            rbody.AppendChild(response);
+            if (string.Equals(methodName, "Browse", StringComparison.OrdinalIgnoreCase))
+                return HandleBrowse(methodParams, user, deviceId);
 
-            foreach (var i in result)
-            {
-                var ri = env.CreateElement(i.Key);
-                ri.InnerText = i.Value;
-                response.AppendChild(ri);
-            }
+            if (string.Equals(methodName, "X_GetFeatureList", StringComparison.OrdinalIgnoreCase))
+                return HandleXGetFeatureList();
 
-            var controlResponse = new ControlResponse
-            {
-                Xml = env.OuterXml,
-                IsSuccessful = true
-            };
+            if (string.Equals(methodName, "X_SetBookmark", StringComparison.OrdinalIgnoreCase))
+                return HandleXSetBookmark(methodParams, user);
 
-            controlResponse.Headers.Add("EXT", string.Empty);
+            if (string.Equals(methodName, "Search", StringComparison.OrdinalIgnoreCase))
+                return HandleSearch(methodParams, user, deviceId);
 
-            return controlResponse;
-        }
-
-        private ControlResponse GetErrorResponse(Exception ex)
-        {
-            var env = new XmlDocument();
-            env.AppendChild(env.CreateXmlDeclaration("1.0", "utf-8", "yes"));
-            var envelope = env.CreateElement("SOAP-ENV", "Envelope", NS_SOAPENV);
-            env.AppendChild(envelope);
-            envelope.SetAttribute("encodingStyle", NS_SOAPENV, "http://schemas.xmlsoap.org/soap/encoding/");
-
-            var rbody = env.CreateElement("SOAP-ENV:Body", NS_SOAPENV);
-            env.DocumentElement.AppendChild(rbody);
-
-            var fault = env.CreateElement("SOAP-ENV", "Fault", NS_SOAPENV);
-            var faultCode = env.CreateElement("faultcode");
-            faultCode.InnerText = "500";
-            fault.AppendChild(faultCode);
-            var faultString = env.CreateElement("faultstring");
-            faultString.InnerText = ex.ToString();
-            fault.AppendChild(faultString);
-            var detail = env.CreateDocumentFragment();
-            detail.InnerXml = "<detail><UPnPError xmlns=\"urn:schemas-upnp-org:control-1-0\"><errorCode>401</errorCode><errorDescription>Invalid Action</errorDescription></UPnPError></detail>";
-            fault.AppendChild(detail);
-            rbody.AppendChild(fault);
-
-            return new ControlResponse
-            {
-                Xml = env.OuterXml,
-                IsSuccessful = false
-            };
+            throw new ResourceNotFoundException("Unexpected control request name: " + methodName);
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleXSetBookmark(IDictionary<string, string> sparams, User user)
@@ -224,7 +116,7 @@ namespace MediaBrowser.Dlna.Server
         {
             var headers = new Headers(true);
             headers.Add("Id", _systemUpdateId.ToString(_usCulture));
-            return headers;           
+            return headers;
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleXGetFeatureList()

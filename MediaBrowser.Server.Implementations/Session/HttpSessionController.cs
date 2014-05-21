@@ -63,17 +63,18 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private Task SendMessage(string name, CancellationToken cancellationToken)
         {
-            return SendMessage(name, new NameValueCollection(), cancellationToken);
+            return SendMessage(name, new Dictionary<string, string>(), cancellationToken);
         }
 
-        private Task SendMessage(string name, NameValueCollection args, CancellationToken cancellationToken)
+        private Task SendMessage(string name, Dictionary<string, string> args, CancellationToken cancellationToken)
         {
-            return SendMessage(new WebSocketMessage<string>
-            {
-                MessageType = name,
-                Data = string.Empty
+            var url = _postUrl + "/" + name + ToQueryString(args);
 
-            }, cancellationToken);
+            return _httpClient.Post(new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = cancellationToken
+            });
         }
 
         public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
@@ -141,12 +142,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
-            return SendMessage(new WebSocketMessage<GeneralCommand>
-            {
-                MessageType = "GeneralCommand",
-                Data = command
-
-            }, cancellationToken);
+            return SendMessage(command.Name, command.Arguments, cancellationToken);
         }
 
         private string ToQueryString(Dictionary<string, string> nvc)
@@ -154,7 +150,15 @@ namespace MediaBrowser.Server.Implementations.Session
             var array = (from item in nvc
                          select string.Format("{0}={1}", WebUtility.UrlEncode(item.Key), WebUtility.UrlEncode(item.Value)))
                 .ToArray();
-            return "?" + string.Join("&", array);
+
+            var args = string.Join("&", array);
+
+            if (string.IsNullOrEmpty(args))
+            {
+                return args;
+            }
+
+            return "?" + args;
         }
     }
 }

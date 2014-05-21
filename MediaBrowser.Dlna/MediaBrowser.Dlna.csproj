@@ -51,6 +51,10 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="ConnectionManager\ConnectionManager.cs" />
+    <Compile Include="ConnectionManager\ConnectionManagerXmlBuilder.cs" />
+    <Compile Include="ConnectionManager\ControlHandler.cs" />
+    <Compile Include="ConnectionManager\ServiceActionListBuilder.cs" />
     <Compile Include="DlnaManager.cs" />
     <Compile Include="Common\Argument.cs" />
     <Compile Include="Eventing\EventManager.cs" />
@@ -79,10 +83,13 @@
     <Compile Include="Profiles\Windows81Profile.cs" />
     <Compile Include="Profiles\WindowsMediaCenterProfile.cs" />
     <Compile Include="Profiles\WindowsPhoneProfile.cs" />
-    <Compile Include="Server\ContentDirectory.cs" />
-    <Compile Include="Server\ControlHandler.cs" />
-    <Compile Include="Server\ServiceActionListBuilder.cs" />
-    <Compile Include="Server\ContentDirectoryXmlBuilder.cs" />
+    <Compile Include="ContentDirectory\ContentDirectory.cs" />
+    <Compile Include="ContentDirectory\ControlHandler.cs" />
+    <Compile Include="ContentDirectory\ServiceActionListBuilder.cs" />
+    <Compile Include="ContentDirectory\ContentDirectoryXmlBuilder.cs" />
+    <Compile Include="Service\BaseControlHandler.cs" />
+    <Compile Include="Service\ControlErrorHandler.cs" />
+    <Compile Include="Service\ServiceXmlBuilder.cs" />
     <Compile Include="Ssdp\Datagram.cs" />
     <Compile Include="Server\DescriptionXmlBuilder.cs" />
     <Compile Include="Ssdp\SsdpHelper.cs" />
@@ -159,6 +166,7 @@
     <EmbeddedResource Include="Images\logo48.jpg" />
     <EmbeddedResource Include="Images\logo48.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

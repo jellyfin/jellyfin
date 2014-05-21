@@ -137,23 +137,48 @@
     }
 
 .myLibraryPosterItem {
-    width: 157px;
+    width: 148px;
 }
 
     .myLibraryPosterItem .posterItemImage {
-        height: 65px;
-        background-position: 20px center;
-        background-size: 25px 25px;
-        background-color: rgba(51, 51, 51, 0.5);
+        height: 38px;
+        background-position: 12px center;
+        background-size: 20px 20px;
+        background-color: rgba(51, 136, 204, 0.5);
+        background-color: rgba(82, 181, 75, 0.5);
     }
 
     .myLibraryPosterItem .posterItemDefaultText {
         top: 0;
         left: 0;
-        line-height: 65px;
+        line-height: 38px;
         text-align: left;
-        padding-left: 60px;
+        padding-left: 45px;
     }
+
+.moviesPosterItem .posterItemImage {
+    background-color: rgba(176, 94, 81, 0.5);
+}
+
+.musicPosterItem .posterItemImage {
+    background-color: rgba(217, 145, 67, 0.5);
+}
+
+.tvshowsPosterItem .posterItemImage {
+    background-color: rgba(77, 88, 164, 0.5);
+}
+
+.gamesPosterItem .posterItemImage {
+    background-color: rgba(183, 202, 72, 0.5);
+}
+
+.channelsPosterItem .posterItemImage {
+    background-color: rgba(51, 136, 204, 0.5);
+}
+
+.livetvPosterItem .posterItemImage {
+    background-color: rgba(255, 233, 127, 0.5);
+}
 
 .smallBackdropPosterItem {
     width: 157px;
@@ -279,7 +304,7 @@
         }
 
     .smallBackdropPosterItem {
-        width: 202px;
+        width: 190px;
     }
 
         .smallBackdropPosterItem .posterItemImage {
@@ -293,6 +318,13 @@
         .bannerPosterItem .posterItemImage {
             height: 55.5px;
         }
+}
+
+@media all and (min-width: 600px) {
+
+    .myLibraryPosterItem {
+        width: 180px;
+    }
 }
 
 @media all and (min-width: 750px) {

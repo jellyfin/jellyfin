@@ -154,9 +154,9 @@ namespace MediaBrowser.Server.Implementations.WebSocket
             {
                 if (WebSocketServer != null)
                 {
-                    // Calling dispose will also call stop
                     _logger.Debug("Disposing alchemy server");
-                    WebSocketServer.Stop();
+
+                    WebSocketServer.Dispose();
                     WebSocketServer = null;
                 }
             }
