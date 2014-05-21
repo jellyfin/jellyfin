@@ -497,9 +497,8 @@ var Dashboard = {
 
             html += '<form>';
 
-            html += '<p><label for="chkEnableThemeSongs">Play theme songs</label><input onchange="ThemeSongManager.enabled(this.checked);" type="checkbox" id="chkEnableThemeSongs" data-mini="true" /></a>';
-
-            html += '<p><a data-mini="true" data-role="button" href="usersettings.html?userId=' + user.Id + '" data-icon="user">Preferences</button></a>';
+            html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.Id + '" data-icon="gear">My Preferences</button></a>';
+            html += '<p><a data-mini="true" data-role="button" href="useredit.html?userId=' + user.Id + '" data-icon="user">My Profile</button></a>';
             html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">Sign Out</button></p>';
 
             html += '</form>';
@@ -511,8 +510,6 @@ var Dashboard = {
 
                 $(this).off("panelafterclose").remove();
             });
-
-            $('#chkEnableThemeSongs', elem).checked(window.ThemeSongManager.enabled()).checkboxradio('refresh');
         });
     },
 

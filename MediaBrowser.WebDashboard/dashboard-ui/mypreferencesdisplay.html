@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>${TitleMediaBrowser}</title>
+</head>
+<body>
+    <div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-theme="b">
+        <div class="libraryViewNav">
+            <a href="#" class="ui-btn-active lnkDisplayPreferences">${TabDisplay}</a>
+            <a href="#" class="lnkLanguagePreferences">${TabLanguages}</a>
+            <a href="#" class="lnkWebClientPreferences">${TabWebClient}</a>
+        </div>
+
+        <br />
+        <form class="displayPreferencesForm" style="margin: 0 auto;">
+            <ul data-role="listview" class="ulForm">
+                <li>
+                    <input type="checkbox" id="chkDisplayMissingEpisodes" data-mini="true" />
+                    <label for="chkDisplayMissingEpisodes">${LabelDisplayMissingEpisodesWithinSeasons}</label>
+                </li>
+                <li>
+                    <input type="checkbox" id="chkDisplayUnairedEpisodes" data-mini="true" />
+                    <label for="chkDisplayUnairedEpisodes">${LabelUnairedMissingEpisodesWithinSeasons}</label>
+                </li>
+                <li>
+                    <input type="checkbox" id="chkGroupMoviesIntoCollections" data-mini="true" />
+                    <label for="chkGroupMoviesIntoCollections">${LabelGroupMoviesIntoCollections}</label>
+                    <div class="fieldDescription">${LabelGroupMoviesIntoCollectionsHelp}</div>
+                </li>
+                <li>
+                    <button type="submit" data-theme="a" data-icon="check" data-mini="true">
+                        ${ButtonOk}
+                    </button>
+                    <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
+                        ${ButtonCancel}
+                    </button>
+                </li>
+            </ul>
+        </form>
+        <script type="text/javascript">
+            $('.displayPreferencesForm').off('submit', DisplayPreferencesPage.onSubmit).on('submit', DisplayPreferencesPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

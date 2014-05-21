@@ -761,5 +761,8 @@
 	"HeaderTypeText": "Enter Text",
 	"LabelTypeText": "Text",
 	"HeaderSearchForSubtitles": "Search for Subtitles",
-	"MessageNoSubtitleSearchResultsFound": "No search results founds."
+	"MessageNoSubtitleSearchResultsFound": "No search results founds.",
+	"TabDisplay": "Display",
+	"TabLanguages": "Languages",
+	"TabWebClient": "Web Client"
 }
