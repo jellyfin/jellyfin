@@ -254,7 +254,7 @@ namespace MediaBrowser.ServerApplication
         {
             //Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
-            _serverNotifyIcon = new ServerNotifyIcon(_appHost.LogManager, _appHost, _appHost.ServerConfigurationManager, _appHost.UserManager, _appHost.LibraryManager, _appHost.JsonSerializer, _appHost.DisplayPreferencesRepository, _appHost.ItemRepository, _appHost.LocalizationManager);
+            _serverNotifyIcon = new ServerNotifyIcon(_appHost.LogManager, _appHost, _appHost.ServerConfigurationManager, _appHost.UserManager, _appHost.LibraryManager, _appHost.JsonSerializer, _appHost.ItemRepository, _appHost.LocalizationManager);
             Application.Run();
         }
 
