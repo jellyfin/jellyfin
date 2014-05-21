@@ -1,98 +1,15 @@
 ﻿using MediaBrowser.Dlna.Common;
-using MediaBrowser.Model.Dlna;
+using MediaBrowser.Dlna.Service;
 using System.Collections.Generic;
-using System.Security;
-using System.Text;
 
-namespace MediaBrowser.Dlna.Server
+namespace MediaBrowser.Dlna.ContentDirectory
 {
     public class ContentDirectoryXmlBuilder
     {
-        private readonly DeviceProfile _profile;
-
-        public ContentDirectoryXmlBuilder(DeviceProfile profile)
-        {
-            _profile = profile;
-        }
-
         public string GetXml()
         {
-            var builder = new StringBuilder();
-
-            builder.Append("<?xml version=\"1.0\"?>");
-            builder.Append("<scpd xmlns=\"urn:schemas-upnp-org:service-1-0\">");
-
-            builder.Append("<specVersion>");
-            builder.Append("<major>1</major>");
-            builder.Append("<minor>0</minor>");
-            builder.Append("</specVersion>");
-
-            AppendActionList(builder);
-            AppendServiceStateTable(builder);
-
-            builder.Append("</scpd>");
-
-            return builder.ToString();
-        }
-
-        private void AppendActionList(StringBuilder builder)
-        {
-            builder.Append("<actionList>");
-
-            foreach (var item in new ServiceActionListBuilder().GetActions())
-            {
-                builder.Append("<action>");
-
-                builder.Append("<name>" + SecurityElement.Escape(item.Name ?? string.Empty) + "</name>");
-
-                builder.Append("<argumentList>");
-
-                foreach (var argument in item.ArgumentList)
-                {
-                    builder.Append("<argument>");
-
-                    builder.Append("<name>" + SecurityElement.Escape(argument.Name ?? string.Empty) + "</name>");
-                    builder.Append("<direction>" + SecurityElement.Escape(argument.Direction ?? string.Empty) + "</direction>");
-                    builder.Append("<relatedStateVariable>" + SecurityElement.Escape(argument.RelatedStateVariable ?? string.Empty) + "</relatedStateVariable>");
-                    
-                    builder.Append("</argument>");
-                }
-
-                builder.Append("</argumentList>");
-                
-                builder.Append("</action>");
-            }
-            
-            builder.Append("</actionList>");
-        }
-
-        private void AppendServiceStateTable(StringBuilder builder)
-        {
-            builder.Append("<serviceStateTable>");
-
-            foreach (var item in GetStateVariables())
-            {
-                var sendEvents = item.SendsEvents ? "yes" : "no";
-
-                builder.Append("<stateVariable sendEvents=\"" + sendEvents + "\">");
-
-                builder.Append("<name>" + SecurityElement.Escape(item.Name ?? string.Empty) + "</name>");
-                builder.Append("<dataType>" + SecurityElement.Escape(item.DataType ?? string.Empty) + "</dataType>");
-
-                if (item.AllowedValues.Count > 0)
-                {
-                    builder.Append("<allowedValueList>");
-                    foreach (var allowedValue in item.AllowedValues)
-                    {
-                        builder.Append("<allowedValue>" + SecurityElement.Escape(allowedValue) + "</allowedValue>");
-                    }
-                    builder.Append("</allowedValueList>");
-                }
-
-                builder.Append("</stateVariable>");
-            }
-
-            builder.Append("</serviceStateTable>");
+            return new ServiceXmlBuilder().GetXml(new ServiceActionListBuilder().GetActions(), 
+                GetStateVariables());
         }
 
         private IEnumerable<StateVariable> GetStateVariables()
@@ -223,13 +140,8 @@ namespace MediaBrowser.Dlna.Server
                 DataType = "string",
                 SendsEvents = false
             });
-            
-            return list;
-        }
 
-        public override string ToString()
-        {
-            return GetXml();
+            return list;
         }
     }
 }

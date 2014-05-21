@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Dlna.Server
+namespace MediaBrowser.Dlna.ContentDirectory
 {
     public class ContentDirectory : IContentDirectory, IDisposable
     {
@@ -43,7 +43,7 @@ namespace MediaBrowser.Dlna.Server
             _config = config;
             _userManager = userManager;
             _eventManager = eventManager;
-            _logger = logManager.GetLogger("DlnaContentDirectory");
+            _logger = logManager.GetLogger("UpnpContentDirectory");
         }
 
         private int SystemUpdateId
@@ -56,12 +56,9 @@ namespace MediaBrowser.Dlna.Server
             }
         }
 
-        public string GetContentDirectoryXml(IDictionary<string, string> headers)
+        public string GetServiceXml(IDictionary<string, string> headers)
         {
-            var profile = _dlna.GetProfile(headers) ??
-                          _dlna.GetDefaultProfile();
-
-            return new ContentDirectoryXmlBuilder(profile).GetXml();
+            return new ContentDirectoryXmlBuilder().GetXml();
         }
 
         public ControlResponse ProcessControlRequest(ControlRequest request)

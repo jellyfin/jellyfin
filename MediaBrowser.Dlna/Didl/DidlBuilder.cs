@@ -345,7 +345,9 @@ namespace MediaBrowser.Dlna.Didl
         /// <param name="filter">The filter.</param>
         private void AddCommonFields(BaseItem item, XmlElement element, Filter filter)
         {
-            if (filter.Contains("dc:title"))
+            // Don't filter on dc:title because not all devices will include it in the filter
+            // MediaMonkey for example won't display content without a title
+            //if (filter.Contains("dc:title"))
             {
                 AddValue(element, "dc", "title", item.Name, NS_DC);
             }
@@ -360,9 +362,12 @@ namespace MediaBrowser.Dlna.Didl
                 }
             }
 
-            foreach (var genre in item.Genres)
+            if (filter.Contains("upnp:genre"))
             {
-                AddValue(element, "upnp", "genre", genre, NS_UPNP);
+                foreach (var genre in item.Genres)
+                {
+                    AddValue(element, "upnp", "genre", genre, NS_UPNP);
+                }
             }
 
             foreach (var studio in item.Studios)

@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Dlna.Common;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Dlna.Server
+namespace MediaBrowser.Dlna.ContentDirectory
 {
     public class ServiceActionListBuilder
     {
