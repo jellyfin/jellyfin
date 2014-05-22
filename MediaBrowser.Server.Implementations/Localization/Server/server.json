@@ -780,5 +780,10 @@
 	"OptionLibraryButtons": "Library buttons",
 	"OptionLibraryTiles": "Library tiles",
 	"OptionResumablemedia": "Resume",
-	"OptionLatestMedia": "Latest media"
+	"OptionLatestMedia": "Latest media",
+	"OptionNone": "None",
+	"HeaderLiveTv": "Live TV",
+	"HeaderReports": "Reports",
+	"HeaderMetadataManager": "Metadata Manager",
+	"HeaderPreferences": "Preferences"
 }
