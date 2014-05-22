@@ -17,7 +17,7 @@
 }
 
 .backdropPage {
-    background-color: rgba(0, 0, 0, .85)!important;
+    background-color: rgba(0, 0, 0, .87)!important;
 }
 
 .backdropContainer {
@@ -66,6 +66,10 @@
 
 .squareEhsContent {
     max-width: 750px;
+}
+
+.homePageSection + .homePageSection {
+    margin-top: 3em;
 }
 
 @media all and (min-width: 1000px) {

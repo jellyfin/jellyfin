@@ -184,16 +184,19 @@
 
             var html = '';
 
-            html += '<h1 class="listHeader">Latest Media</h1>';
-            html += '<div>';
-            html += LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                preferThumb: true,
-                shape: 'backdrop',
-                showTitle: true,
-                centerText: true
-            });
-            html += '</div>';
+            if (result.Items.length) {
+                html += '<h1 class="listHeader">Latest Media</h1>';
+                html += '<div>';
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    preferThumb: true,
+                    shape: 'backdrop',
+                    showTitle: true,
+                    centerText: true
+                });
+                html += '</div>';
+            }
+
 
             $(elem).html(html).createPosterItemMenus();
         });
@@ -211,16 +214,18 @@
 
             var html = '';
 
-            html += '<h1 class="listHeader">My Library</h1>';
-            html += '<div>';
-            html += LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                preferThumb: true,
-                shape: 'backdrop',
-                showTitle: true,
-                centerText: true
-            });
-            html += '</div>';
+            if (result.Items.length) {
+                html += '<h1 class="listHeader">My Library</h1>';
+                html += '<div>';
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: 'backdrop',
+                    showTitle: true,
+                    centerText: true
+                });
+                html += '</div>';
+            }
+
 
             $(elem).html(html).createPosterItemMenus();
         });
@@ -247,17 +252,19 @@
 
             var html = '';
 
-            html += '<h1 class="listHeader">Resume</h1>';
-            html += '<div>';
-            html += LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                preferBackdrop: true,
-                shape: 'backdrop',
-                overlayText: screenWidth >= 600,
-                showTitle: true,
-                showParentTitle: true
-            });
-            html += '</div>';
+            if (result.Items.length) {
+                html += '<h1 class="listHeader">Resume</h1>';
+                html += '<div>';
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    preferBackdrop: true,
+                    shape: 'backdrop',
+                    overlayText: screenWidth >= 600,
+                    showTitle: true,
+                    showParentTitle: true
+                });
+                html += '</div>';
+            }
 
             $(elem).html(html).createPosterItemMenus();
         });
@@ -280,6 +287,9 @@
         }
         else if (section == 'librarybuttons') {
             loadlibraryButtons(elem, userId, index);
+        } else {
+            
+            elem.empty();
         }
     }
 
@@ -287,14 +297,18 @@
 
         var i, length;
         var sectionCount = 3;
-        var html = '';
 
-        for (i = 0, length = sectionCount; i < length; i++) {
+        var elem = $('.sections', page);
+        
+        if (!elem.html().length) {
+            var html = '';
+            for (i = 0, length = sectionCount; i < length; i++) {
 
-            html += '<div class="section' + i + '"></div>';
+                html += '<div class="homePageSection section' + i + '"></div>';
+            }
+
+            elem.html(html);
         }
-
-        $('.sections', page).html(html);
 
         for (i = 0, length = sectionCount; i < length; i++) {
 

@@ -42,6 +42,8 @@
 
     function enabled() {
 
+        var userId = Dashboard.getCurrentUserId();
+        
         var val = LocalSettings.val('enableThemeSongs', userId);
 
         return val == '1';

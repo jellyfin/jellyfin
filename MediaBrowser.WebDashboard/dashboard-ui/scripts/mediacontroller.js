@@ -570,7 +570,7 @@
         };
     }
 
-    $(document).on('headercreated', '.libraryPage', function () {
+    $(document).on('headercreated', function () {
 
         $('.btnCast').on('click', function () {
 

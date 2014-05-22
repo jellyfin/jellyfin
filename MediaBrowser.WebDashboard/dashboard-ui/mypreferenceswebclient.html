@@ -5,7 +5,7 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="webClientPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-theme="b">
+    <div id="webClientPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-theme="b" data-contextname="${HeaderPreferences}">
         <div class="libraryViewNav">
             <a href="#" class="lnkDisplayPreferences">${TabDisplay}</a>
             <a href="#" class="lnkLanguagePreferences">${TabLanguages}</a>
@@ -26,30 +26,32 @@
                     <label for="selectHomeSection1">${LabelHomePageSection1}</label>
                     <select id="selectHomeSection1" data-mini="true">
                         <option value="">${OptionAuto}</option>
+                        <option value="latestmedia">${OptionLatestMedia}</option>
                         <option value="librarybuttons">${OptionLibraryButtons}</option>
                         <option value="librarytiles">${OptionLibraryTiles}</option>
                         <option value="resume">${OptionResumablemedia}</option>
-                        <option value="latestmedia">${OptionLatestMedia}</option>
                     </select>
                 </li>
                 <li>
                     <label for="selectHomeSection2">${LabelHomePageSection2}</label>
                     <select id="selectHomeSection2" data-mini="true">
                         <option value="">${OptionAuto}</option>
+                        <option value="latestmedia">${OptionLatestMedia}</option>
                         <option value="librarybuttons">${OptionLibraryButtons}</option>
                         <option value="librarytiles">${OptionLibraryTiles}</option>
                         <option value="resume">${OptionResumablemedia}</option>
-                        <option value="latestmedia">${OptionLatestMedia}</option>
+                        <option value="none">${OptionNone}</option>
                     </select>
                 </li>
                 <li>
                     <label for="selectHomeSection3">${LabelHomePageSection3}</label>
                     <select id="selectHomeSection3" data-mini="true">
                         <option value="">${OptionAuto}</option>
+                        <option value="latestmedia">${OptionLatestMedia}</option>
                         <option value="librarybuttons">${OptionLibraryButtons}</option>
                         <option value="librarytiles">${OptionLibraryTiles}</option>
                         <option value="resume">${OptionResumablemedia}</option>
-                        <option value="latestmedia">${OptionLatestMedia}</option>
+                        <option value="none">${OptionNone}</option>
                     </select>
                 </li>
             </ul>

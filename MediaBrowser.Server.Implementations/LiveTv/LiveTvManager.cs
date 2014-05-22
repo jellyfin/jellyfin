@@ -1599,7 +1599,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting service status info from {0}", ex, service.Name);
+                _logger.ErrorException("Error getting service status info from {0}", ex, service.Name ?? string.Empty);
 
                 info.Status = LiveTvServiceStatus.Unavailable;
                 info.StatusMessage = ex.Message;

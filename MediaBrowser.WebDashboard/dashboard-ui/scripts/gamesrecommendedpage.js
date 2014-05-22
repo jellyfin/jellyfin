@@ -11,7 +11,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             MediaTypes: "Game",
-            Limit: 10,
+            Limit: 8,
             Recursive: true,
             Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio",
             ParentId: parentId
@@ -32,7 +32,7 @@
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             MediaTypes: "Game",
-            Limit: 10,
+            Limit: 8,
             Recursive: true,
             Filters: "IsPlayed",
             Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio",

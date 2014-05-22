@@ -1,12 +1,12 @@
 ﻿(function (window, document, $) {
 
-    function renderHeader(page, user) {
+    function renderHeader(user) {
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        html += '<button type="button" data-role="none" title="Menu" onclick="LibraryMenu.showLibraryMenu();" class="headerButton libraryMenuButton headerButtonLeft"><img src="css/images/menu.png" /></button>';
-
-        html += '<a class="desktopHomeLink headerButton headerButtonLeft" href="index.html"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a>';
+        html += '<button type="button" data-role="none" title="Menu" onclick="LibraryMenu.showLibraryMenu();" class="headerButton libraryMenuButton headerButtonLeft"><img src="css/images/menu.png" />';
+        html += '<div class="libraryMenuButtonText"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></div>';
+        html += '</button>';
 
         html += '<div class="viewMenuSecondary">';
 
@@ -41,11 +41,9 @@
 
         html += '</div>';
 
-        var $page = $(page);
+        $(document.body).prepend(html);
 
-        $page.prepend(html);
-
-        $page.trigger('headercreated');
+        $(document).trigger('headercreated');
     }
 
     function getItemHref(item) {
@@ -84,7 +82,7 @@
 
         $(panel).panel('toggle');
     }
-    
+
     function updateLibraryMenu(panel) {
         var userId = Dashboard.getCurrentUserId();
 
@@ -104,7 +102,13 @@
 
             }).join('');
 
-            $('.libraryMenuOptions').html(html);
+            var elem = $('.libraryMenuOptions').html(html);
+
+            $('.viewMenuTextLink', elem).on('click', function () {
+
+                $('.libraryMenuButtonText').html(this.innerHTML);
+
+            });
         });
 
         ApiClient.getLiveTvInfo().done(function (liveTvInfo) {
@@ -152,9 +156,11 @@
 
             html += '<div data-role="panel" id="libraryPanel" class="libraryPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="b">';
 
-            html += '<p class="libraryPanelHeader"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
-
             html += '<div style="margin: 0 -1em;">';
+
+            html += '<a class="lnkMediaFolder viewMenuLink viewMenuTextLink homeViewMenu" href="index.html">Home</a>';
+            html += '<div class="libraryMenuDivider"></div>';
+
             html += getViewsHtml(user, channelCount, items, liveTvInfo);
             html += '</div>';
 
@@ -249,6 +255,20 @@
         });
     }
 
+    function updateContextText(page) {
+
+        var name = page.getAttribute('data-contextname');
+
+        if (name) {
+
+            $('.libraryMenuButtonText').html('<span>' + name + '</span>');
+
+        }
+        else if ($(page).hasClass('allLibraryPage')) {
+            $('.libraryMenuButtonText').html('<span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span>');
+        }
+    }
+
     $(document).on('pageinit', ".libraryPage", function () {
 
         var page = this;
@@ -265,18 +285,20 @@
 
         var page = this;
 
-        updateLibraryNavLinks(page);
-
-        if (!$('.viewMenuBar', page).length) {
+        if (!$('.viewMenuBar').length) {
 
             Dashboard.getCurrentUser().done(function (user) {
 
-                renderHeader(page, user);
+                renderHeader(user);
 
                 updateCastIcon();
 
                 updateLibraryNavLinks(page);
+                updateContextText(page);
             });
+        } else {
+            updateContextText(page);
+            updateLibraryNavLinks(page);
         }
 
     }).on('pageshow', ".libraryPage", function () {
