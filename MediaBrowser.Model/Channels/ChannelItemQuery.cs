@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Channels
         /// Gets or sets the category identifier.
         /// </summary>
         /// <value>The category identifier.</value>
-        public string CategoryId { get; set; }
+        public string FolderId { get; set; }
 
         /// <summary>
         /// Gets or sets the user identifier.

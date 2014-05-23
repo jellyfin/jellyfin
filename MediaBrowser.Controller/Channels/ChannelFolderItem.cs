@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Channels
 {
-    public class ChannelCategoryItem : Folder, IChannelItem
+    public class ChannelFolderItem : Folder, IChannelItem
     {
         public string ExternalId { get; set; }
 
@@ -29,9 +29,14 @@ namespace MediaBrowser.Controller.Channels
             }
         }
 
-        public ChannelCategoryItem()
+        public ChannelFolderItem()
         {
             Tags = new List<string>();
+        }
+
+        public override string GetClientTypeName()
+        {
+            return "folder.channelItem";
         }
     }
 }
