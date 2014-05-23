@@ -389,10 +389,11 @@
 
         if (nowPlayingItem.LogoItemId) {
 
-            imgUrl = ApiClient.getImageUrl(nowPlayingItem.LogoItemId, {
+            imgUrl = ApiClient.getScaledImageUrl(nowPlayingItem.LogoItemId, {
 
                 tag: session.LogoImageTag,
-                height: 48,
+                maxHeight: 24,
+                maxWidth: 130,
                 type: 'Logo'
 
             });
@@ -579,27 +580,27 @@
 
         if (item && item.BackdropImageTag) {
 
-            return ApiClient.getImageUrl(item.BackdropItemId, {
+            return ApiClient.getScaledImageUrl(item.BackdropItemId, {
                 type: "Backdrop",
-                width: 810,
+                width: 275,
                 tag: item.BackdropImageTag
             });
         }
 
         if (item && item.ThumbImageTag) {
 
-            return ApiClient.getImageUrl(item.ThumbItemId, {
+            return ApiClient.getScaledImageUrl(item.ThumbItemId, {
                 type: "Thumb",
-                width: 810,
+                width: 275,
                 tag: item.ThumbImageTag
             });
         }
 
         if (item && item.PrimaryImageTag) {
 
-            return ApiClient.getImageUrl(item.PrimaryImageItemId, {
+            return ApiClient.getScaledImageUrl(item.PrimaryImageItemId, {
                 type: "Primary",
-                width: 810,
+                width: 275,
                 tag: item.PrimaryImageTag
             });
         }

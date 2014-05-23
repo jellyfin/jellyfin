@@ -2,8 +2,8 @@
 
     function loadPage(page, config) {
 
-        $('#chkMobileClients', page).checked(config.RequireManualLoginForMobileApps).checkboxradio("refresh");
-        $('#chkOtherApps', page).checked(config.RequireManualLoginForOtherApps).checkboxradio("refresh");
+        $('#chkMobileClients', page).checked(config.RequireMobileManualLogin).checkboxradio("refresh");
+        $('#chkOtherApps', page).checked(config.RequireNonMobileManualLogin).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -32,8 +32,8 @@
 
             ApiClient.getServerConfiguration().done(function (config) {
 
-                config.RequireManualLoginForMobileApps = $('#chkMobileClients', form).checked();
-                config.RequireManualLoginForOtherApps = $('#chkOtherApps', form).checked();
+                config.RequireMobileManualLogin = $('#chkMobileClients', form).checked();
+                config.RequireNonMobileManualLogin = $('#chkOtherApps', form).checked();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });

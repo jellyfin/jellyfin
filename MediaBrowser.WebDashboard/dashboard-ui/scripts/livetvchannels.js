@@ -14,15 +14,26 @@
         });
     }
 
+    function showLoadingMessage(page) {
+
+        $('.popupLoading', page).popup('open');
+    }
+
+    function hideLoadingMessage(page) {
+        $('.popupLoading', page).popup('close');
+    }
+
     function renderChannels(page, result) {
 
         $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+
+        updateFilterControls(this);
 
         var html = getChannelsHtml(result.Items);
         
         html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-        $('#items', page).html(html).trigger('create');
+        $('#items', page).html(html).trigger('create').createPosterItemMenus();
 
         $('.btnNextPage', page).on('click', function () {
             query.StartIndex += query.Limit;
@@ -44,13 +55,54 @@
     }
     
     function reloadItems(page) {
+
+        showLoadingMessage(page);
+        
         apiClient.getLiveTvChannels(query).done(function (result) {
 
             renderChannels(page, result);
+
+            hideLoadingMessage(page);
         });
     }
 
-    $(document).on('pagebeforeshow', "#liveTvChannelsPage", function () {
+    function updateFilterControls(page) {
+
+        $('#chkFavorite', page).checked(query.IsFavorite == true).checkboxradio('refresh');
+        $('#chkLikes', page).checked(query.IsLiked == true).checkboxradio('refresh');
+        $('#chkDislikes', page).checked(query.IsDisliked == true).checkboxradio('refresh');
+    }
+
+    $(document).on('pageinit', "#liveTvChannelsPage", function () {
+
+        var page = this;
+
+        $('#chkFavorite', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.IsFavorite = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+
+        $('#chkLikes', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.IsLiked = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkDislikes', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.IsDisliked = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+    }).on('pagebeforeshow', "#liveTvChannelsPage", function () {
 
         var page = this;
 
@@ -67,6 +119,10 @@
         LibraryBrowser.loadSavedQueryValues('movies', query);
 
         reloadItems(page);
+        
+    }).on('pageshow', "#liveTvChannelsPage", function () {
+
+        updateFilterControls(this);
     });
 
 })(jQuery, document, ApiClient);

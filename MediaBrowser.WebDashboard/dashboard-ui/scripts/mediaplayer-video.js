@@ -430,8 +430,8 @@
 
                 if (chapter.ImageTag) {
 
-                    imgUrl = ApiClient.getImageUrl(currentItem.Id, {
-                        maxwidth: 200,
+                    imgUrl = ApiClient.getScaledImageUrl(currentItem.Id, {
+                        maxWidth: 100,
                         tag: chapter.ImageTag,
                         type: "Chapter",
                         index: i

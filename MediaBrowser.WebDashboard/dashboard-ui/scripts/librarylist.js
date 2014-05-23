@@ -48,8 +48,8 @@
 
         if (parentName && item.ParentLogoItemId) {
 
-            imgUrl = ApiClient.getImageUrl(item.ParentLogoItemId, {
-                height: logoHeight * 2,
+            imgUrl = ApiClient.getScaledImageUrl(item.ParentLogoItemId, {
+                height: logoHeight,
                 type: 'logo',
                 tag: item.ParentLogoImageTag
             });
@@ -59,8 +59,10 @@
         }
         else if (item.ImageTags.Logo) {
 
-            imgUrl = LibraryBrowser.getImageUrl(item, 'Logo', 0, {
-                height: logoHeight * 2,
+            imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                height: logoHeight,
+                type: 'logo',
+                tag: item.ImageTags.Logo
             });
 
             html += '<img src="' + imgUrl + '" style="max-height:' + logoHeight + 'px;max-width:' + maxLogoWidth + 'px;" />';

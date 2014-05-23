@@ -64,6 +64,9 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\SessionUpdatesEventArgs.cs">
       <Link>ApiClient\SessionUpdatesEventArgs.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Channels\ChannelFeatures.cs">
+      <Link>Channels\ChannelFeatures.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelInfo.cs">
       <Link>Channels\ChannelInfo.cs</Link>
     </Compile>

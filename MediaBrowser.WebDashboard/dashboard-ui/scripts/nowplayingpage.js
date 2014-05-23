@@ -18,8 +18,8 @@
 
             if (chapter.ImageTag) {
 
-                imgUrl = ApiClient.getImageUrl(itemId, {
-                    width: 800,
+                imgUrl = ApiClient.getScaledImageUrl(itemId, {
+                    width: 240,
                     tag: chapter.ImageTag,
                     type: "Chapter",
                     index: i
@@ -509,26 +509,26 @@
         }
         else if (item.PrimaryImageTag) {
 
-            url = ApiClient.getImageUrl(item.PrimaryImageItemId, {
+            url = ApiClient.getScaledImageUrl(item.PrimaryImageItemId, {
                 type: "Primary",
-                height: 600,
+                height: 300,
                 tag: item.PrimaryImageTag
             });
         }
         else if (item.BackdropImageTag) {
 
-            url = ApiClient.getImageUrl(item.BackdropItemId, {
+            url = ApiClient.getScaledImageUrl(item.BackdropItemId, {
                 type: "Backdrop",
-                height: 600,
+                height: 300,
                 tag: item.BackdropImageTag,
                 index: 0
             });
 
         } else if (item.ThumbImageTag) {
 
-            url = ApiClient.getImageUrl(item.ThumbImageItemId, {
+            url = ApiClient.getScaledImageUrl(item.ThumbImageItemId, {
                 type: "Thumb",
-                height: 600,
+                height: 300,
                 tag: item.ThumbImageTag
             });
         }

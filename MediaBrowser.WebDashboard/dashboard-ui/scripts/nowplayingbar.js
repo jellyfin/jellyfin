@@ -284,26 +284,26 @@
 
         if (nowPlayingItem.PrimaryImageTag) {
 
-            url = ApiClient.getImageUrl(nowPlayingItem.PrimaryImageItemId, {
+            url = ApiClient.getScaledImageUrl(nowPlayingItem.PrimaryImageItemId, {
                 type: "Primary",
-                height: 80,
+                height: 40,
                 tag: nowPlayingItem.PrimaryImageTag
             });
         }
         else if (nowPlayingItem.BackdropImageTag) {
 
-            url = ApiClient.getImageUrl(nowPlayingItem.BackdropItemId, {
+            url = ApiClient.getScaledImageUrl(nowPlayingItem.BackdropItemId, {
                 type: "Backdrop",
-                height: 80,
+                height: 40,
                 tag: nowPlayingItem.BackdropImageTag,
                 index: 0
             });
 
         } else if (nowPlayingItem.ThumbImageTag) {
 
-            url = ApiClient.getImageUrl(nowPlayingItem.ThumbImageItemId, {
+            url = ApiClient.getScaledImageUrl(nowPlayingItem.ThumbImageItemId, {
                 type: "Thumb",
-                height: 80,
+                height: 40,
                 tag: nowPlayingItem.ThumbImageTag
             });
         }

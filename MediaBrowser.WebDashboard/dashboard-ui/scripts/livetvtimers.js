@@ -45,8 +45,8 @@
             
             if (program.ImageTags && program.ImageTags.Primary) {
 
-                imgUrl = ApiClient.getImageUrl(program.Id, {
-                    height: 160,
+                imgUrl = ApiClient.getScaledImageUrl(program.Id, {
+                    height: 80,
                     tag: program.ImageTags.Primary,
                     type: "Primary"
                 });

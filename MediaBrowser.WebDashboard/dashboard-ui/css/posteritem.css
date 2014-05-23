@@ -128,14 +128,6 @@
 }
 
 
-.backdropPosterItem {
-    width: 148px;
-}
-
-    .backdropPosterItem .posterItemImage {
-        height: 83.25px;
-    }
-
 .myLibraryPosterItem {
     width: 148px;
 }
@@ -180,12 +172,20 @@
     background-color: rgba(255, 233, 127, 0.5);
 }
 
+.backdropPosterItem {
+    width: 128px;
+}
+
+    .backdropPosterItem .posterItemImage {
+        height: 72px;
+    }
+
 .smallBackdropPosterItem {
-    width: 157px;
+    width: 120px;
 }
 
     .smallBackdropPosterItem .posterItemImage {
-        height: 88.3125px;
+        height: 67.5px;
     }
 
 .portraitPosterItem {
@@ -252,6 +252,25 @@
         padding-left: 7px;
         padding-right: 7px;
     }
+}
+
+@media all and (min-width: 360px) {
+
+    .backdropPosterItem {
+        width: 148px;
+    }
+
+        .backdropPosterItem .posterItemImage {
+            height: 83.25px;
+        }
+
+    .smallBackdropPosterItem {
+        width: 157px;
+    }
+
+        .smallBackdropPosterItem .posterItemImage {
+            height: 88.3125px;
+        }
 }
 
 @media all and (min-width: 540px) {

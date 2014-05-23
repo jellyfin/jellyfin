@@ -215,9 +215,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 isNew = true;
             }
 
-            var info = channelInfo.GetChannelInfo();
-
-            item.HomePageUrl = info.HomePageUrl;
+            item.HomePageUrl = channelInfo.HomePageUrl;
             item.OriginalChannelName = channelInfo.Name;
 
             if (string.IsNullOrEmpty(item.Name))
@@ -258,7 +256,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             // Find the corresponding channel provider plugin
             var channelProvider = GetChannelProvider(channel);
 
-            var channelInfo = channelProvider.GetChannelInfo();
+            var channelInfo = channelProvider.GetChannelFeatures();
 
             int? providerStartIndex = null;
             int? providerLimit = null;
@@ -448,7 +446,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             // Increment this as needed to force new downloads
             // Incorporate Name because it's being used to convert channel entity to provider
-            return externalId + (channelProvider.DataVersion ?? string.Empty) + (channelProvider.Name ?? string.Empty) + "12";
+            return externalId + (channelProvider.DataVersion ?? string.Empty) + (channelProvider.Name ?? string.Empty) + "13";
         }
 
         private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Channel internalChannel, CancellationToken cancellationToken)
@@ -473,7 +471,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             else if (info.MediaType == ChannelMediaType.Audio)
             {
-                id = idToHash.GetMBId(typeof(ChannelFolderItem));
+                id = idToHash.GetMBId(typeof(ChannelAudioItem));
 
                 item = _libraryManager.GetItemById(id) as ChannelAudioItem;
 

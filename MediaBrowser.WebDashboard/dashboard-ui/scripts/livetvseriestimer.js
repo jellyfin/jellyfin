@@ -161,8 +161,8 @@
             var programImages = program.ImageTags || {};
             if (programImages.Primary) {
 
-                imgUrl = ApiClient.getImageUrl(program.Id, {
-                    height: 160,
+                imgUrl = ApiClient.getScaledImageUrl(program.Id, {
+                    height: 80,
                     tag: programImages.Primary,
                     type: "Primary"
                 });

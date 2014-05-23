@@ -39,15 +39,15 @@
 
         if (programInfo.ImageTags && programInfo.ImageTags.Primary) {
 
-            var imgUrl = ApiClient.getImageUrl(programInfo.Id, {
-                maxwidth: 200,
-                maxheight: 200,
+            var imgUrl = ApiClient.getScaledImageUrl(programInfo.Id, {
+                maxWidth: 200,
+                maxHeight: 200,
                 tag: programInfo.ImageTags.Primary,
                 type: "Primary"
             });
 
             $('.timerPageImageContainer', page).css("display", "inline-block")
-                .html('<img src="' + imgUrl + '" />');
+                .html('<img src="' + imgUrl + '" style="max-width:200px;max-height:200px;" />');
 
         } else {
             $('.timerPageImageContainer', page).hide();

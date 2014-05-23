@@ -486,26 +486,26 @@
 
             if (state.NowPlayingItem.PrimaryImageTag) {
 
-                url = ApiClient.getImageUrl(state.NowPlayingItem.PrimaryImageItemId, {
+                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.PrimaryImageItemId, {
                     type: "Primary",
-                    height: 80,
+                    height: 40,
                     tag: state.NowPlayingItem.PrimaryImageTag
                 });
             }
             else if (state.NowPlayingItem.BackdropImageTag) {
 
-                url = ApiClient.getImageUrl(state.NowPlayingItem.BackdropItemId, {
+                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.BackdropItemId, {
                     type: "Backdrop",
-                    height: 80,
+                    height: 40,
                     tag: state.NowPlayingItem.BackdropImageTag,
                     index: 0
                 });
 
             } else if (state.NowPlayingItem.ThumbImageTag) {
 
-                url = ApiClient.getImageUrl(state.NowPlayingItem.ThumbImageItemId, {
+                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.ThumbImageItemId, {
                     type: "Thumb",
-                    height: 80,
+                    height: 40,
                     tag: state.NowPlayingItem.ThumbImageTag
                 });
             }

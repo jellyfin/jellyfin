@@ -77,7 +77,13 @@
         if (hint.PrimaryImageTag) {
 
             hint.ImageTags = { Primary: hint.PrimaryImageTag };
-            imgUrl = LibraryBrowser.getImageUrl(hint, "Primary", 0, { maxwidth: 150, maxheight: 150 });
+
+            imgUrl = ApiClient.getImageUrl(hint.ItemId, {
+                type: "Primary",
+                maxWidth: 150,
+                maxHeight: 150,
+                tag: hint.PrimaryImageTag
+            });
 
         }
         else if (hint.MediaType == "Game") {

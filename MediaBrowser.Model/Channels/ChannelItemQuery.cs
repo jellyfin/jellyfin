@@ -45,4 +45,5 @@ namespace MediaBrowser.Model.Channels
             SortBy = new string[] { };
         }
     }
+
 }

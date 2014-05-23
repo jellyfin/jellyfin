@@ -15,11 +15,39 @@
         </div>
         <div data-role="content">
             <div class="viewSettings">
+                <div class="viewControls" data-role="controlgroup" data-type="horizontal">
+                    <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="${ButtonFilter}" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
+                </div>
                 <div class="listTopPaging">
                 </div>
             </div>
             <div id="items" class="itemsContainer"></div>
+
+            <div data-role="popup" class="popupLoading" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width: 250px;" data-history="false">
+                <div style="padding: .5em 1.5em;">
+                    <p style="color: #eee;">${MessageLoadingChannels}</p>
+                </div>
+            </div>
         </div>
+
+        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-position-fixed="true">
+            <form>
+                <fieldset data-role="controlgroup">
+                    <legend>
+                        <strong>${HeaderFilters}</strong>
+                    </legend>
+                    <input class="chkStandardFilter" type="checkbox" id="chkFavorite" data-filter="IsFavorite" data-mini="true">
+                    <label for="chkFavorite">${OptionFavorite}</label>
+
+                    <input class="chkStandardFilter" type="checkbox" id="chkLikes" data-filter="Likes" data-mini="true">
+                    <label for="chkLikes">${OptionLikes}</label>
+
+                    <input class="chkStandardFilter" type="checkbox" id="chkDislikes" data-filter="Dislikes" data-mini="true">
+                    <label for="chkDislikes">${OptionDislikes}</label>
+                </fieldset>
+            </form>
+        </div>
+
     </div>
 </body>
 </html>

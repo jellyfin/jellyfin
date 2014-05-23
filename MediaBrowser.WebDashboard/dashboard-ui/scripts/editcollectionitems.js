@@ -35,9 +35,10 @@
         html += '<div style="width:120px;height:180px;">';
         if (item.ImageTags.Primary) {
 
-            var imgUrl = ApiClient.getImageUrl(item.Id, {
+            var imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                 type: "Primary",
-                width: 300,
+                maxWidth: 120,
+                maxHeight: 180,
                 tag: item.ImageTags.Primary
             });
 
@@ -65,9 +66,10 @@
 
         if (item.PrimaryImageTag) {
 
-            var imgUrl = ApiClient.getImageUrl(item.ItemId, {
+            var imgUrl = ApiClient.getScaledImageUrl(item.ItemId, {
                 type: "Primary",
-                width: 200,
+                maxWidth: 100,
+                maxHeight: 150,
                 tag: item.PrimaryImageTag
             });
 

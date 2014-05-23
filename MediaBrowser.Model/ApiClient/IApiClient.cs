@@ -60,6 +60,30 @@ namespace MediaBrowser.Model.ApiClient
             where T : class;
 
         /// <summary>
+        /// Gets the url needed to stream an audio file
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="ArgumentNullException">options</exception>
+        string GetAudioStreamUrl(StreamOptions options);
+
+        /// <summary>
+        /// Gets the url needed to stream a video file
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="ArgumentNullException">options</exception>
+        string GetVideoStreamUrl(VideoStreamOptions options);
+
+        /// <summary>
+        /// Formulates a url for streaming video using the HLS protocol
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="ArgumentNullException">options</exception>
+        string GetHlsVideoStreamUrl(VideoStreamOptions options);
+
+        /// <summary>
         /// Reports the capabilities.
         /// </summary>
         /// <param name="capabilities">The capabilities.</param>

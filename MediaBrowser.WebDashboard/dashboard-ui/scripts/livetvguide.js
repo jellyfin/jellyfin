@@ -16,6 +16,15 @@
     };
     var channelsPromise;
 
+    function showLoadingMessage(page) {
+
+        $('.popupLoading', page).popup('open');
+    }
+
+    function hideLoadingMessage(page) {
+        $('.popupLoading', page).popup('close');
+    }
+
     function normalizeDateToTimeslot(date) {
 
         var minutesOffset = date.getMinutes() - cellCurationMinutes;
@@ -39,7 +48,7 @@
 
     function reloadGuide(page) {
 
-        Dashboard.showLoadingMsg();
+        showLoadingMessage(page);
 
         channelQuery.userId = Dashboard.getCurrentUserId();
 
@@ -64,7 +73,8 @@
             }).done(function (programsResult) {
 
                 renderGuide(page, date, channelsResult.Items, programsResult.Items);
-                Dashboard.hideLoadingMsg();
+                hideLoadingMessage(page);
+
             });
 
             var channelPagingHtml = LibraryBrowser.getPagingHtml(channelQuery, channelsResult.TotalRecordCount, false, [10, 20, 30, 50, 100]);
@@ -327,9 +337,9 @@
 
             if (channel.ImageTags.Primary) {
 
-                var url = ApiClient.getImageUrl(channel.Id, {
-                    maxheight: 200,
-                    maxwidth: 200,
+                var url = ApiClient.getScaledImageUrl(channel.Id, {
+                    maxHeight: 35,
+                    maxWidth: 60,
                     tag: channel.ImageTags.Primary,
                     type: "Primary"
                 });

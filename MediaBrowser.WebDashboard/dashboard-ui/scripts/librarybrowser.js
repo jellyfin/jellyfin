@@ -457,7 +457,7 @@
             }
 
             // For search hints
-            return ApiClient.getImageUrl(item.Id || item.ItemId, options);
+            return ApiClient.getScaledImageUrl(item.Id || item.ItemId, options);
 
         },
 
@@ -541,38 +541,40 @@
 
                 var forceName = false;
 
+                var downloadHeight = 576;
+
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
 
-                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Backdrop",
-                        maxwidth: 576,
+                        maxWidth: downloadHeight,
                         tag: item.BackdropImageTags[0]
                     });
 
                 }
                 else if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {
 
-                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Thumb",
-                        maxwidth: 576,
+                        maxWidth: downloadHeight,
                         tag: item.ImageTags.Thumb
                     });
 
                 }
                 else if (options.preferBanner && item.ImageTags && item.ImageTags.Banner) {
 
-                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Banner",
-                        maxwidth: 1200,
+                        maxWidth: 500,
                         tag: item.ImageTags.Banner
                     });
 
                 }
                 else if (options.preferThumb && item.SeriesThumbImageTag) {
 
-                    imgUrl = ApiClient.getImageUrl(item.SeriesId, {
+                    imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
                         type: "Thumb",
-                        maxwidth: 576,
+                        maxWidth: downloadHeight,
                         tag: item.SeriesThumbImageTag
                     });
 
@@ -581,15 +583,15 @@
 
                     imgUrl = ApiClient.getThumbImageUrl(item.ParentThumbItemId, {
                         type: "Thumb",
-                        maxwidth: 576
+                        maxWidth: downloadHeight
                     });
 
                 }
                 else if (options.preferThumb && item.BackdropImageTags && item.BackdropImageTags.length) {
 
-                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Backdrop",
-                        maxwidth: 576,
+                        maxWidth: downloadHeight,
                         tag: item.BackdropImageTags[0]
                     });
 
@@ -610,10 +612,10 @@
                 }
                 else if (item.AlbumId && item.AlbumPrimaryImageTag) {
 
-                    height = 400;
+                    height = 220;
                     width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
 
-                    imgUrl = ApiClient.getImageUrl(item.AlbumId, {
+                    imgUrl = ApiClient.getScaledImageUrl(item.AlbumId, {
                         type: "Primary",
                         height: height,
                         width: width,
@@ -623,27 +625,27 @@
                 }
                 else if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
-                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Backdrop",
-                        maxwidth: 576,
+                        maxWidth: downloadHeight,
                         tag: item.BackdropImageTags[0]
                     });
 
                 }
                 else if (item.ImageTags && item.ImageTags.Thumb) {
 
-                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Thumb",
-                        maxwidth: 576,
+                        maxWidth: downloadHeight,
                         tag: item.ImageTags.Thumb
                     });
 
                 }
                 else if (item.SeriesThumbImageTag) {
 
-                    imgUrl = ApiClient.getImageUrl(item.SeriesId, {
+                    imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
                         type: "Thumb",
-                        maxwidth: 576,
+                        maxWidth: downloadHeight,
                         tag: item.SeriesThumbImageTag
                     });
 
@@ -652,7 +654,7 @@
 
                     imgUrl = ApiClient.getThumbImageUrl(item, {
                         type: "Thumb",
-                        maxwidth: 576
+                        maxWidth: downloadHeight
                     });
 
                 }
@@ -958,7 +960,11 @@
             var name = item.EpisodeTitle || item.Name;
 
             if (item.Type == "TvChannel") {
-                return item.Number + ' ' + name;
+
+                if (item.Number) {
+                    return item.Number + ' ' + name;
+                }
+                return name;
             }
             if (displayAsSpecial && item.Type == "Episode" && item.ParentIndexNumber == 0) {
 
@@ -1474,45 +1480,45 @@
 
             var url;
 
-            var imageHeight = 600;
+            var imageHeight = 280;
 
             if (imageTags.Primary) {
 
-                url = ApiClient.getImageUrl(item.Id, {
+                url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Primary",
-                    maxheight: imageHeight,
+                    maxHeight: imageHeight,
                     tag: item.ImageTags.Primary
                 });
             }
             else if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
-                url = ApiClient.getImageUrl(item.Id, {
+                url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Backdrop",
-                    maxheight: imageHeight,
+                    maxHeight: imageHeight,
                     tag: item.BackdropImageTags[0]
                 });
             }
             else if (imageTags.Thumb) {
 
-                url = ApiClient.getImageUrl(item.Id, {
+                url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Thumb",
-                    maxheight: imageHeight,
+                    maxHeight: imageHeight,
                     tag: item.ImageTags.Thumb
                 });
             }
             else if (imageTags.Disc) {
 
-                url = ApiClient.getImageUrl(item.Id, {
+                url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Disc",
-                    maxheight: imageHeight,
+                    maxHeight: imageHeight,
                     tag: item.ImageTags.Disc
                 });
             }
             else if (item.AlbumId && item.AlbumPrimaryImageTag) {
 
-                url = ApiClient.getImageUrl(item.AlbumId, {
+                url = ApiClient.getScaledImageUrl(item.AlbumId, {
                     type: "Primary",
-                    maxheight: imageHeight,
+                    maxHeight: imageHeight,
                     tag: item.AlbumPrimaryImageTag
                 });
 
@@ -1800,8 +1806,11 @@
 
             if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
-                imgUrl = LibraryBrowser.getImageUrl(item, 'Backdrop', 0, {
-                    maxwidth: screenWidth
+                imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Backdrop",
+                    index: 0,
+                    maxWidth: screenWidth,
+                    tag: item.BackdropImageTags[0]
                 });
 
                 $('#itemBackdrop', page).removeClass('noBackdrop').css('background-image', 'url("' + imgUrl + '")');
@@ -1809,11 +1818,11 @@
             }
             else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
 
-                imgUrl = ApiClient.getImageUrl(item.ParentBackdropItemId, {
+                imgUrl = ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
                     type: 'Backdrop',
                     index: 0,
                     tag: item.ParentBackdropImageTags[0],
-                    maxwidth: screenWidth
+                    maxWidth: screenWidth
                 });
 
                 $('#itemBackdrop', page).removeClass('noBackdrop').css('background-image', 'url("' + imgUrl + '")');
@@ -1951,7 +1960,6 @@
         createGalleryImage: function (item, type, tag, index) {
 
             var screenWidth = Math.max(screen.height, screen.width);
-            screenWidth = Math.min(screenWidth, 1280);
 
             var html = '';
 
@@ -1959,8 +1967,9 @@
 
             html += '<div class="galleryImageContainer">';
             html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
+
             html += '<img class="galleryImage" src="' + LibraryBrowser.getImageUrl(item, type, index, {
-                maxwidth: screenWidth,
+                maxWidth: screenWidth,
                 tag: tag
             }) + '" />';
             html += '</div>';
@@ -1969,7 +1978,7 @@
             html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
             html += '<img class="" src="' + LibraryBrowser.getImageUrl(item, type, index, {
 
-                maxwidth: screenWidth,
+                maxWidth: screenWidth,
                 tag: tag
 
             }) + '" />';

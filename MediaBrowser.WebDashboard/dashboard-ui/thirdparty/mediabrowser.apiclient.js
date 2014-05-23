@@ -2197,35 +2197,28 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             return self.getUrl(url, options);
         };
+        
+        self.getScaledImageUrl = function (itemId, options) {
 
-        /**
-         * Constructs a url for an item logo image
-         * If the item doesn't have a logo, it will inherit a logo from a parent
-         * @param {Object} item A BaseItem
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getLogoImageUrl = function (item, options) {
-
-            if (!item) {
-                throw new Error("null item");
+            if (!itemId) {
+                throw new Error("itemId cannot be empty");
             }
 
-            options = options || {
+            options = options || {};
 
-            };
+            var url = "Items/" + itemId + "/Images/" + options.type;
 
-            options.imageType = "logo";
+            if (options.index != null) {
+                url += "/" + options.index;
+            }
 
-            var logoItemId = item.ImageTags && item.ImageTags.Logo ? item.Id : item.ParentLogoItemId;
+            // Don't put these on the query string
+            delete options.type;
+            delete options.index;
 
-            return logoItemId ? self.getImageUrl(logoItemId, options) : null;
+            normalizeImageOptions(options);
+
+            return self.getUrl(url, options);
         };
 
         self.getThumbImageUrl = function (item, options) {
@@ -2243,58 +2236,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             var itemId = item.ImageTags && item.ImageTags.Thumb ? item.Id : item.ParentThumbItemId;
 
             return itemId ? self.getImageUrl(itemId, options) : null;
-        };
-
-        /**
-         * Constructs an array of backdrop image url's for an item
-         * If the item doesn't have any backdrops, it will inherit them from a parent
-         * @param {Object} item A BaseItem
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getBackdropImageUrl = function (item, options) {
-
-            if (!item) {
-                throw new Error("null item");
-            }
-
-            options = options || {
-
-            };
-
-            options.imageType = "backdrop";
-
-            var backdropItemId;
-            var backdropCount;
-
-            if (!item.BackdropCount) {
-                backdropItemId = item.ParentBackdropItemId;
-                backdropCount = item.ParentBackdropCount || 0;
-            } else {
-                backdropItemId = item.Id;
-                backdropCount = item.BackdropCount;
-            }
-
-            if (!backdropItemId) {
-                return [];
-            }
-
-            var files = [];
-
-            for (var i = 0; i < backdropCount; i++) {
-
-                options.imageIndex = i;
-
-                files[i] = self.getImageUrl(backdropItemId, options);
-            }
-
-            return files;
         };
 
         /**

@@ -150,6 +150,32 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     channels = channels
                         .Where(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite == val);
                 }
+
+                if (query.IsLiked.HasValue)
+                {
+                    var val = query.IsLiked.Value;
+
+                    channels = channels
+                        .Where(i =>
+                        {
+                            var likes = _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).Likes;
+
+                            return likes.HasValue && likes.Value == val;
+                        });
+                }
+
+                if (query.IsDisliked.HasValue)
+                {
+                    var val = query.IsDisliked.Value;
+
+                    channels = channels
+                        .Where(i =>
+                        {
+                            var likes = _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).Likes;
+
+                            return likes.HasValue && likes.Value != val;
+                        });
+                }
             }
 
             channels = channels.OrderBy(i =>

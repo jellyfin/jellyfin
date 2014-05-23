@@ -1129,8 +1129,8 @@ var Dashboard = {
 
                 if (imageTags.Primary) {
 
-                    notification.icon = ApiClient.getImageUrl(item.Id, {
-                        width: 100,
+                    notification.icon = ApiClient.getScaledImageUrl(item.Id, {
+                        width: 60,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });

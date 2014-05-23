@@ -68,6 +68,15 @@
 
     function updateFilterControls(page) {
 
+        $('.chkStandardFilter', page).each(function () {
+
+            var filters = "," + (query.Filters || "");
+            var filterName = this.getAttribute('data-filter');
+
+            this.checked = filters.indexOf(',' + filterName) != -1;
+
+        }).checkboxradio('refresh');
+
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 

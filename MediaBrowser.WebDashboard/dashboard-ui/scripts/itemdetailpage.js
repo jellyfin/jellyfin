@@ -184,7 +184,7 @@
             $('#movieTabs', page).show();
         }
 
-        if (item.Type == "video.channelItem" || item.Type == "audio.channelItem" || item.Type == "folder.ChannelItem") {
+        if (item.Type == "ChannelVideoItem" || item.Type == "ChannelAudioItem" || item.Type == "ChannelFolderItem") {
             $('#channelTabs', page).show();
             $('.channelHeader', page).show().html('<a href="channelitems.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
         } else {
@@ -1018,8 +1018,8 @@
 
             if (chapter.ImageTag) {
 
-                imgUrl = ApiClient.getImageUrl(item.Id, {
-                    maxwidth: 400,
+                imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    maxWidth: 210,
                     tag: chapter.ImageTag,
                     type: "Chapter",
                     index: i
@@ -1212,8 +1212,8 @@
 
             if (imageTags.Primary) {
 
-                imgUrl = ApiClient.getImageUrl(item.Id, {
-                    maxwidth: 500,
+                imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    maxWidth: 210,
                     tag: imageTags.Primary,
                     type: "primary"
                 });

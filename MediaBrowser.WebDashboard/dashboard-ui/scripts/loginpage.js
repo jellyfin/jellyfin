@@ -34,7 +34,7 @@
             var users = response1[0];
             var config = response2[0];
 
-            var showManualForm = config.RequireManualLoginForMobileApps || !users.length;
+            var showManualForm = config.RequireMobileManualLogin || !users.length;
 
             if (showManualForm) {
 
