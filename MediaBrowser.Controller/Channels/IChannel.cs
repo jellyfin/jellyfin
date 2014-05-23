@@ -23,10 +23,16 @@ namespace MediaBrowser.Controller.Channels
         string DataVersion { get; }
 
         /// <summary>
+        /// Gets the home page URL.
+        /// </summary>
+        /// <value>The home page URL.</value>
+        string HomePageUrl { get; }
+
+        /// <summary>
         /// Gets the channel information.
         /// </summary>
-        /// <returns>ChannelInfo.</returns>
-        ChannelInfo GetChannelInfo();
+        /// <returns>ChannelFeatures.</returns>
+        ChannelFeatures GetChannelFeatures();
 
         /// <summary>
         /// Determines whether [is enabled for] [the specified user].
@@ -52,6 +58,14 @@ namespace MediaBrowser.Controller.Channels
         /// <returns>Task{IEnumerable{ChannelItem}}.</returns>
         Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Gets all media.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{ChannelItemResult}.</returns>
+        Task<ChannelItemResult> GetAllMedia(InternalAllChannelItemsQuery query, CancellationToken cancellationToken);
+        
         /// <summary>
         /// Gets the channel image.
         /// </summary>

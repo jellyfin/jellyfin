@@ -64,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 // always load the most suitable full subtitles
                 stream = full.FirstOrDefault();
             }
-            
+
             // load forced subs if we have found no suitable full subtitles
             stream = stream ?? forced.FirstOrDefault();
 
@@ -86,17 +86,13 @@ namespace MediaBrowser.Server.Implementations.Dto
             var orderStreams = streams
                 .Where(i => i.Type == type);
 
-            if (languagePreferences.Count == 0)
-            {
-                return orderStreams.OrderBy(i => i.IsDefault)
-                    .ThenBy(i => i.Index)
-                    .ToList();
-            }
-
+            // Give some preferance to external text subs for better performance
             return orderStreams.OrderBy(i => languagePreferences.FindIndex(l => string.Equals(i.Language, l, StringComparison.OrdinalIgnoreCase)))
-                .ThenBy(i => i.IsDefault)
-                .ThenBy(i => i.Index)
-                .ToList();
+                 .ThenBy(i => i.IsDefault)
+                 .ThenBy(i => !i.IsGraphicalSubtitleStream)
+                 .ThenBy(i => i.IsExternal)
+                 .ThenBy(i => i.Index)
+                 .ToList();
         }
     }
 }

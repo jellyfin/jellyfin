@@ -609,10 +609,14 @@ namespace MediaBrowser.Providers.TV
                 var roles = nameGroup.Count() > 1 ? nameGroup[1].Trim() : null;
                 if (roles != null)
                     roles = roles.EndsWith(")") ? roles.Substring(0, roles.Length - 1) : roles;
+
                 return new PersonInfo { Type = PersonType.GuestStar, Name = name, Role = roles };
             }))
             {
-                item.AddPerson(person);
+                if (!string.IsNullOrWhiteSpace(person.Name))
+                {
+                    item.AddPerson(person);
+                }
             }
         }
 

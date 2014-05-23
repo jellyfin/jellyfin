@@ -118,20 +118,20 @@ namespace MediaBrowser.Api.Images
 
         public object Get(GetMediaInfoImages request)
         {
-            return ToOptimizedResult(GetImageList(_appPaths.MediaInfoImagesPath));
+            return ToOptimizedResult(GetImageList(_appPaths.MediaInfoImagesPath, true));
         }
 
         public object Get(GetRatingImages request)
         {
-            return ToOptimizedResult(GetImageList(_appPaths.RatingsPath));
+            return ToOptimizedResult(GetImageList(_appPaths.RatingsPath, true));
         }
 
         public object Get(GetGeneralImages request)
         {
-            return ToOptimizedResult(GetImageList(_appPaths.GeneralPath));
+            return ToOptimizedResult(GetImageList(_appPaths.GeneralPath, false));
         }
 
-        private List<ImageByNameInfo> GetImageList(string path)
+        private List<ImageByNameInfo> GetImageList(string path, bool supportsThemes)
         {
             try
             {
@@ -142,7 +142,7 @@ namespace MediaBrowser.Api.Images
                     {
                         Name = Path.GetFileNameWithoutExtension(i.FullName),
                         FileLength = i.Length,
-                        Theme = GetThemeName(i.FullName, path),
+                        Theme = supportsThemes ? GetThemeName(i.FullName, path) : null,
                         Format = i.Extension.ToLower().TrimStart('.')
                     })
                     .OrderBy(i => i.Name)

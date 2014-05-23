@@ -59,6 +59,7 @@
     <Compile Include="ApiClient\IServerEvents.cs" />
     <Compile Include="ApiClient\GeneralCommandEventArgs.cs" />
     <Compile Include="ApiClient\SessionUpdatesEventArgs.cs" />
+    <Compile Include="Channels\ChannelFeatures.cs" />
     <Compile Include="Channels\ChannelInfo.cs" />
     <Compile Include="Channels\ChannelItemQuery.cs" />
     <Compile Include="Channels\ChannelMediaContentType.cs" />

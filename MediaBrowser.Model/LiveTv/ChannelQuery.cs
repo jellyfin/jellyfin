@@ -17,6 +17,18 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>null</c> if [is favorite] contains no value, <c>true</c> if [is favorite]; otherwise, <c>false</c>.</value>
         public bool? IsFavorite { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is liked.
+        /// </summary>
+        /// <value><c>null</c> if [is liked] contains no value, <c>true</c> if [is liked]; otherwise, <c>false</c>.</value>
+        public bool? IsLiked { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is disliked.
+        /// </summary>
+        /// <value><c>null</c> if [is disliked] contains no value, <c>true</c> if [is disliked]; otherwise, <c>false</c>.</value>
+        public bool? IsDisliked { get; set; }
         
         /// <summary>
         /// Gets or sets the user identifier.

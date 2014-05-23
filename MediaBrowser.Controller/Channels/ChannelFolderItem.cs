@@ -33,10 +33,5 @@ namespace MediaBrowser.Controller.Channels
         {
             Tags = new List<string>();
         }
-
-        public override string GetClientTypeName()
-        {
-            return "folder.channelItem";
-        }
     }
 }

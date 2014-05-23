@@ -170,8 +170,8 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableTmdbUpdates { get; set; }
         public bool EnableFanArtUpdates { get; set; }
 
-        public bool RequireManualLoginForMobileApps { get; set; }
-        public bool RequireManualLoginForOtherApps { get; set; }
+        public bool RequireMobileManualLogin { get; set; }
+        public bool RequireNonMobileManualLogin { get; set; }
 
         /// <summary>
         /// Gets or sets the image saving convention.
@@ -223,6 +223,9 @@ namespace MediaBrowser.Model.Configuration
 
         public SubtitleOptions SubtitleOptions { get; set; }
 
+        [Obsolete]
+        public string[] ManualLoginClients { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -262,6 +265,8 @@ namespace MediaBrowser.Model.Configuration
             SortReplaceCharacters = new[] { ".", "+", "%" };
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
             SortRemoveWords = new[] { "the", "a", "an" };
+
+            ManualLoginClients = new string[] { };
 
             SeasonZeroDisplayName = "Specials";
 
