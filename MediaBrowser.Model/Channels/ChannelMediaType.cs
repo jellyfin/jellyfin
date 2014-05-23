@@ -4,6 +4,8 @@
     {
         Audio = 0,
 
-        Video = 1
+        Video = 1,
+
+        Photo = 2
     }
 }

@@ -389,8 +389,8 @@
             if (item.Type == "Channel") {
                 return "channelitems.html?id=" + id;
             }
-            if (item.Type == "ChannelCategoryItem") {
-                return "channelitems.html?id=" + item.ChannelId + '&categoryId=' + item.Id;
+            if (item.Type == "ChannelFolderItem") {
+                return "channelitems.html?id=" + item.ChannelId + '&folderId=' + item.Id;
             }
             if (item.Type == "Program") {
                 return "livetvprogram.html?id=" + id;

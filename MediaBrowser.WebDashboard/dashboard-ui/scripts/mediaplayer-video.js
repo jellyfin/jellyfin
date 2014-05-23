@@ -804,7 +804,7 @@
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresControls) {
                 if ($.browser.msie) {
-                    html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay">';
+                    html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" controls="controls">';
                 } else {
                     html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay controls>';
                 }

@@ -41,7 +41,7 @@ namespace MediaBrowser.Api
     {
         public string Id { get; set; }
 
-        public string CategoryId { get; set; }
+        public string FolderId { get; set; }
 
         /// <summary>
         /// Gets or sets the user id.
@@ -120,7 +120,7 @@ namespace MediaBrowser.Api
                 StartIndex = request.StartIndex,
                 UserId = request.UserId,
                 ChannelId = request.Id,
-                CategoryId = request.CategoryId,
+                FolderId = request.FolderId,
                 SortOrder = request.SortOrder,
                 SortBy = (request.SortBy ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
                 Filters = request.GetFilters().ToArray()

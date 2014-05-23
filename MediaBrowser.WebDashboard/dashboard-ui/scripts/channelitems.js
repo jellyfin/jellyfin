@@ -9,7 +9,7 @@
     };
 
     function getSavedQueryId() {
-        return 'channels-' + getParameterByName('id') + (getParameterByName('categoryId') || '');
+        return 'channels-' + getParameterByName('id') + (getParameterByName('folderId') || '');
     }
 
     function showLoadingMessage(page) {
@@ -26,14 +26,14 @@
         showLoadingMessage(page);
 
         var channelId = getParameterByName('id');
-        var categoryId = getParameterByName('categoryId');
+        var folderId = getParameterByName('folderId');
 
         query.UserId = Dashboard.getCurrentUserId();
 
 
-        if (categoryId) {
+        if (folderId) {
 
-            ApiClient.getItem(query.UserId, categoryId).done(function (item) {
+            ApiClient.getItem(query.UserId, folderId).done(function (item) {
 
                 $('.categoryTitle', page).show().html(item.Name);
                 $('.channelHeader', page).show().html('<a href="channelitems.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
@@ -48,7 +48,7 @@
             });
         }
 
-        query.categoryId = categoryId;
+        query.folderId = folderId;
         query.Limit = 50;
         $.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
 

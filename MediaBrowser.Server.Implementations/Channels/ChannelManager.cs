@@ -278,7 +278,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 ? null
                 : _userManager.GetUserById(new Guid(query.UserId));
 
-            var itemsResult = await GetChannelItems(channelProvider, user, query.CategoryId, providerStartIndex, providerLimit, cancellationToken)
+            var itemsResult = await GetChannelItems(channelProvider, user, query.FolderId, providerStartIndex, providerLimit, cancellationToken)
                         .ConfigureAwait(false);
 
             var providerTotalRecordCount = providerLimit.HasValue ? itemsResult.TotalRecordCount : null;
@@ -301,9 +301,9 @@ namespace MediaBrowser.Server.Implementations.Channels
         }
 
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
-        private async Task<ChannelItemResult> GetChannelItems(IChannel channel, User user, string categoryId, int? startIndex, int? limit, CancellationToken cancellationToken)
+        private async Task<ChannelItemResult> GetChannelItems(IChannel channel, User user, string folderId, int? startIndex, int? limit, CancellationToken cancellationToken)
         {
-            var cachePath = GetChannelDataCachePath(channel, user, categoryId);
+            var cachePath = GetChannelDataCachePath(channel, user, folderId);
 
             try
             {
@@ -358,11 +358,11 @@ namespace MediaBrowser.Server.Implementations.Channels
                     Limit = limit
                 };
 
-                if (!string.IsNullOrWhiteSpace(categoryId))
+                if (!string.IsNullOrWhiteSpace(folderId))
                 {
-                    var categoryItem = (IChannelItem)_libraryManager.GetItemById(new Guid(categoryId));
+                    var categoryItem = (IChannelItem)_libraryManager.GetItemById(new Guid(folderId));
 
-                    query.CategoryId = categoryItem.ExternalId;
+                    query.FolderId = categoryItem.ExternalId;
                 }
 
                 var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
@@ -394,15 +394,15 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
         }
 
-        private string GetChannelDataCachePath(IChannel channel, User user, string categoryId)
+        private string GetChannelDataCachePath(IChannel channel, User user, string folderId)
         {
             var channelId = GetInternalChannelId(channel.Name).ToString("N");
 
-            var categoryKey = string.IsNullOrWhiteSpace(categoryId) ? "root" : categoryId.GetMD5().ToString("N");
+            var folderKey = string.IsNullOrWhiteSpace(folderId) ? "root" : folderId.GetMD5().ToString("N");
 
             var version = string.IsNullOrWhiteSpace(channel.DataVersion) ? "0" : channel.DataVersion;
 
-            return Path.Combine(_config.ApplicationPaths.CachePath, "channels", channelId, version, categoryKey, user.Id.ToString("N") + ".json");
+            return Path.Combine(_config.ApplicationPaths.CachePath, "channels", channelId, version, folderKey, user.Id.ToString("N") + ".json");
         }
 
         private async Task<QueryResult<BaseItemDto>> GetReturnItems(IEnumerable<BaseItem> items, int? totalCountFromProvider, User user, ChannelItemQuery query, CancellationToken cancellationToken)
@@ -448,7 +448,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             // Increment this as needed to force new downloads
             // Incorporate Name because it's being used to convert channel entity to provider
-            return externalId + (channelProvider.DataVersion ?? string.Empty) + (channelProvider.Name ?? string.Empty) + "11";
+            return externalId + (channelProvider.DataVersion ?? string.Empty) + (channelProvider.Name ?? string.Empty) + "12";
         }
 
         private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Channel internalChannel, CancellationToken cancellationToken)
@@ -459,21 +459,21 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var idToHash = GetIdToHash(info.Id, channelProvider);
 
-            if (info.Type == ChannelItemType.Category)
+            if (info.Type == ChannelItemType.Folder)
             {
-                id = idToHash.GetMBId(typeof(ChannelCategoryItem));
+                id = idToHash.GetMBId(typeof(ChannelFolderItem));
 
-                item = _libraryManager.GetItemById(id) as ChannelCategoryItem;
+                item = _libraryManager.GetItemById(id) as ChannelFolderItem;
 
                 if (item == null)
                 {
                     isNew = true;
-                    item = new ChannelCategoryItem();
+                    item = new ChannelFolderItem();
                 }
             }
             else if (info.MediaType == ChannelMediaType.Audio)
             {
-                id = idToHash.GetMBId(typeof(ChannelCategoryItem));
+                id = idToHash.GetMBId(typeof(ChannelFolderItem));
 
                 item = _libraryManager.GetItemById(id) as ChannelAudioItem;
 

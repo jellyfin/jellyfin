@@ -4,6 +4,6 @@
     {
         Media = 0,
 
-        Category = 1
+        Folder = 1
     }
 }

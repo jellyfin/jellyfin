@@ -141,7 +141,7 @@
 }
 
     .myLibraryPosterItem .posterItemImage {
-        height: 38px;
+        height: 36px;
         background-position: 12px center;
         background-size: 20px 20px;
         background-color: rgba(51, 136, 204, 0.5);
@@ -151,9 +151,9 @@
     .myLibraryPosterItem .posterItemDefaultText {
         top: 0;
         left: 0;
-        line-height: 38px;
+        line-height: 36px;
         text-align: left;
-        padding-left: 45px;
+        padding-left: 43px;
     }
 
 .moviesPosterItem .posterItemImage {

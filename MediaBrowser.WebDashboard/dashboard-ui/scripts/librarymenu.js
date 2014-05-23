@@ -301,6 +301,16 @@
             updateLibraryNavLinks(page);
         }
 
+    }).on('pagebeforeshow', ".page", function () {
+
+        var page = this;
+
+        if ($(page).hasClass('libraryPage')) {
+            $('.viewMenuBar').show();
+        } else {
+            $('.viewMenuBar').hide();
+        }
+
     }).on('pageshow', ".libraryPage", function () {
 
         var page = this;

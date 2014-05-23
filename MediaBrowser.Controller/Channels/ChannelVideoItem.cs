@@ -77,5 +77,10 @@ namespace MediaBrowser.Controller.Channels
                 return base.LocationType;
             }
         }
+
+        public override string GetClientTypeName()
+        {
+            return "video.channelItem";
+        }
     }
 }

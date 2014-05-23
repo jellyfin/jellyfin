@@ -4,7 +4,7 @@ namespace MediaBrowser.Controller.Channels
 {
     public class InternalChannelItemQuery
     {
-        public string CategoryId { get; set; }
+        public string FolderId { get; set; }
 
         public User User { get; set; }
 

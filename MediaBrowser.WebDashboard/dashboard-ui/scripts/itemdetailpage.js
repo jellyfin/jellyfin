@@ -184,7 +184,7 @@
             $('#movieTabs', page).show();
         }
 
-        if (item.Type == "ChannelVideoItem" || item.Type == "ChannelAudioItem" || item.Type == "ChannelCategoryItem") {
+        if (item.Type == "video.channelItem" || item.Type == "audio.channelItem" || item.Type == "folder.ChannelItem") {
             $('#channelTabs', page).show();
             $('.channelHeader', page).show().html('<a href="channelitems.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
         } else {
