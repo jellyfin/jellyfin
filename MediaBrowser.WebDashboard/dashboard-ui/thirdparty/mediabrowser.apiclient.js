@@ -2087,6 +2087,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 }
             }
 
+            options.quality = options.quality || (options.type.toLowerCase() == 'backdrop' ? 80 : 90);
         }
 
         /**
@@ -2117,11 +2118,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 url += "/" + options.index;
             }
 
+            normalizeImageOptions(options);
+
             // Don't put these on the query string
             delete options.type;
             delete options.index;
-
-            normalizeImageOptions(options);
 
             return self.getUrl(url, options);
         };
@@ -2154,11 +2155,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 url += "/" + options.index;
             }
 
+            normalizeImageOptions(options);
+
             // Don't put these on the query string
             delete options.type;
             delete options.index;
-
-            normalizeImageOptions(options);
 
             return self.getUrl(url, options);
         };
@@ -2191,13 +2192,15 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 url += "/" + options.index;
             }
 
+            options.quality = options.quality || (options.type.toLowerCase() == 'backdrop' ? 80 : 90);
+
             // Don't put these on the query string
             delete options.type;
             delete options.index;
 
             return self.getUrl(url, options);
         };
-        
+
         self.getScaledImageUrl = function (itemId, options) {
 
             if (!itemId) {
@@ -2212,11 +2215,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 url += "/" + options.index;
             }
 
+            normalizeImageOptions(options);
+
             // Don't put these on the query string
             delete options.type;
             delete options.index;
-
-            normalizeImageOptions(options);
 
             return self.getUrl(url, options);
         };

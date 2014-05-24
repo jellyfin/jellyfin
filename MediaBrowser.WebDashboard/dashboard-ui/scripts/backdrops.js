@@ -73,7 +73,8 @@
                 var imgUrl = ApiClient.getScaledImageUrl(item.id, {
                     type: "Backdrop",
                     tag: item.tag,
-                    maxWidth: screenWidth
+                    maxWidth: screenWidth,
+                    quality: 80
                 });
 
                 getElement().css('backgroundImage', 'url(\'' + imgUrl + '\')');
@@ -102,7 +103,7 @@
         
         var val = LocalSettings.val('enableBackdrops', userId);
 
-        return val == '1';
+        return val != '0';
     }
 
     $(document).on('pagebeforeshow', ".backdropPage", function () {

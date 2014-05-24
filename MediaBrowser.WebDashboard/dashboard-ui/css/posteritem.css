@@ -145,7 +145,7 @@
         left: 0;
         line-height: 36px;
         text-align: left;
-        padding-left: 43px;
+        padding: 0 0 0 43px;
     }
 
 .moviesPosterItem .posterItemImage {

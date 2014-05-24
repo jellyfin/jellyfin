@@ -68,11 +68,6 @@
     text-decoration: none;
     font-weight: 400!important;
     font-size: 15px;
-}
-
-
-
-.libraryMenuButtonText {
     display: inline-block;
     vertical-align: middle;
     margin-left: .5em;
@@ -302,11 +297,15 @@
 
 @media all and (max-width: 600px) {
 
-    .libraryMenuButtonText {
+    .headerSettingsButton {
         display: none;
     }
+}
 
-    .headerSettingsButton {
+
+@media all and (max-width: 500px) {
+
+    .libraryMenuButtonText {
         display: none;
     }
 }

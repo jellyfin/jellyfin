@@ -48,9 +48,9 @@
     <Reference Include="Alchemy">
       <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Nat, Version=1.2.7.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Mono.Nat, Version=1.2.10.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Mono.Nat.1.2.7.0\lib\net40\Mono.Nat.dll</HintPath>
+      <HintPath>..\packages\Mono.Nat.1.2.10.0\lib\net40\Mono.Nat.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>

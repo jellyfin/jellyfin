@@ -70,11 +70,9 @@
             html += '<div class="' + imageCssClass + '" style="' + style + '">';
             html += '</div>';
 
-            if (options.showTitle) {
-                html += "<div class='posterItemDefaultText'>";
-                html += item.Name;
-                html += "</div>";
-            }
+            html += "<div class='posterItemDefaultText posterItemText'>";
+            html += item.Name;
+            html += "</div>";
 
             html += "</a>";
         }
@@ -161,6 +159,8 @@
             html += '</div>';
 
             $(elem).html(html);
+
+            handleLibraryLinkNavigations(elem);
         });
     }
 
@@ -228,6 +228,8 @@
 
 
             $(elem).html(html).createPosterItemMenus();
+
+            handleLibraryLinkNavigations(elem);
         });
     }
 
@@ -287,8 +289,9 @@
         }
         else if (section == 'librarybuttons') {
             loadlibraryButtons(elem, userId, index);
+
         } else {
-            
+
             elem.empty();
         }
     }
@@ -299,7 +302,7 @@
         var sectionCount = 3;
 
         var elem = $('.sections', page);
-        
+
         if (!elem.html().length) {
             var html = '';
             for (i = 0, length = sectionCount; i < length; i++) {
@@ -314,6 +317,16 @@
 
             loadSection(page, userId, displayPreferences, i);
         }
+    }
+
+    function handleLibraryLinkNavigations(elem) {
+
+        $('a', elem).on('click', function () {
+
+            var text = $('.posterItemText', this).html();
+
+            LibraryMenu.setText(text);
+        });
     }
 
     $(document).on('pagebeforeshow', "#indexPage", function () {

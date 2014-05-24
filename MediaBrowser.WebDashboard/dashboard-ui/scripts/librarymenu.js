@@ -175,6 +175,12 @@
 
         return panel;
     }
+    
+    function setLibraryMenuText(text) {
+        
+        $('.libraryMenuButtonText').html('<span>' + text + '</span>');
+
+    }
 
     function getTopParentId() {
 
@@ -184,7 +190,9 @@
     window.LibraryMenu = {
         showLibraryMenu: showLibraryMenu,
 
-        getTopParentId: getTopParentId
+        getTopParentId: getTopParentId,
+        
+        setText: setLibraryMenuText
     };
 
     function updateCastIcon() {
