@@ -786,5 +786,6 @@
 	"HeaderReports": "Reports",
 	"HeaderMetadataManager": "Metadata Manager",
 	"HeaderPreferences": "Preferences",
-	"MessageLoadingChannels": "Loading channel content..."
+	"MessageLoadingChannels": "Loading channel content...",
+	"ButtonMarkRead": "Mark Read"
 }

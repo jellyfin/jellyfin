@@ -270,9 +270,16 @@ namespace MediaBrowser.Server.Implementations.Udp
                 throw new ArgumentNullException("remoteEndPoint");
             }
 
-            await _udpClient.SendAsync(bytes, bytes.Length, _networkManager.Parse(remoteEndPoint)).ConfigureAwait(false);
+            try
+            {
+                await _udpClient.SendAsync(bytes, bytes.Length, _networkManager.Parse(remoteEndPoint)).ConfigureAwait(false);
 
-            _logger.Info("Udp message sent to {0}", remoteEndPoint);
+                _logger.Info("Udp message sent to {0}", remoteEndPoint);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error sending message to {0}", ex, remoteEndPoint);
+            }
         }
     }
 

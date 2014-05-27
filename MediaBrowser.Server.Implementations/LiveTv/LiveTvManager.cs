@@ -520,6 +520,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var programChannelId = program.ExternalChannelId;
 
+            if (string.IsNullOrWhiteSpace(programChannelId)) return null;
+
             var internalProgramChannelId = _tvDtoService.GetInternalChannelId(program.ServiceName, programChannelId);
 
             return GetInternalChannel(internalProgramChannelId);
