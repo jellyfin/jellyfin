@@ -213,6 +213,13 @@ namespace MediaBrowser.Model.ApiClient
         Task<BaseItemDto> GetRootFolderAsync(string userId);
 
         /// <summary>
+        /// Gets the additional parts.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <returns>Task{BaseItemDto[]}.</returns>
+        Task<BaseItemDto[]> GetAdditionalParts(string itemId);
+        
+        /// <summary>
         /// Gets the users async.
         /// </summary>
         /// <param name="query">The query.</param>

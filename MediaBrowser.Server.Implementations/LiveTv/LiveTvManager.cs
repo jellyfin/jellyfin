@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -37,6 +38,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ITaskManager _taskManager;
+        private readonly IJsonSerializer _json;
 
         private readonly LiveTvDtoService _tvDtoService;
 
@@ -51,7 +53,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
 
-        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager)
+        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, IJsonSerializer json)
         {
             _config = config;
             _fileSystem = fileSystem;
@@ -60,6 +62,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _userManager = userManager;
             _libraryManager = libraryManager;
             _taskManager = taskManager;
+            _json = json;
             _userDataManager = userDataManager;
 
             _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, _itemRepo);
@@ -294,6 +297,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 var result = await service.GetRecordingStream(recording.Id, cancellationToken).ConfigureAwait(false);
 
+                _logger.Debug("Live stream info: " + _json.SerializeToString(result));
+                
                 if (!string.IsNullOrEmpty(result.Id))
                 {
                     _openStreams.AddOrUpdate(result.Id, result, (key, info) => result);
@@ -326,6 +331,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
 
                 var result = await service.GetChannelStream(channel.ExternalId, cancellationToken).ConfigureAwait(false);
+
+                _logger.Debug("Live stream info: " + _json.SerializeToString(result));
 
                 if (!string.IsNullOrEmpty(result.Id))
                 {
@@ -1525,6 +1532,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             try
             {
                 await service.CloseLiveStream(id, cancellationToken).ConfigureAwait(false);
+
+                LiveStreamInfo removed;
+                _openStreams.TryRemove(id, out removed);
             }
             catch (Exception ex)
             {
