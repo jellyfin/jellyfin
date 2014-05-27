@@ -83,7 +83,7 @@
     background-color: #ECEEF4;
 }
 
-.btnMarkReadContainer {
+.btnMarkReadContainer, .btnNotificationListContainer {
     padding: .5em;
 }
 

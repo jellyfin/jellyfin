@@ -1,116 +1,156 @@
-﻿(function ($, document, Dashboard) {
+﻿(function ($, document, Dashboard, LibraryBrowser) {
 
-    var getNotificationsSummaryPromise;
+    function notifications() {
 
-    function getNotificationsSummary() {
+        var self = this;
 
-        getNotificationsSummaryPromise = getNotificationsSummaryPromise || ApiClient.getNotificationSummary(Dashboard.getCurrentUserId());
+        self.getNotificationsSummaryPromise = null;
 
-        return getNotificationsSummaryPromise;
-    }
+        self.total = 0;
 
-    function updateNotificationCount() {
+        self.getNotificationsSummary = function() {
 
-        getNotificationsSummary().done(function (summary) {
+            self.getNotificationsSummaryPromise = self.getNotificationsSummaryPromise || ApiClient.getNotificationSummary(Dashboard.getCurrentUserId());
 
-            var elem = $('.btnNotifications').removeClass('levelNormal').removeClass('levelWarning').removeClass('levelError').html(summary.UnreadCount);
+            return self.getNotificationsSummaryPromise;
+        };
 
-            if (summary.UnreadCount) {
-                elem.addClass('level' + summary.MaxUnreadNotificationLevel);
-            }
-        });
-    }
+        self.updateNotificationCount = function() {
 
-    function showNotificationsFlyout() {
+            self.getNotificationsSummary().done(function(summary) {
 
-        var context = this;
+                var item = $('.btnNotifications').removeClass('levelNormal').removeClass('levelWarning').removeClass('levelError').html(summary.UnreadCount);
 
-        var html = '<div data-role="popup" class="notificationsFlyout" style="min-width:250px;margin-top:30px;margin-right:20px;" data-theme="a">';
+                if (summary.UnreadCount) {
+                    item.addClass('level' + summary.MaxUnreadNotificationLevel);
+                }
+            });
+        };
 
-        html += '<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+        self.showNotificationsFlyout = function() {
 
-        html += '<div class="ui-bar-a" style="text-align:center;">';
-        html += '<h3 style="margin: .5em 0;">Notifications</h3>';
-        html += '</div>';
+            var context = this;
 
-        html += '<div data-role="content" style="padding: 0;">';
+            var html = '<div data-role="popup" class="notificationsFlyout" style="min-width:250px;margin-top:30px;margin-right:20px;" data-theme="a">';
 
-        html += '<p class="notificationsFlyoutlist">Loading...';
+            html += '<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
 
-        html += '</p>';
+            html += '<div class="ui-bar-a" style="text-align:center;">';
+            html += '<h3 style="margin: .5em 0;">Notifications</h3>';
+            html += '</div>';
 
-        html += '<p style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check" data-mini="true" data-theme="b">Mark these read</button></p>';
-        html += '</div>';
+            html += '<div data-role="content" style="padding: 0;">';
 
-        html += '</div>';
+            html += '<p class="notificationsFlyoutlist">Loading...';
 
-        $(document.body).append(html);
+            html += '</p>';
 
-        $('.notificationsFlyout').popup({ positionTo: context }).trigger('create').popup("open").on("popupafterclose", function () {
+            html += '<p style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check" data-mini="true" data-theme="b">Mark these read</button></p>';
 
-            $(this).off("popupafterclose").remove();
+            html += '<p class="btnNotificationListContainer"><button class="btnNotificationList" type="button" data-icon="check" data-mini="true" data-theme="b">View Notifications</button></p>';
 
-        }).on('click', '.btnMarkRead', function () {
+            html += '</div>';
 
+            html += '</div>';
 
-            var ids = $('.unreadFlyoutNotification').map(function () {
+            $(document.body).append(html);
 
-                return this.getAttribute('data-notificationid');
+            $('.notificationsFlyout').popup({ positionTo: context }).trigger('create').popup("open").on("popupafterclose", function() {
 
-            }).get();
+                $(this).off("popupafterclose").remove();
 
-            ApiClient.markNotificationsRead(Dashboard.getCurrentUserId(), ids, true).done(function () {
+            }).on('click', '.btnMarkRead', function() {
 
-                $('.notificationsFlyout').popup("close");
+                var ids = $('.unreadFlyoutNotification').map(function() {
 
-                getNotificationsSummaryPromise = null;
+                    return this.getAttribute('data-notificationid');
 
-                updateNotificationCount();
+                }).get();
+
+                self.markNotificationsRead(ids, function() {
+
+                    $('.notificationsFlyout').popup("close");
+
+                });
+
+            }).on("click", ".btnNotificationList", function(e) {
+
+                e.preventDefault();
+
+                Dashboard.navigate("notificationlist.html");
+
             });
 
-        });
+            var startIndex = 0;
+            var limit = 5;
+            var elem = $('.notificationsFlyoutlist');
+            var markReadButton = $('.btnMarkReadContainer');
 
-        refreshFlyoutContents();
+            refreshNotifications(startIndex, limit, elem, markReadButton);
+        };
+
+        self.markNotificationsRead = function(ids, callback) {
+
+            ApiClient.markNotificationsRead(Dashboard.getCurrentUserId(), ids, true).done(function() {
+
+                self.getNotificationsSummaryPromise = null;
+
+                self.updateNotificationCount();
+
+                callback();
+
+            });
+
+        };
+
+        self.showNotificationsList = function(startIndex, limit, elem, btn) {
+
+            refreshNotifications(startIndex, limit, elem, btn);
+
+        };
     }
 
-    function refreshFlyoutContents() {
-
-        var limit = 5;
-        var startIndex = 0;
+    function refreshNotifications(startIndex, limit, elem, btn) {
 
         ApiClient.getNotifications(Dashboard.getCurrentUserId(), { StartIndex: startIndex, Limit: limit }).done(function (result) {
 
-            listUnreadNotifications(result.Notifications, result.TotalRecordCount, startIndex, limit);
+            listUnreadNotifications(result.Notifications, result.TotalRecordCount, startIndex, limit, elem, btn);
 
         });
     }
 
-    function listUnreadNotifications(notifications, totalRecordCount, startIndex, limit) {
-
-        var elem = $('.notificationsFlyoutlist');
+    function listUnreadNotifications(list, totalRecordCount, startIndex, limit, elem, btn) {
 
         if (!totalRecordCount) {
             elem.html('<p style="padding:.5em 1em;">No unread notifications.</p>');
-            $('.btnMarkReadContainer').hide();
+            btn.hide();
             return;
         }
 
-        if (notifications.filter(function (n) {
+        Notifications.total = totalRecordCount;
+
+        if (list.filter(function (n) {
 
             return !n.IsRead;
 
         }).length) {
-            $('.btnMarkReadContainer').show();
+            btn.show();
         } else {
-            $('.btnMarkReadContainer').hide();
+            btn.hide();
         }
-
 
         var html = '';
 
-        for (var i = 0, length = notifications.length; i < length; i++) {
+        if (totalRecordCount > limit) {
 
-            var notification = notifications[i];
+            var query = { StartIndex: startIndex, Limit: limit };
+
+            html += LibraryBrowser.getPagingHtml(query, totalRecordCount, false, limit, false);
+        }
+
+        for (var i = 0, length = list.length; i < length; i++) {
+
+            var notification = list[i];
 
             html += getNotificationHtml(notification);
 
@@ -169,15 +209,17 @@
 
     }
 
+    window.Notifications = new notifications();
+
     $(Dashboard).on('interiorheaderrendered', function (e, header, user) {
 
         if (!user || $('.notificationsButton', header).length) {
             return;
         }
 
-        $('<a class="imageLink btnNotifications" href="#" title="Notifications">0</a>').insertAfter($('.btnCurrentUser', header)).on('click', showNotificationsFlyout);
+        $('<a class="imageLink btnNotifications" href="#" title="Notifications">0</a>').insertAfter($('.btnCurrentUser', header)).on('click', Notifications.showNotificationsFlyout);
 
-        updateNotificationCount();
+        Notifications.updateNotificationCount();
     });
 
     $(ApiClient).on("websocketmessage", function (e, msg) {
@@ -185,12 +227,12 @@
 
         if (msg.MessageType === "NotificationUpdated" || msg.MessageType === "NotificationAdded" || msg.MessageType === "NotificationsMarkedRead") {
 
-            getNotificationsSummaryPromise = null;
+            Notifications.getNotificationsSummaryPromise = null;
 
-            updateNotificationCount();
+            Notifications.updateNotificationCount();
         }
 
     });
 
 
-})(jQuery, document, Dashboard);
+})(jQuery, document, Dashboard, LibraryBrowser);
