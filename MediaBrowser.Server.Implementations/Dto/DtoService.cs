@@ -771,23 +771,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.Name = item.Name;
             dto.OfficialRating = item.OfficialRating;
 
-            var hasOverview = fields.Contains(ItemFields.Overview);
-            var hasHtmlOverview = fields.Contains(ItemFields.OverviewHtml);
-
-            if (hasOverview || hasHtmlOverview)
+            if (fields.Contains(ItemFields.Overview))
             {
                 var strippedOverview = string.IsNullOrEmpty(item.Overview) ? item.Overview : item.Overview.StripHtml();
 
-                if (hasOverview)
-                {
-                    dto.Overview = strippedOverview;
-                }
-
-                // Only supply the html version if there was actually html content
-                if (hasHtmlOverview)
-                {
-                    dto.OverviewHtml = item.Overview;
-                }
+                dto.Overview = strippedOverview;
             }
 
             // If there are no backdrops, indicate what parent has them in case the Ui wants to allow inheritance
@@ -1251,14 +1239,21 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            var bitrate = i.TotalBitrate ??
-                info.MediaStreams.Where(m => m.Type != MediaStreamType.Subtitle && !string.Equals(m.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
-                .Select(m => m.BitRate ?? 0)
-                .Sum();
-
-            if (bitrate > 0)
+            try
             {
-                info.Bitrate = bitrate;
+                var bitrate = i.TotalBitrate ??
+                    info.MediaStreams.Where(m => m.Type != MediaStreamType.Subtitle && !string.Equals(m.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
+                    .Select(m => m.BitRate ?? 0)
+                    .Sum();
+
+                if (bitrate > 0)
+                {
+                    info.Bitrate = bitrate;
+                }
+            }
+            catch (OverflowException ex)
+            {
+                _logger.ErrorException("Error calculating total bitrate", ex);
             }
 
             return info;

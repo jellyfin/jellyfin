@@ -5,7 +5,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 {
     public class PercentPlayedDrawer
     {
-        private const int IndicatorHeight = 10;
+        private const int IndicatorHeight = 8;
 
         public void Process(Graphics graphics, Size imageSize, double percent)
         {

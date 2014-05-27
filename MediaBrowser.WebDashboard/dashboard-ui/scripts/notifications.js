@@ -82,7 +82,7 @@
             });
 
             var startIndex = 0;
-            var limit = 5;
+            var limit = 4;
             var elem = $('.notificationsFlyoutlist');
             var markReadButton = $('.btnMarkReadContainer');
 

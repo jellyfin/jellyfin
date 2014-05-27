@@ -497,7 +497,7 @@
         html += '<p class="itemGenres"></p>';
 
         html += '<p class="itemOverlayHtml">';
-        html += (item.OverviewHtml || item.Overview || '');
+        html += (item.Overview || '');
         html += '</p>';
 
         html += '</div>';

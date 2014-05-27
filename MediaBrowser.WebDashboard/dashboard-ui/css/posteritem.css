@@ -129,7 +129,7 @@
 
 
 .myLibraryPosterItem {
-    width: 148px;
+    width: 42%;
 }
 
     .myLibraryPosterItem .posterItemImage {
@@ -256,6 +256,10 @@
 
 @media all and (min-width: 360px) {
 
+    .myLibraryPosterItem {
+        width: 45%;
+    }
+
     .backdropPosterItem {
         width: 148px;
     }
@@ -342,7 +346,7 @@
 @media all and (min-width: 600px) {
 
     .myLibraryPosterItem {
-        width: 180px;
+        width: 30%;
     }
 }
 
@@ -367,6 +371,9 @@
 
 @media all and (min-width: 1000px) {
 
+    .myLibraryPosterItem {
+        width: 23%;
+    }
 
     .smallBackdropPosterItem {
         width: 208px;
@@ -401,6 +408,10 @@
 }
 
 @media all and (min-width: 1440px) {
+
+    .myLibraryPosterItem {
+        width: 19%;
+    }
 
     .squarePosterItem {
         width: 167px;

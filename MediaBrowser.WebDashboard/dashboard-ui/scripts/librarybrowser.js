@@ -1697,7 +1697,7 @@
 
         renderOverview: function (elem, item) {
 
-            var overview = item.OverviewHtml || item.Overview || '';
+            var overview = item.Overview || '';
 
             elem.html(overview).trigger('create');
 

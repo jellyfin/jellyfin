@@ -9,18 +9,18 @@
 
         Notifications.showNotificationsList(startIndex, limit, elem, btn);
 
-        elem.on("click", ".btnPreviousPage", function(e) {
+        elem.on("click", ".btnPreviousPage", function (e) {
 
-                e.preventDefault();
+            e.preventDefault();
 
-                startIndex = startIndex - limit;
+            startIndex = startIndex - limit;
 
-                if (startIndex < 0) startIndex = 0;
+            if (startIndex < 0) startIndex = 0;
 
-                Notifications.showNotificationsList(startIndex, limit, elem, btn);
+            Notifications.showNotificationsList(startIndex, limit, elem, btn);
 
-            })
-            .on("click", ".btnNextPage", function(e) {
+        })
+            .on("click", ".btnNextPage", function (e) {
 
                 e.preventDefault();
 
@@ -29,16 +29,16 @@
                 Notifications.showNotificationsList(startIndex, limit, elem, btn);
 
             });
-        
-        $(".readOnlyContent").on("click", ".btnMarkRead", function() {
 
-            var ids = $(".notificationsList div").map(function() {
+        $(".readOnlyContent").on("click", ".btnMarkRead", function () {
+
+            var ids = $(".notificationsList div").map(function () {
 
                 return this.getAttribute('data-notificationid');
 
             }).get();
 
-            Notifications.markNotificationsRead(ids, function() {
+            Notifications.markNotificationsRead(ids, function () {
 
                 Notifications.showNotificationsList(startIndex, limit, elem, btn);
 

@@ -97,11 +97,6 @@ namespace MediaBrowser.Model.Querying
         Overview,
 
         /// <summary>
-        /// The overview HTML
-        /// </summary>
-        OverviewHtml,
-        
-        /// <summary>
         /// The id of the item's parent
         /// </summary>
         ParentId,
