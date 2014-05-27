@@ -609,6 +609,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "mypreferenceswebclient.js",
 
                                 "notifications.js",
+                                "notificationlist.js",
                                 "notificationsetting.js",
                                 "notificationsettings.js",
                                 "playlist.js",
