@@ -237,6 +237,15 @@ namespace MediaBrowser.Server.Implementations.Channels
             return (Channel)_libraryManager.GetItemById(new Guid(id));
         }
 
+        public ChannelFeatures GetChannelFeatures(string id)
+        {
+            var channel = GetChannel(id);
+
+            var channelProvider = GetChannelProvider(channel);
+
+            return channelProvider.GetChannelFeatures();
+        }
+
         private Guid GetInternalChannelId(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -267,7 +276,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 if (query.Limit.HasValue && query.Limit.Value > channelInfo.MaxPageSize.Value)
                 {
-                    throw new ArgumentException(string.Format("Channel {0} only supports a maximum of {1} records at a time.", channel.Name, channelInfo.MaxPageSize.Value));
+                    throw new ArgumentException(string.Format("{0} channel only supports a maximum of {1} records at a time.", channel.Name, channelInfo.MaxPageSize.Value));
                 }
                 providerLimit = query.Limit;
             }

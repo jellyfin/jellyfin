@@ -33,6 +33,7 @@ namespace MediaBrowser.Controller.Channels
         public string ImageUrl { get; set; }
 
         public ChannelMediaType MediaType { get; set; }
+        public ChannelFolderType FolderType { get; set; }
 
         public ChannelMediaContentType ContentType { get; set; }
 

@@ -36,18 +36,27 @@ namespace MediaBrowser.Api
         public int? Limit { get; set; }
     }
 
+    [Route("/Channels/{Id}/Features", "GET", Summary = "Gets features for a channel")]
+    public class GetChannelFeatures : IReturn<ChannelFeatures>
+    {
+        [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     [Route("/Channels/{Id}/Items", "GET", Summary = "Gets channel items")]
     public class GetChannelItems : IReturn<QueryResult<BaseItemDto>>
     {
+        [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
 
+        [ApiMember(Name = "FolderId", Description = "Folder Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string FolderId { get; set; }
 
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
 
         /// <summary>
@@ -97,6 +106,13 @@ namespace MediaBrowser.Api
         public ChannelService(IChannelManager channelManager)
         {
             _channelManager = channelManager;
+        }
+
+        public object Get(GetChannelFeatures request)
+        {
+            var result = _channelManager.GetChannelFeatures(request.Id);
+
+            return ToOptimizedResult(result);
         }
 
         public object Get(GetChannels request)

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
 
@@ -11,6 +12,7 @@ namespace MediaBrowser.Controller.Channels
         public string ChannelId { get; set; }
 
         public ChannelItemType ChannelItemType { get; set; }
+        public ChannelFolderType ChannelFolderType { get; set; }
 
         public string OriginalImageUrl { get; set; }
         public List<string> Tags { get; set; }
