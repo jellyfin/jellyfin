@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -70,7 +71,7 @@ namespace MediaBrowser.Providers.Music
         private void ProcessResult(MusicArtist item, Artist result)
         {
             item.HomePageUrl = result.strWebsite;
-            item.Overview = result.strBiographyEN;
+            item.Overview = (result.strBiographyEN ?? string.Empty).StripHtml();
 
             if (!string.IsNullOrEmpty(result.strGenre))
             {
