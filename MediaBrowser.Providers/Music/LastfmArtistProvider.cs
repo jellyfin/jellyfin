@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -103,7 +104,7 @@ namespace MediaBrowser.Providers.Music
                 Int32.TryParse(data.bio.yearformed, out yearFormed);
                 if (!artist.LockedFields.Contains(MetadataFields.Overview))
                 {
-                    artist.Overview = data.bio.content;
+                    artist.Overview = (data.bio.content ?? string.Empty).StripHtml();
                 }
                 if (!string.IsNullOrEmpty(data.bio.placeformed) && !artist.LockedFields.Contains(MetadataFields.ProductionLocations))
                 {
