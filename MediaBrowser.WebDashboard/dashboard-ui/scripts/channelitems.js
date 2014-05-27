@@ -30,7 +30,6 @@
 
         query.UserId = Dashboard.getCurrentUserId();
 
-
         if (folderId) {
 
             ApiClient.getItem(query.UserId, folderId).done(function (item) {

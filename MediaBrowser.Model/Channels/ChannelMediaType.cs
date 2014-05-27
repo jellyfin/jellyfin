@@ -8,4 +8,13 @@
 
         Photo = 2
     }
+
+    public enum ChannelFolderType
+    {
+        Container = 0,
+
+        MusicAlbum = 1,
+
+        PhotoAlbum = 2
+    }
 }
