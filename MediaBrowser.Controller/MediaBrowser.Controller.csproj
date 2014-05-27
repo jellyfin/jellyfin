@@ -82,6 +82,7 @@
     <Compile Include="Channels\ChannelVideoItem.cs" />
     <Compile Include="Channels\Channel.cs" />
     <Compile Include="Channels\IChannelMediaItem.cs" />
+    <Compile Include="Channels\InternalChannelFeatures.cs" />
     <Compile Include="Channels\InternalChannelItemQuery.cs" />
     <Compile Include="Chapters\ChapterSearchRequest.cs" />
     <Compile Include="Chapters\IChapterProvider.cs" />

@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Model.Channels;
+using System.Collections.Generic;
 
-namespace MediaBrowser.Model.Channels
+namespace MediaBrowser.Controller.Channels
 {
-    public class ChannelFeatures
+    public class InternalChannelFeatures
     {
         /// <summary>
         /// Gets or sets a value indicating whether this instance can search.
@@ -38,29 +39,12 @@ namespace MediaBrowser.Model.Channels
         /// </summary>
         public bool SupportsSortOrderToggle { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can filter.
-        /// </summary>
-        /// <value><c>true</c> if this instance can filter; otherwise, <c>false</c>.</value>
-        public bool CanFilter { get; set; }
-
-        public ChannelFeatures()
+        public InternalChannelFeatures()
         {
             MediaTypes = new List<ChannelMediaType>();
             ContentTypes = new List<ChannelMediaContentType>();
 
             DefaultSortFields = new List<ChannelItemSortField>();
         }
-    }
-
-    public enum ChannelItemSortField
-    {
-        Name = 0,
-        CommunityRating = 1,
-        ContentReleaseDate = 2,
-        DateAdded = 3,
-        Runtime = 4,
-        CommunityMostWatched = 5,
-        UserPlayCount = 6
     }
 }

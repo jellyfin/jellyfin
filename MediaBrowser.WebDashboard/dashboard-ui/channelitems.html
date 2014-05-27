@@ -19,7 +19,7 @@
 
                 <div class="viewControls" data-role="controlgroup" data-type="horizontal">
                     <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="${ButtonSort}" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
-                    <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="${ButtonFilter}" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
+                    <button class="btnFilter" data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="${ButtonFilter}" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
                 </div>
                 <div class="listTopPaging">
                 </div>
@@ -39,7 +39,10 @@
                         <strong>${HeaderSortBy}</strong>
                     </legend>
 
-                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
+                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioDefaultSort" value="on" checked="checked" data-sortby="Default" data-mini="true">
+                    <label for="radioDefaultSort">${OptionDefaultSort}</label>
+
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
                     <label for="radioSortName">${OptionNameSort}</label>
 
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating,SortName" data-mini="true">
@@ -60,17 +63,19 @@
                     <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime,SortName" data-mini="true">
                     <label for="radioRuntime">${OptionRuntime}</label>
                 </fieldset>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>${HeaderSortOrder}</strong>
-                    </legend>
+                <div class="sortOrderToggle">
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>${HeaderSortOrder}</strong>
+                        </legend>
 
-                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
-                    <label for="radioAscending">${OptionAscending}</label>
+                        <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
+                        <label for="radioAscending">${OptionAscending}</label>
 
-                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
-                    <label for="radioDescending">${OptionDescending}</label>
-                </fieldset>
+                        <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
+                        <label for="radioDescending">${OptionDescending}</label>
+                    </fieldset>
+                </div>
             </form>
         </div>
         <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-position-fixed="true">

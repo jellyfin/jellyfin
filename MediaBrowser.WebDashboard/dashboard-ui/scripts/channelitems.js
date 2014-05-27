@@ -20,6 +20,29 @@
     function hideLoadingMessage(page) {
         $('#popupDialog', page).popup('close');
     }
+    
+    function reloadFeatures(page) {
+        
+        var channelId = getParameterByName('id');
+
+        $.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Features", query)).done(function (features) {
+
+            if (features.CanFilter) {
+
+                $('.btnFilter', page).show();
+
+            } else {
+                $('.btnFilter', page).hide();
+            }
+
+            if (features.SupportsSortOrderToggle) {
+
+                $('.sortOrderToggle', page).show();
+            } else {
+                $('.sortOrderToggle', page).hide();
+            }
+        });
+    }
 
     function reloadItems(page) {
 
@@ -188,6 +211,7 @@
 
         LibraryBrowser.loadSavedQueryValues(getSavedQueryId(), query);
 
+        reloadFeatures(page);
         reloadItems(page);
 
         updateFilterControls(page);

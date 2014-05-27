@@ -243,7 +243,21 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var channelProvider = GetChannelProvider(channel);
 
-            return channelProvider.GetChannelFeatures();
+            return GetChannelFeaturesDto(channelProvider.GetChannelFeatures());
+        }
+
+        public ChannelFeatures GetChannelFeaturesDto(InternalChannelFeatures features)
+        {
+            return new ChannelFeatures
+            {
+                CanFilter = !features.MaxPageSize.HasValue,
+                CanSearch = features.CanSearch,
+                ContentTypes = features.ContentTypes,
+                DefaultSortFields = features.DefaultSortFields,
+                MaxPageSize = features.MaxPageSize,
+                MediaTypes = features.MediaTypes,
+                SupportsSortOrderToggle = features.SupportsSortOrderToggle
+            };
         }
 
         private Guid GetInternalChannelId(string name)
