@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Threading;
@@ -32,7 +31,7 @@ namespace MediaBrowser.Controller.Channels
         /// Gets the channel information.
         /// </summary>
         /// <returns>ChannelFeatures.</returns>
-        ChannelFeatures GetChannelFeatures();
+        InternalChannelFeatures GetChannelFeatures();
 
         /// <summary>
         /// Determines whether [is enabled for] [the specified user].

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Channels;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -11,15 +12,9 @@ namespace MediaBrowser.Controller.Channels
         public int? StartIndex { get; set; }
 
         public int? Limit { get; set; }
+
+        public ChannelItemSortField? SortBy { get; set; }
+
+        public bool SortDescending { get; set; }
     }
-
-    public class InternalAllChannelItemsQuery
-    {
-        public User User { get; set; }
-
-        public int? StartIndex { get; set; }
-
-        public int? Limit { get; set; }
-    }
-
 }

@@ -787,5 +787,7 @@
 	"HeaderMetadataManager": "Metadata Manager",
 	"HeaderPreferences": "Preferences",
 	"MessageLoadingChannels": "Loading channel content...",
-	"ButtonMarkRead": "Mark Read"
+	"ButtonMarkRead": "Mark Read",
+	"OptionDefaultSort": "Default",
+	"OptionCommunityMostWatchedSort": "Most Watched"
 }
