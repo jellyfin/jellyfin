@@ -531,7 +531,7 @@ namespace MediaBrowser.ServerApplication
             var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);
             RegisterSingleInstance<ICollectionManager>(collectionManager);
 
-            LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager);
+            LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, JsonSerializer);
             RegisterSingleInstance(LiveTvManager);
 
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);

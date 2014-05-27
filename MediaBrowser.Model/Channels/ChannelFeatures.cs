@@ -57,10 +57,10 @@ namespace MediaBrowser.Model.Channels
     {
         Name = 0,
         CommunityRating = 1,
-        ContentReleaseDate = 2,
-        DateAdded = 3,
+        PremiereDate = 2,
+        DateCreated = 3,
         Runtime = 4,
-        CommunityMostWatched = 5,
-        UserPlayCount = 6
+        PlayCount = 5,
+        CommunityPlayCount = 6
     }
 }

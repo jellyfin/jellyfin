@@ -133,7 +133,7 @@
 }
 
     .myLibraryPosterItem .posterItemImage {
-        height: 36px;
+        height: 34px;
         background-position: 12px center;
         background-size: 20px 20px;
         background-color: rgba(51, 136, 204, 0.5);
@@ -428,4 +428,12 @@
         .backdropPosterItem .posterItemImage {
             height: 167.625px;
         }
+}
+
+
+@media all and (min-width: 1600px) {
+
+    .myLibraryPosterItem {
+        width: 16%;
+    }
 }

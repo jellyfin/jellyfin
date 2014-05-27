@@ -39,29 +39,39 @@
                         <strong>${HeaderSortBy}</strong>
                     </legend>
 
-                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioDefaultSort" value="on" checked="checked" data-sortby="Default" data-mini="true">
+                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioDefaultSort" value="on" checked="checked" data-sortby="" data-mini="true">
                     <label for="radioDefaultSort">${OptionDefaultSort}</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                    <label for="radioSortName">${OptionNameSort}</label>
+                    <div class="sortbyName">
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
+                        <label for="radioSortName">${OptionNameSort}</label>
+                    </div>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating,SortName" data-mini="true">
-                    <label for="radioCommunityRating">${OptionCommunityRating}</label>
+                    <div class="sortbyCommunityRating">
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
+                        <label for="radioCommunityRating">${OptionCommunityRating}</label>
+                    </div>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated,SortName" data-mini="true">
-                    <label for="radioDateCreated">${OptionDateAdded}</label>
+                    <div class="sortbyDateCreated">
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
+                        <label for="radioDateCreated">${OptionDateAdded}</label>
+                    </div>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDatePlayed" value="off" data-sortby="DatePlayed,SortName" data-mini="true">
-                    <label for="radioDatePlayed">${OptionDatePlayed}</label>
+                    <div class="sortbyPlayCount">
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPlayCount" value="off" data-sortby="PlayCount" data-mini="true">
+                        <label for="radioPlayCount">${OptionPlayCount}</label>
+                    </div>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPlayCount" value="off" data-sortby="PlayCount,SortName" data-mini="true">
-                    <label for="radioPlayCount">${OptionPlayCount}</label>
+                    <div class="sortbyPremiereDate">
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate" data-mini="true">
+                        <label for="radioPremiereDate">${OptionReleaseDate}</label>
+                    </div>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate,SortName" data-mini="true">
-                    <label for="radioPremiereDate">${OptionReleaseDate}</label>
+                    <div class="sortbyRuntime">
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
+                        <label for="radioRuntime">${OptionRuntime}</label>
+                    </div>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime,SortName" data-mini="true">
-                    <label for="radioRuntime">${OptionRuntime}</label>
                 </fieldset>
                 <div class="sortOrderToggle">
                     <fieldset data-role="controlgroup">

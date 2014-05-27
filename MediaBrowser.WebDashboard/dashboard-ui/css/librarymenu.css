@@ -188,7 +188,7 @@
 
 .tvshowsViewMenu {
     background-image: url(images/items/folders/tv.png);
-    background-position: 16px 8px;
+    background-position: 16px center;
 }
 
 .moviesViewMenu {
