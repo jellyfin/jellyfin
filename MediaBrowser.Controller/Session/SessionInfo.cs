@@ -87,12 +87,6 @@ namespace MediaBrowser.Controller.Session
         public string DeviceName { get; set; }
 
         /// <summary>
-        /// Gets or sets the device version.
-        /// </summary>
-        /// <value>The device version.</value>
-        public string DeviceVersion { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the now viewing item.
         /// </summary>
         /// <value>The name of the now viewing item.</value>
