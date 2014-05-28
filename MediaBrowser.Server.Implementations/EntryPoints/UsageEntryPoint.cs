@@ -45,13 +45,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             var session = e.SessionInfo;
 
             if (!string.IsNullOrEmpty(session.Client) &&
-                !string.IsNullOrEmpty(session.DeviceName))
+                !string.IsNullOrEmpty(session.DeviceName) &&
+                !string.IsNullOrEmpty(session.DeviceId))
             {
                 var keys = new List<string>
-            {
-                session.Client,
-                session.DeviceName
-            };
+                {
+                    session.Client,
+                    session.DeviceName,
+                    session.DeviceId
+                };
 
                 if (!string.IsNullOrEmpty(session.DeviceVersion))
                 {
@@ -88,7 +90,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 AppName = session.Client,
                 AppVersion = session.ApplicationVersion,
-                DeviceVersion = session.DeviceVersion
+                DeviceVersion = session.DeviceVersion,
+                DeviceId = session.DeviceId
             };
 
             if (string.IsNullOrEmpty(info.DeviceVersion))
