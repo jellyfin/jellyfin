@@ -81,12 +81,14 @@
 
             });
 
+            self.isFlyout = true;
+
             var startIndex = 0;
             var limit = 4;
             var elem = $('.notificationsFlyoutlist');
             var markReadButton = $('.btnMarkReadContainer');
 
-            refreshNotifications(startIndex, limit, elem, markReadButton);
+            refreshNotifications(startIndex, limit, elem, markReadButton, false);
         };
 
         self.markNotificationsRead = function(ids, callback) {
@@ -103,23 +105,23 @@
 
         };
 
-        self.showNotificationsList = function(startIndex, limit, elem, btn) {
+        self.showNotificationsList = function (startIndex, limit, elem, btn) {
 
-            refreshNotifications(startIndex, limit, elem, btn);
+            refreshNotifications(startIndex, limit, elem, btn, true);
 
         };
     }
 
-    function refreshNotifications(startIndex, limit, elem, btn) {
+    function refreshNotifications(startIndex, limit, elem, btn, showPaging) {
 
         ApiClient.getNotifications(Dashboard.getCurrentUserId(), { StartIndex: startIndex, Limit: limit }).done(function (result) {
 
-            listUnreadNotifications(result.Notifications, result.TotalRecordCount, startIndex, limit, elem, btn);
+            listUnreadNotifications(result.Notifications, result.TotalRecordCount, startIndex, limit, elem, btn, showPaging);
 
         });
     }
 
-    function listUnreadNotifications(list, totalRecordCount, startIndex, limit, elem, btn) {
+    function listUnreadNotifications(list, totalRecordCount, startIndex, limit, elem, btn, showPaging) {
 
         if (!totalRecordCount) {
             elem.html('<p style="padding:.5em 1em;">No unread notifications.</p>');
@@ -141,7 +143,7 @@
 
         var html = '';
 
-        if (totalRecordCount > limit) {
+        if (totalRecordCount > limit && showPaging === true) {
 
             var query = { StartIndex: startIndex, Limit: limit };
 
