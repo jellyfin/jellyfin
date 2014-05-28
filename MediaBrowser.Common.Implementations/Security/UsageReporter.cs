@@ -40,7 +40,6 @@ namespace MediaBrowser.Common.Implementations.Security
         public Task ReportAppUsage(ClientInfo app, CancellationToken cancellationToken)
         {
             // TODO: Implement this
-            // Make sure to handle DeviceVersion being 
 
             return Task.FromResult(true);
         }
