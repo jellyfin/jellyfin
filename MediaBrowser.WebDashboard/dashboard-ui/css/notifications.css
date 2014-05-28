@@ -84,7 +84,16 @@
 }
 
 .btnMarkReadContainer, .btnNotificationListContainer {
-    padding: .5em;
+    padding: 0 .5em;
+}
+
+.notificationsList {
+    border-bottom: 1px solid #ccc;
+}
+
+.notificationsList .flyoutNotification {
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
 }
 
 .imgNotification, .imgNotificationInner {
