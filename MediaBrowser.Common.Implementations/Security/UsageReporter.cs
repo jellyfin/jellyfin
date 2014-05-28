@@ -50,5 +50,6 @@ namespace MediaBrowser.Common.Implementations.Security
         public string AppName { get; set; }
         public string AppVersion { get; set; }
         public string DeviceVersion { get; set; }
+        public string DeviceId { get; set; }
     }
 }
