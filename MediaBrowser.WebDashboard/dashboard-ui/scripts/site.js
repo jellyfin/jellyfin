@@ -1332,7 +1332,7 @@ $(function () {
     var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
 
     videoPlayerHtml += '<div id="videoBackdrop">';
-    videoPlayerHtml += '<div id="videoPlayer">';
+    videoPlayerHtml += '<div id="videoPlayer" class="fullscreenVideo">';
     videoPlayerHtml += '<div id="videoElement">';
 
     videoPlayerHtml += '<div id="play" class="status"></div>';
