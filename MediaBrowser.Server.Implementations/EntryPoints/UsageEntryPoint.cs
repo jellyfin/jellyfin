@@ -46,23 +46,16 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             if (!string.IsNullOrEmpty(session.Client) &&
                 !string.IsNullOrEmpty(session.DeviceName) &&
-                !string.IsNullOrEmpty(session.DeviceId))
+                !string.IsNullOrEmpty(session.DeviceId) &&
+                !string.IsNullOrEmpty(session.ApplicationVersion))
             {
                 var keys = new List<string>
                 {
                     session.Client,
                     session.DeviceName,
-                    session.DeviceId
+                    session.DeviceId,
+                    session.ApplicationVersion
                 };
-
-                if (!string.IsNullOrEmpty(session.DeviceVersion))
-                {
-                    keys.Add(session.DeviceVersion);
-                }
-                else
-                {
-                    keys.Add(DefaultDeviceVersion);
-                }
 
                 var key = string.Join("_", keys.ToArray()).GetMD5();
 
@@ -90,14 +83,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 AppName = session.Client,
                 AppVersion = session.ApplicationVersion,
-                DeviceVersion = session.DeviceVersion,
+                DeviceName = session.DeviceName,
                 DeviceId = session.DeviceId
             };
-
-            if (string.IsNullOrEmpty(info.DeviceVersion))
-            {
-                info.DeviceVersion = DefaultDeviceVersion;
-            }
 
             // Report usage to remote server, except for web client, since we already have data on that
             if (!string.Equals(info.AppName, "Dashboard", StringComparison.OrdinalIgnoreCase))
