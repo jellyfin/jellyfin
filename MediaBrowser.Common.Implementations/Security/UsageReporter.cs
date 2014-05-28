@@ -39,9 +39,17 @@ namespace MediaBrowser.Common.Implementations.Security
 
         public Task ReportAppUsage(ClientInfo app, CancellationToken cancellationToken)
         {
-            // TODO: Implement this
+            cancellationToken.ThrowIfCancellationRequested();
 
-            return Task.FromResult(true);
+            var data = new Dictionary<string, string>
+            {
+                { "feature", app.AppName ?? "Unknown App" }, 
+                { "mac", app.DeviceId ?? _networkManager.GetMacAddress() }, 
+                { "ver", app.AppVersion ?? "Unknown" }, 
+                { "platform", app.DeviceName }, 
+            };
+
+            return _httpClient.Post(Constants.Constants.MbAdminUrl + "service/registration/ping", data, cancellationToken);
         }
     }
 
