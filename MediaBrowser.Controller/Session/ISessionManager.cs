@@ -99,7 +99,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <returns>Task.</returns>
-        Task ReportSessionEnded(string sessionId);
+        void ReportSessionEnded(string sessionId);
 
         /// <summary>
         /// Gets the session info dto.
