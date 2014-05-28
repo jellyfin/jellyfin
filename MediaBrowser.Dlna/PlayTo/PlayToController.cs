@@ -89,7 +89,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 try
                 {
                     // Session is inactive, mark it for Disposal and don't start the elapsed timer.
-                    await _sessionManager.ReportSessionEnded(_session.Id).ConfigureAwait(false);
+                    _sessionManager.ReportSessionEnded(_session.Id);
                 }
                 catch (Exception ex)
                 {
@@ -113,8 +113,8 @@ namespace MediaBrowser.Dlna.PlayTo
 
             string nt;
             if (!e.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
-            
-            if (string.Equals(e.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase) && 
+
+            if (string.Equals(e.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase) &&
                 usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
                 !_disposed)
@@ -124,7 +124,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     try
                     {
-                        await _sessionManager.ReportSessionEnded(_session.Id).ConfigureAwait(false);
+                        _sessionManager.ReportSessionEnded(_session.Id);
                     }
                     catch
                     {

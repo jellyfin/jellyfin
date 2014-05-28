@@ -1,38 +1,44 @@
-﻿using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Net;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
-    public class HttpSessionController : ISessionController
+    public class HttpSessionController : ISessionController, IDisposable
     {
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _json;
+        private readonly ISessionManager _sessionManager;
 
         public SessionInfo Session { get; private set; }
 
         private readonly string _postUrl;
 
+        private Timer _pingTimer;
+
         public HttpSessionController(IHttpClient httpClient,
             IJsonSerializer json,
             SessionInfo session,
-            string postUrl)
+            string postUrl, ISessionManager sessionManager)
         {
             _httpClient = httpClient;
             _json = json;
             Session = session;
             _postUrl = postUrl;
+            _sessionManager = sessionManager;
+
+            _pingTimer = new Timer(PingTimerCallback, null, Timeout.Infinite, Timeout.Infinite);
+
+            ResetPingTimer();
         }
 
         public bool IsSessionActive
@@ -48,17 +54,34 @@ namespace MediaBrowser.Server.Implementations.Session
             get { return true; }
         }
 
-        private Task SendMessage(object obj, CancellationToken cancellationToken)
+        private async void PingTimerCallback(object state)
         {
-            var json = _json.SerializeToString(obj);
-
-            return _httpClient.Post(new HttpRequestOptions
+            try
             {
-                Url = _postUrl,
-                CancellationToken = cancellationToken,
-                RequestContent = json,
-                RequestContentType = "application/json"
-            });
+                await SendMessage("Ping", CancellationToken.None).ConfigureAwait(false);
+            }
+            catch
+            {
+                ReportSessionEnded();
+            }
+        }
+
+        private void ReportSessionEnded()
+        {
+            try
+            {
+                _sessionManager.ReportSessionEnded(Session.Id);
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        private void ResetPingTimer()
+        {
+            var period = TimeSpan.FromSeconds(60);
+
+            _pingTimer.Change(period, period);
         }
 
         private Task SendMessage(string name, CancellationToken cancellationToken)
@@ -66,15 +89,20 @@ namespace MediaBrowser.Server.Implementations.Session
             return SendMessage(name, new Dictionary<string, string>(), cancellationToken);
         }
 
-        private Task SendMessage(string name, Dictionary<string, string> args, CancellationToken cancellationToken)
+        private async Task SendMessage(string name, 
+            Dictionary<string, string> args, 
+            CancellationToken cancellationToken)
         {
             var url = _postUrl + "/" + name + ToQueryString(args);
 
-            return _httpClient.Post(new HttpRequestOptions
+            await _httpClient.Post(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken
-            });
+
+            }).ConfigureAwait(false);
+
+            ResetPingTimer();
         }
 
         public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
@@ -159,6 +187,20 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             return "?" + args;
+        }
+
+        public void Dispose()
+        {
+            DisposePingTimer();
+        }
+
+        private void DisposePingTimer()
+        {
+            if (_pingTimer != null)
+            {
+                _pingTimer.Dispose();
+                _pingTimer = null;
+            }
         }
     }
 }

@@ -48,10 +48,14 @@
     padding: 0 15px;
 }
 
+    .headerButtonLeft:first-child {
+        padding-left: 10px;
+    }
+
 .headerButtonRight {
     border-width: 0 !important;
     float: left;
-    padding: 0 18px;
+    padding: 0 15px;
 }
 
     .headerButtonRight:first-child {

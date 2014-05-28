@@ -248,7 +248,7 @@ namespace MediaBrowser.Server.Implementations.Session
             return session;
         }
 
-        public async Task ReportSessionEnded(string sessionId)
+        public async void ReportSessionEnded(string sessionId)
         {
             await _sessionLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 
@@ -256,18 +256,16 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var session = GetSession(sessionId);
 
-                if (session == null)
+                if (session != null)
                 {
-                    throw new ArgumentException("Session not found");
-                }
+                    var key = GetSessionKey(session.Client, session.ApplicationVersion, session.DeviceId);
 
-                var key = GetSessionKey(session.Client, session.ApplicationVersion, session.DeviceId);
+                    SessionInfo removed;
 
-                SessionInfo removed;
-
-                if (_activeConnections.TryRemove(key, out removed))
-                {
-                    OnSessionEnded(removed);
+                    if (_activeConnections.TryRemove(key, out removed))
+                    {
+                        OnSessionEnded(removed);
+                    }
                 }
             }
             finally
@@ -1155,7 +1153,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (controller == null)
                 {
-                    session.SessionController = new HttpSessionController(_httpClient, _jsonSerializer, session, postUrl);
+                    session.SessionController = new HttpSessionController(_httpClient, _jsonSerializer, session, postUrl, this);
                 }
             }
 
