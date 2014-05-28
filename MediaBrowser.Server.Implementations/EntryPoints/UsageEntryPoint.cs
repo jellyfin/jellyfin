@@ -1,9 +1,13 @@
 ﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations.Security;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
@@ -17,16 +21,88 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly INetworkManager _networkManager;
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
+        private readonly ISessionManager _sessionManager;
 
         private Timer _timer;
         private readonly TimeSpan _frequency = TimeSpan.FromHours(24);
 
-        public UsageEntryPoint(ILogger logger, IApplicationHost applicationHost, INetworkManager networkManager, IHttpClient httpClient)
+        private const string DefaultDeviceVersion = "Unknown version";
+        private readonly ConcurrentDictionary<Guid, ClientInfo> _apps = new ConcurrentDictionary<Guid, ClientInfo>();
+
+        public UsageEntryPoint(ILogger logger, IApplicationHost applicationHost, INetworkManager networkManager, IHttpClient httpClient, ISessionManager sessionManager)
         {
             _logger = logger;
             _applicationHost = applicationHost;
             _networkManager = networkManager;
             _httpClient = httpClient;
+            _sessionManager = sessionManager;
+
+            _sessionManager.SessionStarted += _sessionManager_SessionStarted;
+        }
+
+        void _sessionManager_SessionStarted(object sender, SessionEventArgs e)
+        {
+            var session = e.SessionInfo;
+
+            if (!string.IsNullOrEmpty(session.Client) &&
+                !string.IsNullOrEmpty(session.DeviceName))
+            {
+                var keys = new List<string>
+            {
+                session.Client,
+                session.DeviceName
+            };
+
+                if (!string.IsNullOrEmpty(session.DeviceVersion))
+                {
+                    keys.Add(session.DeviceVersion);
+                }
+                else
+                {
+                    keys.Add(DefaultDeviceVersion);
+                }
+
+                var key = string.Join("_", keys.ToArray()).GetMD5();
+
+                _apps.GetOrAdd(key, guid => GetNewClientInfo(session));
+            }
+        }
+
+        private async void ReportNewSession(ClientInfo client)
+        {
+            try
+            {
+                await new UsageReporter(_applicationHost, _networkManager, _httpClient)
+                    .ReportAppUsage(client, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error sending anonymous usage statistics.", ex);
+            }
+        }
+
+        private ClientInfo GetNewClientInfo(SessionInfo session)
+        {
+            var info = new ClientInfo
+            {
+                AppName = session.Client,
+                AppVersion = session.ApplicationVersion,
+                DeviceVersion = session.DeviceVersion
+            };
+
+            if (string.IsNullOrEmpty(info.DeviceVersion))
+            {
+                info.DeviceVersion = DefaultDeviceVersion;
+            }
+
+            // Report usage to remote server, except for web client, since we already have data on that
+            if (!string.Equals(info.AppName, "Dashboard", StringComparison.OrdinalIgnoreCase))
+            {
+                ReportNewSession(info);
+            }
+
+            return info;
         }
 
         public void Run()
@@ -42,8 +118,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             try
             {
-                await new UsageReporter(_applicationHost, _networkManager, _httpClient).ReportUsage(CancellationToken.None)
-                        .ConfigureAwait(false);
+                await new UsageReporter(_applicationHost, _networkManager, _httpClient)
+                    .ReportServerUsage(CancellationToken.None)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -53,6 +130,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         public void Dispose()
         {
+            _sessionManager.SessionStarted -= _sessionManager_SessionStarted;
+
             if (_timer != null)
             {
                 _timer.Dispose();

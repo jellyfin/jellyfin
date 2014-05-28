@@ -59,9 +59,22 @@
     }
 
 .libraryMenuButton {
-    left: 0;
-    opacity: .8;
+    opacity: .95;
 }
+
+    .libraryMenuButton img {
+        border: 1px solid #444 !important;
+        padding: .5em;
+        border-radius: 5px;
+    }
+
+    .libraryMenuButton:hover {
+        opacity: 1!important;
+    }
+
+    .libraryMenuButton img:hover {
+        background-color: #38c;
+    }
 
 .libraryMenuButtonText {
     color: #fff !important;
@@ -70,7 +83,11 @@
     font-size: 15px;
     display: inline-block;
     vertical-align: middle;
-    margin-left: .5em;
+    line-height: 51px;
+    padding-left: 0 !important;
+    position: relative;
+    top: 2px;
+    margin-left: -5px;
 }
 
 .viewMenuBar {
