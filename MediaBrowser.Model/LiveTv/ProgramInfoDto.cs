@@ -10,13 +10,25 @@ using MediaBrowser.Model.Library;
 namespace MediaBrowser.Model.LiveTv
 {
     [DebuggerDisplay("Name = {Name}, StartTime = {StartDate}, EndTime = {EndDate}")]
-    public class ProgramInfoDto : INotifyPropertyChanged
+    public class ProgramInfoDto : INotifyPropertyChanged, IItemDto
     {
         /// <summary>
         /// Id of the program.
         /// </summary>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the primary image aspect ratio.
+        /// </summary>
+        /// <value>The primary image aspect ratio.</value>
+        public double? PrimaryImageAspectRatio { get; set; }
+
+        /// <summary>
+        /// Gets or sets the original primary image aspect ratio.
+        /// </summary>
+        /// <value>The original primary image aspect ratio.</value>
+        public double? OriginalPrimaryImageAspectRatio { get; set; }
+        
         /// <summary>
         /// Gets or sets the timer identifier.
         /// </summary>

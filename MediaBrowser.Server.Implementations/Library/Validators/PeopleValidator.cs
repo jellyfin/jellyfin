@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
-using MoreLinq;
 using System;
 using System.Linq;
 using System.Threading;
@@ -77,7 +76,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 double percent = numComplete;
                 percent /= people.Count;
 
-                progress.Report(15 + 85 * percent);
+                progress.Report(100 * percent);
             }
 
             progress.Report(100);

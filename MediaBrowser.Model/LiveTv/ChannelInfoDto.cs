@@ -1,11 +1,10 @@
-﻿using System.ComponentModel;
+﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Library;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using System;
-using System.Collections.Generic;
-using MediaBrowser.Model.Library;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -20,7 +19,7 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the identifier.
         /// </summary>
