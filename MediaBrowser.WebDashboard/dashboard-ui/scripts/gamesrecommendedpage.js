@@ -22,7 +22,8 @@
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 transparent: true,
-                borderless: true
+                borderless: true,
+                shape: 'auto'
             }));
 
         });
@@ -50,7 +51,8 @@
             $('#recentlyPlayedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 transparent: true,
-                borderless: true
+                borderless: true,
+                shape: 'auto'
             }));
 
         });

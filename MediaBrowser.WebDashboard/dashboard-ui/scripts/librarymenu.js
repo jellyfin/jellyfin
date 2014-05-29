@@ -4,7 +4,7 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        html += '<button type="button" data-role="none" title="Menu" onclick="LibraryMenu.showLibraryMenu();" class="headerButton libraryMenuButton headerButtonLeft">';
+        html += '<button type="button" data-role="none" title="Menu" class="headerButton libraryMenuButton headerButtonLeft">';
         html += '<img src="css/images/menu.png" />';
         html += '</button>';
         html += '<div class="libraryMenuButtonText headerButton"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></div>';
@@ -45,6 +45,8 @@
         $(document.body).prepend(html);
 
         $(document).trigger('headercreated');
+
+        $('.libraryMenuButton').on('click', showLibraryMenu);
     }
 
     function getItemHref(item) {

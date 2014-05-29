@@ -340,8 +340,19 @@
         closePlayMenu: function () {
             $('.playFlyout').popup("close").remove();
         },
+        
+        getHref: function (item, context) {
 
-        getHref: function (item, itemByNameContext) {
+            var href = LibraryBrowser.getHrefInternal(item);
+
+            if (context) {
+                href += "&context=" + context;
+            }
+
+            return href;
+        },
+
+        getHrefInternal: function (item) {
 
             if (!item) {
                 throw new Error('item cannot be null');
@@ -350,8 +361,6 @@
             if (item.url) {
                 return item.url;
             }
-
-            itemByNameContext = itemByNameContext || "";
 
             // Handle search hints
             var id = item.Id || item.ItemId;
@@ -369,7 +378,7 @@
             }
 
             if (item.CollectionType == 'tvshows') {
-                return 'tvrecommended.html?topParentId=' + item.Id;
+                return 'tvlatest.html?topParentId=' + item.Id;
             }
 
             if (item.CollectionType == 'music') {
@@ -411,30 +420,33 @@
                 return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Genre") {
-                return "itembynamedetails.html?genre=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?genre=" + ApiClient.encodeName(item.Name);
             }
             if (item.Type == "MusicGenre") {
-                return "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(item.Name);
             }
             if (item.Type == "GameGenre") {
-                return "itembynamedetails.html?gamegenre=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?gamegenre=" + ApiClient.encodeName(item.Name);
             }
             if (item.Type == "Studio") {
-                return "itembynamedetails.html?studio=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?studio=" + ApiClient.encodeName(item.Name);
             }
             if (item.Type == "Person") {
-                return "itembynamedetails.html?person=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?person=" + ApiClient.encodeName(item.Name);
             }
             if (item.Type == "Recording") {
                 return "livetvrecording.html?id=" + id;
             }
 
             if (item.Type == "MusicArtist") {
-                return "itembynamedetails.html?musicartist=" + ApiClient.encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
+                return "itembynamedetails.html?musicartist=" + ApiClient.encodeName(item.Name);
             }
 
-            return item.IsFolder ? (id ? "itemlist.html?parentId=" + id : "#") : "itemdetails.html?id=" + id;
+            if (item.IsFolder) {
+                return id ? "itemlist.html?parentId=" + id : "#";
+            }
 
+            return "itemdetails.html?id=" + id;
         },
 
         getImageUrl: function (item, type, index, options) {
@@ -793,7 +805,7 @@
                 cssClass = options.centerText ? "posterItemText posterItemTextCentered" : "posterItemText";
 
                 var lines = [];
-                
+
                 if (options.showParentTitle) {
 
                     lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));

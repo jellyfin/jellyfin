@@ -65,6 +65,7 @@
                 else if (document.webkitCancelFullScreen) {
                     document.webkitCancelFullScreen();
                 }
+                $('#videoPlayer').removeClass('fullscreenVideo');
             } else {
                 requestFullScreen(document.body);
             }
@@ -72,6 +73,7 @@
 
         self.resetEnhancements = function () {
             $("#mediaPlayer").hide();
+            $('#videoPlayer').removeClass('fullscreenVideo');
             $("#videoControls").removeClass("inactive");
             $("video").remove();
             $("html").css("cursor", "default");
@@ -85,6 +87,8 @@
             } else if (document.webkitExitFullscreen) {
                 document.webkitExitFullscreen();
             }
+
+            $('#videoPlayer').removeClass('fullscreenVideo');
 
             fullscreenExited = true;
         };
@@ -342,6 +346,8 @@
 
             var player = $("#videoPlayer");
 
+            player.addClass("fullscreenVideo");
+
             remoteFullscreen = true;
 
         }
@@ -349,6 +355,8 @@
         function exitFullScreenToWindow() {
 
             var player = $("#videoPlayer");
+
+            player.removeClass("fullscreenVideo");
 
             remoteFullscreen = false;
 
@@ -801,7 +809,7 @@
                     html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay controls>';
                 }
             } else {
-                
+
                 // Chrome 35 won't play with preload none
                 html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay>';
             }
@@ -996,6 +1004,7 @@
 
             $(document).on("keyup.enhancePlayer", function (e) {
                 if (fullscreenExited) {
+                    videoPlayer.removeClass("fullscreenVideo");
                     fullscreenExited = false;
                     return;
                 }

@@ -69,7 +69,7 @@
 }
 
 .homePageSection + .homePageSection {
-    margin-top: 3em;
+    margin-top: 2em;
 }
 
 @media all and (min-width: 1000px) {

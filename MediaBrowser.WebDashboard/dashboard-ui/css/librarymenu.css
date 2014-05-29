@@ -63,13 +63,14 @@
     }
 
 .libraryMenuButton {
-    opacity: .95;
 }
 
     .libraryMenuButton img {
         border: 1px solid #444 !important;
         padding: .5em;
+        background-color: #181818;
         border-radius: 5px;
+        height: 14px!important;
     }
 
     .libraryMenuButton:hover {
@@ -92,6 +93,7 @@
     position: relative;
     top: 2px;
     margin-left: -5px;
+    cursor: default;
 }
 
 .viewMenuBar {

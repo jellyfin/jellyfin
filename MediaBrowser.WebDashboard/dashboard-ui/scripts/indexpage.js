@@ -192,7 +192,8 @@
                     preferThumb: true,
                     shape: 'backdrop',
                     showTitle: true,
-                    centerText: true
+                    centerText: true,
+                    context: 'home'
                 });
                 html += '</div>';
             }
@@ -263,7 +264,8 @@
                     shape: 'backdrop',
                     overlayText: screenWidth >= 600,
                     showTitle: true,
-                    showParentTitle: true
+                    showParentTitle: true,
+                    context: 'home'
                 });
                 html += '</div>';
             }

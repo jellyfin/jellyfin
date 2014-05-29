@@ -6,6 +6,15 @@
 <body>
     <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage" data-theme="b">
 
+        <div class="itemTabs homeTabs" style="display: none;">
+            <div class="libraryViewNav scopedLibraryViewNav">
+                <a href="index.html" class="lnkHomeHome">${TabHome}</a>
+                <a href="tvrecommended.html" class="lnkHomeNextUp">${TabNextUp}</a>
+                <a href="favorites.html" class="lnkHomeFavorites">${TabFavorites}</a>
+                <a href="tvupcoming.html" class="lnkHomeUpcoming">${TabUpcoming}</a>
+            </div>
+        </div>
+
         <div id="channelTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="channels.html" class="ui-btn-active">${TabChannels}</a>
@@ -30,9 +39,7 @@
         </div>
         <div id="tvShowsTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="tvrecommended.html">${TabSuggested}</a>
                 <a href="tvlatest.html">${TabLatest}</a>
-                <a href="tvupcoming.html">${TabUpcoming}</a>
                 <a href="tvshows.html" class="ui-btn-active">${TabShows}</a>
                 <a href="episodes.html">${TabEpisodes}</a>
                 <a href="tvgenres.html">${TabGenres}</a>

@@ -28,12 +28,12 @@
 
             currentItem = item;
 
-            renderHeader(page, item);
+            var context = getContext(item);
+
+            renderHeader(page, item, context);
 
             LibraryBrowser.renderName(item, $('.itemName', page));
             LibraryBrowser.renderParentName(item, $('.parentName', page));
-
-            var context = getContext(item);
 
             Dashboard.getCurrentUser().done(function (user) {
 
@@ -145,6 +145,11 @@
     function getContext(item) {
 
         // should return either movies, tv, music or games
+        var context = getParameterByName('context');
+
+        if (context) {
+            return context;
+        }
 
         if (item.Type == "Episode" || item.Type == "Series" || item.Type == "Season") {
             return "tv";
@@ -164,46 +169,66 @@
         return "";
     }
 
-    function renderHeader(page, item) {
+    function renderHeader(page, item, context) {
 
         $('.itemTabs', page).hide();
+        $('.channelHeader', page).hide();
+        var elem;
 
-        if (item.Type == "MusicAlbum") {
+        if (context == 'home') {
+            elem = $('.homeTabs', page).show();
+            $('a', elem).removeClass('ui-btn-active');
+            $('.lnkHomeHome', page).addClass('ui-btn-active');
+        }
+        else if (context == 'home-nextup') {
+            elem = $('.homeTabs', page).show();
+            $('a', elem).removeClass('ui-btn-active');
+            $('.lnkHomeNextUp', page).addClass('ui-btn-active');
+        }
+        else if (context == 'home-favorites') {
+            elem = $('.homeTabs', page).show();
+            $('a', elem).removeClass('ui-btn-active');
+            $('.lnkHomeFavorites', page).addClass('ui-btn-active');
+        }
+        else if (context == 'home-upcoming') {
+            elem = $('.homeTabs', page).show();
+            $('a', elem).removeClass('ui-btn-active');
+            $('.lnkHomeUpcoming', page).addClass('ui-btn-active');
+        }
+        else if (item.Type == "MusicAlbum") {
             $('#albumTabs', page).show();
         }
 
-        if (item.Type == "MusicVideo") {
+        else if (item.Type == "MusicVideo") {
             $('#musicVideoTabs', page).show();
         }
 
-        if (item.Type == "Audio") {
+        else if (item.Type == "Audio") {
             $('#songTabs', page).show();
         }
 
-        if (item.Type == "Movie") {
+        else if (item.Type == "Movie") {
             $('#movieTabs', page).show();
         }
 
-        if (item.Type == "ChannelVideoItem" || item.Type == "ChannelAudioItem" || item.Type == "ChannelFolderItem") {
+        else if (item.Type == "ChannelVideoItem" || item.Type == "ChannelAudioItem" || item.Type == "ChannelFolderItem") {
             $('#channelTabs', page).show();
             $('.channelHeader', page).show().html('<a href="channelitems.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
-        } else {
-            $('.channelHeader', page).hide();
         }
 
-        if (item.Type == "BoxSet") {
+        else if (item.Type == "BoxSet") {
             $('#boxsetTabs', page).show();
         }
 
-        if (item.MediaType == "Game") {
+        else if (item.MediaType == "Game") {
             $('#gameTabs', page).show();
         }
 
-        if (item.Type == "GameSystem") {
+        else if (item.Type == "GameSystem") {
             $('#gameSystemTabs', page).show();
         }
 
-        if (item.Type == "Episode" || item.Type == "Season" || item.Type == "Series") {
+        else if (item.Type == "Episode" || item.Type == "Season" || item.Type == "Series") {
             $('#tvShowsTabs', page).show();
         }
     }
@@ -219,7 +244,7 @@
             } else {
                 $('#childrenCollapsible', page).removeClass('hide');
             }
-            renderChildren(page, item, user);
+            renderChildren(page, item, user, context);
         }
         else {
             $('#childrenCollapsible', page).addClass('hide');
@@ -280,7 +305,7 @@
 
     function renderDetails(page, item, context) {
 
-        renderSimilarItems(page, item);
+        renderSimilarItems(page, item, context);
         renderSiblingLinks(page, item);
 
         if (item.Taglines && item.Taglines.length) {
@@ -333,7 +358,7 @@
         }
 
         if (item.Artists && item.Artists.length && item.Type != "MusicAlbum") {
-            $('#artist', page).show().html(getArtistLinksHtml(item.Artists)).trigger('create');
+            $('#artist', page).show().html(getArtistLinksHtml(item.Artists, context)).trigger('create');
         } else {
             $('#artist', page).hide();
         }
@@ -401,7 +426,7 @@
         //}
     }
 
-    function getArtistLinksHtml(artists) {
+    function getArtistLinksHtml(artists, context) {
 
         var html = [];
 
@@ -409,7 +434,7 @@
 
             var artist = artists[i];
 
-            html.push('<a class="textlink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
+            html.push('<a class="textlink" href="itembynamedetails.html?context=' + context + '&musicartist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
 
         }
 
@@ -453,7 +478,8 @@
     function renderSiblingLinks(page, item) {
 
         $('.lnkSibling', page).addClass('hide');
-
+        return;
+        
         if ((item.Type != "Episode" && item.Type != "Season" && item.Type != "Audio") || item.IndexNumber == null) {
             return;
         }
@@ -507,7 +533,7 @@
         });
     }
 
-    function renderSimilarItems(page, item) {
+    function renderSimilarItems(page, item, context) {
 
         var promise;
 
@@ -554,7 +580,8 @@
                 showParentTitle: item.Type == "MusicAlbum",
                 centerText: item.Type != "MusicAlbum",
                 showTitle: item.Type == "MusicAlbum" || item.Type == "Game",
-                borderless: item.Type == "Game"
+                borderless: item.Type == "Game",
+                context: context
             });
 
             $('#similarContent', page).html(html).createPosterItemMenus();
@@ -632,7 +659,7 @@
         }
     }
 
-    function renderChildren(page, item, user) {
+    function renderChildren(page, item, user, context) {
 
         var fields = "ItemCounts,AudioInfo,PrimaryImageAspectRatio";
 
@@ -684,7 +711,8 @@
                         items: result.Items,
                         shape: "portrait",
                         showTitle: true,
-                        centerText: true
+                        centerText: true,
+                        context: context
                     });
                 }
                 else if (item.Type == "Season") {
@@ -692,16 +720,17 @@
                         items: result.Items,
                         shape: "smallBackdrop",
                         showTitle: true,
-                        displayAsSpecial: item.Type == "Season" && item.IndexNumber
+                        displayAsSpecial: item.Type == "Season" && item.IndexNumber,
+                        context: context
                     });
                 }
                 else if (item.Type == "GameSystem") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "auto",
-                        context: 'games',
                         showTitle: true,
-                        centerText: true
+                        centerText: true,
+                        context: context
                     });
                 }
 
@@ -717,7 +746,7 @@
                         { name: 'Books', type: 'Book' }
                     ];
 
-                    renderCollectionItems(page, collectionItemTypes, result.Items, user);
+                    renderCollectionItems(page, collectionItemTypes, result.Items, user, context);
                 }
             }
         });
@@ -781,7 +810,7 @@
         $('.collectionItems', page).trigger('create').createPosterItemMenus();
     }
 
-    function renderCollectionItemType(page, type, items, user) {
+    function renderCollectionItemType(page, type, items, user, context) {
 
         var html = '';
 
@@ -804,7 +833,8 @@
             items: items,
             shape: shape,
             showTitle: true,
-            centerText: true
+            centerText: true,
+            context: context
         });
         html += '</div>';
 

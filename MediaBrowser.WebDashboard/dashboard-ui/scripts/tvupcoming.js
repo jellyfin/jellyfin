@@ -4,14 +4,11 @@
 
         var page = this;
 
-        var parentId = LibraryMenu.getTopParentId();
-
         var query = {
 
             Limit: 32,
             Fields: "SeriesInfo,UserData",
-            UserId: Dashboard.getCurrentUserId(),
-            ParentId: parentId
+            UserId: Dashboard.getCurrentUserId()
         };
 
         $.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).done(function (result) {
@@ -31,9 +28,11 @@
                 showTitle: true,
                 showPremiereDate: true,
                 showPremiereDateIndex: true,
-                preferThumb: true
+                preferThumb: true,
+                context: 'home-upcoming',
+                lazy: true
 
-            })).createPosterItemMenus();
+            })).trigger('create').createPosterItemMenus();
         });
     });
 

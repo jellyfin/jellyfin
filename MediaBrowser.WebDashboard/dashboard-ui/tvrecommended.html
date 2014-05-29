@@ -5,29 +5,18 @@
 </head>
 <body>
     <div id="tvRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="series" data-theme="b">
+
         <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="#" class="ui-btn-active">${TabSuggested}</a>
-            <a href="tvlatest.html">${TabLatest}</a>
+            <a href="index.html">${TabHome}</a>
+            <a href="tvrecommended.html" class="ui-btn-active">${TabNextUp}</a>
+            <a href="favorites.html">${TabFavorites}</a>
             <a href="tvupcoming.html">${TabUpcoming}</a>
-            <a href="tvshows.html">${TabShows}</a>
-            <a href="episodes.html">${TabEpisodes}</a>
-            <a href="tvgenres.html">${TabGenres}</a>
-            <a href="tvpeople.html">${TabPeople}</a>
-            <a href="tvstudios.html">${TabNetworks}</a>
         </div>
+        <br />
         <div data-role="content">
-            <table class="ehsContent">
+            <table class="ehsContent homeEhsContent" style="text-align: center;">
                 <tr>
                     <td>
-
-                        <div id="resumableSection" style="display: none;">
-                            <h1 class="listHeader">${HeaderResume}</h1>
-
-                            <div id="resumableItems">
-                            </div>
-                        </div>
-
-                        <h1 class="listHeader">${HeaderNextUp}</h1>
 
                         <div id="nextUpItems">
                         </div>

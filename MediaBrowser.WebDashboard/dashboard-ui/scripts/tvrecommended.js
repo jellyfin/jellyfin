@@ -1,57 +1,15 @@
 ﻿(function ($, document) {
 
-    function loadResume(page) {
-
-        var screenWidth = $(window).width();
-
-        var parentId = LibraryMenu.getTopParentId();
-
-        var options = {
-
-            SortBy: "DatePlayed",
-            SortOrder: "Descending",
-            IncludeItemTypes: "Episode",
-            Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 5 : 4,
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
-            ExcludeLocationTypes: "Virtual",
-            ParentId: parentId
-        };
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
-
-            if (result.Items.length) {
-                $('#resumableSection', page).show();
-            } else {
-                $('#resumableSection', page).hide();
-            }
-
-            $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "backdrop",
-                showTitle: true,
-                showParentTitle: true,
-                overlayText: screenWidth >= 600
-
-            })).createPosterItemMenus();
-
-        });
-    }
-
     function loadNextUp(page) {
 
         var screenWidth = $(window).width();
-
-        var parentId = LibraryMenu.getTopParentId();
 
         var options = {
 
             Limit: 24,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated",
             UserId: Dashboard.getCurrentUserId(),
-            ExcludeLocationTypes: "Virtual",
-            ParentId: parentId
+            ExcludeLocationTypes: "Virtual"
         };
 
         ApiClient.getNextUpEpisodes(options).done(function (result) {
@@ -67,9 +25,11 @@
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: screenWidth >= 600
+                overlayText: screenWidth >= 600,
+                context: 'home-nextup',
+                lazy: true
 
-            })).createPosterItemMenus();
+            })).trigger('create').createPosterItemMenus();
 
         });
     }
@@ -78,7 +38,6 @@
 
         var page = this;
 
-        loadResume(page);
         loadNextUp(page);
     });
 
