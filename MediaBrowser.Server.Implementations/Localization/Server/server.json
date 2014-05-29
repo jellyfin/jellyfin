@@ -789,5 +789,6 @@
 	"MessageLoadingChannels": "Loading channel content...",
 	"ButtonMarkRead": "Mark Read",
 	"OptionDefaultSort": "Default",
-	"OptionCommunityMostWatchedSort": "Most Watched"
+	"OptionCommunityMostWatchedSort": "Most Watched",
+	"TabNextUp": "Next Up"
 }
