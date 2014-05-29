@@ -27,7 +27,7 @@
             html += LibraryBrowser.getPosterViewHtml({
 
                 items: result.Items,
-                shape: "backdrop",
+                shape: "auto",
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: screenWidth >= 600,

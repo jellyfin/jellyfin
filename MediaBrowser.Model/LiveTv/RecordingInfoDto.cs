@@ -10,13 +10,25 @@ using System.Runtime.Serialization;
 namespace MediaBrowser.Model.LiveTv
 {
     [DebuggerDisplay("Name = {Name}, ChannelName = {ChannelName}")]
-    public class RecordingInfoDto : INotifyPropertyChanged
+    public class RecordingInfoDto : INotifyPropertyChanged, IItemDto
     {
         /// <summary>
         /// Id of the recording.
         /// </summary>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the primary image aspect ratio.
+        /// </summary>
+        /// <value>The primary image aspect ratio.</value>
+        public double? PrimaryImageAspectRatio { get; set; }
+
+        /// <summary>
+        /// Gets or sets the original primary image aspect ratio.
+        /// </summary>
+        /// <value>The original primary image aspect ratio.</value>
+        public double? OriginalPrimaryImageAspectRatio { get; set; }
+        
         /// <summary>
         /// Gets or sets the series timer identifier.
         /// </summary>

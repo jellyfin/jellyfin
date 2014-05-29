@@ -136,8 +136,8 @@
         height: 34px;
         background-position: 12px center;
         background-size: 20px 20px;
-        background-color: rgba(51, 136, 204, 0.5);
-        background-color: rgba(82, 181, 75, 0.5);
+        background-color: rgba(51, 136, 204, 0.7);
+        background-color: rgba(82, 181, 75, 0.7);
     }
 
     .myLibraryPosterItem .posterItemDefaultText {
@@ -149,27 +149,27 @@
     }
 
 .moviesPosterItem .posterItemImage {
-    background-color: rgba(176, 94, 81, 0.5);
+    background-color: rgba(176, 94, 81, 0.7);
 }
 
 .musicPosterItem .posterItemImage {
-    background-color: rgba(217, 145, 67, 0.5);
+    background-color: rgba(217, 145, 67, 0.7);
 }
 
 .tvshowsPosterItem .posterItemImage {
-    background-color: rgba(77, 88, 164, 0.5);
+    background-color: rgba(77, 88, 164, 0.7);
 }
 
 .gamesPosterItem .posterItemImage {
-    background-color: rgba(183, 202, 72, 0.5);
+    background-color: rgba(183, 202, 72, 0.7);
 }
 
 .channelsPosterItem .posterItemImage {
-    background-color: rgba(51, 136, 204, 0.5);
+    background-color: rgba(51, 136, 204, 0.7);
 }
 
 .livetvPosterItem .posterItemImage {
-    background-color: rgba(255, 233, 127, 0.5);
+    background-color: rgba(255, 233, 127, 0.7);
 }
 
 .backdropPosterItem {

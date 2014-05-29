@@ -244,6 +244,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (imageTag != null)
             {
                 dto.ImageTags[ImageType.Primary] = imageTag;
+                _dtoService.AttachPrimaryImageAspectRatio(dto, recording);
             }
 
             if (user != null)
@@ -331,6 +332,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (imageTag != null)
             {
                 dto.ImageTags[ImageType.Primary] = imageTag;
+
+                _dtoService.AttachPrimaryImageAspectRatio(dto, info);
             }
 
             if (currentProgram != null)
@@ -392,6 +395,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (imageTag != null)
             {
                 dto.ImageTags[ImageType.Primary] = imageTag;
+                _dtoService.AttachPrimaryImageAspectRatio(dto, item);
             }
 
             if (user != null)

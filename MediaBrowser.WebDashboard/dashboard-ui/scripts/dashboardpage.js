@@ -869,7 +869,8 @@
     }
 };
 
-$(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pagehide', "#dashboardPage", DashboardPage.onPageHide);
+$(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
+    .on('pagehide', "#dashboardPage", DashboardPage.onPageHide);
 
 (function ($, document, window) {
 

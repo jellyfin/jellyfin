@@ -124,7 +124,7 @@
         $('.recordingsTab', page).html(LibraryBrowser.getPosterViewHtml({
 
             items: result.Items,
-            shape: "smallBackdrop",
+            shape: "autosmall",
             showTitle: true,
             overlayText: screenWidth >= 600,
             coverImage: true

@@ -472,12 +472,12 @@
 
             var primaryImageAspectRatio;
 
-            if (options.shape == 'auto') {
+            if (options.shape == 'auto' || options.shape == 'autosmall') {
 
-                primaryImageAspectRatio = options.shape == 'auto' ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
+                primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio(items);
 
                 if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3) {
-                    options.shape = 'backdrop';
+                    options.shape = options.shape == 'auto' ? 'backdrop' : 'smallBackdrop';
                 }
                 else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33) {
                     options.coverImage = true;

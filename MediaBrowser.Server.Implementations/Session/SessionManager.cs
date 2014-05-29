@@ -165,6 +165,8 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (disposable != null)
             {
+                _logger.Debug("Disposing session controller {0}", disposable.GetType().Name);
+
                 try
                 {
                     disposable.Dispose();

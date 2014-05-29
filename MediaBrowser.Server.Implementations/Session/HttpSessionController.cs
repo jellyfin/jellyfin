@@ -79,9 +79,12 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private void ResetPingTimer()
         {
-            var period = TimeSpan.FromSeconds(60);
+            if (_pingTimer != null)
+            {
+                var period = TimeSpan.FromSeconds(60);
 
-            _pingTimer.Change(period, period);
+                _pingTimer.Change(period, period);
+            }
         }
 
         private Task SendMessage(string name, CancellationToken cancellationToken)

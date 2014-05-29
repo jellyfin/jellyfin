@@ -54,7 +54,7 @@
         $('.recordingItems', elem).html(LibraryBrowser.getPosterViewHtml({
             
             items: recordings,
-            shape: "backdrop",
+            shape: "auto",
             showTitle: true,
             showParentTitle: true,
             overlayText: screenWidth >= 600,
