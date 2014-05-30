@@ -3,10 +3,10 @@
     function getSections() {
 
         return [
-            { name: "Favorite Movies", types: "Movie", id: "favoriteMovies", shape: 'backdrop', preferThumb: true, showTitle: false },
-            { name: "Favorite Shows", types: "Series", id: "favoriteShows", shape: 'backdrop', preferThumb: true, showTitle: false },
-            { name: "Favorite Episodes", types: "Episode", id: "favoriteEpisode", shape: 'backdrop', preferThumb: false, showTitle: true, showParentTitle: true },
-            { name: "Favorite Games", types: "Game", id: "favoriteGames", shape: 'auto', preferThumb: false, showTitle: true }
+            { name: Globalize.translate('HeaderFavoriteMovies'), types: "Movie", id: "favoriteMovies", shape: 'backdrop', preferThumb: true, showTitle: false },
+            { name: Globalize.translate('HeaderFavoriteShows'), types: "Series", id: "favoriteShows", shape: 'backdrop', preferThumb: true, showTitle: false },
+            { name: Globalize.translate('HeaderFavoriteEpisodes'), types: "Episode", id: "favoriteEpisode", shape: 'backdrop', preferThumb: false, showTitle: true, showParentTitle: true },
+            { name: Globalize.translate('HeaderFavoriteGames'), types: "Game", id: "favoriteGames", shape: 'auto', preferThumb: false, showTitle: true }
         ];
 
     }
@@ -27,7 +27,7 @@
             CollapseBoxSetItems: false,
             ExcludeLocationTypes: "Virtual"
         };
-        
+
         if (isSingleSection) {
             options.Limit = null;
         }
@@ -55,7 +55,7 @@
 
                     var href = "favorites.html?sectionid=" + section.id;
 
-                    html += '<a data-role="button" href="' + href + '" data-mini="true" data-inline="true">More ...</a>';
+                    html += '<a data-role="button" href="' + href + '" data-mini="true" data-inline="true">' + Globalize.translate('ButtonMore') + '</a>';
                     html += '</div>';
                 }
                 html += '</div>';

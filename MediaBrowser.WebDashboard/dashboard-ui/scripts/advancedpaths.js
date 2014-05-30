@@ -40,9 +40,9 @@
                     picker.close();
                 },
 
-                header: "Select Server Cache Path",
+                header: Globalize.translate('HeaderSelectServerCachePath'),
 
-                instruction: "Browse or enter the path to use for Media Browser Server cache. The folder must be writeable. The location of this folder will directly impact server performance and should ideally be placed on a solid state drive."
+                instruction: Globalize.translate('HeaderSelectServerCachePathHelp')
             });
         });
 
@@ -60,9 +60,9 @@
                     picker.close();
                 },
 
-                header: "Select Transcoding Temporary Path",
+                header: Globalize.translate('HeaderSelectTranscodingPath'),
 
-                instruction: "Browse or enter the path to use for transcoding temporary files. The folder must be writeable."
+                instruction: Globalize.translate('HeaderSelectTranscodingPathHelp')
             });
         });
 
@@ -80,9 +80,9 @@
                     picker.close();
                 },
 
-                header: "Select Images By Name Path",
+                header: Globalize.translate('HeaderSelectImagesByNamePath'),
 
-                instruction: "Browse or enter the path to your items by name folder. The folder must be writeable."
+                instruction: Globalize.translate('HeaderSelectImagesByNamePathHelp')
             });
         });
 
@@ -100,9 +100,9 @@
                     picker.close();
                 },
 
-                header: "Select Metadata Path",
+                header: Globalize.translate('HeaderSelectMetadataPath'),
 
-                instruction: "Browse or enter the path you'd like to store metadata within. The folder must be writeable."
+                instruction: Globalize.translate('HeaderSelectMetadataPathHelp')
             });
         });
 

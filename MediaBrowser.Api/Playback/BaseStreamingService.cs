@@ -1629,7 +1629,11 @@ namespace MediaBrowser.Api.Playback
             // Video bitrate must fall within requested value
             if (request.AudioBitRate.HasValue)
             {
-                if (!audioStream.BitRate.HasValue || audioStream.BitRate.Value > request.AudioBitRate.Value)
+                if (!audioStream.BitRate.HasValue || audioStream.BitRate.Value <= 0)
+                {
+                    return false;
+                }
+                if (audioStream.BitRate.Value > request.AudioBitRate.Value)
                 {
                     return false;
                 }
@@ -1639,7 +1643,11 @@ namespace MediaBrowser.Api.Playback
             var channels = request.AudioChannels ?? request.MaxAudioChannels;
             if (channels.HasValue)
             {
-                if (!audioStream.Channels.HasValue || audioStream.Channels.Value > channels.Value)
+                if (!audioStream.Channels.HasValue || audioStream.Channels.Value <= 0)
+                {
+                    return false;
+                }
+                if (audioStream.Channels.Value > channels.Value)
                 {
                     return false;
                 }
@@ -1648,7 +1656,11 @@ namespace MediaBrowser.Api.Playback
             // Sample rate must fall within requested value
             if (request.AudioSampleRate.HasValue)
             {
-                if (!audioStream.SampleRate.HasValue || audioStream.SampleRate.Value > request.AudioSampleRate.Value)
+                if (!audioStream.SampleRate.HasValue || audioStream.SampleRate.Value <= 0)
+                {
+                    return false;
+                }
+                if (audioStream.SampleRate.Value > request.AudioSampleRate.Value)
                 {
                     return false;
                 }

@@ -38,7 +38,7 @@
             html += profile.Name;
             html += '</a>';
 
-            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileid="' + profile.Id + '">Delete</a>';
+            html += '<a href="#" data-icon="delete" class="btnDeleteProfile" data-profileid="' + profile.Id + '">' + Globalize.translate('Delete') + '</a>';
 
             html += '</li>';
         }
@@ -82,7 +82,7 @@
 
     function deleteProfile(page, id) {
 
-        Dashboard.confirm("Are you sure you wish to delete this profile?", "Confirm Profile Deletion", function (result) {
+        Dashboard.confirm(Globalize.translate('MessageConfirmProfileDeletion'), Globalize.translate('HeaderConfirmProfileDeletion'), function (result) {
 
             if (result) {
 

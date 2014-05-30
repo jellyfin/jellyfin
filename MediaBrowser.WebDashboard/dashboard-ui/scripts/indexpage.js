@@ -146,7 +146,7 @@
             var html = '<br/>';
 
             if (index) {
-                html += '<h1 class="listHeader">My Library</h1>';
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyLibrary') + '</h1>';
             }
             html += '<div>';
             html += createMediaLinks({
@@ -185,7 +185,7 @@
             var html = '';
 
             if (result.Items.length) {
-                html += '<h1 class="listHeader">Latest Media</h1>';
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
@@ -217,7 +217,7 @@
             var html = '';
 
             if (result.Items.length) {
-                html += '<h1 class="listHeader">My Library</h1>';
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyLibrary') + '</h1>';
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
@@ -258,7 +258,7 @@
             var html = '';
 
             if (result.Items.length) {
-                html += '<h1 class="listHeader">Resume</h1>';
+                html += '<h1 class="listHeader">'+Globalize.translate('HeaderResume')+'</h1>';
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
@@ -334,7 +334,30 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#indexPage", function () {
+    function dismissWelcome(page, userId) {
+
+        ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
+
+            result.CustomPrefs.homePageWelcomeDismissed = '1';
+            ApiClient.updateDisplayPreferences('home', result, userId, 'webclient').done(function() {
+                
+                $('.welcomeMessage', page).hide();
+                
+            });
+        });
+    }
+
+    $(document).on('pageinit', "#indexPage", function () {
+
+        var page = this;
+
+        var userId = Dashboard.getCurrentUserId();
+
+        $('.btnDismissWelcome', page).on('click', function () {
+            dismissWelcome(page, userId);
+        });
+
+    }).on('pagebeforeshow', "#indexPage", function () {
 
         var page = this;
 
@@ -342,6 +365,12 @@
 
         ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
 
+            if (result.CustomPrefs.homePageWelcomeDismissed) {
+                $('.welcomeMessage', page).hide();
+            } else {
+                $('.welcomeMessage', page).show();
+            }
+            
             loadSections(page, userId, result);
         });
 

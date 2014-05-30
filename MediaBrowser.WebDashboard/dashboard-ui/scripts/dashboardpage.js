@@ -630,14 +630,12 @@
         }
 
         if (!tasks.length) {
-            html += '<p>No tasks are currently running.</p>';
             $('#runningTasksCollapsible', page).hide();
         } else {
             $('#runningTasksCollapsible', page).show();
         }
 
         for (var i = 0, length = tasks.length; i < length; i++) {
-
 
             var task = tasks[i];
 

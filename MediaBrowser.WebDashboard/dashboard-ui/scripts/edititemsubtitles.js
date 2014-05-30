@@ -128,15 +128,15 @@
             itemHtml += '</a>';
 
             if (s.Path) {
-                itemHtml += '<a href="#" data-icon="delete" class="btnDelete" data-index="' + s.Index + '">Delete</a>';
+                itemHtml += '<a href="#" data-icon="delete" class="btnDelete" data-index="' + s.Index + '">' + Globalize.translate('Delete') + '</a>';
             } else {
-                itemHtml += '<a href="#" data-icon="delete" style="display:none;" class="btnDelete" data-index="' + s.Index + '">Delete</a>';
+                itemHtml += '<a href="#" data-icon="delete" style="display:none;" class="btnDelete" data-index="' + s.Index + '">' + Globalize.translate('Delete') + '</a>';
             }
 
             itemHtml += '</li>';
 
             return itemHtml;
-            
+
         }).join('');
 
         html += '</ul>';
@@ -202,7 +202,7 @@
             var provider = result.ProviderName;
 
             if (provider != lastProvider) {
-                html += '<li data-role="list-divider">' + provider + '<span class="ui-li-count ui-body-inherit">Rating / Downloads</span></li>';
+                html += '<li data-role="list-divider">' + provider + '<span class="ui-li-count ui-body-inherit">' + Globalize.translate('HeaderRatingsDownloads') + '</span></li>';
                 lastProvider = provider;
             }
 
@@ -279,7 +279,7 @@
         if (msg.MessageType === "LibraryChanged") {
 
             if (msg.Data.ItemsUpdated.indexOf(currentItem.Id) != -1) {
-                
+
                 console.log('Item updated - reloading subtitles');
                 reload($.mobile.activePage);
             }
