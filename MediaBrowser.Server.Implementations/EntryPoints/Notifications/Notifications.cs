@@ -99,7 +99,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var notification = new NotificationRequest
             {
-                Description = installationInfo.Description,
+                Description = e.Argument.Item2.description,
                 NotificationType = type
             };
 

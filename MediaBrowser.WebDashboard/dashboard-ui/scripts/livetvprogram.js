@@ -4,7 +4,7 @@
 
     function deleteTimer(page, id) {
 
-        Dashboard.confirm("Are you sure you wish to cancel this recording?", "Confirm Recording Cancellation", function (result) {
+        Dashboard.confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation'), function (result) {
 
             if (result) {
 
@@ -12,7 +12,7 @@
 
                 ApiClient.cancelLiveTvTimer(id).done(function () {
 
-                    Dashboard.alert('Recording cancelled.');
+                    Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
 
                     reload(page);
                 });

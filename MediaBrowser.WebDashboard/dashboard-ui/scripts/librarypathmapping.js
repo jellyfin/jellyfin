@@ -4,7 +4,7 @@
 
     function remove(page, index) {
 
-        Dashboard.confirm("Are you sure you wish to delete this path substitution?", "Confirm Deletion", function (result) {
+        Dashboard.confirm(Globalize.translate('MessageConfirmPathSubstitutionDeletion'), Globalize.translate('HeaderConfirmDeletion'), function (result) {
 
             if (result) {
 

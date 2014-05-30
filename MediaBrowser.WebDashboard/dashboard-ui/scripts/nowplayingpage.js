@@ -113,7 +113,7 @@
 
         var elem = $('#popupAudioTrackMenu', page);
 
-        var html = '<ul data-role="listview" data-inset="true" style="min-width: 210px;"><li data-role="list-divider">Select Audio</li>';
+        var html = '<ul data-role="listview" data-inset="true" style="min-width: 210px;"><li data-role="list-divider">' + Globalize.translate('HeaderSelectAudio') + '</li>';
 
         html += streams.map(function (s) {
 
@@ -175,7 +175,7 @@
 
         var elem = $('#popupSubtitleTrackMenu', page);
 
-        var html = '<ul data-role="listview" data-inset="true" style="min-width: 210px;"><li data-role="list-divider">Select Subtitles</li>';
+        var html = '<ul data-role="listview" data-inset="true" style="min-width: 210px;"><li data-role="list-divider">' + Globalize.translate('HeaderSelectSubtitles') + '</li>';
 
         html += '<li><a href="#" data-index="-1" class="lnkTrackOption"><h3>';
 
@@ -196,16 +196,16 @@
                 streamHtml += currentStreamImage;
             }
 
-            streamHtml += (s.Language || 'Unknown language');
+            streamHtml += (s.Language || Globalize.translate('LabelUnknownLanguage'));
 
             if (s.IsDefault && s.IsForced) {
-                streamHtml += ' (Default/Forced)';
+                streamHtml += ' ' + Globalize.translate('LabelDefaultForcedStream');
             }
             else if (s.IsDefault) {
-                streamHtml += ' (Default)';
+                streamHtml += ' ' + Globalize.translate('LabelDefaultStream');
             }
             else if (s.IsForced) {
-                streamHtml += ' (Forced)';
+                streamHtml += ' ' + Globalize.translate('LabelForcedStream');
             }
 
             streamHtml += '</h3><p>';

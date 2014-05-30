@@ -8,16 +8,16 @@
 
         self.total = 0;
 
-        self.getNotificationsSummary = function() {
+        self.getNotificationsSummary = function () {
 
             self.getNotificationsSummaryPromise = self.getNotificationsSummaryPromise || ApiClient.getNotificationSummary(Dashboard.getCurrentUserId());
 
             return self.getNotificationsSummaryPromise;
         };
 
-        self.updateNotificationCount = function() {
+        self.updateNotificationCount = function () {
 
-            self.getNotificationsSummary().done(function(summary) {
+            self.getNotificationsSummary().done(function (summary) {
 
                 var item = $('.btnNotifications').removeClass('levelNormal').removeClass('levelWarning').removeClass('levelError').html(summary.UnreadCount);
 
@@ -27,13 +27,13 @@
             });
         };
 
-        self.showNotificationsFlyout = function() {
+        self.showNotificationsFlyout = function () {
 
             var context = this;
 
             var html = '<div data-role="popup" class="notificationsFlyout" style="min-width:250px;margin-top:30px;margin-right:20px;" data-theme="a">';
 
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+            html += '<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">' + Globalize.translate('ButtonClose') + '</a>';
 
             html += '<div class="ui-bar-a" style="text-align:center;">';
             html += '<h3 style="margin: .5em 0;">Notifications</h3>';
@@ -45,8 +45,8 @@
 
             html += '</p>';
 
-            html += '<div class="btnNotificationListContainer"><a data-role="button" href="notificationlist.html" data-icon="action" data-mini="true">View Notifications</a></div>';
-            html += '<div style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check" data-mini="true" data-theme="b">Mark these read</button></div>';
+            html += '<div class="btnNotificationListContainer"><a data-role="button" href="notificationlist.html" data-icon="action" data-mini="true">' + Globalize.translate('ButtonViewNotifications') + '</a></div>';
+            html += '<div style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check" data-mini="true" data-theme="b">' + Globalize.translate('ButtonMarkTheseRead') + '</button></div>';
 
 
             html += '</div>';
@@ -55,19 +55,19 @@
 
             $(document.body).append(html);
 
-            $('.notificationsFlyout').popup({ positionTo: context }).trigger('create').popup("open").on("popupafterclose", function() {
+            $('.notificationsFlyout').popup({ positionTo: context }).trigger('create').popup("open").on("popupafterclose", function () {
 
                 $(this).off("popupafterclose").remove();
 
-            }).on('click', '.btnMarkRead', function() {
+            }).on('click', '.btnMarkRead', function () {
 
-                var ids = $('.unreadFlyoutNotification').map(function() {
+                var ids = $('.unreadFlyoutNotification').map(function () {
 
                     return this.getAttribute('data-notificationid');
 
                 }).get();
 
-                self.markNotificationsRead(ids, function() {
+                self.markNotificationsRead(ids, function () {
 
                     $('.notificationsFlyout').popup("close");
 
@@ -85,9 +85,9 @@
             refreshNotifications(startIndex, limit, elem, markReadButton, false);
         };
 
-        self.markNotificationsRead = function(ids, callback) {
+        self.markNotificationsRead = function (ids, callback) {
 
-            ApiClient.markNotificationsRead(Dashboard.getCurrentUserId(), ids, true).done(function() {
+            ApiClient.markNotificationsRead(Dashboard.getCurrentUserId(), ids, true).done(function () {
 
                 self.getNotificationsSummaryPromise = null;
 
@@ -118,7 +118,7 @@
     function listUnreadNotifications(list, totalRecordCount, startIndex, limit, elem, btn, showPaging) {
 
         if (!totalRecordCount) {
-            elem.html('<p style="padding:.5em 1em;">No unread notifications.</p>');
+            elem.html('<p style="padding:.5em 1em;">' + Globalize.translate('LabelNoUnreadNotifications') + '</p>');
             btn.hide();
             return;
         }
@@ -178,7 +178,7 @@
         }
 
         if (notification.Url) {
-            html += '<p style="margin: .25em 0;"><a href="' + notification.Url + '" target="_blank">More information</a></p>';
+            html += '<p style="margin: .25em 0;"><a href="' + notification.Url + '" target="_blank">' + Globalize.translate('ButtonMoreInformation') + '</a></p>';
         }
 
         html += '</div>';

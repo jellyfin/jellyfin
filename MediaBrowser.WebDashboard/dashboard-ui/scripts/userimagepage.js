@@ -53,15 +53,15 @@
 
         switch (evt.target.error.code) {
             case evt.target.error.NOT_FOUND_ERR:
-                Dashboard.showError(Globalize.translate("FileNotFound"));
+                Dashboard.showError(Globalize.translate('FileNotFound'));
                 break;
             case evt.target.error.NOT_READABLE_ERR:
-                Dashboard.showError(Globalize.translate("FileReadError"));
+                Dashboard.showError(Globalize.translate('FileReadError'));
                 break;
             case evt.target.error.ABORT_ERR:
                 break; // noop
             default:
-                Dashboard.showError(Globalize.translate("FileReadError"));
+                Dashboard.showError(Globalize.translate('FileReadError'));
         };
     }
 
@@ -73,7 +73,7 @@
     function onFileReaderAbort(evt) {
 
         Dashboard.hideLoadingMsg();
-        Dashboard.showError(Globalize.translate("FileReadCancelled"));
+        Dashboard.showError(Globalize.translate('FileReadCancelled'));
     }
 
     function setFiles(page, files) {
@@ -156,7 +156,7 @@
 
         self.deleteImage = function () {
 
-            Dashboard.confirm(Globalize.translate("DeleteImageConfirmation"), Globalize.translate("DeleteImage"), function (result) {
+            Dashboard.confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('DeleteImage'), function (result) {
 
                 if (result) {
 

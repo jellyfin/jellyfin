@@ -111,11 +111,11 @@
 
             if (!plugin.isExternal) {
                 html += "<div class='posterItemText packageReviewText' style='color:#000;'>";
-                html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : "Free";
+                html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : Globalize.translate('LabelFree');
                 html += Dashboard.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
 
                 html += "<span class='storeReviewCount'>";
-                html += " " + plugin.totalRatings + " Reviews";
+                html += " " + Globalize.translate('LabelNumberReviews').replace("{0}", plugin.totalRatings);
                 html += "</span>";
 
                 html += "</div>";
@@ -128,7 +128,7 @@
             html += "<div class='posterItemText' style='color:#000;'>";
             
             if (installedPlugin) {
-                html += installedPlugin.Version + ' installed';
+                html += Globalize.translate('LabelVersionInstalled').replace("{0}", installedPlugin.Version);
             } else {
                 html += '&nbsp;';
             }

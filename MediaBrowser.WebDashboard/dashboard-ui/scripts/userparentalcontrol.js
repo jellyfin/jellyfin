@@ -167,7 +167,7 @@
 
         Dashboard.validateCurrentUser(page);
 
-        Dashboard.alert(Globalize.translate("SettingsSaved"));
+        Dashboard.alert(Globalize.translate('SettingsSaved'));
     }
 
     function saveUser(user, page) {

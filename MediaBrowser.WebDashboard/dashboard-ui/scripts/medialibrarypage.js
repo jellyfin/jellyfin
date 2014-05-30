@@ -298,7 +298,7 @@
 
         var location = virtualFolder.Locations[index];
 
-        Dashboard.confirm("Are you sure you wish to remove " + location + "?", "Remove Media Location", function (confirmResult) {
+        Dashboard.confirm("Are you sure you wish to remove this location?", "Remove Media Location", function (confirmResult) {
 
             if (confirmResult) {
 

@@ -8,7 +8,7 @@
 
     function deleteSeriesTimer(page, id) {
 
-        Dashboard.confirm("Are you sure you wish to cancel this series?", "Confirm Series Cancellation", function (result) {
+        Dashboard.confirm(Globalize.translate('MessageConfirmSeriesCancellation'), Globalize.translate('HeaderConfirmSeriesCancellation'), function (result) {
 
             if (result) {
 
@@ -16,7 +16,7 @@
 
                 ApiClient.cancelLiveTvSeriesTimer(id).done(function () {
 
-                    Dashboard.alert('Series cancelled.');
+                    Dashboard.alert(Globalize.translate('MessageSeriesCancelled'));
 
                     reload(page);
                 });
@@ -31,7 +31,7 @@
 
         html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
 
-        html += '<li data-role="list-divider">Series Recordings</li>';
+        html += '<li data-role="list-divider">' + Globalize.translate('HeaderSeriesRecordings') + '</li>';
 
         for (var i = 0, length = timers.length; i < length; i++) {
 
@@ -55,7 +55,7 @@
 
             if (timer.RecordAnyTime) {
 
-                html += ' - Any time.';
+                html += ' - ' + Globalize.translate('LabelAnytime');
             } else {
                 html += ' - ' + LiveTvHelpers.getDisplayTime(timer.StartDate);
             }
@@ -63,7 +63,7 @@
 
             html += '<p>';
             if (timer.RecordAnyChannel) {
-                html += 'All Channels';
+                html += Globalize.translate('LabelAllChannels');
             }
             else if (timer.ChannelId) {
                 html += timer.ChannelName;
@@ -71,7 +71,7 @@
             html += '</p>';
             html += '</a>';
 
-            html += '<a data-seriestimerid="' + timer.Id + '" href="#" title="Cancel Series" class="btnCancelSeries">Cancel Series</a>';
+            html += '<a data-seriestimerid="' + timer.Id + '" href="#" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries">' + Globalize.translate('ButtonCancelSeries') + '</a>';
 
             html += '</li>';
         }
@@ -80,7 +80,7 @@
 
         var elem = $('#items', page).html(html).trigger('create');
 
-        $('.btnCancelSeries', elem).on('click', function() {
+        $('.btnCancelSeries', elem).on('click', function () {
 
             deleteSeriesTimer(page, this.getAttribute('data-seriestimerid'));
 
@@ -121,7 +121,7 @@
         var page = this;
 
         reload(page);
-        
+
     }).on('pageinit', "#liveTvSeriesTimersPage", function () {
 
         var page = this;

@@ -29,7 +29,7 @@
 
         var html = '';
 
-        html += '<li data-role="list-divider"><h3>Task Triggers</h3></li>';
+        html += '<li data-role="list-divider"><h3>' + Globalize.translate('HeaderTaskTriggers') + '</h3></li>';
 
         for (var i = 0, length = task.Triggers.length; i < length; i++) {
 
@@ -173,7 +173,7 @@
 
     confirmDeleteTrigger: function (index) {
 
-        Dashboard.confirm("Are you sure you wish to delete this task trigger?", "Delete Task Trigger", function (result) {
+        Dashboard.confirm(Globalize.translate('MessageDeleteTaskTrigger'), Globalize.translate('HeaderDeleteTaskTrigger'), function (result) {
 
             if (result) {
                 ScheduledTaskPage.deleteTrigger(index);

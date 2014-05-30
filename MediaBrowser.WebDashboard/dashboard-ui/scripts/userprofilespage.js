@@ -14,7 +14,7 @@
 
         var html = "";
 
-        html += '<li data-role="list-divider"><h3>' + Globalize.translate("Users") + '</h3></li>';
+        html += '<li data-role="list-divider"><h3>' + Globalize.translate('Users') + '</h3></li>';
 
         for (var i = 0, length = users.length; i < length; i++) {
 
@@ -41,15 +41,15 @@
             html += "</h3>";
 
             html += "<p class='ui-li-aside'>";
-            if (user.Configuration.HasPassword) html += '<img src="css/images/userdata/password.png" alt="' + Globalize.translate("Password") + '" title="' + Globalize.translate("Password") + '" class="userProfileIcon" />';
-            if (user.Configuration.IsAdministrator) html += '<img src="css/images/userdata/administrator.png" alt="' + Globalize.translate("Administrator") + '" title="' + Globalize.translate("Administrator") + '" class="userProfileIcon" />';
+            if (user.Configuration.HasPassword) html += '<img src="css/images/userdata/password.png" alt="' + Globalize.translate('Password') + '" title="' + Globalize.translate('Password') + '" class="userProfileIcon" />';
+            if (user.Configuration.IsAdministrator) html += '<img src="css/images/userdata/administrator.png" alt="' + Globalize.translate('Administrator') + '" title="' + Globalize.translate('Administrator') + '" class="userProfileIcon" />';
 
             html += "</p>";
 
             html += "</a>";
 
 
-            html += "<a onclick='UserProfilesPage.deleteUser(this);' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#'>" + Globalize.translate("Delete") + "</a>";
+            html += "<a onclick='UserProfilesPage.deleteUser(this);' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#'>" + Globalize.translate('Delete') + "</a>";
 
             html += "</li>";
         }
@@ -64,9 +64,9 @@
         var page = $.mobile.activePage;
         var name = link.getAttribute('data-username');
 
-        var msg = Globalize.translate("DeleteUserConfirmation").replace('{0}', name);
+        var msg = Globalize.translate('DeleteUserConfirmation').replace('{0}', name);
 
-        Dashboard.confirm(msg, Globalize.translate("DeleteUser"), function (result) {
+        Dashboard.confirm(msg, Globalize.translate('DeleteUser'), function (result) {
 
             if (result) {
                 Dashboard.showLoadingMsg();

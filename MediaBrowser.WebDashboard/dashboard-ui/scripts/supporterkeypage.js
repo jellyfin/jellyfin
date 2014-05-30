@@ -43,14 +43,14 @@
             if (key) {
 
                 Dashboard.alert({
-                    message: "Thank you. Your supporter key has been updated.",
-                    title: "Confirmation"
+                    message: Globalize.translate('MessageKeyUpdated'),
+                    title: Globalize.translate('HeaderConfirmation')
                 });
 
             } else {
                 Dashboard.alert({
-                    message: "Thank you. Your supporter key has been removed.",
-                    title: "Confirmation"
+                    message: Globalize.translate('MessageKeyRemoved'),
+                    title: Globalize.translate('HeaderConfirmation')
                 });
             }
 
@@ -83,7 +83,7 @@
             var result = JSON.parse(res);
             Dashboard.hideLoadingMsg();
             if (result.Success) {
-                Dashboard.alert("Keys Linked.");
+                Dashboard.alert(Globalize.translate('MessageKeysLinked'));
             } else {
                 Dashboard.showError(result.ErrorMessage);
             }
@@ -107,7 +107,7 @@
             var result = JSON.parse(res);
             Dashboard.hideLoadingMsg();
             if (result.Success) {
-                Dashboard.alert("Key emailed to " + email);
+                Dashboard.alert(Globalize.translate('MessageKeyEmailedTo').replace("{0}", email));
             } else {
                 Dashboard.showError(result.ErrorMessage);
             }

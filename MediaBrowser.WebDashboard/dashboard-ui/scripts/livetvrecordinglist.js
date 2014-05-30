@@ -98,7 +98,7 @@
             });
 
         } else {
-            $('.listName', page).html('All Recordings');
+            $('.listName', page).html(Globalize.translate('HeaderAllRecordings'));
         }
 
     }).on('pageshow', "#liveTvRecordingListPage", function () {

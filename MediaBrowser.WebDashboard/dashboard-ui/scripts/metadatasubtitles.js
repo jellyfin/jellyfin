@@ -58,11 +58,6 @@
 
         });
 
-    }).on('pageinit', "#metadataSubtitlesPage", function () {
-
-        var page = this;
-
-
     });
 
     function metadataSubtitlesPage() {

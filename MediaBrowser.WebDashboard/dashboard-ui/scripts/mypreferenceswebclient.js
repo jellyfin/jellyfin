@@ -23,7 +23,7 @@
 
         ApiClient.updateDisplayPreferences('home', displayPreferences, userId, 'webclient').done(function () {
 
-            Dashboard.alert(Globalize.translate("SettingsSaved"));
+            Dashboard.alert(Globalize.translate('SettingsSaved'));
             
         });
     }

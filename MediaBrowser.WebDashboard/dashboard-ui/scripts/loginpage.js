@@ -117,7 +117,7 @@
             Dashboard.hideLoadingMsg();
 
             setTimeout(function () {
-                Dashboard.showError("Invalid user or password.");
+                Dashboard.showError(Globalize.translate('MessageInvalidUser'));
             }, 300);
         });
 

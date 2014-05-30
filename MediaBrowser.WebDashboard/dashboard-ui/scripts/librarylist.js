@@ -109,22 +109,22 @@
             var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
             var onPlayClick = 'LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'' + item.Type + '\', ' + item.IsFolder + ', \'' + item.MediaType + '\', ' + resumePosition + ');return false;';
 
-            html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext" title="Play" onclick="' + onPlayClick + '" style="' + buttonMargin + '">Play</button>';
+            html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext" title="' + Globalize.translate('ButtonPlay') + '" onclick="' + onPlayClick + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonPlay') + '</button>';
             buttonCount++;
 
             if (item.MediaType == "Audio" || item.Type == "MusicAlbum") {
-                html += '<button type="button" data-mini="true" data-inline="true" data-icon="plus" data-iconpos="notext" title="Queue" onclick="MediaController.queue(\'' + item.Id + '\');return false;" style="' + buttonMargin + '">Queue</button>';
+                html += '<button type="button" data-mini="true" data-inline="true" data-icon="plus" data-iconpos="notext" title="' + Globalize.translate('ButtonQueue') + '" onclick="MediaController.queue(\'' + item.Id + '\');return false;" style="' + buttonMargin + '">' + Globalize.translate('ButtonQueue') + '</button>';
                 buttonCount++;
             }
         }
 
         if (item.LocalTrailerCount && item.PlayAccess == 'Full') {
-            html += '<button type="button" data-mini="true" data-inline="true" data-icon="video" data-iconpos="notext" class="btnPlayTrailer" data-itemid="' + item.Id + '" title="Play Trailer" style="' + buttonMargin + '">Play Trailer</button>';
+            html += '<button type="button" data-mini="true" data-inline="true" data-icon="video" data-iconpos="notext" class="btnPlayTrailer" data-itemid="' + item.Id + '" title="' + Globalize.translate('ButtonPlayTrailer') + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonPlayTrailer') + '</button>';
             buttonCount++;
         }
 
         if (currentUser.Configuration.IsAdministrator && item.Type != "Recording" && item.Type != "Program") {
-            html += '<button type="button" data-mini="true" data-inline="true" data-icon="edit" data-iconpos="notext" title="Edit" onclick="Dashboard.navigate(\'edititemmetadata.html?id=' + item.Id + '\');return false;" style="' + buttonMargin + '">Edit</button>';
+            html += '<button type="button" data-mini="true" data-inline="true" data-icon="edit" data-iconpos="notext" title="' + Globalize.translate('ButtonEdit') + '" onclick="Dashboard.navigate(\'edititemmetadata.html?id=' + item.Id + '\');return false;" style="' + buttonMargin + '">' + Globalize.translate('ButtonEdit') + '</button>';
             buttonCount++;
         }
 
@@ -158,7 +158,7 @@
 
     function splitVersions(id, page) {
 
-        Dashboard.confirm("Are you sure you wish to split the media sources into separate items?", "Split Media Apart", function (confirmResult) {
+        Dashboard.confirm(Globalize.translate('MessageConfirmSplitMedia'), Globalize.translate('HeaderSplitMedia'), function (confirmResult) {
 
             if (confirmResult) {
 
@@ -177,30 +177,6 @@
             }
         });
 
-    }
-
-    function getContextMenuOptions(elem) {
-
-        var items = [];
-
-        var id = elem.getAttribute('data-itemid');
-
-        items.push({ type: 'header', text: 'Edit' });
-
-        items.push({ type: 'link', text: 'Details', url: 'edititemmetadata.html?id=' + id });
-
-        items.push({ type: 'link', text: 'Images', url: 'edititemimages.html?id=' + id });
-
-        var versionCount = parseInt(elem.getAttribute('data-mediasourcecount') || '0');
-
-        if (versionCount > 1) {
-
-            items.push({ type: 'divider' });
-            items.push({ type: 'header', text: 'Manage' });
-            items.push({ type: 'command', text: 'Split Versions Apart', name: 'SplitVersions' });
-        }
-
-        return items;
     }
 
     $.fn.createPosterItemMenus = function (options) {
@@ -324,8 +300,8 @@
         if (selection.length < 2) {
 
             Dashboard.alert({
-                message: "Please select two or more items to group together.",
-                title: "Error"
+                message: Globalize.translate('MessagePleaseSelectItemsToGroup'),
+                title: Globalize.translate('HeaderError')
             });
 
             return;
@@ -337,9 +313,9 @@
 
         }).join('<br/>');
 
-        var msg = "The following titles will be grouped into one item:<br/><br/>" + names;
+        var msg = Globalize.translate('MessageTheFollowingItemsWillBeGrouped') + "<br/><br/>" + names;
 
-        msg += "<br/><br/>Media Browser clients will automatically choose the optimal version to play based on device and network performance. Are you sure you wish to continue?";
+        msg += "<br/><br/>" + Globalize.translate('MessageConfirmItemGrouping');
 
         Dashboard.confirm(msg, "Group Versions", function (confirmResult) {
 

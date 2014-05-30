@@ -43,10 +43,10 @@
                 });
                 
                 html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
-
+                $('.noItemsMessage', page).hide();
             } else {
                 
-                html += '<p>Collections allow you to enjoy personalized groupings of Movies, Series, Albums, Books and Games. Click the New button to start creating Collections.</p>';
+                $('.noItemsMessage', page).show();
             }
 
             $('#items', page).html(html).trigger('create').createPosterItemMenus();

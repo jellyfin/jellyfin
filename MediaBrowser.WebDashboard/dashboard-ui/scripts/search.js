@@ -129,27 +129,27 @@
         }
         else if (hint.Type == "MusicArtist") {
 
-            html += '<div class="searchHintSecondaryText">Artist</div>';
+            html += '<div class="searchHintSecondaryText">' + Globalize.translate('LabelArtist') + '</div>';
 
         }
         else if (hint.Type == "Movie") {
 
-            html += '<div class="searchHintSecondaryText">Movie</div>';
+            html += '<div class="searchHintSecondaryText">' + Globalize.translate('LabelMovie') + '</div>';
 
         }
         else if (hint.Type == "MusicVideo") {
 
-            html += '<div class="searchHintSecondaryText">Music Video</div>';
+            html += '<div class="searchHintSecondaryText">' + Globalize.translate('LabelMusicVideo') + '</div>';
 
         }
         else if (hint.Type == "Episode") {
 
-            html += '<div class="searchHintSecondaryText">Episode</div>';
+            html += '<div class="searchHintSecondaryText">' + Globalize.translate('LabelEpisode') + '</div>';
 
         }
         else if (hint.Type == "Series") {
 
-            html += '<div class="searchHintSecondaryText">Series</div>';
+            html += '<div class="searchHintSecondaryText">' + Globalize.translate('LabelSeries') + '</div>';
 
         }
         else {
@@ -210,7 +210,7 @@
             html += '<div data-role="panel" id="searchPanel" class="searchPanel" data-position="right" data-display="overlay" data-position-fixed="true" data-theme="b">';
 
             html += '<h3>';
-            html += 'Search';
+            html += Globalize.translate('HeaderSearch');
             html += '</h3>';
 
             html += '<input id="txtSearch" class="txtSearch" type="search" data-theme="a" />';

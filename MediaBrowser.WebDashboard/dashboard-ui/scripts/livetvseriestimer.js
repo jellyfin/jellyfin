@@ -4,7 +4,7 @@
 
     function deleteTimer(page, id) {
 
-        Dashboard.confirm("Are you sure you wish to cancel this recording?", "Confirm Recording Cancellation", function (result) {
+        Dashboard.confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation'), function (result) {
 
             if (result) {
 
@@ -12,7 +12,7 @@
 
                 ApiClient.cancelLiveTvTimer(id).done(function () {
 
-                    Dashboard.alert('Recording cancelled.');
+                    Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
 
                     reload(page);
                 });
@@ -108,7 +108,7 @@
             item.Days = getDays(form);
 
             ApiClient.updateLiveTvSeriesTimer(item).done(function () {
-                Dashboard.alert('Timer Saved');
+                Dashboard.alert(Globalize.translate('MessageRecordingSaved'));
             });
         });
 
@@ -204,7 +204,7 @@
 
             html += '</a>';
 
-            html += '<a data-timerid="' + timer.Id + '" href="#" title="Cancel Recording" class="btnCancelTimer">Cancel Recording</a>';
+            html += '<a data-timerid="' + timer.Id + '" href="#" title="' + Globalize.translate('ButonCancelRecording') + '" class="btnCancelTimer">' + Globalize.translate('ButonCancelRecording') + '</a>';
 
             html += '</li>';
         }

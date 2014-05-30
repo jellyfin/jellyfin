@@ -143,7 +143,7 @@
                 });
             }
 
-            var html = '';
+            var html = '<br/>';
 
             if (index) {
                 html += '<h1 class="listHeader">My Library</h1>';

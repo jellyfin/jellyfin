@@ -52,7 +52,7 @@
         var currentPlayer;
         var currentTargetInfo;
         var players = [];
-        
+
         var keys = new bindKeys(self);
 
         $(window).on("keydown", keys.keyBinding);
@@ -438,7 +438,7 @@
 
         html += '</fieldset>';
 
-        html += '<p class="fieldDescription">All plays will be sent to the selected player.</p>';
+        html += '<p class="fieldDescription">' + Globalize.translate('LabelAllPlaysSentToPlayer') + '</p>';
 
         checkedHtml = enableMirrorMode ? ' checked="checked"' : '';
         html += '<div style="margin-top:1.5em;" class="fldMirrorMode"><label for="chkEnableMirrorMode">Enable display mirroring</label><input type="checkbox" class="chkEnableMirrorMode" id="chkEnableMirrorMode" data-mini="true"' + checkedHtml + ' /></div>';
@@ -521,7 +521,7 @@
         var self = this;
         var keyResult = {};
 
-        self.keyBinding = function(e) {
+        self.keyBinding = function (e) {
 
             if (bypass()) return;
 
@@ -533,7 +533,7 @@
             }
         };
 
-        self.keyPrevent = function(e) {
+        self.keyPrevent = function (e) {
 
             if (bypass()) return;
 
@@ -544,10 +544,10 @@
             }
         };
 
-        keyResult[32] = function() { // spacebar
+        keyResult[32] = function () { // spacebar
 
             var player = controller.getCurrentPlayer();
-            
+
             player.getPlayerState().done(function (result) {
 
                 var state = result;
@@ -562,7 +562,7 @@
             });
         };
 
-        var bypass = function() {
+        var bypass = function () {
             // Get active elem to see what type it is
             var active = document.activeElement;
             var type = active.type || active.tagName.toLowerCase();

@@ -42,7 +42,7 @@
             if (configPage) {
                 html += "<a href='" + Dashboard.getConfigurationPageUrl(configPage.Name) + "'>";
             } else {
-                html += "<a onclick='Dashboard.alert(\"" + Globalize.translate("NoPluginConfigurationMessage") + "\");' href='#'>";
+                html += "<a onclick='Dashboard.alert(\"" + Globalize.translate('NoPluginConfigurationMessage') + "\");' href='#'>";
             }
 
             html += "<h3>" + plugin.Name + "</h3>";
@@ -51,7 +51,7 @@
 
             html += "</a>";
 
-            html += "<a data-id='" + plugin.Id + "' data-pluginname='" + plugin.Name + "' onclick='PluginsPage.deletePlugin(this);' href='#'>" + Globalize.translate("Delete") + "</a>";
+            html += "<a data-id='" + plugin.Id + "' data-pluginname='" + plugin.Name + "' onclick='PluginsPage.deletePlugin(this);' href='#'>" + Globalize.translate('Delete') + "</a>";
 
             html += "</li>";
         }
@@ -59,9 +59,9 @@
         if (!plugins.length) {
 
             html += '<li style="padding:5px;">';
-            html += '<p>You have no plugins installed.</p>';
+            html += '<p>' + Globalize.translate('MessageNoPluginsInstalled') + '</p>';
             html += '<p><a href="plugincatalog.html">';
-            html += Globalize.translate("BrowsePluginCatalogMessage");
+            html += Globalize.translate('BrowsePluginCatalogMessage');
             html += '</a></p>';
             html += '</li>';
 
@@ -79,9 +79,9 @@
         var name = link.getAttribute('data-pluginname');
         var uniqueid = link.getAttribute('data-id');
 
-        var msg = Globalize.translate("UninstallPluginConfirmation").replace("{0}", name);
+        var msg = Globalize.translate('UninstallPluginConfirmation').replace("{0}", name);
 
-        Dashboard.confirm(msg, Globalize.translate("UninstallPluginHeader"), function (result) {
+        Dashboard.confirm(msg, Globalize.translate('UninstallPluginHeader'), function (result) {
 
             if (result) {
                 Dashboard.showLoadingMsg();

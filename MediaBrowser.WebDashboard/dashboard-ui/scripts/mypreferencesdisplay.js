@@ -17,7 +17,7 @@
         user.Configuration.GroupMoviesIntoBoxSets = $('#chkGroupMoviesIntoCollections', page).checked();
 
         ApiClient.updateUser(user).done(function () {
-            Dashboard.alert(Globalize.translate("SettingsSaved"));
+            Dashboard.alert(Globalize.translate('SettingsSaved'));
         });
     }
 

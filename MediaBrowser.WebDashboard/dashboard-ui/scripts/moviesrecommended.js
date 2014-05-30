@@ -9,18 +9,18 @@
         switch (recommendation.RecommendationType) {
 
             case 'SimilarToRecentlyPlayed':
-                title = 'Because you watched ' + recommendation.BaselineItemName;
+                title = Globalize.translate('RecommendationBecauseYouWatched').replace("{0}", recommendation.BaselineItemName);
                 break;
             case 'SimilarToLikedItem':
-                title = 'Because you like ' + recommendation.BaselineItemName;
+                title = Globalize.translate('RecommendationBecauseYouLike').replace("{0}", recommendation.BaselineItemName);
                 break;
             case 'HasDirectorFromRecentlyPlayed':
             case 'HasLikedDirector':
-                title = 'Directed by ' + recommendation.BaselineItemName;
+                title = Globalize.translate('RecommendationDirectedBy').replace("{0}", recommendation.BaselineItemName);
                 break;
             case 'HasActorFromRecentlyPlayed':
             case 'HasLikedActor':
-                title = 'Starring ' + recommendation.BaselineItemName;
+                title = Globalize.translate('RecommendationStarring').replace("{0}", recommendation.BaselineItemName);
                 break;
         }
 
@@ -88,12 +88,14 @@
 
             if (!recommendations.length) {
 
-                $('.recommendations', page).html('<br/><p>No movie suggestions are currently available. Start watching and rating your movies, and then come back to view your recommendations.</p>');
+                $('.noItemsMessage', page).show();
+                $('.recommendations', page).html('');
                 return;
             }
 
             var html = recommendations.map(getRecommendationHtml).join('');
 
+            $('.noItemsMessage', page).hide();
             $('.recommendations', page).html(html).createPosterItemMenus();
         });
 

@@ -26,9 +26,9 @@
                 itemHtml += '<h3>' + i.Name + '</h3>';
 
                 if (i.Enabled) {
-                    itemHtml += '<p style="color:#009F00;">Enabled</p>';
+                    itemHtml += '<p style="color:#009F00;">' + Globalize.translate('LabelEnabled') + '</p>';
                 } else {
-                    itemHtml += '<p style="color:#cc0000;">Disabled</p>';
+                    itemHtml += '<p style="color:#cc0000;">' + Globalize.translate('LabelDisabled') + '</p>';
                 }
 
                 itemHtml += '</a>';

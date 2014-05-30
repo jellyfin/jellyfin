@@ -61,7 +61,7 @@
 
     function selectDays(page, days) {
 
-        var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var daysOfWeek = getDaysOfWeek();
 
         for (var i = 0, length = daysOfWeek.length; i < length; i++) {
 
@@ -72,10 +72,24 @@
         }
 
     }
+    
+    function getDaysOfWeek() {
+        
+        // Do not localize. These are used as values, not text.
+        return [
+            'Sunday',
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday'
+        ];
+    }
 
     function getDays(page) {
 
-        var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var daysOfWeek = getDaysOfWeek();
 
         var days = [];
 

@@ -2,9 +2,9 @@
 
     function resetTuner(page, id) {
 
-        var message = 'Are you sure you wish to reset this tuner? Any active players or recordings will be abruptly stopped.';
+        var message = Globalize.translate('MessageConfirmResetTuner');
 
-        Dashboard.confirm(message, "Reset Tuner", function (confirmResult) {
+        Dashboard.confirm(message, Globalize.translate('HeaderResetTuner'), function (confirmResult) {
 
             if (confirmResult) {
 
@@ -43,20 +43,24 @@
             if (tuner.Status == 'RecordingTv') {
                 if (tuner.ChannelName) {
 
-                    html += '<a href="livetvchannel.html?id=' + tuner.ChannelId + '">Recording ' + tuner.ChannelName + '</a>';
+                    html += '<a href="livetvchannel.html?id=' + tuner.ChannelId + '">';
+                    html += Globalize.translate('StatusRecordingProgram').replace('{0}', tuner.ChannelName);
+                    html += '</a>';
                 } else {
 
-                    html += 'Recording';
+                    html += Globalize.translate('StatusRecording');
                 }
             }
             else if (tuner.Status == 'LiveTv') {
 
                 if (tuner.ChannelName) {
 
-                    html += '<a href="livetvchannel.html?id=' + tuner.ChannelId + '">Watching ' + tuner.ChannelName + '</a>';
+                    html += '<a href="livetvchannel.html?id=' + tuner.ChannelId + '">';
+                    html += Globalize.translate('StatusWatchingProgram').replace('{0}', tuner.ChannelName);
+                    html += '</a>';
                 } else {
 
-                    html += 'Watching';
+                    html += Globalize.translate('StatusWatching');
                 }
             }
             else {
@@ -77,7 +81,7 @@
             html += '</td>';
 
             html += '<td>';
-            html += '<button data-tunerid="' + tuner.Id + '" type="button" data-inline="true" data-icon="refresh" data-mini="true" data-iconpos="notext" class="btnResetTuner organizerButton" title="Reset Tuner">Reset</button>';
+            html += '<button data-tunerid="' + tuner.Id + '" type="button" data-inline="true" data-icon="refresh" data-mini="true" data-iconpos="notext" class="btnResetTuner organizerButton" title="' + Globalize.translate('ButtonResetTuner') + '">' + Globalize.translate('ButtonResetTuner') + '</button>';
             html += '</td>';
 
             html += '</tr>';
@@ -117,10 +121,10 @@
         var versionHtml = service.Version || 'Unknown';
 
         if (service.HasUpdateAvailable) {
-            versionHtml += ' <a style="margin-left: .25em;" href="' + serviceUrl + '" target="_blank">(Update available)</a>';
+            versionHtml += ' <a style="margin-left: .25em;" href="' + serviceUrl + '" target="_blank">' + Globalize.translate('LiveTvUpdateAvailable') + '</a>';
         }
         else {
-            versionHtml += '<img src="css/images/checkmarkgreen.png" style="height: 17px; margin-left: 10px; margin-right: 0; position: relative; top: 5px; border-radius:3px;" /> Up to date!';
+            versionHtml += '<img src="css/images/checkmarkgreen.png" style="height: 17px; margin-left: 10px; margin-right: 0; position: relative; top: 5px; border-radius:3px;" /> ' + Globalize.translate('LabelVersionUpToDate');
         }
 
         $('#activeServiceVersion', page).html(versionHtml).trigger('create');
@@ -180,23 +184,23 @@
 
         var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
         var progressElem = $('.refreshGuideProgress', page).val(progress);
-        
+
         if (task.State == 'Running') {
             progressElem.show();
         } else {
             progressElem.hide();
         }
-        
+
         var lastResult = task.LastExecutionResult ? task.LastExecutionResult.Status : '';
-        
+
         if (lastResult == "Failed") {
-            $('.lastRefreshGuideResult', page).html('<span style="color:#FF0000;">(failed)</span>');
+            $('.lastRefreshGuideResult', page).html('<span style="color:#FF0000;">' + Globalize.translate('LabelFailed') + '</span>');
         }
         else if (lastResult == "Cancelled") {
-            $('.lastRefreshGuideResult', page).html('<span style="color:#0026FF;">(cancelled)</span>');
+            $('.lastRefreshGuideResult', page).html('<span style="color:#0026FF;">' + Globalize.translate('LabelCancelled') + '</span>');
         }
         else if (lastResult == "Aborted") {
-            $('.lastRefreshGuideResult', page).html('<span style="color:#FF0000;">(Aborted by server shutdown)</span>');
+            $('.lastRefreshGuideResult', page).html('<span style="color:#FF0000;">' + Globalize.translate('LabelAbortedByServerShutdown') + '</span>');
         } else {
             $('.lastRefreshGuideResult', page).html(lastResult);
         }
@@ -243,9 +247,9 @@
         if (ApiClient.isWebSocketOpen()) {
             ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
         }
-        
+
         $(ApiClient).on("websocketmessage", onWebSocketMessage).on('websocketopen', function () {
-            
+
             if (ApiClient.isWebSocketOpen()) {
                 ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
             }

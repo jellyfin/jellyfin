@@ -36,7 +36,7 @@
 
             Dashboard.hideLoadingMsg();
 
-            Dashboard.alert(Globalize.translate("PasswordSaved"));
+            Dashboard.alert(Globalize.translate('PasswordSaved'));
             loadUser(page);
 
         });
@@ -53,7 +53,7 @@
 
             if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
 
-                Dashboard.showError(Globalize.translate("PasswordMatchError"));
+                Dashboard.showError(Globalize.translate('PasswordMatchError'));
                 return false;
             }
 
@@ -68,11 +68,11 @@
 
         self.resetPassword = function () {
 
-            var msg = Globalize.translate("PasswordResetConfirmation");
+            var msg = Globalize.translate('PasswordResetConfirmation');
 
             var page = $.mobile.activePage;
 
-            Dashboard.confirm(msg, Globalize.translate("PasswordResetHeader"), function (result) {
+            Dashboard.confirm(msg, Globalize.translate('PasswordResetHeader'), function (result) {
 
                 if (result) {
                     var userId = getParameterByName("userId");
@@ -84,8 +84,8 @@
                         Dashboard.hideLoadingMsg();
 
                         Dashboard.alert({
-                            message: Globalize.translate("PasswordResetComplete"),
-                            title: Globalize.translate("PasswordResetHeader")
+                            message: Globalize.translate('PasswordResetComplete'),
+                            title: Globalize.translate('PasswordResetHeader')
                         });
 
                         loadUser(page);

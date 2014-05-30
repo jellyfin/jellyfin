@@ -2,7 +2,7 @@
 
     function reloadList(page) {
 
-        ApiClient.getScheduledTasks({isHidden: false}).done(function (tasks) {
+        ApiClient.getScheduledTasks({ isHidden: false }).done(function (tasks) {
 
             populateList(page, tasks);
 
@@ -81,16 +81,17 @@
 
             if (task.LastExecutionResult) {
 
-                html += "Last ran " + humane_date(task.LastExecutionResult.EndTimeUtc) + ', taking ' + humane_elapsed(task.LastExecutionResult.StartTimeUtc, task.LastExecutionResult.EndTimeUtc);
+                html += Globalize.translate('LabelScheduledTaskLastRan').replace("{0}", humane_date(task.LastExecutionResult.EndTimeUtc))
+                    .replace("{1}", humane_elapsed(task.LastExecutionResult.StartTimeUtc, task.LastExecutionResult.EndTimeUtc));
 
                 if (task.LastExecutionResult.Status == "Failed") {
-                    html += " <span style='color:#FF0000;'>(failed)</span>";
+                    html += " <span style='color:#FF0000;'>" + Globalize.translate('LabelFailed') + "</span>";
                 }
                 else if (task.LastExecutionResult.Status == "Cancelled") {
-                    html += " <span style='color:#0026FF;'>(cancelled)</span>";
+                    html += " <span style='color:#0026FF;'>" + Globalize.translate('LabelCancelled') + "</span>";
                 }
                 else if (task.LastExecutionResult.Status == "Aborted") {
-                    html += " <span style='color:#FF0000;'>(Aborted by server shutdown)</span>";
+                    html += " <span style='color:#FF0000;'>" + Globalize.translate('LabelAbortedByServerShutdown') + "</span>";
                 }
             }
         }
@@ -106,7 +107,7 @@
 
         } else {
 
-            html += "<span style='color:#FF0000;'>Stopping</span>";
+            html += "<span style='color:#FF0000;'>" + Globalize.translate('LabelStopping') + "</span>";
         }
 
         return html;
@@ -161,7 +162,7 @@
     }
 
     function onWebSocketConnectionOpen() {
-        
+
         startInterval();
         reloadList($.mobile.activePage);
     }
