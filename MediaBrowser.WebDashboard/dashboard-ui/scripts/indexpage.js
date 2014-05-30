@@ -193,13 +193,14 @@
                     shape: 'backdrop',
                     showTitle: true,
                     centerText: true,
-                    context: 'home'
+                    context: 'home',
+                    lazy: true
                 });
                 html += '</div>';
             }
 
 
-            $(elem).html(html).createPosterItemMenus();
+            $(elem).html(html).trigger('create').createPosterItemMenus();
         });
     }
 
@@ -222,13 +223,14 @@
                     items: result.Items,
                     shape: 'backdrop',
                     showTitle: true,
-                    centerText: true
+                    centerText: true,
+                    lazy: true
                 });
                 html += '</div>';
             }
 
 
-            $(elem).html(html).createPosterItemMenus();
+            $(elem).html(html).trigger('create').createPosterItemMenus();
 
             handleLibraryLinkNavigations(elem);
         });
@@ -265,12 +267,13 @@
                     overlayText: screenWidth >= 600,
                     showTitle: true,
                     showParentTitle: true,
-                    context: 'home'
+                    context: 'home',
+                    lazy: true
                 });
                 html += '</div>';
             }
 
-            $(elem).html(html).createPosterItemMenus();
+            $(elem).html(html).trigger('create').createPosterItemMenus();
         });
     }
 

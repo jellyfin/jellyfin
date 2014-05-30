@@ -5,6 +5,7 @@
         return [
             { name: "Favorite Movies", types: "Movie", id: "favoriteMovies", shape: 'backdrop', preferThumb: true, showTitle: false },
             { name: "Favorite Shows", types: "Series", id: "favoriteShows", shape: 'backdrop', preferThumb: true, showTitle: false },
+            { name: "Favorite Episodes", types: "Episode", id: "favoriteEpisode", shape: 'backdrop', preferThumb: false, showTitle: true, showParentTitle: true },
             { name: "Favorite Games", types: "Game", id: "favoriteGames", shape: 'auto', preferThumb: false, showTitle: true }
         ];
 
@@ -45,6 +46,7 @@
                     overlayText: screenWidth >= 600,
                     context: 'home-favorites',
                     showTitle: section.showTitle,
+                    showParentTitle: section.showParentTitle,
                     lazy: true
                 });
 
