@@ -790,5 +790,7 @@
 	"ButtonMarkRead": "Mark Read",
 	"OptionDefaultSort": "Default",
 	"OptionCommunityMostWatchedSort": "Most Watched",
-	"TabNextUp": "Next Up"
+	"TabNextUp": "Next Up",
+	"MessageNoMovieSuggestionsAvailable": "No movie suggestions are currently available. Start watching and rating your movies, and then come back to view your recommendations.",
+	"MessageNoCollectionsAvailable": "Collections allow you to enjoy personalized groupings of Movies, Series, Albums, Books and Games. Click the New button to start creating Collections."
 }
