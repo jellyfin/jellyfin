@@ -680,6 +680,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
 
                 rootFolder.AddVirtualChild(folder);
+
+                RegisterItem(folder);
             }
 
             return rootFolder;

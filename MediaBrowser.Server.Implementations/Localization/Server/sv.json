@@ -755,8 +755,8 @@
     "LabelEnableBackdrops": "Aktivera fondbilder",
     "LabelEnableThemeSongsHelp": "Om aktiverat spelas ledmotiv upp vid bl\u00e4ddring i biblioteket.",
     "LabelEnableBackdropsHelp": "Om aktiverat visas fondbilder i bakgrunden av vissa sidor vid bl\u00e4ddring i biblioteket.",
-    "HeaderAllDevices": "Alla enheter",
-    "HeaderThisDevice": "Den h\u00e4r enheten",
+    "HeaderHomePage": "Home Page",
+    "HeaderSettingsForThisDevice": "Settings for This Device",
     "OptionAuto": "Auto",
     "OptionYes": "Ja",
     "OptionNo": "Nej",
@@ -775,5 +775,11 @@
     "MessageLoadingChannels": "H\u00e4mtar kanalinneh\u00e5ll...",
     "ButtonMarkRead": "Markera som l\u00e4st",
     "OptionDefaultSort": "F\u00f6rval",
-    "OptionCommunityMostWatchedSort": "Oftast visade"
+    "OptionCommunityMostWatchedSort": "Oftast visade",
+    "TabNextUp": "Next Up",
+    "MessageNoMovieSuggestionsAvailable": "No movie suggestions are currently available. Start watching and rating your movies, and then come back to view your recommendations.",
+    "MessageNoCollectionsAvailable": "Collections allow you to enjoy personalized groupings of Movies, Series, Albums, Books and Games. Click the New button to start creating Collections.",
+    "HeaderWelcomeToMediaBrowserWebClient": "Welcome to the Media Browser Web Client",
+    "ButtonDismiss": "Dismiss",
+    "MessageLearnHowToCustomize": "Learn how to customize this page to your own personal tastes. Click your user icon in the top right corner of the screen to view and update your preferences."
 }
