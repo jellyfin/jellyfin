@@ -482,17 +482,17 @@
     <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelInfoDto.cs">
       <Link>LiveTv\ChannelInfoDto.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelQuery.cs">
-      <Link>LiveTv\ChannelQuery.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelType.cs">
-      <Link>LiveTv\ChannelType.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\DayPattern.cs">
       <Link>LiveTv\DayPattern.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\GuideInfo.cs">
       <Link>LiveTv\GuideInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvChannelQuery.cs">
+      <Link>LiveTv\LiveTvChannelQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvChannelType.cs">
+      <Link>LiveTv\LiveTvChannelType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvInfo.cs">
       <Link>LiveTv\LiveTvInfo.cs</Link>

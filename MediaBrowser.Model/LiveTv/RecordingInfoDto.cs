@@ -164,7 +164,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the type of the channel.
         /// </summary>
         /// <value>The type of the channel.</value>
-        public ChannelType ChannelType { get; set; }
+        public LiveTvChannelType ChannelType { get; set; }
 
         /// <summary>
         /// Gets or sets the official rating.
