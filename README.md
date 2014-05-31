@@ -35,11 +35,6 @@ If you're a new user looking to install Media Browser Server, please head over t
 
 http://mediabrowser3.com/community
 
-## Current Versions ##
-
-Release: 3.0.5099.2102<br/>
-Beta: 3.0.5131.18923<br/>
-
 ## Images
 
 ![Android](https://dl.dropboxusercontent.com/u/4038856/android1.png)
