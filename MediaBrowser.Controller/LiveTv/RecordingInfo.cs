@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets or sets the type of the channel.
         /// </summary>
         /// <value>The type of the channel.</value>
-        public ChannelType ChannelType { get; set; }
+        public LiveTvChannelType ChannelType { get; set; }
      
         /// <summary>
         /// Name of the recording.

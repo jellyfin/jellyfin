@@ -4,13 +4,13 @@ namespace MediaBrowser.Model.LiveTv
     /// <summary>
     /// Class ChannelQuery.
     /// </summary>
-    public class ChannelQuery
+    public class LiveTvChannelQuery
     {
         /// <summary>
         /// Gets or sets the type of the channel.
         /// </summary>
         /// <value>The type of the channel.</value>
-        public ChannelType? ChannelType { get; set; }
+        public LiveTvChannelType? ChannelType { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is favorite.

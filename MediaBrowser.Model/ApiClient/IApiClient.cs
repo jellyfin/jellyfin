@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -1147,5 +1148,29 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{SeriesTimerInfoDto}.</returns>
         Task<SeriesTimerInfoDto> GetDefaultLiveTvTimerInfo(string programId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the channel features.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{ChannelFeatures}.</returns>
+        Task<ChannelFeatures> GetChannelFeatures(string channelId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the channel items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{QueryResult{BaseItemDto}}.</returns>
+        Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the channels.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{QueryResult{BaseItemDto}}.</returns>
+        Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken);
     }
 }

@@ -154,7 +154,7 @@
     <Compile Include="Library\PlayAccess.cs" />
     <Compile Include="LiveTv\BaseTimerInfoDto.cs" />
     <Compile Include="LiveTv\ChannelInfoDto.cs" />
-    <Compile Include="LiveTv\ChannelQuery.cs" />
+    <Compile Include="LiveTv\LiveTvChannelQuery.cs" />
     <Compile Include="LiveTv\DayPattern.cs" />
     <Compile Include="LiveTv\GuideInfo.cs" />
     <Compile Include="LiveTv\LiveTvInfo.cs" />
@@ -200,7 +200,7 @@
     <Compile Include="IO\IIsoManager.cs" />
     <Compile Include="IO\IIsoMount.cs" />
     <Compile Include="IO\IIsoMounter.cs" />
-    <Compile Include="LiveTv\ChannelType.cs" />
+    <Compile Include="LiveTv\LiveTvChannelType.cs" />
     <Compile Include="LiveTv\LiveTvServiceInfo.cs" />
     <Compile Include="LiveTv\RecordingInfoDto.cs" />
     <Compile Include="Net\WebSocketMessage.cs" />
