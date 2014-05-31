@@ -4,6 +4,9 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
+        //html += '<a href="index.html" class="headerButton headerButtonLeft headerHomeButton">';
+        //html += '<img src="css/images/items/folders/home.png" />';
+        //html += '</a>';
         html += '<button type="button" data-role="none" title="Menu" class="headerButton libraryMenuButton headerButtonLeft">';
         html += '<img src="css/images/menu.png" />';
         html += '</button>';

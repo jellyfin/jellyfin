@@ -4,7 +4,7 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="boxsetsPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="movie,boxset" data-theme="b">
+    <div id="boxsetsPage" data-role="page" class="page libraryPage backdropPage collectionEditorPage" data-backdroptype="movie,boxset" data-theme="b">
 
         <div class="libraryViewNav scopedLibraryViewNav">
             <a href="#" class="ui-btn-active">${TabCollections}</a>
@@ -22,14 +22,14 @@
                 <div class="listTopPaging">
                     &nbsp;
                 </div>
-                <button id="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" class="hide">${ButtonNew}</button>
+                <button class="btnNewCollection hide" data-mini="true" data-icon="plus" data-inline="true">${ButtonNew}</button>
             </div>
             <div id="items" class="itemsContainer"></div>
             <div class="noItemsMessage" style="display: none;">
                 <p>${MessageNoCollectionsAvailable}</p>
             </div>
         </div>
-        <div data-role="panel" id="newCollectionPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
+        <div data-role="panel" class="newCollectionPanel" data-position="right" data-display="overlay" data-position-fixed="true">
             <form class="newCollectionForm">
 
                 <h3>${HeaderNewCollection}</h3>
@@ -48,7 +48,7 @@
                 </div>
                 <br />
                 <p>
-                    <button id="btnSubmitNewCollection" type="submit" data-icon="plus" data-mini="true" data-theme="b">${ButtonCreate}</button>
+                    <button type="submit" data-icon="plus" data-mini="true">${ButtonCreate}</button>
                 </p>
             </form>
         </div>
@@ -118,7 +118,7 @@
         </div>
 
         <script type="text/javascript">
-            $('.newCollectionForm').off('submit', BoxSetsPage.onNewCollectionSubmit).on('submit', BoxSetsPage.onNewCollectionSubmit);
+            $('.newCollectionForm').off('submit', BoxSetEditor.onNewCollectionSubmit).on('submit', BoxSetEditor.onNewCollectionSubmit);
         </script>
     </div>
 </body>

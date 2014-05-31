@@ -148,7 +148,7 @@
         padding: 0 0 0 43px;
     }
 
-.moviesPosterItem .posterItemImage {
+.moviesPosterItem .posterItemImage, .trailersPosterItem .posterItemImage {
     background-color: rgba(176, 94, 81, 0.7);
 }
 
@@ -170,6 +170,22 @@
 
 .livetvPosterItem .posterItemImage {
     background-color: rgba(255, 233, 127, 0.7);
+}
+
+.homevideosPosterItem .posterItemImage {
+    background-color: rgba(110, 52, 32, 0.7);
+}
+
+.adultvideosPosterItem .posterItemImage {
+    background-color: rgba(184, 83, 116, 0.7);
+}
+
+.photosPosterItem .posterItemImage {
+    background-color: rgba(127, 0, 0, 0.7);
+}
+
+.musicvideosPosterItem .posterItemImage {
+    background-color: rgba(143, 54, 168, 0.7);
 }
 
 .backdropPosterItem {

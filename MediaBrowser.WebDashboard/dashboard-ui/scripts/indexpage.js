@@ -31,13 +31,17 @@
                     imgUrl = "css/images/items/folders/games.png";
                     break;
                 case "trailers":
-                    imgUrl = "css/images/items/folders/games.png";
+                    imgUrl = "css/images/items/folders/movies.png";
                     break;
+                case "adultvideos":
                 case "homevideos":
                     imgUrl = "css/images/items/folders/homevideos.png";
                     break;
                 case "musicvideos":
                     imgUrl = "css/images/items/folders/musicvideos.png";
+                    break;
+                case "books":
+                    imgUrl = "css/images/items/folders/books.png";
                     break;
                 case "channels":
                     imgUrl = "css/images/items/folders/channels.png";

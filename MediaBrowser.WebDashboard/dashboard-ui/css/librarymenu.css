@@ -63,9 +63,15 @@
     }
 
 .libraryMenuButton {
+    /*padding-left: 10px;
+    opacity: .85;*/
 }
 
-    .libraryMenuButton img {
+.headerHomeButton {
+    padding-right: 0!important;
+}
+
+    .libraryMenuButton img, .headerHomeButton img {
         border: 1px solid #444 !important;
         padding: .5em;
         background-color: #181818;
@@ -77,7 +83,7 @@
         opacity: 1!important;
     }
 
-    .libraryMenuButton img:hover {
+    .libraryMenuButton img:hover, .headerHomeButton img:hover {
         background-color: #38c;
     }
 
@@ -92,7 +98,7 @@
     padding-left: 0 !important;
     position: relative;
     top: 2px;
-    margin-left: -5px;
+    margin-left: -8px;
     cursor: default;
 }
 
@@ -214,7 +220,7 @@
     background-position: 16px center;
 }
 
-.moviesViewMenu {
+.moviesViewMenu, .trailersViewMenu {
     background-image: url(images/items/folders/movies.png);
 }
 
@@ -261,6 +267,10 @@
 
 .reportsViewMenu {
     background-image: url(images/items/folders/report.png);
+}
+
+.homevideosViewMenu, .adultvideosViewMenu {
+    background-image: url(images/items/folders/homevideos.png);
 }
 
 .viewMenuSecondary {

@@ -13,9 +13,7 @@
         DashboardPage.startInterval();
 
         $(ApiClient).on("websocketmessage", DashboardPage.onWebSocketMessage)
-            .on("websocketopen", DashboardPage.onWebSocketConnectionChange)
-            .on("websocketerror", DashboardPage.onWebSocketConnectionChange)
-            .on("websocketclose", DashboardPage.onWebSocketConnectionChange);
+            .on("websocketopen", DashboardPage.onWebSocketOpen);
 
         DashboardPage.lastAppUpdateCheck = null;
         DashboardPage.lastPluginUpdateCheck = null;
@@ -180,9 +178,8 @@
         }
     },
 
-    onWebSocketConnectionChange: function () {
+    onWebSocketOpen: function () {
 
-        DashboardPage.stopInterval();
         DashboardPage.startInterval();
     },
 
@@ -191,6 +188,10 @@
         ApiClient.getSessions().done(function (sessions) {
 
             DashboardPage.renderInfo(page, sessions);
+        });
+        ApiClient.getScheduledTasks().done(function (tasks) {
+
+            DashboardPage.renderRunningTasks(page, tasks);
         });
     },
 

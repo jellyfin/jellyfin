@@ -471,7 +471,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 MediaSourceId = info.MediaSourceId,
                 MediaInfo = info.Item,
                 DeviceName = session.DeviceName,
-                ClientName = session.Client
+                ClientName = session.Client,
+                DeviceId = session.DeviceId
 
             }, _logger);
 
@@ -542,7 +543,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 MediaSourceId = session.PlayState.MediaSourceId,
                 MediaInfo = info.Item,
                 DeviceName = session.DeviceName,
-                ClientName = session.Client
+                ClientName = session.Client,
+                DeviceId = session.DeviceId
 
             }, _logger);
         }
@@ -614,7 +616,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 MediaSourceId = info.MediaSourceId,
                 MediaInfo = info.Item,
                 DeviceName = session.DeviceName,
-                ClientName = session.Client
+                ClientName = session.Client,
+                DeviceId = session.DeviceId
 
             }, _logger);
 

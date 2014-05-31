@@ -721,7 +721,7 @@
     "HeaderDownloadSubtitlesFor": "T\u00e9l\u00e9charger les sous-titres pour:",
     "LabelSkipIfGraphicalSubsPresent": "Sauter la vid\u00e9o si elle contient d\u00e9j\u00e0 des sous-titres graphiques",
     "LabelSkipIfGraphicalSubsPresentHelp": "Garder des versions textes des sous-titres va \u00eatre plus efficace avec les appareils mobiles.",
-    "TabSubtitles": "Sous-titres:",
+    "TabSubtitles": "Sous-titres",
     "LabelOpenSubtitlesUsername": "Nom d'utilisateur de Open Subtitles:",
     "LabelOpenSubtitlesPassword": "Mot de passe de Open Subtitles:",
     "LabelPlayDefaultAudioTrack": "Utiliser la flux audio par d\u00e9faut peu importe la langue",
@@ -755,8 +755,8 @@
     "LabelEnableBackdrops": "Activer les images d'arri\u00e8re-plans",
     "LabelEnableThemeSongsHelp": "Si activ\u00e9, les chansons themes seront lues en arri\u00e8re-plan pendant la navigation dans les biblioth\u00e8ques.",
     "LabelEnableBackdropsHelp": "Si activ\u00e9, les images d'arri\u00e8re-plan seront affich\u00e9es sur certaines pages pendant la navigation dans les biblioth\u00e8ques.",
-    "HeaderAllDevices": "Tous les appareils",
-    "HeaderThisDevice": "Cet appareil",
+    "HeaderHomePage": "Page de d\u00e9marrage",
+    "HeaderSettingsForThisDevice": "Param\u00e8tres pour cet appareil",
     "OptionAuto": "Auto",
     "OptionYes": "Oui",
     "OptionNo": "Non",
@@ -775,5 +775,11 @@
     "MessageLoadingChannels": "Chargement du contenu de la cha\u00eene...",
     "ButtonMarkRead": "Marquer lu",
     "OptionDefaultSort": "Par d\u00e9faut",
-    "OptionCommunityMostWatchedSort": "Les plus \u00e9cout\u00e9s"
+    "OptionCommunityMostWatchedSort": "Les plus \u00e9cout\u00e9s",
+    "TabNextUp": "Prochains \u00e0 voir",
+    "MessageNoMovieSuggestionsAvailable": "Aucune suggestion de film n'est actuellement disponible. Commencez \u00e0 regarder et noter vos films pour avoir des suggestions.",
+    "MessageNoCollectionsAvailable": "Collections allow you to enjoy personalized groupings of Movies, Series, Albums, Books and Games. Click the New button to start creating Collections.",
+    "HeaderWelcomeToMediaBrowserWebClient": "Bienvenue au client Web Media Browser",
+    "ButtonDismiss": "Dismiss",
+    "MessageLearnHowToCustomize": "Learn how to customize this page to your own personal tastes. Click your user icon in the top right corner of the screen to view and update your preferences."
 }

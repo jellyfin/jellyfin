@@ -319,10 +319,20 @@
             }
         }
         else if (msg.MessageType === "PlaybackStart") {
-            firePlaybackEvent('playbackstart', msg.Data);
+
+            if (msg.Data.DeviceId != ApiClient.deviceId()) {
+                if (MediaController.getPlayerInfo().id == msg.Data.Id) {
+                    firePlaybackEvent('playbackstart', msg.Data);
+                }
+            }
         }
         else if (msg.MessageType === "PlaybackStopped") {
-            firePlaybackEvent('playbackstop', msg.Data);
+
+            if (msg.Data.DeviceId != ApiClient.deviceId()) {
+                if (MediaController.getPlayerInfo().id == msg.Data.Id) {
+                    firePlaybackEvent('playbackstop', msg.Data);
+                }
+            }
         }
     }
 

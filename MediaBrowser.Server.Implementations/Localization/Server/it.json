@@ -755,8 +755,8 @@
     "LabelEnableBackdrops": "Abilita gli sfondi",
     "LabelEnableThemeSongsHelp": "Se abiltato le canzoni a tema saranno riprodotte mentre visualizzi la tua libreria",
     "LabelEnableBackdropsHelp": "Se abilitato gli sfondi verranno riprodotti mentre visualizzi la tua libreria",
-    "HeaderAllDevices": "Tutti i dispositivi",
-    "HeaderThisDevice": "Questo dispositivo",
+    "HeaderHomePage": "Home Page",
+    "HeaderSettingsForThisDevice": "Settings for This Device",
     "OptionAuto": "Automatico",
     "OptionYes": "Si",
     "OptionNo": "No",
@@ -775,5 +775,11 @@
     "MessageLoadingChannels": "Sto caricando il contenuto del canale",
     "ButtonMarkRead": "Segna come letto",
     "OptionDefaultSort": "Predefinito",
-    "OptionCommunityMostWatchedSort": "Pi\u00f9 visti"
+    "OptionCommunityMostWatchedSort": "Pi\u00f9 visti",
+    "TabNextUp": "Next Up",
+    "MessageNoMovieSuggestionsAvailable": "No movie suggestions are currently available. Start watching and rating your movies, and then come back to view your recommendations.",
+    "MessageNoCollectionsAvailable": "Collections allow you to enjoy personalized groupings of Movies, Series, Albums, Books and Games. Click the New button to start creating Collections.",
+    "HeaderWelcomeToMediaBrowserWebClient": "Welcome to the Media Browser Web Client",
+    "ButtonDismiss": "Dismiss",
+    "MessageLearnHowToCustomize": "Learn how to customize this page to your own personal tastes. Click your user icon in the top right corner of the screen to view and update your preferences."
 }

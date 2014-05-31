@@ -32,7 +32,7 @@
             updateFilterControls(page);
 
             if (result.TotalRecordCount) {
-                
+
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
@@ -41,11 +41,11 @@
                     centerText: true,
                     lazy: true
                 });
-                
+
                 html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
                 $('.noItemsMessage', page).hide();
             } else {
-                
+
                 $('.noItemsMessage', page).show();
             }
 
@@ -68,16 +68,6 @@
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
-
-            Dashboard.getCurrentUser().done(function(user) {
-                
-                if (user.Configuration.IsAdministrator) {
-                    $('#btnNewCollection', page).removeClass('hide');
-                } else {
-                    $('#btnNewCollection', page).addClass('hide');
-                }
-
-            });
 
             Dashboard.hideLoadingMsg();
         });
@@ -116,7 +106,7 @@
 
     function showNewCollectionPanel(page) {
 
-        $('#newCollectionPanel', page).panel('toggle');
+        $('.newCollectionPanel', page).panel('toggle');
 
         $('#txtNewCollectionName', page).val('').focus();
     }
@@ -190,11 +180,6 @@
             reloadItems(page);
         });
 
-        $('#btnNewCollection', page).on('click', function () {
-
-            showNewCollectionPanel(page);
-        });
-
     }).on('pagebeforeshow', "#boxsetsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
@@ -214,9 +199,48 @@
     }).on('pageshow', "#boxsetsPage", function () {
 
         updateFilterControls(this);
+        
+    }).on('collectionedit', "#boxsetsPage", function () {
+
+        reloadItems(this);
     });
 
-    window.BoxSetsPage = {
+})(jQuery, document);
+
+(function ($, document) {
+
+    function showNewCollectionPanel(page) {
+
+        $('.newCollectionPanel', page).panel('toggle');
+
+        $('#txtNewCollectionName', page).val('').focus();
+    }
+
+    $(document).on('pageinit', ".collectionEditorPage", function () {
+
+        var page = this;
+
+        $('.btnNewCollection', page).on('click', function () {
+
+            showNewCollectionPanel(page);
+        });
+
+    }).on('pagebeforeshow', ".collectionEditorPage", function () {
+
+        var page = this;
+
+        Dashboard.getCurrentUser().done(function (user) {
+
+            if (user.Configuration.IsAdministrator) {
+                $('.btnNewCollection', page).removeClass('hide');
+            } else {
+                $('.btnNewCollection', page).addClass('hide');
+            }
+
+        });
+    });
+
+    window.BoxSetEditor = {
 
         onNewCollectionSubmit: function () {
 
@@ -225,11 +249,11 @@
             var page = $(this).parents('.page');
 
             var url = ApiClient.getUrl("Collections", {
-                
+
                 Name: $('#txtNewCollectionName', page).val(),
                 IsLocked: !$('#chkEnableInternetMetadata', page).checked(),
-                
-                ParentId: getParameterByName('parentId') || getParameterByName('topParentId')
+
+                ParentId: getParameterByName('parentId') || LibraryMenu.getTopParentId()
 
             });
 
@@ -241,9 +265,9 @@
 
                 Dashboard.hideLoadingMsg();
 
-                $('#newCollectionPanel', page).panel('toggle');
+                $('.newCollectionPanel', page).panel('toggle');
 
-                reloadItems(page);
+                $(page).trigger('collectionedit');
 
             });
 
