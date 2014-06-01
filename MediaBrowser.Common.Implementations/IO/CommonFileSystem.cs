@@ -357,11 +357,11 @@ namespace MediaBrowser.Common.Implementations.IO
             {
                 if (to.IndexOf('/') != -1)
                 {
-                    newPath = path.Replace('\\', '/');
+                    newPath = newPath.Replace('\\', '/');
                 }
                 else
                 {
-                    newPath = path.Replace('/', '\\');
+                    newPath = newPath.Replace('/', '\\');
                 }
             }
 
