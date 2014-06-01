@@ -100,22 +100,28 @@
         }
 
         var userId = Dashboard.getCurrentUserId();
-        
+
         var val = LocalSettings.val('enableBackdrops', userId);
 
         return val != '0';
     }
 
-    $(document).on('pagebeforeshow', ".backdropPage", function () {
+    $(document).on('pagebeforeshow', ".page", function () {
 
         var page = this;
 
-        if (enabled()) {
-            var type = page.getAttribute('data-backdroptype');
+        if ($(page).hasClass('backdropPage')) {
 
-            showBackdrop(type);
+            if (enabled()) {
+                var type = page.getAttribute('data-backdroptype');
+
+                showBackdrop(type);
+
+            } else {
+                $(page).removeClass('backdropPage');
+                clearBackdrop();
+            }
         } else {
-            $(page).removeClass('backdropPage');
             clearBackdrop();
         }
 

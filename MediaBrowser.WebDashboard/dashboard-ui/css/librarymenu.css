@@ -196,28 +196,26 @@
 
 .viewMenuTextLink {
     display: block;
-    padding: .6em .5em .6em 43px!important;
+    padding: .6em .5em .6em 39px!important;
     font-size: 15px;
     font-weight: 300!important;
     font-family: Roboto;
     background-repeat: no-repeat;
-    background-size: 18px 18px;
-    background-position: 16px center;
+    background-size: 14px 14px;
+    background-position: 14px center;
 }
 
 .musicViewMenu {
     background-image: url(images/items/folders/music.png);
-    background-position: 16px 8px;
+    background-position: 14px 8px;
 }
 
 .homeViewMenu {
     background-image: url(images/items/folders/home.png);
-    background-position: 16px 9px;
 }
 
 .tvshowsViewMenu {
     background-image: url(images/items/folders/tv.png);
-    background-position: 16px center;
 }
 
 .moviesViewMenu, .trailersViewMenu {
@@ -226,12 +224,10 @@
 
 .gamesViewMenu {
     background-image: url(images/items/folders/games.png);
-    background-position: 16px 8px;
 }
 
 .channelsViewMenu {
     background-image: url(images/items/folders/channels.png);
-    background-position: 16px 9px;
 }
 
 .booksViewMenu {
@@ -240,12 +236,10 @@
 
 .musicvideosViewMenu {
     background-image: url(images/items/folders/musicvideos.png);
-    background-position: 16px 8px;
 }
 
 .photosViewMenu {
     background-image: url(images/items/folders/photos.png);
-    background-position: 16px 8px;
 }
 
 .homeVideosViewMenu {
@@ -258,7 +252,6 @@
 
 .editorViewMenu {
     background-image: url(images/items/folders/edit.png);
-    background-position: 16px 8px;
 }
 
 .dashboardViewMenu {

@@ -748,8 +748,12 @@ var Dashboard = {
             href: "autoorganizelog.html",
             selected: page.hasClass("organizePage")
         }, {
-            name: "DLNA",
+            name: "Channels",
             divider: true,
+            href: "channelsettings.html",
+            selected: page.hasClass("channelSettingsPage")
+        }, {
+            name: "DLNA",
             href: "dlnasettings.html",
             selected: page.hasClass("dlnaPage")
         }, {
@@ -780,7 +784,6 @@ var Dashboard = {
             selected: pageElem.id == "scheduledTasksPage" || pageElem.id == "scheduledTaskPage"
         }, {
             name: "Help",
-            divider: true,
             href: "support.html",
             selected: pageElem.id == "supportPage" || pageElem.id == "logPage" || pageElem.id == "supporterPage" || pageElem.id == "supporterKeyPage" || pageElem.id == "aboutPage"
         }];

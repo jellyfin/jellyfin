@@ -142,7 +142,7 @@
                 coverImage: true
             });
 
-            html += LibraryBrowser.getPagingHtml(pagingHtml);
+            html += pagingHtml;
 
             $('#items', page).html(html).trigger('create').createPosterItemMenus();
 

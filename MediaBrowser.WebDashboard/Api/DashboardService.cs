@@ -539,6 +539,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "autoorganizelog.js",
                                 "channels.js",
                                 "channelitems.js",
+                                "channelsettings.js",
                                 "dashboardgeneral.js",
                                 "dashboardinfo.js",
                                 "dashboardpage.js",

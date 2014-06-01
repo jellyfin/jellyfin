@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleChannels}</title>
+</head>
+<body>
+    <div id="channelSettingsPage" data-role="page" class="page type-interior channelSettingsPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <br />
+                <form class="channelSettingsForm">
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="selectChannelResolution">${LabelChannelStreamOptionBestAvailable}</label>
+                            <select id="selectChannelResolution">
+                                <option value="">${ChannelStreamOptionBestAvailable}</option>
+                                <option value="1920">1080p</option>
+                                <option value="1280">720p</option>
+                                <option value="720">480p</option>
+                            </select>
+                            <div class="fieldDescription">${LabelChannelStreamOptionBestAvailableHelp}</div>
+                        </li>
+                    </ul>
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check">
+                                ${ButtonSave}
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                                ${ButtonCancel}
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.channelSettingsForm').off('submit', ChannelSettingsPage.onSubmit).on('submit', ChannelSettingsPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

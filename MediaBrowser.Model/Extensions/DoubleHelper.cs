@@ -2,6 +2,9 @@
 
 namespace MediaBrowser.Model.Extensions
 {
+    /// <summary>
+    /// Isolating these helpers allow this entire project to be easily converted to Java
+    /// </summary>
     public static class DoubleHelper
     {
         /// <summary>

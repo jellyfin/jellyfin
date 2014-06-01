@@ -218,7 +218,7 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
         /// <returns>Task{BaseItemDto[]}.</returns>
-        Task<BaseItemDto[]> GetAdditionalParts(string itemId, string userId);
+        Task<ItemsResult> GetAdditionalParts(string itemId, string userId);
         
         /// <summary>
         /// Gets the users async.
@@ -443,8 +443,9 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Gets the system status async.
         /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{SystemInfo}.</returns>
-        Task<SystemInfo> GetSystemInfoAsync();
+        Task<SystemInfo> GetSystemInfoAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets a person

@@ -563,6 +563,7 @@
 	"LabelDefaultUser": "Default user:",
 	"LabelDefaultUserHelp": "Determines which user library should be displayed on connected devices. This can be overridden for each device using profiles.",
 	"TitleDlna": "DLNA",
+	"TitleChannels": "Channels",
 	"HeaderServerSettings": "Server Settings",
 	"LabelWeatherDisplayLocation": "Weather display location:",
 	"LabelWeatherDisplayLocationHelp": "US zip code / City, State, Country / City, Country",
@@ -796,5 +797,8 @@
 	"HeaderWelcomeToMediaBrowserWebClient": "Welcome to the Media Browser Web Client",
 	"ButtonDismiss": "Dismiss",
 	"MessageLearnHowToCustomize": "Learn how to customize this page to your own personal tastes. Click your user icon in the top right corner of the screen to view and update your preferences.",
-	"ButtonEditOtherUserPreferences": "Edit this user's personal preferences."
+	"ButtonEditOtherUserPreferences": "Edit this user's personal preferences.",
+	"ChannelStreamOptionBestAvailable": "Best available",
+	"LabelChannelStreamOptionBestAvailable": "Preferred streaming quality:",
+	"LabelChannelStreamOptionBestAvailableHelp": "Determines the selected quality when channel content is available in multiple resolutions."
 }
