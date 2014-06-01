@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -17,7 +18,7 @@ namespace MediaBrowser.Model.Dlna
 
         public Filter(string filter)
         {
-            _all = string.Equals(filter, "*", StringComparison.OrdinalIgnoreCase);
+            _all = StringHelper.EqualsIgnoreCase(filter, "*");
 
             List<string> list = new List<string>();
             foreach (string s in (filter ?? string.Empty).Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries))

@@ -1,17 +1,15 @@
 ﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
     public class StreamBuilder
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         public StreamInfo BuildAudioItem(AudioOptions options)
         {
             ValidateAudioInput(options);
@@ -27,7 +25,7 @@ namespace MediaBrowser.Model.Dlna
                 mediaSources = new List<MediaSourceInfo>();
                 foreach (MediaSourceInfo i in mediaSources)
                 {
-                    if (string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
+                    if (StringHelper.EqualsIgnoreCase(i.Id, mediaSourceId))
                         mediaSources.Add(i);
                 }
             }
@@ -60,7 +58,7 @@ namespace MediaBrowser.Model.Dlna
                 mediaSources = new List<MediaSourceInfo>();
                 foreach (MediaSourceInfo i in mediaSources)
                 {
-                    if (string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
+                    if (StringHelper.EqualsIgnoreCase(i.Id, mediaSourceId))
                         mediaSources.Add(i);
                 }
             }
@@ -505,7 +503,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.AudioBitrate:
                         {
                             int num;
-                            if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
+                            if (IntHelper.TryParseCultureInvariant(value, out num))
                             {
                                 item.AudioBitrate = num;
                             }
@@ -514,7 +512,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.AudioChannels:
                         {
                             int num;
-                            if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
+                            if (IntHelper.TryParseCultureInvariant(value, out num))
                             {
                                 item.MaxAudioChannels = num;
                             }
@@ -537,7 +535,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.Height:
                         {
                             int num;
-                            if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
+                            if (IntHelper.TryParseCultureInvariant(value, out num))
                             {
                                 item.MaxHeight = num;
                             }
@@ -546,7 +544,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.VideoBitrate:
                         {
                             int num;
-                            if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
+                            if (IntHelper.TryParseCultureInvariant(value, out num))
                             {
                                 item.VideoBitrate = num;
                             }
@@ -554,8 +552,8 @@ namespace MediaBrowser.Model.Dlna
                         }
                     case ProfileConditionValue.VideoFramerate:
                         {
-                            int num;
-                            if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
+                            double num;
+                            if (DoubleHelper.TryParseCultureInvariant(value, out num))
                             {
                                 item.MaxFramerate = num;
                             }
@@ -564,7 +562,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.VideoLevel:
                         {
                             int num;
-                            if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
+                            if (IntHelper.TryParseCultureInvariant(value, out num))
                             {
                                 item.VideoLevel = num;
                             }
@@ -573,7 +571,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.Width:
                         {
                             int num;
-                            if (int.TryParse(value, NumberStyles.Any, _usCulture, out num))
+                            if (IntHelper.TryParseCultureInvariant(value, out num))
                             {
                                 item.MaxWidth = num;
                             }
@@ -594,7 +592,7 @@ namespace MediaBrowser.Model.Dlna
                 bool any = false;
                 foreach (string i in profile.GetContainers())
                 {
-                    if (string.Equals(i, mediaContainer, StringComparison.OrdinalIgnoreCase))
+                    if (StringHelper.EqualsIgnoreCase(i, mediaContainer))
                     {
                         any = true;
                         break;
@@ -624,7 +622,7 @@ namespace MediaBrowser.Model.Dlna
                 bool any = false;
                 foreach (string i in profile.GetContainers())
                 {
-                    if (string.Equals(i, mediaContainer, StringComparison.OrdinalIgnoreCase))
+                    if (StringHelper.EqualsIgnoreCase(i, mediaContainer))
                     {
                         any = true;
                         break;

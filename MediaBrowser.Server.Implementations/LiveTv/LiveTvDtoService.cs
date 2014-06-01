@@ -206,7 +206,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsRepeat = info.IsRepeat,
                 EpisodeTitle = info.EpisodeTitle,
                 ChannelType = info.ChannelType,
-                MediaType = info.ChannelType == LiveTvChannelType.Radio ? MediaType.Audio : MediaType.Video,
+                MediaType = info.ChannelType == ChannelType.Radio ? MediaType.Audio : MediaType.Video,
                 CommunityRating = GetClientCommunityRating(info.CommunityRating),
                 OfficialRating = info.OfficialRating,
                 Audio = info.Audio,

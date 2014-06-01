@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
@@ -89,7 +90,7 @@ namespace MediaBrowser.Model.Dto
             {
                 foreach (MediaStream i in MediaStreams)
                 {
-                    if (i.Type == MediaStreamType.Video && (i.Codec ?? string.Empty).IndexOf("jpeg", StringComparison.OrdinalIgnoreCase) == -1)
+                    if (i.Type == MediaStreamType.Video && StringHelper.IndexOfIgnoreCase((i.Codec ?? string.Empty), "jpeg") == -1)
                     {
                         return i;
                     }

@@ -428,6 +428,15 @@
     <Compile Include="..\MediaBrowser.Model\Events\GenericEventArgs.cs">
       <Link>Events\GenericEventArgs.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Extensions\DoubleHelper.cs">
+      <Link>Extensions\DoubleHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Extensions\IntHelper.cs">
+      <Link>Extensions\IntHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Extensions\StringHelper.cs">
+      <Link>Extensions\StringHelper.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\FileOrganization\EpisodeFileOrganizationRequest.cs">
       <Link>FileOrganization\EpisodeFileOrganizationRequest.cs</Link>
     </Compile>
@@ -482,6 +491,9 @@
     <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelInfoDto.cs">
       <Link>LiveTv\ChannelInfoDto.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelType.cs">
+      <Link>LiveTv\ChannelType.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\DayPattern.cs">
       <Link>LiveTv\DayPattern.cs</Link>
     </Compile>
@@ -490,9 +502,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvChannelQuery.cs">
       <Link>LiveTv\LiveTvChannelQuery.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvChannelType.cs">
-      <Link>LiveTv\LiveTvChannelType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvInfo.cs">
       <Link>LiveTv\LiveTvInfo.cs</Link>

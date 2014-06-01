@@ -4,7 +4,7 @@ namespace MediaBrowser.Model.LiveTv
     /// <summary>
     /// Enum ChannelType
     /// </summary>
-    public enum LiveTvChannelType
+    public enum ChannelType
     {
         /// <summary>
         /// The TV

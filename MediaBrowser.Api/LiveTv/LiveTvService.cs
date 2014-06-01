@@ -21,7 +21,7 @@ namespace MediaBrowser.Api.LiveTv
     public class GetChannels : IReturn<QueryResult<ChannelInfoDto>>
     {
         [ApiMember(Name = "Type", Description = "Optional filter by channel type.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public LiveTvChannelType? Type { get; set; }
+        public ChannelType? Type { get; set; }
 
         [ApiMember(Name = "UserId", Description = "Optional filter by user and attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }

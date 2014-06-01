@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Extensions;
+using System;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -15,22 +16,22 @@ namespace MediaBrowser.Model.Dlna
 
             SearchType = SearchType.Unknown;
 
-            if (search.IndexOf("upnp:class", StringComparison.OrdinalIgnoreCase) != -1 &&
-                search.IndexOf("derivedfrom", StringComparison.OrdinalIgnoreCase) != -1)
+            if (StringHelper.IndexOfIgnoreCase(search, "upnp:class") != -1 &&
+                StringHelper.IndexOfIgnoreCase(search, "derivedfrom") != -1)
             {
-                if (search.IndexOf("object.item.audioItem", StringComparison.OrdinalIgnoreCase) != -1)
+                if (StringHelper.IndexOfIgnoreCase(search, "object.item.audioItem") != -1)
                 {
                     SearchType = SearchType.Audio;
                 }
-                else if (search.IndexOf("object.item.imageItem", StringComparison.OrdinalIgnoreCase) != -1)
+                else if (StringHelper.IndexOfIgnoreCase(search, "object.item.imageItem") != -1)
                 {
                     SearchType = SearchType.Image;
                 }
-                else if (search.IndexOf("object.item.videoItem", StringComparison.OrdinalIgnoreCase) != -1)
+                else if (StringHelper.IndexOfIgnoreCase(search, "object.item.videoItem") != -1)
                 {
                     SearchType = SearchType.Video;
                 }
-                else if (search.IndexOf("object.container.playlistContainer", StringComparison.OrdinalIgnoreCase) != -1)
+                else if (StringHelper.IndexOfIgnoreCase(search, "object.container.playlistContainer") != -1)
                 {
                     SearchType = SearchType.Playlist;
                 }

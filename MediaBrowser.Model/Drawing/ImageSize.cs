@@ -1,4 +1,4 @@
-using System.Globalization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Drawing
 {
@@ -7,8 +7,6 @@ namespace MediaBrowser.Model.Drawing
     /// </summary>
     public struct ImageSize
     {
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         private double _height;
         private double _width;
 
@@ -67,12 +65,12 @@ namespace MediaBrowser.Model.Drawing
                 {
                     double val;
 
-                    if (double.TryParse(parts[0], NumberStyles.Any, UsCulture, out val))
+                    if (DoubleHelper.TryParseCultureInvariant(parts[0], out val))
                     {
                         _width = val;
                     }
 
-                    if (double.TryParse(parts[1], NumberStyles.Any, UsCulture, out val))
+                    if (DoubleHelper.TryParseCultureInvariant(parts[1], out val))
                     {
                         _height = val;
                     }

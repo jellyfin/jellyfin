@@ -256,7 +256,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             try
             {
-                var session = GetSession(sessionId);
+                var session = GetSession(sessionId, false);
 
                 if (session != null)
                 {
@@ -710,13 +710,14 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Gets the session.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
+        /// <param name="throwOnMissing">if set to <c>true</c> [throw on missing].</param>
         /// <returns>SessionInfo.</returns>
         /// <exception cref="ResourceNotFoundException"></exception>
-        private SessionInfo GetSession(string sessionId)
+        private SessionInfo GetSession(string sessionId, bool throwOnMissing = true)
         {
-            var session = Sessions.First(i => string.Equals(i.Id, sessionId));
+            var session = Sessions.FirstOrDefault(i => string.Equals(i.Id, sessionId));
 
-            if (session == null)
+            if (session == null && throwOnMissing)
             {
                 throw new ResourceNotFoundException(string.Format("Session {0} not found.", sessionId));
             }

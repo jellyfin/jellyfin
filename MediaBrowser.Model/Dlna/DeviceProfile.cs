@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.MediaInfo;
+﻿using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -125,7 +126,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!string.Equals(container, i.Container, StringComparison.OrdinalIgnoreCase))
+                if (!StringHelper.EqualsIgnoreCase(container, i.Container))
                 {
                     continue;
                 }
@@ -151,7 +152,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!string.Equals(container, i.Container, StringComparison.OrdinalIgnoreCase))
+                if (!StringHelper.EqualsIgnoreCase(container, i.Container))
                 {
                     continue;
                 }
@@ -161,7 +162,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!string.Equals(videoCodec, i.VideoCodec, StringComparison.OrdinalIgnoreCase))
+                if (!StringHelper.EqualsIgnoreCase(videoCodec, i.VideoCodec))
                 {
                     continue;
                 }

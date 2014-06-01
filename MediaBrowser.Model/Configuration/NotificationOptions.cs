@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -72,7 +73,7 @@ namespace MediaBrowser.Model.Configuration
         {
             foreach (NotificationOption i in Options)
             {
-                if (string.Equals(type, i.Type, StringComparison.OrdinalIgnoreCase)) return i;
+                if (StringHelper.EqualsIgnoreCase(type, i.Type)) return i;
             }
             return null;
         }

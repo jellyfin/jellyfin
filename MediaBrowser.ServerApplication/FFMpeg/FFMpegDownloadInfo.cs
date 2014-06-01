@@ -149,8 +149,10 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
                     //No Unix version available 
                     return new string[] { };
+
+                default:
+                    throw new ApplicationException("No ffmpeg download available for " + pid);
             }
-            return new string[] { };
         }
     }
 

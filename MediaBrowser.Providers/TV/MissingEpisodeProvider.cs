@@ -93,10 +93,10 @@ namespace MediaBrowser.Providers.TV
 
             var hasBadData = HasInvalidContent(group);
 
-            var anySeasonsRemoved = await RemoveObsoleteOrMissingSeasons(group, episodeLookup, cancellationToken)
+            var anySeasonsRemoved = await RemoveObsoleteOrMissingSeasons(group, episodeLookup, hasBadData)
                 .ConfigureAwait(false);
 
-            var anyEpisodesRemoved = await RemoveObsoleteOrMissingEpisodes(group, episodeLookup, cancellationToken)
+            var anyEpisodesRemoved = await RemoveObsoleteOrMissingEpisodes(group, episodeLookup, hasBadData)
                 .ConfigureAwait(false);
 
             var hasNewEpisodes = false;
@@ -143,7 +143,16 @@ namespace MediaBrowser.Providers.TV
             var allItems = group.ToList().SelectMany(i => i.RecursiveChildren).ToList();
 
             return allItems.OfType<Season>().Any(i => !i.IndexNumber.HasValue) ||
-                   allItems.OfType<Episode>().Any(i => !i.IndexNumber.HasValue || !i.ParentIndexNumber.HasValue);
+                   allItems.OfType<Episode>().Any(i =>
+                   {
+                       if (!i.ParentIndexNumber.HasValue)
+                       {
+                           return true;
+                       }
+
+                       // You could have episodes under season 0 with no number
+                       return false;
+                   });
         }
 
         /// <summary>
@@ -271,7 +280,9 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Removes the virtual entry after a corresponding physical version has been added
         /// </summary>
-        private async Task<bool> RemoveObsoleteOrMissingEpisodes(IEnumerable<Series> series, IEnumerable<Tuple<int, int>> episodeLookup, CancellationToken cancellationToken)
+        private async Task<bool> RemoveObsoleteOrMissingEpisodes(IEnumerable<Series> series, 
+            IEnumerable<Tuple<int, int>> episodeLookup, 
+            bool forceRemoveAll)
         {
             var existingEpisodes = (from s in series
                                     let seasonOffset = TvdbSeriesProvider.GetSeriesOffset(s.ProviderIds) ?? ((s.AnimeSeriesIndex ?? 1) - 1)
@@ -290,6 +301,11 @@ namespace MediaBrowser.Providers.TV
             var episodesToRemove = virtualEpisodes
                 .Where(i =>
                 {
+                    if (forceRemoveAll)
+                    {
+                        return true;
+                    }
+
                     if (i.Episode.IndexNumber.HasValue && i.Episode.ParentIndexNumber.HasValue)
                     {
                         var seasonNumber = i.Episode.ParentIndexNumber.Value + i.SeasonOffset;
@@ -335,9 +351,11 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         /// <param name="series">The series.</param>
         /// <param name="episodeLookup">The episode lookup.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="forceRemoveAll">if set to <c>true</c> [force remove all].</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private async Task<bool> RemoveObsoleteOrMissingSeasons(IEnumerable<Series> series, IEnumerable<Tuple<int, int>> episodeLookup, CancellationToken cancellationToken)
+        private async Task<bool> RemoveObsoleteOrMissingSeasons(IEnumerable<Series> series, 
+            IEnumerable<Tuple<int, int>> episodeLookup,
+            bool forceRemoveAll)
         {
             var existingSeasons = (from s in series
                                    let seasonOffset = TvdbSeriesProvider.GetSeriesOffset(s.ProviderIds) ?? ((s.AnimeSeriesIndex ?? 1) - 1)
@@ -356,6 +374,11 @@ namespace MediaBrowser.Providers.TV
             var seasonsToRemove = virtualSeasons
                 .Where(i =>
                 {
+                    if (forceRemoveAll)
+                    {
+                        return true;
+                    }
+
                     if (i.Season.IndexNumber.HasValue)
                     {
                         var seasonNumber = i.Season.IndexNumber.Value + i.SeasonOffset;
