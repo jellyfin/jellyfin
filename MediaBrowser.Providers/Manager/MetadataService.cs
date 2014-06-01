@@ -169,15 +169,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>ItemUpdateType.</returns>
         protected virtual ItemUpdateType BeforeSave(TItemType item)
         {
-            var updateType = ItemUpdateType.None;
-
-            if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(item.Path))
-            {
-                item.Name = Path.GetFileNameWithoutExtension(item.Path);
-                updateType = updateType | ItemUpdateType.MetadataDownload;
-            }
-
-            return updateType;
+            return ItemUpdateType.None;
         }
 
         /// <summary>
@@ -309,11 +301,6 @@ namespace MediaBrowser.Providers.Manager
                         if (imageService.MergeImages(item, localItem.Images))
                         {
                             refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;
-                        }
-
-                        if (string.IsNullOrWhiteSpace(localItem.Item.Name))
-                        {
-                            localItem.Item.Name = item.Name ?? Path.GetFileNameWithoutExtension(item.Path);
                         }
 
                         MergeData(localItem.Item, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
