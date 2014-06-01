@@ -1,7 +1,7 @@
-﻿using System;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Providers.Manager
@@ -14,7 +14,11 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (replaceData || string.IsNullOrEmpty(target.Name))
                 {
-                    target.Name = source.Name;
+                    // Safeguard against incoming data having an emtpy name
+                    if (!string.IsNullOrWhiteSpace(source.Name))
+                    {
+                        target.Name = source.Name;
+                    }
                 }
             }
 
