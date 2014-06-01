@@ -1171,7 +1171,12 @@ namespace MediaBrowser.Server.Implementations.Dto
                     LocationType = item.LocationType,
                     Name = item.Name,
                     Path = GetMappedPath(item),
-                    MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery { ItemId = item.Id }).ToList(),
+                    MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
+                    {
+                        ItemId = item.Id
+
+                    }).ToList(),
+
                     RunTimeTicks = item.RunTimeTicks
                 }            
             };

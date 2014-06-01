@@ -1427,13 +1427,12 @@ namespace MediaBrowser.Api.Playback
             }
             else if (item is IChannelMediaItem)
             {
-                var channelMediaSources = await ChannelManager.GetChannelItemMediaSources(request.Id, CancellationToken.None).ConfigureAwait(false);
-
-                var source = channelMediaSources.First();
+                var source = await GetChannelMediaInfo(request.Id, CancellationToken.None).ConfigureAwait(false);
                 state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
                 state.IsRemote = source.IsRemote;
                 state.MediaPath = source.Path;
                 state.RunTimeTicks = item.RunTimeTicks;
+                mediaStreams = GetMediaStreams(source).ToList();
             }
             else
             {
@@ -1479,28 +1478,7 @@ namespace MediaBrowser.Api.Playback
 
             }).ToList();
 
-            if (videoRequest != null)
-            {
-                if (string.IsNullOrEmpty(videoRequest.VideoCodec))
-                {
-                    videoRequest.VideoCodec = InferVideoCodec(url);
-                }
-
-                state.VideoStream = GetMediaStream(mediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video);
-                state.SubtitleStream = GetMediaStream(mediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
-                state.AudioStream = GetMediaStream(mediaStreams, videoRequest.AudioStreamIndex, MediaStreamType.Audio);
-
-                if (state.VideoStream != null && state.VideoStream.IsInterlaced)
-                {
-                    state.DeInterlace = true;
-                }
-
-                EnforceResolutionLimit(state, videoRequest);
-            }
-            else
-            {
-                state.AudioStream = GetMediaStream(mediaStreams, null, MediaStreamType.Audio, true);
-            }
+            AttachMediaStreamInfo(state, mediaStreams, videoRequest, url);
 
             state.SegmentLength = state.ReadInputAtNativeFramerate ? 5 : 10;
             state.HlsListSize = state.ReadInputAtNativeFramerate ? 100 : 1440;
@@ -1536,6 +1514,96 @@ namespace MediaBrowser.Api.Playback
             }
 
             return state;
+        }
+
+        private void AttachMediaStreamInfo(StreamState state,
+            List<MediaStream> mediaStreams,
+            VideoStreamRequest videoRequest,
+            string requestedUrl)
+        {
+            if (videoRequest != null)
+            {
+                if (string.IsNullOrEmpty(videoRequest.VideoCodec))
+                {
+                    videoRequest.VideoCodec = InferVideoCodec(requestedUrl);
+                }
+
+                state.VideoStream = GetMediaStream(mediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video);
+                state.SubtitleStream = GetMediaStream(mediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
+                state.AudioStream = GetMediaStream(mediaStreams, videoRequest.AudioStreamIndex, MediaStreamType.Audio);
+
+                if (state.VideoStream != null && state.VideoStream.IsInterlaced)
+                {
+                    state.DeInterlace = true;
+                }
+
+                EnforceResolutionLimit(state, videoRequest);
+            }
+            else
+            {
+                state.AudioStream = GetMediaStream(mediaStreams, null, MediaStreamType.Audio, true);
+            }
+        }
+
+        private IEnumerable<MediaStream> GetMediaStreams(ChannelMediaInfo info)
+        {
+            var list = new List<MediaStream>();
+
+            if (!string.IsNullOrWhiteSpace(info.VideoCodec) &&
+                !string.IsNullOrWhiteSpace(info.AudioCodec))
+            {
+                list.Add(new MediaStream
+                {
+                    Type = MediaStreamType.Video,
+                    Width = info.Width,
+                    RealFrameRate = info.Framerate,
+                    Profile = info.VideoProfile,
+                    Level = info.VideoLevel,
+                    Index = -1,
+                    Height = info.Height,
+                    Codec = info.VideoCodec,
+                    BitRate = info.VideoBitrate,
+                    AverageFrameRate = info.Framerate
+                });
+
+                list.Add(new MediaStream
+                {
+                    Type = MediaStreamType.Audio,
+                    Index = -1,
+                    Codec = info.AudioCodec,
+                    BitRate = info.AudioBitrate,
+                    Channels = info.AudioChannels,
+                    SampleRate = info.AudioSampleRate
+                });
+            }
+
+            return list;
+        }
+
+        private async Task<ChannelMediaInfo> GetChannelMediaInfo(string id, CancellationToken cancellationToken)
+        {
+            var channelMediaSources = await ChannelManager.GetChannelItemMediaSources(id, cancellationToken)
+                .ConfigureAwait(false);
+
+            var list = channelMediaSources.ToList();
+
+            var preferredWidth = ServerConfigurationManager.Configuration.ChannelOptions.PreferredStreamingWidth;
+
+            if (preferredWidth.HasValue)
+            {
+                var val = preferredWidth.Value;
+
+                return list
+                    .OrderBy(i => Math.Abs(i.Width ?? 0 - val))
+                    .ThenByDescending(i => i.Width ?? 0)
+                    .ThenBy(list.IndexOf)
+                    .First();
+            }
+
+            return list
+                .OrderByDescending(i => i.Width ?? 0)
+                .ThenBy(list.IndexOf)
+                .First();
         }
 
         private bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
