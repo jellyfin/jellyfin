@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
 using System;
 using System.Collections.Generic;
@@ -523,7 +524,7 @@ namespace MediaBrowser.Model.Dto
         /// <returns><c>true</c> if the specified type is type; otherwise, <c>false</c>.</returns>
         public bool IsType(string type)
         {
-            return Type.Equals(type, StringComparison.OrdinalIgnoreCase);
+            return StringHelper.EqualsIgnoreCase(Type, type);
         }
 
         /// <summary>
@@ -837,7 +838,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsVideo
         {
-            get { return string.Equals(MediaType, Entities.MediaType.Video, StringComparison.OrdinalIgnoreCase); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Video); }
         }
 
         /// <summary>
@@ -847,7 +848,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsAudio
         {
-            get { return string.Equals(MediaType, Entities.MediaType.Audio, StringComparison.OrdinalIgnoreCase); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Audio); }
         }
 
         /// <summary>
@@ -857,7 +858,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsGame
         {
-            get { return string.Equals(MediaType, Entities.MediaType.Game, StringComparison.OrdinalIgnoreCase); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Game); }
         }
 
         /// <summary>
@@ -867,7 +868,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsPerson
         {
-            get { return string.Equals(Type, "Person", StringComparison.OrdinalIgnoreCase); }
+            get { return StringHelper.EqualsIgnoreCase(Type, "Person"); }
         }
 
         /// <summary>
@@ -877,37 +878,37 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsRoot
         {
-            get { return string.Equals(Type, "AggregateFolder", StringComparison.OrdinalIgnoreCase); }
+            get { return StringHelper.EqualsIgnoreCase(Type, "AggregateFolder"); }
         }
 
         [IgnoreDataMember]
         public bool IsMusicGenre
         {
-            get { return string.Equals(Type, "MusicGenre", StringComparison.OrdinalIgnoreCase); }
+            get { return StringHelper.EqualsIgnoreCase(Type, "MusicGenre"); }
         }
 
         [IgnoreDataMember]
         public bool IsGameGenre
         {
-            get { return string.Equals(Type, "GameGenre", StringComparison.OrdinalIgnoreCase); }
+            get { return StringHelper.EqualsIgnoreCase(Type, "GameGenre"); }
         }
 
         [IgnoreDataMember]
         public bool IsGenre
         {
-            get { return string.Equals(Type, "Genre", StringComparison.OrdinalIgnoreCase); }
+            get { return StringHelper.EqualsIgnoreCase(Type, "Genre"); }
         }
 
         [IgnoreDataMember]
         public bool IsArtist
         {
-            get { return string.Equals(Type, "Artist", StringComparison.OrdinalIgnoreCase); }
+            get { return StringHelper.EqualsIgnoreCase(Type, "Artist"); }
         }
 
         [IgnoreDataMember]
         public bool IsStudio
         {
-            get { return string.Equals(Type, "Studio", StringComparison.OrdinalIgnoreCase); }
+            get { return StringHelper.EqualsIgnoreCase(Type, "Studio"); }
         }
 
         /// <summary>

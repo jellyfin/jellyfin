@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -139,8 +140,8 @@ namespace MediaBrowser.Model.Entities
 
                 var codec = Codec ?? string.Empty;
 
-                return codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 ||
-                       codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1;
+                return StringHelper.IndexOfIgnoreCase(codec, "pgs") != -1 ||
+                       StringHelper.IndexOfIgnoreCase(codec, "dvd") != -1;
             }
         }
 

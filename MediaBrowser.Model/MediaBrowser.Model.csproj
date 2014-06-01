@@ -144,6 +144,9 @@
     <Compile Include="Entities\SortOrder.cs" />
     <Compile Include="Entities\VideoSize.cs" />
     <Compile Include="Events\GenericEventArgs.cs" />
+    <Compile Include="Extensions\DoubleHelper.cs" />
+    <Compile Include="Extensions\IntHelper.cs" />
+    <Compile Include="Extensions\StringHelper.cs" />
     <Compile Include="FileOrganization\EpisodeFileOrganizationRequest.cs" />
     <Compile Include="FileOrganization\FileOrganizationResult.cs" />
     <Compile Include="FileOrganization\FileOrganizationResultQuery.cs" />
@@ -200,7 +203,7 @@
     <Compile Include="IO\IIsoManager.cs" />
     <Compile Include="IO\IIsoMount.cs" />
     <Compile Include="IO\IIsoMounter.cs" />
-    <Compile Include="LiveTv\LiveTvChannelType.cs" />
+    <Compile Include="LiveTv\ChannelType.cs" />
     <Compile Include="LiveTv\LiveTvServiceInfo.cs" />
     <Compile Include="LiveTv\RecordingInfoDto.cs" />
     <Compile Include="Net\WebSocketMessage.cs" />

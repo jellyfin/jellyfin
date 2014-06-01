@@ -416,7 +416,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return item;
         }
 
-        private LiveTvProgram GetProgram(ProgramInfo info, LiveTvChannelType channelType, string serviceName, CancellationToken cancellationToken)
+        private LiveTvProgram GetProgram(ProgramInfo info, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
         {
             var id = _tvDtoService.GetInternalProgramId(serviceName, info.Id);
 
@@ -475,7 +475,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (item == null)
             {
-                if (info.ChannelType == LiveTvChannelType.TV)
+                if (info.ChannelType == ChannelType.TV)
                 {
                     item = new LiveTvVideoRecording
                     {

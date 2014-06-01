@@ -127,6 +127,11 @@
     display: none;
 }
 
+.smallBackdropPosterItem .posterItemOverlayInner>div {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
 
 .myLibraryPosterItem {
     width: 42%;

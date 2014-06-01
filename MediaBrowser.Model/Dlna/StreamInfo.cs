@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -45,7 +45,7 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxWidth { get; set; }
         public int? MaxHeight { get; set; }
 
-        public int? MaxFramerate { get; set; }
+        public double? MaxFramerate { get; set; }
 
         public string DeviceProfileId { get; set; }
         public string DeviceId { get; set; }
@@ -89,15 +89,13 @@ namespace MediaBrowser.Model.Dlna
                 return string.Format("{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, dlnaCommand);
             }
 
-            if (string.Equals(Protocol, "hls", StringComparison.OrdinalIgnoreCase))
+            if (StringHelper.EqualsIgnoreCase(Protocol, "hls"))
             {
                 return string.Format("{0}/videos/{1}/stream.m3u8?{2}", baseUrl, ItemId, dlnaCommand);
             }
 
             return string.Format("{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, dlnaCommand);
         }
-
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         private static string BuildDlnaParam(StreamInfo item)
         {
@@ -109,16 +107,16 @@ namespace MediaBrowser.Model.Dlna
                 (item.IsDirectStream).ToString().ToLower(),
                 item.VideoCodec ?? string.Empty,
                 item.AudioCodec ?? string.Empty,
-                item.AudioStreamIndex.HasValue ? item.AudioStreamIndex.Value.ToString(UsCulture) : string.Empty,
-                item.SubtitleStreamIndex.HasValue ? item.SubtitleStreamIndex.Value.ToString(UsCulture) : string.Empty,
-                item.VideoBitrate.HasValue ? item.VideoBitrate.Value.ToString(UsCulture) : string.Empty,
-                item.AudioBitrate.HasValue ? item.AudioBitrate.Value.ToString(UsCulture) : string.Empty,
-                item.MaxAudioChannels.HasValue ? item.MaxAudioChannels.Value.ToString(UsCulture) : string.Empty,
-                item.MaxFramerate.HasValue ? item.MaxFramerate.Value.ToString(UsCulture) : string.Empty,
-                item.MaxWidth.HasValue ? item.MaxWidth.Value.ToString(UsCulture) : string.Empty,
-                item.MaxHeight.HasValue ? item.MaxHeight.Value.ToString(UsCulture) : string.Empty,
-                item.StartPositionTicks.ToString(UsCulture),
-                item.VideoLevel.HasValue ? item.VideoLevel.Value.ToString(UsCulture) : string.Empty
+                item.AudioStreamIndex.HasValue ? StringHelper.ToStringCultureInvariant(item.AudioStreamIndex.Value) : string.Empty,
+                item.SubtitleStreamIndex.HasValue ? StringHelper.ToStringCultureInvariant(item.SubtitleStreamIndex.Value) : string.Empty,
+                item.VideoBitrate.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoBitrate.Value) : string.Empty,
+                item.AudioBitrate.HasValue ? StringHelper.ToStringCultureInvariant(item.AudioBitrate.Value) : string.Empty,
+                item.MaxAudioChannels.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxAudioChannels.Value) : string.Empty,
+                item.MaxFramerate.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxFramerate.Value) : string.Empty,
+                item.MaxWidth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxWidth.Value) : string.Empty,
+                item.MaxHeight.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxHeight.Value) : string.Empty,
+                StringHelper.ToStringCultureInvariant(item.StartPositionTicks),
+                item.VideoLevel.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoLevel.Value) : string.Empty
             };
 
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
@@ -332,7 +330,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                TransportStreamTimestamp defaultValue = string.Equals(Container, "m2ts", StringComparison.OrdinalIgnoreCase)
+                TransportStreamTimestamp defaultValue = StringHelper.EqualsIgnoreCase(Container, "m2ts")
                     ? TransportStreamTimestamp.Valid
                     : TransportStreamTimestamp.None;
 

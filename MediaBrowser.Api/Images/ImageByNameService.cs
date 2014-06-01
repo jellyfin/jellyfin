@@ -93,6 +93,7 @@ namespace MediaBrowser.Api.Images
     {
         public string Name { get; set; }
         public string Theme { get; set; }
+        public string Context { get; set; }
         public long FileLength { get; set; }
         public string Format { get; set; }
     }
@@ -142,7 +143,13 @@ namespace MediaBrowser.Api.Images
                     {
                         Name = Path.GetFileNameWithoutExtension(i.FullName),
                         FileLength = i.Length,
+
+                        // For themeable images, use the Theme property
+                        // For general images, the same object structure is fine,
+                        // but it's not owned by a theme, so call it Context
                         Theme = supportsThemes ? GetThemeName(i.FullName, path) : null,
+                        Context = supportsThemes ? null : GetThemeName(i.FullName, path),
+
                         Format = i.Extension.ToLower().TrimStart('.')
                     })
                     .OrderBy(i => i.Name)

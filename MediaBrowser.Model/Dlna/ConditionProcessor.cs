@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Model.MediaInfo;
+﻿using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.MediaInfo;
 using System;
-using System.Globalization;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -98,7 +98,6 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         private bool IsConditionSatisfied(ProfileCondition condition, int? currentValue)
         {
             if (!currentValue.HasValue)
@@ -108,7 +107,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             int expected;
-            if (int.TryParse(condition.Value, NumberStyles.Any, UsCulture, out expected))
+            if (IntHelper.TryParseCultureInvariant(condition.Value, out expected))
             {
                 switch (condition.Condition)
                 {
@@ -141,9 +140,9 @@ namespace MediaBrowser.Model.Dlna
             switch (condition.Condition)
             {
                 case ProfileConditionType.Equals:
-                    return string.Equals(currentValue, expected, StringComparison.OrdinalIgnoreCase);
+                    return StringHelper.EqualsIgnoreCase(currentValue, expected);
                 case ProfileConditionType.NotEquals:
-                    return !string.Equals(currentValue, expected, StringComparison.OrdinalIgnoreCase);
+                    return !StringHelper.EqualsIgnoreCase(currentValue, expected);
                 default:
                     throw new InvalidOperationException("Unexpected ProfileConditionType");
             }
@@ -158,7 +157,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             double expected;
-            if (double.TryParse(condition.Value, NumberStyles.Any, UsCulture, out expected))
+            if (DoubleHelper.TryParseCultureInvariant(condition.Value, out expected))
             {
                 switch (condition.Condition)
                 {

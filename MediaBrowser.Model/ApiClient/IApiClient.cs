@@ -218,7 +218,7 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
         /// <returns>Task{BaseItemDto[]}.</returns>
-        Task<BaseItemDto[]> GetAdditionalParts(string itemId);
+        Task<BaseItemDto[]> GetAdditionalParts(string itemId, string userId);
         
         /// <summary>
         /// Gets the users async.

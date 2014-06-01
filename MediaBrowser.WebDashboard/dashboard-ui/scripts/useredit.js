@@ -3,13 +3,27 @@
     function loadUser(page, user, loggedInUser) {
 
         if (!loggedInUser.Configuration.IsAdministrator) {
+
             $('#fldIsAdmin', page).hide();
             $('#featureAccessFields', page).hide();
             $('#accessControlDiv', page).hide();
+
         } else {
+
             $('#accessControlDiv', page).show();
             $('#fldIsAdmin', page).show();
             $('#featureAccessFields', page).show();
+            $('.lnkEditUserPreferencesContainer', page).show();
+        }
+
+        if (!loggedInUser.Configuration.IsAdministrator || !user.Id || user.Id == loggedInUser.Id) {
+
+            $('.lnkEditUserPreferencesContainer', page).hide();
+
+        } else {
+
+            $('.lnkEditUserPreferencesContainer', page).show();
+            $('.lnkEditUserPreferences', page).attr('href', 'mypreferencesdisplay.html?userId=' + user.Id);
         }
 
         Dashboard.setPageTitle(user.Name || Globalize.translate('AddUser'));

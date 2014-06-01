@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets or sets the type of the channel.
         /// </summary>
         /// <value>The type of the channel.</value>
-        public LiveTvChannelType ChannelType { get; set; }
+        public ChannelType ChannelType { get; set; }
 
         /// <summary>
         /// The start date of the program, in UTC.
@@ -161,7 +161,7 @@ namespace MediaBrowser.Controller.LiveTv
         {
             get
             {
-                return ChannelType == LiveTvChannelType.TV ? Model.Entities.MediaType.Video : Model.Entities.MediaType.Audio;
+                return ChannelType == ChannelType.TV ? Model.Entities.MediaType.Video : Model.Entities.MediaType.Audio;
             }
         }
 

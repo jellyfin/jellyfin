@@ -127,7 +127,9 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, getPageSizes())).trigger('create');
+            var pagingHtml = LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, getPageSizes());
+            
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
 
@@ -140,7 +142,7 @@
                 coverImage: true
             });
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, getPageSizes());
+            html += LibraryBrowser.getPagingHtml(pagingHtml);
 
             $('#items', page).html(html).trigger('create').createPosterItemMenus();
 
