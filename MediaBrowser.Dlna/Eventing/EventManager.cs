@@ -47,7 +47,7 @@ namespace MediaBrowser.Dlna.Eventing
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, int? timeoutSeconds, string callbackUrl)
         {
             var timeout = timeoutSeconds ?? 300;
-            var id = Guid.NewGuid().ToString("N");
+            var id = "uuid:" + Guid.NewGuid().ToString("N");
 
             _logger.Debug("Creating event subscription for {0} with timeout of {1} to {2}",
                 notificationType,
@@ -88,7 +88,7 @@ namespace MediaBrowser.Dlna.Eventing
                 ContentType = "text/plain"
             };
 
-            response.Headers["SID"] = "uuid:" + subscriptionId;
+            response.Headers["SID"] = subscriptionId;
             response.Headers["TIMEOUT"] = "SECOND-" + timeoutSeconds.ToString(_usCulture);
 
             return response;
@@ -147,7 +147,7 @@ namespace MediaBrowser.Dlna.Eventing
 
             options.RequestHeaders.Add("NT", subscription.NotificationType);
             options.RequestHeaders.Add("NTS", "upnp:propchange");
-            options.RequestHeaders.Add("SID", "uuid:" + subscription.Id);
+            options.RequestHeaders.Add("SID", subscription.Id);
             options.RequestHeaders.Add("SEQ", subscription.TriggerCount.ToString(_usCulture));
 
             try
