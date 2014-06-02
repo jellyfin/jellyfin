@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Channels
                 }
             }
 
-            return base.GetUserDataKey();
+            return ExternalId;
         }
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)

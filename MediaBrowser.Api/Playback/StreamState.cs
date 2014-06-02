@@ -31,7 +31,10 @@ namespace MediaBrowser.Api.Playback
         public StreamState()
         {
             PlayableStreamFileNames = new List<string>();
+            RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+
+        public Dictionary<string, string> RemoteHttpHeaders { get; set; }
 
         /// <summary>
         /// Gets or sets the log file stream.
@@ -40,7 +43,7 @@ namespace MediaBrowser.Api.Playback
         public Stream LogFileStream { get; set; }
 
         public string InputContainer { get; set; }
-        
+
         public MediaStream AudioStream { get; set; }
         public MediaStream VideoStream { get; set; }
         public MediaStream SubtitleStream { get; set; }
@@ -277,8 +280,8 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
-                var defaultValue = string.Equals(OutputContainer, "m2ts", StringComparison.OrdinalIgnoreCase) ? 
-                    TransportStreamTimestamp.Valid : 
+                var defaultValue = string.Equals(OutputContainer, "m2ts", StringComparison.OrdinalIgnoreCase) ?
+                    TransportStreamTimestamp.Valid :
                     TransportStreamTimestamp.None;
 
                 return !Request.Static

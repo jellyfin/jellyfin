@@ -25,12 +25,10 @@ namespace MediaBrowser.Api.Playback.Progressive
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
         protected readonly IImageProcessor ImageProcessor;
-        protected readonly IHttpClient HttpClient;
 
-        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IChannelManager channelManager, IImageProcessor imageProcessor, IHttpClient httpClient) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager, channelManager)
+        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IChannelManager channelManager, IHttpClient httpClient, IImageProcessor imageProcessor) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager, channelManager, httpClient)
         {
             ImageProcessor = imageProcessor;
-            HttpClient = httpClient;
         }
 
         /// <summary>
@@ -280,7 +278,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (!File.Exists(outputPath))
             {
-                await StartFfMpeg(state, outputPath).ConfigureAwait(false);
+                await StartFfMpeg(state, outputPath, new CancellationTokenSource()).ConfigureAwait(false);
             }
             else
             {

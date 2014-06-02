@@ -846,16 +846,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.Path))
             {
-                var locationType = item.LocationType;
-
-                if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
-                {
-                    dto.Path = GetMappedPath(item.Path);
-                }
-                else
-                {
-                    dto.Path = item.Path;
-                }
+                dto.Path = GetMappedPath(item);
             }
 
             dto.PremiereDate = item.PremiereDate;
@@ -1315,14 +1306,12 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             var locationType = item.LocationType;
 
-            if (locationType != LocationType.FileSystem && locationType != LocationType.Offline)
+            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
             {
-                return path;
-            }
-
-            foreach (var map in _config.Configuration.PathSubstitutions)
-            {
-                path = _fileSystem.SubstitutePath(path, map.From, map.To);
+                foreach (var map in _config.Configuration.PathSubstitutions)
+                {
+                    path = _fileSystem.SubstitutePath(path, map.From, map.To);
+                }
             }
 
             return path;
@@ -1416,16 +1405,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             return string.Join("/", terms.ToArray());
-        }
-
-        private string GetMappedPath(string path)
-        {
-            foreach (var map in _config.Configuration.PathSubstitutions)
-            {
-                path = _fileSystem.SubstitutePath(path, map.From, map.To);
-            }
-
-            return path;
         }
 
         private void SetProductionLocations(BaseItem item, BaseItemDto dto)

@@ -1,4 +1,6 @@
+using System.Threading;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -54,7 +56,7 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public class VideoHlsService : BaseHlsService
     {
-        public VideoHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IChannelManager channelManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager, channelManager)
+        public VideoHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IChannelManager channelManager, IHttpClient httpClient) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager, channelManager, httpClient)
         {
         }
 
@@ -155,7 +157,8 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <param name="state">The state.</param>
         /// <param name="performSubtitleConversion">if set to <c>true</c> [perform subtitle conversion].</param>
         /// <returns>System.String.</returns>
-        protected override string GetVideoArguments(StreamState state, bool performSubtitleConversion)
+        protected override string GetVideoArguments(StreamState state, 
+            bool performSubtitleConversion)
         {
             var codec = GetVideoCodec(state.VideoRequest);
 
@@ -178,7 +181,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 if (state.VideoRequest.Width.HasValue || state.VideoRequest.Height.HasValue || state.VideoRequest.MaxHeight.HasValue || state.VideoRequest.MaxWidth.HasValue)
                 {
-                    args += GetOutputSizeParam(state, codec, performSubtitleConversion);
+                    args += GetOutputSizeParam(state, codec, performSubtitleConversion, CancellationToken.None);
                 }
             }
 

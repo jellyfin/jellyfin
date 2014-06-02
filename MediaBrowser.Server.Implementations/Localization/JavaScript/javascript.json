@@ -136,5 +136,7 @@
 	"HeaderSelectServerCachePathHelp": "Browse or enter the path to use for server cache files. The folder must be writeable. The location of this folder will directly impact server performance and should ideally be placed on a solid state drive.",
 	"HeaderSelectTranscodingPathHelp": "Browse or enter the path to use for transcoding temporary files. The folder must be writeable.",
 	"HeaderSelectImagesByNamePathHelp": "Browse or enter the path to your items by name folder. The folder must be writeable.",
-	"HeaderSelectMetadataPathHelp": "Browse or enter the path you'd like to store metadata within. The folder must be writeable."
+	"HeaderSelectMetadataPathHelp": "Browse or enter the path you'd like to store metadata within. The folder must be writeable.",
+	"HeaderSelectChannelDownloadPath": "Select Channel Download Path",
+	"HeaderSelectChannelDownloadPathHelp": "Browse or enter the path to use for storing channel cache files. The folder must be writeable."
 }

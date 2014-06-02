@@ -1,3 +1,4 @@
+using System.Threading;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
@@ -60,7 +61,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public class VideoService : BaseProgressiveStreamingService
     {
-        public VideoService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IChannelManager channelManager, IImageProcessor imageProcessor, IHttpClient httpClient) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager, channelManager, imageProcessor, httpClient)
+        public VideoService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IChannelManager channelManager, IHttpClient httpClient, IImageProcessor imageProcessor) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager, channelManager, httpClient, imageProcessor)
         {
         }
 
@@ -108,7 +109,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var inputModifier = GetInputModifier(state);
 
-            return string.Format("{0} -i {1}{2} {3} {4} -map_metadata -1 -threads {5} {6}{7} \"{8}\"",
+            return string.Format("{0} -i {1}{2} {3} {4} -map_metadata -1 -threads {5} {6}{7} -y \"{8}\"",
                 inputModifier,
                 GetInputArgument(state),
                 keyFrame,
@@ -156,7 +157,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
                 {
-                    args += GetOutputSizeParam(state, codec, performSubtitleConversion);
+                    args += GetOutputSizeParam(state, codec, performSubtitleConversion, CancellationToken.None);
                 }
             }
 

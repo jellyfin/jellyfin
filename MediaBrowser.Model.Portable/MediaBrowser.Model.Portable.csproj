@@ -284,6 +284,9 @@
     <Compile Include="..\MediaBrowser.Model\Dto\IItemDto.cs">
       <Link>Dto\IItemDto.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\ImageByNameInfo.cs">
+      <Link>Dto\ImageByNameInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\ImageInfo.cs">
       <Link>Dto\ImageInfo.cs</Link>
     </Compile>

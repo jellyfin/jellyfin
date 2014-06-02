@@ -43,6 +43,11 @@ namespace MediaBrowser.Api
         public string Id { get; set; }
     }
 
+    [Route("/Channels/Features", "GET", Summary = "Gets features for a channel")]
+    public class GetAllChannelFeatures : IReturn<List<ChannelFeatures>>
+    {
+    }
+
     [Route("/Channels/{Id}/Items", "GET", Summary = "Gets channel items")]
     public class GetChannelItems : IReturn<QueryResult<BaseItemDto>>
     {
@@ -106,6 +111,13 @@ namespace MediaBrowser.Api
         public ChannelService(IChannelManager channelManager)
         {
             _channelManager = channelManager;
+        }
+
+        public object Get(GetAllChannelFeatures request)
+        {
+            var result = _channelManager.GetAllChannelFeatures().ToList();
+
+            return ToOptimizedResult(result);
         }
 
         public object Get(GetChannelFeatures request)

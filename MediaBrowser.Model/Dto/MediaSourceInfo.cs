@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
-using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -35,11 +34,13 @@ namespace MediaBrowser.Model.Dto
         public int? Bitrate { get; set; }
 
         public TransportStreamTimestamp? Timestamp { get; set; }
+        public Dictionary<string, string> RequiredHttpHeaders { get; set; }
 
         public MediaSourceInfo()
         {
             Formats = new List<string>();
             MediaStreams = new List<MediaStream>();
+            RequiredHttpHeaders = new Dictionary<string, string>();
         }
 
         public int? DefaultAudioStreamIndex { get; set; }

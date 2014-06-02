@@ -7,6 +7,9 @@ namespace MediaBrowser.Controller.Channels
     {
         bool IsInfiniteStream { get; set; }
 
+        long? RunTimeTicks { get; set; }
+        string MediaType { get; }
+
         ChannelMediaContentType ContentType { get; set; }
 
         List<ChannelMediaInfo> ChannelMediaSources { get; set; }

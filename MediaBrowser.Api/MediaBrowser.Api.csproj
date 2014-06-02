@@ -105,7 +105,6 @@
     <Compile Include="Playback\Hls\DynamicHlsService.cs" />
     <Compile Include="Playback\Hls\HlsSegmentService.cs" />
     <Compile Include="Playback\Hls\VideoHlsService.cs" />
-    <Compile Include="Playback\ProgressiveStreamService.cs" />
     <Compile Include="Playback\Progressive\AudioService.cs" />
     <Compile Include="Playback\Progressive\BaseProgressiveStreamingService.cs" />
     <Compile Include="Playback\BaseStreamingService.cs" />

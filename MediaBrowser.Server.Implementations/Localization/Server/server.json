@@ -798,7 +798,13 @@
 	"ButtonDismiss": "Dismiss",
 	"MessageLearnHowToCustomize": "Learn how to customize this page to your own personal tastes. Click your user icon in the top right corner of the screen to view and update your preferences.",
 	"ButtonEditOtherUserPreferences": "Edit this user's personal preferences.",
-	"ChannelStreamOptionBestAvailable": "Best available",
-	"LabelChannelStreamOptionBestAvailable": "Preferred streaming quality:",
-	"LabelChannelStreamOptionBestAvailableHelp": "Determines the selected quality when channel content is available in multiple resolutions."
+	"LabelChannelStreamQuality": "Preferred internet stream quality:",
+	"LabelChannelStreamQualityHelp": "In a low bandwidth environment, limiting quality can help ensure a smooth streaming experience.",
+	"OptionBestAvailableStreamQuality": "Best available",
+	"LabelEnableChannelContentDownloadingFor": "Enable channel content downloading for:",
+	"LabelEnableChannelContentDownloadingForHelp": "Some channels support downloading content prior to viewing. Enable this in low bandwidth enviornments to download channel content during off hours.",
+	"LabelChannelDownloadPath": "Channel content download path:",
+	"LabelChannelDownloadPathHelp": "Specify a custom download path if desired. Leave empty to download to an internal program data folder.",
+	"LabelChannelDownloadAge": "Delete content after: (days)",
+	"LabelChannelDownloadAgeHelp": "Downloaded content older than this will be deleted. It will remain playable via internet streaming."
 }
