@@ -35,5 +35,10 @@ namespace MediaBrowser.Controller.Channels
         {
             Tags = new List<string>();
         }
+
+        public override string GetUserDataKey()
+        {
+            return ExternalId;
+        }
     }
 }

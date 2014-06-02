@@ -32,6 +32,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="fileSystem">The file system.</param>
         public ProgressiveStreamWriter(string path, ILogger logger, IFileSystem fileSystem)
         {
             Path = path;

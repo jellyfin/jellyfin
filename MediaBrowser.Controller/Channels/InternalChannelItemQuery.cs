@@ -17,4 +17,9 @@ namespace MediaBrowser.Controller.Channels
 
         public bool SortDescending { get; set; }
     }
+
+    public class InternalAllChannelMediaQuery
+    {
+        public User User { get; set; }
+    }
 }

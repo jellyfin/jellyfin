@@ -50,6 +50,14 @@ namespace MediaBrowser.Controller.Channels
         Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, User user, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Gets all media.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{ChannelItemResult}.</returns>
+        Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the channel items.
         /// </summary>
         /// <param name="query">The query.</param>

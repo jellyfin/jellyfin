@@ -196,13 +196,13 @@
 
 .viewMenuTextLink {
     display: block;
-    padding: .6em .5em .6em 39px!important;
+    padding: .6em .5em .6em 38px!important;
     font-size: 15px;
     font-weight: 300!important;
     font-family: Roboto;
     background-repeat: no-repeat;
     background-size: 14px 14px;
-    background-position: 14px center;
+    background-position: 13px center;
 }
 
 .musicViewMenu {

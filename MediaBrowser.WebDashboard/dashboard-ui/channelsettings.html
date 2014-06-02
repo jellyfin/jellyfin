@@ -13,16 +13,41 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="selectChannelResolution">${LabelChannelStreamOptionBestAvailable}</label>
+                            <label for="selectChannelResolution">${LabelChannelStreamQuality}</label>
                             <select id="selectChannelResolution">
-                                <option value="">${ChannelStreamOptionBestAvailable}</option>
+                                <option value="">${OptionBestAvailableStreamQuality}</option>
                                 <option value="1920">1080p</option>
                                 <option value="1280">720p</option>
                                 <option value="720">480p</option>
                             </select>
-                            <div class="fieldDescription">${LabelChannelStreamOptionBestAvailableHelp}</div>
+                            <div class="fieldDescription">${LabelChannelStreamQualityHelp}</div>
                         </li>
                     </ul>
+                    <div class="channelDownloading" style="display: none;">
+
+                        <div>
+                            <label>${LabelEnableChannelContentDownloadingFor}</label>
+                        </div>
+                        <div class="channelDownloadingList"></div>
+                        <div class="fieldDescription">${LabelEnableChannelContentDownloadingForHelp}</div>
+                        <br />
+                        <br />
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <label for="txtCachePath">${LabelChannelDownloadPath}</label>
+                                <div style="display: inline-block; width: 92%;">
+                                    <input type="text" id="txtCachePath" name="txtCachePath" data-mini="true" />
+                                </div>
+                                <button id="btnSelectCachePath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                                <div class="fieldDescription">${LabelChannelDownloadPathHelp}</div>
+                            </li>
+                            <li>
+                                <label for="txtDownloadAge">${LabelChannelDownloadAge}</label>
+                                <input type="number" id="txtDownloadAge" pattern="[0-9]*" min="1" data-mini="true" />
+                                <div class="fieldDescription">${LabelChannelDownloadAgeHelp}</div>
+                            </li>
+                        </ul>
+                    </div>
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">

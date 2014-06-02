@@ -5,11 +5,29 @@ namespace MediaBrowser.Model.Channels
     public class ChannelFeatures
     {
         /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>The identifier.</value>
+        public string Id { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance can search.
         /// </summary>
         /// <value><c>true</c> if this instance can search; otherwise, <c>false</c>.</value>
         public bool CanSearch { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can get all media.
+        /// </summary>
+        /// <value><c>true</c> if this instance can get all media; otherwise, <c>false</c>.</value>
+        public bool CanGetAllMedia { get; set; }
+        
         /// <summary>
         /// Gets or sets the media types.
         /// </summary>
@@ -43,6 +61,12 @@ namespace MediaBrowser.Model.Channels
         /// </summary>
         /// <value><c>true</c> if this instance can filter; otherwise, <c>false</c>.</value>
         public bool CanFilter { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can download all media.
+        /// </summary>
+        /// <value><c>true</c> if this instance can download all media; otherwise, <c>false</c>.</value>
+        public bool CanDownloadAllMedia { get; set; }
 
         public ChannelFeatures()
         {

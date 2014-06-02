@@ -117,7 +117,8 @@ namespace MediaBrowser.Api
         /// <param name="startTimeTicks">The start time ticks.</param>
         /// <param name="sourcePath">The source path.</param>
         /// <param name="deviceId">The device id.</param>
-        public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process, long? startTimeTicks, string sourcePath, string deviceId)
+        /// <param name="cancellationTokenSource">The cancellation token source.</param>
+        public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process, long? startTimeTicks, string sourcePath, string deviceId, CancellationTokenSource cancellationTokenSource)
         {
             lock (_activeTranscodingJobs)
             {
@@ -129,7 +130,8 @@ namespace MediaBrowser.Api
                     ActiveRequestCount = 1,
                     StartTimeTicks = startTimeTicks,
                     SourcePath = sourcePath,
-                    DeviceId = deviceId
+                    DeviceId = deviceId,
+                    CancellationTokenSource = cancellationTokenSource
                 });
             }
         }
@@ -276,6 +278,11 @@ namespace MediaBrowser.Api
             {
                 _activeTranscodingJobs.Remove(job);
 
+                if (!job.CancellationTokenSource.IsCancellationRequested)
+                {
+                    job.CancellationTokenSource.Cancel();
+                }
+
                 if (job.KillTimer != null)
                 {
                     job.KillTimer.Dispose();
@@ -329,7 +336,7 @@ namespace MediaBrowser.Api
 
         private async void DeletePartialStreamFiles(string path, TranscodingJobType jobType, int retryCount, int delayMs)
         {
-            if (retryCount >= 10)
+            if (retryCount >= 8)
             {
                 return;
             }
@@ -432,6 +439,8 @@ namespace MediaBrowser.Api
         public long? StartTimeTicks { get; set; }
         public string SourcePath { get; set; }
         public string DeviceId { get; set; }
+
+        public CancellationTokenSource CancellationTokenSource { get; set; }
     }
 
     /// <summary>

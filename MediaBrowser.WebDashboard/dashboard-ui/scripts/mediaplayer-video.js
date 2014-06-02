@@ -688,7 +688,9 @@
                 options.push({ name: '720p - 4Mbps', maxWidth: 1280, bitrate: 4000000 });
                 options.push({ name: '720p - 3Mbps', maxWidth: 1280, bitrate: 3000000 });
                 options.push({ name: '720p - 2Mbps', maxWidth: 1280, bitrate: 2000000 });
-                options.push({ name: '720p - 1.5Mbps', maxWidth: 1280, bitrate: 1500000 });
+                
+                // The extra 1 is because they're keyed off the bitrate value
+                options.push({ name: '720p - 1Mbps', maxWidth: 1280, bitrate: 1000001 });
             }
 
             options.push({ name: '480p - 1.0Mbps', maxWidth: 720, bitrate: 1000000 });

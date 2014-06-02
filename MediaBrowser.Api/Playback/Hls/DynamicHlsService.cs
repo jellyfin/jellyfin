@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -16,6 +17,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MimeTypes = ServiceStack.MimeTypes;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -60,7 +62,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
     public class DynamicHlsService : BaseHlsService
     {
-        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IChannelManager channelManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager, channelManager)
+        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IChannelManager channelManager, IHttpClient httpClient) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager, channelManager, httpClient)
         {
         }
 
@@ -98,9 +100,9 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (!File.Exists(playlistPath))
             {
-                await StartFfMpeg(state, playlistPath).ConfigureAwait(false);
+                await StartFfMpeg(state, playlistPath, new CancellationTokenSource()).ConfigureAwait(false);
 
-                await WaitForMinimumSegmentCount(playlistPath, GetSegmentWait()).ConfigureAwait(false);
+                await WaitForMinimumSegmentCount(playlistPath, GetSegmentWait(), CancellationToken.None).ConfigureAwait(false);
             }
 
             return GetSegementResult(path);
@@ -283,7 +285,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 if (state.VideoRequest.Width.HasValue || state.VideoRequest.Height.HasValue || state.VideoRequest.MaxHeight.HasValue || state.VideoRequest.MaxWidth.HasValue)
                 {
-                    args += GetOutputSizeParam(state, codec, performSubtitleConversion);
+                    args += GetOutputSizeParam(state, codec, performSubtitleConversion, CancellationToken.None);
                 }
             }
 

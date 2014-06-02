@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -27,7 +28,7 @@ namespace MediaBrowser.Controller.Channels
 
         public ChannelMediaInfo()
         {
-            RequiredHttpHeaders = new Dictionary<string, string>();
+            RequiredHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             IsRemote = true;
         }
     }

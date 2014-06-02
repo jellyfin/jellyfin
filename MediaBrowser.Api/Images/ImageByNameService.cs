@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Dto;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -87,15 +88,6 @@ namespace MediaBrowser.Api.Images
     [Api(Description = "Gets all general images by name")]
     public class GetGeneralImages : IReturn<List<ImageByNameInfo>>
     {
-    }
-
-    public class ImageByNameInfo
-    {
-        public string Name { get; set; }
-        public string Theme { get; set; }
-        public string Context { get; set; }
-        public long FileLength { get; set; }
-        public string Format { get; set; }
     }
 
     /// <summary>

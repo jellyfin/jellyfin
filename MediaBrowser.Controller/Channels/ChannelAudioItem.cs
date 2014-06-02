@@ -28,6 +28,11 @@ namespace MediaBrowser.Controller.Channels
             return config.BlockUnratedItems.Contains(UnratedItem.ChannelContent);
         }
 
+        public override string GetUserDataKey()
+        {
+            return ExternalId;
+        }
+
         public override bool SupportsLocalMetadata
         {
             get

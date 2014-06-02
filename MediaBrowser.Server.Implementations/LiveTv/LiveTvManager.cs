@@ -297,6 +297,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 var result = await service.GetRecordingStream(recording.Id, cancellationToken).ConfigureAwait(false);
 
+                Sanitize(result);
+
                 _logger.Debug("Live stream info: " + _json.SerializeToString(result));
                 
                 if (!string.IsNullOrEmpty(result.Id))
@@ -332,6 +334,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 var result = await service.GetChannelStream(channel.ExternalId, cancellationToken).ConfigureAwait(false);
 
+                Sanitize(result);
+
                 _logger.Debug("Live stream info: " + _json.SerializeToString(result));
 
                 if (!string.IsNullOrEmpty(result.Id))
@@ -350,6 +354,55 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             finally
             {
                 _liveStreamSemaphore.Release();
+            }
+        }
+
+        private void Sanitize(LiveStreamInfo info)
+        {
+            // Clean some bad data coming from providers
+
+            foreach (var stream in info.MediaStreams)
+            {
+                if (stream.BitDepth.HasValue && stream.BitDepth <= 0)
+                {
+                    stream.BitDepth = null;
+                }
+                if (stream.BitRate.HasValue && stream.BitRate <= 0)
+                {
+                    stream.BitRate = null;
+                }
+                if (stream.Channels.HasValue && stream.Channels <= 0)
+                {
+                    stream.Channels = null;
+                }
+                if (stream.AverageFrameRate.HasValue && stream.AverageFrameRate <= 0)
+                {
+                    stream.AverageFrameRate = null;
+                }
+                if (stream.RealFrameRate.HasValue && stream.RealFrameRate <= 0)
+                {
+                    stream.RealFrameRate = null;
+                }
+                if (stream.Width.HasValue && stream.Width <= 0)
+                {
+                    stream.Width = null;
+                }
+                if (stream.Height.HasValue && stream.Height <= 0)
+                {
+                    stream.Height = null;
+                }
+                if (stream.SampleRate.HasValue && stream.SampleRate <= 0)
+                {
+                    stream.SampleRate = null;
+                }
+                if (stream.Level.HasValue && stream.Level <= 0)
+                {
+                    stream.Level = null;
+                }
+                if (stream.PacketLength.HasValue && stream.PacketLength <= 0)
+                {
+                    stream.PacketLength = null;
+                }
             }
         }
 

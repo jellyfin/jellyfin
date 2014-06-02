@@ -371,7 +371,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 Headers = new NameValueCollection(httpResponse.Headers),
 
-                ContentLength = contentLength
+                ContentLength = contentLength,
+
+                ResponseUrl = httpResponse.ResponseUri.ToString()
             };
         }
 

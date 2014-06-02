@@ -25,7 +25,7 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
-        protected BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IChannelManager channelManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager, channelManager)
+        protected BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IEncodingManager encodingManager, IDlnaManager dlnaManager, IChannelManager channelManager, IHttpClient httpClient) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager, encodingManager, dlnaManager, channelManager, httpClient)
         {
         }
 
@@ -82,7 +82,9 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </exception>
         private async Task<object> ProcessRequestAsync(StreamRequest request)
         {
-            var state = GetState(request, CancellationToken.None).Result;
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            var state = GetState(request, cancellationTokenSource.Token).Result;
 
             var playlist = GetOutputFilePath(state);
 
@@ -92,7 +94,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             else
             {
-                await FfmpegStartLock.WaitAsync().ConfigureAwait(false);
+                await FfmpegStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
                 try
                 {
                     if (File.Exists(playlist))
@@ -104,16 +106,16 @@ namespace MediaBrowser.Api.Playback.Hls
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            await StartFfMpeg(state, playlist).ConfigureAwait(false);
+                            await StartFfMpeg(state, playlist, cancellationTokenSource).ConfigureAwait(false);
                         }
                         catch
                         {
                             state.Dispose();
                             throw;
                         }
-                    }
 
-                    await WaitForMinimumSegmentCount(playlist, GetSegmentWait()).ConfigureAwait(false);
+                        await WaitForMinimumSegmentCount(playlist, GetSegmentWait(), cancellationTokenSource.Token).ConfigureAwait(false);
+                    }
                 }
                 finally
                 {
@@ -220,10 +222,12 @@ namespace MediaBrowser.Api.Playback.Hls
             return builder.ToString();
         }
 
-        protected async Task WaitForMinimumSegmentCount(string playlist, int segmentCount)
+        protected async Task WaitForMinimumSegmentCount(string playlist, int segmentCount, CancellationToken cancellationToken)
         {
             while (true)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 string fileText;
 
                 // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
@@ -240,7 +244,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     break;
                 }
 
-                await Task.Delay(25).ConfigureAwait(false);
+                await Task.Delay(25, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -287,7 +291,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // If performSubtitleConversions is true we're actually starting ffmpeg
             var startNumberParam = performSubtitleConversions ? GetStartNumber(state).ToString(UsCulture) : "0";
 
-            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9} \"{10}\"",
+            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9} -y \"{10}\"",
                 itsOffset,
                 inputModifier,
                 GetInputArgument(state),
@@ -309,7 +313,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                     var bitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? 64000;
 
-                    var lowBitrateParams = string.Format(" -threads {0} -vn -codec:a:0 libmp3lame -ac 2 -ab {1} -hls_time {2} -start_number {3} -hls_list_size {4} \"{5}\"",
+                    var lowBitrateParams = string.Format(" -threads {0} -vn -codec:a:0 libmp3lame -ac 2 -ab {1} -hls_time {2} -start_number {3} -hls_list_size {4} -y \"{5}\"",
                         threads,
                         bitrate / 2,
                         state.SegmentLength.ToString(UsCulture),

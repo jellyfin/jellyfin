@@ -16,6 +16,12 @@ namespace MediaBrowser.Common.Net
         public string ContentType { get; set; }
 
         /// <summary>
+        /// Gets or sets the response URL.
+        /// </summary>
+        /// <value>The response URL.</value>
+        public string ResponseUrl { get; set; }
+        
+        /// <summary>
         /// Gets or sets the content.
         /// </summary>
         /// <value>The content.</value>
