@@ -1549,5 +1549,18 @@ namespace MediaBrowser.Controller.Entities
 
             return hasChanges;
         }
+
+        protected static string GetMappedPath(string path, LocationType locationType)
+        {
+            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+            {
+                foreach (var map in ConfigurationManager.Configuration.PathSubstitutions)
+                {
+                    path = FileSystem.SubstitutePath(path, map.From, map.To);
+                }
+            }
+
+            return path;
+        }
     }
 }

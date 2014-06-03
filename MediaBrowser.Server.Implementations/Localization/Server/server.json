@@ -806,5 +806,6 @@
 	"LabelChannelDownloadPath": "Channel content download path:",
 	"LabelChannelDownloadPathHelp": "Specify a custom download path if desired. Leave empty to download to an internal program data folder.",
 	"LabelChannelDownloadAge": "Delete content after: (days)",
-	"LabelChannelDownloadAgeHelp": "Downloaded content older than this will be deleted. It will remain playable via internet streaming."
+	"LabelChannelDownloadAgeHelp": "Downloaded content older than this will be deleted. It will remain playable via internet streaming.",
+	"ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog."
 }

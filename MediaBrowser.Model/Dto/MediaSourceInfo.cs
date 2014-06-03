@@ -12,6 +12,8 @@ namespace MediaBrowser.Model.Dto
 
         public string Path { get; set; }
 
+        public MediaSourceType Type { get; set; }
+
         public string Container { get; set; }
         public long? Size { get; set; }
 
@@ -100,5 +102,12 @@ namespace MediaBrowser.Model.Dto
                 return null;
             }
         }
+    }
+
+    public enum MediaSourceType
+    {
+        Default = 0,
+        Grouping = 1,
+        Cache = 2
     }
 }

@@ -83,7 +83,11 @@
                     $('.btnPlayExternalTrailer', page).addClass('hide').attr('href', '#');
                 }
 
-                if (user.Configuration.IsAdministrator && item.MediaSources && item.MediaSources.length > 1) {
+                var groupedVersions = (item.MediaSources || []).filter(function (g) {
+                    return g.Type == "Grouping";
+                });
+
+                if (user.Configuration.IsAdministrator && groupedVersions.length) {
                     $('.splitVersionContainer', page).show();
                 } else {
                     $('.splitVersionContainer', page).hide();
@@ -479,7 +483,7 @@
 
         $('.lnkSibling', page).addClass('hide');
         return;
-        
+
         if ((item.Type != "Episode" && item.Type != "Season" && item.Type != "Audio") || item.IndexNumber == null) {
             return;
         }

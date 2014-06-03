@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,6 +11,8 @@ namespace MediaBrowser.Controller.Channels
 {
     public class ChannelVideoItem : Video, IChannelMediaItem
     {
+        public static IChannelManager ChannelManager { get; set; }
+
         public string ExternalId { get; set; }
 
         public string ChannelId { get; set; }
@@ -76,6 +79,15 @@ namespace MediaBrowser.Controller.Channels
 
                 return base.LocationType;
             }
+        }
+
+        public override IEnumerable<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        {
+            var list = base.GetMediaSources(enablePathSubstitution).ToList();
+
+            list.InsertRange(0, ChannelManager.GetCachedChannelItemMediaSources(Id.ToString("N")));
+
+            return list;
         }
     }
 }

@@ -120,6 +120,7 @@
     <Compile Include="Entities\IHasDisplayOrder.cs" />
     <Compile Include="Entities\IHasImages.cs" />
     <Compile Include="Entities\IHasKeywords.cs" />
+    <Compile Include="Entities\IHasMediaSources.cs" />
     <Compile Include="Entities\IHasMediaStreams.cs" />
     <Compile Include="Entities\IHasMetascore.cs" />
     <Compile Include="Entities\IHasPreferredMetadataLanguage.cs" />

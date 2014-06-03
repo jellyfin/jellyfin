@@ -31,6 +31,12 @@
     
     function loadPage(page, config, allChannelFeatures) {
 
+        if (allChannelFeatures.length) {
+            $('.noChannelsHeader', page).hide();
+        } else {
+            $('.noChannelsHeader', page).show();
+        }
+        
         var downloadableList = allChannelFeatures.filter(function (i) {
             return i.CanDownloadAllMedia;
         });
