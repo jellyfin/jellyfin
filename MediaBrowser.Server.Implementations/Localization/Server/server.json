@@ -802,7 +802,7 @@
 	"LabelChannelStreamQualityHelp": "In a low bandwidth environment, limiting quality can help ensure a smooth streaming experience.",
 	"OptionBestAvailableStreamQuality": "Best available",
 	"LabelEnableChannelContentDownloadingFor": "Enable channel content downloading for:",
-	"LabelEnableChannelContentDownloadingForHelp": "Some channels support downloading content prior to viewing. Enable this in low bandwidth enviornments to download channel content during off hours.",
+	"LabelEnableChannelContentDownloadingForHelp": "Some channels support downloading content prior to viewing. Enable this in low bandwidth enviornments to download channel content during off hours. Content is downloaded as part of the channel download scheduled task.",
 	"LabelChannelDownloadPath": "Channel content download path:",
 	"LabelChannelDownloadPathHelp": "Specify a custom download path if desired. Leave empty to download to an internal program data folder.",
 	"LabelChannelDownloadAge": "Delete content after: (days)",
