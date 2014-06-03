@@ -134,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             if (cachedVersions.Count > 0)
             {
-                await RefreshMediaSourceItems(cachedVersions, item.IsVideo, cancellationToken).ConfigureAwait(false);
+                await RefreshMediaSourceItems(cachedVersions, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -152,7 +152,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 options.RequestHeaders[header.Key] = header.Value;
             }
 
-            var destination = Path.Combine(path, item.ChannelId, source.Path.GetMD5().ToString("N"));
+            var destination = Path.Combine(path, item.ChannelId, item.Id);
             Directory.CreateDirectory(Path.GetDirectoryName(destination));
 
             // Determine output extension
@@ -180,23 +180,26 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             File.Move(response.TempFilePath, destination);
 
-            await RefreshMediaSourceItem(destination, item.IsVideo, cancellationToken).ConfigureAwait(false);
+            await RefreshMediaSourceItem(destination, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task RefreshMediaSourceItems(IEnumerable<MediaSourceInfo> items, bool isVideo, CancellationToken cancellationToken)
+        private async Task RefreshMediaSourceItems(IEnumerable<MediaSourceInfo> items, CancellationToken cancellationToken)
         {
             foreach (var item in items)
             {
-                await RefreshMediaSourceItem(item.Path, isVideo, cancellationToken).ConfigureAwait(false);
+                await RefreshMediaSourceItem(item.Path, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task RefreshMediaSourceItem(string path, bool isVideo, CancellationToken cancellationToken)
+        private async Task RefreshMediaSourceItem(string path, CancellationToken cancellationToken)
         {
             var item = _libraryManager.ResolvePath(new FileInfo(path));
 
             if (item != null)
             {
+                // Get the version from the database
+                item = _libraryManager.GetItemById(item.Id) ?? item;
+
                 await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
             }
         }

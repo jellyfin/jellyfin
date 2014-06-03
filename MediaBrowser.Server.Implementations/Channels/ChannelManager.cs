@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -194,17 +195,68 @@ namespace MediaBrowser.Server.Implementations.Channels
             var sources = SortMediaInfoResults(results).Select(i => GetMediaSource(item, i))
                 .ToList();
 
-            var channelIdString = channel.Id.ToString("N");
-            var isVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
+            var cachedVersions = GetCachedChannelItemMediaSources(item);
 
-            var cachedVersionTasks = sources
-                .Select(i => GetCachedVersion(channelIdString, i, isVideo, cancellationToken));
-
-            var cachedVersions = await Task.WhenAll(cachedVersionTasks).ConfigureAwait(false);
-
-            sources.InsertRange(0, cachedVersions.Where(i => i != null));
+            sources.InsertRange(0, cachedVersions);
 
             return sources;
+        }
+
+        public IEnumerable<MediaSourceInfo> GetCachedChannelItemMediaSources(string id)
+        {
+            var item = (IChannelMediaItem)_libraryManager.GetItemById(id);
+
+            return GetCachedChannelItemMediaSources(item);
+        }
+
+        public IEnumerable<MediaSourceInfo> GetCachedChannelItemMediaSources(IChannelMediaItem item)
+        {
+            var filenamePrefix = item.Id.ToString("N");
+            var parentPath = Path.Combine(ChannelDownloadPath, item.ChannelId);
+
+            try
+            {
+                var files = new DirectoryInfo(parentPath).EnumerateFiles("*", SearchOption.TopDirectoryOnly);
+
+                if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+                {
+                    files = files.Where(i => EntityResolutionHelper.IsVideoFile(i.FullName));
+                }
+                else
+                {
+                    files = files.Where(i => EntityResolutionHelper.IsAudioFile(i.FullName));
+                }
+
+                var file = files
+                    .FirstOrDefault(i => i.Name.StartsWith(filenamePrefix, StringComparison.OrdinalIgnoreCase));
+
+                if (file != null)
+                {
+                    var cachedItem = _libraryManager.ResolvePath(file);
+
+                    if (cachedItem != null)
+                    {
+                        var hasMediaSources = _libraryManager.GetItemById(cachedItem.Id) as IHasMediaSources;
+
+                        if (hasMediaSources != null)
+                        {
+                            var source = hasMediaSources.GetMediaSources(true).FirstOrDefault();
+
+                            if (source != null)
+                            {
+                                source.Type = MediaSourceType.Cache;
+                                return new[] { source };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+
+            return new List<MediaSourceInfo>();
         }
 
         private MediaSourceInfo GetMediaSource(IChannelMediaItem item, ChannelMediaInfo info)
@@ -225,46 +277,6 @@ namespace MediaBrowser.Server.Implementations.Channels
             };
 
             return source;
-        }
-
-        private async Task<MediaSourceInfo> GetCachedVersion(string channelId, 
-            MediaSourceInfo info, 
-            bool isVideo,
-            CancellationToken cancellationToken)
-        {
-            var filename = info.Path.GetMD5().ToString("N");
-
-            var path = Path.Combine(ChannelDownloadPath, channelId, filename);
-
-            try
-            {
-                var file = Directory.EnumerateFiles(Path.GetDirectoryName(path), "*", SearchOption.TopDirectoryOnly)
-                        .FirstOrDefault(i => (Path.GetFileName(i) ?? string.Empty).StartsWith(filename, StringComparison.OrdinalIgnoreCase));
-
-                if (!string.IsNullOrWhiteSpace(file))
-                {
-                    var source = new MediaSourceInfo
-                    {
-                        Path = file,
-                        LocationType = LocationType.FileSystem,
-                        Name = "Cached " + info.Name,
-                        Id = file.GetMD5().ToString("N")
-                    };
-
-                    if (isVideo)
-                    {
-                        source.VideoType = VideoType.VideoFile;
-                    }
-
-                    return source;
-                }
-            }
-            catch (DirectoryNotFoundException)
-            {
-                return null;
-            }
-
-            return null;
         }
 
         private IEnumerable<MediaStream> GetMediaStreams(ChannelMediaInfo info)

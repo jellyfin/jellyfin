@@ -1,16 +1,27 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
     /// Class Audio
     /// </summary>
-    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<SongInfo>, IHasTags
+    public class Audio : BaseItem, 
+        IHasMediaStreams, 
+        IHasAlbumArtist, 
+        IHasArtist, 
+        IHasMusicGenres, 
+        IHasLookupInfo<SongInfo>, 
+        IHasTags,
+        IHasMediaSources
     {
         public string FormatName { get; set; }
         public long? Size { get; set; }
@@ -161,6 +172,54 @@ namespace MediaBrowser.Controller.Entities.Audio
             info.AlbumArtist = AlbumArtist;
             info.Album = Album;
             info.Artists = Artists;
+
+            return info;
+        }
+
+        public virtual IEnumerable<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        {
+            var result = new List<MediaSourceInfo>
+            {
+                GetVersionInfo(this, enablePathSubstitution)
+            };
+
+            return result;
+        }
+
+        private static MediaSourceInfo GetVersionInfo(Audio i, bool enablePathSubstituion)
+        {
+            var locationType = i.LocationType;
+            
+            var info = new MediaSourceInfo
+            {
+                Id = i.Id.ToString("N"),
+                LocationType = locationType,
+                MediaStreams = ItemRepository.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
+                Name = i.Name,
+                Path = enablePathSubstituion ? GetMappedPath(i.Path, locationType) : i.Path,
+                RunTimeTicks = i.RunTimeTicks,
+                Container = i.Container,
+                Size = i.Size,
+                Formats = (i.FormatName ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
+            };
+
+            if (string.IsNullOrEmpty(info.Container))
+            {
+                if (!string.IsNullOrWhiteSpace(i.Path) && locationType != LocationType.Remote && locationType != LocationType.Virtual)
+                {
+                    info.Container = System.IO.Path.GetExtension(i.Path).TrimStart('.');
+                }
+            }
+
+            var bitrate = i.TotalBitrate ??
+                info.MediaStreams.Where(m => m.Type == MediaStreamType.Audio)
+                .Select(m => m.BitRate ?? 0)
+                .Sum();
+
+            if (bitrate > 0)
+            {
+                info.Bitrate = bitrate;
+            }
 
             return info;
         }

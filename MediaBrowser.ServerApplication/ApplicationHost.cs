@@ -680,6 +680,7 @@ namespace MediaBrowser.ServerApplication
             Folder.UserManager = UserManager;
             BaseItem.FileSystem = FileSystemManager;
             BaseItem.UserDataManager = UserDataManager;
+            ChannelVideoItem.ChannelManager = ChannelManager;
         }
 
         /// <summary>

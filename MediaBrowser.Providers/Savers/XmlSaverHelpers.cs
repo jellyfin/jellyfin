@@ -649,7 +649,7 @@ namespace MediaBrowser.Providers.Savers
         /// </summary>
         /// <typeparam name="T"></typeparam>
         public static void AddMediaInfo<T>(T item, StringBuilder builder, IItemRepository itemRepository)
-            where T : BaseItem, IHasMediaStreams
+            where T : BaseItem
         {
             var video = item as Video;
 
