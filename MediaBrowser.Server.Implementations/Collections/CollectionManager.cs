@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace MediaBrowser.Server.Implementations.Collections
 {
@@ -255,7 +256,10 @@ namespace MediaBrowser.Server.Implementations.Collections
                 }
             }
 
-            return list.Except(itemsToCollapse.Cast<BaseItem>()).Concat(boxsets).Distinct();
+            return list
+                .Except(itemsToCollapse.Cast<BaseItem>())
+                .Concat(boxsets)
+                .DistinctBy(i => i.Id);
         }
     }
 }

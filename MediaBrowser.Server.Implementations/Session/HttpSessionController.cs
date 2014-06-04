@@ -42,6 +42,14 @@ namespace MediaBrowser.Server.Implementations.Session
             ResetPingTimer();
         }
 
+        private string PostUrl
+        {
+            get
+            {
+                return string.Format("http://{0}{1}", Session.RemoteEndPoint, _postUrl);
+            }
+        }
+
         public bool IsSessionActive
         {
             get
@@ -97,7 +105,7 @@ namespace MediaBrowser.Server.Implementations.Session
             Dictionary<string, string> args, 
             CancellationToken cancellationToken)
         {
-            var url = _postUrl + "/" + name + ToQueryString(args);
+            var url = PostUrl + "/" + name + ToQueryString(args);
 
             await _httpClient.Post(new HttpRequestOptions
             {

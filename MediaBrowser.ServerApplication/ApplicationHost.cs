@@ -798,6 +798,8 @@ namespace MediaBrowser.ServerApplication
                 Logger.ErrorException("Error sending server restart notification", ex);
             }
 
+            Logger.Debug("Calling NativeApp.Restart");
+
             NativeApp.Restart();
         }
 

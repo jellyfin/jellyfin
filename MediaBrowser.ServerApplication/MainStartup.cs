@@ -116,11 +116,13 @@ namespace MediaBrowser.ServerApplication
         /// <returns><c>true</c> if [is already running] [the specified current process]; otherwise, <c>false</c>.</returns>
         private static bool IsAlreadyRunning(string applicationPath, Process currentProcess)
         {
+            var filename = Path.GetFileName(applicationPath);
+
             var duplicate = Process.GetProcesses().FirstOrDefault(i =>
             {
                 try
                 {
-                    return string.Equals(applicationPath, i.MainModule.FileName) && currentProcess.Id != i.Id;
+                    return string.Equals(filename, Path.GetFileName(i.MainModule.FileName)) && currentProcess.Id != i.Id;
                 }
                 catch (Exception)
                 {
