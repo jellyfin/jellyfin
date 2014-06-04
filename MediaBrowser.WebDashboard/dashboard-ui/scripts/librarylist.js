@@ -300,7 +300,7 @@
         if (selection.length < 2) {
 
             Dashboard.alert({
-                message: Globalize.translate('MessagePleaseSelectItemsToGroup'),
+                message: Globalize.translate('MessagePleaseSelectTwoItems'),
                 title: Globalize.translate('HeaderError')
             });
 
@@ -324,6 +324,7 @@
                 Dashboard.showLoadingMsg();
 
                 $.ajax({
+                    
                     type: "POST",
                     url: ApiClient.getUrl("Videos/MergeVersions", { Ids: selection.join(',') })
 
@@ -331,12 +332,29 @@
 
                     Dashboard.hideLoadingMsg();
 
-                    hideSelections();
+                    hideSelections(page);
 
                     $('.itemsContainer', page).trigger('needsrefresh');
                 });
             }
         });
+    }
+    
+    function addToCollection(page) {
+        
+        var selection = getSelectedItems(page);
+
+        if (selection.length < 1) {
+
+            Dashboard.alert({
+                message: Globalize.translate('MessagePleaseSelectOneItem'),
+                title: Globalize.translate('HeaderError')
+            });
+
+            return;
+        }
+
+        BoxSetEditor.showPanel(page, selection);
     }
 
     $(document).on('pageinit', ".libraryPage", function () {
@@ -350,6 +368,16 @@
         $('.btnMergeVersions', page).on('click', function () {
             combineVersions(page);
         });
+
+        $('.btnAddToCollection', page).on('click', function () {
+            addToCollection(page);
+        });
+
+    }).on('pagebeforeshow', ".libraryPage", function () {
+
+        var page = this;
+
+        hideSelections(page);
 
     });
 

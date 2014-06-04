@@ -4,7 +4,7 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="moviesPage" data-role="page" class="page libraryPage" data-theme="b">
+    <div id="moviesPage" data-role="page" class="page libraryPage collectionEditorPage" data-theme="b">
 
         <div class="libraryViewNav scopedLibraryViewNav">
             <a href="movieslatest.html">${TabLatest}</a>
@@ -38,12 +38,44 @@
                 </div>
 
                 <div class="selectionCommands" style="display: none;">
-                    <div data-role="controlgroup" data-type="horizontal" class="selectionCommandsControlGroup">
+                    <div class="selectionCommandsControlGroup">
                         <button class="btnMergeVersions" data-mini="true" data-icon="recycle" data-inline="true" title="${ButtonGroupVersions}">${ButtonGroupVersions}</button>
+                        <button class="btnAddToCollection" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToCollection}">${ButtonAddToCollection}</button>
                     </div>
                 </div>
             </div>
             <div id="items" class="itemsContainer"></div>
+        </div>
+        <div data-role="panel" class="newCollectionPanel" data-position="right" data-display="overlay" data-position-fixed="true">
+            <form class="newCollectionForm">
+
+                <h3>${HeaderAddToCollection}</h3>
+
+                <br />
+                <div>
+                    <label for="selectCollectionToAddTo">${LabelSelectCollection}</label>
+                    <select id="selectCollectionToAddTo" data-mini="true"></select>
+                </div>
+                <br />
+                <div class="newCollectionInfo">
+                    <div>
+                        <label for="txtNewCollectionName">${LabelName}</label>
+                        <input type="text" id="txtNewCollectionName" required="required" />
+                        <div class="fieldDescription">${NewCollectionNameExample}</div>
+                    </div>
+
+                    <br />
+                    <div>
+                        <label for="chkEnableInternetMetadata">${OptionSearchForInternetMetadata}</label>
+                        <input type="checkbox" id="chkEnableInternetMetadata" data-mini="true" />
+                    </div>
+                    <br />
+                </div>
+                <p>
+                    <input class="fldSelectedItemIds" type="hidden" />
+                    <button type="submit" data-icon="plus" data-mini="true">${ButtonSubmit}</button>
+                </p>
+            </form>
         </div>
         <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-position-fixed="true">
 
@@ -210,6 +242,9 @@
 
             </form>
         </div>
+        <script type="text/javascript">
+            $('.newCollectionForm').off('submit', BoxSetEditor.onNewCollectionSubmit).on('submit', BoxSetEditor.onNewCollectionSubmit);
+        </script>
     </div>
 </body>
 </html>

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.IO;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -142,6 +143,16 @@ namespace MediaBrowser.Server.Implementations.Session
                 SessionInfo = info
 
             }, _logger);
+
+            if (!string.IsNullOrWhiteSpace(info.DeviceId))
+            {
+                var capabilities = GetSavedCapabilities(info.DeviceId);
+
+                if (capabilities != null)
+                {
+                    ReportCapabilities(info, capabilities, false);
+                }
+            }
         }
 
         private async void OnSessionEnded(SessionInfo info)
@@ -237,7 +248,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 return session;
             }
-            
+
             // Save this directly. No need to fire off all the events for this.
             await _userRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
 
@@ -1148,6 +1159,13 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSession(sessionId);
 
+            ReportCapabilities(session, capabilities, true);
+        }
+
+        private async void ReportCapabilities(SessionInfo session,
+            SessionCapabilities capabilities,
+            bool saveCapabilities)
+        {
             session.PlayableMediaTypes = capabilities.PlayableMediaTypes;
             session.SupportedCommands = capabilities.SupportedCommands;
 
@@ -1168,6 +1186,59 @@ namespace MediaBrowser.Server.Implementations.Session
                 SessionInfo = session
 
             }, _logger);
+
+            if (saveCapabilities)
+            {
+                await SaveCapabilities(session.DeviceId, capabilities).ConfigureAwait(false);
+            }
+        }
+
+        private string GetCapabilitiesFilePath(string deviceId)
+        {
+            var filename = deviceId.GetMD5().ToString("N") + ".json";
+
+            return Path.Combine(_configurationManager.ApplicationPaths.CachePath, "devices", filename);
+        }
+
+        private SessionCapabilities GetSavedCapabilities(string deviceId)
+        {
+            var path = GetCapabilitiesFilePath(deviceId);
+
+            try
+            {
+                return _jsonSerializer.DeserializeFromFile<SessionCapabilities>(path);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return null;
+            }
+            catch (FileNotFoundException)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting saved capabilities", ex);
+                return null;
+            }
+        }
+
+        private readonly SemaphoreSlim _capabilitiesLock = new SemaphoreSlim(1, 1);
+        private async Task SaveCapabilities(string deviceId, SessionCapabilities capabilities)
+        {
+            var path = GetCapabilitiesFilePath(deviceId);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            await _capabilitiesLock.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                _jsonSerializer.SerializeToFile(capabilities, path);
+            }
+            finally
+            {
+                _capabilitiesLock.Release();
+            }
         }
 
         public SessionInfoDto GetSessionInfoDto(SessionInfo session)

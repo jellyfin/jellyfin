@@ -128,6 +128,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 request.Host = options.Host;
             }
 
+            if (!string.IsNullOrEmpty(options.Referer))
+            {
+                request.Referer = options.Referer;
+            }
+
 #if !__MonoCS__
             if (options.EnableKeepAlive)
             {

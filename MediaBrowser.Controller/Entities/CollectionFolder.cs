@@ -121,11 +121,16 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <returns>Task.</returns>
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
+            var list = PhysicalLocationsList.ToList();
+
             CreateResolveArgs(directoryService);
 
-            return NullTaskResult;
+            if (!list.SequenceEqual(PhysicalLocationsList))
+            {
+                await UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -164,8 +169,7 @@ namespace MediaBrowser.Controller.Entities
                 LibraryManager.RootFolder.Children
                 .OfType<Folder>()
                 .Where(i => i.Path != null && PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase))
-                .SelectMany(c => c.Children)
-                .ToList();
+                .SelectMany(c => c.Children);
         }
     }
 }

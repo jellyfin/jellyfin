@@ -1065,8 +1065,12 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         private string GetUserAgentParam(StreamState state)
         {
-            string useragent;
-            state.RemoteHttpHeaders.TryGetValue("User-Agent", out useragent);
+            string useragent = null;
+
+            if (state.RemoteHttpHeaders != null)
+            {
+                state.RemoteHttpHeaders.TryGetValue("User-Agent", out useragent);
+            }
 
             if (string.IsNullOrWhiteSpace(useragent))
             {

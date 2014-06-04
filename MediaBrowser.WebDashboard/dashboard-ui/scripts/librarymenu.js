@@ -49,7 +49,7 @@
 
         $(document).trigger('headercreated');
 
-        $('.libraryMenuButton').on('click', showLibraryMenu);
+        $('.libraryMenuButton').createHoverTouch().on('hovertouch', showLibraryMenu);
     }
 
     function getItemHref(item) {
@@ -86,10 +86,15 @@
 
         updateLibraryNavLinks($.mobile.activePage);
 
-        $(panel).panel('toggle');
+        $(panel).panel('toggle').off('mouseleave.librarymenu').on('mouseleave.librarymenu', function () {
+
+            $(this).panel("close");
+
+        });
     }
 
     function updateLibraryMenu(panel) {
+
         var userId = Dashboard.getCurrentUserId();
 
         ApiClient.getItems(userId, {
@@ -181,9 +186,9 @@
 
         return panel;
     }
-    
+
     function setLibraryMenuText(text) {
-        
+
         $('.libraryMenuButtonText').html('<span>' + text + '</span>');
 
     }
@@ -197,7 +202,7 @@
         showLibraryMenu: showLibraryMenu,
 
         getTopParentId: getTopParentId,
-        
+
         setText: setLibraryMenuText
     };
 
@@ -350,3 +355,53 @@
     });
 
 })(window, document, jQuery);
+
+$.fn.createHoverTouch = function () {
+
+    var preventHover = false;
+    var timerId;
+
+    function startTimer(elem) {
+
+        stopTimer();
+
+        timerId = setTimeout(function () {
+
+            $(elem).trigger('hovertouch');
+        }, 200);
+    }
+
+    function stopTimer(elem) {
+
+        if (timerId) {
+            clearTimeout(timerId);
+            timerId = null;
+        }
+    }
+
+    return $(this).on('mouseenter', function () {
+
+        if (preventHover === true) {
+            return;
+        }
+
+        startTimer(this);
+
+    }).on('mouseleave', function () {
+
+        stopTimer(this);
+
+    }).on('touchstart', function () {
+
+        preventHover = true;
+
+    }).on('click', function () {
+
+        preventHover = true;
+
+        if (preventHover) {
+            $(this).trigger('hovertouch');
+        }
+    });
+
+};

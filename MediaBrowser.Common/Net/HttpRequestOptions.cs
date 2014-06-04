@@ -53,6 +53,12 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
+        /// Gets or sets the referrer.
+        /// </summary>
+        /// <value>The referrer.</value>
+        public string Referer { get; set; }
+
+        /// <summary>
         /// Gets or sets the host.
         /// </summary>
         /// <value>The host.</value>

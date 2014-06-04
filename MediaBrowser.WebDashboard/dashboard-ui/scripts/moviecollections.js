@@ -104,13 +104,6 @@
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    function showNewCollectionPanel(page) {
-
-        $('.newCollectionPanel', page).panel('toggle');
-
-        $('#txtNewCollectionName', page).val('').focus();
-    }
-
     $(document).on('pageinit', "#boxsetsPage", function () {
 
         var page = this;
@@ -199,21 +192,54 @@
     }).on('pageshow', "#boxsetsPage", function () {
 
         updateFilterControls(this);
-        
-    }).on('collectionedit', "#boxsetsPage", function () {
 
-        reloadItems(this);
     });
 
 })(jQuery, document);
 
 (function ($, document) {
 
-    function showNewCollectionPanel(page) {
+    function showNewCollectionPanel(page, items) {
 
-        $('.newCollectionPanel', page).panel('toggle');
+        $('.fldSelectedItemIds', page).val(items.join(','));
 
-        $('#txtNewCollectionName', page).val('').focus();
+        var panel = $('.newCollectionPanel', page).panel('toggle');
+
+        populateCollections(panel);
+    }
+
+    function populateCollections(panel) {
+
+        var select = $('#selectCollectionToAddTo', panel);
+
+        if (!select.length) {
+
+            $('#txtNewCollectionName', panel).val('').focus();
+            return;
+        }
+
+        $('.newCollectionInfo', panel).hide();
+
+        var options = {
+
+            Recursive: true,
+            IncludeItemTypes: "BoxSet"
+        };
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+
+            var html = '';
+
+            html += '<option value="">' + Globalize.translate('OptionNewCollection') + '</option>';
+
+            html += result.Items.map(function (i) {
+
+                return '<option value="' + i.Id + '">' + i.Name + '</option>';
+            });
+
+            select.html(html).val('').selectmenu('refresh').trigger('change');
+
+        });
     }
 
     $(document).on('pageinit', ".collectionEditorPage", function () {
@@ -222,7 +248,18 @@
 
         $('.btnNewCollection', page).on('click', function () {
 
-            showNewCollectionPanel(page);
+            showNewCollectionPanel(page, []);
+        });
+
+        $('#selectCollectionToAddTo', page).on('change', function () {
+
+            if (this.value) {
+                $('.newCollectionInfo', page).hide();
+                $('#txtNewCollectionName', page).removeAttr('required');
+            } else {
+                $('.newCollectionInfo', page).show();
+                $('#txtNewCollectionName', page).attr('required', 'required');
+            }
         });
 
     }).on('pagebeforeshow', ".collectionEditorPage", function () {
@@ -240,7 +277,77 @@
         });
     });
 
+    function createCollection(page) {
+
+        var url = ApiClient.getUrl("Collections", {
+
+            Name: $('#txtNewCollectionName', page).val(),
+            IsLocked: !$('#chkEnableInternetMetadata', page).checked(),
+            Ids: $('.fldSelectedItemIds', page).val() || ''
+
+            //ParentId: getParameterByName('parentId') || LibraryMenu.getTopParentId()
+
+        });
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            dataType: "json"
+
+        }).done(function (result) {
+
+            Dashboard.hideLoadingMsg();
+
+            var id = result.Id;
+            var destination = 'itemdetails.html?id=' + id;
+
+            var context = getParameterByName('context');
+
+            if (context) {
+                destination += "&context=" + context;
+            }
+
+            $('.newCollectionPanel', page).panel('toggle');
+            Dashboard.navigate(destination);
+
+        });
+    }
+
+    function addToCollection(page, id) {
+
+        var url = ApiClient.getUrl("Collections/" + id + "/Items", {
+
+            Ids: $('.fldSelectedItemIds', page).val() || ''
+        });
+
+        $.ajax({
+            type: "POST",
+            url: url
+
+        }).done(function () {
+
+            Dashboard.hideLoadingMsg();
+
+            var destination = 'itemdetails.html?id=' + id;
+
+            var context = getParameterByName('context');
+
+            if (context) {
+                destination += "&context=" + context;
+            }
+
+            $('.newCollectionPanel', page).panel('toggle');
+            Dashboard.navigate(destination);
+
+        });
+
+    }
+
     window.BoxSetEditor = {
+
+        showPanel: function (page, items) {
+            showNewCollectionPanel(page, items);
+        },
 
         onNewCollectionSubmit: function () {
 
@@ -248,28 +355,13 @@
 
             var page = $(this).parents('.page');
 
-            var url = ApiClient.getUrl("Collections", {
+            var collectionId = $('#selectCollectionToAddTo', page).val();
 
-                Name: $('#txtNewCollectionName', page).val(),
-                IsLocked: !$('#chkEnableInternetMetadata', page).checked(),
-
-                ParentId: getParameterByName('parentId') || LibraryMenu.getTopParentId()
-
-            });
-
-            $.ajax({
-                type: "POST",
-                url: url
-
-            }).done(function () {
-
-                Dashboard.hideLoadingMsg();
-
-                $('.newCollectionPanel', page).panel('toggle');
-
-                $(page).trigger('collectionedit');
-
-            });
+            if (collectionId) {
+                addToCollection(page, collectionId);
+            } else {
+                createCollection(page);
+            }
 
             return false;
         }
