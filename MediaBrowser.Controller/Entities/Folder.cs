@@ -445,6 +445,11 @@ namespace MediaBrowser.Controller.Entities
 
                 cancellationToken.ThrowIfCancellationRequested();
 
+                if (this is UserRootFolder)
+                {
+                    var b = true;
+                }
+
                 foreach (var child in nonCachedChildren)
                 {
                     BaseItem currentChild;

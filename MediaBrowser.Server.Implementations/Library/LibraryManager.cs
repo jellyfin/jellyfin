@@ -674,14 +674,19 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var folder = child.GetFolder();
 
-                if (folder.Id == Guid.Empty)
+                if (folder != null)
                 {
-                    folder.Id = (folder.Path ?? folder.GetType().Name).GetMBId(folder.GetType());
+                    if (folder.Id == Guid.Empty)
+                    {
+                        folder.Id = (folder.Path ?? folder.GetType().Name).GetMBId(folder.GetType());
+                    }
+
+                    folder = GetItemById(folder.Id) as BasePluginFolder ?? folder;
+
+                    rootFolder.AddVirtualChild(folder);
+
+                    RegisterItem(folder);
                 }
-
-                rootFolder.AddVirtualChild(folder);
-
-                RegisterItem(folder);
             }
 
             return rootFolder;

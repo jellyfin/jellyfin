@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -31,6 +33,23 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return hasChanges;
+        }
+
+        protected override async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        {
+            await base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService)
+                .ConfigureAwait(false);
+
+            // Not the best way to handle this, but it solves an issue
+            // CollectionFolders aren't always getting saved after changes
+            // This means that grabbing the item by Id may end up returning the old one
+            // Fix is in two places - make sure the folder gets saved
+            // And here to remedy it for affected users.
+            // In theory this can be removed eventually.
+            foreach (var item in Children)
+            {
+                LibraryManager.RegisterItem(item);
+            }
         }
     }
 }

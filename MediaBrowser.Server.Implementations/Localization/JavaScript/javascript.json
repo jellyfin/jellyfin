@@ -115,7 +115,8 @@
 	"HeaderSplitMedia": "Split Media Apart",
 	"MessageConfirmSplitMedia": "Are you sure you wish to split the media sources into separate items?",
 	"HeaderError": "Error",
-	"MessagePleaseSelectItemsToGroup": "Please select two or more items to group together.",
+	"MessagePleaseSelectOneItem": "Please select at least one item.",
+	"MessagePleaseSelectTwoItems": "Please select at least two items.",
 	"MessageTheFollowingItemsWillBeGrouped": "The following titles will be grouped into one item:",
 	"MessageConfirmItemGrouping": "Media Browser clients will automatically choose the optimal version to play based on device and network performance. Are you sure you wish to continue?",
 	"HeaderResume": "Resume",
@@ -138,5 +139,6 @@
 	"HeaderSelectImagesByNamePathHelp": "Browse or enter the path to your items by name folder. The folder must be writeable.",
 	"HeaderSelectMetadataPathHelp": "Browse or enter the path you'd like to store metadata within. The folder must be writeable.",
 	"HeaderSelectChannelDownloadPath": "Select Channel Download Path",
-	"HeaderSelectChannelDownloadPathHelp": "Browse or enter the path to use for storing channel cache files. The folder must be writeable."
+	"HeaderSelectChannelDownloadPathHelp": "Browse or enter the path to use for storing channel cache files. The folder must be writeable.",
+	"OptionNewCollection": "New..."
 }

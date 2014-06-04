@@ -611,13 +611,15 @@ namespace MediaBrowser.Providers.Manager
 
             try
             {
+                var isEnabledFor = saver.IsEnabledFor(item, updateType);
+
                 if (!includeDisabled)
                 {
                     if (options.DisabledMetadataSavers.Contains(saver.Name, StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
                     }
-                    
+
                     if (!item.IsSaveLocalMetadataEnabled())
                     {
                         if (updateType >= ItemUpdateType.MetadataEdit)
@@ -626,7 +628,7 @@ namespace MediaBrowser.Providers.Manager
 
                             // Manual edit occurred
                             // Even if save local is off, save locally anyway if the metadata file already exists
-                            if (fileSaver == null || !File.Exists(fileSaver.GetSavePath(item)))
+                            if (fileSaver == null || !isEnabledFor || !File.Exists(fileSaver.GetSavePath(item)))
                             {
                                 return false;
                             }
@@ -640,7 +642,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
 
-                return saver.IsEnabledFor(item, updateType);
+                return isEnabledFor;
             }
             catch (Exception ex)
             {
