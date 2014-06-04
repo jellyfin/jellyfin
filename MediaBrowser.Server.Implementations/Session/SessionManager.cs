@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -22,6 +21,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -983,6 +983,8 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         public Task SendServerRestartNotification(CancellationToken cancellationToken)
         {
+            _logger.Debug("Beginning SendServerRestartNotification");
+
             var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
 
             var tasks = sessions.Select(session => Task.Run(async () =>
@@ -1171,13 +1173,11 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (!string.IsNullOrWhiteSpace(capabilities.MessageCallbackUrl))
             {
-                var postUrl = string.Format("http://{0}{1}", session.RemoteEndPoint, capabilities.MessageCallbackUrl);
-
                 var controller = session.SessionController as HttpSessionController;
 
                 if (controller == null)
                 {
-                    session.SessionController = new HttpSessionController(_httpClient, _jsonSerializer, session, postUrl, this);
+                    session.SessionController = new HttpSessionController(_httpClient, _jsonSerializer, session, capabilities.MessageCallbackUrl, this);
                 }
             }
 

@@ -430,7 +430,7 @@
 
         populateListView($('#listCountries', page), item.ProductionLocations || []);
         populateListView($('#listGenres', page), item.Genres);
-        populatePeople($('#peopleList', page), item.People || []);
+        populatePeople(page, item.People || []);
 
         populateListView($('#listStudios', page), (item.Studios || []).map(function (element) { return element.Name || ''; }));
 
@@ -544,10 +544,12 @@
         }
     }
 
-    function populatePeople(elem, people) {
+    function populatePeople(page, people) {
 
         var lastType = '';
         var html = '';
+
+        var elem = $('#peopleList', page);
 
         for (var i = 0, length = people.length; i < length; i++) {
 
@@ -560,7 +562,7 @@
                 lastType = type;
             }
 
-            html += '<li><a href="#">';
+            html += '<li><a class="btnEditPerson" href="#" data-index="' + i + '">';
 
             html += '<h3>' + (person.Name || 'Unknown name') + '</h3>';
 
@@ -581,8 +583,61 @@
             var index = parseInt(this.getAttribute('data-index'));
             currentItem.People.splice(index, 1);
 
-            populatePeople(elem, currentItem.People);
+            populatePeople(page, currentItem.People);
         });
+
+        $('.btnEditPerson', elem).on('click', function () {
+
+            var index = parseInt(this.getAttribute('data-index'));
+
+            editPerson(page, currentItem.People[index], index);
+        });
+    }
+
+    function editPerson(page, person, index) {
+
+        $('#popupEditPerson', page).popup("open");
+
+        $('#txtPersonName', page).val(person.Name || '');
+        $('#selectPersonType', page).val(person.Type || '').selectmenu('refresh');
+        $('#txtPersonRole', page).val(person.Role || '');
+
+        if (index == null) {
+            index = '';
+        }
+
+        $("#fldPersonIndex", page).val(index);
+    }
+
+    function savePersonInfo(page) {
+
+        $('#popupEditPerson', page).popup("close");
+
+        var index = $("#fldPersonIndex", page).val();
+        var person;
+
+        var isNew = true;
+
+        if (index) {
+
+            isNew = false;
+            index = parseInt(index);
+
+            person = currentItem.People[index];
+
+        } else {
+            person = {};
+        }
+
+        person.Name = $('#txtPersonName', page).val();
+        person.Type = $('#selectPersonType', page).val();
+        person.Role = $('#txtPersonRole', page).val();
+
+        if (isNew) {
+            currentItem.People.push(person);
+        }
+
+        populatePeople(page, currentItem.People);
     }
 
     function convertTo24HourFormat(time) {
@@ -913,6 +968,14 @@
             searchForIdentificationResults(page);
             return false;
         };
+
+        self.onPersonInfoFormSubmit = function () {
+
+            var page = $(this).parents('.page');
+
+            savePersonInfo(page);
+            return false;
+        };
     }
 
     window.EditItemMetadataPage = new editItemMetadataPage();
@@ -1203,6 +1266,11 @@
 
                 reload(page);
             }
+        });
+
+        $("#btnAddPerson", page).on('click', function (event, data) {
+
+            editPerson(page, {});
         });
 
     }).on('pagebeforeshow', "#editItemMetadataPage", function () {

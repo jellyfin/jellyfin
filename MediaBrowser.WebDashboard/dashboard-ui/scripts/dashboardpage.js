@@ -165,10 +165,10 @@
             DashboardPage.renderHasPendingRestart(page, true);
         }
         else if (msg.MessageType == "ServerShuttingDown") {
-            DashboardPage.renderHasPendingRestart(page, false);
+            DashboardPage.renderHasPendingRestart(page, true);
         }
         else if (msg.MessageType == "ServerRestarting") {
-            DashboardPage.renderHasPendingRestart(page, false);
+            DashboardPage.renderHasPendingRestart(page, true);
         }
         else if (msg.MessageType == "ScheduledTasksInfo") {
 

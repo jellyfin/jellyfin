@@ -296,6 +296,7 @@
                         <div data-mini="true" data-role="collapsible" id="peopleCollapsible" style="display: none; margin-top: 1em;">
                             <h3>People</h3>
                             <div>
+                                <button type="button" id="btnAddPerson" data-icon="plus" data-mini="true" data-theme="a">Add Person</button>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="peopleList"></ul>
                             </div>
                         </div>
@@ -448,10 +449,58 @@
 
         </div>
 
+        <div data-role="popup" data-transition="slidefade" id="popupEditPerson" class="popup" data-theme="a">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3 style="margin: .5em;">Person Info</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="popupEditPersonForm">
+
+                    <div>
+                        <label for="txtPersonName">Name:</label>
+                        <input type="text" id="txtPersonName" required="required" data-mini="true" />
+                    </div>
+
+                    <div>
+                        <label for="selectPersonType">Type:</label>
+                        <select id="selectPersonType" data-mini="true">
+                            <option value=""></option>
+                            <option value="Actor">Actor</option>
+                            <option value="Composer">Composer</option>
+                            <option value="Director">Director</option>
+                            <option value="GuestStar">Guest Star</option>
+                            <option value="Producer">Producer</option>
+                            <option value="Writer">Writer</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="txtPersonRole">Role:</label>
+                        <input type="text" id="txtPersonRole" data-mini="true" />
+                        <div class="fieldDescription">Role is generally only applicable to actors.</div>
+                    </div>
+                    <br />
+                    <input type="hidden" id="fldPersonIndex" />
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            Ok
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            Cancel
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
+
         <script type="text/javascript">
             $('.editItemMetadataForm').off('submit', EditItemMetadataPage.onSubmit).on('submit', EditItemMetadataPage.onSubmit);
             $('.popupConfirmDeleteForm').off('submit', EditItemMetadataPage.onDeleteFormSubmitted).on('submit', EditItemMetadataPage.onDeleteFormSubmitted);
             $('.popupIdentifyForm').off('submit', EditItemMetadataPage.onIdentificationFormSubmitted).on('submit', EditItemMetadataPage.onIdentificationFormSubmitted);
+            $('.popupEditPersonForm').off('submit', EditItemMetadataPage.onPersonInfoFormSubmit).on('submit', EditItemMetadataPage.onPersonInfoFormSubmit);
         </script>
 
     </div>
