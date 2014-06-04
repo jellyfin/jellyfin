@@ -216,7 +216,7 @@ namespace MediaBrowser.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.VideoAudio,
-                    Codec = "ac3,wmav2,wmapro",
+                    Codec = "ac3",
                     Conditions = new []
                     {
                         new ProfileCondition
@@ -224,6 +224,22 @@ namespace MediaBrowser.Dlna.Profiles
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.AudioChannels,
                             Value = "6",
+                            IsRequired = false
+                        }
+                    }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.VideoAudio,
+                    Codec = "wmav2,wmapro",
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.AudioChannels,
+                            Value = "2",
                             IsRequired = false
                         }
                     }
