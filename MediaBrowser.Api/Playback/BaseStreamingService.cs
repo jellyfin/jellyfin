@@ -363,11 +363,11 @@ namespace MediaBrowser.Api.Playback
                 switch (qualitySetting)
                 {
                     case EncodingQuality.HighSpeed:
-                        crf = "14";
+                        crf = "16";
                         profileScore = 2;
                         break;
                     case EncodingQuality.HighQuality:
-                        crf = "8";
+                        crf = "10";
                         profileScore = 1;
                         break;
                     case EncodingQuality.MaxQuality:
@@ -518,16 +518,12 @@ namespace MediaBrowser.Api.Playback
                 return string.Format("{4} -vf \"{0}scale=trunc(min(iw\\,{1})/2)*2:trunc(min((iw/dar)\\,{2})/2)*2{3}\"", yadifParam, maxWidthParam, maxHeightParam, assSubtitleParam, copyTsParam);
             }
 
-            var isH264Output = outputVideoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase);
-
             // If a fixed width was requested
             if (request.Width.HasValue)
             {
                 var widthParam = request.Width.Value.ToString(UsCulture);
 
-                return isH264Output ?
-                    string.Format("{3} -vf \"{0}scale={1}:trunc(ow/a/2)*2{2}\"", yadifParam, widthParam, assSubtitleParam, copyTsParam) :
-                    string.Format("{3} -vf \"{0}scale={1}:-1{2}\"", yadifParam, widthParam, assSubtitleParam, copyTsParam);
+                return string.Format("{3} -vf \"{0}scale={1}:trunc(ow/a/2)*2{2}\"", yadifParam, widthParam, assSubtitleParam, copyTsParam);
             }
 
             // If a fixed height was requested
@@ -535,9 +531,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var heightParam = request.Height.Value.ToString(UsCulture);
 
-                return isH264Output ?
-                    string.Format("{3} -vf \"{0}scale=trunc(oh*a*2)/2:{1}{2}\"", yadifParam, heightParam, assSubtitleParam, copyTsParam) :
-                    string.Format("{3} -vf \"{0}scale=-1:{1}{2}\"", yadifParam, heightParam, assSubtitleParam, copyTsParam);
+                return string.Format("{3} -vf \"{0}scale=trunc(oh*a*2)/2:{1}{2}\"", yadifParam, heightParam, assSubtitleParam, copyTsParam);
             }
 
             // If a max width was requested
@@ -545,9 +539,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
 
-                return isH264Output ?
-                    string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):trunc(ow/dar/2)*2{2}\"", yadifParam, maxWidthParam, assSubtitleParam, copyTsParam) :
-                    string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):-1{2}\"", yadifParam, maxWidthParam, assSubtitleParam, copyTsParam);
+                return string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):trunc(ow/dar/2)*2{2}\"", yadifParam, maxWidthParam, assSubtitleParam, copyTsParam);
             }
 
             // If a max height was requested
@@ -555,9 +547,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
 
-                return isH264Output ?
-                    string.Format("{3} -vf \"{0}scale=trunc(oh*a*2)/2:min(ih\\,{1}){2}\"", yadifParam, maxHeightParam, assSubtitleParam, copyTsParam) :
-                    string.Format("{3} -vf \"{0}scale=-1:min(ih\\,{1}){2}\"", yadifParam, maxHeightParam, assSubtitleParam, copyTsParam);
+                return string.Format("{3} -vf \"{0}scale=trunc(oh*a*2)/2:min(ih\\,{1}){2}\"", yadifParam, maxHeightParam, assSubtitleParam, copyTsParam);
             }
 
             if (state.VideoStream == null)
@@ -574,17 +564,10 @@ namespace MediaBrowser.Api.Playback
 
             var outputSize = DrawingUtils.Resize(currentWidth, currentHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
 
-            // If we're encoding with libx264, it can't handle odd numbered widths or heights, so we'll have to fix that
-            if (isH264Output)
-            {
-                var widthParam = outputSize.Width.ToString(UsCulture);
-                var heightParam = outputSize.Height.ToString(UsCulture);
+            var manualWidthParam = outputSize.Width.ToString(UsCulture);
+            var manualHeightParam = outputSize.Height.ToString(UsCulture);
 
-                return string.Format("{4} -vf \"{0}scale=trunc({1}/2)*2:trunc({2}/2)*2{3}\"", yadifParam, widthParam, heightParam, assSubtitleParam, copyTsParam);
-            }
-
-            // Otherwise use -vf scale since ffmpeg will ensure internally that the aspect ratio is preserved
-            return string.Format("{3} -vf \"{0}scale={1}:-1{2}\"", yadifParam, Convert.ToInt32(outputSize.Width), assSubtitleParam, copyTsParam);
+            return string.Format("{4} -vf \"{0}scale=trunc({1}/2)*2:trunc({2}/2)*2{3}\"", yadifParam, manualWidthParam, manualHeightParam, assSubtitleParam, copyTsParam);
         }
 
         /// <summary>
@@ -1067,10 +1050,7 @@ namespace MediaBrowser.Api.Playback
         {
             string useragent = null;
 
-            if (state.RemoteHttpHeaders != null)
-            {
-                state.RemoteHttpHeaders.TryGetValue("User-Agent", out useragent);
-            }
+            state.RemoteHttpHeaders.TryGetValue("User-Agent", out useragent);
 
             if (string.IsNullOrWhiteSpace(useragent))
             {
@@ -1925,7 +1905,12 @@ namespace MediaBrowser.Api.Playback
 
             if (state.IsRemote)
             {
-                inputModifier += " " + GetUserAgentParam(state);
+                var userAgentParam = GetUserAgentParam(state);
+
+                if (!string.IsNullOrWhiteSpace(userAgentParam))
+                {
+                    inputModifier += " " + userAgentParam;
+                }
             }
 
             inputModifier = inputModifier.Trim();

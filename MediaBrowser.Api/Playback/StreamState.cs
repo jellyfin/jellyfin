@@ -28,12 +28,6 @@ namespace MediaBrowser.Api.Playback
             get { return Request as VideoStreamRequest; }
         }
 
-        public StreamState()
-        {
-            PlayableStreamFileNames = new List<string>();
-            RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
         public Dictionary<string, string> RemoteHttpHeaders { get; set; }
 
         /// <summary>
@@ -82,6 +76,8 @@ namespace MediaBrowser.Api.Playback
             _liveTvManager = liveTvManager;
             _logger = logger;
             SupportedAudioCodecs = new List<string>();
+            PlayableStreamFileNames = new List<string>();
+            RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         public string InputAudioSync { get; set; }
