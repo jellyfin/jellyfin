@@ -326,6 +326,8 @@ namespace MediaBrowser.Api.UserLibrary
                 items = _collectionManager.CollapseItemsWithinBoxSets(items, user);
             }
 
+            items = ApplyPostCollectionCollapseFilters(request, items, user);
+            
             items = ApplySortOrder(request, items, user, _libraryManager);
 
             // This must be the last filter
@@ -811,20 +813,6 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(f => !vals.Contains(f.LocationType.ToString(), StringComparer.OrdinalIgnoreCase));
             }
 
-            if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
-            {
-                items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
-            }
-            if (!string.IsNullOrEmpty(request.NameStartsWith))
-            {
-                items = items.Where(i => string.Compare(request.NameStartsWith, i.SortName.Substring(0, 1), StringComparison.CurrentCultureIgnoreCase) == 0);
-            }
-
-            if (!string.IsNullOrEmpty(request.NameLessThan))
-            {
-                items = items.Where(i => string.Compare(request.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
-            }
-
             if (!string.IsNullOrEmpty(request.AlbumArtistStartsWithOrGreater))
             {
                 items = items.OfType<IHasAlbumArtist>()
@@ -1231,6 +1219,25 @@ namespace MediaBrowser.Api.UserLibrary
             return items;
         }
 
+        private IEnumerable<BaseItem> ApplyPostCollectionCollapseFilters(GetItems request, IEnumerable<BaseItem> items, User user)
+        {
+            if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
+            {
+                items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
+            }
+            if (!string.IsNullOrEmpty(request.NameStartsWith))
+            {
+                items = items.Where(i => string.Compare(request.NameStartsWith, i.SortName.Substring(0, 1), StringComparison.CurrentCultureIgnoreCase) == 0);
+            }
+
+            if (!string.IsNullOrEmpty(request.NameLessThan))
+            {
+                items = items.Where(i => string.Compare(request.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
+            }
+
+            return items;
+        }
+        
         private bool IsYearMismatched(BaseItem item)
         {
             if (item.ProductionYear.HasValue)
