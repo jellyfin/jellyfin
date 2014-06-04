@@ -102,8 +102,9 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#liveTvChannelsPage", function () {
+    }).on('pageshow', "#liveTvChannelsPage", function () {
 
+        // Can't use pagebeforeshow here or the loading popup won't center correctly
         var page = this;
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -120,9 +121,8 @@
 
         reloadItems(page);
         
-    }).on('pageshow', "#liveTvChannelsPage", function () {
-
         updateFilterControls(this);
+        
     });
 
 })(jQuery, document, ApiClient);

@@ -216,10 +216,11 @@
     CastPlayer.prototype.onLaunchError = function () {
         console.log("chromecast launch error");
         this.deviceState = DEVICE_STATE.ERROR;
+        
         Dashboard.alert({
 
-            title: "Error Launching Chromecast",
-            message: "There was an error launching chromecast. Please ensure your device is connected to your wireless network."
+            title: Globalize.translate("Error"),
+            message: Globalize.translate("ErrorLaunchingChromecast")
 
         });
 

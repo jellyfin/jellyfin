@@ -50,7 +50,7 @@
         html += '<div style="text-align:center;margin-top:4px;max-width:100px;overflow:hidden;height: 32px;">' + item.Name + '</div>';
 
         if (item.ParentId != currentItem.Id) {
-            html += '<label for="chkRemove' + item.Id + '">Remove</label><input id="chkRemove' + item.Id + '" class="chkRemoveItem" type="checkbox" data-itemid="' + item.Id + '" data-mini="true" />';
+            html += '<label for="chkRemove' + item.Id + '">' + Globalize.translate("ButtonRemove") + '</label><input id="chkRemove' + item.Id + '" class="chkRemoveItem" type="checkbox" data-itemid="' + item.Id + '" data-mini="true" />';
         }
 
         html += '</div>';
@@ -80,7 +80,7 @@
 
         html += '<div style="text-align:center;margin-top:4px;max-width:100px;overflow:hidden;height: 32px;">' + item.Name + '</div>';
 
-        html += '<label for="chkAdd' + item.ItemId + '">Add</label><input id="chkAdd' + item.ItemId + '" class="chkAddItem" type="checkbox" data-itemid="' + item.ItemId + '" data-mini="true" />';
+        html += '<label for="chkAdd' + item.ItemId + '">' + Globalize.translate("ButtonAdd") + '</label><input id="chkAdd' + item.ItemId + '" class="chkAddItem" type="checkbox" data-itemid="' + item.ItemId + '" data-mini="true" />';
 
         html += '</div>';
 
@@ -174,7 +174,7 @@
         });
 
         if (!items.length) {
-            Dashboard.alert('Please select at least one item.');
+            Dashboard.alert(Globalize.translate("MessagePleaseSelectOneItem"));
             return;
         }
 
@@ -207,7 +207,7 @@
         });
 
         if (!items.length) {
-            Dashboard.alert('Please select at least one item.');
+            Dashboard.alert(Globalize.translate("MessagePleaseSelectOneItem"));
             return;
         }
 
