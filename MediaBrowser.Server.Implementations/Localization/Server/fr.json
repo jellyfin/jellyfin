@@ -234,6 +234,7 @@
     "ButtonSelect": "S\u00e9lectionner",
     "ButtonSearch": "Recherche",
     "ButtonGroupVersions": "Versions des groupes",
+    "ButtonAddToCollection": "Add to Collection",
     "PismoMessage": "En utilisation de \"Pismo File Mount\" par une license fournie.",
     "TangibleSoftwareMessage": "Utilisation de convertisseurs Tangible Solutions Java\/C# par licence fournie.",
     "HeaderCredits": "Cr\u00e9dits",
@@ -450,6 +451,8 @@
     "LabelPreferredDisplayLanguageHelp": "La traduction de Media Browser est un projet en cours et n'est pas compl\u00e9t\u00e9e encore.",
     "LabelReadHowYouCanContribute": "Lire comment vous pouvez contribuer.",
     "HeaderNewCollection": "Nouvelle collection",
+    "HeaderAddToCollection": "Add to Collection",
+    "ButtonSubmit": "Submit",
     "NewCollectionNameExample": "Exemple: Collection Star Wars",
     "OptionSearchForInternetMetadata": "Rechercher sur Internet les images et m\u00e9tadonn\u00e9es",
     "ButtonCreate": "Cr\u00e9er",
@@ -793,5 +796,15 @@
     "LabelChannelDownloadPathHelp": "Specify a custom download path if desired. Leave empty to download to an internal program data folder.",
     "LabelChannelDownloadAge": "Delete content after: (days)",
     "LabelChannelDownloadAgeHelp": "Downloaded content older than this will be deleted. It will remain playable via internet streaming.",
-    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog."
+    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog.",
+    "LabelSelectCollection": "Select collection:",
+    "ViewTypeMovies": "Movies",
+    "ViewTypeTvShows": "TV",
+    "ViewTypeGames": "Games",
+    "ViewTypeMusic": "Music",
+    "ViewTypeBoxSets": "Collections",
+    "HeaderOtherDisplaySettings": "Display Settings",
+    "HeaderLibraryViews": "Library Views",
+    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
 }

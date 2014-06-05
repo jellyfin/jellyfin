@@ -1056,6 +1056,14 @@ namespace MediaBrowser.Server.Implementations.Library
 
             innerProgress.RegisterAction(pct => progress.Report(75 + pct * .25));
 
+            foreach (var user in _userManager.Users)
+            {
+                foreach (var view in user.GetViews().ToList())
+                {
+                    await view.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                }
+            }
+
             // Run post-scan tasks
             await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
 

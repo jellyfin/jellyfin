@@ -65,6 +65,8 @@ namespace MediaBrowser.Model.Configuration
         public string[] BlockedMediaFolders { get; set; }
         public string[] BlockedChannels { get; set; }
 
+        public string[] ExcludeFoldersFromGrouping { get; set; }
+
         public UnratedItem[] BlockUnratedItems { get; set; }
 
         public SubtitlePlaybackMode SubtitleMode { get; set; }
@@ -81,11 +83,12 @@ namespace MediaBrowser.Model.Configuration
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;
-            GroupMoviesIntoBoxSets = true;
 
             BlockedMediaFolders = new string[] { };
             BlockedChannels = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
+
+            ExcludeFoldersFromGrouping = new string[] { };
         }
     }
 

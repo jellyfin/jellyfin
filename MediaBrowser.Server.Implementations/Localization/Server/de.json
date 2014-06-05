@@ -234,6 +234,7 @@
     "ButtonSelect": "Ausw\u00e4hlen",
     "ButtonSearch": "Suche",
     "ButtonGroupVersions": "Gruppiere Versionen",
+    "ButtonAddToCollection": "Add to Collection",
     "PismoMessage": "Verwendet Pismo File Mount durch eine gespendete Lizenz.",
     "TangibleSoftwareMessage": "Utilizing Tangible Solutions Java\/C# converters through a donated license.",
     "HeaderCredits": "Credits",
@@ -450,6 +451,8 @@
     "LabelPreferredDisplayLanguageHelp": "Die \u00dcbersetzung von Media Browser ist ein andauerndes Projekt und noch nicht abgeschlossen.",
     "LabelReadHowYouCanContribute": "Lesen Sie wie Sie dazu beitragen k\u00f6nnen.",
     "HeaderNewCollection": "Neue Collection",
+    "HeaderAddToCollection": "Add to Collection",
+    "ButtonSubmit": "Submit",
     "NewCollectionNameExample": "Beispiel: Star Wars Collection",
     "OptionSearchForInternetMetadata": "Suche im Internet nach Bildmaterial und Metadaten",
     "ButtonCreate": "Kreieren",
@@ -793,5 +796,15 @@
     "LabelChannelDownloadPathHelp": "Specify a custom download path if desired. Leave empty to download to an internal program data folder.",
     "LabelChannelDownloadAge": "Delete content after: (days)",
     "LabelChannelDownloadAgeHelp": "Downloaded content older than this will be deleted. It will remain playable via internet streaming.",
-    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog."
+    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog.",
+    "LabelSelectCollection": "Select collection:",
+    "ViewTypeMovies": "Movies",
+    "ViewTypeTvShows": "TV",
+    "ViewTypeGames": "Games",
+    "ViewTypeMusic": "Music",
+    "ViewTypeBoxSets": "Collections",
+    "HeaderOtherDisplaySettings": "Display Settings",
+    "HeaderLibraryViews": "Library Views",
+    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
 }

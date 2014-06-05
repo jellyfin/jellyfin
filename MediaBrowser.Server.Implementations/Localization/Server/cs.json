@@ -234,6 +234,7 @@
     "ButtonSelect": "Vybrat",
     "ButtonSearch": "Hled\u00e1n\u00ed",
     "ButtonGroupVersions": "Skupinov\u00e9 verze",
+    "ButtonAddToCollection": "Add to Collection",
     "PismoMessage": "Vyu\u017e\u00edv\u00e1me spr\u00e1vce soubor\u016f \"Pismo\" skrze dotovanou licenci.",
     "TangibleSoftwareMessage": "Utilizing Tangible Solutions Java\/C# converters through a donated license.",
     "HeaderCredits": "Credits",
@@ -450,6 +451,8 @@
     "LabelPreferredDisplayLanguageHelp": "P\u0159eklad programu Media Browser prob\u00edh\u00e1, a je\u0161t\u011b nen\u00ed dokon\u010den.",
     "LabelReadHowYouCanContribute": "P\u0159e\u010dt\u011bte si o tom, jak m\u016f\u017eete p\u0159isp\u011bt.",
     "HeaderNewCollection": "Nov\u00e1 kolekce",
+    "HeaderAddToCollection": "Add to Collection",
+    "ButtonSubmit": "Submit",
     "NewCollectionNameExample": "P\u0159\u00edklad: Kolekce Star Wars",
     "OptionSearchForInternetMetadata": "Prohledat internet pro nalezen\u00ed metadat a obalu.",
     "ButtonCreate": "Vytvo\u0159it",
@@ -793,5 +796,15 @@
     "LabelChannelDownloadPathHelp": "Specify a custom download path if desired. Leave empty to download to an internal program data folder.",
     "LabelChannelDownloadAge": "Delete content after: (days)",
     "LabelChannelDownloadAgeHelp": "Downloaded content older than this will be deleted. It will remain playable via internet streaming.",
-    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog."
+    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog.",
+    "LabelSelectCollection": "Select collection:",
+    "ViewTypeMovies": "Movies",
+    "ViewTypeTvShows": "TV",
+    "ViewTypeGames": "Games",
+    "ViewTypeMusic": "Music",
+    "ViewTypeBoxSets": "Collections",
+    "HeaderOtherDisplaySettings": "Display Settings",
+    "HeaderLibraryViews": "Library Views",
+    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
 }

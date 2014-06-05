@@ -4,7 +4,6 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -354,7 +353,7 @@ namespace MediaBrowser.Model.Dlna
             foreach (ContainerProfile i in profile.ContainerProfiles)
             {
                 if (i.Type == DlnaProfileType.Video &&
-                    i.GetContainers().Contains(container, StringComparer.OrdinalIgnoreCase))
+                    ListHelper.ContainsIgnoreCase(i.GetContainers(), container))
                 {
                     conditions.AddRange(i.Conditions);
                 }
@@ -639,7 +638,7 @@ namespace MediaBrowser.Model.Dlna
             if (videoCodecs.Count > 0)
             {
                 string videoCodec = videoStream == null ? null : videoStream.Codec;
-                if (string.IsNullOrEmpty(videoCodec) || !videoCodecs.Contains(videoCodec, StringComparer.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(videoCodec) || !ListHelper.ContainsIgnoreCase(videoCodecs, videoCodec))
                 {
                     return false;
                 }
@@ -650,7 +649,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 // Check audio codecs
                 string audioCodec = audioStream == null ? null : audioStream.Codec;
-                if (string.IsNullOrEmpty(audioCodec) || !audioCodecs.Contains(audioCodec, StringComparer.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(audioCodec) || !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
                 {
                     return false;
                 }

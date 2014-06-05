@@ -40,6 +40,17 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
     }
 
+    [Route("/Users/{UserId}/Views", "GET")]
+    public class GetUserViews : IReturn<QueryResult<BaseItemDto>>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public Guid UserId { get; set; }
+    }
+
     /// <summary>
     /// Class GetItem
     /// </summary>
@@ -236,7 +247,7 @@ namespace MediaBrowser.Api.UserLibrary
     public class ReportPlaybackStopped : PlaybackStopInfo, IReturnVoid
     {
     }
-    
+
     /// <summary>
     /// Class OnPlaybackStart
     /// </summary>
@@ -457,12 +468,34 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
+        public object Get(GetUserViews request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+
+            var folders = user.GetViews();
+
+            var dtos = folders.OrderBy(i => i.SortName)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToArray();
+
+            var result = new QueryResult<BaseItemDto>
+            {
+                Items = dtos,
+                TotalRecordCount = dtos.Length
+            };
+
+            return ToOptimizedResult(result);
+        }
+
         private List<BaseItemDto> GetAsync(GetSpecialFeatures request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ? 
-                user.RootFolder : 
+            var item = string.IsNullOrEmpty(request.Id) ?
+                user.RootFolder :
                 _libraryManager.GetItemById(request.Id);
 
             // Get everything

@@ -1,7 +1,6 @@
-﻿using System;
+﻿using MediaBrowser.Model.Extensions;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -28,7 +27,7 @@ namespace MediaBrowser.Model.Dlna
 
         public bool Contains(string field)
         {
-            return _all || _fields.Contains(field, StringComparer.OrdinalIgnoreCase);
+            return _all || ListHelper.ContainsIgnoreCase(_fields, field);
         }
     }
 }

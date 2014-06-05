@@ -1,6 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Extensions;
 using System.Collections.Generic;
-using System.Linq;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Model.Dlna
@@ -34,7 +33,7 @@ namespace MediaBrowser.Model.Dlna
         {
             List<string> codecs = GetCodecs();
 
-            return codecs.Count == 0 || codecs.Contains(codec, StringComparer.OrdinalIgnoreCase);
+            return codecs.Count == 0 || ListHelper.ContainsIgnoreCase(codecs, codec);
         }
     }
 }

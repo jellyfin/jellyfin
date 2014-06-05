@@ -790,6 +790,11 @@ namespace MediaBrowser.Controller.Entities
             return hasLinkedChildren ? list.DistinctBy(i => i.Id).ToList() : list;
         }
 
+        protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        {
+            return Children;
+        }
+
         /// <summary>
         /// Adds the children to list.
         /// </summary>
@@ -803,7 +808,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var hasLinkedChildren = false;
 
-            foreach (var child in Children)
+            foreach (var child in GetEligibleChildrenForRecursiveChildren(user))
             {
                 if (child.IsVisible(user))
                 {

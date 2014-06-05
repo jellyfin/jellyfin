@@ -30,6 +30,7 @@
     "HeaderConfirmation": "Bevestiging",
     "MessageKeyUpdated": "Dank u. Uw supporter sleutel is bijgewerkt.",
     "MessageKeyRemoved": "Dank u. Uw supporter sleutel is verwijderd.",
+    "ErrorLaunchingChromecast": "Er is een fout opgetreden bij het starten van chromecast. Zorg ervoor dat uw apparaat is aangesloten op uw draadloze netwerk.",
     "HeaderSearch": "Zoeken",
     "LabelArtist": "Artiest",
     "LabelMovie": "Film",
@@ -115,7 +116,8 @@
     "HeaderSplitMedia": "Splits Media Apart",
     "MessageConfirmSplitMedia": "Weet u zeker dat u de media bronnen wilt splitsen in afzonderlijke items?",
     "HeaderError": "Fout",
-    "MessagePleaseSelectItemsToGroup": "Selecteer twee of meer items om te groeperen.",
+    "MessagePleaseSelectOneItem": "Selecteer ten minste een item.",
+    "MessagePleaseSelectTwoItems": "Selecteer ten minste twee items.",
     "MessageTheFollowingItemsWillBeGrouped": "De volgende titels worden gegroepeerd in \u00e9\u00e9n item:",
     "MessageConfirmItemGrouping": "Media Browser clients zullen automatisch de optimale versie afspelen op basis van het apparaat en de prestaties van het netwerk. Weet u zeker dat u wilt doorgaan?",
     "HeaderResume": "Hervatbaar",
@@ -136,5 +138,10 @@
     "HeaderSelectServerCachePathHelp": "Bladeren of voer het pad in om te gebruiken voor server cache-bestanden. De map moet beschrijfbaar zijn. De locatie van deze map zal een directe invloed prestaties van de server hebben en zou idealiter op een solid state drive worden geplaatst.",
     "HeaderSelectTranscodingPathHelp": "Bladeren of voer het pad in om te gebruiken voor het transcoderen van tijdelijke bestanden. De map moet beschrijfbaar zijn.",
     "HeaderSelectImagesByNamePathHelp": "Bladeren of voer het pad in naar uw Afbeeldingen op naam Map. De map moet beschrijfbaar zijn.",
-    "HeaderSelectMetadataPathHelp": "Blader of voer het pad in dat u wilt gebruiken om metadata in op te slaan. De map moet beschrijfbaar zijn."
+    "HeaderSelectMetadataPathHelp": "Blader of voer het pad in dat u wilt gebruiken om metadata in op te slaan. De map moet beschrijfbaar zijn.",
+    "HeaderSelectChannelDownloadPath": "Selecteer Kanaal Download Pad",
+    "HeaderSelectChannelDownloadPathHelp": "Bladeren of voer het pad in om te gebruiken voor het opslaan van kanaal cache-bestanden. De map moet beschrijfbaar zijn.",
+    "OptionNewCollection": "Nieuw ...",
+    "ButtonAdd": "Toevoegen",
+    "ButtonRemove": "Verwijderen"
 }

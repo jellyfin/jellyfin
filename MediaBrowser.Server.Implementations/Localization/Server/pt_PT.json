@@ -234,6 +234,7 @@
     "ButtonSelect": "Selecionar",
     "ButtonSearch": "Procurar",
     "ButtonGroupVersions": "Agrupar Vers\u00f5es",
+    "ButtonAddToCollection": "Add to Collection",
     "PismoMessage": "Usar o Prismo File Mount atrav\u00e9s de uma licen\u00e7a doada.",
     "TangibleSoftwareMessage": "A utilizar conversores Java\/C# da Tangible Solutions atrav\u00e9s de uma licen\u00e7a doada.",
     "HeaderCredits": "Cr\u00e9ditos",
@@ -450,6 +451,8 @@
     "LabelPreferredDisplayLanguageHelp": "A tradu\u00e7\u00e3o do Media Browser \u00e9 um projeto em andamento e ainda n\u00e3o est\u00e1 completo.",
     "LabelReadHowYouCanContribute": "Leia sobre como pode contribuir.",
     "HeaderNewCollection": "Nova Cole\u00e7\u00e3o",
+    "HeaderAddToCollection": "Add to Collection",
+    "ButtonSubmit": "Submit",
     "NewCollectionNameExample": "Exemplo: Cole\u00e7\u00e3o Guerra das Estrelas",
     "OptionSearchForInternetMetadata": "Procurar na internet por imagens e metadados",
     "ButtonCreate": "Criar",
@@ -793,5 +796,15 @@
     "LabelChannelDownloadPathHelp": "Specify a custom download path if desired. Leave empty to download to an internal program data folder.",
     "LabelChannelDownloadAge": "Delete content after: (days)",
     "LabelChannelDownloadAgeHelp": "Downloaded content older than this will be deleted. It will remain playable via internet streaming.",
-    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog."
+    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog.",
+    "LabelSelectCollection": "Select collection:",
+    "ViewTypeMovies": "Movies",
+    "ViewTypeTvShows": "TV",
+    "ViewTypeGames": "Games",
+    "ViewTypeMusic": "Music",
+    "ViewTypeBoxSets": "Collections",
+    "HeaderOtherDisplaySettings": "Display Settings",
+    "HeaderLibraryViews": "Library Views",
+    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
 }
