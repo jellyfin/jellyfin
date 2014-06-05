@@ -437,6 +437,9 @@
     <Compile Include="..\MediaBrowser.Model\Extensions\IntHelper.cs">
       <Link>Extensions\IntHelper.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Extensions\ListHelper.cs">
+      <Link>Extensions\ListHelper.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\StringHelper.cs">
       <Link>Extensions\StringHelper.cs</Link>
     </Compile>

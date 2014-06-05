@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -182,7 +183,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The configuration directory path.</value>
         [IgnoreDataMember]
-        private string ConfigurationDirectoryPath
+        internal string ConfigurationDirectoryPath
         {
             get
             {
@@ -245,6 +246,11 @@ namespace MediaBrowser.Controller.Entities
 
             Configuration = config;
             SaveConfiguration();
+        }
+
+        public IEnumerable<Folder> GetViews()
+        {
+            return ((UserRootFolder)RootFolder).GetViews(this, CancellationToken.None).Result;
         }
     }
 }

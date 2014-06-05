@@ -7,7 +7,35 @@
 
         $('#chkGroupMoviesIntoCollections', page).checked(user.Configuration.GroupMoviesIntoBoxSets || false).checkboxradio("refresh");
 
-        Dashboard.hideLoadingMsg();
+        ApiClient.getItems(user.Id, {}).done(function (result) {
+
+            var folderHtml = '';
+
+            folderHtml += '<div data-role="controlgroup">';
+            folderHtml += result.Items.map(function (i) {
+
+                var currentHtml = '';
+
+                var id = 'chkGroupFolder' + i.Id;
+
+                currentHtml += '<label for="' + id + '">' + i.Name + '</label>';
+
+                var isChecked = user.Configuration.ExcludeFoldersFromGrouping.indexOf(i.Id) == -1;
+                var checkedHtml = isChecked ? ' checked="checked"' : '';
+
+                currentHtml += '<input class="chkGroupFolder" data-folderid="' + i.Id + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedHtml + ' />';
+
+                return currentHtml;
+
+            }).join('');
+
+            folderHtml += '</div>';
+
+            $('.folderGroupList', page).html(folderHtml).trigger('create');
+
+            Dashboard.hideLoadingMsg();
+        });
+
     }
 
     function saveUser(page, user) {
@@ -15,6 +43,11 @@
         user.Configuration.DisplayMissingEpisodes = $('#chkDisplayMissingEpisodes', page).checked();
         user.Configuration.DisplayUnairedEpisodes = $('#chkDisplayUnairedEpisodes', page).checked();
         user.Configuration.GroupMoviesIntoBoxSets = $('#chkGroupMoviesIntoCollections', page).checked();
+
+        user.Configuration.ExcludeFoldersFromGrouping = $(".chkGroupFolder:not(:checked)", page).get().map(function (i) {
+
+            return i.getAttribute('data-folderid');
+        });
 
         ApiClient.updateUser(user).done(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
@@ -30,9 +63,9 @@
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
         ApiClient.getUser(userId).done(function (result) {
-            
+
             saveUser(page, result);
-            
+
         });
 
         // Disable default form submission
@@ -57,7 +90,7 @@
             loadForm(page, user);
 
         });
-        
+
     }).on('pageshow', ".userPreferencesPage", function () {
 
         var page = this;

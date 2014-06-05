@@ -30,6 +30,7 @@
     "HeaderConfirmation": "Bekr\u00e4ftelse",
     "MessageKeyUpdated": "Tack. Din donationskod har uppdaterats.",
     "MessageKeyRemoved": "Tack. Din donationskod har raderats.",
+    "ErrorLaunchingChromecast": "There was an error launching chromecast. Please ensure your device is connected to your wireless network.",
     "HeaderSearch": "S\u00f6k",
     "LabelArtist": "Artist",
     "LabelMovie": "Film",
@@ -115,7 +116,8 @@
     "HeaderSplitMedia": "Dela upp media",
     "MessageConfirmSplitMedia": "\u00c4r du s\u00e4ker p\u00e5 att du vill dela upp dessa media i separata objekt?",
     "HeaderError": "Fel",
-    "MessagePleaseSelectItemsToGroup": "V\u00e4lj tv\u00e5 eller flera objekt att gruppera.",
+    "MessagePleaseSelectOneItem": "Please select at least one item.",
+    "MessagePleaseSelectTwoItems": "Please select at least two items.",
     "MessageTheFollowingItemsWillBeGrouped": "F\u00f6ljande titlar kommer att grupperas till ett enda objekt:",
     "MessageConfirmItemGrouping": "Media Browser-klienter kommer automatiskt att v\u00e4lja den b\u00e4sta versionen f\u00f6r uppspelning baserat p\u00e5 enhets- och n\u00e4tverksprestanda.Vill du forts\u00e4tta?",
     "HeaderResume": "\u00c5teruppta",
@@ -136,5 +138,10 @@
     "HeaderSelectServerCachePathHelp": "Bl\u00e4ddra fram till eller ange plats f\u00f6r lagring av serverns cache-filer. Katalogen m\u00e5ste vara tillg\u00e4nglig f\u00f6r skrivning. Valet av plats kommer att direkt p\u00e5verka serverns prestanda och f\u00f6r b\u00e4sta resultat rekommenderas en SSD.",
     "HeaderSelectTranscodingPathHelp": "Bl\u00e4ddra fram till eller ange plats f\u00f6r omkodarens mellanlagring. Katalogen m\u00e5ste vara tillg\u00e4nglig f\u00f6r skrivning.",
     "HeaderSelectImagesByNamePathHelp": "Bl\u00e4ddra fram till eller ange plats f\u00f6r ImagesByName-mappen. Katalogen m\u00e5ste vara tillg\u00e4nglig f\u00f6r skrivning.",
-    "HeaderSelectMetadataPathHelp": "Bl\u00e4ddra fram till eller ange plats f\u00f6r lagring av metadata. Katalogen m\u00e5ste vara tillg\u00e4nglig f\u00f6r skrivning."
+    "HeaderSelectMetadataPathHelp": "Bl\u00e4ddra fram till eller ange plats f\u00f6r lagring av metadata. Katalogen m\u00e5ste vara tillg\u00e4nglig f\u00f6r skrivning.",
+    "HeaderSelectChannelDownloadPath": "Select Channel Download Path",
+    "HeaderSelectChannelDownloadPathHelp": "Browse or enter the path to use for storing channel cache files. The folder must be writeable.",
+    "OptionNewCollection": "New...",
+    "ButtonAdd": "L\u00e4gg till",
+    "ButtonRemove": "Ta bort"
 }

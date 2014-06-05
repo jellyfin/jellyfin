@@ -234,6 +234,7 @@
     "ButtonSelect": "Select",
     "ButtonSearch": "Search",
     "ButtonGroupVersions": "Group Versions",
+    "ButtonAddToCollection": "Add to Collection",
     "PismoMessage": "Utilizing Pismo File Mount through a donated license.",
     "TangibleSoftwareMessage": "Utilizing Tangible Solutions Java\/C# converters through a donated license.",
     "HeaderCredits": "Credits",
@@ -450,6 +451,8 @@
     "LabelPreferredDisplayLanguageHelp": "Translating Media Browser is an ongoing project and is not yet complete.",
     "LabelReadHowYouCanContribute": "Read about how you can contribute.",
     "HeaderNewCollection": "New Collection",
+    "HeaderAddToCollection": "Add to Collection",
+    "ButtonSubmit": "Submit",
     "NewCollectionNameExample": "Example: Star Wars Collection",
     "OptionSearchForInternetMetadata": "Search the internet for artwork and metadata",
     "ButtonCreate": "Create",
@@ -793,5 +796,15 @@
     "LabelChannelDownloadPathHelp": "Specify a custom download path if desired. Leave empty to download to an internal program data folder.",
     "LabelChannelDownloadAge": "Delete content after: (days)",
     "LabelChannelDownloadAgeHelp": "Downloaded content older than this will be deleted. It will remain playable via internet streaming.",
-    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog."
+    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog.",
+    "LabelSelectCollection": "Select collection:",
+    "ViewTypeMovies": "Movies",
+    "ViewTypeTvShows": "TV",
+    "ViewTypeGames": "Games",
+    "ViewTypeMusic": "Music",
+    "ViewTypeBoxSets": "Collections",
+    "HeaderOtherDisplaySettings": "Display Settings",
+    "HeaderLibraryViews": "Library Views",
+    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
 }

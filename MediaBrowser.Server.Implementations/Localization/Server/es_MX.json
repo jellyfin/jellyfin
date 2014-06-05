@@ -234,6 +234,7 @@
     "ButtonSelect": "Seleccionar",
     "ButtonSearch": "B\u00fasqueda",
     "ButtonGroupVersions": "Agrupar Versiones",
+    "ButtonAddToCollection": "Agregar a Colecci\u00f3n.",
     "PismoMessage": "Utilizando Pismo File Mount a trav\u00e9s de una licencia donada.",
     "TangibleSoftwareMessage": "Utilizando convertidores Java\/C# de Tangible Solutions por medio de una licencia donada.",
     "HeaderCredits": "Cr\u00e9ditos",
@@ -450,6 +451,8 @@
     "LabelPreferredDisplayLanguageHelp": "La traducci\u00f3n de Media Browser es un proyecto en curso y a\u00fan no se ha completado.",
     "LabelReadHowYouCanContribute": "Lea acerca de c\u00f3mo puede contribuir.",
     "HeaderNewCollection": "Nueva Colecci\u00f3n",
+    "HeaderAddToCollection": "Agregar a Colecci\u00f3n.",
+    "ButtonSubmit": "Enviar",
     "NewCollectionNameExample": "Ejemplo: Colecci\u00f3n Guerra de las Galaxias",
     "OptionSearchForInternetMetadata": "Buscar en internet ilustraciones y metadatos",
     "ButtonCreate": "Crear",
@@ -793,5 +796,15 @@
     "LabelChannelDownloadPathHelp": "Especifique una ruta personalizada para descargas si as\u00ed lo desea. D\u00e9jelo vac\u00edo para descargar a una carpeta de datos interna del programa.",
     "LabelChannelDownloadAge": "Eliminar contenido despu\u00e9s de: (d\u00edas)",
     "LabelChannelDownloadAgeHelp": "El contenido descargado anterior a esto ser\u00e1 eliminado. Permanecer\u00e1 reproducible via transmisi\u00f3n por Internet.",
-    "ChannelSettingsFormHelp": "Instale canales tales como Avances y Vimeo desde el cat\u00e1logo de complementos."
+    "ChannelSettingsFormHelp": "Instale canales tales como Avances y Vimeo desde el cat\u00e1logo de complementos.",
+    "LabelSelectCollection": "Elegir colecci\u00f3n:",
+    "ViewTypeMovies": "Movies",
+    "ViewTypeTvShows": "TV",
+    "ViewTypeGames": "Games",
+    "ViewTypeMusic": "Music",
+    "ViewTypeBoxSets": "Collections",
+    "HeaderOtherDisplaySettings": "Display Settings",
+    "HeaderLibraryViews": "Library Views",
+    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
 }

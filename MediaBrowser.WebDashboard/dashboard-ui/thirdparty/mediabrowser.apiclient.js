@@ -2552,6 +2552,23 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.getUserViews = function (userId, options) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            options = options || {};
+
+            var url = self.getUrl("Users/" + userId + "/Views", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
             Gets artists from an item
         */

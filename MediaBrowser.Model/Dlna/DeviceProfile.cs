@@ -131,7 +131,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (!ListHelper.ContainsIgnoreCase(i.GetAudioCodecs(), audioCodec ?? string.Empty))
                 {
                     continue;
                 }
@@ -184,13 +184,13 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 List<string> containers = i.GetContainers();
-                if (containers.Count > 0 && !containers.Contains(container, StringComparer.OrdinalIgnoreCase))
+                if (containers.Count > 0 && !ListHelper.ContainsIgnoreCase(containers, container))
                 {
                     continue;
                 }
 
                 List<string> audioCodecs = i.GetAudioCodecs();
-                if (audioCodecs.Count > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (audioCodecs.Count > 0 && !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
                 {
                     continue;
                 }
@@ -229,7 +229,7 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 List<string> containers = i.GetContainers();
-                if (containers.Count > 0 && !containers.Contains(container, StringComparer.OrdinalIgnoreCase))
+                if (containers.Count > 0 && !ListHelper.ContainsIgnoreCase(containers, container))
                 {
                     continue;
                 }
@@ -281,19 +281,19 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 List<string> containers = i.GetContainers();
-                if (containers.Count > 0 && !containers.Contains(container, StringComparer.OrdinalIgnoreCase))
+                if (containers.Count > 0 && !ListHelper.ContainsIgnoreCase(containers, container))
                 {
                     continue;
                 }
 
                 List<string> audioCodecs = i.GetAudioCodecs();
-                if (audioCodecs.Count > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (audioCodecs.Count > 0 && !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
                 {
                     continue;
                 }
 
                 List<string> videoCodecs = i.GetVideoCodecs();
-                if (videoCodecs.Count > 0 && !videoCodecs.Contains(videoCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (videoCodecs.Count > 0 && !ListHelper.ContainsIgnoreCase(videoCodecs, videoCodec))
                 {
                     continue;
                 }

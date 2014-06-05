@@ -97,11 +97,7 @@
 
         var userId = Dashboard.getCurrentUserId();
 
-        ApiClient.getItems(userId, {
-
-            SortBy: "SortName"
-
-        }).done(function (result) {
+        ApiClient.getUserViews(userId).done(function (result) {
 
             var items = result.Items;
 

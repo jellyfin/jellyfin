@@ -30,6 +30,7 @@
     "HeaderConfirmation": "Conferme",
     "MessageKeyUpdated": "Grazie. La vostra chiave supporter \u00e8 stato aggiornato.",
     "MessageKeyRemoved": "Grazie. La vostra chiave supporter \u00e8 stata rimossa.",
+    "ErrorLaunchingChromecast": "There was an error launching chromecast. Please ensure your device is connected to your wireless network.",
     "HeaderSearch": "Ricerca",
     "LabelArtist": "Artista",
     "LabelMovie": "Film",
@@ -115,7 +116,8 @@
     "HeaderSplitMedia": "Split Media Apart",
     "MessageConfirmSplitMedia": "Sei sicuro di voler dividere le fonti dei media in voci separate?",
     "HeaderError": "Errore",
-    "MessagePleaseSelectItemsToGroup": "Si prega di selezionare due o pi\u00f9 elementi al gruppo insieme.",
+    "MessagePleaseSelectOneItem": "Please select at least one item.",
+    "MessagePleaseSelectTwoItems": "Please select at least two items.",
     "MessageTheFollowingItemsWillBeGrouped": "I seguenti titoli saranno raggruppati in un unico elemento:",
     "MessageConfirmItemGrouping": "Clienti Media Browser sceglier\u00e0 automaticamente la versione ottimale per giocare sulla base del dispositivo e prestazioni di rete. Sei sicuro di voler continuare?",
     "HeaderResume": "Riprendi",
@@ -136,5 +138,10 @@
     "HeaderSelectServerCachePathHelp": "Sfoglia o immettere il percorso da utilizzare per i file di cache server. La cartella deve essere scrivibile. La posizione di questa cartella avr\u00e0 un impatto diretto sulle prestazioni del server e dovrebbe idealmente essere collocato su un disco a stato solido.",
     "HeaderSelectTranscodingPathHelp": "Sfoglia o immettere il percorso da utilizzare per la transcodifica dei file temporanei. La cartella deve essere scrivibile.",
     "HeaderSelectImagesByNamePathHelp": "Sfoglia oppure immettere il percorso per i vostri articoli per cartella nome. La cartella deve essere scrivibile.",
-    "HeaderSelectMetadataPathHelp": "Sfoglia o inserire il percorso vuoi archiviare i metadati all'interno. La cartella deve essere scrivibile."
+    "HeaderSelectMetadataPathHelp": "Sfoglia o inserire il percorso vuoi archiviare i metadati all'interno. La cartella deve essere scrivibile.",
+    "HeaderSelectChannelDownloadPath": "Select Channel Download Path",
+    "HeaderSelectChannelDownloadPathHelp": "Browse or enter the path to use for storing channel cache files. The folder must be writeable.",
+    "OptionNewCollection": "New...",
+    "ButtonAdd": "Aggiungi",
+    "ButtonRemove": "Rimuovi"
 }

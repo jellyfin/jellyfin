@@ -234,6 +234,7 @@
     "ButtonSelect": "\u05d1\u05d7\u05e8",
     "ButtonSearch": "\u05d7\u05d9\u05e4\u05d5\u05e9",
     "ButtonGroupVersions": "\u05e7\u05d1\u05d5\u05e6\u05ea \u05d2\u05e8\u05e1\u05d0\u05d5\u05ea",
+    "ButtonAddToCollection": "Add to Collection",
     "PismoMessage": "\u05d0\u05e4\u05e9\u05e8 \u05d8\u05e2\u05d9\u05e0\u05ea \u05e7\u05d1\u05e6\u05d9 Pismo \u05d3\u05e8\u05da \u05e8\u05d9\u05e9\u05d9\u05d5\u05df \u05ea\u05e8\u05d5\u05de\u05d4.",
     "TangibleSoftwareMessage": "Utilizing Tangible Solutions Java\/C# converters through a donated license.",
     "HeaderCredits": "Credits",
@@ -450,6 +451,8 @@
     "LabelPreferredDisplayLanguageHelp": "\u05ea\u05e8\u05d2\u05d5\u05dd Media Browser \u05d4\u05d5\u05d0 \u05ea\u05d4\u05dc\u05d9\u05da \u05d1\u05d4\u05ea\u05d4\u05d5\u05d5\u05ea \u05d5\u05e2\u05d3\u05d9\u05df \u05dc\u05d0 \u05de\u05d5\u05e9\u05dc\u05dd.",
     "LabelReadHowYouCanContribute": "\u05e7\u05e8\u05d0 \u05db\u05d9\u05e6\u05d3 \u05d0\u05ea\u05d4 \u05d9\u05db\u05d5\u05dc \u05dc\u05ea\u05e8\u05d5\u05dd.",
     "HeaderNewCollection": "\u05d0\u05d5\u05e4\u05e1\u05d9\u05dd \u05d7\u05d3\u05e9\u05d9\u05dd",
+    "HeaderAddToCollection": "Add to Collection",
+    "ButtonSubmit": "Submit",
     "NewCollectionNameExample": "\u05dc\u05d3\u05d5\u05d2\u05de\u05d0 :\u05d0\u05d5\u05e1\u05e3 \u05de\u05dc\u05d7\u05de\u05ea \u05d4\u05db\u05d5\u05db\u05d1\u05d9\u05dd",
     "OptionSearchForInternetMetadata": "\u05d7\u05e4\u05e9 \u05d1\u05d0\u05d9\u05e0\u05e8\u05e0\u05d8 \u05d0\u05d7\u05e8\u05d9 \u05de\u05d9\u05d3\u05e2 \u05d5\u05ea\u05de\u05d5\u05e0\u05d5\u05ea",
     "ButtonCreate": "\u05e6\u05d5\u05e8",
@@ -793,5 +796,15 @@
     "LabelChannelDownloadPathHelp": "Specify a custom download path if desired. Leave empty to download to an internal program data folder.",
     "LabelChannelDownloadAge": "Delete content after: (days)",
     "LabelChannelDownloadAgeHelp": "Downloaded content older than this will be deleted. It will remain playable via internet streaming.",
-    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog."
+    "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog.",
+    "LabelSelectCollection": "Select collection:",
+    "ViewTypeMovies": "Movies",
+    "ViewTypeTvShows": "TV",
+    "ViewTypeGames": "Games",
+    "ViewTypeMusic": "Music",
+    "ViewTypeBoxSets": "Collections",
+    "HeaderOtherDisplaySettings": "Display Settings",
+    "HeaderLibraryViews": "Library Views",
+    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
 }

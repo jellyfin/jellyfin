@@ -234,6 +234,7 @@
     "ButtonSelect": "V\u00e4lj",
     "ButtonSearch": "S\u00f6k",
     "ButtonGroupVersions": "Gruppera versioner",
+    "ButtonAddToCollection": "Add to Collection",
     "PismoMessage": "Anv\u00e4nder Pismo File Mount baserat p\u00e5 en sk\u00e4nkt licens",
     "TangibleSoftwareMessage": "Anv\u00e4nder Tangible Solutions Java\/C#-konverterare baserat p\u00e5 en sk\u00e4nkt licens.",
     "HeaderCredits": "Tack till",
@@ -450,6 +451,8 @@
     "LabelPreferredDisplayLanguageHelp": "\u00d6vers\u00e4ttningen av Media Browser \u00e4r ett p\u00e5g\u00e5ende projekt och \u00e4nnu ej f\u00e4rdigst\u00e4llt.",
     "LabelReadHowYouCanContribute": "L\u00e4s om hur du kan bidra.",
     "HeaderNewCollection": "Ny samling",
+    "HeaderAddToCollection": "Add to Collection",
+    "ButtonSubmit": "Submit",
     "NewCollectionNameExample": "Exemple: Star Wars-samling",
     "OptionSearchForInternetMetadata": "S\u00f6k p\u00e5 internet efter grafik och metadata",
     "ButtonCreate": "Skapa",
@@ -793,5 +796,15 @@
     "LabelChannelDownloadPathHelp": "Ange anpassad plats om s\u00e5 \u00f6nskas. L\u00e4mna tomt f\u00f6r att anv\u00e4nda en intern programdatamapp.",
     "LabelChannelDownloadAge": "Radera inneh\u00e5ll efter (dagar):",
     "LabelChannelDownloadAgeHelp": "Nedladdat inneh\u00e5ll \u00e4ldre \u00e4n s\u00e5 raderas. Det \u00e4r fortfarande tillg\u00e4ngligt via str\u00f6mning fr\u00e5n Internet.",
-    "ChannelSettingsFormHelp": "Installera kanaler, t ex Trailers och Vimeo, via till\u00e4ggskatalogen."
+    "ChannelSettingsFormHelp": "Installera kanaler, t ex Trailers och Vimeo, via till\u00e4ggskatalogen.",
+    "LabelSelectCollection": "Select collection:",
+    "ViewTypeMovies": "Movies",
+    "ViewTypeTvShows": "TV",
+    "ViewTypeGames": "Games",
+    "ViewTypeMusic": "Music",
+    "ViewTypeBoxSets": "Collections",
+    "HeaderOtherDisplaySettings": "Display Settings",
+    "HeaderLibraryViews": "Library Views",
+    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
 }

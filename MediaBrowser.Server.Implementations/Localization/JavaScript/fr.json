@@ -30,6 +30,7 @@
     "HeaderConfirmation": "Confirmation",
     "MessageKeyUpdated": "Merci. Votre cl\u00e9 de supporteur a \u00e9t\u00e9 mise \u00e0 jour.",
     "MessageKeyRemoved": "Merci, Votre cl\u00e9 de supporteur a \u00e9t\u00e9 supprim\u00e9e.",
+    "ErrorLaunchingChromecast": "There was an error launching chromecast. Please ensure your device is connected to your wireless network.",
     "HeaderSearch": "Recherche",
     "LabelArtist": "Artiste",
     "LabelMovie": "Film",
@@ -115,7 +116,8 @@
     "HeaderSplitMedia": "Split Media Apart",
     "MessageConfirmSplitMedia": "Are you sure you wish to split the media sources into separate items?",
     "HeaderError": "Erreur",
-    "MessagePleaseSelectItemsToGroup": "Please select two or more items to group together.",
+    "MessagePleaseSelectOneItem": "Please select at least one item.",
+    "MessagePleaseSelectTwoItems": "Please select at least two items.",
     "MessageTheFollowingItemsWillBeGrouped": "The following titles will be grouped into one item:",
     "MessageConfirmItemGrouping": "Media Browser clients will automatically choose the optimal version to play based on device and network performance. Are you sure you wish to continue?",
     "HeaderResume": "Reprendre",
@@ -136,5 +138,10 @@
     "HeaderSelectServerCachePathHelp": "Browse or enter the path to use for server cache files. The folder must be writeable. The location of this folder will directly impact server performance and should ideally be placed on a solid state drive.",
     "HeaderSelectTranscodingPathHelp": "Browse or enter the path to use for transcoding temporary files. The folder must be writeable.",
     "HeaderSelectImagesByNamePathHelp": "Browse or enter the path to your items by name folder. The folder must be writeable.",
-    "HeaderSelectMetadataPathHelp": "Browse or enter the path you'd like to store metadata within. The folder must be writeable."
+    "HeaderSelectMetadataPathHelp": "Browse or enter the path you'd like to store metadata within. The folder must be writeable.",
+    "HeaderSelectChannelDownloadPath": "Select Channel Download Path",
+    "HeaderSelectChannelDownloadPathHelp": "Browse or enter the path to use for storing channel cache files. The folder must be writeable.",
+    "OptionNewCollection": "New...",
+    "ButtonAdd": "Ajouter",
+    "ButtonRemove": "Supprimer"
 }

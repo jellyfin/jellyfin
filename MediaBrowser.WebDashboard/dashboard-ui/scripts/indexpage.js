@@ -102,13 +102,7 @@
 
     function loadlibraryButtons(elem, userId, index) {
 
-        var options = {
-
-            SortBy: "SortName",
-            Fields: "PrimaryImageAspectRatio"
-        };
-
-        var promise1 = ApiClient.getItems(userId, options);
+        var promise1 = ApiClient.getUserViews(userId);
 
         var promise2 = ApiClient.getLiveTvInfo();
 
@@ -210,13 +204,7 @@
 
     function loadLibraryTiles(elem, userId) {
 
-        var options = {
-
-            SortBy: "SortName",
-            Fields: "PrimaryImageAspectRatio"
-        };
-
-        ApiClient.getItems(userId, options).done(function (result) {
+        ApiClient.getUserViews(userId).done(function (result) {
 
             var html = '';
 
@@ -338,11 +326,13 @@
         });
     }
 
+    var homePageDismissValue = '2';
+    
     function dismissWelcome(page, userId) {
 
         ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
 
-            result.CustomPrefs.homePageWelcomeDismissed = '1';
+            result.CustomPrefs.homePageWelcomeDismissed = homePageDismissValue;
             ApiClient.updateDisplayPreferences('home', result, userId, 'webclient').done(function() {
                 
                 $('.welcomeMessage', page).hide();
@@ -369,7 +359,7 @@
 
         ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
 
-            if (result.CustomPrefs.homePageWelcomeDismissed) {
+            if (result.CustomPrefs.homePageWelcomeDismissed == homePageDismissValue) {
                 $('.welcomeMessage', page).hide();
             } else {
                 $('.welcomeMessage', page).show();

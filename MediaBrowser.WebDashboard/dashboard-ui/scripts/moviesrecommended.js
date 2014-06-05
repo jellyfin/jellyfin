@@ -80,8 +80,7 @@
             userId: Dashboard.getCurrentUserId(),
             categoryLimit: screenWidth >= 1200 ? 6 : 3,
             itemLimit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 6),
-            Fields: "PrimaryImageAspectRatio",
-            ParentId: parentId
+            Fields: "PrimaryImageAspectRatio"
         });
 
         $.getJSON(url).done(function (recommendations) {

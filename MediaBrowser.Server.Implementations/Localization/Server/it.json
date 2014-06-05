@@ -234,6 +234,7 @@
     "ButtonSelect": "Seleziona",
     "ButtonSearch": "Cerca",
     "ButtonGroupVersions": "Versione Gruppo",
+    "ButtonAddToCollection": "Add to Collection",
     "PismoMessage": "Dona per avere una licenza di Pismo",
     "TangibleSoftwareMessage": "Utilizzando materiali Solutions convertitori Java \/ C # attraverso una licenza dopo aver donato.",
     "HeaderCredits": "Crediti",
@@ -450,6 +451,8 @@
     "LabelPreferredDisplayLanguageHelp": "La traduzione nella tua lingua non \u00e8 ancora completa.Scusa.",
     "LabelReadHowYouCanContribute": "Leggi come puoi contribuire",
     "HeaderNewCollection": "Nuova collezione",
+    "HeaderAddToCollection": "Add to Collection",
+    "ButtonSubmit": "Submit",
     "NewCollectionNameExample": "Esempio:Collezione Star wars",
     "OptionSearchForInternetMetadata": "Cerca su internet le immagini e i metadati",
     "ButtonCreate": "Crea",
@@ -793,5 +796,15 @@
     "LabelChannelDownloadPathHelp": "Specificare un percorso di download personalizzato se lo desideri. Lasciare vuoto per scaricare in una cartella dati di programma interno.",
     "LabelChannelDownloadAge": "Elimina contenuto dopo: (giorni)",
     "LabelChannelDownloadAgeHelp": "Contenuti scaricati pi\u00f9 di questa et\u00e0 sar\u00e0 cancellato. Rimarr\u00e0 giocabile via internet in streaming.",
-    "ChannelSettingsFormHelp": "Installare canali come trailer e Vimeo nel catalogo plugin."
+    "ChannelSettingsFormHelp": "Installare canali come trailer e Vimeo nel catalogo plugin.",
+    "LabelSelectCollection": "Select collection:",
+    "ViewTypeMovies": "Movies",
+    "ViewTypeTvShows": "TV",
+    "ViewTypeGames": "Games",
+    "ViewTypeMusic": "Music",
+    "ViewTypeBoxSets": "Collections",
+    "HeaderOtherDisplaySettings": "Display Settings",
+    "HeaderLibraryViews": "Library Views",
+    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
 }

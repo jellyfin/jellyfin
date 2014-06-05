@@ -37,9 +37,11 @@ namespace MediaBrowser.Server.Implementations.Localization
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LocalizationManager"/> class.
+        /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
         public LocalizationManager(IServerConfigurationManager configurationManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
         {
             _configurationManager = configurationManager;

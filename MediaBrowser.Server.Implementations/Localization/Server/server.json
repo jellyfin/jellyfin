@@ -811,5 +811,14 @@
 	"LabelChannelDownloadAge": "Delete content after: (days)",
 	"LabelChannelDownloadAgeHelp": "Downloaded content older than this will be deleted. It will remain playable via internet streaming.",
 	"ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog.",
-	"LabelSelectCollection": "Select collection:"
+	"LabelSelectCollection": "Select collection:",
+	"ViewTypeMovies": "Movies",
+	"ViewTypeTvShows": "TV",
+	"ViewTypeGames": "Games",
+	"ViewTypeMusic": "Music",
+	"ViewTypeBoxSets": "Collections",
+	"HeaderOtherDisplaySettings": "Display Settings",
+	"HeaderLibraryViews": "Library Views",
+	"LabelSelectFolderGroups": "Automatically group content from the following folders into views such as Movies, Music and TV:",
+	"LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own view."
 }

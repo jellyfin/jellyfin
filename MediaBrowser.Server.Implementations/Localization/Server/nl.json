@@ -234,6 +234,7 @@
     "ButtonSelect": "Selecteer",
     "ButtonSearch": "Zoeken",
     "ButtonGroupVersions": "Groepeer Versies",
+    "ButtonAddToCollection": "Toevoegen aan verzameling",
     "PismoMessage": "Pismo File Mount (met een geschonken licentie).",
     "TangibleSoftwareMessage": "Tangible Solution Java\/C# converters worden onder een gedoneerde licentie gebruikt.",
     "HeaderCredits": "Credits",
@@ -450,6 +451,8 @@
     "LabelPreferredDisplayLanguageHelp": "Het vertalen van Media Browser is een doorlopend project en is nog niet voltooid.",
     "LabelReadHowYouCanContribute": "Lees meer over hoe u kunt bijdragen.",
     "HeaderNewCollection": "Nieuwe Verzamling",
+    "HeaderAddToCollection": "Toevoegen aan verzameling",
+    "ButtonSubmit": "Uitvoeren",
     "NewCollectionNameExample": "Voorbeeld: Star Wars Collectie",
     "OptionSearchForInternetMetadata": "Zoeken op het internet voor afbeeldingen en metagegevens",
     "ButtonCreate": "Cre\u00ebren",
@@ -793,5 +796,15 @@
     "LabelChannelDownloadPathHelp": "Geef een eigen download pad op als dit gewenst is, leeglaten voor dowloaden naar de interne program data map.",
     "LabelChannelDownloadAge": "Verwijder inhoud na: (dagen)",
     "LabelChannelDownloadAgeHelp": "Gedownloade inhoud die ouder is zal worden verwijderd. Afspelen via internet streaming blijft mogelijk.",
-    "ChannelSettingsFormHelp": "Installeer kanalen zoals Trailers en Viemo in de plugin catalogus."
+    "ChannelSettingsFormHelp": "Installeer kanalen zoals Trailers en Vimeo in de plug-in catalogus.",
+    "LabelSelectCollection": "Selecteer verzameling:",
+    "ViewTypeMovies": "Movies",
+    "ViewTypeTvShows": "TV",
+    "ViewTypeGames": "Games",
+    "ViewTypeMusic": "Music",
+    "ViewTypeBoxSets": "Collections",
+    "HeaderOtherDisplaySettings": "Display Settings",
+    "HeaderLibraryViews": "Library Views",
+    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
 }

@@ -30,6 +30,7 @@
     "HeaderConfirmation": "Confirmaci\u00f3n",
     "MessageKeyUpdated": "Gracias. Su clave de aficionado ha sido actualizada.",
     "MessageKeyRemoved": "Gracias. Su clave de aficionado ha sido eliminada.",
+    "ErrorLaunchingChromecast": "Hubo un error iniciando chromecast. Por favor aseg\u00farate de que tu dispositivo este conectado a tu red inalambrica",
     "HeaderSearch": "Buscar",
     "LabelArtist": "Artista",
     "LabelMovie": "Pel\u00edcula",
@@ -115,7 +116,8 @@
     "HeaderSplitMedia": "Dividir y Separar Medios",
     "MessageConfirmSplitMedia": "\u00bfEstas seguro de que deseas dividir y separar estos medios en elementos individuales?",
     "HeaderError": "Error",
-    "MessagePleaseSelectItemsToGroup": "Por favor selecciona dos o mas elementos para agruparlos",
+    "MessagePleaseSelectOneItem": "Por favor selecciona al menos un elemento.",
+    "MessagePleaseSelectTwoItems": "Por favor selecciona al menos dos elementos.",
     "MessageTheFollowingItemsWillBeGrouped": "Los siguientes t\u00edtulos ser\u00e1n agrupados en un solo elemento.",
     "MessageConfirmItemGrouping": "Los clientes de Media Browser elegir\u00e1n autom\u00e1ticamente la versi\u00f3n optima para reproducir basado en el dispositivo y el rendimiento de redo. \u00bfEsta seguro de que desea continuar?",
     "HeaderResume": "Continuar",
@@ -136,5 +138,10 @@
     "HeaderSelectServerCachePathHelp": "Explore o capture la ruta a utilizar para los archivos del cach\u00e9 del servidor. La carpeta debe tener permisos de escritura. La ubicaci\u00f3n de esta carpeta impactar\u00e1 directamente el desempe\u00f1o del servidor; idealmente, debe ser ubicada en un disco de estado s\u00f3lido.",
     "HeaderSelectTranscodingPathHelp": "Explore o capture la ruta a utilizar para los archivos temporales de transcodificaci\u00f3n. La carpeta debe tener permisos de escritura.",
     "HeaderSelectImagesByNamePathHelp": "Explore o capture la ruta a utilizar para la carpeta de im\u00e1genes por nombre. La carpeta debe tener permisos de escritura.",
-    "HeaderSelectMetadataPathHelp": "Explore o capture la ruta donde desea almacenar los metadatos. La carpeta debe tener permisos de escritura."
+    "HeaderSelectMetadataPathHelp": "Explore o capture la ruta donde desea almacenar los metadatos. La carpeta debe tener permisos de escritura.",
+    "HeaderSelectChannelDownloadPath": "Selecciona una ruta para la descarga del canal",
+    "HeaderSelectChannelDownloadPathHelp": "Navega o entra en la ruta usada para almacenar los archivos temporales del canal. La carpeta debe tener permisos de escritura.",
+    "OptionNewCollection": "Nuevo...",
+    "ButtonAdd": "A\u00f1adir",
+    "ButtonRemove": "Eliminar"
 }

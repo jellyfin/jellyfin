@@ -762,6 +762,12 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.CollectionType = collectionFolder.CollectionType;
             }
 
+            var userView = item as UserView;
+            if (userView != null)
+            {
+                dto.CollectionType = userView.ViewType;
+            }
+
             if (fields.Contains(ItemFields.RemoteTrailers))
             {
                 dto.RemoteTrailers = hasTrailers != null ?
