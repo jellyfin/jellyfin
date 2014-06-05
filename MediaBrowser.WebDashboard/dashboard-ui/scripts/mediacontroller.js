@@ -291,6 +291,10 @@
             currentPlayer.shuffle(id);
         };
 
+        self.playlist = function() {
+            return currentPlayer.playlist || [];
+        };
+
         self.sendCommand = function (cmd, player) {
 
             player = player || self.getLocalPlayer();

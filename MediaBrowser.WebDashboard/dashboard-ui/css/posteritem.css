@@ -28,6 +28,12 @@
     padding: 11px 12px 10px;
 }
 
+.posterItemOverlayInner p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .posterItemImage {
     background-size: contain;
     background-repeat: no-repeat;

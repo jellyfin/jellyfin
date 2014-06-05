@@ -17,7 +17,7 @@
 
         html += '<tbody>';
 
-        $.each(MediaController.playlist, function (i, item) {
+        $.each(MediaController.playlist(), function (i, item) {
 
             var name = LibraryBrowser.getPosterViewDisplayName(item);
 
@@ -80,7 +80,7 @@
 
         var page = this;
 
-        //reloadPlaylist(page);
+        reloadPlaylist(page);
     });
 
 
