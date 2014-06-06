@@ -9,6 +9,6 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// The wake from sleep
         /// </summary>
-        WakeFromSleep
+        WakeFromSleep = 0
     }
 }

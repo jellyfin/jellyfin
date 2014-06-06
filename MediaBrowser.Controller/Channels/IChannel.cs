@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Threading;
@@ -28,6 +27,12 @@ namespace MediaBrowser.Controller.Channels
         string HomePageUrl { get; }
 
         /// <summary>
+        /// Gets the parental rating.
+        /// </summary>
+        /// <value>The parental rating.</value>
+        ChannelParentalRating ParentalRating { get; }
+
+        /// <summary>
         /// Gets the channel information.
         /// </summary>
         /// <returns>ChannelFeatures.</returns>
@@ -36,26 +41,9 @@ namespace MediaBrowser.Controller.Channels
         /// <summary>
         /// Determines whether [is enabled for] [the specified user].
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="userId">The user identifier.</param>
         /// <returns><c>true</c> if [is enabled for] [the specified user]; otherwise, <c>false</c>.</returns>
-        bool IsEnabledFor(User user);
-
-        /// <summary>
-        /// Searches the specified search term.
-        /// </summary>
-        /// <param name="searchInfo">The search information.</param>
-        /// <param name="user">The user.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{ChannelItemInfo}}.</returns>
-        Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, User user, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets all media.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{ChannelItemResult}.</returns>
-        Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken);
+        bool IsEnabledFor(string userId);
 
         /// <summary>
         /// Gets the channel items.
@@ -78,16 +66,5 @@ namespace MediaBrowser.Controller.Channels
         /// </summary>
         /// <returns>IEnumerable{ImageType}.</returns>
         IEnumerable<ImageType> GetSupportedChannelImages();
-    }
-
-    public interface IRequiresMediaInfoCallback
-    {
-        /// <summary>
-        /// Gets the channel item media information.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{ChannelMediaInfo}}.</returns>
-        Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo(string id, CancellationToken cancellationToken);
     }
 }

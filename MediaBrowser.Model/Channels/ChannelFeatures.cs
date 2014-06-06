@@ -23,12 +23,6 @@ namespace MediaBrowser.Model.Channels
         public bool CanSearch { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance can get all media.
-        /// </summary>
-        /// <value><c>true</c> if this instance can get all media; otherwise, <c>false</c>.</value>
-        public bool CanGetAllMedia { get; set; }
-        
-        /// <summary>
         /// Gets or sets the media types.
         /// </summary>
         /// <value>The media types.</value>

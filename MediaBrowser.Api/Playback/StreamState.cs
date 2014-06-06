@@ -204,6 +204,11 @@ namespace MediaBrowser.Api.Playback
                     return Convert.ToInt32(newSize.Width);
                 }
 
+                if (VideoRequest == null)
+                {
+                    return null;
+                }
+
                 return VideoRequest.MaxWidth ?? VideoRequest.Width;
             }
         }
@@ -227,6 +232,11 @@ namespace MediaBrowser.Api.Playback
                         VideoRequest.MaxHeight);
 
                     return Convert.ToInt32(newSize.Height);
+                }
+
+                if (VideoRequest == null)
+                {
+                    return null;
                 }
 
                 return VideoRequest.MaxHeight ?? VideoRequest.Height;

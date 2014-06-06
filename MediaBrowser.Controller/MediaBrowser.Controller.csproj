@@ -73,6 +73,7 @@
     <Compile Include="Channels\ChannelItemResult.cs" />
     <Compile Include="Channels\ChannelItemType.cs" />
     <Compile Include="Channels\ChannelMediaInfo.cs" />
+    <Compile Include="Channels\ChannelParentalRating.cs" />
     <Compile Include="Channels\ChannelSearchInfo.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelFactory.cs" />
@@ -82,8 +83,13 @@
     <Compile Include="Channels\ChannelVideoItem.cs" />
     <Compile Include="Channels\Channel.cs" />
     <Compile Include="Channels\IChannelMediaItem.cs" />
+    <Compile Include="Channels\IHasCacheKey.cs" />
+    <Compile Include="Channels\IIndexableChannel.cs" />
+    <Compile Include="Channels\InternalAllChannelMediaQuery.cs" />
     <Compile Include="Channels\InternalChannelFeatures.cs" />
     <Compile Include="Channels\InternalChannelItemQuery.cs" />
+    <Compile Include="Channels\IRequiresMediaInfoCallback.cs" />
+    <Compile Include="Channels\ISearchableChannel.cs" />
     <Compile Include="Chapters\ChapterSearchRequest.cs" />
     <Compile Include="Chapters\IChapterProvider.cs" />
     <Compile Include="Chapters\ChapterResponse.cs" />
