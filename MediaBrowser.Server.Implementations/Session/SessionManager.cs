@@ -464,7 +464,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             UpdateNowPlayingItem(session, info, libraryItem);
 
-            if (!string.IsNullOrEmpty(session.DeviceId))
+            if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
             {
                 ClearTranscodingInfo(session.DeviceId);
             }

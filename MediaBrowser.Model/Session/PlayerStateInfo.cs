@@ -66,5 +66,9 @@
 
         public float? Framerate { get; set; }
         public double? CompletionPercentage { get; set; }
+
+        public int? Width { get; set; }
+        public int? Height { get; set; }
+        public int? AudioChannels { get; set; }
     }
 }

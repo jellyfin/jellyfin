@@ -1584,6 +1584,8 @@ namespace MediaBrowser.Api.Playback
 
             state.OutputAudioCodec = GetAudioCodec(state.Request);
 
+            state.OutputAudioChannels = GetNumAudioChannelsParam(state.Request, state.AudioStream, state.OutputAudioCodec);
+            
             if (videoRequest != null)
             {
                 state.OutputVideoCodec = GetVideoCodec(videoRequest);

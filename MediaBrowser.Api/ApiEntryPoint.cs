@@ -176,7 +176,10 @@ namespace MediaBrowser.Api
                     VideoCodec = videoCodec,
                     Container = state.OutputContainer,
                     Framerate = framerate,
-                    CompletionPercentage = percentComplete
+                    CompletionPercentage = percentComplete,
+                    Width = state.OutputWidth,
+                    Height = state.OutputHeight,
+                    AudioChannels = state.OutputAudioChannels
                 });
             }
         }
