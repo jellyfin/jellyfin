@@ -419,7 +419,7 @@
         $('.btnAudioTracks', page).buttonEnabled(hasStreams(item, 'Audio') && supportedCommands.indexOf('SetAudioStreamIndex') != -1);
         $('.btnSubtitles', page).buttonEnabled(hasStreams(item, 'Subtitle') && supportedCommands.indexOf('SetSubtitleStreamIndex') != -1);
 
-        if (item && item.Chapters && item.Chapters.length) {
+        if (item && item.Chapters && item.Chapters.length && playState.CanSeek) {
             $('.btnChapters', page).buttonEnabled(true);
 
         } else {

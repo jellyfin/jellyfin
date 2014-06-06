@@ -1190,7 +1190,8 @@
                 audioChannels: 2,
                 audioBitrate: 128000,
                 StartTimeTicks: startPositionTicks,
-                mediaSourceId: mediaSource.Id
+                mediaSourceId: mediaSource.Id,
+                deviceId: ApiClient.deviceId()
             };
 
             var sourceContainer = (mediaSource.Container || '').toLowerCase();

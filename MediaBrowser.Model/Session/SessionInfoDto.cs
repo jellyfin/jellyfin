@@ -137,6 +137,8 @@ namespace MediaBrowser.Model.Session
 
         public PlayerStateInfo PlayState { get; set; }
 
+        public TranscodingInfo TranscodingInfo { get; set; }
+        
         public event PropertyChangedEventHandler PropertyChanged;
 
         public SessionInfoDto()

@@ -27,28 +27,31 @@
 }
 
 @font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 100;
-  src: local('Roboto Thin'), local('Roboto-Thin'), url(fonts/RobotoThin.woff) format('woff');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 100;
+    src: local('Roboto Thin'), local('Roboto-Thin'), url(fonts/RobotoThin.woff) format('woff');
 }
+
 @font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 300;
-  src: local('Roboto Light'), local('Roboto-Light'), url(fonts/RobotoLight.woff) format('woff');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 300;
+    src: local('Roboto Light'), local('Roboto-Light'), url(fonts/RobotoLight.woff) format('woff');
 }
+
 @font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto Regular'), local('Roboto-Regular'), url(fonts/RobotoRegular.woff) format('woff');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Roboto Regular'), local('Roboto-Regular'), url(fonts/RobotoRegular.woff) format('woff');
 }
+
 @font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Roboto Medium'), local('Roboto-Medium'), url(fonts/RobotoMedium.woff) format('woff');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 500;
+    src: local('Roboto Medium'), local('Roboto-Medium'), url(fonts/RobotoMedium.woff) format('woff');
 }
 
 * {
@@ -941,7 +944,7 @@ progress {
 .sessionUserInfo {
     position: absolute;
     right: 0;
-    bottom: 7px;
+    bottom: 11px;
     padding: .5em;
     text-align: right;
 }
@@ -953,7 +956,7 @@ progress {
 .sessionNowPlayingInfo {
     position: absolute;
     left: 0;
-    bottom: 7px;
+    bottom: 11px;
     padding: .5em;
     max-width: 150px;
     overflow: hidden;
@@ -966,7 +969,7 @@ progress {
     margin-right: 5px;
 }
 
-.activeSession progress {
+.activeSession .playbackProgress {
     position: absolute;
     right: 0;
     bottom: 0;
@@ -1005,7 +1008,14 @@ progress {
     color: #fff;
     position: absolute;
     right: 10px;
-    bottom: 15px;
+    bottom: 19px;
+}
+
+.sessionTranscodingFramerate {
+    position: absolute;
+    left: 10px;
+    bottom: 19px;
+    color: #fff;
 }
 
 .sessionNowPlayingStreamInfo {
@@ -1013,6 +1023,42 @@ progress {
     position: absolute;
     left: 10px;
     top: 10px;
+}
+
+.activeSession .transcodingProgress {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 5px;
+    width: 100%;
+    opacity: .9;
+    z-index: 1000;
+    position: absolute;
+}
+
+.transcodingSession .playbackProgress {
+    bottom: 5px;
+}
+
+/* Firefox */
+.transcodingProgress::-moz-progress-bar {
+    border-radius: 5px;
+    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
+}
+
+/* Chrome */
+.transcodingProgress::-webkit-progress-value {
+    border-radius: 5px;
+    background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0, rgb(221, 73, 25)), color-stop(1, rgb(221, 73, 25)) )!important;
+    background-image: -webkit-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
+}
+
+/* Polyfill */
+.transcodingProgress[aria-valuenow]:before {
+    border-radius: 5px;
+    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
+    background-image: -ms-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
+    background-image: -o-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
 }
 
 @media all and (max-width: 1000px) {

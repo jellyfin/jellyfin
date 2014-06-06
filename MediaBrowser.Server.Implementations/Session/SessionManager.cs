@@ -347,6 +347,11 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             session.NowPlayingItem = null;
             session.PlayState = new PlayerStateInfo();
+
+            if (!string.IsNullOrEmpty(session.DeviceId))
+            {
+                ClearTranscodingInfo(session.DeviceId);
+            }
         }
 
         private string GetSessionKey(string clientType, string appVersion, string deviceId)
@@ -458,6 +463,11 @@ namespace MediaBrowser.Server.Implementations.Session
                 : _libraryManager.GetItemById(new Guid(info.ItemId));
 
             UpdateNowPlayingItem(session, info, libraryItem);
+
+            if (!string.IsNullOrEmpty(session.DeviceId))
+            {
+                ClearTranscodingInfo(session.DeviceId);
+            }
 
             session.QueueableMediaTypes = info.QueueableMediaTypes;
 
@@ -1264,7 +1274,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 UserName = session.UserName,
                 NowPlayingItem = session.NowPlayingItem,
                 SupportsRemoteControl = session.SupportsMediaControl,
-                PlayState = session.PlayState
+                PlayState = session.PlayState,
+                TranscodingInfo = session.TranscodingInfo
             };
 
             if (session.UserId.HasValue)
@@ -1489,6 +1500,21 @@ namespace MediaBrowser.Server.Implementations.Session
             var session = GetSession(sessionId);
 
             session.NowViewingItem = item;
+        }
+
+        public void ReportTranscodingInfo(string deviceId, TranscodingInfo info)
+        {
+            var session = Sessions.FirstOrDefault(i => string.Equals(i.DeviceId, deviceId));
+
+            if (session != null)
+            {
+                session.TranscodingInfo = info;
+            }
+        }
+
+        public void ClearTranscodingInfo(string deviceId)
+        {
+            ReportTranscodingInfo(deviceId, null);
         }
     }
 }

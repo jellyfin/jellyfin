@@ -45,53 +45,51 @@ namespace MediaBrowser.Api.Playback.Progressive
                 return ext;
             }
 
-            var videoRequest = state.Request as VideoStreamRequest;
+            var isVideoRequest = state.VideoRequest != null;
 
             // Try to infer based on the desired video codec
-            if (videoRequest != null && !string.IsNullOrEmpty(videoRequest.VideoCodec))
+            if (isVideoRequest)
             {
-                if (state.IsInputVideo)
-                {
-                    if (string.Equals(videoRequest.VideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+                var videoCodec = state.VideoRequest.VideoCodec;
+                
+                    if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
                     {
                         return ".ts";
                     }
-                    if (string.Equals(videoRequest.VideoCodec, "theora", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(videoCodec, "theora", StringComparison.OrdinalIgnoreCase))
                     {
                         return ".ogv";
                     }
-                    if (string.Equals(videoRequest.VideoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
                     {
                         return ".webm";
                     }
-                    if (string.Equals(videoRequest.VideoCodec, "wmv", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(videoCodec, "wmv", StringComparison.OrdinalIgnoreCase))
                     {
                         return ".asf";
                     }
-                }
             }
 
             // Try to infer based on the desired audio codec
-            if (!string.IsNullOrEmpty(state.Request.AudioCodec))
+            if (!isVideoRequest)
             {
-                if (!state.IsInputVideo)
+                var audioCodec = state.Request.AudioCodec;
+
+                if (string.Equals("aac", audioCodec, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals("aac", state.Request.AudioCodec, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return ".aac";
-                    }
-                    if (string.Equals("mp3", state.Request.AudioCodec, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return ".mp3";
-                    }
-                    if (string.Equals("vorbis", state.Request.AudioCodec, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return ".ogg";
-                    }
-                    if (string.Equals("wma", state.Request.AudioCodec, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return ".wma";
-                    }
+                    return ".aac";
+                }
+                if (string.Equals("mp3", audioCodec, StringComparison.OrdinalIgnoreCase))
+                {
+                    return ".mp3";
+                }
+                if (string.Equals("vorbis", audioCodec, StringComparison.OrdinalIgnoreCase))
+                {
+                    return ".ogg";
+                }
+                if (string.Equals("wma", audioCodec, StringComparison.OrdinalIgnoreCase))
+                {
+                    return ".wma";
                 }
             }
 
@@ -134,7 +132,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 }
             }
 
-            var outputPath = GetOutputFilePath(state);
+            var outputPath = state.OutputFilePath;
             var outputPathExists = File.Exists(outputPath);
 
             var isStatic = request.Static ||
@@ -243,7 +241,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         private async Task<object> GetStreamResult(StreamState state, IDictionary<string, string> responseHeaders, bool isHeadRequest)
         {
             // Use the command line args with a dummy playlist path
-            var outputPath = GetOutputFilePath(state);
+            var outputPath = state.OutputFilePath;
 
             responseHeaders["Accept-Ranges"] = "none";
 

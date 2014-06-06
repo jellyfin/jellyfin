@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Api.Playback;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -9,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Api
 {
@@ -33,15 +36,18 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
 
+        private readonly ISessionManager _sessionManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiEntryPoint" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="appPaths">The application paths.</param>
-        public ApiEntryPoint(ILogger logger, IServerApplicationPaths appPaths)
+        public ApiEntryPoint(ILogger logger, IServerApplicationPaths appPaths, ISessionManager sessionManager)
         {
             Logger = logger;
             _appPaths = appPaths;
+            _sessionManager = sessionManager;
 
             Instance = this;
         }
@@ -115,10 +121,16 @@ namespace MediaBrowser.Api
         /// <param name="type">The type.</param>
         /// <param name="process">The process.</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
-        /// <param name="sourcePath">The source path.</param>
         /// <param name="deviceId">The device id.</param>
+        /// <param name="state">The state.</param>
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
-        public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process, long? startTimeTicks, string sourcePath, string deviceId, CancellationTokenSource cancellationTokenSource)
+        public void OnTranscodeBeginning(string path,
+            TranscodingJobType type,
+            Process process,
+            long? startTimeTicks,
+            string deviceId,
+            StreamState state,
+            CancellationTokenSource cancellationTokenSource)
         {
             lock (_activeTranscodingJobs)
             {
@@ -129,9 +141,42 @@ namespace MediaBrowser.Api
                     Process = process,
                     ActiveRequestCount = 1,
                     StartTimeTicks = startTimeTicks,
-                    SourcePath = sourcePath,
                     DeviceId = deviceId,
                     CancellationTokenSource = cancellationTokenSource
+                });
+
+                ReportTranscodingProgress(state, null, null);
+            }
+        }
+
+        public void ReportTranscodingProgress(StreamState state, float? framerate, double? percentComplete)
+        {
+            var deviceId = state.Request.DeviceId;
+
+            if (!string.IsNullOrWhiteSpace(deviceId))
+            {
+                var audioCodec = state.Request.AudioCodec;
+                var videoCodec = state.VideoRequest == null ? null : state.VideoRequest.VideoCodec;
+
+                if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase) ||
+                    string.IsNullOrEmpty(audioCodec))
+                {
+                    audioCodec = state.OutputAudioCodec;
+                }
+                if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) ||
+                    string.IsNullOrEmpty(videoCodec))
+                {
+                    videoCodec = state.OutputVideoCodec;
+                }
+
+                _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
+                {
+                    Bitrate = state.TotalOutputBitrate,
+                    AudioCodec = audioCodec,
+                    VideoCodec = videoCodec,
+                    Container = state.OutputContainer,
+                    Framerate = framerate,
+                    CompletionPercentage = percentComplete
                 });
             }
         }
@@ -144,13 +189,19 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="type">The type.</param>
-        public void OnTranscodeFailedToStart(string path, TranscodingJobType type)
+        /// <param name="state">The state.</param>
+        public void OnTranscodeFailedToStart(string path, TranscodingJobType type, StreamState state)
         {
             lock (_activeTranscodingJobs)
             {
                 var job = _activeTranscodingJobs.First(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
 
                 _activeTranscodingJobs.Remove(job);
+            }
+
+            if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
+            {
+                _sessionManager.ClearTranscodingInfo(state.Request.DeviceId);
             }
         }
 
@@ -437,7 +488,6 @@ namespace MediaBrowser.Api
         public Timer KillTimer { get; set; }
 
         public long? StartTimeTicks { get; set; }
-        public string SourcePath { get; set; }
         public string DeviceId { get; set; }
 
         public CancellationTokenSource CancellationTokenSource { get; set; }

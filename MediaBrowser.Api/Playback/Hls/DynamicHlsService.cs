@@ -89,7 +89,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
 
-            var playlistPath = Path.ChangeExtension(GetOutputFilePath(state), ".m3u8");
+            var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
 
             var path = GetSegmentPath(playlistPath, index);
 
@@ -231,7 +231,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetAudioArguments(StreamState state)
         {
-            var codec = GetAudioCodec(state.Request);
+            var codec = state.OutputAudioCodec;
 
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
@@ -266,7 +266,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetVideoArguments(StreamState state, bool performSubtitleConversion)
         {
-            var codec = GetVideoCodec(state.VideoRequest);
+            var codec = state.OutputVideoCodec;
 
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))

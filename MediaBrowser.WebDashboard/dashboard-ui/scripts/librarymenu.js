@@ -364,7 +364,7 @@ $.fn.createHoverTouch = function () {
         timerId = setTimeout(function () {
 
             $(elem).trigger('hovertouch');
-        }, 200);
+        }, 250);
     }
 
     function stopTimer(elem) {

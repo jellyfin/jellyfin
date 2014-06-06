@@ -86,7 +86,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var state = GetState(request, cancellationTokenSource.Token).Result;
 
-            var playlist = GetOutputFilePath(state);
+            var playlist = state.OutputFilePath;
 
             if (File.Exists(playlist))
             {
@@ -307,7 +307,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (hlsVideoRequest != null)
             {
-                if (hlsVideoRequest.AppendBaselineStream && state.IsInputVideo)
+                if (hlsVideoRequest.AppendBaselineStream)
                 {
                     var lowBitratePath = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath) + "-low.m3u8");
 

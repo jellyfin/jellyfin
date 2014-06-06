@@ -26,7 +26,7 @@ namespace MediaBrowser.Providers.Folders
 
         public bool Supports(IHasImages item)
         {
-            return item is ICollectionFolder;
+            return item is CollectionFolder;
         }
 
         public int Order

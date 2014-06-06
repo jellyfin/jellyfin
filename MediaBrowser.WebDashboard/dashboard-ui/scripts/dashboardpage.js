@@ -132,7 +132,7 @@
 
         $(ApiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
         DashboardPage.stopInterval();
-        
+
         if (DashboardPage.sessionUpdateTimer) {
             clearInterval(DashboardPage.sessionUpdateTimer);
         }
@@ -215,20 +215,24 @@
 
         for (var i = 0, length = sessions.length; i < length; i++) {
 
-            var connection = sessions[i];
+            var session = sessions[i];
 
-            var rowId = 'session' + connection.Id;
+            var rowId = 'session' + session.Id;
 
             var elem = $('#' + rowId, page);
 
             if (elem.length) {
-                DashboardPage.updateSession(elem, connection);
+                DashboardPage.updateSession(elem, session);
                 continue;
             }
 
-            var nowPlayingItem = connection.NowPlayingItem;
+            var nowPlayingItem = session.NowPlayingItem;
 
             var className = nowPlayingItem ? 'playingSession activeSession' : 'activeSession';
+
+            if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
+                className += ' transcodingSession';
+            }
 
             html += '<div class="' + className + '" id="' + rowId + '">';
 
@@ -246,22 +250,22 @@
 
             html += '<div class="sessionAppInfo">';
 
-            var clientImage = DashboardPage.getClientImage(connection);
+            var clientImage = DashboardPage.getClientImage(session);
 
             if (clientImage) {
                 html += clientImage;
             }
 
             html += '<div class="sessionAppName" style="display:inline-block;">';
-            html += '<div class="sessionDeviceName">' + connection.DeviceName + '</div>';
-            html += '<div class="sessionAppSecondaryText">' + DashboardPage.getAppSecondaryText(connection) + '</div>';
+            html += '<div class="sessionDeviceName">' + session.DeviceName + '</div>';
+            html += '<div class="sessionAppSecondaryText">' + DashboardPage.getAppSecondaryText(session) + '</div>';
             html += '</div>';
 
             html += '</div>';
 
             html += '<div class="sessionUserInfo">';
 
-            var userImage = DashboardPage.getUserImage(connection);
+            var userImage = DashboardPage.getUserImage(session);
             if (userImage) {
                 html += '<div class="sessionUserImage" data-src="' + userImage + '">';
                 html += '<img src="' + userImage + '" />';
@@ -271,12 +275,12 @@
             html += '</div>';
 
             html += '<div class="sessionUserName">';
-            html += DashboardPage.getUsersHtml(connection);
+            html += DashboardPage.getUsersHtml(session);
             html += '</div>';
 
             html += '</div>';
 
-            var nowPlayingName = DashboardPage.getNowPlayingName(connection);
+            var nowPlayingName = DashboardPage.getNowPlayingName(session);
 
             html += '<div class="sessionNowPlayingInfo" data-imgsrc="' + nowPlayingName.image + '">';
             html += nowPlayingName.html;
@@ -284,20 +288,35 @@
 
             if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
 
-                var position = connection.PlayState.PositionTicks || 0;
+                var position = session.PlayState.PositionTicks || 0;
                 var value = (100 * position) / nowPlayingItem.RunTimeTicks;
 
-                html += '<progress class="itemProgressBar" min="0" max="100" value="' + value + '"></progress>';
+                html += '<progress class="itemProgressBar playbackProgress" min="0" max="100" value="' + value + '"></progress>';
             } else {
-                html += '<progress class="itemProgressBar" min="0" max="100" style="display:none;"></progress>';
+                html += '<progress class="itemProgressBar playbackProgress" min="0" max="100" style="display:none;"></progress>';
+            }
+
+            if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
+
+                html += '<progress class="itemProgressBar transcodingProgress" min="0" max="100" value="' + session.TranscodingInfo.CompletionPercentage.toFixed(1) + '"></progress>';
+            } else {
+                html += '<progress class="itemProgressBar transcodingProgress" min="0" max="100" style="display:none;"></progress>';
             }
 
             html += '</div>';
 
             html += '<div class="posterItemOverlayTarget">';
 
-            html += '<div class="sessionNowPlayingStreamInfo">' + DashboardPage.getSessionNowPlayingStreamInfo(connection) + '</div>';
-            html += '<div class="sessionNowPlayingTime">' + DashboardPage.getSessionNowPlayingTime(connection) + '</div>';
+            html += '<div class="sessionNowPlayingStreamInfo">' + DashboardPage.getSessionNowPlayingStreamInfo(session) + '</div>';
+            html += '<div class="sessionNowPlayingTime">' + DashboardPage.getSessionNowPlayingTime(session) + '</div>';
+
+            if (session.TranscodingInfo && session.TranscodingInfo.Framerate) {
+
+                html += '<div class="sessionTranscodingFramerate">' + session.TranscodingInfo.Framerate + ' fps</div>';
+            } else {
+                html += '<div class="sessionTranscodingFramerate"></div>';
+            }
+
             html += '</div>';
 
             html += '</div>';
@@ -326,6 +345,40 @@
         }
 
         html += '</div>';
+
+        if (session.TranscodingInfo) {
+
+            html += '<br/>';
+
+            var line = [];
+
+            if (session.TranscodingInfo.Container) {
+
+                line.push(session.TranscodingInfo.Container);
+            }
+            if (session.TranscodingInfo.Bitrate) {
+
+                if (session.TranscodingInfo.Bitrate > 1000000) {
+                    line.push((session.TranscodingInfo.Bitrate / 1000000).toFixed(1) + ' Mbps');
+                } else {
+                    line.push(Math.floor(session.TranscodingInfo.Bitrate / 1000) + ' kbps');
+                }
+            }
+            if (line.length) {
+
+                html += '<div>' + line.join(' ') + '</div>';
+            }
+
+            if (session.TranscodingInfo.VideoCodec) {
+
+                html += '<div>Video: ' + session.TranscodingInfo.VideoCodec + '</div>';
+            }
+            if (session.TranscodingInfo.AudioCodec && session.TranscodingInfo.AudioCodec != session.TranscodingInfo.Container) {
+
+                html += '<div>Audio: ' + session.TranscodingInfo.AudioCodec + '</div>';
+            }
+
+        }
 
         return html;
     },
@@ -475,6 +528,8 @@
 
         $('.sessionAppSecondaryText', row).html(DashboardPage.getAppSecondaryText(session));
 
+        $('.sessionTranscodingFramerate', row).html((session.TranscodingInfo && session.TranscodingInfo.Framerate) ? session.TranscodingInfo.Framerate + ' fps' : '');
+
         var nowPlayingName = DashboardPage.getNowPlayingName(session);
         var nowPlayingInfoElem = $('.sessionNowPlayingInfo', row);
 
@@ -488,9 +543,18 @@
             var position = session.PlayState.PositionTicks || 0;
             var value = (100 * position) / nowPlayingItem.RunTimeTicks;
 
-            $('progress', row).show().val(value);
+            $('.playbackProgress', row).show().val(value);
         } else {
-            $('progress', row).hide();
+            $('.playbackProgress', row).hide();
+        }
+
+        if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
+
+            row.addClass('transcodingSession');
+            $('.transcodingProgress', row).show().val(session.TranscodingInfo.CompletionPercentage);
+        } else {
+            $('.transcodingProgress', row).hide();
+            row.removeClass('transcodingSession');
         }
 
         var imgUrl = DashboardPage.getNowPlayingImageUrl(nowPlayingItem) || '';

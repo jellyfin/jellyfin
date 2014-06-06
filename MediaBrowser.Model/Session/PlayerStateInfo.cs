@@ -56,4 +56,15 @@
         /// <value>The play method.</value>
         public PlayMethod? PlayMethod { get; set; }
     }
+
+    public class TranscodingInfo
+    {
+        public string AudioCodec { get; set; }
+        public string VideoCodec { get; set; }
+        public string Container { get; set; }
+        public int? Bitrate { get; set; }
+
+        public float? Framerate { get; set; }
+        public double? CompletionPercentage { get; set; }
+    }
 }
