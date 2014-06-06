@@ -78,8 +78,6 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <exception cref="System.InvalidOperationException">Only aac and mp3 audio codecs are supported.</exception>
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool performSubtitleConversions)
         {
-            var request = state.Request;
-
             var audioTranscodeParams = new List<string>();
 
             var bitrate = state.OutputAudioBitrate;

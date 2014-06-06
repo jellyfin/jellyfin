@@ -163,6 +163,9 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
+        public string OutputFilePath { get; set; }
+        public string OutputVideoCodec { get; set; }
+        public string OutputAudioCodec { get; set; }
         public int? OutputAudioChannels;
         public int? OutputAudioSampleRate;
         public int? OutputAudioBitrate;

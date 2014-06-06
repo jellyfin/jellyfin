@@ -118,7 +118,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.String.</returns>
         protected override string GetAudioArguments(StreamState state)
         {
-            var codec = GetAudioCodec(state.Request);
+            var codec = state.OutputAudioCodec;
 
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
@@ -160,7 +160,7 @@ namespace MediaBrowser.Api.Playback.Hls
         protected override string GetVideoArguments(StreamState state, 
             bool performSubtitleConversion)
         {
-            var codec = GetVideoCodec(state.VideoRequest);
+            var codec = state.OutputVideoCodec;
 
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))

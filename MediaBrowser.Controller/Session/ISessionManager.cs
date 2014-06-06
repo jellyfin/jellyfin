@@ -226,5 +226,18 @@ namespace MediaBrowser.Controller.Session
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="capabilities">The capabilities.</param>
         void ReportCapabilities(string sessionId, SessionCapabilities capabilities);
+
+        /// <summary>
+        /// Reports the transcoding information.
+        /// </summary>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="info">The information.</param>
+        void ReportTranscodingInfo(string deviceId, TranscodingInfo info);
+
+        /// <summary>
+        /// Clears the transcoding information.
+        /// </summary>
+        /// <param name="deviceId">The device identifier.</param>
+        void ClearTranscodingInfo(string deviceId);
     }
 }
