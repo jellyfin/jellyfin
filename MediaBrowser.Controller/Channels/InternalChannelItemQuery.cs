@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Channels;
+﻿using MediaBrowser.Model.Channels;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -7,7 +6,7 @@ namespace MediaBrowser.Controller.Channels
     {
         public string FolderId { get; set; }
 
-        public User User { get; set; }
+        public string UserId { get; set; }
 
         public int? StartIndex { get; set; }
 
@@ -16,10 +15,5 @@ namespace MediaBrowser.Controller.Channels
         public ChannelItemSortField? SortBy { get; set; }
 
         public bool SortDescending { get; set; }
-    }
-
-    public class InternalAllChannelMediaQuery
-    {
-        public User User { get; set; }
     }
 }

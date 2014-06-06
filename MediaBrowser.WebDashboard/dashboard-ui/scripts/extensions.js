@@ -70,25 +70,7 @@ if (!Array.prototype.filter) {
 var WebNotifications = {
 
     show: function (data) {
-        if (window.webkitNotifications) {
-            if (!webkitNotifications.checkPermission()) {
-                var notif = webkitNotifications.createNotification(data.icon, data.title, data.body);
-                notif.show();
-
-                if (data.timeout) {
-                    setTimeout(function () {
-                        notif.cancel();
-                    }, data.timeout);
-                }
-
-                return notif;
-            } else {
-                webkitNotifications.requestPermission(function () {
-                    return WebNotifications.show(data);
-                });
-            }
-        }
-        else if (window.Notification) {
+        if (window.Notification) {
 
             var level = Notification.permissionLevel ? Notification.permissionLevel() : Notification.permission;
 
@@ -99,15 +81,46 @@ var WebNotifications = {
                     notif.show();
                 }
 
-                if (data.timeout && notif.cancel) {
+                if (data.timeout) {
                     setTimeout(function () {
-                        notif.cancel();
+
+                        if (notif.close) {
+                            notif.close();
+                        }
+                        else if (notif.cancel) {
+                            notif.cancel();
+                        }
                     }, data.timeout);
                 }
 
                 return notif;
             } else if (level === "default") {
                 Notification.requestPermission(function () {
+                    return WebNotifications.show(data);
+                });
+            }
+        }
+        
+        else if (window.webkitNotifications) {
+            if (!webkitNotifications.checkPermission()) {
+                var notif = webkitNotifications.createNotification(data.icon, data.title, data.body);
+                notif.show();
+
+                if (data.timeout) {
+                    setTimeout(function () {
+
+                        if (notif.close) {
+                            notif.close();
+                        }
+                        else if (notif.cancel) {
+                            notif.cancel();
+                        }
+                    }, data.timeout);
+                }
+
+                return notif;
+            } else {
+                webkitNotifications.requestPermission(function () {
                     return WebNotifications.show(data);
                 });
             }
