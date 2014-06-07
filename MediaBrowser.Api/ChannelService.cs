@@ -49,7 +49,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Channels/{Id}/Items", "GET", Summary = "Gets channel items")]
-    public class GetChannelItems : IReturn<QueryResult<BaseItemDto>>
+    public class GetChannelItems : IReturn<QueryResult<BaseItemDto>>, IHasItemFields
     {
         [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
@@ -87,6 +87,9 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string SortBy { get; set; }
 
+        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Fields { get; set; }
+        
         /// <summary>
         /// Gets the filters.
         /// </summary>
@@ -163,7 +166,8 @@ namespace MediaBrowser.Api
                 FolderId = request.FolderId,
                 SortOrder = request.SortOrder,
                 SortBy = (request.SortBy ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
-                Filters = request.GetFilters().ToArray()
+                Filters = request.GetFilters().ToArray(),
+                Fields = request.GetItemFields().ToList()
 
             }, CancellationToken.None).Result;
 

@@ -11,7 +11,7 @@
                     <a href="plugins.html" data-role="button">${TabMyPlugins}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabCatalog}</a>
                 </div>
-                
+
                 <br />
                 <fieldset data-role="controlgroup" data-type="horizontal">
                     <legend>${LabelDisplayPluginsFor}</legend>
@@ -28,6 +28,11 @@
                 <p style="display: none;">
                     <input class="chkPremiumFilter" type="checkbox" data-mini="true" data-inline="true" name="chkPremium" id="chkPremium" data-filter="IsPremium" />
                     <label for="chkPremium">Free Only</label>
+                </p>
+                <br />
+                <p style="max-width: 300px;">
+                    <label for="chkAdult">${OptionDisplayAdultContent}</label>
+                    <input id="chkAdult" type="checkbox" data-mini="true" />
                 </p>
                 <br />
                 <div id="noPlugins" class="hide">

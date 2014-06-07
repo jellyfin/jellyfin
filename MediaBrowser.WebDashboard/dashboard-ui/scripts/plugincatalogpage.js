@@ -2,7 +2,8 @@
 
     // The base query options
     var query = {
-        TargetSystems: 'Server'
+        TargetSystems: 'Server',
+        IsAdult: false
     };
 
     function getApps() {
@@ -79,7 +80,7 @@
                 }
 
                 html += '<div class="ui-bar-a" style="padding: 0 1em;"><h3>' + category + '</h3></div>';
-                
+
                 currentCategory = category;
             }
 
@@ -126,7 +127,7 @@
             })[0];
 
             html += "<div class='posterItemText' style='color:#000;'>";
-            
+
             if (installedPlugin) {
                 html += Globalize.translate('LabelVersionInstalled').replace("{0}", installedPlugin.Version);
             } else {
@@ -173,11 +174,17 @@
             reloadList(page);
         });
 
+        $('#chkAdult', page).on('change', function () {
+
+            query.IsAdult = this.checked ? null : false;
+            reloadList(page);
+        });
+
     }).on('pageshow', "#pluginCatalogPage", function () {
 
         var page = this;
 
-        $(".radioPackageTypes", page).each(function() {
+        $(".radioPackageTypes", page).each(function () {
 
             this.checked = this.value == query.TargetSystems;
 

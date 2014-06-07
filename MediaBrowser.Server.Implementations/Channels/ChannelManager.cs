@@ -797,12 +797,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             await RefreshIfNeeded(all, cancellationToken).ConfigureAwait(false);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
-
-            var returnItemArray = all.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var returnItemArray = all.Select(i => _dtoService.GetBaseItemDto(i, query.Fields, user))
                 .ToArray();
 
             return new QueryResult<BaseItemDto>

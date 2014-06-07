@@ -176,6 +176,11 @@
 
             DashboardPage.renderRunningTasks(page, tasks);
         }
+        else if (msg.MessageType == "PackageInstalling" || msg.MessageType == "PackageInstallationCompleted") {
+
+            DashboardPage.pollForInfo(page, true);
+            DashboardPage.reloadSystemInfo(page);
+        }
     },
 
     onWebSocketOpen: function () {
@@ -183,11 +188,11 @@
         DashboardPage.startInterval();
     },
 
-    pollForInfo: function (page) {
+    pollForInfo: function (page, forceUpdate) {
 
         ApiClient.getSessions().done(function (sessions) {
 
-            DashboardPage.renderInfo(page, sessions);
+            DashboardPage.renderInfo(page, sessions, forceUpdate);
         });
         ApiClient.getScheduledTasks().done(function (tasks) {
 
@@ -195,10 +200,10 @@
         });
     },
 
-    renderInfo: function (page, sessions) {
+    renderInfo: function (page, sessions, forceUpdate) {
 
         DashboardPage.renderActiveConnections(page, sessions);
-        DashboardPage.renderPluginUpdateInfo(page);
+        DashboardPage.renderPluginUpdateInfo(page, forceUpdate);
 
         Dashboard.hideLoadingMsg();
     },
@@ -812,10 +817,10 @@
         $('#pendingInstallations', page).html(html);
     },
 
-    renderPluginUpdateInfo: function (page) {
+    renderPluginUpdateInfo: function (page, forceUpdate) {
 
         // Only check once every 30 mins
-        if (DashboardPage.lastPluginUpdateCheck && (new Date().getTime() - DashboardPage.lastPluginUpdateCheck) < 1800000) {
+        if (!forceUpdate && DashboardPage.lastPluginUpdateCheck && (new Date().getTime() - DashboardPage.lastPluginUpdateCheck) < 1800000) {
             return;
         }
 
