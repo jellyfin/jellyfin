@@ -7,5 +7,10 @@ namespace MediaBrowser.Controller.Channels
         public List<ChannelItemInfo> Items { get; set; }
 
         public int? TotalRecordCount { get; set; }
+
+        public ChannelItemResult()
+        {
+            Items = new List<ChannelItemInfo>();
+        }
     }
 }
