@@ -823,5 +823,6 @@
 	"HeaderOtherDisplaySettings": "Display Settings",
 	"HeaderLibraryViews": "Library Views",
 	"LabelSelectFolderGroups": "Automatically group content from the following folders into views such as Movies, Music and TV:",
-	"LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own view."
+	"LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own view.",
+	"OptionDisplayAdultContent": "Display adult content"
 }

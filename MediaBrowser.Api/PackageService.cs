@@ -50,6 +50,9 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "IsPremium", Description = "Optional. Filter by premium status", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? IsPremium { get; set; }
+
+        [ApiMember(Name = "IsAdult", Description = "Optional. Filter by package that contain adult content.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? IsAdult { get; set; }
     }
 
     /// <summary>
@@ -191,6 +194,11 @@ namespace MediaBrowser.Api
             if (request.IsPremium.HasValue)
             {
                 packages = packages.Where(p => p.isPremium == request.IsPremium.Value);
+            }
+
+            if (request.IsAdult.HasValue)
+            {
+                packages = packages.Where(p => p.adult == request.IsAdult.Value);
             }
 
             return ToOptimizedResult(packages.ToList());
