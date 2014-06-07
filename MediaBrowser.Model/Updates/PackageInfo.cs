@@ -39,6 +39,12 @@ namespace MediaBrowser.Model.Updates
         public bool isPremium { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is adult only content.
+        /// </summary>
+        /// <value><c>true</c> if this instance is adult; otherwise, <c>false</c>.</value>
+        public bool adult { get; set; }
+
+        /// <summary>
         /// Gets or sets the rich desc URL.
         /// </summary>
         /// <value>The rich desc URL.</value>
