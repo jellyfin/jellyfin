@@ -43,9 +43,17 @@
         /// <value>The limit.</value>
         public int? Limit { get; set; }
 
+        /// <summary>
+        /// Gets or sets the content types.
+        /// </summary>
+        /// <value>The content types.</value>
+        public ChannelMediaContentType[] ContentTypes { get; set; }
+
         public AllChannelMediaQuery()
         {
             ChannelIds = new string[] { };
+
+            ContentTypes = new ChannelMediaContentType[] { };
         }
     }
 

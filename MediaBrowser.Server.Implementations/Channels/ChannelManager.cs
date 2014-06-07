@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Channels;
@@ -37,7 +38,9 @@ namespace MediaBrowser.Server.Implementations.Channels
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
 
-        public ChannelManager(IUserManager userManager, IDtoService dtoService, ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IUserDataManager userDataManager, IJsonSerializer jsonSerializer)
+        private readonly ILocalizationManager _localization;
+
+        public ChannelManager(IUserManager userManager, IDtoService dtoService, ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IUserDataManager userDataManager, IJsonSerializer jsonSerializer, ILocalizationManager localization)
         {
             _userManager = userManager;
             _dtoService = dtoService;
@@ -47,6 +50,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             _fileSystem = fileSystem;
             _userDataManager = userDataManager;
             _jsonSerializer = jsonSerializer;
+            _localization = localization;
         }
 
         public void AddParts(IEnumerable<IChannel> channels, IEnumerable<IChannelFactory> factories)
@@ -371,13 +375,14 @@ namespace MediaBrowser.Server.Implementations.Channels
                     Id = id,
                     DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo),
                     DateModified = _fileSystem.GetLastWriteTimeUtc(fileInfo),
-                    Path = path,
-                    OfficialRating = GetOfficialRating(channelInfo.ParentalRating)
+                    Path = path
                 };
 
                 isNew = true;
             }
 
+            item.OfficialRating = GetOfficialRating(channelInfo.ParentalRating);
+            item.Overview = channelInfo.Description;
             item.HomePageUrl = channelInfo.HomePageUrl;
             item.OriginalChannelName = channelInfo.Name;
 
@@ -511,6 +516,14 @@ namespace MediaBrowser.Server.Implementations.Channels
             IEnumerable<Tuple<IChannel, ChannelItemInfo>> items = results
                 .SelectMany(i => i.Item2.Items.Select(m => new Tuple<IChannel, ChannelItemInfo>(i.Item1, m)))
                 .OrderBy(i => i.Item2.Name);
+
+            if (query.ContentTypes.Length > 0)
+            {
+                // Avoid implicitly captured closure
+                var contentTypes = query.ContentTypes;
+
+                items = items.Where(i => contentTypes.Contains(i.Item2.ContentType));
+            }
 
             if (query.StartIndex.HasValue)
             {
@@ -737,35 +750,26 @@ namespace MediaBrowser.Server.Implementations.Channels
                 userCacheKey = hasCacheKey.GetCacheKey(userId) ?? string.Empty;
             }
 
-            var folderKey = string.IsNullOrWhiteSpace(folderId) ? "root" : folderId;
-            folderKey = (folderKey + userCacheKey).GetMD5().ToString("N");
+            var filename = string.IsNullOrWhiteSpace(folderId) ? "root" : folderId;
+            filename += userCacheKey;
 
-            var version = string.IsNullOrWhiteSpace(channel.DataVersion) ? "0" : channel.DataVersion;
-
-            var filename = userId;
-            var hashfilename = false;
+            var version = (channel.DataVersion ?? string.Empty).GetMD5().ToString("N");
 
             if (sortField.HasValue)
             {
                 filename += "-sortField-" + sortField.Value;
-                hashfilename = true;
             }
             if (sortDescending)
             {
                 filename += "-sortDescending";
-                hashfilename = true;
             }
 
-            if (hashfilename)
-            {
-                filename = filename.GetMD5().ToString("N");
-            }
+            filename = filename.GetMD5().ToString("N");
 
             return Path.Combine(_config.ApplicationPaths.CachePath,
                 "channels",
                 channelId,
                 version,
-                folderKey,
                 filename + ".json");
         }
 
@@ -813,7 +817,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             // Increment this as needed to force new downloads
             // Incorporate Name because it's being used to convert channel entity to provider
             return externalId + (channelProvider.DataVersion ?? string.Empty) +
-                (channelProvider.Name ?? string.Empty) + "15";
+                (channelProvider.Name ?? string.Empty) + "16";
         }
 
         private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Channel internalChannel, CancellationToken cancellationToken)
@@ -1021,6 +1025,24 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
 
             return items;
+        }
+
+        public async Task<BaseItemDto> GetChannelFolder(string userId, CancellationToken cancellationToken)
+        {
+            var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(new Guid(userId));
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+
+            var folder = await GetInternalChannelFolder(userId, cancellationToken).ConfigureAwait(false);
+
+            return _dtoService.GetBaseItemDto(folder, fields, user);
+        }
+
+        public async Task<Folder> GetInternalChannelFolder(string userId, CancellationToken cancellationToken)
+        {
+            var name = _localization.GetLocalizedString("ViewTypeChannels");
+            return await _libraryManager.GetNamedView(name, "channels", "zz_" + name, cancellationToken).ConfigureAwait(false);
         }
     }
 }

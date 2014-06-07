@@ -768,7 +768,8 @@
     "LabelHomePageSection2": "Home page section two:",
     "LabelHomePageSection3": "Home page section three:",
     "OptionLibraryButtons": "Library buttons",
-    "OptionLibraryTiles": "Library tiles",
+    "OptionLibraryTiles": "Library tiles (large)",
+    "OptionSmallLibraryTiles": "Library tiles (small)",
     "OptionResumablemedia": "Resume",
     "OptionLatestMedia": "Latest media",
     "OptionNone": "None",
@@ -803,8 +804,10 @@
     "ViewTypeGames": "Games",
     "ViewTypeMusic": "Music",
     "ViewTypeBoxSets": "Collections",
+    "ViewTypeChannels": "Channels",
+    "ViewTypeLiveTV": "Live TV",
     "HeaderOtherDisplaySettings": "Display Settings",
     "HeaderLibraryViews": "Library Views",
-    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
-    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
+    "LabelSelectFolderGroups": "Automatically group content from the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own view."
 }

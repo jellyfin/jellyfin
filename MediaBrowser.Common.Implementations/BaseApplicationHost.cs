@@ -678,9 +678,14 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         public void NotifyPendingRestart()
         {
+            var changed = !HasPendingRestart;
+
             HasPendingRestart = true;
 
-            EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, Logger);
+            if (changed)
+            {
+                EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, Logger);
+            }
         }
 
         /// <summary>

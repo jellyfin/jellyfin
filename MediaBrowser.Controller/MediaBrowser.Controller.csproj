@@ -160,6 +160,7 @@
     <Compile Include="Library\IntroInfo.cs" />
     <Compile Include="Library\ItemUpdateType.cs" />
     <Compile Include="Library\IUserDataManager.cs" />
+    <Compile Include="Library\IUserViewManager.cs" />
     <Compile Include="Library\LibraryManagerExtensions.cs" />
     <Compile Include="Library\PlaybackStopEventArgs.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />

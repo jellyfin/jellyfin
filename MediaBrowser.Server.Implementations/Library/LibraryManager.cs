@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -18,6 +18,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.Library.Validators;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
+using MoreLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -26,7 +27,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MoreLinq;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 
 namespace MediaBrowser.Server.Implementations.Library
@@ -920,7 +920,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             // Ensure the location is unavailable.
             Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.ArtistsPath);
-            
+
             return new ArtistsValidator(this, _userManager, _logger).Run(progress, cancellationToken);
         }
 
@@ -934,7 +934,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             // Ensure the location is unavailable.
             Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.MusicGenrePath);
-            
+
             return new MusicGenresValidator(this, _logger).Run(progress, cancellationToken);
         }
 
@@ -948,7 +948,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             // Ensure the location is unavailable.
             Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.GameGenrePath);
-            
+
             return new GameGenresValidator(this, _userManager, _logger).Run(progress, cancellationToken);
         }
 
@@ -1055,14 +1055,6 @@ namespace MediaBrowser.Server.Implementations.Library
             innerProgress = new ActionableProgress<double>();
 
             innerProgress.RegisterAction(pct => progress.Report(75 + pct * .25));
-
-            foreach (var user in _userManager.Users)
-            {
-                foreach (var view in user.GetViews().ToList())
-                {
-                    await view.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-                }
-            }
 
             // Run post-scan tasks
             await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
@@ -1502,6 +1494,39 @@ namespace MediaBrowser.Server.Implementations.Library
                     return list;
                 })
                 .Distinct(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public async Task<UserView> GetNamedView(string name, string type, string sortName, CancellationToken cancellationToken)
+        {
+            var id = "namedview_2_" + name;
+            var guid = id.GetMD5();
+
+            var item = GetItemById(guid) as UserView;
+            
+            if (item == null)
+            {
+                var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath,
+                    "views",
+                    _fileSystem.GetValidFilename(name));
+
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                item = new UserView
+                {
+                    Path = path,
+                    Id = guid,
+                    DateCreated = DateTime.UtcNow,
+                    Name = name,
+                    ViewType = type,
+                    ForcedSortName = sortName
+                };
+
+                await CreateItem(item, cancellationToken).ConfigureAwait(false);
+
+                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            }
+
+            return item;
         }
     }
 }

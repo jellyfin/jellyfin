@@ -104,6 +104,13 @@ namespace MediaBrowser.Api
         }
     }
 
+    [Route("/Channels/Folder", "GET", Summary = "Gets the users channel folder, along with configured images")]
+    public class GetChannelFolder : IReturn<BaseItemDto>
+    {
+        [ApiMember(Name = "UserId", Description = "Optional attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string UserId { get; set; }
+    }
+    
     public class ChannelService : BaseApiService
     {
         private readonly IChannelManager _channelManager;
@@ -127,6 +134,11 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result);
         }
 
+        public object Get(GetChannelFolder request)
+        {
+            return ToOptimizedResult(_channelManager.GetChannelFolder(request.UserId, CancellationToken.None).Result);
+        }
+        
         public object Get(GetChannels request)
         {
             var result = _channelManager.GetChannels(new ChannelQuery

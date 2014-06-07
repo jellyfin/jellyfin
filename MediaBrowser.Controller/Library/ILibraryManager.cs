@@ -332,5 +332,15 @@ namespace MediaBrowser.Controller.Library
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> ReplaceVideosWithPrimaryVersions(IEnumerable<BaseItem> items);
+
+        /// <summary>
+        /// Gets the named folder.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="sortName">Name of the sort.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Folder}.</returns>
+        Task<UserView> GetNamedView(string name, string type, string sortName, CancellationToken cancellationToken);
     }
 }

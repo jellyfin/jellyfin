@@ -1,7 +1,6 @@
-﻿using System;
+﻿using MediaBrowser.Model.Extensions;
 using System.Diagnostics;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Entities
 {

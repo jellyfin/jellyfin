@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using ServiceStack;
@@ -48,7 +49,10 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
+
+        [ApiMember(Name = "IncludeExternalContent", Description = "Whether or not to include external views such as channels or live tv", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "POST")]
+        public bool? IncludeExternalContent { get; set; }
     }
 
     /// <summary>
@@ -438,6 +442,8 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly ISessionManager _sessionManager;
         private readonly IDtoService _dtoService;
 
+        private readonly IUserViewManager _userViewManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLibraryService" /> class.
         /// </summary>
@@ -447,13 +453,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="dtoService">The dto service.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, ISessionManager sessionManager, IDtoService dtoService)
+        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, ISessionManager sessionManager, IDtoService dtoService, IUserViewManager userViewManager)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
             _sessionManager = sessionManager;
             _dtoService = dtoService;
+            _userViewManager = userViewManager;
         }
 
         /// <summary>
@@ -470,12 +477,23 @@ namespace MediaBrowser.Api.UserLibrary
 
         public object Get(GetUserViews request)
         {
-            var user = _userManager.GetUserById(request.UserId);
+            var user = _userManager.GetUserById(new Guid(request.UserId));
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var folders = user.GetViews();
+            var query = new UserViewQuery
+            {
+                UserId = request.UserId
+
+            };
+
+            if (request.IncludeExternalContent.HasValue)
+            {
+                query.IncludeExternalContent = request.IncludeExternalContent.Value;
+            }
+
+            var folders = _userViewManager.GetUserViews(query, CancellationToken.None).Result;
 
             var dtos = folders.OrderBy(i => i.SortName)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))

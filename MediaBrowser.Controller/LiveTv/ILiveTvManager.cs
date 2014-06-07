@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
@@ -257,5 +258,21 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task ResetTuner(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the live tv folder.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>BaseItemDto.</returns>
+        Task<Folder> GetInternalLiveTvFolder(string userId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the live tv folder.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>BaseItemDto.</returns>
+        Task<BaseItemDto> GetLiveTvFolder(string userId, CancellationToken cancellationToken);
     }
 }

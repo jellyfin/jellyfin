@@ -197,6 +197,8 @@ namespace MediaBrowser.ServerApplication
         private INotificationManager NotificationManager { get; set; }
         private ISubtitleManager SubtitleManager { get; set; }
 
+        private IUserViewManager UserViewManager { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
         /// </summary>
@@ -510,7 +512,7 @@ namespace MediaBrowser.ServerApplication
                 MediaEncoder);
             RegisterSingleInstance(EncodingManager);
 
-            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer);
+            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager);
             RegisterSingleInstance(ChannelManager);
 
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
@@ -528,8 +530,11 @@ namespace MediaBrowser.ServerApplication
             var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);
             RegisterSingleInstance<ICollectionManager>(collectionManager);
 
-            LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, JsonSerializer);
+            LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, JsonSerializer, LocalizationManager);
             RegisterSingleInstance(LiveTvManager);
+
+            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, FileSystemManager, UserManager, ChannelManager, LiveTvManager);
+            RegisterSingleInstance(UserViewManager);
 
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
             RegisterSingleInstance(NotificationManager);

@@ -1275,7 +1275,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 NowPlayingItem = session.NowPlayingItem,
                 SupportsRemoteControl = session.SupportsMediaControl,
                 PlayState = session.PlayState,
-                TranscodingInfo = session.TranscodingInfo
+                TranscodingInfo = session.NowPlayingItem == null ? null : session.TranscodingInfo
             };
 
             if (session.UserId.HasValue)

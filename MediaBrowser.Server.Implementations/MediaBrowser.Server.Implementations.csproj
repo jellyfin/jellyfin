@@ -166,6 +166,7 @@
     <Compile Include="Library\Resolvers\VideoResolver.cs" />
     <Compile Include="Library\UserDataManager.cs" />
     <Compile Include="Library\UserManager.cs" />
+    <Compile Include="Library\UserViewManager.cs" />
     <Compile Include="Library\Validators\ArtistsPostScanTask.cs" />
     <Compile Include="Library\Validators\ArtistsValidator.cs" />
     <Compile Include="Library\Validators\BoxSetPostScanTask.cs" />
@@ -178,6 +179,7 @@
     <Compile Include="Library\Validators\PeopleValidator.cs" />
     <Compile Include="Library\Validators\StudiosPostScanTask.cs" />
     <Compile Include="Library\Validators\StudiosValidator.cs" />
+    <Compile Include="Library\Validators\UserViewPostScanTask.cs" />
     <Compile Include="Library\Validators\YearsPostScanTask.cs" />
     <Compile Include="LiveTv\ChannelImageProvider.cs" />
     <Compile Include="LiveTv\CleanDatabaseScheduledTask.cs" />
@@ -337,6 +339,10 @@
     <EmbeddedResource Include="Localization\Server\kk.json" />
     <EmbeddedResource Include="Localization\countries.json" />
     <EmbeddedResource Include="Localization\cultures.json" />
+    <EmbeddedResource Include="Localization\JavaScript\da.json" />
+    <EmbeddedResource Include="Localization\JavaScript\vi.json" />
+    <EmbeddedResource Include="Localization\Server\da.json" />
+    <EmbeddedResource Include="Localization\Server\vi.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
