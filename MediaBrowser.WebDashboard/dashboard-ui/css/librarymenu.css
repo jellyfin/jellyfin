@@ -210,7 +210,7 @@
     background-image: url(images/items/folders/home.png);
 }
 
-.tvshowsViewMenu {
+.tvshowsViewMenu, .livetvViewMenu {
     background-image: url(images/items/folders/tv.png);
 }
 

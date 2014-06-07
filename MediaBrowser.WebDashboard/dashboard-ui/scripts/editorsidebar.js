@@ -76,25 +76,17 @@
 
     function loadChildrenOfRootNode(page, callback, openItems, selectedId) {
 
-        var promise1 = $.getJSON(ApiClient.getUrl("Library/MediaFolders"));
-
         var promise2 = ApiClient.getLiveTvInfo();
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        $.when(promise2).done(function (response2) {
 
-            var mediaFolders = response1[0].Items;
-            var liveTvInfo = response2[0];
+            var liveTvInfo = response2;
 
             var nodes = [];
 
             var i, length;
 
-            for (i = 0, length = mediaFolders.length; i < length; i++) {
-
-                var state = openItems.indexOf(mediaFolders[i].Id) == -1 ? 'closed' : 'open';
-
-                nodes.push(getNode(mediaFolders[i], state));
-            }
+            nodes.push({ attr: { id: 'MediaFolders', rel: 'folder', itemtype: 'mediafolders' }, data: 'Media Folders', state: 'open' });
 
             for (i = 0, length = liveTvInfo.Services.length; i < length; i++) {
 
@@ -142,6 +134,24 @@
 
     }
 
+    function loadMediaFolders(service, openItems, callback) {
+
+        $.getJSON(ApiClient.getUrl("Library/MediaFolders")).done(function (result) {
+
+            var nodes = result.Items.map(function (i) {
+
+                var state = openItems.indexOf(i.Id) == -1 ? 'closed' : 'open';
+
+                return getNode(i, state);
+
+            });
+
+            callback(nodes);
+
+        });
+
+    }
+
     function loadNode(page, node, openItems, selectedId, currentUser, callback) {
 
         if (node == '-1') {
@@ -157,6 +167,12 @@
         if (itemtype == 'livetvservice') {
 
             loadLiveTvChannels(id, openItems, callback);
+            return;
+        }
+
+        if (itemtype == 'mediafolders') {
+
+            loadMediaFolders(id, openItems, callback);
             return;
         }
 
@@ -240,7 +256,9 @@
                 itemType: data.rslt.obj.attr("itemtype")
             };
 
-            $(this).trigger('itemclicked', [eventData]);
+            if (eventData.itemType != 'livetvservice' && eventData.itemType != 'mediafolders') {
+                $(this).trigger('itemclicked', [eventData]);
+            }
 
         });
     }

@@ -396,7 +396,7 @@
     "HeaderCastCrew": "\u62cd\u651d\u4eba\u54e1\u53ca\u6f14\u54e1",
     "HeaderAdditionalParts": "\u9644\u52a0\u90e8\u4efd",
     "ButtonSplitVersionsApart": "Split Versions Apart",
-    "ButtonPlayTrailer": "\u9810\u544a",
+    "ButtonPlayTrailer": "Trailer",
     "LabelMissing": "\u7f3a\u5c11",
     "LabelOffline": "\u96e2\u7dda",
     "PathSubstitutionHelp": "Path substitutions are used for mapping a path on the server to a path that clients are able to access. By allowing clients direct access to media on the server they may be able to play them directly over the network and avoid using server resources to stream and transcode them.",
@@ -768,7 +768,8 @@
     "LabelHomePageSection2": "Home page section two:",
     "LabelHomePageSection3": "Home page section three:",
     "OptionLibraryButtons": "Library buttons",
-    "OptionLibraryTiles": "Library tiles",
+    "OptionLibraryTiles": "Library tiles (large)",
+    "OptionSmallLibraryTiles": "Library tiles (small)",
     "OptionResumablemedia": "Resume",
     "OptionLatestMedia": "Latest media",
     "OptionNone": "None",
@@ -803,8 +804,10 @@
     "ViewTypeGames": "Games",
     "ViewTypeMusic": "Music",
     "ViewTypeBoxSets": "Collections",
+    "ViewTypeChannels": "Channels",
+    "ViewTypeLiveTV": "Live TV",
     "HeaderOtherDisplaySettings": "Display Settings",
     "HeaderLibraryViews": "Library Views",
-    "LabelSelectFolderGroups": "Automatically group the following folders into views such as Movies, Music and TV:",
-    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own section."
+    "LabelSelectFolderGroups": "Automatically group content from the following folders into views such as Movies, Music and TV:",
+    "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own view."
 }

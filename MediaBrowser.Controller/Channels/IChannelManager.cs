@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Channels;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
@@ -80,5 +81,21 @@ namespace MediaBrowser.Controller.Channels
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{MediaSourceInfo}}.</returns>
         Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaSources(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the channel folder.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>BaseItemDto.</returns>
+        Task<Folder> GetInternalChannelFolder(string userId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the channel folder.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>BaseItemDto.</returns>
+        Task<BaseItemDto> GetChannelFolder(string userId, CancellationToken cancellationToken);
     }
 }

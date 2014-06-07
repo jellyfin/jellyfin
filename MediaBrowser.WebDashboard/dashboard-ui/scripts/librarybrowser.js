@@ -365,6 +365,18 @@
             // Handle search hints
             var id = item.Id || item.ItemId;
 
+            if (item.CollectionType == 'livetv') {
+                return 'livetvsuggested.html';
+            }
+
+            if (item.CollectionType == 'channels') {
+                return 'channels.html';
+            }
+
+            if (item.CollectionType == 'movies') {
+                return 'movieslatest.html?topParentId=' + item.Id;
+            }
+
             if (item.CollectionType == 'boxsets' || item.Type == 'ManualCollectionsFolder') {
                 return 'collections.html?topParentId=' + item.Id;
             }

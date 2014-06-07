@@ -370,7 +370,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsNews = item.IsNews,
                 IsKids = item.IsKids,
                 IsPremiere = item.IsPremiere,
-                Type = "Program"
+                Type = "Program",
+                MediaType = item.MediaType
             };
 
             if (item.EndDate.HasValue)

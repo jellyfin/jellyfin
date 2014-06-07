@@ -183,7 +183,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The configuration directory path.</value>
         [IgnoreDataMember]
-        internal string ConfigurationDirectoryPath
+        public string ConfigurationDirectoryPath
         {
             get
             {
@@ -246,11 +246,6 @@ namespace MediaBrowser.Controller.Entities
 
             Configuration = config;
             SaveConfiguration();
-        }
-
-        public IEnumerable<Folder> GetViews()
-        {
-            return ((UserRootFolder)RootFolder).GetViews(this, CancellationToken.None).Result;
         }
     }
 }

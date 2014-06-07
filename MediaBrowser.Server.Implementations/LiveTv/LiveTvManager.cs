@@ -7,13 +7,16 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -21,7 +24,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -40,6 +42,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly ITaskManager _taskManager;
         private readonly IJsonSerializer _json;
 
+        private readonly IDtoService _dtoService;
+        private readonly ILocalizationManager _localization;
+
         private readonly LiveTvDtoService _tvDtoService;
 
         private readonly List<ILiveTvService> _services = new List<ILiveTvService>();
@@ -53,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
 
-        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, IJsonSerializer json)
+        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, IJsonSerializer json, ILocalizationManager localization)
         {
             _config = config;
             _fileSystem = fileSystem;
@@ -63,6 +68,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _libraryManager = libraryManager;
             _taskManager = taskManager;
             _json = json;
+            _localization = localization;
+            _dtoService = dtoService;
             _userDataManager = userDataManager;
 
             _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, _itemRepo);
@@ -1733,6 +1740,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public Task ResetTuner(string id, CancellationToken cancellationToken)
         {
             return ActiveService.ResetTuner(id, cancellationToken);
+        }
+
+        public async Task<BaseItemDto> GetLiveTvFolder(string userId, CancellationToken cancellationToken)
+        {
+            var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(new Guid(userId));
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+
+            var folder = await GetInternalLiveTvFolder(userId, cancellationToken).ConfigureAwait(false);
+
+            return _dtoService.GetBaseItemDto(folder, fields, user);
+        }
+
+        public async Task<Folder> GetInternalLiveTvFolder(string userId, CancellationToken cancellationToken)
+        {
+            var name = _localization.GetLocalizedString("ViewTypeLiveTV");
+            return await _libraryManager.GetNamedView(name, "livetv", "zz_" + name, cancellationToken).ConfigureAwait(false);
         }
     }
 }

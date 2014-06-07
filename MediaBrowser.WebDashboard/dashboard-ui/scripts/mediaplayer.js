@@ -256,6 +256,10 @@
                 console.log('Transcoding because bitrate is too high');
                 return false;
             }
+            
+            if (videoStream && videoStream.Profile == 'High') {
+                return false;
+            }
 
             var extension = (mediaSource.Container || '').toLowerCase();
 

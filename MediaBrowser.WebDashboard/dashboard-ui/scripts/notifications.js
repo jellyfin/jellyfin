@@ -39,14 +39,14 @@
             html += '<h3 style="margin: .5em 0;">Notifications</h3>';
             html += '</div>';
 
-            html += '<div data-role="content" style="padding: 0;">';
+            html += '<div style="padding: 0;">';
 
             html += '<p class="notificationsFlyoutlist">Loading...';
 
             html += '</p>';
 
             html += '<div class="btnNotificationListContainer"><a data-role="button" href="notificationlist.html" data-icon="action" data-mini="true">' + Globalize.translate('ButtonViewNotifications') + '</a></div>';
-            html += '<div style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check" data-mini="true" data-theme="b">' + Globalize.translate('ButtonMarkTheseRead') + '</button></div>';
+            html += '<div style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check" data-mini="true">' + Globalize.translate('ButtonMarkTheseRead') + '</button></div>';
 
 
             html += '</div>';

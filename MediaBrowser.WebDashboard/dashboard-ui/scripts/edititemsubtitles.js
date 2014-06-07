@@ -292,10 +292,6 @@
 
         $('.libraryTree', page).on('itemclicked', function (event, data) {
 
-            if (data.itemType == "livetvservice") {
-                return;
-            }
-
             if (data.id != currentItem.Id) {
 
                 MetadataEditor.currentItemId = data.id;

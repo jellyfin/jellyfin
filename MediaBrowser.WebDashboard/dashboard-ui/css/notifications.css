@@ -70,6 +70,10 @@
         max-width: 95%;
     }
 
+    .flyoutNotification:last-child {
+        border-bottom: 1px solid #ccc;
+    }
+
 .notificationName {
     font-weight: bold;
     color: #555;
@@ -88,13 +92,13 @@
 }
 
 .notificationsList {
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #ddd;
 }
 
-.notificationsList .flyoutNotification {
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
-}
+    .notificationsList .flyoutNotification {
+        border-left: 1px solid #ddd;
+        border-right: 1px solid #ddd;
+    }
 
 .imgNotification, .imgNotificationInner {
     width: 40px;

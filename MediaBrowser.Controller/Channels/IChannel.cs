@@ -15,6 +15,12 @@ namespace MediaBrowser.Controller.Channels
         string Name { get; }
 
         /// <summary>
+        /// Gets the description.
+        /// </summary>
+        /// <value>The description.</value>
+        string Description { get; }
+
+        /// <summary>
         /// Gets the data version.
         /// </summary>
         /// <value>The data version.</value>

@@ -157,6 +157,7 @@
     <Compile Include="Globalization\LocalizatonOption.cs" />
     <Compile Include="IO\FileSystemEntryType.cs" />
     <Compile Include="Library\PlayAccess.cs" />
+    <Compile Include="Library\UserViewQuery.cs" />
     <Compile Include="LiveTv\BaseTimerInfoDto.cs" />
     <Compile Include="LiveTv\ChannelInfoDto.cs" />
     <Compile Include="LiveTv\LiveTvChannelQuery.cs" />

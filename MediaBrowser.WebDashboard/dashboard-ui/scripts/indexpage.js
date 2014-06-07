@@ -1,5 +1,19 @@
 ﻿(function ($, document, apiClient) {
 
+    function getUserViews(userId) {
+
+        var deferred = $.Deferred();
+
+        ApiClient.getUserViews(userId).done(function (result) {
+
+            var items = result.Items;
+
+            deferred.resolveWith(null, [items]);
+        });
+
+        return deferred.promise();
+    }
+
     function createMediaLinks(options) {
 
         var html = "";
@@ -102,44 +116,7 @@
 
     function loadlibraryButtons(elem, userId, index) {
 
-        var promise1 = ApiClient.getUserViews(userId);
-
-        var promise2 = ApiClient.getLiveTvInfo();
-
-        var promise3 = $.getJSON(ApiClient.getUrl("Channels", {
-            userId: userId,
-
-            // We just want the total record count
-            limit: 0
-        }));
-
-        $.when(promise1, promise2, promise3).done(function (r1, r2, r3) {
-
-            var result = r1[0];
-            var liveTvInfo = r2[0];
-            var channelResponse = r3[0];
-
-            if (channelResponse.TotalRecordCount) {
-
-                result.Items.push({
-                    Name: 'Channels',
-                    CollectionType: 'channels',
-                    Id: 'channels',
-                    url: 'channels.html'
-                });
-            }
-
-            var showLiveTv = liveTvInfo.EnabledUsers.indexOf(userId) != -1;
-
-            if (showLiveTv) {
-
-                result.Items.push({
-                    Name: 'Live TV',
-                    CollectionType: 'livetv',
-                    Id: 'livetv',
-                    url: 'livetvsuggested.html'
-                });
-            }
+        getUserViews(userId).done(function (items) {
 
             var html = '<br/>';
 
@@ -148,7 +125,7 @@
             }
             html += '<div>';
             html += createMediaLinks({
-                items: result.Items,
+                items: items,
                 shape: 'myLibrary',
                 showTitle: true,
                 centerText: true
@@ -202,18 +179,18 @@
         });
     }
 
-    function loadLibraryTiles(elem, userId) {
+    function loadLibraryTiles(elem, userId, shape) {
 
-        ApiClient.getUserViews(userId).done(function (result) {
+        getUserViews(userId).done(function (items) {
 
             var html = '';
 
-            if (result.Items.length) {
+            if (items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyLibrary') + '</h1>';
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: 'backdrop',
+                    items: items,
+                    shape: shape,
                     showTitle: true,
                     centerText: true,
                     lazy: true
@@ -250,7 +227,7 @@
             var html = '';
 
             if (result.Items.length) {
-                html += '<h1 class="listHeader">'+Globalize.translate('HeaderResume')+'</h1>';
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderResume') + '</h1>';
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
@@ -279,7 +256,10 @@
             loadRecentlyAdded(elem, userId);
         }
         else if (section == 'librarytiles') {
-            loadLibraryTiles(elem, userId);
+            loadLibraryTiles(elem, userId, 'backdrop');
+        }
+        else if (section == 'smalllibrarytiles') {
+            loadLibraryTiles(elem, userId, 'smallBackdrop');
         }
         else if (section == 'resume') {
             loadResume(elem, userId);
@@ -327,16 +307,16 @@
     }
 
     var homePageDismissValue = '2';
-    
+
     function dismissWelcome(page, userId) {
 
         ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
 
             result.CustomPrefs.homePageWelcomeDismissed = homePageDismissValue;
-            ApiClient.updateDisplayPreferences('home', result, userId, 'webclient').done(function() {
-                
+            ApiClient.updateDisplayPreferences('home', result, userId, 'webclient').done(function () {
+
                 $('.welcomeMessage', page).hide();
-                
+
             });
         });
     }
@@ -364,7 +344,7 @@
             } else {
                 $('.welcomeMessage', page).show();
             }
-            
+
             loadSections(page, userId, result);
         });
 

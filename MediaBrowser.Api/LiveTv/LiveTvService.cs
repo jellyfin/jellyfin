@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
@@ -259,6 +261,13 @@ namespace MediaBrowser.Api.LiveTv
     {
     }
 
+    [Route("/LiveTv/Folder", "GET", Summary = "Gets the users live tv folder, along with configured images")]
+    public class GetLiveTvFolder : IReturn<BaseItemDto>
+    {
+        [ApiMember(Name = "UserId", Description = "Optional attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string UserId { get; set; }
+    }
+
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
@@ -316,6 +325,11 @@ namespace MediaBrowser.Api.LiveTv
             var result = _liveTvManager.GetChannel(request.Id, CancellationToken.None, user).Result;
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        public object Get(GetLiveTvFolder request)
+        {
+            return ToOptimizedResult(_liveTvManager.GetLiveTvFolder(request.UserId, CancellationToken.None).Result);
         }
 
         public object Get(GetPrograms request)
