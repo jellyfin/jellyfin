@@ -125,10 +125,11 @@ namespace MediaBrowser.Api.Movies
             var user = _userManager.GetUserById(request.UserId.Value);
 
             var movies = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId)
-                .OfType<Movie>()
-                .ToList();
+                .OfType<Movie>();
 
-            var result = GetRecommendationCategories(user, movies, request.CategoryLimit, request.ItemLimit, request.GetItemFields().ToList());
+            movies = _libraryManager.ReplaceVideosWithPrimaryVersions(movies).Cast<Movie>();
+
+            var result = GetRecommendationCategories(user, movies.ToList(), request.CategoryLimit, request.ItemLimit, request.GetItemFields().ToList());
 
             return ToOptimizedResult(result);
         }
@@ -226,15 +227,6 @@ namespace MediaBrowser.Api.Movies
                     break;
                 }
             }
-
-            //// Get the lead actor for all movies
-            //var allActors = GetActors(allMovies)
-            //    .ToList();
-
-            //foreach (var actor in recentActors)
-            //{
-
-            //}
 
             return categories.OrderBy(i => i.RecommendationType).ThenBy(i => Guid.NewGuid());
         }
