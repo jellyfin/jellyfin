@@ -410,6 +410,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     stream.PacketLength = null;
                 }
+
+                // Don't trust the provider values
+                stream.Index = -1;
             }
         }
 

@@ -193,10 +193,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool AllowVideoUpscaling { get; set; }
 
-        public bool EnableMovieChapterImageExtraction { get; set; }
-        public bool EnableEpisodeChapterImageExtraction { get; set; }
-        public bool EnableOtherVideoChapterImageExtraction { get; set; }
-
         public MetadataOptions[] MetadataOptions { get; set; }
 
         public bool EnableDebugEncodingLogging { get; set; }
@@ -227,6 +223,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] ManualLoginClients { get; set; }
 
         public ChannelOptions ChannelOptions { get; set; }
+        public ChapterOptions ChapterOptions { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -241,9 +238,6 @@ namespace MediaBrowser.Model.Configuration
             EnableHttpLevelLogging = true;
             EnableDashboardResponseCaching = true;
 
-            EnableMovieChapterImageExtraction = true;
-            EnableEpisodeChapterImageExtraction = false;
-            EnableOtherVideoChapterImageExtraction = false;
             EnableAutomaticRestart = true;
             EnablePeoplePrefixSubFolders = true;
 
@@ -297,6 +291,7 @@ namespace MediaBrowser.Model.Configuration
             SubtitleOptions = new SubtitleOptions();
 
             ChannelOptions = new ChannelOptions();
+            ChapterOptions = new ChapterOptions();
         }
     }
 
@@ -313,6 +308,31 @@ namespace MediaBrowser.Model.Configuration
         {
             DownloadingChannels = new string[] { };
             MaxDownloadAge = 30;
+        }
+    }
+
+    public class ChapterOptions
+    {
+        public bool EnableMovieChapterImageExtraction { get; set; }
+        public bool EnableEpisodeChapterImageExtraction { get; set; }
+        public bool EnableOtherVideoChapterImageExtraction { get; set; }
+
+        public bool DownloadMovieChapters { get; set; }
+        public bool DownloadEpisodeChapters { get; set; }
+
+        public string[] FetcherOrder { get; set; }
+        public string[] DisabledFetchers { get; set; }
+
+        public ChapterOptions()
+        {
+            EnableMovieChapterImageExtraction = true;
+            EnableEpisodeChapterImageExtraction = false;
+            EnableOtherVideoChapterImageExtraction = false;
+
+            DownloadMovieChapters = true;
+
+            DisabledFetchers = new string[] { };
+            FetcherOrder = new string[] { };
         }
     }
 }

@@ -91,6 +91,7 @@
     <Compile Include="Channels\IRequiresMediaInfoCallback.cs" />
     <Compile Include="Channels\ISearchableChannel.cs" />
     <Compile Include="Chapters\ChapterSearchRequest.cs" />
+    <Compile Include="Chapters\IChapterManager.cs" />
     <Compile Include="Chapters\IChapterProvider.cs" />
     <Compile Include="Chapters\ChapterResponse.cs" />
     <Compile Include="Collections\CollectionCreationOptions.cs" />

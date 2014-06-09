@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -49,58 +50,59 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
+        private readonly IChapterManager _chapterManager;
 
         public string Name
         {
             get { return "ffprobe"; }
         }
 
-        public Task<ItemUpdateType> FetchAsync(Episode item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Episode item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, directoryService, cancellationToken);
+            return FetchVideoInfo(item, options, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(MusicVideo item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(MusicVideo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, directoryService, cancellationToken);
+            return FetchVideoInfo(item, options, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(Movie item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Movie item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, directoryService, cancellationToken);
+            return FetchVideoInfo(item, options, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(AdultVideo item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(AdultVideo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, directoryService, cancellationToken);
+            return FetchVideoInfo(item, options, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(LiveTvVideoRecording item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(LiveTvVideoRecording item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, directoryService, cancellationToken);
+            return FetchVideoInfo(item, options, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(Trailer item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Trailer item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, directoryService, cancellationToken);
+            return FetchVideoInfo(item, options, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(Video item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Video item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            return FetchVideoInfo(item, directoryService, cancellationToken);
+            return FetchVideoInfo(item, options, cancellationToken);
         }
 
-        public Task<ItemUpdateType> FetchAsync(Audio item, IDirectoryService directoryService, CancellationToken cancellationToken)
-        {
-            return FetchAudioInfo(item, cancellationToken);
-        }
-
-        public Task<ItemUpdateType> FetchAsync(LiveTvAudioRecording item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Audio item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchAudioInfo(item, cancellationToken);
         }
 
-        public FFProbeProvider(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager)
+        public Task<ItemUpdateType> FetchAsync(LiveTvAudioRecording item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            return FetchAudioInfo(item, cancellationToken);
+        }
+
+        public FFProbeProvider(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager, IChapterManager chapterManager)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -114,10 +116,11 @@ namespace MediaBrowser.Providers.MediaInfo
             _fileSystem = fileSystem;
             _config = config;
             _subtitleManager = subtitleManager;
+            _chapterManager = chapterManager;
         }
 
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
-        public Task<ItemUpdateType> FetchVideoInfo<T>(T item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchVideoInfo<T>(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
             where T : Video
         {
             if (item.LocationType != LocationType.FileSystem)
@@ -140,9 +143,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
-            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager);
+            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager, _chapterManager);
 
-            return prober.ProbeVideo(item, directoryService, true, cancellationToken);
+            return prober.ProbeVideo(item, options, cancellationToken);
         }
 
         public Task<ItemUpdateType> FetchAudioInfo<T>(T item, CancellationToken cancellationToken)
@@ -171,9 +174,10 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (video != null && !video.IsPlaceHolder)
                 {
-                    var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager);
-
-                    return !video.SubtitleFiles.SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, directoryService, false).Select(i => i.FullName).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
+                    return !video.SubtitleFiles
+                        .SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, directoryService, false)
+                        .Select(i => i.FullName)
+                        .OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
                 }
             }
 

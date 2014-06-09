@@ -10,6 +10,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -43,6 +44,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
+using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Server.Implementations;
@@ -196,6 +198,7 @@ namespace MediaBrowser.ServerApplication
 
         private INotificationManager NotificationManager { get; set; }
         private ISubtitleManager SubtitleManager { get; set; }
+        private IChapterManager ChapterManager { get; set; }
 
         private IUserViewManager UserViewManager { get; set; }
 
@@ -544,6 +547,9 @@ namespace MediaBrowser.ServerApplication
             SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor, LibraryManager, ItemRepository);
             RegisterSingleInstance(SubtitleManager);
 
+            ChapterManager = new ChapterManager(LibraryManager, LogManager.GetLogger("ChapterManager"), ServerConfigurationManager);
+            RegisterSingleInstance(ChapterManager);
+
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
             var userdataTask = Task.Run(async () => await ConfigureUserDataRepositories().ConfigureAwait(false));
@@ -725,7 +731,8 @@ namespace MediaBrowser.ServerApplication
             LiveTvManager.AddParts(GetExports<ILiveTvService>());
 
             SubtitleManager.AddParts(GetExports<ISubtitleProvider>());
-            
+            ChapterManager.AddParts(GetExports<IChapterProvider>());
+       
             SessionManager.AddParts(GetExports<ISessionControllerFactory>());
 
             ChannelManager.AddParts(GetExports<IChannel>(), GetExports<IChannelFactory>());

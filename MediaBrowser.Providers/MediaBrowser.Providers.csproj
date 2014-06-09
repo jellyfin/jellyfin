@@ -79,6 +79,7 @@
     <Compile Include="BoxSets\MovieDbBoxSetImageProvider.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetProvider.cs" />
     <Compile Include="Channels\ChannelMetadataService.cs" />
+    <Compile Include="Chapters\ChapterManager.cs" />
     <Compile Include="Folders\CollectionFolderImageProvider.cs" />
     <Compile Include="Folders\FolderMetadataService.cs" />
     <Compile Include="Folders\ImagesByNameImageProvider.cs" />

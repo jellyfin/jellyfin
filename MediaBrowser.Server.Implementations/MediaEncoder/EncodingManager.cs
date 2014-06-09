@@ -91,21 +91,21 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             if (video is Movie)
             {
-                if (!_config.Configuration.EnableMovieChapterImageExtraction)
+                if (!_config.Configuration.ChapterOptions.EnableMovieChapterImageExtraction)
                 {
                     return false;
                 }
             }
             else if (video is Episode)
             {
-                if (!_config.Configuration.EnableEpisodeChapterImageExtraction)
+                if (!_config.Configuration.ChapterOptions.EnableEpisodeChapterImageExtraction)
                 {
                     return false;
                 }
             }
             else
             {
-                if (!_config.Configuration.EnableOtherVideoChapterImageExtraction)
+                if (!_config.Configuration.ChapterOptions.EnableOtherVideoChapterImageExtraction)
                 {
                     return false;
                 }

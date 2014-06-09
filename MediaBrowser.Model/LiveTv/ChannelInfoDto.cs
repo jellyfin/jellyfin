@@ -32,6 +32,10 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The external identifier.</value>
         public string ExternalId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the media sources.
+        /// </summary>
+        /// <value>The media sources.</value>
         public List<MediaSourceInfo> MediaSources { get; set; }
         
         /// <summary>
