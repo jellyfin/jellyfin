@@ -22,6 +22,12 @@ namespace MediaBrowser.Model.Chapters
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the provider.
+        /// </summary>
+        /// <value>The name of the provider.</value>
+        public string ProviderName { get; set; }
+        
+        /// <summary>
         /// Gets or sets the community rating.
         /// </summary>
         /// <value>The community rating.</value>

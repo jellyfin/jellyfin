@@ -561,7 +561,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return dtos.ToList();
             }
 
-            throw new ArgumentException("The item does not support special features");
+            return new List<BaseItemDto>();
         }
 
         /// <summary>

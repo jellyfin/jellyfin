@@ -12,7 +12,14 @@ namespace MediaBrowser.Controller.Providers
     public interface ICustomMetadataProvider<TItemType> : IMetadataProvider<TItemType>, ICustomMetadataProvider
         where TItemType : IHasMetadata
     {
-        Task<ItemUpdateType> FetchAsync(TItemType item, IDirectoryService directoryService, CancellationToken cancellationToken);
+        /// <summary>
+        /// Fetches the asynchronous.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{ItemUpdateType}.</returns>
+        Task<ItemUpdateType> FetchAsync(TItemType item, MetadataRefreshOptions options, CancellationToken cancellationToken);
     }
 
     public interface IPreRefreshProvider : ICustomMetadataProvider

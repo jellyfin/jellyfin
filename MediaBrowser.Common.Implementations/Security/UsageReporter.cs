@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,13 +26,16 @@ namespace MediaBrowser.Common.Implementations.Security
 
             var mac = _networkManager.GetMacAddress();
 
+            var plugins = string.Join("|", _applicationHost.Plugins.Select(i => i.Name).ToArray());
+
             var data = new Dictionary<string, string>
             {
                 { "feature", _applicationHost.Name }, 
                 { "mac", mac }, 
                 { "ver", _applicationHost.ApplicationVersion.ToString() }, 
                 { "platform", Environment.OSVersion.VersionString }, 
-                { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower()}
+                { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower()}, 
+                { "plugins", plugins}
             };
 
             return _httpClient.Post(Constants.Constants.MbAdminUrl + "service/registration/ping", data, cancellationToken);

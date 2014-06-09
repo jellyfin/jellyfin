@@ -4,7 +4,7 @@
 
     function deleteRecording() {
 
-        Dashboard.confirm(Globalize.transate('MessageConfirmRecordingDeletion'), Globalize.transate('HeaderConfirmRecordingDeletion'), function (result) {
+        Dashboard.confirm(Globalize.translate('MessageConfirmRecordingDeletion'), Globalize.translate('HeaderConfirmRecordingDeletion'), function (result) {
 
             if (result) {
 
@@ -12,7 +12,7 @@
 
                 ApiClient.deleteLiveTvRecording(currentItem.Id).done(function () {
 
-                    Dashboard.alert(Globalize.transate('MessageRecordingDeleted'));
+                    Dashboard.alert(Globalize.translate('MessageRecordingDeleted'));
 
                     Dashboard.navigate('livetvrecordings.html');
                 });

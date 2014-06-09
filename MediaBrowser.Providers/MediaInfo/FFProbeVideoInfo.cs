@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -41,10 +42,11 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
+        private readonly IChapterManager _chapterManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager)
+        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager, IChapterManager chapterManager)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -58,9 +60,12 @@ namespace MediaBrowser.Providers.MediaInfo
             _fileSystem = fileSystem;
             _config = config;
             _subtitleManager = subtitleManager;
+            _chapterManager = chapterManager;
         }
 
-        public async Task<ItemUpdateType> ProbeVideo<T>(T item, IDirectoryService directoryService, bool enableSubtitleDownloading, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> ProbeVideo<T>(T item,
+            MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
             where T : Video
         {
             var isoMount = await MountIsoIfNeeded(item, cancellationToken).ConfigureAwait(false);
@@ -105,7 +110,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Fetch(item, cancellationToken, result, isoMount, blurayDiscInfo, directoryService, enableSubtitleDownloading).ConfigureAwait(false);
+                await Fetch(item, cancellationToken, result, isoMount, blurayDiscInfo, options).ConfigureAwait(false);
 
             }
             finally
@@ -121,7 +126,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private const string SchemaVersion = "1";
 
-        private async Task<InternalMediaInfoResult> GetMediaInfo(BaseItem item, IIsoMount isoMount, CancellationToken cancellationToken)
+        private async Task<InternalMediaInfoResult> GetMediaInfo(BaseItem item,
+            IIsoMount isoMount,
+            CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -160,7 +167,12 @@ namespace MediaBrowser.Providers.MediaInfo
             return result;
         }
 
-        protected async Task Fetch(Video video, CancellationToken cancellationToken, InternalMediaInfoResult data, IIsoMount isoMount, BlurayDiscInfo blurayInfo, IDirectoryService directoryService, bool enableSubtitleDownloading)
+        protected async Task Fetch(Video video,
+            CancellationToken cancellationToken,
+            InternalMediaInfoResult data,
+            IIsoMount isoMount,
+            BlurayDiscInfo blurayInfo,
+            MetadataRefreshOptions options)
         {
             var mediaInfo = MediaEncoderHelpers.GetMediaInfo(data);
             var mediaStreams = mediaInfo.MediaStreams;
@@ -208,16 +220,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchBdInfo(video, chapters, mediaStreams, blurayInfo);
             }
 
-            await AddExternalSubtitles(video, mediaStreams, directoryService, enableSubtitleDownloading, cancellationToken).ConfigureAwait(false);
+            await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
             FetchWtvInfo(video, data);
 
             video.IsHD = mediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1270);
-
-            if (chapters.Count == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
-            {
-                AddDummyChapters(video, chapters);
-            }
 
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
@@ -228,18 +235,34 @@ namespace MediaBrowser.Providers.MediaInfo
 
             ExtractTimestamp(video);
 
-            await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
-            {
-                Chapters = chapters,
-                Video = video,
-                ExtractImages = false,
-                SaveChapters = false
-
-            }, cancellationToken).ConfigureAwait(false);
-
             await _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
 
-            await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
+            if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
+                options.MetadataRefreshMode == MetadataRefreshMode.EnsureMetadata)
+            {
+                var remoteChapters = await DownloadChapters(video, cancellationToken).ConfigureAwait(false);
+
+                if (remoteChapters.Count > 0)
+                {
+                    chapters = remoteChapters;
+                }
+
+                if (chapters.Count == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
+                {
+                    AddDummyChapters(video, chapters);
+                }
+
+                await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
+                {
+                    Chapters = chapters,
+                    Video = video,
+                    ExtractImages = false,
+                    SaveChapters = false
+
+                }, cancellationToken).ConfigureAwait(false);
+
+                await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         private ChapterInfo GetChapterInfo(MediaChapter chapter)
@@ -416,15 +439,20 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="video">The video.</param>
         /// <param name="currentStreams">The current streams.</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <param name="enableSubtitleDownloading">if set to <c>true</c> [enable subtitle downloading].</param>
+        /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task AddExternalSubtitles(Video video, List<MediaStream> currentStreams, IDirectoryService directoryService, bool enableSubtitleDownloading, CancellationToken cancellationToken)
+        private async Task AddExternalSubtitles(Video video,
+            List<MediaStream> currentStreams,
+            MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
         {
             var subtitleResolver = new SubtitleResolver(_localization);
 
-            var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, currentStreams.Count, directoryService, false).ToList();
+            var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, currentStreams.Count, options.DirectoryService, false).ToList();
+
+            var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.EnsureMetadata ||
+                                            options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
             if (enableSubtitleDownloading && (_config.Configuration.SubtitleOptions.DownloadEpisodeSubtitles &&
                 video is Episode) ||
@@ -444,13 +472,40 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Rescan
                 if (downloadedLanguages.Count > 0)
                 {
-                    externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, currentStreams.Count, directoryService, true).ToList();
+                    externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, currentStreams.Count, options.DirectoryService, true).ToList();
                 }
             }
 
             video.SubtitleFiles = externalSubtitleStreams.Select(i => i.Path).OrderBy(i => i).ToList();
 
             currentStreams.AddRange(externalSubtitleStreams);
+        }
+
+        private async Task<List<ChapterInfo>> DownloadChapters(Video video, CancellationToken cancellationToken)
+        {
+            if ((_config.Configuration.ChapterOptions.DownloadEpisodeChapters &&
+                 video is Episode) ||
+                (_config.Configuration.ChapterOptions.DownloadMovieChapters &&
+                 video is Movie))
+            {
+                var results = await _chapterManager.Search(video, cancellationToken).ConfigureAwait(false);
+
+                var result = results.FirstOrDefault();
+
+                if (result != null)
+                {
+                    var chapters = await _chapterManager.GetChapters(result.Id, cancellationToken).ConfigureAwait(false);
+
+                    return chapters.Chapters.Select(i => new ChapterInfo
+                    {
+                        Name = i.Name,
+                        StartPositionTicks = i.StartPositionTicks
+
+                    }).ToList();
+                }
+            }
+
+            return new List<ChapterInfo>();
         }
 
         /// <summary>
@@ -499,6 +554,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="mount">The mount.</param>
+        /// <param name="blurayDiscInfo">The bluray disc information.</param>
         private void OnPreFetch(Video item, IIsoMount mount, BlurayDiscInfo blurayDiscInfo)
         {
             if (item.VideoType == VideoType.Iso)

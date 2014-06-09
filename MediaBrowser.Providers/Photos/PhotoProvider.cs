@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Photos
             _imageProcessor = imageProcessor;
         }
 
-        public Task<ItemUpdateType> FetchAsync(Photo item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             item.SetImagePath(ImageType.Primary, item.Path);
             item.SetImagePath(ImageType.Backdrop, item.Path);

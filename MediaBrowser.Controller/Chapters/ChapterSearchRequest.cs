@@ -21,6 +21,8 @@ namespace MediaBrowser.Controller.Chapters
         public long? RuntimeTicks { get; set; }
         public Dictionary<string, string> ProviderIds { get; set; }
 
+        public bool SearchAllProviders { get; set; }
+
         public ChapterSearchRequest()
         {
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

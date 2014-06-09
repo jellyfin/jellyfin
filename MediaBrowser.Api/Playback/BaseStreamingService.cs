@@ -363,11 +363,11 @@ namespace MediaBrowser.Api.Playback
                 switch (qualitySetting)
                 {
                     case EncodingQuality.HighSpeed:
-                        crf = "16";
+                        crf = "12";
                         profileScore = 2;
                         break;
                     case EncodingQuality.HighQuality:
-                        crf = "10";
+                        crf = "8";
                         profileScore = 1;
                         break;
                     case EncodingQuality.MaxQuality:

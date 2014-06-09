@@ -271,7 +271,7 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var provider in customProviders.Where(i => i is IPreRefreshProvider))
             {
-                await RunCustomProvider(provider, item, options.DirectoryService, refreshResult, cancellationToken).ConfigureAwait(false);
+                await RunCustomProvider(provider, item, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
             var temp = CreateNew();
@@ -343,19 +343,19 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var provider in customProviders.Where(i => !(i is IPreRefreshProvider)))
             {
-                await RunCustomProvider(provider, item, options.DirectoryService, refreshResult, cancellationToken).ConfigureAwait(false);
+                await RunCustomProvider(provider, item, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
             return refreshResult;
         }
 
-        private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, IDirectoryService directoryService, RefreshResult refreshResult, CancellationToken cancellationToken)
+        private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, MetadataRefreshOptions options, RefreshResult refreshResult, CancellationToken cancellationToken)
         {
             Logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
 
             try
             {
-                refreshResult.UpdateType = refreshResult.UpdateType | await provider.FetchAsync(item, directoryService, cancellationToken).ConfigureAwait(false);
+                refreshResult.UpdateType = refreshResult.UpdateType | await provider.FetchAsync(item, options, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {

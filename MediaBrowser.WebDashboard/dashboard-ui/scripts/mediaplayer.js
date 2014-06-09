@@ -257,11 +257,12 @@
                 return false;
             }
             
-            if (videoStream && videoStream.Profile == 'High') {
+            var extension = (mediaSource.Container || '').toLowerCase();
+
+            // m4v's with high profile failing in chrome
+            if (videoStream && videoStream.Profile == 'High' && extension == 'm4v') {
                 return false;
             }
-
-            var extension = (mediaSource.Container || '').toLowerCase();
 
             if (extension == 'm4v') {
                 return $.browser.chrome;
