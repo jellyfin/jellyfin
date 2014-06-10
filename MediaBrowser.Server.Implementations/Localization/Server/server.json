@@ -733,7 +733,7 @@
 	"OptionReportByteRangeSeekingWhenTranscodingHelp": "This is required for some devices that don't time seek very well.",
 	"HeaderSubtitleDownloadingHelp": "When Media Browser scans your video files it can search for missing subtitles, and download them using a subtitle provider such as OpenSubtitles.org.",
 	"HeaderDownloadSubtitlesFor": "Download subtitles for:",
-	"MessageNoChapterProviders": "Install a chapter provider plugin such as ChapterDb or tagChimp to enable additional chapter metadata options.",
+	"MessageNoChapterProviders": "Install a chapter provider plugin such as ChapterDb or tagChimp to enable additional chapter options.",
 	"LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains graphical subtitles",
 	"LabelSkipIfGraphicalSubsPresentHelp": "Keeping text versions of subtitles will result in more efficient delivery to mobile clients.",
 	"TabSubtitles": "Subtitles",

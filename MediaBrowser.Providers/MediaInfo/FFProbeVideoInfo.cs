@@ -261,7 +261,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 }, cancellationToken).ConfigureAwait(false);
 
-                await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
+                await _chapterManager.SaveChapters(video.Id.ToString(), chapters, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -279,8 +279,14 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Limit accuracy to milliseconds to match xml saving
-            var ms = Math.Round(TimeSpan.FromTicks(chapter.start / 100).TotalMilliseconds);
-            info.StartPositionTicks = TimeSpan.FromMilliseconds(ms).Ticks;
+            var secondsString = chapter.start_time;
+            double seconds;
+
+            if (double.TryParse(secondsString, NumberStyles.Any, CultureInfo.InvariantCulture, out seconds))
+            {
+                var ms = Math.Round(TimeSpan.FromSeconds(seconds).TotalMilliseconds);
+                info.StartPositionTicks = TimeSpan.FromMilliseconds(ms).Ticks;
+            }
 
             return info;
         }

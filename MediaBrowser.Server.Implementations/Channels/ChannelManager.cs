@@ -453,6 +453,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 MaxPageSize = features.MaxPageSize,
                 MediaTypes = features.MediaTypes,
                 SupportsSortOrderToggle = features.SupportsSortOrderToggle,
+                SupportsLatestMedia = provider is ISupportsLatestMedia,
                 Name = channel.Name,
                 Id = channel.Id.ToString("N"),
                 CanDownloadAllMedia = isIndexable

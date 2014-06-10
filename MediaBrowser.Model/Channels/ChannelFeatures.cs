@@ -51,6 +51,12 @@ namespace MediaBrowser.Model.Channels
         public bool SupportsSortOrderToggle { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [supports latest media].
+        /// </summary>
+        /// <value><c>true</c> if [supports latest media]; otherwise, <c>false</c>.</value>
+        public bool SupportsLatestMedia { get; set; }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether this instance can filter.
         /// </summary>
         /// <value><c>true</c> if this instance can filter; otherwise, <c>false</c>.</value>

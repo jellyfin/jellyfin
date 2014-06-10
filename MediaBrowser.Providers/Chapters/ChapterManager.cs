@@ -5,8 +5,10 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Chapters;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -22,12 +24,14 @@ namespace MediaBrowser.Providers.Chapters
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
+        private readonly IItemRepository _itemRepo;
 
-        public ChapterManager(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config)
+        public ChapterManager(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _config = config;
+            _itemRepo = itemRepo;
         }
 
         public void AddParts(IEnumerable<IChapterProvider> chapterProviders)
@@ -235,6 +239,16 @@ namespace MediaBrowser.Providers.Chapters
             }
 
             return 0;
+        }
+
+        public IEnumerable<ChapterInfo> GetChapters(string itemId)
+        {
+            return _itemRepo.GetChapters(new Guid(itemId));
+        }
+
+        public Task SaveChapters(string itemId, IEnumerable<ChapterInfo> chapters, CancellationToken cancellationToken)
+        {
+            return _itemRepo.SaveChapters(new Guid(itemId), chapters, cancellationToken);
         }
     }
 }

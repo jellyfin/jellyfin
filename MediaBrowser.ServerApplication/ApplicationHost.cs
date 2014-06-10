@@ -511,10 +511,6 @@ namespace MediaBrowser.ServerApplication
 
             progress.Report(15);
 
-            EncodingManager = new EncodingManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository,
-                MediaEncoder);
-            RegisterSingleInstance(EncodingManager);
-
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager);
             RegisterSingleInstance(ChannelManager);
 
@@ -547,8 +543,12 @@ namespace MediaBrowser.ServerApplication
             SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor, LibraryManager, ItemRepository);
             RegisterSingleInstance(SubtitleManager);
 
-            ChapterManager = new ChapterManager(LibraryManager, LogManager.GetLogger("ChapterManager"), ServerConfigurationManager);
+            ChapterManager = new ChapterManager(LibraryManager, LogManager.GetLogger("ChapterManager"), ServerConfigurationManager, ItemRepository);
             RegisterSingleInstance(ChapterManager);
+
+            EncodingManager = new EncodingManager(ServerConfigurationManager, FileSystemManager, Logger,
+                MediaEncoder, ChapterManager);
+            RegisterSingleInstance(EncodingManager);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));

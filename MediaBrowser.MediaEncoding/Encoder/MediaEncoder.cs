@@ -261,167 +261,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ((Process)sender).Dispose();
         }
 
-        /// <summary>
-        /// Converts the text subtitle to ass.
-        /// </summary>
-        /// <param name="inputPath">The input path.</param>
-        /// <param name="outputPath">The output path.</param>
-        /// <param name="language">The language.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public async Task ConvertTextSubtitleToAss(string inputPath, string outputPath, string language,
-            CancellationToken cancellationToken)
-        {
-            var semaphore = GetLock(outputPath);
-
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                if (!File.Exists(outputPath))
-                {
-                    await ConvertTextSubtitleToAssInternal(inputPath, outputPath, language).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-        }
-
         private const int FastSeekOffsetSeconds = 1;
-
-        /// <summary>
-        /// Converts the text subtitle to ass.
-        /// </summary>
-        /// <param name="inputPath">The input path.</param>
-        /// <param name="outputPath">The output path.</param>
-        /// <param name="language">The language.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">inputPath
-        /// or
-        /// outputPath</exception>
-        /// <exception cref="System.ApplicationException"></exception>
-        private async Task ConvertTextSubtitleToAssInternal(string inputPath, string outputPath, string language)
-        {
-            if (string.IsNullOrEmpty(inputPath))
-            {
-                throw new ArgumentNullException("inputPath");
-            }
-
-            if (string.IsNullOrEmpty(outputPath))
-            {
-                throw new ArgumentNullException("outputPath");
-            }
-
-
-            var encodingParam = string.IsNullOrEmpty(language)
-                ? string.Empty
-                : GetSubtitleLanguageEncodingParam(language) + " ";
-
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    RedirectStandardOutput = false,
-                    RedirectStandardError = true,
-
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    FileName = FFMpegPath,
-                    Arguments =
-                        string.Format("{0} -i \"{1}\" -c:s ass \"{2}\"", encodingParam, inputPath, outputPath),
-
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false
-                }
-            };
-
-            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
-
-            var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-convert-" + Guid.NewGuid() + ".txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
-
-            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read,
-                true);
-
-            try
-            {
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                logFileStream.Dispose();
-
-                _logger.ErrorException("Error starting ffmpeg", ex);
-
-                throw;
-            }
-
-            var logTask = process.StandardError.BaseStream.CopyToAsync(logFileStream);
-
-            var ranToCompletion = process.WaitForExit(60000);
-
-            if (!ranToCompletion)
-            {
-                try
-                {
-                    _logger.Info("Killing ffmpeg subtitle conversion process");
-
-                    process.Kill();
-
-                    process.WaitForExit(1000);
-
-                    await logTask.ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error killing subtitle conversion process", ex);
-                }
-                finally
-                {
-                    logFileStream.Dispose();
-                }
-            }
-
-            var exitCode = ranToCompletion ? process.ExitCode : -1;
-
-            process.Dispose();
-
-            var failed = false;
-
-            if (exitCode == -1)
-            {
-                failed = true;
-
-                if (File.Exists(outputPath))
-                {
-                    try
-                    {
-                        _logger.Info("Deleting converted subtitle due to failure: ", outputPath);
-                        File.Delete(outputPath);
-                    }
-                    catch (IOException ex)
-                    {
-                        _logger.ErrorException("Error deleting converted subtitle {0}", ex, outputPath);
-                    }
-                }
-            }
-            else if (!File.Exists(outputPath))
-            {
-                failed = true;
-            }
-
-            if (failed)
-            {
-                var msg = string.Format("ffmpeg subtitle converted failed for {0}", inputPath);
-
-                _logger.Error(msg);
-
-                throw new ApplicationException(msg);
-            }
-            await SetAssFont(outputPath).ConfigureAwait(false);
-        }
 
         protected string GetFastSeekCommandLineParameter(TimeSpan offset)
         {
@@ -448,10 +288,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>
         /// Gets the subtitle language encoding param.
         /// </summary>
+        /// <param name="path">The path.</param>
         /// <param name="language">The language.</param>
         /// <returns>System.String.</returns>
-        private string GetSubtitleLanguageEncodingParam(string language)
+        public string GetSubtitleLanguageEncodingParam(string path, string language)
         {
+            if (GetFileEncoding(path).Equals(Encoding.UTF8))
+            {
+                return string.Empty;
+            }
+
             switch (language.ToLower())
             {
                 case "pol":
@@ -468,27 +314,50 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 case "rup":
                 case "alb":
                 case "sqi":
-                    return "-sub_charenc windows-1250";
+                    return "windows-1250";
                 case "ara":
-                    return "-sub_charenc windows-1256";
+                    return "windows-1256";
                 case "heb":
-                    return "-sub_charenc windows-1255";
+                    return "windows-1255";
                 case "grc":
                 case "gre":
-                    return "-sub_charenc windows-1253";
+                    return "windows-1253";
                 case "crh":
                 case "ota":
                 case "tur":
-                    return "-sub_charenc windows-1254";
+                    return "windows-1254";
                 case "rus":
-                    return "-sub_charenc windows-1251";
+                    return "windows-1251";
                 case "vie":
-                    return "-sub_charenc windows-1258";
+                    return "windows-1258";
                 case "kor":
-                    return "-sub_charenc cp949";
+                    return "cp949";
                 default:
-                    return "-sub_charenc windows-1252";
+                    return "windows-1252";
             }
+        }
+
+        private static Encoding GetFileEncoding(string srcFile)
+        {
+            // *** Detect byte order mark if any - otherwise assume default
+            var buffer = new byte[5];
+
+            using (var file = new FileStream(srcFile, FileMode.Open))
+            {
+                file.Read(buffer, 0, 5);
+            }
+
+            if (buffer[0] == 0xef && buffer[1] == 0xbb && buffer[2] == 0xbf)
+                return Encoding.UTF8;
+            if (buffer[0] == 0xfe && buffer[1] == 0xff)
+                return Encoding.Unicode;
+            if (buffer[0] == 0 && buffer[1] == 0 && buffer[2] == 0xfe && buffer[3] == 0xff)
+                return Encoding.UTF32;
+            if (buffer[0] == 0x2b && buffer[1] == 0x2f && buffer[2] == 0x76)
+                return Encoding.UTF7;
+
+            // It's ok - anything aside from utf is ok since that's what we're looking for
+            return Encoding.Default;
         }
 
         /// <summary>
