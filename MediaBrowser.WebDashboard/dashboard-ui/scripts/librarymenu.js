@@ -131,7 +131,7 @@
         });
     }
 
-    function getLibraryMenu(user, channelCount, items, liveTvInfo) {
+    function getLibraryMenu() {
 
         var panel = $('#libraryPanel');
 
@@ -146,7 +146,7 @@
             html += '<a class="lnkMediaFolder viewMenuLink viewMenuTextLink homeViewMenu" href="index.html">Home</a>';
             html += '<div class="libraryMenuDivider"></div>';
 
-            html += getViewsHtml(user, channelCount, items, liveTvInfo);
+            html += getViewsHtml();
             html += '</div>';
 
             html += '</div>';

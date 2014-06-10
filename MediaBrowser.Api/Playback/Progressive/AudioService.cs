@@ -73,10 +73,10 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// </summary>
         /// <param name="outputPath">The output path.</param>
         /// <param name="state">The state.</param>
-        /// <param name="performSubtitleConversions">if set to <c>true</c> [perform subtitle conversions].</param>
+        /// <param name="isEncoding">if set to <c>true</c> [is encoding].</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.InvalidOperationException">Only aac and mp3 audio codecs are supported.</exception>
-        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool performSubtitleConversions)
+        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
             var audioTranscodeParams = new List<string>();
 

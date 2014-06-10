@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;

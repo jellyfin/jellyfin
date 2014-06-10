@@ -1734,6 +1734,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return info;
         }
 
+        public IEnumerable<User> GetEnabledUsers()
+        {
+            var service = ActiveService;
+
+            return _userManager.Users
+                .Where(i => i.Configuration.EnableLiveTvAccess && service != null);
+        }
+
         /// <summary>
         /// Resets the tuner.
         /// </summary>

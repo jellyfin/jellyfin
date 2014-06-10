@@ -55,14 +55,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, bool copySubtitleStream, string outputPath, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Converts the text subtitle to ass.
+        /// Gets the subtitle language encoding parameter.
         /// </summary>
-        /// <param name="inputPath">The input path.</param>
-        /// <param name="outputPath">The output path.</param>
+        /// <param name="path">The path.</param>
         /// <param name="language">The language.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task ConvertTextSubtitleToAss(string inputPath, string outputPath, string language, CancellationToken cancellationToken);
+        /// <returns>System.String.</returns>
+        string GetSubtitleLanguageEncodingParam(string path, string language);
 
         /// <summary>
         /// Gets the media info.
@@ -88,14 +86,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="type">The type.</param>
         /// <returns>System.String.</returns>
         string GetInputArgument(string[] inputFiles, InputType type);
-
-        /// <summary>
-        /// Encodes the image.
-        /// </summary>
-        /// <param name="options">The options.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        Task<Stream> EncodeImage(ImageEncodingOptions options, CancellationToken cancellationToken);
     }
 
     /// <summary>

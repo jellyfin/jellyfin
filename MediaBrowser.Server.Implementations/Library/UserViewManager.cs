@@ -88,29 +88,19 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (query.IncludeExternalContent)
             {
-                var channelsTask = Task.Run(() => _channelManager.GetChannels(new ChannelQuery
+                var channelResult = await _channelManager.GetChannels(new ChannelQuery
                 {
                     Limit = 0,
                     UserId = query.UserId
 
-                }, cancellationToken), cancellationToken);
-
-                // Avoid implicitly captured closure.
-                var token = cancellationToken;
-                var liveTvTask = Task.Run(() => _liveTvManager.GetLiveTvInfo(token), cancellationToken);
-
-                await Task.WhenAll(channelsTask, liveTvTask).ConfigureAwait(false);
-
-                var channelResult = channelsTask.Result;
+                }, cancellationToken).ConfigureAwait(false);
 
                 if (channelResult.TotalRecordCount > 0)
                 {
                     list.Add(await _channelManager.GetInternalChannelFolder(query.UserId, cancellationToken).ConfigureAwait(false));
                 }
 
-                var liveTvInfo = liveTvTask.Result;
-
-                if (liveTvInfo.EnabledUsers.Contains(query.UserId))
+                if (_liveTvManager.GetEnabledUsers().Select(i => i.Id.ToString("N")).Contains(query.UserId))
                 {
                     list.Add(await _liveTvManager.GetInternalLiveTvFolder(query.UserId, cancellationToken).ConfigureAwait(false));
                 }

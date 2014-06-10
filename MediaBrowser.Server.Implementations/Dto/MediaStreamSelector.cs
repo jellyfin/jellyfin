@@ -38,7 +38,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             SubtitlePlaybackMode mode,
             string audioTrackLanguage)
         {
-            var languages = preferredLanguages as List<string> ?? preferredLanguages.ToList();
+            var languages = preferredLanguages.ToList();
             streams = GetSortedStreams(streams, MediaStreamType.Subtitle, languages).ToList();
 
             var full = streams.Where(s => !s.IsForced);
@@ -87,7 +87,12 @@ namespace MediaBrowser.Server.Implementations.Dto
                 .Where(i => i.Type == type);
 
             // Give some preferance to external text subs for better performance
-            return orderStreams.OrderBy(i => languagePreferences.FindIndex(l => string.Equals(i.Language, l, StringComparison.OrdinalIgnoreCase)))
+            return orderStreams.OrderBy(i =>
+            {
+                var index = languagePreferences.FindIndex(l => string.Equals(i.Language, l, StringComparison.OrdinalIgnoreCase));
+
+                return index == -1 ? 100 : index;
+            })
                  .ThenBy(i => i.IsDefault)
                  .ThenBy(i => !i.IsGraphicalSubtitleStream)
                  .ThenBy(i => i.IsExternal)

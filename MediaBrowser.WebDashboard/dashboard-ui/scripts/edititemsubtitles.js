@@ -91,55 +91,64 @@
 
     function fillSubtitleList(page, item) {
 
-        var html = '<ul data-role="listview" data-split-icon="delete"><li data-role="list-divider">Current Subtitles</li>';
-
         var streams = item.MediaStreams || [];
 
-        html += streams.filter(function (s) {
+        var subs = streams.filter(function (s) {
 
             return s.Type == 'Subtitle';
+        });
 
-        }).map(function (s) {
+        var html = '';
 
-            var itemHtml = '<li><a class="btnViewSubtitles" href="#" data-index="' + s.Index + '">';
+        if (subs.length) {
 
-            itemHtml += '<p>' + (s.Language || 'Unknown language') + '</p>';
+            html += '<br/>';
+            html += '<ul data-role="listview" data-split-icon="delete"><li data-role="list-divider">Current Subtitles</li>';
 
-            if (s.IsDefault || s.IsForced) {
+            html += subs.map(function (s) {
 
-                var atts = [];
+                var cssClass = s.Path ? 'btnViewSubtitles' : '';
 
-                if (s.IsDefault) {
+                var itemHtml = '<li><a class="' + cssClass + '" href="#" data-index="' + s.Index + '">';
 
-                    atts.push('Default');
+                itemHtml += '<p>' + (s.Language || 'Unknown language') + '</p>';
+
+                if (s.IsDefault || s.IsForced) {
+
+                    var atts = [];
+
+                    if (s.IsDefault) {
+
+                        atts.push('Default');
+                    }
+                    if (s.IsForced) {
+
+                        atts.push('Forced');
+                    }
+
+                    itemHtml += '<p>' + atts.join(', ') + '</p>';
                 }
-                if (s.IsForced) {
 
-                    atts.push('Forced');
+                if (s.Path) {
+                    itemHtml += '<p>' + (s.Path) + '</p>';
                 }
 
-                itemHtml += '<p>' + atts.join(', ') + '</p>';
-            }
+                itemHtml += '</a>';
 
-            if (s.Path) {
-                itemHtml += '<p>' + (s.Path) + '</p>';
-            }
+                if (s.Path) {
+                    itemHtml += '<a href="#" data-icon="delete" class="btnDelete" data-index="' + s.Index + '">' + Globalize.translate('Delete') + '</a>';
+                } else {
+                    itemHtml += '<a href="#" data-icon="delete" style="display:none;" class="btnDelete" data-index="' + s.Index + '">' + Globalize.translate('Delete') + '</a>';
+                }
 
-            itemHtml += '</a>';
+                itemHtml += '</li>';
 
-            if (s.Path) {
-                itemHtml += '<a href="#" data-icon="delete" class="btnDelete" data-index="' + s.Index + '">' + Globalize.translate('Delete') + '</a>';
-            } else {
-                itemHtml += '<a href="#" data-icon="delete" style="display:none;" class="btnDelete" data-index="' + s.Index + '">' + Globalize.translate('Delete') + '</a>';
-            }
+                return itemHtml;
 
-            itemHtml += '</li>';
+            }).join('');
 
-            return itemHtml;
-
-        }).join('');
-
-        html += '</ul>';
+            html += '</ul>';
+        }
 
         var elem = $('.subtitleList', page).html(html).trigger('create');
 

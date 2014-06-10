@@ -101,9 +101,9 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="outputPath">The output path.</param>
         /// <param name="state">The state.</param>
-        /// <param name="performSubtitleConversions">if set to <c>true</c> [perform subtitle conversions].</param>
+        /// <param name="isEncoding">if set to <c>true</c> [is encoding].</param>
         /// <returns>System.String.</returns>
-        protected abstract string GetCommandLineArguments(string outputPath, StreamState state, bool performSubtitleConversions);
+        protected abstract string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding);
 
         /// <summary>
         /// Gets the type of the transcoding job.
@@ -478,12 +478,10 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="state">The state.</param>
         /// <param name="outputVideoCodec">The output video codec.</param>
-        /// <param name="performTextSubtitleConversion">if set to <c>true</c> [perform text subtitle conversion].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
         protected string GetOutputSizeParam(StreamState state,
             string outputVideoCodec,
-            bool performTextSubtitleConversion,
             CancellationToken cancellationToken)
         {
             // http://sonnati.wordpress.com/2012/10/19/ffmpeg-the-swiss-army-knife-of-internet-streaming-part-vi/
@@ -496,7 +494,7 @@ namespace MediaBrowser.Api.Playback
 
             if (state.SubtitleStream != null && !state.SubtitleStream.IsGraphicalSubtitleStream)
             {
-                assSubtitleParam = GetTextSubtitleParam(state, performTextSubtitleConversion, cancellationToken);
+                assSubtitleParam = GetTextSubtitleParam(state, cancellationToken);
                 copyTsParam = " -copyts";
             }
 
@@ -574,103 +572,41 @@ namespace MediaBrowser.Api.Playback
         /// Gets the text subtitle param.
         /// </summary>
         /// <param name="state">The state.</param>
-        /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
         protected string GetTextSubtitleParam(StreamState state,
-            bool performConversion,
             CancellationToken cancellationToken)
         {
-            var path = state.SubtitleStream.IsExternal ?
-                GetConvertedAssPath(state.SubtitleStream, performConversion, cancellationToken) :
-                GetExtractedAssPath(state, performConversion, cancellationToken);
-
-            if (string.IsNullOrEmpty(path))
-            {
-                return string.Empty;
-            }
-
             var seconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds;
 
-            return string.Format(",ass='{0}',setpts=PTS -{1}/TB",
-                path.Replace('\\', '/').Replace(":/", "\\:/"),
+            if (state.SubtitleStream.IsExternal)
+            {
+                var subtitlePath = state.SubtitleStream.Path;
+
+                var charsetParam = string.Empty;
+
+                if (!string.IsNullOrEmpty(state.SubtitleStream.Language))
+                {
+                    var charenc = MediaEncoder.GetSubtitleLanguageEncodingParam(subtitlePath, state.SubtitleStream.Language);
+
+                    if (!string.IsNullOrEmpty(charenc))
+                    {
+                        charsetParam = ":charenc=" + charenc;
+                    }
+                }
+
+                // TODO: Perhaps also use original_size=1920x800
+
+                return string.Format(",subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
+                    subtitlePath.Replace('\\', '/').Replace(":/", "\\:/"),
+                    charsetParam,
+                    Math.Round(seconds).ToString(UsCulture));
+            }
+
+            return string.Format(",subtitles='{0}:si={1}',setpts=PTS -{2}/TB",
+                state.MediaPath.Replace('\\', '/').Replace(":/", "\\:/"),
+                state.SubtitleStream.Index.ToString(UsCulture),
                 Math.Round(seconds).ToString(UsCulture));
-        }
-
-        /// <summary>
-        /// Gets the extracted ass path.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>System.String.</returns>
-        private string GetExtractedAssPath(StreamState state,
-            bool performConversion,
-            CancellationToken cancellationToken)
-        {
-            var path = EncodingManager.GetSubtitleCachePath(state.MediaPath, state.SubtitleStream.Index, ".ass");
-
-            if (performConversion)
-            {
-                InputType type;
-
-                var inputPath = MediaEncoderHelpers.GetInputArgument(state.MediaPath, state.IsRemote, state.VideoType, state.IsoType, null, state.PlayableStreamFileNames, out type);
-
-                try
-                {
-                    var parentPath = Path.GetDirectoryName(path);
-
-                    Directory.CreateDirectory(parentPath);
-
-                    // Don't re-encode ass/ssa to ass because ffmpeg ass encoder fails if there's more than one ass rectangle. Affect Anime mostly.
-                    // See https://lists.ffmpeg.org/pipermail/ffmpeg-cvslog/2013-April/063616.html
-                    var isAssSubtitle = string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase) || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase);
-
-                    var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, state.SubtitleStream.Index, isAssSubtitle, path, cancellationToken);
-
-                    Task.WaitAll(task);
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-
-            return path;
-        }
-
-        /// <summary>
-        /// Gets the converted ass path.
-        /// </summary>
-        /// <param name="subtitleStream">The subtitle stream.</param>
-        /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>System.String.</returns>
-        private string GetConvertedAssPath(MediaStream subtitleStream,
-            bool performConversion,
-            CancellationToken cancellationToken)
-        {
-            var path = EncodingManager.GetSubtitleCachePath(subtitleStream.Path, ".ass");
-
-            if (performConversion)
-            {
-                try
-                {
-                    var parentPath = Path.GetDirectoryName(path);
-
-                    Directory.CreateDirectory(parentPath);
-
-                    var task = MediaEncoder.ConvertTextSubtitleToAss(subtitleStream.Path, path, subtitleStream.Language, cancellationToken);
-
-                    Task.WaitAll(task);
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-
-            return path;
         }
 
         /// <summary>
@@ -688,7 +624,7 @@ namespace MediaBrowser.Api.Playback
             // Add resolution params, if specified
             if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
             {
-                outputSizeParam = GetOutputSizeParam(state, outputVideoCodec, false, CancellationToken.None).TrimEnd('"');
+                outputSizeParam = GetOutputSizeParam(state, outputVideoCodec, CancellationToken.None).TrimEnd('"');
                 outputSizeParam = "," + outputSizeParam.Substring(outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase));
             }
 
@@ -1585,7 +1521,7 @@ namespace MediaBrowser.Api.Playback
             state.OutputAudioCodec = GetAudioCodec(state.Request);
 
             state.OutputAudioChannels = GetNumAudioChannelsParam(state.Request, state.AudioStream, state.OutputAudioCodec);
-            
+
             if (videoRequest != null)
             {
                 state.OutputVideoCodec = GetVideoCodec(videoRequest);

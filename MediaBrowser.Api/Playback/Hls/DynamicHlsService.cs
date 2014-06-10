@@ -264,7 +264,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return args;
         }
 
-        protected override string GetVideoArguments(StreamState state, bool performSubtitleConversion)
+        protected override string GetVideoArguments(StreamState state)
         {
             var codec = state.OutputVideoCodec;
 
@@ -285,7 +285,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 if (state.VideoRequest.Width.HasValue || state.VideoRequest.Height.HasValue || state.VideoRequest.MaxHeight.HasValue || state.VideoRequest.MaxWidth.HasValue)
                 {
-                    args += GetOutputSizeParam(state, codec, performSubtitleConversion, CancellationToken.None);
+                    args += GetOutputSizeParam(state, codec, CancellationToken.None);
                 }
             }
 

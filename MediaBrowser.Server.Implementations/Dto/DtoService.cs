@@ -133,8 +133,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                         ? null
                         : source.MediaStreams.Where(i => i.Type == MediaStreamType.Audio && i.Index == defaultAudioIndex).Select(i => i.Language).FirstOrDefault();
 
-                    source.DefaultSubtitleStreamIndex = MediaStreamSelector.GetDefaultSubtitleStreamIndex(source.MediaStreams, preferredSubs,
-                            user.Configuration.SubtitleMode, audioLangage);
+                    source.DefaultSubtitleStreamIndex = MediaStreamSelector.GetDefaultSubtitleStreamIndex(source.MediaStreams, 
+                        preferredSubs,
+                        user.Configuration.SubtitleMode, 
+                        audioLangage);
                 }
             }
 

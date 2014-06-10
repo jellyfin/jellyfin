@@ -1,11 +1,10 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -24,48 +23,16 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
-        private readonly IItemRepository _itemRepo;
         private readonly IMediaEncoder _encoder;
+        private readonly IChapterManager _chapterManager;
 
-        public EncodingManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IMediaEncoder encoder)
+        public EncodingManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IMediaEncoder encoder, IChapterManager chapterManager)
         {
             _config = config;
             _fileSystem = fileSystem;
             _logger = logger;
-            _itemRepo = itemRepo;
             _encoder = encoder;
-        }
-
-        private string SubtitleCachePath
-        {
-            get
-            {
-                return Path.Combine(_config.ApplicationPaths.CachePath, "subtitles");
-            }
-        }
-        
-        public string GetSubtitleCachePath(string originalSubtitlePath, string outputSubtitleExtension)
-        {
-            var ticksParam = _fileSystem.GetLastWriteTimeUtc(originalSubtitlePath).Ticks;
-
-            var filename = (originalSubtitlePath + ticksParam).GetMD5() + outputSubtitleExtension;
-
-            var prefix = filename.Substring(0, 1);
-
-            return Path.Combine(SubtitleCachePath, prefix, filename);
-        }
-
-        public string GetSubtitleCachePath(string mediaPath, int subtitleStreamIndex, string outputSubtitleExtension)
-        {
-            var ticksParam = string.Empty;
-
-            var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
-
-            var filename = (mediaPath + "_" + subtitleStreamIndex.ToString(_usCulture) + "_" + date.Ticks.ToString(_usCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
-
-            var prefix = filename.Substring(0, 1);
-
-            return Path.Combine(SubtitleCachePath, prefix, filename);
+            _chapterManager = chapterManager;
         }
 
         /// <summary>
@@ -202,7 +169,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             if (saveChapters && changesMade)
             {
-                await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
+                await _chapterManager.SaveChapters(video.Id.ToString(), chapters, cancellationToken).ConfigureAwait(false);
             }
 
             DeleteDeadImages(currentImages, chapters);

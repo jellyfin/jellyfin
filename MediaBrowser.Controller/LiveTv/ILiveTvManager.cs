@@ -274,5 +274,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>BaseItemDto.</returns>
         Task<BaseItemDto> GetLiveTvFolder(string userId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the enabled users.
+        /// </summary>
+        /// <returns>IEnumerable{User}.</returns>
+        IEnumerable<User> GetEnabledUsers();
     }
 }

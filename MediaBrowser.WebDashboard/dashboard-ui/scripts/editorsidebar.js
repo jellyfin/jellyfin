@@ -76,31 +76,18 @@
 
     function loadChildrenOfRootNode(page, callback, openItems, selectedId) {
 
-        var promise2 = ApiClient.getLiveTvInfo();
+        var promise2 = ApiClient.getLiveTvChannels({limit: 0});
 
         $.when(promise2).done(function (response2) {
 
-            var liveTvInfo = response2;
+            var result = response2;
 
             var nodes = [];
 
-            var i, length;
-
             nodes.push({ attr: { id: 'MediaFolders', rel: 'folder', itemtype: 'mediafolders' }, data: 'Media Folders', state: 'open' });
 
-            for (i = 0, length = liveTvInfo.Services.length; i < length; i++) {
-
-                var service = liveTvInfo.Services[i];
-
-                var name = service.Name;
-
-                var htmlName = "<div class='editorNode'>";
-
-                htmlName += name;
-
-                htmlName += "</div>";
-
-                nodes.push({ attr: { id: name, rel: 'folder', itemtype: 'livetvservice' }, data: htmlName, state: 'closed' });
+            if (result.TotalRecordCount) {
+                nodes.push({ attr: { id: 'livetv', rel: 'folder', itemtype: 'livetv' }, data: 'Live TV', state: 'closed' });
             }
 
             callback(nodes);
@@ -164,7 +151,7 @@
 
         var itemtype = node.attr("itemtype");
 
-        if (itemtype == 'livetvservice') {
+        if (itemtype == 'livetv') {
 
             loadLiveTvChannels(id, openItems, callback);
             return;
@@ -256,7 +243,7 @@
                 itemType: data.rslt.obj.attr("itemtype")
             };
 
-            if (eventData.itemType != 'livetvservice' && eventData.itemType != 'mediafolders') {
+            if (eventData.itemType != 'livetv' && eventData.itemType != 'mediafolders') {
                 $(this).trigger('itemclicked', [eventData]);
             }
 

@@ -6,4 +6,9 @@
 
         public string UserId { get; set; }
     }
+
+    public class ChannelLatestMediaSearch
+    {
+        public string UserId { get; set; }
+    }
 }
