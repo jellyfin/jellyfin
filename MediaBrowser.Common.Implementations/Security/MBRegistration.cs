@@ -52,6 +52,7 @@ namespace MediaBrowser.Common.Implementations.Security
         {
             //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
             var reg = new RegRecord { registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-30) };
+            var success = reg.registered;
 
             if (!reg.registered)
             {
@@ -73,6 +74,7 @@ namespace MediaBrowser.Common.Implementations.Security
                     using (var json = await httpClient.Post(MBValidateUrl, data, CancellationToken.None).ConfigureAwait(false))
                     {
                         reg = jsonSerializer.DeserializeFromStream<RegRecord>(json);
+                        success = true;
                     }
 
                     if (reg.registered)
@@ -91,7 +93,7 @@ namespace MediaBrowser.Common.Implementations.Security
                 }
             }
 
-            return new MBRegistrationRecord { IsRegistered = reg.registered, ExpirationDate = reg.expDate, RegChecked = true };
+            return new MBRegistrationRecord { IsRegistered = reg.registered, ExpirationDate = reg.expDate, RegChecked = true, RegError = !success};
         }
     }
 }
