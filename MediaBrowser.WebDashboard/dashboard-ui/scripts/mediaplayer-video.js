@@ -14,8 +14,6 @@
 
         var self = mediaPlayer;
 
-        var currentItem;
-        var currentMediaSource;
         var timeout;
         var video;
         var initialVolume;
@@ -29,6 +27,8 @@
         var positionSlider;
         var isPositionSliderActive;
         var currentTimeElement;
+
+        self.currentSubtitleStreamIndex = null;
 
         self.initVideoPlayer = function () {
             video = playVideo(item, mediaSource, startPosition);
@@ -176,7 +176,7 @@
 
             var newPercent = parseInt(this.value);
 
-            var newPositionTicks = (newPercent / 100) * currentMediaSource.RunTimeTicks;
+            var newPositionTicks = (newPercent / 100) * self.currentMediaSource.RunTimeTicks;
 
             self.changeStream(Math.floor(newPositionTicks));
         }
@@ -405,7 +405,7 @@
 
             var currentTicks = self.getCurrentTicks();
 
-            var chapters = currentItem.Chapters || [];
+            var chapters = self.currentItem.Chapters || [];
 
             for (var i = 0, length = chapters.length; i < length; i++) {
 
@@ -430,7 +430,7 @@
 
                 if (chapter.ImageTag) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(currentItem.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(self.currentItem.Id, {
                         maxWidth: 100,
                         tag: chapter.ImageTag,
                         type: "Chapter",
@@ -460,7 +460,7 @@
 
         function getAudioTracksHtml() {
 
-            var streams = currentMediaSource.MediaStreams.filter(function (currentStream) {
+            var streams = self.currentMediaSource.MediaStreams.filter(function (currentStream) {
                 return currentStream.Type == "Audio";
             });
 
@@ -528,11 +528,11 @@
 
         function getSubtitleTracksHtml() {
 
-            var streams = currentMediaSource.MediaStreams.filter(function (currentStream) {
+            var streams = self.currentMediaSource.MediaStreams.filter(function (currentStream) {
                 return currentStream.Type == "Subtitle";
             });
 
-            var currentIndex = getParameterByName('SubtitleStreamIndex', video.currentSrc) || -1;
+            var currentIndex = self.currentSubtitleStreamIndex;
 
             var html = '';
 
@@ -610,7 +610,7 @@
 
             var currentAudioStreamIndex = getParameterByName('AudioStreamIndex', video.currentSrc);
 
-            var options = getVideoQualityOptions(currentMediaSource.MediaStreams, currentAudioStreamIndex, transcodingExtension);
+            var options = getVideoQualityOptions(self.currentMediaSource.MediaStreams, currentAudioStreamIndex, transcodingExtension);
 
             if (isStatic) {
                 options[0].name = "Direct";
@@ -688,7 +688,7 @@
                 options.push({ name: '720p - 4Mbps', maxWidth: 1280, bitrate: 4000000 });
                 options.push({ name: '720p - 3Mbps', maxWidth: 1280, bitrate: 3000000 });
                 options.push({ name: '720p - 2Mbps', maxWidth: 1280, bitrate: 2000000 });
-                
+
                 // The extra 1 is because they're keyed off the bitrate value
                 options.push({ name: '720p - 1Mbps', maxWidth: 1280, bitrate: 1000001 });
             }
@@ -724,15 +724,27 @@
 
             var mediaStreams = mediaSource.MediaStreams || [];
 
+            var subtitleStreams = mediaStreams.filter(function (s) {
+                return s.Type == 'Subtitle';
+            });
+
+            var selectedSubtitleStream = subtitleStreams.filter(function (s) {
+                return s.Index == mediaSource.DefaultSubtitleStreamIndex;
+
+            })[0];
+
             var baseParams = {
                 audioChannels: 2,
                 StartTimeTicks: startPosition,
-                SubtitleStreamIndex: mediaSource.DefaultSubtitleStreamIndex,
                 AudioStreamIndex: mediaSource.DefaultAudioStreamIndex,
                 deviceId: ApiClient.deviceId(),
                 Static: false,
                 mediaSourceId: mediaSource.Id
             };
+
+            if (selectedSubtitleStream && selectedSubtitleStream.IsGraphicalSubtitleStream) {
+                baseParams.SubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
+            }
 
             var mp4Quality = getVideoQualityOptions(mediaStreams).filter(function (opt) {
                 return opt.selected;
@@ -830,6 +842,22 @@
 
             html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
 
+            var textStreams = subtitleStreams.filter(function (s) {
+                return !s.IsGraphicalSubtitleStream;
+            });
+
+            for (var i = 0, length = textStreams.length; i < length; i++) {
+
+                var textStream = textStreams[i];
+                var textStreamUrl = ApiClient.getUrl('Videos/' + item.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
+                    mediaSourceId: mediaSource.Id
+                });
+
+                var defaultAttribute = i.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
+
+                html += '<track data-index="' + textStream.Index + '" kind="subtitles" src="' + textStreamUrl + '" srclang="' + (textStream.Language || 'und') + '"' + defaultAttribute + '>';
+            }
+
             html += '</video>';
 
             var mediaPlayer = $("#mediaPlayer").show();
@@ -846,17 +874,15 @@
 
             $('#video-qualityButton', videoControls).show();
 
-            if (mediaStreams.filter(function (i) {
-                return i.Type == "Audio";
+            if (mediaStreams.filter(function (s) {
+                return s.Type == "Audio";
             }).length) {
                 $('#video-audioTracksButton', videoControls).show();
             } else {
                 $('#video-audioTracksButton', videoControls).hide();
             }
 
-            if (mediaStreams.filter(function (i) {
-                return i.Type == "Subtitle";
-            }).length) {
+            if (subtitleStreams.length) {
                 $('#video-subtitleButton', videoControls).show().prop("disabled", false);
             } else {
                 $('#video-subtitleButton', videoControls).hide().prop("disabled", true);;
@@ -1021,8 +1047,7 @@
 
             fullscreenExited = false;
 
-            currentItem = item;
-            currentMediaSource = mediaSource;
+            self.currentSubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
 
             return video[0];
         }

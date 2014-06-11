@@ -310,7 +310,7 @@
     function renderDetails(page, item, context) {
 
         renderSimilarItems(page, item, context);
-        renderSiblingLinks(page, item);
+        renderSiblingLinks(page, item, context);
 
         if (item.Taglines && item.Taglines.length) {
             $('#itemTagline', page).html(item.Taglines[0]).show();
@@ -479,10 +479,9 @@
         });
     }
 
-    function renderSiblingLinks(page, item) {
+    function renderSiblingLinks(page, item, context) {
 
         $('.lnkSibling', page).addClass('hide');
-        return;
 
         if ((item.Type != "Episode" && item.Type != "Season" && item.Type != "Audio") || item.IndexNumber == null) {
             return;
@@ -515,6 +514,8 @@
             });
         }
 
+        context = context || '';
+        
         promise.done(function (result) {
 
             for (var i = 0, length = result.Items.length; i < length; i++) {
@@ -527,11 +528,11 @@
 
                 if (curr.IndexNumber < item.IndexNumber) {
 
-                    $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id);
+                    $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id + '&context=' + context);
                 }
                 else if (curr.IndexNumber > item.IndexNumber) {
 
-                    $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id);
+                    $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id + '&context=' + context);
                 }
             }
         });

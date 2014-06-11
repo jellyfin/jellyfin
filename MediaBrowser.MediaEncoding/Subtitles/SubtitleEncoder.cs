@@ -47,19 +47,24 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         public async Task<Stream> ConvertSubtitles(Stream stream,
             string inputFormat,
             string outputFormat,
+            long startTimeTicks,
             CancellationToken cancellationToken)
         {
             var ms = new MemoryStream();
 
             try
             {
-                if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
+                // Return the original without any conversions, if possible
+                if (startTimeTicks == 0 && 
+                    string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
                 {
                     await stream.CopyToAsync(ms, 81920, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     var trackInfo = await GetTrackInfo(stream, inputFormat, cancellationToken).ConfigureAwait(false);
+
+                    UpdateStartingPosition(trackInfo, startTimeTicks);
 
                     var writer = GetWriter(outputFormat);
 
@@ -76,10 +81,26 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return ms;
         }
 
+        private void UpdateStartingPosition(SubtitleTrackInfo track, long startPositionTicks)
+        {
+            if (startPositionTicks == 0) return;
+
+            foreach (var trackEvent in track.TrackEvents)
+            {
+                trackEvent.EndPositionTicks -= startPositionTicks;
+                trackEvent.StartPositionTicks -= startPositionTicks;
+            }
+
+            track.TrackEvents = track.TrackEvents
+                .SkipWhile(i => i.StartPositionTicks < 0 || i.EndPositionTicks < 0)
+                .ToList();
+        }
+
         public async Task<Stream> GetSubtitles(string itemId,
             string mediaSourceId,
             int subtitleStreamIndex,
             string outputFormat,
+            long startTimeTicks,
             CancellationToken cancellationToken)
         {
             var subtitle = await GetSubtitleStream(itemId, mediaSourceId, subtitleStreamIndex, cancellationToken)
@@ -89,7 +110,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var inputFormat = subtitle.Item2;
 
-                return await ConvertSubtitles(stream, inputFormat, outputFormat, cancellationToken).ConfigureAwait(false);
+                return await ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -127,9 +148,34 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, inputType, subtitleStream, cancellationToken).ConfigureAwait(false);
 
-            var stream = File.OpenRead(fileInfo.Item1);
+            var stream = await GetSubtitleStream(fileInfo.Item1, subtitleStream.Language).ConfigureAwait(false);
 
             return new Tuple<Stream, string>(stream, fileInfo.Item2);
+        }
+
+        private async Task<Stream> GetSubtitleStream(string path, string language)
+        {
+            if (!string.IsNullOrEmpty(language))
+            {
+                var charset = GetSubtitleFileCharacterSet(path, language);
+
+                if (!string.IsNullOrEmpty(charset))
+                {
+                    using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                    {
+                        using (var reader = new StreamReader(fs, Encoding.GetEncoding(charset)))
+                        {
+                            var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                            var bytes = Encoding.UTF8.GetBytes(text);
+
+                            return new MemoryStream(bytes);
+                        }
+                    }
+                }
+            }
+
+            return File.OpenRead(path);
         }
 
         private async Task<Tuple<string, string>> GetReadableFile(string mediaPath,
@@ -282,10 +328,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException("outputPath");
             }
 
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             var encodingParam = string.IsNullOrEmpty(language)
                 ? string.Empty
-                : _mediaEncoder.GetSubtitleLanguageEncodingParam(inputPath, language);
+                : GetSubtitleFileCharacterSet(inputPath, language);
 
             if (!string.IsNullOrEmpty(encodingParam))
             {
@@ -456,7 +503,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException("outputPath");
             }
 
-            string processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s ass \"{2}\"", inputPath,
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+
+            var processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s ass \"{2}\"", inputPath,
                 subtitleStreamIndex, outputPath);
 
             if (copySubtitleStream)
@@ -614,6 +663,81 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var prefix = filename.Substring(0, 1);
 
             return Path.Combine(SubtitleCachePath, prefix, filename);
+        }
+
+        /// <summary>
+        /// Gets the subtitle language encoding param.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="language">The language.</param>
+        /// <returns>System.String.</returns>
+        public string GetSubtitleFileCharacterSet(string path, string language)
+        {
+            if (GetFileEncoding(path).Equals(Encoding.UTF8))
+            {
+                return string.Empty;
+            }
+
+            switch (language.ToLower())
+            {
+                case "pol":
+                case "cze":
+                case "ces":
+                case "slo":
+                case "slk":
+                case "hun":
+                case "slv":
+                case "srp":
+                case "hrv":
+                case "rum":
+                case "ron":
+                case "rup":
+                case "alb":
+                case "sqi":
+                    return "windows-1250";
+                case "ara":
+                    return "windows-1256";
+                case "heb":
+                    return "windows-1255";
+                case "grc":
+                case "gre":
+                    return "windows-1253";
+                case "crh":
+                case "ota":
+                case "tur":
+                    return "windows-1254";
+                case "rus":
+                    return "windows-1251";
+                case "vie":
+                    return "windows-1258";
+                case "kor":
+                    return "cp949";
+                default:
+                    return "windows-1252";
+            }
+        }
+
+        private static Encoding GetFileEncoding(string srcFile)
+        {
+            // *** Detect byte order mark if any - otherwise assume default
+            var buffer = new byte[5];
+
+            using (var file = new FileStream(srcFile, FileMode.Open))
+            {
+                file.Read(buffer, 0, 5);
+            }
+
+            if (buffer[0] == 0xef && buffer[1] == 0xbb && buffer[2] == 0xbf)
+                return Encoding.UTF8;
+            if (buffer[0] == 0xfe && buffer[1] == 0xff)
+                return Encoding.Unicode;
+            if (buffer[0] == 0 && buffer[1] == 0 && buffer[2] == 0xfe && buffer[3] == 0xff)
+                return Encoding.UTF32;
+            if (buffer[0] == 0x2b && buffer[1] == 0x2f && buffer[2] == 0x76)
+                return Encoding.UTF7;
+
+            // It's ok - anything aside from utf is ok since that's what we're looking for
+            return Encoding.Default;
         }
     }
 }

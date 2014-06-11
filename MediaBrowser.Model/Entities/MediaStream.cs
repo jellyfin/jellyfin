@@ -130,7 +130,6 @@ namespace MediaBrowser.Model.Entities
         /// <value><c>true</c> if this instance is external; otherwise, <c>false</c>.</value>
         public bool IsExternal { get; set; }
 
-        [IgnoreDataMember]
         public bool IsGraphicalSubtitleStream
         {
             get

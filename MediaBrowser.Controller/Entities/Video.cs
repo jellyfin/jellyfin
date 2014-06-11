@@ -20,7 +20,6 @@ namespace MediaBrowser.Controller.Entities
     /// Class Video
     /// </summary>
     public class Video : BaseItem, 
-        IHasMediaStreams, 
         IHasAspectRatio, 
         IHasTags, 
         ISupportsPlaceHolders,

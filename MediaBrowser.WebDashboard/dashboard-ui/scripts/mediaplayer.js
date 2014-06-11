@@ -7,10 +7,11 @@
         var testableVideoElement = document.createElement('video');
         var currentMediaElement;
         var currentProgressInterval;
-        var currentItem;
-        var currentMediaSource;
         var canClientSeek;
         var currentPlaylistIndex = 0;
+
+        self.currentItem = null;
+        self.currentMediaSource = null;
 
         self.currentDurationTicks = null;
         self.startTimeTicksOffset = null;
@@ -110,7 +111,7 @@
                 var transcodingExtension = self.getTranscodingExtension();
                 var isStatic;
 
-                if (currentItem.MediaType == "Video") {
+                if (self.currentItem.MediaType == "Video") {
 
                     if (params.AudioStreamIndex != null) {
                         currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
@@ -121,12 +122,12 @@
 
                     var maxWidth = params.MaxWidth || getParameterByName('MaxWidth', currentSrc);
                     var audioStreamIndex = params.AudioStreamIndex == null ? getParameterByName('AudioStreamIndex', currentSrc) : params.AudioStreamIndex;
-                    var subtitleStreamIndex = params.SubtitleStreamIndex == null ? getParameterByName('SubtitleStreamIndex', currentSrc) : params.SubtitleStreamIndex;
+                    var subtitleStreamIndex = self.currentSubtitleStreamIndex;
                     var videoBitrate = parseInt(getParameterByName('VideoBitrate', currentSrc) || '0');
                     var audioBitrate = parseInt(getParameterByName('AudioBitrate', currentSrc) || '0');
                     var bitrate = params.Bitrate || (videoBitrate + audioBitrate);
 
-                    var finalParams = self.getFinalVideoParams(currentMediaSource, maxWidth, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension);
+                    var finalParams = self.getFinalVideoParams(self.currentMediaSource, maxWidth, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension);
 
                     currentSrc = replaceQueryString(currentSrc, 'MaxWidth', finalParams.maxWidth);
                     currentSrc = replaceQueryString(currentSrc, 'VideoBitrate', finalParams.videoBitrate);
@@ -167,7 +168,7 @@
 
                 });
 
-                if (currentItem.MediaType == "Video") {
+                if (self.currentItem.MediaType == "Video") {
                     ApiClient.stopActiveEncodings().done(function () {
 
                         self.startTimeTicksOffset = ticks;
@@ -212,7 +213,7 @@
                 currentTimeElement.html(timeText);
             }
 
-            var state = self.getPlayerStateInternal(currentMediaElement, currentItem, currentMediaSource);
+            var state = self.getPlayerStateInternal(currentMediaElement, self.currentItem, self.currentMediaSource);
 
             $(self).trigger('positionchange', [state]);
         };
@@ -242,7 +243,7 @@
                 return false;
             }
 
-            if (subtitleStream) {
+            if (subtitleStream && subtitleStream.IsGraphicalSubtitleStream) {
                 console.log('Transcoding because subtitles are required');
                 return false;
             }
@@ -312,7 +313,7 @@
 
         self.canQueueMediaType = function (mediaType) {
 
-            return currentItem && currentItem.MediaType == mediaType;
+            return self.currentItem && self.currentItem.MediaType == mediaType;
         };
 
         function translateItemsForPlayback(items) {
@@ -449,21 +450,21 @@
 
             if (item.MediaType === "Video") {
 
-                currentItem = item;
-                currentMediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
+                self.currentItem = item;
+                self.currentMediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
 
-                videoPlayer(self, item, currentMediaSource, startPosition, user);
+                videoPlayer(self, item, self.currentMediaSource, startPosition, user);
                 mediaElement = self.initVideoPlayer();
-                self.currentDurationTicks = currentMediaSource.RunTimeTicks;
+                self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
             } else if (item.MediaType === "Audio") {
 
-                currentItem = item;
-                currentMediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
+                self.currentItem = item;
+                self.currentMediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
 
-                mediaElement = playAudio(item, currentMediaSource, startPosition);
+                mediaElement = playAudio(item, self.currentMediaSource, startPosition);
 
-                self.currentDurationTicks = currentMediaSource.RunTimeTicks;
+                self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
             } else {
                 throw new Error("Unrecognized media type");
@@ -485,7 +486,7 @@
 
             var mediaControls = $("#videoControls");
 
-            var state = self.getPlayerStateInternal(currentMediaElement, item, currentMediaSource);
+            var state = self.getPlayerStateInternal(currentMediaElement, item, self.currentMediaSource);
 
             var url = "";
 
@@ -915,7 +916,7 @@
 
             elem.pause();
 
-            var isVideo = currentItem.MediaType == "Video";
+            var isVideo = self.currentItem.MediaType == "Video";
 
             $(elem).off("ended.playnext").on("ended", function () {
 
@@ -927,8 +928,8 @@
 
                 elem.src = "";
                 currentMediaElement = null;
-                currentItem = null;
-                currentMediaSource = null;
+                self.currentItem = null;
+                self.currentMediaSource = null;
 
             }).trigger("ended");
 
@@ -948,7 +949,7 @@
 
             var deferred = $.Deferred();
 
-            var result = self.getPlayerStateInternal(currentMediaElement, currentItem, currentMediaSource);
+            var result = self.getPlayerStateInternal(currentMediaElement, self.currentItem, self.currentMediaSource);
 
             deferred.resolveWith(null, [result]);
 
@@ -977,11 +978,7 @@
                     if (audioStreamIndex) {
                         state.PlayState.AudioStreamIndex = parseInt(audioStreamIndex);
                     }
-                    var subtitleStreamIndex = getParameterByName('SubtitleStreamIndex', currentSrc);
-
-                    if (subtitleStreamIndex) {
-                        state.PlayState.SubtitleStreamIndex = parseInt(subtitleStreamIndex);
-                    }
+                    state.PlayState.SubtitleStreamIndex = self.currentSubtitleStreamIndex;
 
                     state.PlayState.PlayMethod = getParameterByName('static', currentSrc) == 'true' ?
                         'DirectStream' :
@@ -1076,7 +1073,7 @@
 
             self.saveVolume(playerElement.volume);
 
-            var state = self.getPlayerStateInternal(playerElement, currentItem, currentMediaSource);
+            var state = self.getPlayerStateInternal(playerElement, self.currentItem, self.currentMediaSource);
 
             $(self).trigger('volumechange', [state]);
         };
@@ -1091,8 +1088,8 @@
 
             clearProgressInterval();
 
-            var item = currentItem;
-            var mediaSource = currentMediaSource;
+            var item = self.currentItem;
+            var mediaSource = self.currentMediaSource;
 
             if (item.MediaType == "Video") {
                 ApiClient.stopActiveEncodings();
@@ -1109,7 +1106,7 @@
 
         self.onPlaystateChange = function (playerElement) {
 
-            var state = self.getPlayerStateInternal(playerElement, currentItem, currentMediaSource);
+            var state = self.getPlayerStateInternal(playerElement, self.currentItem, self.currentMediaSource);
 
             $(self).trigger('playstatechange', [state]);
         };
@@ -1117,7 +1114,7 @@
         $(window).on("beforeunload popstate", function () {
 
             // Try to report playback stopped before the browser closes
-            if (currentItem && currentMediaElement && currentProgressInterval) {
+            if (self.currentItem && currentMediaElement && currentProgressInterval) {
 
                 self.onPlaybackStopped.call(currentMediaElement);
             }
@@ -1125,7 +1122,7 @@
 
         function sendProgressUpdate() {
 
-            var state = self.getPlayerStateInternal(currentMediaElement, currentItem, currentMediaSource);
+            var state = self.getPlayerStateInternal(currentMediaElement, self.currentItem, self.currentMediaSource);
             
             var info = {
                 QueueableMediaTypes: state.NowPlayingItem.MediaType,

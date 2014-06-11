@@ -46,18 +46,12 @@ namespace MediaBrowser.ServerApplication
 
                 var json = FormatJson(_jsonSerializer.SerializeToString(item));
 
-                if (item is IHasMediaStreams)
+                var hasMediaSources = item as IHasMediaSources;
+                if (hasMediaSources != null)
                 {
-                    var mediaStreams = _itemRepository.GetMediaStreams(new MediaStreamQuery
-                    {
-                        ItemId = item.Id
+                    var sources = hasMediaSources.GetMediaSources(false).ToList();
 
-                    }).ToList();
-
-                    if (mediaStreams.Count > 0)
-                    {
-                        json += "\n\nMedia Streams:\n\n" + FormatJson(_jsonSerializer.SerializeToString(mediaStreams));
-                    }
+                    json += "\n\nMedia Sources:\n\n" + FormatJson(_jsonSerializer.SerializeToString(sources));
                 }
 
                 txtJson.Text = json;
