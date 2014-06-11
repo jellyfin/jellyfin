@@ -742,7 +742,7 @@
                 mediaSourceId: mediaSource.Id
             };
 
-            if (selectedSubtitleStream && selectedSubtitleStream.IsGraphicalSubtitleStream) {
+            if (selectedSubtitleStream && !selectedSubtitleStream.IsTextSubtitleStream) {
                 baseParams.SubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
             }
 
@@ -843,14 +843,13 @@
             html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
 
             var textStreams = subtitleStreams.filter(function (s) {
-                return !s.IsGraphicalSubtitleStream;
+                return s.IsTextSubtitleStream;
             });
 
             for (var i = 0, length = textStreams.length; i < length; i++) {
 
                 var textStream = textStreams[i];
-                var textStreamUrl = ApiClient.getUrl('Videos/' + item.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
-                    mediaSourceId: mediaSource.Id
+                var textStreamUrl = ApiClient.getUrl('Videos/' + item.Id + '/' + mediaSource.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
                 });
 
                 var defaultAttribute = i.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';

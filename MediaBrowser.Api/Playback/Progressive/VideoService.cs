@@ -147,7 +147,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             args += keyFrameArg;
 
-            var hasGraphicalSubs = state.SubtitleStream != null && state.SubtitleStream.IsGraphicalSubtitleStream;
+            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 
             var request = state.VideoRequest;
 

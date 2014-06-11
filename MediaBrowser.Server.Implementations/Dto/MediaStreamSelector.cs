@@ -94,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 return index == -1 ? 100 : index;
             })
                  .ThenBy(i => i.IsDefault)
-                 .ThenBy(i => !i.IsGraphicalSubtitleStream)
+                 .ThenBy(i => i.IsTextSubtitleStream)
                  .ThenBy(i => i.IsExternal)
                  .ThenBy(i => i.Index)
                  .ToList();

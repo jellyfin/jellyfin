@@ -451,7 +451,7 @@ namespace MediaBrowser.Api.Playback
 
             var pts = string.Empty;
 
-            if (state.SubtitleStream != null && !state.SubtitleStream.IsGraphicalSubtitleStream)
+            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream)
             {
                 var seconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds;
 
@@ -486,7 +486,7 @@ namespace MediaBrowser.Api.Playback
 
             var request = state.VideoRequest;
 
-            if (state.SubtitleStream != null && !state.SubtitleStream.IsGraphicalSubtitleStream)
+            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream)
             {
                 assSubtitleParam = GetTextSubtitleParam(state, cancellationToken);
                 copyTsParam = " -copyts";
@@ -590,7 +590,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 // TODO: Perhaps also use original_size=1920x800
-
                 return string.Format(",subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
                     subtitlePath.Replace('\\', '/').Replace(":/", "\\:/"),
                     charsetParam,

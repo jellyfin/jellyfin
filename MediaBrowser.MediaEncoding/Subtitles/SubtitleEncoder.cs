@@ -253,6 +253,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException("format");
             }
 
+            if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
+            {
+                return new SrtWriter();
+            }
             if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase))
             {
                 return new VttWriter();
