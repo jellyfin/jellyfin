@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
@@ -9,6 +8,7 @@ using MediaBrowser.Model.Providers;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Api.Library
 {
     [Route("/Videos/{Id}/Subtitles/{Index}", "GET", Summary = "Gets an external subtitle file")]
+    [Route("/Videos/{Id}/Subtitles/{Index}/Stream.{Format}", "GET", Summary = "Gets subtitles in a specified format (vtt).")]
     public class GetSubtitle
     {
         /// <summary>
@@ -25,8 +26,14 @@ namespace MediaBrowser.Api.Library
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
 
+        [ApiMember(Name = "MediaSourceId", Description = "MediaSourceId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string MediaSourceId { get; set; }
+
         [ApiMember(Name = "Index", Description = "The subtitle stream index", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "GET")]
         public int Index { get; set; }
+
+        [ApiMember(Name = "Format", Description = "Format", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Format { get; set; }
     }
 
     [Route("/Videos/{Id}/Subtitles/{Index}", "DELETE", Summary = "Deletes an external subtitle file")]
@@ -81,13 +88,13 @@ namespace MediaBrowser.Api.Library
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
-        private readonly IItemRepository _itemRepo;
+        private readonly ISubtitleEncoder _subtitleEncoder;
 
-        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, IItemRepository itemRepo)
+        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder)
         {
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
-            _itemRepo = itemRepo;
+            _subtitleEncoder = subtitleEncoder;
         }
 
         public object Get(SearchRemoteSubtitles request)
@@ -100,21 +107,30 @@ namespace MediaBrowser.Api.Library
         }
         public object Get(GetSubtitle request)
         {
-            var subtitleStream = _itemRepo.GetMediaStreams(new MediaStreamQuery
+            if (string.IsNullOrEmpty(request.Format))
             {
+                var item = (Video)_libraryManager.GetItemById(new Guid(request.Id));
 
-                Index = request.Index,
-                ItemId = new Guid(request.Id),
-                Type = MediaStreamType.Subtitle
+                var mediaSource = item.GetMediaSources(false)
+                    .First(i => string.Equals(i.Id, request.MediaSourceId ?? request.Id));
 
-            }).FirstOrDefault();
+                var subtitleStream = mediaSource.MediaStreams
+                    .First(i => i.Type == MediaStreamType.Subtitle && i.Index == request.Index);
 
-            if (subtitleStream == null)
-            {
-                throw new ResourceNotFoundException();
+                return ToStaticFileResult(subtitleStream.Path);
             }
 
-            return ToStaticFileResult(subtitleStream.Path);
+            var stream = GetSubtitles(request).Result;
+
+            return ResultFactory.GetResult(stream, Common.Net.MimeTypes.GetMimeType("file." + request.Format));
+        }
+
+        private async Task<Stream> GetSubtitles(GetSubtitle request)
+        {
+            var stream = await _subtitleEncoder.GetSubtitles(request.Id, request.MediaSourceId, request.Index, request.Format,
+                        CancellationToken.None);
+
+            return stream;
         }
 
         public void Delete(DeleteSubtitle request)
@@ -135,7 +151,7 @@ namespace MediaBrowser.Api.Library
         {
             var result = _subtitleManager.GetRemoteSubtitles(request.Id, CancellationToken.None).Result;
 
-            return ResultFactory.GetResult(result.Stream, MimeTypes.GetMimeType("file." + result.Format));
+            return ResultFactory.GetResult(result.Stream, Common.Net.MimeTypes.GetMimeType("file." + result.Format));
         }
 
         public void Post(DownloadRemoteSubtitles request)

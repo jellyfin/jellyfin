@@ -26,7 +26,11 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         private readonly IMediaEncoder _encoder;
         private readonly IChapterManager _chapterManager;
 
-        public EncodingManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IMediaEncoder encoder, IChapterManager chapterManager)
+        public EncodingManager(IServerConfigurationManager config, 
+            IFileSystem fileSystem, 
+            ILogger logger, 
+            IMediaEncoder encoder, 
+            IChapterManager chapterManager)
         {
             _config = config;
             _fileSystem = fileSystem;

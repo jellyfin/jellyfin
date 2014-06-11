@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
@@ -11,7 +12,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public SubtitleTrackInfo Parse(Stream stream)
+        public SubtitleTrackInfo Parse(Stream stream, CancellationToken cancellationToken)
         {
             var trackInfo = new SubtitleTrackInfo();
             var eventIndex = 1;
@@ -24,6 +25,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 while ((line = reader.ReadLine()) != null)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
                     if (string.IsNullOrWhiteSpace(line))
                     {
                         continue;
