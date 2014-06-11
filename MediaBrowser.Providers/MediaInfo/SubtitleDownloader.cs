@@ -110,7 +110,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // There's an internal subtitle stream for this language
             if (skipIfGraphicalSubtitlesPresent &&
-                internalMediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.IsGraphicalSubtitleStream && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+                internalMediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && !i.IsTextSubtitleStream && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }

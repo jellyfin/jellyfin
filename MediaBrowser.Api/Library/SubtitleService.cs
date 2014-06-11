@@ -15,8 +15,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Library
 {
-    [Route("/Videos/{Id}/Subtitles/{Index}", "GET", Summary = "Gets an external subtitle file")]
-    [Route("/Videos/{Id}/Subtitles/{Index}/Stream.{Format}", "GET", Summary = "Gets subtitles in a specified format (vtt).")]
+    [Route("/Videos/{Id}/{MediaSourceId}/Subtitles/{Index}/Stream.{Format}", "GET", Summary = "Gets subtitles in a specified format (vtt).")]
     public class GetSubtitle
     {
         /// <summary>
@@ -26,7 +25,7 @@ namespace MediaBrowser.Api.Library
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
 
-        [ApiMember(Name = "MediaSourceId", Description = "MediaSourceId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "MediaSourceId", Description = "MediaSourceId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string MediaSourceId { get; set; }
 
         [ApiMember(Name = "Index", Description = "The subtitle stream index", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "GET")]

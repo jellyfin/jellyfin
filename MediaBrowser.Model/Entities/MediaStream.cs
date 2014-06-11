@@ -130,18 +130,19 @@ namespace MediaBrowser.Model.Entities
         /// <value><c>true</c> if this instance is external; otherwise, <c>false</c>.</value>
         public bool IsExternal { get; set; }
 
-        public bool IsGraphicalSubtitleStream
+        public bool IsTextSubtitleStream
         {
             get
             {
-                if (IsExternal) return false;
+                if (Type != MediaStreamType.Subtitle) return false;
 
                 var codec = Codec ?? string.Empty;
 
-                return StringHelper.IndexOfIgnoreCase(codec, "pgs") != -1 ||
-                       StringHelper.IndexOfIgnoreCase(codec, "dvd") != -1;
+                return StringHelper.IndexOfIgnoreCase(codec, "pgs") == -1 &&
+                       StringHelper.IndexOfIgnoreCase(codec, "dvd") == -1;
             }
         }
+
 
         /// <summary>
         /// Gets or sets the filename.
