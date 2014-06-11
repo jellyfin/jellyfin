@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
@@ -12,6 +13,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// </summary>
         /// <param name="info">The information.</param>
         /// <param name="stream">The stream.</param>
-        void Write(SubtitleTrackInfo info, Stream stream);
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void Write(SubtitleTrackInfo info, Stream stream, CancellationToken cancellationToken);
     }
 }

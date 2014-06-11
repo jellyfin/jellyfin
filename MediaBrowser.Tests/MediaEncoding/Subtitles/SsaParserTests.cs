@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using MediaBrowser.MediaEncoding.Subtitles;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -42,7 +43,7 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
 
             var stream = File.OpenRead(@"MediaEncoding\Subtitles\TestSubtitles\data.ssa");
 
-            var result = sut.Parse(stream);
+            var result = sut.Parse(stream, CancellationToken.None);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedSubs.TrackEvents.Count,result.TrackEvents.Count);

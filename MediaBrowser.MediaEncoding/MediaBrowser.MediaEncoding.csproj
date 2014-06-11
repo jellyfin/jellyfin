@@ -60,6 +60,7 @@
     <Compile Include="Subtitles\ISubtitleWriter.cs" />
     <Compile Include="Subtitles\SrtParser.cs" />
     <Compile Include="Subtitles\SsaParser.cs" />
+    <Compile Include="Subtitles\SubtitleEncoder.cs" />
     <Compile Include="Subtitles\SubtitleTrackInfo.cs" />
     <Compile Include="Subtitles\VttWriter.cs" />
   </ItemGroup>

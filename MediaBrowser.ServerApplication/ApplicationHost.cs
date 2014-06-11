@@ -40,6 +40,7 @@ using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Dlna.Main;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
+using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
@@ -550,6 +551,8 @@ namespace MediaBrowser.ServerApplication
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
 
+            RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder));
+
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
             var userdataTask = Task.Run(async () => await ConfigureUserDataRepositories().ConfigureAwait(false));
@@ -732,7 +735,7 @@ namespace MediaBrowser.ServerApplication
 
             SubtitleManager.AddParts(GetExports<ISubtitleProvider>());
             ChapterManager.AddParts(GetExports<IChapterProvider>());
-       
+
             SessionManager.AddParts(GetExports<ISessionControllerFactory>());
 
             ChannelManager.AddParts(GetExports<IChannel>(), GetExports<IChannelFactory>());

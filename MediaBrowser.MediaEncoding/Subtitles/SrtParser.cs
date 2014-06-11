@@ -3,25 +3,35 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
     public class SrtParser : ISubtitleParser
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        public SubtitleTrackInfo Parse(Stream stream) {
+        public SubtitleTrackInfo Parse(Stream stream, CancellationToken cancellationToken)
+        {
             var trackInfo = new SubtitleTrackInfo();
             using ( var reader = new StreamReader(stream))
             {
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (string.IsNullOrWhiteSpace(line))
                     {
                         continue;
                     }
                     var subEvent = new SubtitleTrackEvent {Id = line};
                     line = reader.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(line))
+                    {
+                        continue;
+                    }
+                    
                     var time = Regex.Split(line, @"[\t ]*-->[\t ]*");
                     subEvent.StartPositionTicks = GetTicks(time[0]);
                     var endTime = time[1];

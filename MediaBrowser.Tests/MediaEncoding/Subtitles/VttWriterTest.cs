@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using MediaBrowser.MediaEncoding.Subtitles;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -91,7 +92,7 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
                 File.Delete("testVTT.vtt");
             using (var file = File.OpenWrite("testVTT.vtt"))
             {
-                sut.Write(infoSubs,file);
+                sut.Write(infoSubs, file, CancellationToken.None);
             }
 
             var result = File.ReadAllText("testVTT.vtt");
