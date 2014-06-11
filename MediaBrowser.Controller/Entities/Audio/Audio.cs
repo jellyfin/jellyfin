@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Threading;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -15,7 +14,6 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// Class Audio
     /// </summary>
     public class Audio : BaseItem, 
-        IHasMediaStreams, 
         IHasAlbumArtist, 
         IHasArtist, 
         IHasMusicGenres, 

@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -30,7 +29,6 @@ namespace MediaBrowser.Server.Implementations.Dto
     {
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
-        private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
         private readonly IItemRepository _itemRepo;
 
@@ -41,11 +39,10 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         private readonly Func<IChannelManager> _channelManagerFactory;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory)
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory)
         {
             _logger = logger;
             _libraryManager = libraryManager;
-            _userManager = userManager;
             _userDataRepository = userDataRepository;
             _itemRepo = itemRepo;
             _imageProcessor = imageProcessor;
@@ -993,9 +990,9 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (fields.Contains(ItemFields.MediaStreams))
             {
                 // Add VideoInfo
-                var iHasMediaStreams = item as IHasMediaStreams;
+                var iHasMediaSources = item as IHasMediaSources;
 
-                if (iHasMediaStreams != null)
+                if (iHasMediaSources != null)
                 {
                     List<MediaStream> mediaStreams;
 
@@ -1007,11 +1004,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                     else
                     {
-                        mediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
-                        {
-                            ItemId = item.Id
-
-                        }).ToList();
+                        mediaStreams = iHasMediaSources.GetMediaSources(true).First().MediaStreams;
                     }
 
                     dto.MediaStreams = mediaStreams;

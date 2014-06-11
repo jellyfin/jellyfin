@@ -41,26 +41,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         Task<Stream> ExtractVideoImage(string[] inputFiles, InputType type, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
-        
-        /// <summary>
-        /// Extracts the text subtitle.
-        /// </summary>
-        /// <param name="inputFiles">The input files.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
-        /// <param name="copySubtitleStream">if set to true, copy stream instead of converting.</param>
-        /// <param name="outputPath">The output path.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, bool copySubtitleStream, string outputPath, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the subtitle language encoding parameter.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="language">The language.</param>
-        /// <returns>System.String.</returns>
-        string GetSubtitleLanguageEncodingParam(string path, string language);
 
         /// <summary>
         /// Gets the media info.

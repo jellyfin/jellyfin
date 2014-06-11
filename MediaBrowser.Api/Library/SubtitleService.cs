@@ -34,6 +34,9 @@ namespace MediaBrowser.Api.Library
 
         [ApiMember(Name = "Format", Description = "Format", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Format { get; set; }
+
+        [ApiMember(Name = "StartPositionTicks", Description = "StartPositionTicks", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public long StartPositionTicks { get; set; }
     }
 
     [Route("/Videos/{Id}/Subtitles/{Index}", "DELETE", Summary = "Deletes an external subtitle file")]
@@ -127,10 +130,12 @@ namespace MediaBrowser.Api.Library
 
         private async Task<Stream> GetSubtitles(GetSubtitle request)
         {
-            var stream = await _subtitleEncoder.GetSubtitles(request.Id, request.MediaSourceId, request.Index, request.Format,
-                        CancellationToken.None);
-
-            return stream;
+            return await _subtitleEncoder.GetSubtitles(request.Id, 
+                request.MediaSourceId, 
+                request.Index, 
+                request.Format,
+                request.StartPositionTicks,
+                CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Delete(DeleteSubtitle request)

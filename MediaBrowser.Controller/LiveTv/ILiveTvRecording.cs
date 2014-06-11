@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public interface ILiveTvRecording : IHasImages, IHasMediaStreams
+    public interface ILiveTvRecording : IHasImages, IHasMediaSources
     {
         string ServiceName { get; set; }
 
