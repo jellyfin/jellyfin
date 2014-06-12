@@ -34,7 +34,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     switch (arg)
                     {
                         case "Version":
-                            return "20140602";
+                            return "20140612";
                         case "FFMpegFilename":
                             return "ffmpeg.exe";
                         case "FFProbeFilename":
