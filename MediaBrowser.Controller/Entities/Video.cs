@@ -560,7 +560,8 @@ namespace MediaBrowser.Controller.Entities
                 Size = i.Size,
                 Formats = (i.FormatName ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                 Timestamp = i.Timestamp,
-                Type = type
+                Type = type,
+                PlayableStreamFileNames = i.PlayableStreamFileNames.ToList()
             };
 
             if (string.IsNullOrEmpty(info.Container))

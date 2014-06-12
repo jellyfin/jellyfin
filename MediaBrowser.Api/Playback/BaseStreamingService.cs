@@ -598,7 +598,7 @@ namespace MediaBrowser.Api.Playback
 
             return string.Format(",subtitles='{0}:si={1}',setpts=PTS -{2}/TB",
                 state.MediaPath.Replace('\\', '/').Replace(":/", "\\:/"),
-                state.SubtitleStream.Index.ToString(UsCulture),
+                state.InternalSubtitleStreamOffset.ToString(UsCulture),
                 Math.Round(seconds).ToString(UsCulture));
         }
 
@@ -1474,7 +1474,7 @@ namespace MediaBrowser.Api.Playback
 
                     state.IsoType = mediaSource.IsoType;
 
-                    //state.PlayableStreamFileNames = mediaSource.PlayableStreamFileNames.ToList();
+                    state.PlayableStreamFileNames = mediaSource.PlayableStreamFileNames.ToList();
 
                     if (mediaSource.Timestamp.HasValue)
                     {
@@ -1551,6 +1551,11 @@ namespace MediaBrowser.Api.Playback
                 state.VideoStream = GetMediaStream(mediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video);
                 state.SubtitleStream = GetMediaStream(mediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
                 state.AudioStream = GetMediaStream(mediaStreams, videoRequest.AudioStreamIndex, MediaStreamType.Audio);
+
+                if (state.SubtitleStream != null && !state.SubtitleStream.IsExternal)
+                {
+                    state.InternalSubtitleStreamOffset = mediaStreams.Where(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal).ToList().IndexOf(state.SubtitleStream);
+                }
 
                 if (state.VideoStream != null && state.VideoStream.IsInterlaced)
                 {

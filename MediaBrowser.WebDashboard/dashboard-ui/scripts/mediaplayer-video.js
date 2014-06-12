@@ -36,6 +36,16 @@
             return video;
         };
 
+        self.getCurrentSubtitleStream = function () {
+            return self.getSubtitleStream(self.currentSubtitleStreamIndex);
+        };
+
+        self.getSubtitleStream = function (index) {
+            return self.currentMediaSource.MediaStreams.filter(function (s) {
+                return s.Type == 'Subtitle' && s.Index == index;
+            })[0];
+        };
+
         self.remoteFullscreen = function () {
 
             var videoControls = $("#videoControls");
@@ -151,7 +161,62 @@
         };
 
         self.setSubtitleStreamIndex = function (index) {
-            self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: index });
+
+            if (!self.supportsTextTracks()) {
+                self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: index });
+                self.currentSubtitleStreamIndex = index;
+                return;
+            }
+
+            var currentStream = self.getCurrentSubtitleStream();
+
+            var newStream = self.getSubtitleStream(index);
+
+            if (!currentStream && !newStream) return;
+
+            var selectedTrackElementIndex = -1;
+
+            if (currentStream && !newStream) {
+
+                if (!currentStream.IsTextSubtitleStream) {
+
+                    // Need to change the transcoded stream to remove subs
+                    self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: -1 });
+                }
+            }
+            else if (!currentStream && newStream) {
+
+                if (newStream.IsTextSubtitleStream) {
+                    selectedTrackElementIndex = index;
+                } else {
+
+                    // Need to change the transcoded stream to add subs
+                    self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: index });
+                }
+            }
+
+            self.setCurrentTrackElement(selectedTrackElementIndex);
+            self.currentSubtitleStreamIndex = index;
+        };
+
+        self.setCurrentTrackElement = function (index) {
+
+            var textStreams = self.currentMediaSource.MediaStreams.filter(function (s) {
+                return s.Type == 'Subtitle' && s.IsTextSubtitleStream;
+            });
+
+            var allTracks = video.textTracks; // get list of tracks
+
+            for (var i = 0; i < allTracks.length; i++) {
+
+                var trackIndex = textStreams[i].Index;
+
+                if (trackIndex == index) {
+                    allTracks[i].mode = "showing"; // show this track
+                } else {
+                    allTracks[i].mode = "disabled"; // hide all other tracks
+                }
+            }
         };
 
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function (e) {
@@ -532,7 +597,7 @@
                 return currentStream.Type == "Subtitle";
             });
 
-            var currentIndex = self.currentSubtitleStreamIndex;
+            var currentIndex = self.currentSubtitleStreamIndex || -1;
 
             var html = '';
 
@@ -742,7 +807,7 @@
                 mediaSourceId: mediaSource.Id
             };
 
-            if (selectedSubtitleStream && !selectedSubtitleStream.IsTextSubtitleStream) {
+            if (selectedSubtitleStream && (!selectedSubtitleStream.IsTextSubtitleStream || !self.supportsTextTracks())) {
                 baseParams.SubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
             }
 
@@ -842,19 +907,21 @@
 
             html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
 
-            var textStreams = subtitleStreams.filter(function (s) {
-                return s.IsTextSubtitleStream;
-            });
-
-            for (var i = 0, length = textStreams.length; i < length; i++) {
-
-                var textStream = textStreams[i];
-                var textStreamUrl = ApiClient.getUrl('Videos/' + item.Id + '/' + mediaSource.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
+            if (self.supportsTextTracks()) {
+                var textStreams = subtitleStreams.filter(function (s) {
+                    return s.IsTextSubtitleStream;
                 });
 
-                var defaultAttribute = i.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
+                for (var i = 0, length = textStreams.length; i < length; i++) {
 
-                html += '<track data-index="' + textStream.Index + '" kind="subtitles" src="' + textStreamUrl + '" srclang="' + (textStream.Language || 'und') + '"' + defaultAttribute + '>';
+                    var textStream = textStreams[i];
+                    var textStreamUrl = ApiClient.getUrl('Videos/' + item.Id + '/' + mediaSource.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
+                    });
+
+                    var defaultAttribute = i.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
+
+                    html += '<track kind="subtitles" src="' + textStreamUrl + '" srclang="' + (textStream.Language || 'und') + '"' + defaultAttribute + '>';
+                }
             }
 
             html += '</video>';

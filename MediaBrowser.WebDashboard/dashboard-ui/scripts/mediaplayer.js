@@ -218,6 +218,17 @@
             $(self).trigger('positionchange', [state]);
         };
 
+        self.supportsTextTracks = function () {
+
+            // Does not support changing tracks via mode property
+            if ($.browser.mozilla) {
+                return false;
+            }
+
+            // For now, until perfected
+            return false;
+        };
+
         self.canPlayVideoDirect = function (mediaSource, videoStream, audioStream, subtitleStream, maxWidth, bitrate) {
 
             if (!mediaSource) {
@@ -243,7 +254,7 @@
                 return false;
             }
 
-            if (subtitleStream && subtitleStream.IsGraphicalSubtitleStream) {
+            if (subtitleStream && (subtitleStream.IsGraphicalSubtitleStream || !self.supportsTextTracks())) {
                 console.log('Transcoding because subtitles are required');
                 return false;
             }
@@ -257,7 +268,7 @@
                 console.log('Transcoding because bitrate is too high');
                 return false;
             }
-            
+
             var extension = (mediaSource.Container || '').toLowerCase();
 
             // m4v's with high profile failing in chrome
@@ -1123,7 +1134,7 @@
         function sendProgressUpdate() {
 
             var state = self.getPlayerStateInternal(currentMediaElement, self.currentItem, self.currentMediaSource);
-            
+
             var info = {
                 QueueableMediaTypes: state.NowPlayingItem.MediaType,
                 ItemId: state.NowPlayingItem.Id,

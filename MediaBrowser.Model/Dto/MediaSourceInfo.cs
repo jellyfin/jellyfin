@@ -30,6 +30,7 @@ namespace MediaBrowser.Model.Dto
         public Video3DFormat? Video3DFormat { get; set; }
 
         public List<MediaStream> MediaStreams { get; set; }
+        public List<string> PlayableStreamFileNames { get; set; }
 
         public List<string> Formats { get; set; }
 
@@ -43,6 +44,7 @@ namespace MediaBrowser.Model.Dto
             Formats = new List<string>();
             MediaStreams = new List<MediaStream>();
             RequiredHttpHeaders = new Dictionary<string, string>();
+            PlayableStreamFileNames = new List<string>();
         }
 
         public int? DefaultAudioStreamIndex { get; set; }
