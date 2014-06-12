@@ -32,6 +32,7 @@ namespace MediaBrowser.Controller.Entities
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = new List<MetadataFields>();
             ImageInfos = new List<ItemImageInfo>();
+            Identities = new List<IItemIdentity>();
         }
 
         /// <summary>
@@ -243,6 +244,9 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public bool IsUnidentified { get; set; }
+
+        [IgnoreDataMember]
+        public List<IItemIdentity> Identities { get; set; }
 
         /// <summary>
         /// Gets or sets the locked fields.

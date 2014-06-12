@@ -104,6 +104,9 @@ namespace MediaBrowser.Providers.Manager
                 refreshResult.AddStatus(ProviderRefreshStatus.Failure, ex.Message);
             }
 
+            // Identify item
+            TIdType id = null;
+
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
@@ -120,7 +123,8 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0)
                 {
-                    var result = await RefreshWithProviders(itemOfType, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
+                    id = await CreateInitialLookupInfo(itemOfType, cancellationToken).ConfigureAwait(false);
+                    var result = await RefreshWithProviders(itemOfType, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
@@ -128,6 +132,13 @@ namespace MediaBrowser.Providers.Manager
                     refreshResult.AddImageProvidersRefreshed(result.Providers);
                 }
             }
+
+            if (id == null)
+            {
+                id = await CreateInitialLookupInfo(itemOfType, cancellationToken).ConfigureAwait(false);
+            }
+
+            MergeIdentities(itemOfType, id);
 
             // Next run remote image providers, but only if local image providers didn't throw an exception
             if (!localImagesFailed && refreshOptions.ImageRefreshMode != ImageRefreshMode.ValidationOnly)
@@ -159,6 +170,15 @@ namespace MediaBrowser.Providers.Manager
             if (providersHadChanges || refreshResult.IsDirty)
             {
                 await SaveProviderResult(itemOfType, refreshResult).ConfigureAwait(false);
+            }
+        }
+
+        private void MergeIdentities(TItemType item, TIdType id)
+        {
+            var hasIdentity = id as IHasIdentities<IItemIdentity>;
+            if (hasIdentity != null)
+            {
+                item.Identities = hasIdentity.Identities.ToList();
             }
         }
 
@@ -259,7 +279,7 @@ namespace MediaBrowser.Providers.Manager
             return item is TItemType;
         }
 
-        protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item, MetadataRefreshOptions options, List<IMetadataProvider> providers, ItemImageProvider imageService, CancellationToken cancellationToken)
+        protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item, TIdType id, MetadataRefreshOptions options, List<IMetadataProvider> providers, ItemImageProvider imageService, CancellationToken cancellationToken)
         {
             var refreshResult = new RefreshResult
             {
@@ -280,7 +300,7 @@ namespace MediaBrowser.Providers.Manager
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
             {
-                await ExecuteRemoteProviders(item, temp, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
+                await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
             var hasLocalMetadata = false;
@@ -333,7 +353,7 @@ namespace MediaBrowser.Providers.Manager
             // Local metadata is king - if any is found don't run remote providers
             if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh))
             {
-                await ExecuteRemoteProviders(item, temp, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
+                await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
             if (refreshResult.UpdateType > ItemUpdateType.None)
@@ -374,10 +394,8 @@ namespace MediaBrowser.Providers.Manager
             return new TItemType();
         }
 
-        private async Task ExecuteRemoteProviders(TItemType item, TItemType temp, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, RefreshResult refreshResult, CancellationToken cancellationToken)
+        private async Task ExecuteRemoteProviders(TItemType item, TItemType temp, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, RefreshResult refreshResult, CancellationToken cancellationToken)
         {
-            TIdType id = null;
-
             var unidentifiedCount = 0;
             var identifiedCount = 0;
 
@@ -386,11 +404,7 @@ namespace MediaBrowser.Providers.Manager
                 var providerName = provider.GetType().Name;
                 Logger.Debug("Running {0} for {1}", providerName, item.Path ?? item.Name);
 
-                if (id == null)
-                {
-                    id = item.GetLookupInfo();
-                }
-                else
+                if (id != null)
                 {
                     MergeNewData(temp, id);
                 }
@@ -433,6 +447,19 @@ namespace MediaBrowser.Providers.Manager
                 item.IsUnidentified = isUnidentified;
                 refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
             }
+        }
+
+        private async Task<TIdType> CreateInitialLookupInfo(TItemType item, CancellationToken cancellationToken)
+        {
+            var info = item.GetLookupInfo();
+            
+            var hasIdentity = info as IHasIdentities<IItemIdentity>;
+            if (hasIdentity != null)
+            {
+                await hasIdentity.FindIdentities(ProviderManager, cancellationToken).ConfigureAwait(false);
+            }
+
+            return info;
         }
 
         private void MergeNewData(TItemType source, TIdType lookupInfo)
