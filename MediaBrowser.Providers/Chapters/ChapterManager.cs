@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.Chapters
             {
                 ContentType = mediaType,
                 IndexNumber = video.IndexNumber,
-                //Language = language,
+                Language = video.GetPreferredMetadataLanguage(),
                 MediaPath = video.Path,
                 Name = video.Name,
                 ParentIndexNumber = video.ParentIndexNumber,
