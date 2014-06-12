@@ -240,7 +240,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
                 options.MetadataRefreshMode == MetadataRefreshMode.EnsureMetadata)
             {
-                var remoteChapters = await DownloadChapters(video, cancellationToken).ConfigureAwait(false);
+                var remoteChapters = await DownloadChapters(video, chapters, cancellationToken).ConfigureAwait(false);
 
                 if (remoteChapters.Count > 0)
                 {
@@ -487,7 +487,7 @@ namespace MediaBrowser.Providers.MediaInfo
             currentStreams.AddRange(externalSubtitleStreams);
         }
 
-        private async Task<List<ChapterInfo>> DownloadChapters(Video video, CancellationToken cancellationToken)
+        private async Task<List<ChapterInfo>> DownloadChapters(Video video, List<ChapterInfo> currentChapters, CancellationToken cancellationToken)
         {
             if ((_config.Configuration.ChapterOptions.DownloadEpisodeChapters &&
                  video is Episode) ||
@@ -502,12 +502,31 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     var chapters = await _chapterManager.GetChapters(result.Id, cancellationToken).ConfigureAwait(false);
 
-                    return chapters.Chapters.Select(i => new ChapterInfo
+                    var chapterInfos = chapters.Chapters.Select(i => new ChapterInfo
                     {
                         Name = i.Name,
                         StartPositionTicks = i.StartPositionTicks
 
                     }).ToList();
+
+                    if (chapterInfos.All(i => i.StartPositionTicks == 0))
+                    {
+                        if (currentChapters.Count >= chapterInfos.Count)
+                        {
+                            var index = 0;
+                            foreach (var info in chapterInfos)
+                            {
+                                info.StartPositionTicks = currentChapters[index].StartPositionTicks;
+                                index++;
+                            }
+                        }
+                        else
+                        {
+                            chapterInfos.Clear();
+                        }
+                    }
+
+                    return chapterInfos;
                 }
             }
 

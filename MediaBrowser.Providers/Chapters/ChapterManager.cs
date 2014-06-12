@@ -67,7 +67,8 @@ namespace MediaBrowser.Providers.Chapters
                 ParentIndexNumber = video.ParentIndexNumber,
                 ProductionYear = video.ProductionYear,
                 ProviderIds = video.ProviderIds,
-                RuntimeTicks = video.RunTimeTicks
+                RuntimeTicks = video.RunTimeTicks,
+                SearchAllProviders = false
             };
 
             var episode = video as Episode;
@@ -95,8 +96,12 @@ namespace MediaBrowser.Providers.Chapters
                 {
                     try
                     {
-                        return await Search(request, provider, cancellationToken).ConfigureAwait(false);
+                        var currentResults = await Search(request, provider, cancellationToken).ConfigureAwait(false);
 
+                        if (currentResults.Count > 0)
+                        {
+                            return currentResults;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -124,19 +129,21 @@ namespace MediaBrowser.Providers.Chapters
             return results.SelectMany(i => i);
         }
 
-        private async Task<IEnumerable<RemoteChapterResult>> Search(ChapterSearchRequest request,
+        private async Task<List<RemoteChapterResult>> Search(ChapterSearchRequest request,
             IChapterProvider provider,
             CancellationToken cancellationToken)
         {
             var searchResults = await provider.Search(request, cancellationToken).ConfigureAwait(false);
 
-            foreach (var result in searchResults)
+            var list = searchResults.ToList();
+
+            foreach (var result in list)
             {
                 result.Id = GetProviderId(provider.Name) + "_" + result.Id;
                 result.ProviderName = provider.Name;
             }
 
-            return searchResults;
+            return list;
         }
 
         public Task<ChapterResponse> GetChapters(string id, CancellationToken cancellationToken)
@@ -186,7 +193,7 @@ namespace MediaBrowser.Providers.Chapters
             if (!includeDisabledProviders)
             {
                 providers = providers
-                    .Where(i => _config.Configuration.ChapterOptions.DisabledFetchers.Contains(i.Name))
+                    .Where(i => !_config.Configuration.ChapterOptions.DisabledFetchers.Contains(i.Name))
                     .ToArray();
             }
 

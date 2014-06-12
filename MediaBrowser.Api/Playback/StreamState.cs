@@ -163,6 +163,8 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
+        public int InternalSubtitleStreamOffset { get; set; }
+
         public string OutputFilePath { get; set; }
         public string OutputVideoCodec { get; set; }
         public string OutputAudioCodec { get; set; }
