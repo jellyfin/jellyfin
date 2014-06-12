@@ -54,11 +54,13 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="imageProviders">The image providers.</param>
         /// <param name="metadataServices">The metadata services.</param>
+        /// <param name="identityProviders">The identity providers.</param>
+        /// <param name="identityConverters">The identity converters.</param>
         /// <param name="metadataProviders">The metadata providers.</param>
         /// <param name="savers">The savers.</param>
         /// <param name="imageSavers">The image savers.</param>
         /// <param name="externalIds">The external ids.</param>
-        void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders,
+        void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IItemIdentityProvider> identityProviders, IEnumerable<IItemIdentityConverter> identityConverters, IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> savers,
             IEnumerable<IImageSaver> imageSavers,
             IEnumerable<IExternalId> externalIds);
@@ -136,5 +138,12 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
         Task<HttpResponseInfo> GetSearchImage(string providerName, string url, CancellationToken cancellationToken);
+
+        IEnumerable<IItemIdentityProvider<TLookupInfo, TIdentity>> GetItemIdentityProviders<TLookupInfo, TIdentity>()
+            where TLookupInfo : ItemLookupInfo
+            where TIdentity : IItemIdentity;
+
+        IEnumerable<IItemIdentityConverter<TIdentity>> GetItemIdentityConverters<TIdentity>()
+            where TIdentity : IItemIdentity;
     }
 }
