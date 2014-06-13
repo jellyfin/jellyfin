@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (dynamicImageProvider != null)
                 {
-                    await RefreshFromProvider(item, dynamicImageProvider, savedOptions, result, cancellationToken).ConfigureAwait(false);
+                    await RefreshFromProvider(item, dynamicImageProvider, refreshOptions, savedOptions, result, cancellationToken).ConfigureAwait(false);
                     providerIds.Add(provider.GetType().FullName.GetMD5());
                 }
             }
@@ -93,11 +93,17 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="provider">The provider.</param>
+        /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="savedOptions">The saved options.</param>
         /// <param name="result">The result.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task RefreshFromProvider(IHasImages item, IDynamicImageProvider provider, MetadataOptions savedOptions, RefreshResult result, CancellationToken cancellationToken)
+        private async Task RefreshFromProvider(IHasImages item,
+            IDynamicImageProvider provider,
+            ImageRefreshOptions refreshOptions,
+            MetadataOptions savedOptions,
+            RefreshResult result,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -105,7 +111,8 @@ namespace MediaBrowser.Providers.Manager
 
                 foreach (var imageType in images)
                 {
-                    if (!item.HasImage(imageType) && savedOptions.IsEnabled(imageType))
+                    if (savedOptions.IsEnabled(imageType) &&
+                        (!item.HasImage(imageType) || refreshOptions.IsReplacingImage(imageType)))
                     {
                         _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
 
