@@ -491,6 +491,7 @@ namespace MediaBrowser.Api.Playback
                 assSubtitleParam = GetTextSubtitleParam(state, cancellationToken);
                 copyTsParam = " -copyts";
             }
+            //copyTsParam = " -copyts";
 
             // If fixed dimensions were supplied
             if (request.Width.HasValue && request.Height.HasValue)

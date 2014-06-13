@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -54,7 +53,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     subEvent.Text = Regex.Replace(subEvent.Text, "<", "&lt;", RegexOptions.IgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, ">", "&gt;", RegexOptions.IgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, "&lt;(\\/?(font|b|u|i|s))((\\s+(\\w|\\w[\\w\\-]*\\w)(\\s*=\\s*(?:\\\".*?\\\"|'.*?'|[^'\\\">\\s]+))?)+\\s*|\\s*)(\\/?)&gt;", "<$1$3$7>", RegexOptions.IgnoreCase);
-                    subEvent.Text = Regex.Replace(subEvent.Text, @"\\N", "<br />",RegexOptions.IgnoreCase);
                     trackInfo.TrackEvents.Add(subEvent);
                 }
             }

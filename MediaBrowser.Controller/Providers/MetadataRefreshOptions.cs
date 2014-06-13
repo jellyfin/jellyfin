@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -23,9 +25,20 @@ namespace MediaBrowser.Controller.Providers
         public ImageRefreshMode ImageRefreshMode { get; set; }
         public IDirectoryService DirectoryService { get; set; }
 
+        public bool ReplaceAllImages { get; set; }
+
+        public List<ImageType> ReplaceImages { get; set; }
+
         public ImageRefreshOptions()
         {
             ImageRefreshMode = ImageRefreshMode.Default;
+
+            ReplaceImages = new List<ImageType>();
+        }
+
+        public bool IsReplacingImage(ImageType type)
+        {
+            return ReplaceAllImages || ReplaceImages.Contains(type);
         }
     }
 

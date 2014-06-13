@@ -2,8 +2,34 @@
     window.MediaBrowser = {};
 }
 
-MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, window, FileReader) {
+MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, window, FileReader, localStorage) {
 
+    function generateDeviceId() {
+
+        var keys = [];
+
+        keys.push(navigator.userAgent);
+        keys.push((navigator.cpuClass || ""));
+
+        var randomId = '';
+        
+        if (localStorage) {
+            
+            //  Since the above is not guaranteed to be unique per device, add a little more
+            randomId = localStorage.getItem('randomId');
+            
+            if (!randomId) {
+
+                randomId = new Date().getTime();
+                localStorage.setItem('randomId', randomId);
+            }
+        }
+
+        keys.push(randomId);
+
+        return MediaBrowser.SHA1(keys.join('|'));
+    }
+    
     /**
      * Creates a new api client instance
      * @param {String} serverAddress
@@ -18,7 +44,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         var self = this;
         var deviceName = "Web Browser";
-        var deviceId = MediaBrowser.SHA1(navigator.userAgent + (navigator.cpuClass || ""));
+        var deviceId = generateDeviceId();
         var currentUserId;
         var webSocket;
 
@@ -3155,7 +3181,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
     };
 
-}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout, window, window.FileReader);
+}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout, window, window.FileReader, window.localStorage);
 
 /**
  * Provides a friendly way to create an api client instance using information from the browser's current url

@@ -240,11 +240,18 @@ namespace MediaBrowser.Providers.MediaInfo
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
                 options.MetadataRefreshMode == MetadataRefreshMode.EnsureMetadata)
             {
-                var remoteChapters = await DownloadChapters(video, chapters, cancellationToken).ConfigureAwait(false);
-
-                if (remoteChapters.Count > 0)
+                try
                 {
-                    chapters = remoteChapters;
+                    var remoteChapters = await DownloadChapters(video, chapters, cancellationToken).ConfigureAwait(false);
+
+                    if (remoteChapters.Count > 0)
+                    {
+                        chapters = remoteChapters;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error downloading chapters", ex);
                 }
 
                 if (chapters.Count == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))

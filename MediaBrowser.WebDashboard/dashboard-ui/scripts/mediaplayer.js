@@ -42,7 +42,14 @@
         };
 
         self.getCurrentTicks = function (mediaElement) {
-            return Math.floor(10000000 * (mediaElement || currentMediaElement).currentTime) + self.startTimeTicksOffset;
+
+            var playerTime = Math.floor(10000000 * (mediaElement || currentMediaElement).currentTime);
+
+            //if (currentItem.MediaType == 'Audio') {
+                playerTime += self.startTimeTicksOffset;
+            //}
+
+            return playerTime;
         };
 
         self.clearPauseStop = function () {
@@ -218,6 +225,8 @@
             $(self).trigger('positionchange', [state]);
         };
 
+        var supportsTextTracks;
+
         self.supportsTextTracks = function () {
 
             // Does not support changing tracks via mode property
@@ -225,8 +234,13 @@
                 return false;
             }
 
-            // For now, until perfected
-            return false;
+            if (supportsTextTracks == null) {
+
+                supportsTextTracks = document.createElement('video').textTracks != null;
+            }
+
+            // For now, until ready
+            return supportsTextTracks;
         };
 
         self.canPlayVideoDirect = function (mediaSource, videoStream, audioStream, subtitleStream, maxWidth, bitrate) {
