@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -55,5 +56,10 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is unidentified; otherwise, <c>false</c>.</value>
         bool IsUnidentified { get; set; }
+
+        /// <summary>
+        /// Gets the item identities.
+        /// </summary>
+        List<IItemIdentity> Identities { get; set; }
     }
 }

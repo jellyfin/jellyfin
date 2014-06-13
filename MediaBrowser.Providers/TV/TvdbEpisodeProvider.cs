@@ -23,7 +23,7 @@ namespace MediaBrowser.Providers.TV
     /// <summary>
     /// Class RemoteEpisodeProvider
     /// </summary>
-    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasChangeMonitor
+    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IItemIdentityProvider<EpisodeInfo, EpisodeIdentity>, IHasChangeMonitor
     {
         internal static TvdbEpisodeProvider Current;
         private readonly IFileSystem _fileSystem;
@@ -40,19 +40,18 @@ namespace MediaBrowser.Providers.TV
         {
             var list = new List<RemoteSearchResult>();
 
-            string seriesTvdbId;
-            searchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesTvdbId);
+            var identity = searchInfo.Identities.FirstOrDefault(id => id.Type == MetadataProviders.Tvdb.ToString()) ?? await FindIdentity(searchInfo).ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(seriesTvdbId))
+            if (identity != null)
             {
-                await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesTvdbId, searchInfo.MetadataLanguage,
+                await TvdbSeriesProvider.Current.EnsureSeriesInfo(identity.SeriesId, searchInfo.MetadataLanguage,
                         cancellationToken).ConfigureAwait(false);
 
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesTvdbId);
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, identity.SeriesId);
 
                 try
                 {
-                    var item = FetchEpisodeData(searchInfo, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
+                    var item = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
 
                     if (item != null)
                     {
@@ -83,20 +82,19 @@ namespace MediaBrowser.Providers.TV
             get { return "TheTVDB"; }
         }
 
-        public Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo searchInfo, CancellationToken cancellationToken)
+        public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
-            string seriesTvdbId;
-            searchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesTvdbId);
+            var identity = searchInfo.Identities.FirstOrDefault(id => id.Type == MetadataProviders.Tvdb.ToString()) ?? await FindIdentity(searchInfo).ConfigureAwait(false);
 
             var result = new MetadataResult<Episode>();
 
-            if (!string.IsNullOrEmpty(seriesTvdbId))
+            if (identity != null)
             {
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesTvdbId);
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, identity.SeriesId);
 
                 try
                 {
-                    result.Item = FetchEpisodeData(searchInfo, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
+                    result.Item = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
                     result.HasMetadata = result.Item != null;
                 }
                 catch (FileNotFoundException)
@@ -105,7 +103,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            return Task.FromResult(result);
+            return result;
         }
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
@@ -211,18 +209,14 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="seriesDataPath">The series data path.</param>
+        /// <param name="seriesProviderIds"></param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private Episode FetchEpisodeData(EpisodeInfo id, string seriesDataPath, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
+        private Episode FetchEpisodeData(EpisodeInfo id, EpisodeIdentity identity, string seriesDataPath, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
         {
-            if (id.IndexNumber == null)
-            {
-                return null;
-            }
-
-            var episodeNumber = id.IndexNumber.Value;
+            var episodeNumber = identity.IndexNumber;
             var seasonOffset = TvdbSeriesProvider.GetSeriesOffset(seriesProviderIds) ?? 0;
-            var seasonNumber = id.ParentIndexNumber + seasonOffset;
+            var seasonNumber = identity.SeasonIndex + seasonOffset;
 
             if (seasonNumber == null)
             {
@@ -263,7 +257,7 @@ namespace MediaBrowser.Providers.TV
                 usingAbsoluteData = true;
             }
 
-            var end = id.IndexNumberEnd ?? episodeNumber;
+            var end = identity.IndexNumberEnd ?? episodeNumber;
             episodeNumber++;
 
             while (episodeNumber <= end)
@@ -726,5 +720,29 @@ namespace MediaBrowser.Providers.TV
         {
             throw new NotImplementedException();
         }
+
+        public Task<EpisodeIdentity> FindIdentity(EpisodeInfo info)
+        {
+            string seriesTvdbId;
+            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesTvdbId);
+
+            if (string.IsNullOrEmpty(seriesTvdbId) || info.IndexNumber == null)
+            {
+                return Task.FromResult<EpisodeIdentity>(null);
+            }
+
+            var id = new EpisodeIdentity
+            {
+                Type = MetadataProviders.Tvdb.ToString(),
+                SeriesId = seriesTvdbId,
+                SeasonIndex = info.ParentIndexNumber,
+                IndexNumber = info.IndexNumber.Value,
+                IndexNumberEnd = info.IndexNumberEnd
+            };
+
+            return Task.FromResult(id);
+        }
+
+        public int Order { get { return 0; } }
     }
 }
