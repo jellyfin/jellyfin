@@ -103,39 +103,28 @@ namespace MediaBrowser.Server.Implementations.Dto
                 AttachUserSpecificInfo(dto, item, user, fields);
             }
 
+            var hasMediaSources = item as IHasMediaSources;
+            if (hasMediaSources != null)
+            {
+                if (fields.Contains(ItemFields.MediaSources))
+                {
+                    if (user == null)
+                    {
+                        dto.MediaSources = hasMediaSources.GetMediaSources(true).ToList();
+                    }
+                    else
+                    {
+                        dto.MediaSources = hasMediaSources.GetMediaSources(true, user).ToList();
+                    }
+                }
+            }
+
             if (fields.Contains(ItemFields.Studios))
             {
                 AttachStudios(dto, item);
             }
 
             AttachBasicFields(dto, item, owner, fields);
-
-            if (user != null && dto.MediaSources != null && item is Video)
-            {
-                var preferredAudio = string.IsNullOrEmpty(user.Configuration.AudioLanguagePreference)
-                    ? new string[] { }
-                    : new[] { user.Configuration.AudioLanguagePreference };
-
-                var preferredSubs = string.IsNullOrEmpty(user.Configuration.SubtitleLanguagePreference)
-                    ? new string[] { }
-                    : new[] { user.Configuration.SubtitleLanguagePreference };
-
-                foreach (var source in dto.MediaSources)
-                {
-                    source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(
-                        source.MediaStreams, preferredAudio, user.Configuration.PlayDefaultAudioTrack);
-
-                    var defaultAudioIndex = source.DefaultAudioStreamIndex;
-                    var audioLangage = defaultAudioIndex == null
-                        ? null
-                        : source.MediaStreams.Where(i => i.Type == MediaStreamType.Audio && i.Index == defaultAudioIndex).Select(i => i.Language).FirstOrDefault();
-
-                    source.DefaultSubtitleStreamIndex = MediaStreamSelector.GetDefaultSubtitleStreamIndex(source.MediaStreams, 
-                        preferredSubs,
-                        user.Configuration.SubtitleMode, 
-                        audioLangage);
-                }
-            }
 
             if (fields.Contains(ItemFields.SoundtrackIds))
             {
@@ -926,11 +915,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
 
                 dto.MediaSourceCount = 1;
-
-                if (fields.Contains(ItemFields.MediaSources))
-                {
-                    dto.MediaSources = GetMediaSources(audio);
-                }
             }
 
             var album = item as MusicAlbum;
@@ -962,11 +946,6 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 dto.PartCount = video.AdditionalPartIds.Count + 1;
                 dto.MediaSourceCount = video.MediaSourceCount;
-
-                if (fields.Contains(ItemFields.MediaSources))
-                {
-                    dto.MediaSources = GetMediaSources(video);
-                }
 
                 if (fields.Contains(ItemFields.Chapters))
                 {

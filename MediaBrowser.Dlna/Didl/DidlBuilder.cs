@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -10,6 +8,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
@@ -28,14 +27,14 @@ namespace MediaBrowser.Dlna.Didl
         private readonly DeviceProfile _profile;
         private readonly IImageProcessor _imageProcessor;
         private readonly string _serverAddress;
-        private readonly IDtoService _dtoService;
+        private readonly User _user;
 
-        public DidlBuilder(DeviceProfile profile, IImageProcessor imageProcessor, string serverAddress, IDtoService dtoService)
+        public DidlBuilder(DeviceProfile profile, User user, IImageProcessor imageProcessor, string serverAddress)
         {
             _profile = profile;
             _imageProcessor = imageProcessor;
             _serverAddress = serverAddress;
-            _dtoService = dtoService;
+            _user = user;
         }
 
         public string GetItemDidl(BaseItem item, string deviceId, Filter filter)
@@ -99,9 +98,7 @@ namespace MediaBrowser.Dlna.Didl
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
-            var sources = _dtoService.GetMediaSources(video);
-
-            int? maxBitrateSetting = null;
+            var sources = _user == null ? video.GetMediaSources(true).ToList() : video.GetMediaSources(true, _user).ToList();
 
             var streamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
             {
@@ -109,11 +106,11 @@ namespace MediaBrowser.Dlna.Didl
                 MediaSources = sources,
                 Profile = _profile,
                 DeviceId = deviceId,
-                MaxBitrate = maxBitrateSetting
+                MaxBitrate = _profile.MaxBitrate
             });
 
             var url = streamInfo.ToDlnaUrl(_serverAddress);
-            //res.AppendChild(container.OwnerDocument.CreateCDataSection(url));
+
             res.InnerText = url;
 
             var mediaSource = sources.First(i => string.Equals(i.Id, streamInfo.MediaSourceId));
@@ -218,7 +215,7 @@ namespace MediaBrowser.Dlna.Didl
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
-            var sources = _dtoService.GetMediaSources(audio);
+            var sources = _user == null ? audio.GetMediaSources(true).ToList() : audio.GetMediaSources(true, _user).ToList();
 
             var streamInfo = new StreamBuilder().BuildAudioItem(new AudioOptions
             {
@@ -229,7 +226,7 @@ namespace MediaBrowser.Dlna.Didl
             });
 
             var url = streamInfo.ToDlnaUrl(_serverAddress);
-            //res.AppendChild(container.OwnerDocument.CreateCDataSection(url));
+
             res.InnerText = url;
 
             var mediaSource = sources.First(i => string.Equals(i.Id, streamInfo.MediaSourceId));

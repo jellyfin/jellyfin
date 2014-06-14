@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Server.Implementations.Dto
+namespace MediaBrowser.Controller.MediaEncoding
 {
     public static class MediaStreamSelector
     {

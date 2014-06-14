@@ -109,7 +109,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (liveTvItem != null)
             {
-                return !liveTvItem.HasImage(ImageType.Primary) && (liveTvItem.HasProviderImage ?? true) && (DateTime.UtcNow - date).TotalHours >= 6;
+                return !liveTvItem.HasImage(ImageType.Primary) && (liveTvItem.HasProviderImage ?? true);
             }
             return false;
         }

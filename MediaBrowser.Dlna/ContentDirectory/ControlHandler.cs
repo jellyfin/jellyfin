@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -42,7 +41,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IDtoService dtoService, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config)
             : base(config, logger)
         {
             _libraryManager = libraryManager;
@@ -51,7 +50,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _systemUpdateId = systemUpdateId;
             _profile = profile;
 
-            _didlBuilder = new DidlBuilder(profile, imageProcessor, serverAddress, dtoService);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)

@@ -49,6 +49,12 @@
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>MediaBrowser.Model.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
@@ -325,6 +331,7 @@
     <Compile Include="Weather\WeatherUnits.cs" />
     <None Include="Fody.targets" />
     <None Include="FodyWeavers.xml" />
+    <None Include="MediaBrowser.Model.snk" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -4,7 +4,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
@@ -32,7 +31,6 @@ namespace MediaBrowser.Dlna.Main
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
-        private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
         
         private SsdpHandler _ssdpHandler;
@@ -40,7 +38,7 @@ namespace MediaBrowser.Dlna.Main
         private readonly List<Guid> _registeredServerIds = new List<Guid>();
         private bool _dlnaServerStarted;
 
-        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IDtoService dtoService, IImageProcessor imageProcessor)
+        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IImageProcessor imageProcessor)
         {
             _config = config;
             _appHost = appHost;
@@ -51,7 +49,6 @@ namespace MediaBrowser.Dlna.Main
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
-            _dtoService = dtoService;
             _imageProcessor = imageProcessor;
             _logger = logManager.GetLogger("Dlna");
         }
@@ -197,7 +194,6 @@ namespace MediaBrowser.Dlna.Main
                         _userManager,
                         _dlnaManager,
                         _appHost,
-                        _dtoService,
                         _imageProcessor,
                         _ssdpHandler);
 
