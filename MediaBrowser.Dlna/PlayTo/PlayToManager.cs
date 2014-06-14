@@ -3,7 +3,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
@@ -36,12 +35,11 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IDlnaManager _dlnaManager;
         private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
-        private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
 
         private readonly SsdpHandler _ssdpHandler;
         
-        public PlayToManager(ILogger logger, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IDtoService dtoService, IImageProcessor imageProcessor, SsdpHandler ssdpHandler)
+        public PlayToManager(ILogger logger, IServerConfigurationManager config, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepository, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, SsdpHandler ssdpHandler)
         {
             _tokenSource = new CancellationTokenSource();
 
@@ -53,7 +51,6 @@ namespace MediaBrowser.Dlna.PlayTo
             _userManager = userManager;
             _dlnaManager = dlnaManager;
             _appHost = appHost;
-            _dtoService = dtoService;
             _imageProcessor = imageProcessor;
             _ssdpHandler = ssdpHandler;
             _config = config;
@@ -284,7 +281,6 @@ namespace MediaBrowser.Dlna.PlayTo
                         _logger, 
                         _dlnaManager, 
                         _userManager, 
-                        _dtoService, 
                         _imageProcessor, 
                         _ssdpHandler,
                         serverAddress);

@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -13,13 +12,13 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -33,7 +32,6 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly ILogger _logger;
         private readonly IDlnaManager _dlnaManager;
         private readonly IUserManager _userManager;
-        private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
 
         private readonly SsdpHandler _ssdpHandler;
@@ -54,7 +52,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private Timer _updateTimer;
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IDtoService dtoService, IImageProcessor imageProcessor, SsdpHandler ssdpHandler, string serverAddress)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, SsdpHandler ssdpHandler, string serverAddress)
         {
             _session = session;
             _itemRepository = itemRepository;
@@ -62,7 +60,6 @@ namespace MediaBrowser.Dlna.PlayTo
             _libraryManager = libraryManager;
             _dlnaManager = dlnaManager;
             _userManager = userManager;
-            _dtoService = dtoService;
             _imageProcessor = imageProcessor;
             _ssdpHandler = ssdpHandler;
             _serverAddress = serverAddress;
@@ -228,6 +225,8 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             _logger.Debug("{0} - Received PlayRequest: {1}", this._session.DeviceName, command.PlayCommand);
 
+            var user = string.IsNullOrEmpty(command.ControllingUserId) ? null : _userManager.GetUserById(new Guid(command.ControllingUserId));
+
             var items = new List<BaseItem>();
             foreach (string id in command.ItemIds)
             {
@@ -243,12 +242,12 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 if (isFirst && command.StartPositionTicks.HasValue)
                 {
-                    playlist.Add(CreatePlaylistItem(item, command.StartPositionTicks.Value, serverAddress));
+                    playlist.Add(CreatePlaylistItem(item, user, command.StartPositionTicks.Value, serverAddress));
                     isFirst = false;
                 }
                 else
                 {
-                    playlist.Add(CreatePlaylistItem(item, 0, serverAddress));
+                    playlist.Add(CreatePlaylistItem(item, user, 0, serverAddress));
                 }
             }
 
@@ -267,10 +266,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (!string.IsNullOrWhiteSpace(command.ControllingUserId))
             {
-                var userId = new Guid(command.ControllingUserId);
-
-                var user = _userManager.GetUserById(userId);
-
                 await _sessionManager.LogSessionActivity(_session.Client, _session.ApplicationVersion, _session.DeviceId,
                         _session.DeviceName, _session.RemoteEndPoint, user).ConfigureAwait(false);
             }
@@ -388,15 +383,16 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        private PlaylistItem CreatePlaylistItem(BaseItem item, long startPostionTicks, string serverAddress)
+        private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks, string serverAddress)
         {
             var deviceInfo = _device.Properties;
 
             var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
                 _dlnaManager.GetDefaultProfile();
 
-            var mediaSources = item is Audio || item is Video
-                ? _dtoService.GetMediaSources(item)
+            var hasMediaSources = item as IHasMediaSources;
+            var mediaSources = hasMediaSources != null
+                ? (user == null ? hasMediaSources.GetMediaSources(true) : hasMediaSources.GetMediaSources(true, user)).ToList()
                 : new List<MediaSourceInfo>();
 
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId);
@@ -404,9 +400,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             playlistItem.StreamUrl = playlistItem.StreamInfo.ToUrl(serverAddress);
 
-            var itemXml =
-                new DidlBuilder(profile, _imageProcessor, serverAddress, _dtoService).GetItemDidl(item, _session.DeviceId,
-                    new Filter());
+            var itemXml = new DidlBuilder(profile, user, _imageProcessor, serverAddress).GetItemDidl(item, _session.DeviceId, new Filter());
 
             playlistItem.Didl = itemXml;
 

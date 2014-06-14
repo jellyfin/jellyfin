@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Dlna.Service;
@@ -17,7 +16,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
     public class ContentDirectory : BaseService, IContentDirectory, IDisposable
     {
         private readonly ILibraryManager _libraryManager;
-        private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
         private readonly IUserDataManager _userDataManager;
         private readonly IDlnaManager _dlna;
@@ -27,7 +25,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
         public ContentDirectory(IDlnaManager dlna,
             IUserDataManager userDataManager,
             IImageProcessor imageProcessor,
-            IDtoService dtoService,
             ILibraryManager libraryManager,
             IServerConfigurationManager config,
             IUserManager userManager,
@@ -38,7 +35,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _dlna = dlna;
             _userDataManager = userDataManager;
             _imageProcessor = imageProcessor;
-            _dtoService = dtoService;
             _libraryManager = libraryManager;
             _config = config;
             _userManager = userManager;
@@ -73,7 +69,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 _libraryManager,
                 profile,
                 serverAddress,
-                _dtoService,
                 _imageProcessor,
                 _userDataManager,
                 user,
