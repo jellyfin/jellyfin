@@ -463,7 +463,8 @@ namespace MediaBrowser.Dlna.PlayTo
                         ItemId = item.Id.ToString("N"),
                         MediaSources = mediaSources,
                         Profile = profile,
-                        DeviceId = deviceId
+                        DeviceId = deviceId,
+                        MaxBitrate = profile.MaxBitrate
                     }),
 
                     Profile = profile
@@ -481,7 +482,8 @@ namespace MediaBrowser.Dlna.PlayTo
                         ItemId = item.Id.ToString("N"),
                         MediaSources = mediaSources,
                         Profile = profile,
-                        DeviceId = deviceId
+                        DeviceId = deviceId,
+                        MaxBitrate = profile.MaxBitrate
                     }),
 
                     Profile = profile
