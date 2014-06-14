@@ -4,7 +4,7 @@
 
         var screenWidth = $(window).width();
 
-        var options = {
+        var query = {
 
             Limit: 24,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated",
@@ -12,7 +12,19 @@
             ExcludeLocationTypes: "Virtual"
         };
 
-        ApiClient.getNextUpEpisodes(options).done(function (result) {
+        query.ParentId = LibraryMenu.getTopParentId();
+        
+        if (query.ParentId) {
+
+            $('.scopedLibraryViewNav', page).show();
+            $('.globalNav', page).hide();
+
+        } else {
+            $('.scopedLibraryViewNav', page).hide();
+            $('.globalNav', page).show();
+        }
+
+        ApiClient.getNextUpEpisodes(query).done(function (result) {
 
             if (result.Items.length) {
                 $('.noNextUpItems', page).hide();

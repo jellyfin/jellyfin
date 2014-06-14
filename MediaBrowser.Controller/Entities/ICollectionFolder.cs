@@ -6,5 +6,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public interface ICollectionFolder
     {
+        string CollectionType { get; }
     }
 }

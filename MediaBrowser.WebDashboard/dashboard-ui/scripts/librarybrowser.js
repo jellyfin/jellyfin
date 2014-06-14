@@ -390,7 +390,7 @@
             }
 
             if (item.CollectionType == 'tvshows') {
-                return 'tvlatest.html?topParentId=' + item.Id;
+                return 'tvrecommended.html?topParentId=' + item.Id;
             }
 
             if (item.CollectionType == 'music') {

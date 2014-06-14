@@ -11,6 +11,8 @@
             UserId: Dashboard.getCurrentUserId()
         };
 
+        query.ParentId = LibraryMenu.getTopParentId();
+
         $.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).done(function (result) {
 
             var items = result.Items;

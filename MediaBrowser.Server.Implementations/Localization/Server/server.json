@@ -785,9 +785,9 @@
 	"LabelHomePageSection1": "Home page section one:",
 	"LabelHomePageSection2": "Home page section two:",
 	"LabelHomePageSection3": "Home page section three:",
-	"OptionLibraryButtons": "Library buttons",
-	"OptionLibraryTiles": "Library tiles (large)",
-	"OptionSmallLibraryTiles": "Library tiles (small)",
+	"OptionMyLibraryButtons": "My library (buttons)",
+	"OptionMyLibrary": "My library",
+	"OptionMyLibrarySmall": "My library (small)",
 	"OptionResumablemedia": "Resume",
 	"OptionLatestMedia": "Latest media",
 	"OptionNone": "None",
@@ -828,5 +828,6 @@
 	"HeaderLibraryViews": "Library Views",
 	"LabelSelectFolderGroups": "Automatically group content from the following folders into views such as Movies, Music and TV:",
 	"LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own view.",
-	"OptionDisplayAdultContent": "Display adult content"
+	"OptionDisplayAdultContent": "Display adult content",
+	"OptionLibraryFolders": "Folder view"
 }

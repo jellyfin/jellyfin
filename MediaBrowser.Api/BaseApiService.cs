@@ -160,6 +160,13 @@ namespace MediaBrowser.Api
             {
                 var folder = (Folder) libraryManager.GetItemById(new Guid(parentId));
 
+                if (userId.HasValue)
+                {
+                    var user = userManager.GetUserById(userId.Value);
+
+                    return folder.GetRecursiveChildren(user).ToList();
+                }
+
                 return folder.GetRecursiveChildren();
             }
             if (userId.HasValue)

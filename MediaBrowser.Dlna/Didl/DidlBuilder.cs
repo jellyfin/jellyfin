@@ -423,7 +423,7 @@ namespace MediaBrowser.Dlna.Didl
                     else if (item is Series || item is Season || item is BoxSet)
                     {
                         classType = "object.container.album.videoAlbum";
-                    }                  
+                    }
                 }
 
                 objectClass.InnerText = classType ?? "object.container.storageFolder";
@@ -441,7 +441,7 @@ namespace MediaBrowser.Dlna.Didl
                 if (!_profile.RequiresPlainVideoItems && item is Movie)
                 {
                     objectClass.InnerText = "object.item.videoItem.movie";
-                }                
+                }
                 else
                 {
                     objectClass.InnerText = "object.item.videoItem";

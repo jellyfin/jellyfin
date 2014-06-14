@@ -103,7 +103,7 @@
         switch (index) {
 
             case 0:
-                return 'librarybuttons';
+                return 'smalllibrarytiles';
             case 1:
                 return 'resume';
             case 2:
@@ -179,14 +179,16 @@
         });
     }
 
-    function loadLibraryTiles(elem, userId, shape) {
+    function loadLibraryTiles(elem, userId, shape, index) {
 
         getUserViews(userId).done(function (items) {
 
             var html = '';
 
             if (items.length) {
+
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyLibrary') + '</h1>';
+
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
@@ -198,6 +200,42 @@
                 html += '</div>';
             }
 
+
+            $(elem).html(html).trigger('create').createPosterItemMenus();
+
+            handleLibraryLinkNavigations(elem);
+        });
+    }
+
+    function loadLibraryFolders(elem, userId, shape, index) {
+
+        ApiClient.getItems(userId, {
+
+            SortBy: "SortName"
+
+        }).done(function (result) {
+
+            var html = '';
+            var items = result.Items;
+
+            for (var i = 0, length = items.length; i < length; i++) {
+                items[i].url = 'itemlist.html?parentid=' + items[i].Id;
+            }
+
+            if (items.length) {
+
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLibraryFolders') + '</h1>';
+
+                html += '<div>';
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: items,
+                    shape: shape,
+                    showTitle: true,
+                    centerText: true,
+                    lazy: true
+                });
+                html += '</div>';
+            }
 
             $(elem).html(html).trigger('create').createPosterItemMenus();
 
@@ -256,16 +294,19 @@
             loadRecentlyAdded(elem, userId);
         }
         else if (section == 'librarytiles') {
-            loadLibraryTiles(elem, userId, 'backdrop');
+            loadLibraryTiles(elem, userId, 'backdrop', index);
         }
         else if (section == 'smalllibrarytiles') {
-            loadLibraryTiles(elem, userId, 'smallBackdrop');
+            loadLibraryTiles(elem, userId, 'smallBackdrop', index);
         }
         else if (section == 'resume') {
             loadResume(elem, userId);
         }
         else if (section == 'librarybuttons') {
             loadlibraryButtons(elem, userId, index);
+
+        } else if (section == 'folders') {
+            loadLibraryFolders(elem, userId, 'backdrop', index);
 
         } else {
 
