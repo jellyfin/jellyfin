@@ -12,8 +12,11 @@ namespace MediaBrowser.Api
 {
     public class BaseRefreshRequest : IReturnVoid
     {
-        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
         public bool Forced { get; set; }
+
+        [ApiMember(Name = "ReplaceAllImages", Description = "Determines if images should be replaced during the refresh.", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "POST")]
+        public bool ReplaceAllImages { get; set; }
     }
 
     [Route("/Items/{Id}/Refresh", "POST")]
@@ -145,7 +148,8 @@ namespace MediaBrowser.Api
             {
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ImageRefreshMode = ImageRefreshMode.FullRefresh,
-                ReplaceAllMetadata = request.Forced
+                ReplaceAllMetadata = request.Forced,
+                ReplaceAllImages = request.ReplaceAllImages
             };
         }
     }

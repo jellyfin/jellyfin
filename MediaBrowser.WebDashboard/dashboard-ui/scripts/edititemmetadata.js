@@ -1191,9 +1191,15 @@
 
             $('#refreshLoading', page).show();
 
-            var force = $('#selectRefreshMode', page).val() == 'all';
+            var mode = $('#selectRefreshMode', page).val();
 
-            ApiClient.refreshItem(currentItem.Id, force, true).done(function () {
+            ApiClient.refreshItem(currentItem.Id, {
+
+                forced: mode == 'allandimages' || mode == 'all',
+                recursive: true,
+                replaceAllImages: mode == 'allandimages'
+
+            }).done(function () {
 
                 reload(page);
 

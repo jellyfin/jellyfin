@@ -20,6 +20,7 @@
 
         self.isLocalPlayer = true;
         self.isDefaultPlayer = true;
+        
         self.name = 'Html5 Player';
 
         self.getTargets = function () {
@@ -45,7 +46,7 @@
 
             var playerTime = Math.floor(10000000 * (mediaElement || currentMediaElement).currentTime);
 
-            //if (currentItem.MediaType == 'Audio') {
+            //if (!self.isCopyingTimestamps) {
                 playerTime += self.startTimeTicksOffset;
             //}
 
@@ -486,7 +487,7 @@
 
                 self.currentItem = item;
                 self.currentMediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
-
+                
                 mediaElement = playAudio(item, self.currentMediaSource, startPosition);
 
                 self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;

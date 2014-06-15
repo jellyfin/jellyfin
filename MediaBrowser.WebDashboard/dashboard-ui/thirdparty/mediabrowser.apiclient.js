@@ -1147,16 +1147,13 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Refreshes metadata for an item
          */
-        self.refreshItem = function (itemId, force, recursive) {
+        self.refreshItem = function (itemId, options) {
 
             if (!itemId) {
                 throw new Error("null itemId");
             }
 
-            var url = self.getUrl("Items/" + itemId + "/Refresh", {
-                forced: force || false,
-                recursive: recursive || false
-            });
+            var url = self.getUrl("Items/" + itemId + "/Refresh", options || {});
 
             return self.ajax({
                 type: "POST",
