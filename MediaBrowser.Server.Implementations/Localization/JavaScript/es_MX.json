@@ -58,14 +58,14 @@
     "ButtonMute": "Mudo",
     "ButtonUnmute": "Quitar mudo",
     "ButtonStop": "Detener",
-    "ButtonNextTrack": "Pista siguiente",
+    "ButtonNextTrack": "Pista Siguiente",
     "ButtonPause": "Pausar",
     "ButtonPlay": "Reproducir",
     "ButtonEdit": "Editar",
     "ButtonQueue": "A cola",
     "ButtonPlayTrailer": "Reproducir Trailer",
     "ButtonPlaylist": "Lista de Reprod.",
-    "ButtonPreviousTrack": "Pista anterior",
+    "ButtonPreviousTrack": "Pista Anterior",
     "LabelEnabled": "Habilitado",
     "LabelDisabled": "Deshabilitado",
     "ButtonMoreInformation": "Mas Informaci\u00f3n",
@@ -122,6 +122,7 @@
     "MessageConfirmItemGrouping": "Los clientes de Media Browser elegir\u00e1n autom\u00e1ticamente la versi\u00f3n optima para reproducir basado en el dispositivo y el rendimiento de redo. \u00bfEsta seguro de que desea continuar?",
     "HeaderResume": "Continuar",
     "HeaderMyLibrary": "Mi Biblioteca",
+    "HeaderLibraryFolders": "Folder View",
     "HeaderLatestMedia": "\u00daltimos Medios",
     "ButtonMore": "M\u00e1s...",
     "HeaderFavoriteMovies": "Pel\u00edculas Preferidas",
@@ -143,5 +144,7 @@
     "HeaderSelectChannelDownloadPathHelp": "Navega o entra en la ruta usada para almacenar los archivos temporales del canal. La carpeta debe tener permisos de escritura.",
     "OptionNewCollection": "Nuevo...",
     "ButtonAdd": "A\u00f1adir",
-    "ButtonRemove": "Eliminar"
+    "ButtonRemove": "Eliminar",
+    "LabelChapterDownloaders": "Descargadores de Cap\u00edtulos:",
+    "LabelChapterDownloadersHelp": "Habilite y califique sus descargadores de cap\u00edtulos preferidos en orden de prioridad. Los descargadores con menor prioridad s\u00f3lo seran utilizados para completar informaci\u00f3n faltante."
 }

@@ -122,6 +122,7 @@
     "MessageConfirmItemGrouping": "Los clientes de Media Browser elegir\u00e1n autom\u00e1ticamente la mejor forma de reproduccion sobre la base de dispositivo y rendimiento de la red. \u00bfEst\u00e1 seguro que desea continuar?",
     "HeaderResume": "Continuar",
     "HeaderMyLibrary": "Mi librer\u00eda",
+    "HeaderLibraryFolders": "Folder View",
     "HeaderLatestMedia": "\u00daltimos medios",
     "ButtonMore": "M\u00e1s...",
     "HeaderFavoriteMovies": "Pel\u00edculas favoritas",
@@ -143,5 +144,7 @@
     "HeaderSelectChannelDownloadPathHelp": "Navege o escriba la ruta para guardar el los archivos de cach\u00e9 de canales. La carpeta debe tener permisos de escritura.",
     "OptionNewCollection": "Nuevo...",
     "ButtonAdd": "A\u00f1adir",
-    "ButtonRemove": "Quitar"
+    "ButtonRemove": "Quitar",
+    "LabelChapterDownloaders": "Downloaders de cap\u00edtulos:",
+    "LabelChapterDownloadersHelp": "Habilitar y clasificar sus descargadores de cap\u00edtulos preferidos en orden de prioridad. Descargadores de menor prioridad s\u00f3lo se utilizar\u00e1n para completar la informaci\u00f3n que falta."
 }

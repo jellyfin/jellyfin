@@ -208,7 +208,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             return new ITaskTrigger[]
                 {
-                    new DailyTrigger { TimeOfDay = TimeSpan.FromHours(3) },
+                    new IntervalTrigger{ Interval = TimeSpan.FromHours(4)},
                 };
         }
 

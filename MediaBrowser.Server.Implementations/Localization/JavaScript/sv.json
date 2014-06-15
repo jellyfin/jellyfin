@@ -122,6 +122,7 @@
     "MessageConfirmItemGrouping": "Media Browser-klienter kommer automatiskt att v\u00e4lja den b\u00e4sta versionen f\u00f6r uppspelning baserat p\u00e5 enhets- och n\u00e4tverksprestanda.Vill du forts\u00e4tta?",
     "HeaderResume": "\u00c5teruppta",
     "HeaderMyLibrary": "Mitt bibliotek",
+    "HeaderLibraryFolders": "Folder View",
     "HeaderLatestMedia": "Nytillkommet",
     "ButtonMore": "Mer...",
     "HeaderFavoriteMovies": "Favoritfilmer",
@@ -143,5 +144,7 @@
     "HeaderSelectChannelDownloadPathHelp": "Bl\u00e4ddra fram till eller ange plats f\u00f6r lagring av cache f\u00f6r kanaler. Katalogen m\u00e5ste vara tillg\u00e4nglig f\u00f6r skrivning.",
     "OptionNewCollection": "Ny...",
     "ButtonAdd": "L\u00e4gg till",
-    "ButtonRemove": "Ta bort"
+    "ButtonRemove": "Ta bort",
+    "LabelChapterDownloaders": "H\u00e4mtare av kapitelinformation:",
+    "LabelChapterDownloadersHelp": "Aktivera och rangordna dina h\u00e4mtare baserat p\u00e5 prioritet. L\u00e4gre prioriterade h\u00e4mtare anv\u00e4nds endast f\u00f6r att fylla i saknad information."
 }

@@ -122,6 +122,7 @@
     "MessageConfirmItemGrouping": "Media Browser clients will automatically choose the optimal version to play based on device and network performance. Are you sure you wish to continue?",
     "HeaderResume": "Fortsett",
     "HeaderMyLibrary": "Mitt bibliotek",
+    "HeaderLibraryFolders": "Folder View",
     "HeaderLatestMedia": "Latest Media",
     "ButtonMore": "More...",
     "HeaderFavoriteMovies": "Favorite Movies",
@@ -143,5 +144,7 @@
     "HeaderSelectChannelDownloadPathHelp": "Browse or enter the path to use for storing channel cache files. The folder must be writeable.",
     "OptionNewCollection": "New...",
     "ButtonAdd": "Add",
-    "ButtonRemove": "Remove"
+    "ButtonRemove": "Remove",
+    "LabelChapterDownloaders": "Chapter downloaders:",
+    "LabelChapterDownloadersHelp": "Enable and rank your preferred chapter downloaders in order of priority. Lower priority downloaders will only be used to fill in missing information."
 }
