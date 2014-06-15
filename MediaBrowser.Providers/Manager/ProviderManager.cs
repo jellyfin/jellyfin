@@ -335,7 +335,7 @@ namespace MediaBrowser.Providers.Manager
                     return false;
                 }
 
-                if (provider is IRemoteImageProvider)
+                if (provider is IRemoteImageProvider || provider is IDynamicImageProvider)
                 {
                     if (!ConfigurationManager.Configuration.EnableInternetProviders)
                     {

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -9,6 +10,7 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,8 +28,9 @@ namespace MediaBrowser.Server.Implementations.Channels
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
+        private readonly IUserManager _userManager;
 
-        public ChannelDownloadScheduledTask(IChannelManager manager, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public ChannelDownloadScheduledTask(IChannelManager manager, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem, ILibraryManager libraryManager, IUserManager userManager)
         {
             _manager = manager;
             _config = config;
@@ -35,6 +38,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             _httpClient = httpClient;
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
+            _userManager = userManager;
         }
 
         public string Name
@@ -55,70 +59,118 @@ namespace MediaBrowser.Server.Implementations.Channels
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             CleanChannelContent(cancellationToken);
-            progress.Report(5);
 
-            await DownloadChannelContent(cancellationToken, progress).ConfigureAwait(false);
+            var users = _userManager.Users.Select(i => i.Id.ToString("N")).ToList();
+
+            var numComplete = 0;
+
+            foreach (var user in users)
+            {
+                double percentPerUser = 1;
+                percentPerUser /= users.Count;
+                var startingPercent = numComplete * percentPerUser * 100;
+
+                var innerProgress = new ActionableProgress<double>();
+                innerProgress.RegisterAction(p => progress.Report(startingPercent + (.8 * p)));
+
+                await DownloadContent(user, cancellationToken, innerProgress).ConfigureAwait(false);
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= users.Count;
+                progress.Report(percent * 100);
+            }
+
             progress.Report(100);
         }
 
-        private void CleanChannelContent(CancellationToken cancellationToken)
+        private async Task DownloadContent(string user,
+            CancellationToken cancellationToken,
+            IProgress<double> progress)
         {
-            if (!_config.Configuration.ChannelOptions.MaxDownloadAge.HasValue)
-            {
-                return;
-            }
+            var innerProgress = new ActionableProgress<double>();
+            innerProgress.RegisterAction(p => progress.Report(0 + (.8 * p)));
+            await DownloadAllChannelContent(user, cancellationToken, innerProgress).ConfigureAwait(false);
+            progress.Report(80);
 
-            var minDateModified = DateTime.UtcNow.AddDays(0 - _config.Configuration.ChannelOptions.MaxDownloadAge.Value);
-
-            var path = _manager.ChannelDownloadPath;
-
-            try
-            {
-                DeleteCacheFilesFromDirectory(cancellationToken, path, minDateModified, new Progress<double>());
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // No biggie here. Nothing to delete
-            }
+            innerProgress = new ActionableProgress<double>();
+            innerProgress.RegisterAction(p => progress.Report(80 + (.2 * p)));
+            await DownloadLatestChannelContent(user, cancellationToken, progress).ConfigureAwait(false);
+            progress.Report(100);
         }
 
-        private async Task DownloadChannelContent(CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task DownloadLatestChannelContent(string userId,
+            CancellationToken cancellationToken,
+            IProgress<double> progress)
         {
-            if (_config.Configuration.ChannelOptions.DownloadingChannels.Length == 0)
+            var result = await _manager.GetLatestChannelItems(new AllChannelMediaQuery
             {
-                return;
-            }
-
-            var result = await _manager.GetAllMedia(new AllChannelMediaQuery
-            {
-                ChannelIds = _config.Configuration.ChannelOptions.DownloadingChannels
+                UserId = userId
 
             }, cancellationToken).ConfigureAwait(false);
 
+            progress.Report(5);
+
+            var innerProgress = new ActionableProgress<double>();
+            innerProgress.RegisterAction(p => progress.Report(5 + (.95 * p)));
+
             var path = _manager.ChannelDownloadPath;
 
+            await DownloadChannelContent(result, path, cancellationToken, innerProgress).ConfigureAwait(false);
+        }
+
+        private async Task DownloadAllChannelContent(string userId,
+            CancellationToken cancellationToken,
+            IProgress<double> progress)
+        {
+            var result = await _manager.GetAllMedia(new AllChannelMediaQuery
+            {
+                UserId = userId
+
+            }, cancellationToken).ConfigureAwait(false);
+
+            progress.Report(5);
+
+            var innerProgress = new ActionableProgress<double>();
+            innerProgress.RegisterAction(p => progress.Report(5 + (.95 * p)));
+
+            var path = _manager.ChannelDownloadPath;
+
+            await DownloadChannelContent(result, path, cancellationToken, innerProgress).ConfigureAwait(false);
+        }
+
+        private async Task DownloadChannelContent(QueryResult<BaseItemDto> result,
+            string path,
+            CancellationToken cancellationToken,
+            IProgress<double> progress)
+        {
             var numComplete = 0;
 
             foreach (var item in result.Items)
             {
-                try
+                if (_config.Configuration.ChannelOptions.DownloadingChannels.Contains(item.ChannelId))
                 {
-                    await DownloadChannelItem(item, cancellationToken, path);
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error downloading channel content for {0}", ex, item.Name);
+                    try
+                    {
+                        await DownloadChannelItem(item, cancellationToken, path);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error downloading channel content for {0}", ex, item.Name);
+                    }
                 }
 
                 numComplete++;
                 double percent = numComplete;
                 percent /= result.Items.Length;
-                progress.Report(percent * 95 + 5);
+                progress.Report(percent * 100);
             }
+
+            progress.Report(100);
         }
 
         private async Task DownloadChannelItem(BaseItemDto item,
@@ -212,6 +264,27 @@ namespace MediaBrowser.Server.Implementations.Channels
                 };
         }
 
+        private void CleanChannelContent(CancellationToken cancellationToken)
+        {
+            if (!_config.Configuration.ChannelOptions.MaxDownloadAge.HasValue)
+            {
+                return;
+            }
+
+            var minDateModified = DateTime.UtcNow.AddDays(0 - _config.Configuration.ChannelOptions.MaxDownloadAge.Value);
+
+            var path = _manager.ChannelDownloadPath;
+
+            try
+            {
+                DeleteCacheFilesFromDirectory(cancellationToken, path, minDateModified, new Progress<double>());
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // No biggie here. Nothing to delete
+            }
+        }
+
         /// <summary>
         /// Deletes the cache files from directory with a last write time less than a given date
         /// </summary>
@@ -260,15 +333,22 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is hidden.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
         public bool IsHidden
         {
             get
             {
-                return !_manager.GetAllChannelFeatures()
-                    .Any(i => i.CanDownloadAllMedia && _config.Configuration.ChannelOptions.DownloadingChannels.Contains(i.Id));
+                return !_manager.GetAllChannelFeatures().Any();
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is enabled.
+        /// </summary>
+        /// <value><c>true</c> if this instance is enabled; otherwise, <c>false</c>.</value>
         public bool IsEnabled
         {
             get

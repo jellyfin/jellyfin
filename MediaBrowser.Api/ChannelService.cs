@@ -107,6 +107,53 @@ namespace MediaBrowser.Api
         }
     }
 
+    [Route("/Channels/Items/Latest", "GET", Summary = "Gets channel items")]
+    public class GetLatestChannelItems : IReturn<QueryResult<BaseItemDto>>, IHasItemFields
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string UserId { get; set; }
+
+        /// <summary>
+        /// Skips over a given number of items within the results. Use for paging.
+        /// </summary>
+        /// <value>The start index.</value>
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? StartIndex { get; set; }
+
+        /// <summary>
+        /// The maximum number of items to return
+        /// </summary>
+        /// <value>The limit.</value>
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
+
+        [ApiMember(Name = "Filters", Description = "Optional. Specify additional filters to apply. This allows multiple, comma delimeted. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Filters { get; set; }
+
+        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Fields { get; set; }
+
+        /// <summary>
+        /// Gets the filters.
+        /// </summary>
+        /// <returns>IEnumerable{ItemFilter}.</returns>
+        public IEnumerable<ItemFilter> GetFilters()
+        {
+            var val = Filters;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return new ItemFilter[] { };
+            }
+
+            return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+        }
+    }
+    
     [Route("/Channels/Folder", "GET", Summary = "Gets the users channel folder, along with configured images")]
     public class GetChannelFolder : IReturn<BaseItemDto>
     {
@@ -166,6 +213,21 @@ namespace MediaBrowser.Api
                 FolderId = request.FolderId,
                 SortOrder = request.SortOrder,
                 SortBy = (request.SortBy ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
+                Filters = request.GetFilters().ToArray(),
+                Fields = request.GetItemFields().ToList()
+
+            }, CancellationToken.None).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Get(GetLatestChannelItems request)
+        {
+            var result = _channelManager.GetLatestChannelItems(new AllChannelMediaQuery
+            {
+                Limit = request.Limit,
+                StartIndex = request.StartIndex,
+                UserId = request.UserId,
                 Filters = request.GetFilters().ToArray(),
                 Fields = request.GetItemFields().ToList()
 
