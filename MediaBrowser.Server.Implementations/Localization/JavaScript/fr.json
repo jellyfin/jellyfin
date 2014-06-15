@@ -122,6 +122,7 @@
     "MessageConfirmItemGrouping": "Media Browser clients will automatically choose the optimal version to play based on device and network performance. Are you sure you wish to continue?",
     "HeaderResume": "Reprendre",
     "HeaderMyLibrary": "Ma biblioth\u00e8que",
+    "HeaderLibraryFolders": "Folder View",
     "HeaderLatestMedia": "Derniers m\u00e9dias",
     "ButtonMore": "Plus...",
     "HeaderFavoriteMovies": "Films favoris",
@@ -143,5 +144,7 @@
     "HeaderSelectChannelDownloadPathHelp": "Browse or enter the path to use for storing channel cache files. The folder must be writeable.",
     "OptionNewCollection": "New...",
     "ButtonAdd": "Ajouter",
-    "ButtonRemove": "Supprimer"
+    "ButtonRemove": "Supprimer",
+    "LabelChapterDownloaders": "Chapter downloaders:",
+    "LabelChapterDownloadersHelp": "Enable and rank your preferred chapter downloaders in order of priority. Lower priority downloaders will only be used to fill in missing information."
 }
