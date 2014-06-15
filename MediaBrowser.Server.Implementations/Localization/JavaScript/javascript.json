@@ -146,5 +146,6 @@
 	"ButtonAdd": "Add",
 	"ButtonRemove": "Remove",
 	"LabelChapterDownloaders": "Chapter downloaders:",
-	"LabelChapterDownloadersHelp": "Enable and rank your preferred chapter downloaders in order of priority. Lower priority downloaders will only be used to fill in missing information."
+	"LabelChapterDownloadersHelp": "Enable and rank your preferred chapter downloaders in order of priority. Lower priority downloaders will only be used to fill in missing information.",
+	"HeaderFavoriteAlbums": "Favorite Albums"
 }

@@ -198,7 +198,7 @@
 
                 if (newStream.IsTextSubtitleStream) {
                     selectedTrackElementIndex = index;
-                    
+
                     if (!currentStream.IsTextSubtitleStream) {
                         self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: -1 });
                     }
@@ -231,6 +231,18 @@
                     allTracks[i].mode = "disabled"; // hide all other tracks
                 }
             }
+        };
+
+        self.updateTextStreamUrls = function (startPositionTicks) {
+
+            $('track', video).each(function () {
+
+                var currentSrc = this.src;
+
+                currentSrc = replaceQueryString(currentSrc, 'startPositionTicks', startPositionTicks);
+
+                this.src = currentSrc;
+            });
         };
 
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function (e) {
@@ -930,7 +942,7 @@
 
                     var textStream = textStreams[i];
                     var textStreamUrl = ApiClient.getUrl('Videos/' + item.Id + '/' + mediaSource.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
-                        startPositionTicks: startPosition
+                        startPositionTicks: (startPosition || 0)
                     });
 
                     var defaultAttribute = textStream.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';

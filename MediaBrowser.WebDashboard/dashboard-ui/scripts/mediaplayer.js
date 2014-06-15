@@ -183,6 +183,8 @@
                         element.src = currentSrc;
 
                     });
+
+                    self.updateTextStreamUrls(ticks || 0);
                 } else {
                     self.startTimeTicksOffset = ticks;
                     element.src = currentSrc;
