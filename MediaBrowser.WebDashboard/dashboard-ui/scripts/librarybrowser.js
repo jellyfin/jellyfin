@@ -370,7 +370,7 @@
             }
 
             if (item.CollectionType == 'channels') {
-                return 'channels.html';
+                return 'channelslatest.html';
             }
 
             if (item.CollectionType == 'movies') {

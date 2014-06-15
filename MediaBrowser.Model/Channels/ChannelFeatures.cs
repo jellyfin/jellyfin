@@ -63,10 +63,10 @@ namespace MediaBrowser.Model.Channels
         public bool CanFilter { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance can download all media.
+        /// Gets or sets a value indicating whether [supports content downloading].
         /// </summary>
-        /// <value><c>true</c> if this instance can download all media; otherwise, <c>false</c>.</value>
-        public bool CanDownloadAllMedia { get; set; }
+        /// <value><c>true</c> if [supports content downloading]; otherwise, <c>false</c>.</value>
+        public bool SupportsContentDownloading { get; set; }
 
         public ChannelFeatures()
         {

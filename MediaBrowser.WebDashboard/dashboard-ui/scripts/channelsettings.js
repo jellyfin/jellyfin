@@ -38,7 +38,7 @@
         }
         
         var downloadableList = allChannelFeatures.filter(function (i) {
-            return i.CanDownloadAllMedia;
+            return i.SupportsContentDownloading;
         });
 
         populateDownloadList(page, config, downloadableList);

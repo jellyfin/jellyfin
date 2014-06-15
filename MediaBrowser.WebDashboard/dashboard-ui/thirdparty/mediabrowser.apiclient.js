@@ -3419,6 +3419,8 @@ MediaBrowser.SHA1 = function (msg) {
     } else if (browser.webkit) {
         browser.safari = true;
     }
+    
+    browser.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
 
     jQuery.browser = browser;
 

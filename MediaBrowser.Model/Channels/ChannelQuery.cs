@@ -1,4 +1,7 @@
-﻿namespace MediaBrowser.Model.Channels
+﻿using MediaBrowser.Model.Querying;
+using System.Collections.Generic;
+
+namespace MediaBrowser.Model.Channels
 {
     public class ChannelQuery
     {
@@ -54,7 +57,13 @@
             ChannelIds = new string[] { };
 
             ContentTypes = new ChannelMediaContentType[] { };
+
+            Filters = new ItemFilter[] { };
+            Fields = new List<ItemFields>();
         }
+
+        public ItemFilter[] Filters { get; set; }
+        public List<ItemFields> Fields { get; set; }
     }
 
 }

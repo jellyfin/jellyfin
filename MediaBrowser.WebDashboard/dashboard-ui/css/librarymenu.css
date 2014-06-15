@@ -122,8 +122,7 @@
     left: 0;
     top: 51px;
     z-index: 1000;
-    background-color: #181818;
-    background-color: rgba(24, 24, 24, 1);
+    background-color: #161616;
 }
 
 @media all and (max-width: 460px) {

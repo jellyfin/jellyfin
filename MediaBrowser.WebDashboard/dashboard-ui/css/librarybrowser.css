@@ -46,9 +46,12 @@
 }
 
 .listHeader {
-    margin-top: .7em;
+    margin-top: .5em;
     margin-bottom: 0;
     padding-left: 4px;
+}
+.firstListHeader {
+    margin-top: 0;
 }
 
 .ehsContent {
@@ -69,7 +72,7 @@
 }
 
 .homePageSection + .homePageSection {
-    margin-top: 2em;
+    margin-top: 1em;
 }
 
 @media all and (min-width: 1000px) {

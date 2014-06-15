@@ -53,6 +53,14 @@ namespace MediaBrowser.Server.Implementations.Channels
             _localization = localization;
         }
 
+        private TimeSpan CacheLength
+        {
+            get
+            {
+                return TimeSpan.FromDays(1);
+            }
+        }
+
         public void AddParts(IEnumerable<IChannel> channels, IEnumerable<IChannelFactory> factories)
         {
             _channels = channels.ToArray();
@@ -443,6 +451,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             InternalChannelFeatures features)
         {
             var isIndexable = provider is IIndexableChannel;
+            var supportsLatest = provider is ISupportsLatestMedia;
 
             return new ChannelFeatures
             {
@@ -453,10 +462,10 @@ namespace MediaBrowser.Server.Implementations.Channels
                 MaxPageSize = features.MaxPageSize,
                 MediaTypes = features.MediaTypes,
                 SupportsSortOrderToggle = features.SupportsSortOrderToggle,
-                SupportsLatestMedia = provider is ISupportsLatestMedia,
+                SupportsLatestMedia = supportsLatest,
                 Name = channel.Name,
                 Id = channel.Id.ToString("N"),
-                CanDownloadAllMedia = isIndexable
+                SupportsContentDownloading = isIndexable || supportsLatest
             };
         }
 
@@ -470,6 +479,105 @@ namespace MediaBrowser.Server.Implementations.Channels
             return ("Channel " + name).GetMBId(typeof(Channel));
         }
 
+        public async Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken)
+        {
+            var user = string.IsNullOrWhiteSpace(query.UserId)
+                ? null
+                : _userManager.GetUserById(new Guid(query.UserId));
+
+            var channels = _channels;
+
+            if (query.ChannelIds.Length > 0)
+            {
+                // Avoid implicitly captured closure
+                var ids = query.ChannelIds;
+                channels = channels
+                    .Where(i => ids.Contains(GetInternalChannelId(i.Name).ToString("N")))
+                    .ToArray();
+            }
+
+            // Avoid implicitly captured closure
+            var userId = query.UserId;
+
+            var tasks = channels
+                .Select(async i =>
+                {
+                    var indexable = i as ISupportsLatestMedia;
+
+                    if (indexable != null)
+                    {
+                        try
+                        {
+                            var result = await indexable.GetLatestMedia(new ChannelLatestMediaSearch
+                            {
+                                UserId = userId
+
+                            }, cancellationToken).ConfigureAwait(false);
+
+                            var resultItems = result.ToList();
+
+                            return new Tuple<IChannel, ChannelItemResult>(i, new ChannelItemResult
+                            {
+                                Items = resultItems,
+                                TotalRecordCount = resultItems.Count
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error getting all media from {0}", ex, i.Name);
+                        }
+                    }
+                    return new Tuple<IChannel, ChannelItemResult>(i, new ChannelItemResult { });
+                });
+
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            var totalCount = results.Length;
+
+            IEnumerable<Tuple<IChannel, ChannelItemInfo>> items = results
+                .SelectMany(i => i.Item2.Items.Select(m => new Tuple<IChannel, ChannelItemInfo>(i.Item1, m)))
+                .OrderBy(i => i.Item2.Name);
+
+            if (query.ContentTypes.Length > 0)
+            {
+                // Avoid implicitly captured closure
+                var contentTypes = query.ContentTypes;
+
+                items = items.Where(i => contentTypes.Contains(i.Item2.ContentType));
+            }
+
+            // Avoid implicitly captured closure
+            var token = cancellationToken;
+            var itemTasks = items.Select(i =>
+            {
+                var channelProvider = i.Item1;
+                var channel = GetChannel(GetInternalChannelId(channelProvider.Name).ToString("N"));
+                return GetChannelItemEntity(i.Item2, channelProvider, channel, token);
+            });
+
+            IEnumerable<BaseItem> internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
+
+            internalItems = ApplyFilters(internalItems, query.Filters, user);
+
+            if (query.StartIndex.HasValue)
+            {
+                internalItems = internalItems.Skip(query.StartIndex.Value);
+            }
+            if (query.Limit.HasValue)
+            {
+                internalItems = internalItems.Take(query.Limit.Value);
+            }
+
+            var returnItemArray = internalItems.Select(i => _dtoService.GetBaseItemDto(i, query.Fields, user))
+                .ToArray();
+
+            return new QueryResult<BaseItemDto>
+            {
+                TotalRecordCount = totalCount,
+                Items = returnItemArray
+            };
+        }
+
         public async Task<QueryResult<BaseItemDto>> GetAllMedia(AllChannelMediaQuery query, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrWhiteSpace(query.UserId)
@@ -480,10 +588,15 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             if (query.ChannelIds.Length > 0)
             {
+                // Avoid implicitly captured closure
+                var ids = query.ChannelIds;
                 channels = channels
-                    .Where(i => query.ChannelIds.Contains(GetInternalChannelId(i.Name).ToString("N")))
+                    .Where(i => ids.Contains(GetInternalChannelId(i.Name).ToString("N")))
                     .ToArray();
             }
+
+            // Avoid implicitly captured closure
+            var userId = query.UserId;
 
             var tasks = channels
                 .Select(async i =>
@@ -496,7 +609,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                         {
                             var result = await indexable.GetAllMedia(new InternalAllChannelMediaQuery
                             {
-                                UserId = query.UserId
+                                UserId = userId
 
                             }, cancellationToken).ConfigureAwait(false);
 
@@ -546,12 +659,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
-
-            var returnItemArray = internalItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var returnItemArray = internalItems.Select(i => _dtoService.GetBaseItemDto(i, query.Fields, user))
                 .ToArray();
 
             return new QueryResult<BaseItemDto>
@@ -641,7 +749,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var userId = user.Id.ToString("N");
 
-            var cacheLength = TimeSpan.FromDays(1);
+            var cacheLength = CacheLength;
             var cachePath = GetChannelDataCachePath(channel, userId, folderId, sortField, sortDescending);
 
             try

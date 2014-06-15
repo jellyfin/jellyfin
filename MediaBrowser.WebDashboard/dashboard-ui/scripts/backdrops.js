@@ -98,6 +98,11 @@
         if ($.browser.msie) {
             return false;
         }
+        
+        // For bandwidth
+        if ($.browser.mobile) {
+            return false;
+        }
 
         var userId = Dashboard.getCurrentUserId();
 

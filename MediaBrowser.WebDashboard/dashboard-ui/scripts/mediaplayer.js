@@ -232,11 +232,12 @@
 
         self.supportsTextTracks = function () {
 
-            // Does not support changing tracks via mode property
-            if ($.browser.mozilla) {
+            // When seeking with transcoding, there repointing the track element
+            // to a new url (via src) doesn't seem to work.
+            if ($.browser.chrome) {
                 return false;
             }
-
+            
             if (supportsTextTracks == null) {
 
                 supportsTextTracks = document.createElement('video').textTracks != null;

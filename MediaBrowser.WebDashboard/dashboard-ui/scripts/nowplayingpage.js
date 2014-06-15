@@ -413,6 +413,7 @@
         var playerInfo = MediaController.getPlayerInfo();
 
         var supportedCommands = playerInfo.supportedCommands;
+        var playState = state.PlayState || {};
 
         $('.btnToggleFullscreen', page).buttonEnabled(item && item.MediaType == 'Video' && supportedCommands.indexOf('ToggleFullscreen') != -1);
 
@@ -436,8 +437,6 @@
 
         var btnPause = $('.btnPause', page).buttonEnabled(item != null);
         var btnPlay = $('.btnPlay', page).buttonEnabled(item != null);
-
-        var playState = state.PlayState || {};
 
         if (playState.IsPaused) {
 

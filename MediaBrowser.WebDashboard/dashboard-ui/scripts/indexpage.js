@@ -108,6 +108,8 @@
                 return 'resume';
             case 2:
                 return 'latestmedia';
+            case 3:
+                return 'latestchannelmedia';
             default:
                 return '';
         }
@@ -147,7 +149,7 @@
 
             SortBy: "DateCreated",
             SortOrder: "Descending",
-            Limit: screenWidth >= 2400 ? 30 : (screenWidth >= 1920 ? 20 : (screenWidth >= 1440 ? 12 : (screenWidth >= 800 ? 12 : 8))),
+            Limit: screenWidth >= 2400 ? 30 : (screenWidth >= 1920 ? 20 : (screenWidth >= 1440 ? 12 : (screenWidth >= 800 ? 9 : 8))),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed,IsNotFolder",
@@ -174,6 +176,41 @@
                 html += '</div>';
             }
 
+
+            $(elem).html(html).trigger('create').createPosterItemMenus();
+        });
+    }
+
+    function loadLatestChannelMedia(elem, userId) {
+
+        var screenWidth = $(window).width();
+
+        var options = {
+
+            Limit: 6,
+            Fields: "PrimaryImageAspectRatio",
+            Filters: "IsUnplayed",
+            UserId: userId
+        };
+
+        $.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
+
+            var html = '';
+
+            if (result.Items.length) {
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestChannelMedia') + '</h1>';
+                html += '<div>';
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    preferThumb: true,
+                    shape: 'auto',
+                    showTitle: true,
+                    centerText: true,
+                    context: 'home',
+                    lazy: true
+                });
+                html += '</div>';
+            }
 
             $(elem).html(html).trigger('create').createPosterItemMenus();
         });
@@ -289,7 +326,7 @@
         var section = displayPreferences.CustomPrefs['home' + index] || getDefaultSection(index);
 
         var elem = $('.section' + index, page);
-
+        
         if (section == 'latestmedia') {
             loadRecentlyAdded(elem, userId);
         }
@@ -308,6 +345,9 @@
         } else if (section == 'folders') {
             loadLibraryFolders(elem, userId, 'backdrop', index);
 
+        } else if (section == 'latestchannelmedia') {
+            loadLatestChannelMedia(elem, userId);
+
         } else {
 
             elem.empty();
@@ -317,7 +357,7 @@
     function loadSections(page, userId, displayPreferences) {
 
         var i, length;
-        var sectionCount = 3;
+        var sectionCount = 4;
 
         var elem = $('.sections', page);
 
