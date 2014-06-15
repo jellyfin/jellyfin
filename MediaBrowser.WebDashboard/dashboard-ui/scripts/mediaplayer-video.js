@@ -930,6 +930,7 @@
 
                     var textStream = textStreams[i];
                     var textStreamUrl = ApiClient.getUrl('Videos/' + item.Id + '/' + mediaSource.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
+                        startPositionTicks: startPosition
                     });
 
                     var defaultAttribute = textStream.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
