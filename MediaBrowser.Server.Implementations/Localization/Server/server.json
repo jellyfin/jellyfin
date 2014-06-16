@@ -792,6 +792,7 @@
 	"OptionResumablemedia": "Resume",
 	"OptionLatestMedia": "Latest media",
 	"OptionLatestChannelMedia": "Latest channel items",
+	"HeaderLatestChannelItems": "Latest Channel Items",
 	"OptionNone": "None",
 	"HeaderLiveTv": "Live TV",
 	"HeaderReports": "Reports",
