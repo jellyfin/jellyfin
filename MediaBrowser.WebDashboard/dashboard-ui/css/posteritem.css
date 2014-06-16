@@ -42,6 +42,10 @@
     position: relative;
 }
 
+    #scenesContent .posterItemImage {
+        background-position-y: center;
+    }
+
 .posterItem:hover .posterItemImage {
     -moz-box-shadow: 0 0 12px 7px #38c;
     -webkit-box-shadow: 0 0 12px 7px #38c;
