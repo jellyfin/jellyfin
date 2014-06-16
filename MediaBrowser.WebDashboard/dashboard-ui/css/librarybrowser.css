@@ -46,12 +46,12 @@
 }
 
 .listHeader {
-    margin-top: .5em;
+    margin-top: .7em;
     margin-bottom: 0;
     padding-left: 4px;
 }
 .firstListHeader {
-    margin-top: 0;
+    margin-top: .25em;
 }
 
 .ehsContent {

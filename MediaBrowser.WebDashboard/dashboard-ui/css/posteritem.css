@@ -28,11 +28,11 @@
     padding: 11px 12px 10px;
 }
 
-.posterItemOverlayInner p {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+    .posterItemOverlayInner p {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
 .posterItemImage {
     background-size: contain;
@@ -133,7 +133,7 @@
     display: none;
 }
 
-.smallBackdropPosterItem .posterItemOverlayInner>div {
+.smallBackdropPosterItem .posterItemOverlayInner > div {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -212,6 +212,14 @@
 }
 
     .smallBackdropPosterItem .posterItemImage {
+        height: 67.5px;
+    }
+
+.miniBackdropPosterItem {
+    width: 120px;
+}
+
+    .miniBackdropPosterItem .posterItemImage {
         height: 67.5px;
     }
 
@@ -302,6 +310,14 @@
         .smallBackdropPosterItem .posterItemImage {
             height: 88.3125px;
         }
+
+    .miniBackdropPosterItem {
+        width: 148px;
+    }
+
+        .miniBackdropPosterItem .posterItemImage {
+            height: 83.25px;
+        }
 }
 
 @media all and (min-width: 540px) {
@@ -319,6 +335,14 @@
     }
 
         .smallBackdropPosterItem .posterItemImage {
+            height: 101.25px;
+        }
+
+    .miniBackdropPosterItem {
+        width: 180px;
+    }
+
+        .miniBackdropPosterItem .posterItemImage {
             height: 101.25px;
         }
 }

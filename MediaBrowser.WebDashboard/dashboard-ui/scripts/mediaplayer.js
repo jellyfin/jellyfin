@@ -289,9 +289,9 @@
 
             var extension = (mediaSource.Container || '').toLowerCase();
 
-            // m4v's with high profile failing in chrome
-            if (videoStream && videoStream.Profile == 'High' && extension == 'm4v') {
-                return false;
+            // m4v's and mp4's with high profile failing in chrome
+            if (videoStream && videoStream.Profile == 'High') {
+                //return false;
             }
 
             if (extension == 'm4v') {

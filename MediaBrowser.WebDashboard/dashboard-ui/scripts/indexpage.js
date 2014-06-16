@@ -149,7 +149,7 @@
 
             SortBy: "DateCreated",
             SortOrder: "Descending",
-            Limit: screenWidth >= 2400 ? 30 : (screenWidth >= 1920 ? 20 : (screenWidth >= 1440 ? 12 : (screenWidth >= 800 ? 9 : 8))),
+            Limit: screenWidth >= 2400 ? 30 : (screenWidth >= 1920 ? 20 : (screenWidth >= 1440 ? 10 : (screenWidth >= 800 ? 9 : 8))),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed,IsNotFolder",
@@ -187,7 +187,7 @@
 
         var options = {
 
-            Limit: 6,
+            Limit: screenWidth >= 2400 ? 10 : (screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : (screenWidth >= 800 ? 8 : 6))),
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed",
             UserId: userId
@@ -334,7 +334,7 @@
             loadLibraryTiles(elem, userId, 'backdrop', index);
         }
         else if (section == 'smalllibrarytiles') {
-            loadLibraryTiles(elem, userId, 'smallBackdrop', index);
+            loadLibraryTiles(elem, userId, 'miniBackdrop', index);
         }
         else if (section == 'resume') {
             loadResume(elem, userId);
