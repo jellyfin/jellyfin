@@ -26,114 +26,144 @@
 
         ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 
-            currentItem = item;
-
-            var context = getContext(item);
-
-            renderHeader(page, item, context);
-
-            LibraryBrowser.renderName(item, $('.itemName', page));
-            LibraryBrowser.renderParentName(item, $('.parentName', page));
-
-            Dashboard.getCurrentUser().done(function (user) {
-
-                var imageHref = user.Configuration.IsAdministrator ? "edititemimages.html?id=" + item.Id : "";
-
-                $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, imageHref));
-
-                setInitialCollapsibleState(page, item, context, user);
-                renderDetails(page, item, context);
-                LibraryBrowser.renderDetailPageBackdrop(page, item);
-
-                if (user.Configuration.IsAdministrator) {
-                    $('.btnEdit', page).removeClass('hide');
-
-                } else {
-                    $('.btnEdit', page).addClass('hide');
-                }
-
-                var externalPlayUrl = getExternalPlayUrl(item);
-                $('.btnPlayExternal', page).attr('href', externalPlayUrl || '#');
-
-                if (externalPlayUrl) {
-                    $('.btnPlayExternal', page).removeClass('hide');
-                    $('.btnPlay', page).addClass('hide');
-                }
-                else if (MediaController.canPlay(item)) {
-                    $('.btnPlay', page).removeClass('hide');
-                    $('.btnPlayExternal', page).addClass('hide');
-                }
-                else {
-                    $('.btnPlay', page).addClass('hide');
-                    $('.btnPlayExternal', page).addClass('hide');
-                }
-
-                if (item.LocalTrailerCount && item.PlayAccess == 'Full') {
-                    $('.btnPlayTrailer', page).removeClass('hide');
-                } else {
-                    $('.btnPlayTrailer', page).addClass('hide');
-                }
-
-                if (!item.LocalTrailerCount && item.RemoteTrailers.length && item.PlayAccess == 'Full') {
-
-                    $('.btnPlayExternalTrailer', page).removeClass('hide').attr('href', item.RemoteTrailers[0].Url);
-
-                } else {
-
-                    $('.btnPlayExternalTrailer', page).addClass('hide').attr('href', '#');
-                }
-
-                var groupedVersions = (item.MediaSources || []).filter(function (g) {
-                    return g.Type == "Grouping";
-                });
-
-                if (user.Configuration.IsAdministrator && groupedVersions.length) {
-                    $('.splitVersionContainer', page).show();
-                } else {
-                    $('.splitVersionContainer', page).hide();
-                }
-            });
-
-            if (item.LocationType == "Offline") {
-
-                $('.offlineIndicator', page).show();
-            }
-            else {
-                $('.offlineIndicator', page).hide();
-            }
-
-            var isMissingEpisode = false;
-
-            if (item.LocationType == "Virtual" && item.Type == "Episode") {
-                try {
-                    if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate, { toLocal: true }).getTime())) {
-                        isMissingEpisode = true;
-                    }
-                } catch (err) {
-
-                }
-            }
-
-            if (isMissingEpisode) {
-
-                $('.missingIndicator', page).show();
-            }
-            else {
-                $('.missingIndicator', page).hide();
-            }
-
-            setPeopleHeader(page, item);
-
-            $(page).trigger('displayingitem', [{
-
-                item: item,
-                context: context
-            }]);
-
-            Dashboard.hideLoadingMsg();
+            reloadFromItem(page, item);
         });
 
         $('.btnEdit', page).attr('href', "edititemmetadata.html?id=" + id);
+    }
+
+    function reloadFromItem(page, item) {
+
+        currentItem = item;
+
+        var context = getContext(item);
+
+        renderHeader(page, item, context);
+
+        LibraryBrowser.renderName(item, $('.itemName', page));
+        LibraryBrowser.renderParentName(item, $('.parentName', page));
+
+        Dashboard.getCurrentUser().done(function (user) {
+
+            var imageHref = user.Configuration.IsAdministrator ? "edititemimages.html?id=" + item.Id : "";
+
+            $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, imageHref));
+
+            setInitialCollapsibleState(page, item, context, user);
+            renderDetails(page, item, context);
+            LibraryBrowser.renderDetailPageBackdrop(page, item);
+
+            if (user.Configuration.IsAdministrator) {
+                $('.btnEdit', page).removeClass('hide');
+
+            } else {
+                $('.btnEdit', page).addClass('hide');
+            }
+
+            var externalPlayUrl = getExternalPlayUrl(item);
+            $('.btnPlayExternal', page).attr('href', externalPlayUrl || '#');
+
+            if (externalPlayUrl) {
+                $('.btnPlayExternal', page).removeClass('hide');
+                $('.btnPlay', page).addClass('hide');
+            }
+            else if (MediaController.canPlay(item)) {
+                $('.btnPlay', page).removeClass('hide');
+                $('.btnPlayExternal', page).addClass('hide');
+            }
+            else {
+                $('.btnPlay', page).addClass('hide');
+                $('.btnPlayExternal', page).addClass('hide');
+            }
+
+            if (item.LocalTrailerCount && item.PlayAccess == 'Full') {
+                $('.btnPlayTrailer', page).removeClass('hide');
+            } else {
+                $('.btnPlayTrailer', page).addClass('hide');
+            }
+
+            if (!item.LocalTrailerCount && item.RemoteTrailers.length && item.PlayAccess == 'Full') {
+
+                $('.btnPlayExternalTrailer', page).removeClass('hide').attr('href', item.RemoteTrailers[0].Url);
+
+            } else {
+
+                $('.btnPlayExternalTrailer', page).addClass('hide').attr('href', '#');
+            }
+
+            var groupedVersions = (item.MediaSources || []).filter(function (g) {
+                return g.Type == "Grouping";
+            });
+
+            if (user.Configuration.IsAdministrator && groupedVersions.length) {
+                $('.splitVersionContainer', page).show();
+            } else {
+                $('.splitVersionContainer', page).hide();
+            }
+        });
+
+        if (item.LocationType == "Offline") {
+
+            $('.offlineIndicator', page).show();
+        }
+        else {
+            $('.offlineIndicator', page).hide();
+        }
+
+        var isMissingEpisode = false;
+
+        if (item.LocationType == "Virtual" && item.Type == "Episode") {
+            try {
+                if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate, { toLocal: true }).getTime())) {
+                    isMissingEpisode = true;
+                }
+            } catch (err) {
+
+            }
+        }
+
+        if (isMissingEpisode) {
+
+            $('.missingIndicator', page).show();
+        }
+        else {
+            $('.missingIndicator', page).hide();
+        }
+
+        setPeopleHeader(page, item);
+
+        $(page).trigger('displayingitem', [{
+
+            item: item,
+            context: context
+        }]);
+
+        Dashboard.hideLoadingMsg();
+    }
+
+    function onWebSocketMessage(e, data) {
+
+        var msg = data;
+        var page = $.mobile.activePage;
+
+        if (msg.MessageType === "UserDataChanged") {
+
+            if (currentItem && msg.Data.UserId == Dashboard.getCurrentUserId()) {
+
+                var key = currentItem.UserData.Key;
+
+                var userData = msg.Data.UserDataList.filter(function (u) {
+
+                    return u.Key == key;
+                })[0];
+
+                if (userData) {
+                    currentItem.UserData = userData;
+                    reloadFromItem(page, currentItem);
+                }
+            }
+        }
+
     }
 
     function setPeopleHeader(page, item) {
@@ -515,7 +545,7 @@
         }
 
         context = context || '';
-        
+
         promise.done(function (result) {
 
             for (var i = 0, length = result.Items.length; i < length; i++) {
@@ -1458,6 +1488,8 @@
 
         reload(page);
 
+        $(ApiClient).on('websocketmessage', onWebSocketMessage);
+
     }).on('pagehide', "#itemDetailPage", function () {
 
         currentItem = null;
@@ -1465,6 +1497,8 @@
         var page = this;
 
         $(page).off("click.moreScenes").off("click.morePeople").off("click.moreSpecials").off("click.moreCriticReviews");
+
+        $(ApiClient).off('websocketmessage', onWebSocketMessage);
     });
 
     function itemDetailPage() {
