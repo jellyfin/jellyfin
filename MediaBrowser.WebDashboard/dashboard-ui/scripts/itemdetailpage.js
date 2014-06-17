@@ -159,7 +159,7 @@
 
                 if (userData) {
                     currentItem.UserData = userData;
-                    reloadFromItem(page, currentItem);
+                    renderUserDataIcons(page, currentItem);
                 }
             }
         }
