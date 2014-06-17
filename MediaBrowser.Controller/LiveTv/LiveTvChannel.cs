@@ -1,8 +1,11 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -115,9 +118,26 @@ namespace MediaBrowser.Controller.LiveTv
             return new List<BaseItem>();
         }
 
-        public IEnumerable<Model.Dto.MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        public IEnumerable<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {
-            throw new System.NotImplementedException();
+            var list = new List<MediaSourceInfo>();
+
+            var locationType = LocationType;
+
+            var info = new MediaSourceInfo
+            {
+                Id = Id.ToString("N"),
+                Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
+                MediaStreams = new List<MediaStream>(),
+                Name = Name,
+                Path = Path,
+                RunTimeTicks = RunTimeTicks,
+                Type = MediaSourceType.Default
+            };
+
+            list.Add(info);
+
+            return list;
         }
     }
 }

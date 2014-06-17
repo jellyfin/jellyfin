@@ -34,6 +34,9 @@ namespace MediaBrowser.Api
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Limit { get; set; }
+
+        [ApiMember(Name = "SupportsLatestItems", Description = "Optional. Filter by channels that support getting latest items.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? SupportsLatestItems { get; set; }
     }
 
     [Route("/Channels/{Id}/Features", "GET", Summary = "Gets features for a channel")]
@@ -137,6 +140,9 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
 
+        [ApiMember(Name = "ChannelIds", Description = "Optional. Specify one or more channel id's, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string ChannelIds { get; set; }
+        
         /// <summary>
         /// Gets the filters.
         /// </summary>
@@ -196,6 +202,7 @@ namespace MediaBrowser.Api
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
                 UserId = request.UserId,
+                SupportsLatestItems = request.SupportsLatestItems
 
             }, CancellationToken.None).Result;
 
@@ -227,6 +234,7 @@ namespace MediaBrowser.Api
             {
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
+                ChannelIds = (request.ChannelIds ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
                 UserId = request.UserId,
                 Filters = request.GetFilters().ToArray(),
                 Fields = request.GetItemFields().ToList()

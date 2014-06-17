@@ -107,6 +107,13 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var channels = _channelEntities.OrderBy(i => i.SortName).ToList();
 
+            if (query.SupportsLatestItems.HasValue)
+            {
+                var val = query.SupportsLatestItems.Value;
+                channels = channels.Where(i => (GetChannelProvider(i) is ISupportsLatestMedia) == val)
+                    .ToList();
+            }
+
             if (user != null)
             {
                 channels = channels.Where(i => GetChannelProvider(i).IsEnabledFor(user.Id.ToString("N")) && i.IsVisible(user))
