@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,56 +18,22 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets the input argument.
         /// </summary>
         /// <param name="videoPath">The video path.</param>
-        /// <param name="isRemote">if set to <c>true</c> [is remote].</param>
-        /// <param name="videoType">Type of the video.</param>
-        /// <param name="isoType">Type of the iso.</param>
+        /// <param name="protocol">The protocol.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <param name="playableStreamFileNames">The playable stream file names.</param>
-        /// <param name="type">The type.</param>
         /// <returns>System.String[][].</returns>
-        public static string[] GetInputArgument(string videoPath, bool isRemote, VideoType videoType, IsoType? isoType, IIsoMount isoMount, IEnumerable<string> playableStreamFileNames, out InputType type)
+        public static string[] GetInputArgument(string videoPath, MediaProtocol protocol, IIsoMount isoMount, List<string> playableStreamFileNames)
         {
-            var inputPath = isoMount == null ? new[] { videoPath } : new[] { isoMount.MountedPath };
-
-            type = InputType.File;
-
-            switch (videoType)
+            if (playableStreamFileNames.Count > 0)
             {
-                case VideoType.BluRay:
-                    type = InputType.Bluray;
-                    inputPath = GetPlayableStreamFiles(inputPath[0], playableStreamFileNames).ToArray();
-                    break;
-                case VideoType.Dvd:
-                    type = InputType.Dvd;
-                    inputPath = GetPlayableStreamFiles(inputPath[0], playableStreamFileNames).ToArray();
-                    break;
-                case VideoType.Iso:
-                    if (isoType.HasValue)
-                    {
-                        switch (isoType.Value)
-                        {
-                            case IsoType.BluRay:
-                                type = InputType.Bluray;
-                                inputPath = GetPlayableStreamFiles(inputPath[0], playableStreamFileNames).ToArray();
-                                break;
-                            case IsoType.Dvd:
-                                type = InputType.Dvd;
-                                inputPath = GetPlayableStreamFiles(inputPath[0], playableStreamFileNames).ToArray();
-                                break;
-                        }
-                    }
-                    break;
-                case VideoType.VideoFile:
-                    {
-                        if (isRemote)
-                        {
-                            type = InputType.Url;
-                        }
-                        break;
-                    }
+                if (isoMount == null)
+                {
+                    return GetPlayableStreamFiles(videoPath, playableStreamFileNames).ToArray();
+                }
+                return GetPlayableStreamFiles(isoMount.MountedPath, playableStreamFileNames).ToArray();
             }
 
-            return inputPath;
+            return new[] {videoPath};
         }
 
         public static List<string> GetPlayableStreamFiles(string rootPath, IEnumerable<string> filenames)
@@ -78,46 +45,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             return filenames.Select(name => allFiles.FirstOrDefault(f => string.Equals(Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase)))
                 .Where(f => !string.IsNullOrEmpty(f))
                 .ToList();
-        }
-
-        /// <summary>
-        /// Gets the type of the input.
-        /// </summary>
-        /// <param name="videoType">Type of the video.</param>
-        /// <param name="isoType">Type of the iso.</param>
-        /// <returns>InputType.</returns>
-        public static InputType GetInputType(VideoType? videoType, IsoType? isoType)
-        {
-            var type = InputType.File;
-
-            if (videoType.HasValue)
-            {
-                switch (videoType.Value)
-                {
-                    case VideoType.BluRay:
-                        type = InputType.Bluray;
-                        break;
-                    case VideoType.Dvd:
-                        type = InputType.Dvd;
-                        break;
-                    case VideoType.Iso:
-                        if (isoType.HasValue)
-                        {
-                            switch (isoType.Value)
-                            {
-                                case IsoType.BluRay:
-                                    type = InputType.Bluray;
-                                    break;
-                                case IsoType.Dvd:
-                                    type = InputType.Dvd;
-                                    break;
-                            }
-                        }
-                        break;
-                }
-            }
-
-            return type;
         }
 
         public static MediaInfo GetMediaInfo(InternalMediaInfoResult data)

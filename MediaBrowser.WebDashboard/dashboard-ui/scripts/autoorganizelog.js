@@ -30,9 +30,9 @@
 
         })[0];
 
-        var message = 'The following file will be <b>deleted</b>:<p style="word-wrap:break-word;">' + item.OriginalPath + '</p><p>Are you sure you wish to proceed?</p>';
+        var message = Globalize.translate('MessageFileWillBeDeleted') + '<p style="word-wrap:break-word;">' + item.OriginalPath + '</p><p>' + Globalize.translate('MessageSureYouWishToProceed') + '</p>';
 
-        Dashboard.confirm(message, "Delete File", function (confirmResult) {
+        Dashboard.confirm(message, Globalize.translate('HeaderDeleteFile'), function (confirmResult) {
 
             if (confirmResult) {
 
@@ -107,17 +107,17 @@
             return;
         }
 
-        var message = 'The following file will be moved from:<p style="word-wrap:break-word;">' + item.OriginalPath + '</p><p>to:</p><p style="word-wrap:break-word;">' + item.TargetPath + '</p>';
+        var message = Globalize.translate('MessageFollowingFileWillBeMovedFrom') + '<p style="word-wrap:break-word;">' + item.OriginalPath + '</p><p>' + Globalize.translate('MessageDestinationTo') + '</p><p style="word-wrap:break-word;">' + item.TargetPath + '</p>';
 
         if (item.DuplicatePaths.length) {
-            message += '<p><b>In addition the following dupliates will be deleted:</b></p>';
+            message += '<p><b>' + Globalize.translate('MessageDuplicatesWillBeDeleted') + '</b></p>';
 
             message += '<p style="word-wrap:break-word;">' + item.DuplicatePaths.join('<br/>') + '</p>';
         }
 
-        message += '<p>Are you sure you wish to proceed?</p>';
+        message += '<p>' + Globalize.translate('MessageSureYouWishToProceed') + '</p>';
 
-        Dashboard.confirm(message, "Organize File", function (confirmResult) {
+        Dashboard.confirm(message, Globalize.translate('HeaderOrganizeFile'), function (confirmResult) {
 
             if (confirmResult) {
 
@@ -184,15 +184,15 @@
         var color = null;
 
         if (status == 'SkippedExisting') {
-            status = 'Skipped';
+            status = Globalize.translate('StatusSkipped');
         }
         else if (status == 'Failure') {
             color = '#cc0000';
-            status = 'Failed';
+            status = Globalize.translate('StatusFailed');
         }
         if (status == 'Success') {
             color = 'green';
-            status = 'Success';
+            status = Globalize.translate('StatusSuccess');
         }
 
         if (enhance && enhance) {
@@ -221,8 +221,8 @@
 
 
             if (item.Status != 'Success') {
-                html += '<button data-resultid="' + item.Id + '" type="button" data-inline="true" data-icon="delete" data-mini="true" data-iconpos="notext" class="btnDeleteResult organizerButton" title="Delete File">Delete File</button>';
-                html += '<button data-resultid="' + item.Id + '" type="button" data-inline="true" data-icon="action" data-mini="true" data-iconpos="notext" class="btnProcessResult organizerButton" title="Organize File">Process</button>';
+                html += '<button data-resultid="' + item.Id + '" type="button" data-inline="true" data-icon="delete" data-mini="true" data-iconpos="notext" class="btnDeleteResult organizerButton" title="' + Globalize.translate('ButtonDeleteFile') + '">' + Globalize.translate('ButtonDeleteFile') + '</button>';
+                html += '<button data-resultid="' + item.Id + '" type="button" data-inline="true" data-icon="action" data-mini="true" data-iconpos="notext" class="btnProcessResult organizerButton" title="' + Globalize.translate('ButtonOrganizeFile') + '">' + Globalize.translate('ButtonOrganizeFile') + '</button>';
             }
 
             html += '</td>';

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -89,11 +90,13 @@ namespace MediaBrowser.Providers.MediaInfo
                                       ? TimeSpan.FromTicks(Convert.ToInt64(item.RunTimeTicks.Value * .1))
                                       : TimeSpan.FromSeconds(10);
 
-                InputType type;
+                var protocol = item.LocationType == LocationType.Remote
+                    ? MediaProtocol.Http
+                    : MediaProtocol.File;
 
-                var inputPath = MediaEncoderHelpers.GetInputArgument(item.Path, item.LocationType == LocationType.Remote, item.VideoType, item.IsoType, isoMount, item.PlayableStreamFileNames, out type);
+                var inputPath = MediaEncoderHelpers.GetInputArgument(item.Path, protocol, isoMount, item.PlayableStreamFileNames);
 
-                var stream = await _mediaEncoder.ExtractVideoImage(inputPath, type, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
+                var stream = await _mediaEncoder.ExtractVideoImage(inputPath, protocol, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
 
                 return new DynamicImageResponse
                 {

@@ -8,6 +8,7 @@ namespace MediaBrowser.Model.Dto
 {
     public class MediaSourceInfo
     {
+        public MediaProtocol Protocol { get; set; }
         public string Id { get; set; }
 
         public string Path { get; set; }
@@ -16,8 +17,6 @@ namespace MediaBrowser.Model.Dto
 
         public string Container { get; set; }
         public long? Size { get; set; }
-
-        public LocationType LocationType { get; set; }
 
         public string Name { get; set; }
 

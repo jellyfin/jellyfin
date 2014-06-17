@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -50,7 +51,7 @@ namespace MediaBrowser.Api.Playback
 
         public string MediaPath { get; set; }
 
-        public bool IsRemote { get; set; }
+        public MediaProtocol InputProtocol { get; set; }
 
         public bool IsInputVideo { get; set; }
 

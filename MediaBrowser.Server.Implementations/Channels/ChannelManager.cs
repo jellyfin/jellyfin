@@ -280,7 +280,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 MediaStreams = GetMediaStreams(info).ToList(),
 
                 Container = info.Container,
-                LocationType = info.IsRemote ? LocationType.Remote : LocationType.FileSystem,
+                Protocol = info.Protocol,
                 Path = info.Path,
                 RequiredHttpHeaders = info.RequiredHttpHeaders,
                 RunTimeTicks = item.RunTimeTicks,
@@ -555,17 +555,18 @@ namespace MediaBrowser.Server.Implementations.Channels
                 return GetChannelItemEntity(i.Item2, channelProvider, channel, token);
             });
 
-            IEnumerable<BaseItem> internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
+            var internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
 
-            internalItems = ApplyFilters(internalItems, query.Filters, user);
+            internalItems = ApplyFilters(internalItems, query.Filters, user).ToArray();
+            await RefreshIfNeeded(internalItems, cancellationToken).ConfigureAwait(false);
 
             if (query.StartIndex.HasValue)
             {
-                internalItems = internalItems.Skip(query.StartIndex.Value);
+                internalItems = internalItems.Skip(query.StartIndex.Value).ToArray();
             }
             if (query.Limit.HasValue)
             {
-                internalItems = internalItems.Take(query.Limit.Value);
+                internalItems = internalItems.Take(query.Limit.Value).ToArray();
             }
 
             var returnItemArray = internalItems.Select(i => _dtoService.GetBaseItemDto(i, query.Fields, user))
@@ -658,6 +659,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             });
 
             var internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
+            await RefreshIfNeeded(internalItems, cancellationToken).ConfigureAwait(false);
 
             var returnItemArray = internalItems.Select(i => _dtoService.GetBaseItemDto(i, query.Fields, user))
                 .ToArray();

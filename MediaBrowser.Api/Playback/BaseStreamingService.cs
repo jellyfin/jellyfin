@@ -1,16 +1,12 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
@@ -19,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -639,16 +636,16 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the probe size argument.
         /// </summary>
-        /// <param name="isVideo">if set to <c>true</c> [is video].</param>
-        /// <param name="videoType">Type of the video.</param>
-        /// <param name="isoType">Type of the iso.</param>
+        /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        private string GetProbeSizeArgument(bool isVideo, VideoType? videoType, IsoType? isoType)
+        private string GetProbeSizeArgument(StreamState state)
         {
-            var type = !isVideo ? MediaEncoderHelpers.GetInputType(null, null) :
-                MediaEncoderHelpers.GetInputType(videoType, isoType);
+            if (state.PlayableStreamFileNames.Count > 0)
+            {
+                return MediaEncoder.GetProbeSizeArgument(state.PlayableStreamFileNames.ToArray(), state.InputProtocol);
+            }
 
-            return MediaEncoder.GetProbeSizeArgument(type);
+            return MediaEncoder.GetProbeSizeArgument(new[] { state.MediaPath }, state.InputProtocol);
         }
 
         /// <summary>
@@ -765,7 +762,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetInputArgument(StreamState state)
         {
-            var type = state.IsRemote ? InputType.Url : InputType.File;
+            var protocol = state.InputProtocol;
 
             var inputPath = new[] { state.MediaPath };
 
@@ -773,11 +770,11 @@ namespace MediaBrowser.Api.Playback
             {
                 if (!(state.VideoType == VideoType.Iso && state.IsoMount == null))
                 {
-                    inputPath = MediaEncoderHelpers.GetInputArgument(state.MediaPath, state.IsRemote, state.VideoType, state.IsoType, state.IsoMount, state.PlayableStreamFileNames, out type);
+                    inputPath = MediaEncoderHelpers.GetInputArgument(state.MediaPath, state.InputProtocol, state.IsoMount, state.PlayableStreamFileNames);
                 }
             }
 
-            return MediaEncoder.GetInputArgument(inputPath, type);
+            return MediaEncoder.GetInputArgument(inputPath, protocol);
         }
 
         /// <summary>
@@ -885,7 +882,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             // This is arbitrary, but add a little buffer time when internet streaming
-            if (state.IsRemote)
+            if (state.InputProtocol != MediaProtocol.File)
             {
                 await Task.Delay(3000, cancellationTokenSource.Token).ConfigureAwait(false);
             }
@@ -1063,34 +1060,9 @@ namespace MediaBrowser.Api.Playback
 
             state.RemoteHttpHeaders.TryGetValue("User-Agent", out useragent);
 
-            if (string.IsNullOrWhiteSpace(useragent))
-            {
-                useragent = GetUserAgent(state.MediaPath);
-            }
-
             if (!string.IsNullOrWhiteSpace(useragent))
             {
                 return "-user-agent \"" + useragent + "\"";
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the user agent.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.String.</returns>
-        protected string GetUserAgent(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException("path");
-
-            }
-            if (path.IndexOf("apple.com", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                return "QuickTime/7.7.4";
             }
 
             return string.Empty;
@@ -1388,12 +1360,12 @@ namespace MediaBrowser.Api.Playback
                 if (!string.IsNullOrEmpty(path))
                 {
                     state.MediaPath = path;
-                    state.IsRemote = false;
+                    state.InputProtocol = MediaProtocol.File;
                 }
                 else if (!string.IsNullOrEmpty(mediaUrl))
                 {
                     state.MediaPath = mediaUrl;
-                    state.IsRemote = true;
+                    state.InputProtocol = MediaProtocol.Http;
                 }
 
                 state.RunTimeTicks = recording.RunTimeTicks;
@@ -1425,14 +1397,14 @@ namespace MediaBrowser.Api.Playback
                 if (!string.IsNullOrEmpty(streamInfo.Path))
                 {
                     state.MediaPath = streamInfo.Path;
-                    state.IsRemote = false;
+                    state.InputProtocol = MediaProtocol.File;
 
                     await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
                 }
                 else if (!string.IsNullOrEmpty(streamInfo.Url))
                 {
                     state.MediaPath = streamInfo.Url;
-                    state.IsRemote = true;
+                    state.InputProtocol = MediaProtocol.Http;
                 }
 
                 state.ReadInputAtNativeFramerate = true;
@@ -1445,7 +1417,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var source = await GetChannelMediaInfo(request.Id, request.MediaSourceId, cancellationToken).ConfigureAwait(false);
                 state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
-                state.IsRemote = source.LocationType == LocationType.Remote;
+                state.InputProtocol = source.Protocol;
                 state.MediaPath = source.Path;
                 state.RunTimeTicks = item.RunTimeTicks;
                 state.RemoteHttpHeaders = source.RequiredHttpHeaders;
@@ -1461,7 +1433,7 @@ namespace MediaBrowser.Api.Playback
                 mediaStreams = mediaSource.MediaStreams;
 
                 state.MediaPath = mediaSource.Path;
-                state.IsRemote = mediaSource.LocationType == LocationType.Remote;
+                state.InputProtocol = mediaSource.Protocol;
                 state.InputContainer = mediaSource.Container;
 
                 if (item is Video)
@@ -1921,18 +1893,15 @@ namespace MediaBrowser.Api.Playback
         {
             var inputModifier = string.Empty;
 
-            var probeSize = GetProbeSizeArgument(state.IsInputVideo, state.VideoType, state.IsoType);
+            var probeSize = GetProbeSizeArgument(state);
             inputModifier += " " + probeSize;
             inputModifier = inputModifier.Trim();
 
-            if (state.IsRemote)
-            {
-                var userAgentParam = GetUserAgentParam(state);
+            var userAgentParam = GetUserAgentParam(state);
 
-                if (!string.IsNullOrWhiteSpace(userAgentParam))
-                {
-                    inputModifier += " " + userAgentParam;
-                }
+            if (!string.IsNullOrWhiteSpace(userAgentParam))
+            {
+                inputModifier += " " + userAgentParam;
             }
 
             inputModifier = inputModifier.Trim();

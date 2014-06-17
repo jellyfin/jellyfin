@@ -2,7 +2,9 @@
     
     function updateSeasonPatternHelp(page, value) {
         
-        var replacementHtmlResult = 'Result: ' + value.replace('%s', '1').replace('%0s', '01').replace('%00s', '001');
+        var resultValue = value.replace('%s', '1').replace('%0s', '01').replace('%00s', '001');
+
+        var replacementHtmlResult = Globalize.translate('OrganizePatternResult').replace('{0}', resultValue);
 
         $('.seasonFolderFieldDescription', page).html(replacementHtmlResult);
     }
@@ -40,7 +42,7 @@
 
         value = getEpisodeFileName(value, false);
         
-        var replacementHtmlResult = 'Result: ' + value;
+        var replacementHtmlResult = Globalize.translate('OrganizePatternResult').replace('{0}', value);
 
         $('.episodePatternDescription', page).html(replacementHtmlResult);
     }
@@ -49,7 +51,7 @@
 
         value = getEpisodeFileName(value, true);
 
-        var replacementHtmlResult = 'Result: ' + value;
+        var replacementHtmlResult = Globalize.translate('OrganizePatternResult').replace('{0}', value);
 
         $('.multiEpisodePatternDescription', page).html(replacementHtmlResult);
     }
@@ -112,9 +114,9 @@
                     picker.close();
                 },
 
-                header: "Select Watch Folder",
+                header: Globalize.translate('HeaderSelectWatchFolder'),
 
-                instruction: "Browse or enter the path to your watch folder. The folder must be writeable."
+                instruction: Globalize.translate('HeaderSelectWatchFolderHelp')
             });
         });
 

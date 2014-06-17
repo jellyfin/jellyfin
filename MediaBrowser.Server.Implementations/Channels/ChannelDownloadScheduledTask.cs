@@ -8,8 +8,8 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
@@ -182,7 +182,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var list = sources.ToList();
 
-            var cachedVersions = list.Where(i => i.LocationType == LocationType.FileSystem).ToList();
+            var cachedVersions = list.Where(i => i.Protocol == MediaProtocol.File).ToList();
 
             if (cachedVersions.Count > 0)
             {
@@ -190,7 +190,12 @@ namespace MediaBrowser.Server.Implementations.Channels
                 return;
             }
 
-            var source = list.First();
+            var source = list.FirstOrDefault(i => i.Protocol == MediaProtocol.Http);
+
+            if (source == null)
+            {
+                return;
+            }
 
             var options = new HttpRequestOptions
             {

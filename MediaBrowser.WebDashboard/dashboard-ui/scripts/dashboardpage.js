@@ -466,21 +466,6 @@
             html: text,
             image: imgUrl
         };
-
-        //var playstate = session.PlayState;
-
-        //if (playstate) {
-
-        //    if (playstate.PlayMethod == 'DirectPlay') {
-        //        return 'Direct playing';
-        //    }
-        //    if (playstate.PlayMethod == 'DirectStream') {
-        //        return 'Direct streaming';
-        //    }
-        //    if (playstate.PlayMethod == 'Transcode') {
-        //        text = text + '<div class="sessionPlayMethod">Transcoding</div>';
-        //    }
-        //}
     },
 
     getUsersHtml: function (session) {
@@ -776,7 +761,7 @@
 
                     $('#pUpdateNow', page).show();
 
-                    $('#newVersionNumber', page).html("Version " + version.versionStr + " is now available for download.");
+                    $('#newVersionNumber', page).html(Globalize.translate('VersionXIsAvailableForDownload').replace('{0}', version.versionStr));
                 }
 
             }).fail(function () {
@@ -845,9 +830,9 @@
 
                 var update = updates[i];
 
-                html += '<p><strong>A new version of ' + update.name + ' is available!</strong></p>';
+                html += '<p><strong>' + Globalize.translate('NewVersionOfSomethingAvailable').replace('{0}', update.name) + '</strong></p>';
 
-                html += '<button type="button" data-icon="arrow-d" data-theme="b" onclick="DashboardPage.installPluginUpdate(this);" data-name="' + update.name + '" data-guid="' + update.guid + '" data-version="' + update.versionStr + '" data-classification="' + update.classification + '">Update Now</button>';
+                html += '<button type="button" data-icon="arrow-d" data-theme="b" onclick="DashboardPage.installPluginUpdate(this);" data-name="' + update.name + '" data-guid="' + update.guid + '" data-version="' + update.versionStr + '" data-classification="' + update.classification + '">' + Globalize.translate('ButtonUpdateNow') + '</button>';
             }
 
             elem.html(html).trigger('create');
@@ -912,7 +897,7 @@
 
     restart: function () {
 
-        Dashboard.confirm("Are you sure you wish to restart Media Browser Server?", "Restart", function (result) {
+        Dashboard.confirm(Globalize.translate('MessageConfirmRestart'), Globalize.translate('HeaderRestart'), function (result) {
 
             if (result) {
                 $('#btnRestartServer').buttonEnabled(false);
@@ -925,7 +910,7 @@
 
     shutdown: function () {
 
-        Dashboard.confirm("Are you sure you wish to shutdown Media Browser Server?", "Shutdown", function (result) {
+        Dashboard.confirm(Globalize.translate('MessageConfirmShutdown'), Globalize.translate('HeaderShutdown'), function (result) {
 
             if (result) {
                 $('#btnRestartServer').buttonEnabled(false);

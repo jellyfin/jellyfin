@@ -1111,7 +1111,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (tvChannel != null)
             {
-                dto.MediaSources = GetMediaSources(tvChannel);
+                dto.MediaSources = tvChannel.GetMediaSources(true).ToList();
             }
 
             var channelItem = item as IChannelItem;
@@ -1121,43 +1121,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.ChannelId = channelItem.ChannelId;
                 dto.ChannelName = _channelManagerFactory().GetChannel(channelItem.ChannelId).Name;
             }
-        }
-
-        public List<MediaSourceInfo> GetMediaSources(BaseItem item)
-        {
-            var video = item as Video;
-
-            if (video != null)
-            {
-                return video.GetMediaSources(true).ToList();
-            }
-
-            var audio = item as Audio;
-
-            if (audio != null)
-            {
-                return audio.GetMediaSources(true).ToList();
-            }
-
-            var result = new List<MediaSourceInfo>
-            {
-                new MediaSourceInfo
-                {
-                    Id = item.Id.ToString("N"),
-                    LocationType = item.LocationType,
-                    Name = item.Name,
-                    Path = GetMappedPath(item),
-                    MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
-                    {
-                        ItemId = item.Id
-
-                    }).ToList(),
-
-                    RunTimeTicks = item.RunTimeTicks
-                }            
-            };
-
-            return result;
         }
 
         private string GetMappedPath(IHasMetadata item)
