@@ -125,14 +125,6 @@
     text-align: center;
 }
 
-.squarePosterItem {
-    width: 140px;
-}
-
-    .squarePosterItem .posterItemImage {
-        height: 140px;
-    }
-
 .storeReviewCount {
     display: none;
 }
@@ -202,6 +194,14 @@
 .musicvideosPosterItem .posterItemImage {
     background-color: rgba(143, 54, 168, 0.7);
 }
+
+.squarePosterItem {
+    width: 140px;
+}
+
+    .squarePosterItem .posterItemImage {
+        height: 140px;
+    }
 
 .backdropPosterItem {
     width: 128px;
@@ -341,14 +341,6 @@
         .smallBackdropPosterItem .posterItemImage {
             height: 101.25px;
         }
-
-    .miniBackdropPosterItem {
-        width: 168px;
-    }
-
-        .miniBackdropPosterItem .posterItemImage {
-            height: 94.5px;
-        }
 }
 
 @media all and (min-width: 600px) {
@@ -458,6 +450,30 @@
 
         .backdropPosterItem .posterItemImage {
             height: 167.625px;
+        }
+
+    .miniBackdropPosterItem {
+        width: 180px;
+    }
+
+        .miniBackdropPosterItem .posterItemImage {
+            height: 101.25px;
+        }
+
+    .squarePosterItem {
+        width: 160px;
+    }
+
+        .squarePosterItem .posterItemImage {
+            height: 160px;
+        }
+
+    .portraitPosterItem {
+        width: 144px;
+    }
+
+        .portraitPosterItem .posterItemImage {
+            height: 216px;
         }
 }
 

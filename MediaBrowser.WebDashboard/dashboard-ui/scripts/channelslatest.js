@@ -20,9 +20,11 @@
 
     function reloadFromChannel(page, channel, index) {
 
+        var screenWidth = $(window).width();
+
         var options = {
 
-            Limit: 7,
+            Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : (screenWidth >= 800 ? 6 : 6)),
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed",
             UserId: Dashboard.getCurrentUserId(),

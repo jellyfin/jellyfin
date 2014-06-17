@@ -771,9 +771,9 @@
     "LabelHomePageSection1": "Hemsk\u00e4rmens del 1:",
     "LabelHomePageSection2": "Hemsk\u00e4rmens del 2:",
     "LabelHomePageSection3": "Hemsk\u00e4rmens del 3:",
-    "OptionMyLibraryButtons": "My library (buttons)",
-    "OptionMyLibrary": "My library",
-    "OptionMyLibrarySmall": "My library (small)",
+    "OptionMyLibraryButtons": "Mitt bibliotek (knappar)",
+    "OptionMyLibrary": "Mitt bibliotek",
+    "OptionMyLibrarySmall": "Mitt bibliotek (litet)",
     "OptionResumablemedia": "\u00c5teruppta",
     "OptionLatestMedia": "Nytillkommet",
     "OptionNone": "Inga",
@@ -815,5 +815,5 @@
     "LabelSelectFolderGroups": "Gruppera automatiskt f\u00f6ljande mappar till vyer s\u00e5som filmer, musik och TV:",
     "LabelSelectFolderGroupsHelp": "Mappar som ej \u00e4r markerade visas enskilda i sin egen avdelning.",
     "OptionDisplayAdultContent": "Visa erotiskt inneh\u00e5ll",
-    "OptionLibraryFolders": "Folder view"
+    "OptionLibraryFolders": "Mappvy"
 }
