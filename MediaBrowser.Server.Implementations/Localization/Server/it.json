@@ -771,9 +771,9 @@
     "LabelHomePageSection1": "Sezione 1 pagina iniziale",
     "LabelHomePageSection2": "Sezione 2 pagina iniziale",
     "LabelHomePageSection3": "Sezione 3 pagina iniziale",
-    "OptionMyLibraryButtons": "My library (buttons)",
-    "OptionMyLibrary": "My library",
-    "OptionMyLibrarySmall": "My library (small)",
+    "OptionMyLibraryButtons": "Mia libreria",
+    "OptionMyLibrary": "Mia libreria",
+    "OptionMyLibrarySmall": "Mia libreria",
     "OptionResumablemedia": "Riprendi",
     "OptionLatestMedia": "Ultimo media",
     "OptionNone": "Nessuno",
@@ -815,5 +815,5 @@
     "LabelSelectFolderGroups": "Automaticamente i contenuti del gruppo dalle seguenti cartelle nella vista come film, musica e TV:",
     "LabelSelectFolderGroupsHelp": "Le cartelle che siano deselezionate verranno visualizzati da soli nel loro punto di vista.",
     "OptionDisplayAdultContent": "Visualizzazioni contenuti per adulti",
-    "OptionLibraryFolders": "Folder view"
+    "OptionLibraryFolders": "Vista"
 }
