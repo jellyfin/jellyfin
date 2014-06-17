@@ -1,7 +1,4 @@
-﻿using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.MediaInfo;
-using System;
+﻿using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -60,38 +57,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public static string GetProbeSizeArgument(bool isDvd)
         {
             return isDvd ? "-probesize 1G -analyzeduration 200M" : string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the number of audio channels to specify on the command line
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="audioStream">The audio stream.</param>
-        /// <returns>System.Nullable{System.Int32}.</returns>
-        public static int? GetNumAudioChannelsParam(EncodingOptions request, MediaStream audioStream)
-        {
-            if (audioStream != null)
-            {
-                var codec = request.AudioCodec ?? string.Empty;
-
-                if (audioStream.Channels > 2 && codec.IndexOf("wma", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    // wmav2 currently only supports two channel output
-                    return 2;
-                }
-            }
-
-            if (request.MaxAudioChannels.HasValue)
-            {
-                if (audioStream != null && audioStream.Channels.HasValue)
-                {
-                    return Math.Min(request.MaxAudioChannels.Value, audioStream.Channels.Value);
-                }
-
-                return request.MaxAudioChannels.Value;
-            }
-
-            return request.AudioChannels;
         }
     }
 }

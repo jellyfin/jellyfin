@@ -187,7 +187,7 @@
 
         var options = {
 
-            Limit: screenWidth >= 2400 ? 10 : (screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : (screenWidth >= 800 ? 8 : 6))),
+            Limit: screenWidth >= 2400 ? 10 : (screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : (screenWidth >= 800 ? 7 : 6))),
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed",
             UserId: userId

@@ -50,14 +50,15 @@
 
             Dashboard.updateSystemInfo(systemInfo);
 
-            $('#appVersionNumber', page).html('Version ' + systemInfo.Version);
+            $('#appVersionNumber', page).html(Globalize.translate('LabelVersionNumber').replace('{0}', systemInfo.Version));
 
             var port = systemInfo.HttpServerPortNumber;
 
             if (port == systemInfo.WebSocketPortNumber) {
-                $('#ports', page).html('Running on port <b>' + port + '</b>');
+                
+                $('#ports', page).html(Globalize.translate('LabelRunningOnPort').replace('{0}', '<b>' + port + '</b>'));
             } else {
-                $('#ports', page).html('Running on ports <b>' + port + '</b> and <b>' + systemInfo.WebSocketPortNumber + '</b>');
+                $('#ports', page).html(Globalize.translate('LabelRunningOnPorts').replace('{0}', '<b>' + port + '</b>').replace('{1}', '<b>' + systemInfo.WebSocketPortNumber + '</b>'));
             }
 
             if (systemInfo.CanSelfRestart) {
@@ -340,13 +341,13 @@
         html += '<div>';
 
         if (session.PlayState.PlayMethod == 'Transcode') {
-            html += 'Transcoding';
+            html += Globalize.translate('LabelPlayMethodTranscoding');
         }
         else if (session.PlayState.PlayMethod == 'DirectStream') {
-            html += 'Direct Streaming';
+            html += Globalize.translate('LabelPlayMethodDirectStream');
         }
         else if (session.PlayState.PlayMethod == 'DirectPlay') {
-            html += 'Direct Playing';
+            html += Globalize.translate('LabelPlayMethodDirectPlay');
         }
 
         html += '</div>';
@@ -376,11 +377,11 @@
 
             if (session.TranscodingInfo.VideoCodec) {
 
-                html += '<div>Video: ' + session.TranscodingInfo.VideoCodec + '</div>';
+                html += '<div>' + Globalize.translate('LabelVideoCodec').replace('{0}', session.TranscodingInfo.VideoCodec) + '</div>';
             }
             if (session.TranscodingInfo.AudioCodec && session.TranscodingInfo.AudioCodec != session.TranscodingInfo.Container) {
 
-                html += '<div>Audio: ' + session.TranscodingInfo.AudioCodec + '</div>';
+                html += '<div>' + Globalize.translate('LabelAudioCodec').replace('{0}', session.TranscodingInfo.AudioCodec) + '</div>';
             }
 
         }
@@ -707,10 +708,10 @@
 
                 html += "<span style='color:#009F00;margin-left:5px;margin-right:5px;'>" + progress + "%</span>";
 
-                html += '<button type="button" data-icon="stop" data-iconpos="notext" data-inline="true" data-mini="true" onclick="DashboardPage.stopTask(\'' + task.Id + '\');">Stop</button>';
+                html += '<button type="button" data-icon="stop" data-iconpos="notext" data-inline="true" data-mini="true" onclick="DashboardPage.stopTask(\'' + task.Id + '\');">' + Globalize.translate('ButtonStop') + '</button>';
             }
             else if (task.State == "Cancelling") {
-                html += '<span style="color:#cc0000;">Stopping</span>';
+                html += '<span style="color:#cc0000;">' + Globalize.translate('LabelStopping') + '</span>';
             }
 
             html += '</p>';
@@ -730,7 +731,9 @@
 
             var externalUrl = systemInfo.WanAddress + "/mediabrowser";
 
-            $('.externalUrl', page).html('Remote access: <a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>').show().trigger('create');
+            var remoteAccessHtml = Globalize.translate('LabelRemoteAccessUrl').replace('{0}', '<a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>');
+
+            $('.externalUrl', page).html(remoteAccessHtml).show().trigger('create');
         } else {
             $('.externalUrl', page).hide();
         }

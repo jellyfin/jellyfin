@@ -22,10 +22,20 @@ namespace MediaBrowser.Model.Channels
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [supports latest items].
+        /// </summary>
+        /// <value><c>true</c> if [supports latest items]; otherwise, <c>false</c>.</value>
+        public bool? SupportsLatestItems { get; set; }
     }
 
     public class AllChannelMediaQuery
     {
+        /// <summary>
+        /// Gets or sets the channel ids.
+        /// </summary>
+        /// <value>The channel ids.</value>
         public string[] ChannelIds { get; set; }
 
         /// <summary>

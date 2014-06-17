@@ -13,7 +13,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
-            Limit: screenWidth >= 1920 ? 32 : (screenWidth >= 1440 ? 32 : (screenWidth >= 800 ? 24 : 18)),
+            Limit: screenWidth >= 1920 ? 32 : (screenWidth >= 1440 ? 32 : (screenWidth >= 800 ? 28 : 18)),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed",
