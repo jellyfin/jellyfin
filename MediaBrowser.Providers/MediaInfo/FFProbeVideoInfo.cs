@@ -126,7 +126,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private const string SchemaVersion = "1";
 
-        private async Task<InternalMediaInfoResult> GetMediaInfo(BaseItem item,
+        private async Task<InternalMediaInfoResult> GetMediaInfo(Video item,
             IIsoMount isoMount,
             CancellationToken cancellationToken)
         {
@@ -149,17 +149,13 @@ namespace MediaBrowser.Providers.MediaInfo
             {
             }
 
-            var type = InputType.File;
-            var inputPath = isoMount == null ? new[] { item.Path } : new[] { isoMount.MountedPath };
+            var protocol = item.LocationType == LocationType.Remote
+                ? MediaProtocol.Http
+                : MediaProtocol.File;
 
-            var video = item as Video;
+            var inputPath = MediaEncoderHelpers.GetInputArgument(item.Path, protocol, isoMount, item.PlayableStreamFileNames);
 
-            if (video != null)
-            {
-                inputPath = MediaEncoderHelpers.GetInputArgument(video.Path, video.LocationType == LocationType.Remote, video.VideoType, video.IsoType, isoMount, video.PlayableStreamFileNames, out type);
-            }
-
-            var result = await _mediaEncoder.GetMediaInfo(inputPath, type, false, cancellationToken).ConfigureAwait(false);
+            var result = await _mediaEncoder.GetMediaInfo(inputPath, protocol, false, cancellationToken).ConfigureAwait(false);
 
             Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
             _json.SerializeToFile(result, cachePath);

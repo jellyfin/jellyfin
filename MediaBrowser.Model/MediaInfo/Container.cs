@@ -6,4 +6,11 @@ namespace MediaBrowser.Model.MediaInfo
         public const string MP4 = "mp4";
         public const string MKV = "mkv";
     }
+
+    public enum MediaProtocol
+    {
+        File = 0,
+        Http = 1,
+        Rtmp = 2
+    }
 }

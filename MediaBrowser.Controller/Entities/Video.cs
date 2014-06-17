@@ -549,7 +549,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 Id = i.Id.ToString("N"),
                 IsoType = i.IsoType,
-                LocationType = locationType,
+                Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
                 MediaStreams = mediaStreams,
                 Name = GetMediaSourceName(i, mediaStreams),
                 Path = enablePathSubstitution ? GetMappedPath(i.Path, locationType) : i.Path,

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.IO;
 using System.Threading;
@@ -35,59 +36,37 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Extracts the video image.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
-        /// <param name="type">The type.</param>
+        /// <param name="protocol">The protocol.</param>
         /// <param name="threedFormat">The threed format.</param>
         /// <param name="offset">The offset.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        Task<Stream> ExtractVideoImage(string[] inputFiles, InputType type, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
+        Task<Stream> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the media info.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
-        /// <param name="type">The type.</param>
+        /// <param name="protocol">The protocol.</param>
         /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, InputType type, bool isAudio, CancellationToken cancellationToken);
+        Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, MediaProtocol protocol, bool isAudio, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the probe size argument.
         /// </summary>
-        /// <param name="type">The type.</param>
+        /// <param name="inputFiles">The input files.</param>
+        /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
-        string GetProbeSizeArgument(InputType type);
+        string GetProbeSizeArgument(string[] inputFiles, MediaProtocol protocol);
 
         /// <summary>
         /// Gets the input argument.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
-        /// <param name="type">The type.</param>
+        /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
-        string GetInputArgument(string[] inputFiles, InputType type);
-    }
-
-    /// <summary>
-    /// Enum InputType
-    /// </summary>
-    public enum InputType
-    {
-        /// <summary>
-        /// The file
-        /// </summary>
-        File,
-        /// <summary>
-        /// The bluray
-        /// </summary>
-        Bluray,
-        /// <summary>
-        /// The DVD
-        /// </summary>
-        Dvd,
-        /// <summary>
-        /// The URL
-        /// </summary>
-        Url
+        string GetInputArgument(string[] inputFiles, MediaProtocol protocol);
     }
 }

@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -191,7 +192,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             var info = new MediaSourceInfo
             {
                 Id = i.Id.ToString("N"),
-                LocationType = locationType,
+                Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
                 MediaStreams = ItemRepository.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
                 Name = i.Name,
                 Path = enablePathSubstituion ? GetMappedPath(i.Path, locationType) : i.Path,

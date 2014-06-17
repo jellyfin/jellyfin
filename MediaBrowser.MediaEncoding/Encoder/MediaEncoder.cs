@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
@@ -102,37 +103,38 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Gets the media info.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
-        /// <param name="type">The type.</param>
+        /// <param name="protocol">The protocol.</param>
         /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, InputType type, bool isAudio,
+        public Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, MediaProtocol protocol, bool isAudio,
             CancellationToken cancellationToken)
         {
-            return GetMediaInfoInternal(GetInputArgument(inputFiles, type), !isAudio,
-                GetProbeSizeArgument(type), cancellationToken);
+            return GetMediaInfoInternal(GetInputArgument(inputFiles, protocol), !isAudio,
+                GetProbeSizeArgument(inputFiles, protocol), cancellationToken);
         }
 
         /// <summary>
         /// Gets the input argument.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
-        /// <param name="type">The type.</param>
+        /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentException">Unrecognized InputType</exception>
-        public string GetInputArgument(string[] inputFiles, InputType type)
+        public string GetInputArgument(string[] inputFiles, MediaProtocol protocol)
         {
-            return EncodingUtils.GetInputArgument(inputFiles.ToList(), type == InputType.Url);
+            return EncodingUtils.GetInputArgument(inputFiles.ToList(), protocol);
         }
 
         /// <summary>
         /// Gets the probe size argument.
         /// </summary>
-        /// <param name="type">The type.</param>
+        /// <param name="inputFiles">The input files.</param>
+        /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
-        public string GetProbeSizeArgument(InputType type)
+        public string GetProbeSizeArgument(string[] inputFiles, MediaProtocol protocol)
         {
-            return EncodingUtils.GetProbeSizeArgument(type == InputType.Dvd);
+            return EncodingUtils.GetProbeSizeArgument(inputFiles.Length > 0);
         }
 
         /// <summary>
@@ -287,27 +289,27 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public Task<Stream> ExtractAudioImage(string path, CancellationToken cancellationToken)
         {
-            return ExtractImage(new[] { path }, InputType.File, true, null, null, cancellationToken);
+            return ExtractImage(new[] { path }, MediaProtocol.File, true, null, null, cancellationToken);
         }
 
-        public Task<Stream> ExtractVideoImage(string[] inputFiles, InputType type, Video3DFormat? threedFormat,
+        public Task<Stream> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, Video3DFormat? threedFormat,
             TimeSpan? offset, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFiles, type, false, threedFormat, offset, cancellationToken);
+            return ExtractImage(inputFiles, protocol, false, threedFormat, offset, cancellationToken);
         }
 
-        private async Task<Stream> ExtractImage(string[] inputFiles, InputType type, bool isAudio,
+        private async Task<Stream> ExtractImage(string[] inputFiles, MediaProtocol protocol, bool isAudio,
             Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
             var resourcePool = isAudio ? _audioImageResourcePool : _videoImageResourcePool;
 
-            var inputArgument = GetInputArgument(inputFiles, type);
+            var inputArgument = GetInputArgument(inputFiles, protocol);
 
             if (!isAudio)
             {
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, type, threedFormat, offset, true, resourcePool, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, protocol, threedFormat, offset, true, resourcePool, cancellationToken).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -315,10 +317,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, type, threedFormat, offset, false, resourcePool, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, protocol, threedFormat, offset, false, resourcePool, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<Stream> ExtractImageInternal(string inputPath, InputType type, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        private async Task<Stream> ExtractImageInternal(string inputPath, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -357,7 +359,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, "-", vf) :
                 string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf);
 
-            var probeSize = GetProbeSizeArgument(type);
+            var probeSize = GetProbeSizeArgument(new[] { inputPath }, protocol);
 
             if (!string.IsNullOrEmpty(probeSize))
             {

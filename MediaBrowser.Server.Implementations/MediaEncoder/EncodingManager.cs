@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Server.Implementations.MediaEncoder
 {
@@ -133,15 +134,15 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                         // Add some time for the first chapter to make sure we don't end up with a black image
                         var time = chapter.StartPositionTicks == 0 ? TimeSpan.FromTicks(Math.Min(FirstChapterTicks, video.RunTimeTicks ?? 0)) : TimeSpan.FromTicks(chapter.StartPositionTicks);
 
-                        InputType type;
+                        var protocol = MediaProtocol.File;
 
-                        var inputPath = MediaEncoderHelpers.GetInputArgument(video.Path, false, video.VideoType, video.IsoType, null, video.PlayableStreamFileNames, out type);
+                        var inputPath = MediaEncoderHelpers.GetInputArgument(video.Path, protocol, null, video.PlayableStreamFileNames);
 
                         try
                         {
                             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                            using (var stream = await _encoder.ExtractVideoImage(inputPath, type, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false))
+                            using (var stream = await _encoder.ExtractVideoImage(inputPath, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false))
                             {
                                 using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                                 {

@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -73,10 +74,9 @@ namespace MediaBrowser.Providers.MediaInfo
             {
             }
 
-            const InputType type = InputType.File;
             var inputPath = new[] { item.Path };
 
-            var result = await _mediaEncoder.GetMediaInfo(inputPath, type, false, cancellationToken).ConfigureAwait(false);
+            var result = await _mediaEncoder.GetMediaInfo(inputPath, MediaProtocol.File, false, cancellationToken).ConfigureAwait(false);
 
             Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
             _json.SerializeToFile(result, cachePath);

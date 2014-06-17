@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public class LiveTvChannel : BaseItem, IItemByName
+    public class LiveTvChannel : BaseItem, IItemByName, IHasMediaSources
     {
         /// <summary>
         /// Gets the user data key.
@@ -113,6 +113,11 @@ namespace MediaBrowser.Controller.LiveTv
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
             return new List<BaseItem>();
+        }
+
+        public IEnumerable<Model.Dto.MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

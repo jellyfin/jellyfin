@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
@@ -118,18 +119,23 @@ namespace MediaBrowser.Api.Playback.Progressive
             var responseHeaders = new Dictionary<string, string>();
 
             // Static remote stream
-            if (request.Static && state.IsRemote)
+            if (request.Static && state.InputProtocol == MediaProtocol.Http)
             {
                 AddDlnaHeaders(state, responseHeaders, true);
 
                 try
                 {
-                    return GetStaticRemoteStreamResult(state.MediaPath, responseHeaders, isHeadRequest).Result;
+                    return GetStaticRemoteStreamResult(state, responseHeaders, isHeadRequest).Result;
                 }
                 finally
                 {
                     state.Dispose();
                 }
+            }
+
+            if (request.Static && state.InputProtocol != MediaProtocol.File)
+            {
+                throw new ArgumentException(string.Format("Input protocol {0} cannot be streamed statically.", state.InputProtocol));
             }
 
             var outputPath = state.OutputFilePath;
@@ -186,16 +192,19 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <summary>
         /// Gets the static remote stream result.
         /// </summary>
-        /// <param name="mediaPath">The media path.</param>
+        /// <param name="state">The state.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>Task{System.Object}.</returns>
-        private async Task<object> GetStaticRemoteStreamResult(string mediaPath, Dictionary<string, string> responseHeaders, bool isHeadRequest)
+        private async Task<object> GetStaticRemoteStreamResult(StreamState state, Dictionary<string, string> responseHeaders, bool isHeadRequest)
         {
+            string useragent = null;
+            state.RemoteHttpHeaders.TryGetValue("User-Agent", out useragent);
+
             var options = new HttpRequestOptions
             {
-                Url = mediaPath,
-                UserAgent = GetUserAgent(mediaPath),
+                Url = state.MediaPath,
+                UserAgent = useragent,
                 BufferContent = false
             };
 
