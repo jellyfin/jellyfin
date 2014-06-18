@@ -365,7 +365,7 @@
 
                 var time = self.currentDurationTicks * (Number(pct) * .01);
 
-                var tooltext = Dashboard.getDisplayTime(time)
+                var tooltext = Dashboard.getDisplayTime(time);
 
                 tooltip.text(tooltext);
 
