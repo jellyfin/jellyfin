@@ -548,7 +548,7 @@ namespace MediaBrowser.Api.Images
 
             var contentType = GetMimeType(request.Format, imageInfo.Path);
 
-            var cacheGuid = new Guid(_imageProcessor.GetImageCacheTag(item, request.Type, imageInfo.Path, originalFileImageDateModified, supportedImageEnhancers));
+            var cacheGuid = new Guid(_imageProcessor.GetImageCacheTag(item, imageInfo, supportedImageEnhancers));
 
             TimeSpan? cacheDuration = null;
 
@@ -571,9 +571,8 @@ namespace MediaBrowser.Api.Images
             {
                 Item = currentItem,
                 Request = currentRequest,
-                OriginalImageDateModified = originalFileImageDateModified,
                 Enhancers = supportedImageEnhancers,
-                OriginalImagePath = imageInfo.Path,
+                Image = imageInfo,
                 ImageProcessor = _imageProcessor
 
             }, contentType, responseHeaders);

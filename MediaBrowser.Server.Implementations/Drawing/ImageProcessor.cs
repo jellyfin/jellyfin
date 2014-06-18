@@ -128,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 throw new ArgumentNullException("toStream");
             }
 
-            var originalImagePath = options.OriginalImagePath;
+            var originalImagePath = options.Image.Path;
 
             if (options.HasDefaultOptions() && options.Enhancers.Count == 0 && !options.CropWhiteSpace)
             {
@@ -140,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 }
             }
 
-            var dateModified = options.OriginalImageDateModified;
+            var dateModified = options.Image.DateModified;
 
             if (options.CropWhiteSpace)
             {
@@ -152,7 +152,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             if (options.Enhancers.Count > 0)
             {
-                var tuple = await GetEnhancedImage(originalImagePath, dateModified, options.Item, options.ImageType, options.ImageIndex, options.Enhancers).ConfigureAwait(false);
+                var tuple = await GetEnhancedImage(options.Image, options.Item, options.ImageIndex, options.Enhancers).ConfigureAwait(false);
 
                 originalImagePath = tuple.Item1;
                 dateModified = tuple.Item2;
@@ -663,20 +663,18 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             var supportedEnhancers = GetSupportedEnhancers(item, image.Type);
 
-            return GetImageCacheTag(item, image.Type, image.Path, image.DateModified, supportedEnhancers.ToList());
+            return GetImageCacheTag(item, image, supportedEnhancers.ToList());
         }
 
         /// <summary>
         /// Gets the image cache tag.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="originalImagePath">The original image path.</param>
-        /// <param name="dateModified">The date modified of the original image file.</param>
+        /// <param name="image">The image.</param>
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetImageCacheTag(IHasImages item, ImageType imageType, string originalImagePath, DateTime dateModified, List<IImageEnhancer> imageEnhancers)
+        public string GetImageCacheTag(IHasImages item, ItemImageInfo image, List<IImageEnhancer> imageEnhancers)
         {
             if (item == null)
             {
@@ -688,10 +686,14 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 throw new ArgumentNullException("imageEnhancers");
             }
 
-            if (string.IsNullOrEmpty(originalImagePath))
+            if (image == null)
             {
-                throw new ArgumentNullException("originalImagePath");
+                throw new ArgumentNullException("image");
             }
+
+            var originalImagePath = image.Path;
+            var dateModified = image.DateModified;
+            var imageType = image.Type;
 
             // Optimization
             if (imageEnhancers.Count == 0)
@@ -718,23 +720,27 @@ namespace MediaBrowser.Server.Implementations.Drawing
             var enhancers = GetSupportedEnhancers(item, imageType).ToList();
 
             var imageInfo = item.GetImageInfo(imageType, imageIndex);
-            var imagePath = imageInfo.Path;
 
-            var dateModified = imageInfo.DateModified;
-
-            var result = await GetEnhancedImage(imagePath, dateModified, item, imageType, imageIndex, enhancers);
+            var result = await GetEnhancedImage(imageInfo, item, imageIndex, enhancers);
 
             return result.Item1;
         }
 
-        private async Task<Tuple<string, DateTime>> GetEnhancedImage(string originalImagePath, DateTime dateModified, IHasImages item,
-                                                    ImageType imageType, int imageIndex,
-                                                    List<IImageEnhancer> enhancers)
+        private async Task<Tuple<string, DateTime>> GetEnhancedImage(ItemImageInfo image, 
+            IHasImages item, 
+            int imageIndex,
+            List<IImageEnhancer> enhancers)
         {
+            var originalImagePath = image.Path;
+            var dateModified = image.DateModified;
+            var imageType = image.Type;
+            
             try
             {
+                var cacheGuid = GetImageCacheTag(item, image, enhancers);
+
                 // Enhance if we have enhancers
-                var ehnancedImagePath = await GetEnhancedImageInternal(originalImagePath, dateModified, item, imageType, imageIndex, enhancers).ConfigureAwait(false);
+                var ehnancedImagePath = await GetEnhancedImageInternal(originalImagePath, item, imageType, imageIndex, enhancers, cacheGuid).ConfigureAwait(false);
 
                 // If the path changed update dateModified
                 if (!ehnancedImagePath.Equals(originalImagePath, StringComparison.OrdinalIgnoreCase))
@@ -756,14 +762,19 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// Runs an image through the image enhancers, caches the result, and returns the cached path
         /// </summary>
         /// <param name="originalImagePath">The original image path.</param>
-        /// <param name="dateModified">The date modified of the original image file.</param>
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="supportedEnhancers">The supported enhancers.</param>
+        /// <param name="cacheGuid">The cache unique identifier.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">originalImagePath</exception>
-        private async Task<string> GetEnhancedImageInternal(string originalImagePath, DateTime dateModified, IHasImages item, ImageType imageType, int imageIndex, List<IImageEnhancer> supportedEnhancers)
+        private async Task<string> GetEnhancedImageInternal(string originalImagePath, 
+            IHasImages item, 
+            ImageType imageType, 
+            int imageIndex, 
+            IEnumerable<IImageEnhancer> supportedEnhancers,
+            string cacheGuid)
         {
             if (string.IsNullOrEmpty(originalImagePath))
             {
@@ -774,8 +785,6 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 throw new ArgumentNullException("item");
             }
-
-            var cacheGuid = GetImageCacheTag(item, imageType, originalImagePath, dateModified, supportedEnhancers);
 
             // All enhanced images are saved as png to allow transparency
             var enhancedImagePath = GetCachePath(EnhancedImageCachePath, cacheGuid + ".png");

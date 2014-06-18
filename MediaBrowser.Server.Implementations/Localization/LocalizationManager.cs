@@ -108,12 +108,41 @@ namespace MediaBrowser.Server.Implementations.Localization
         public IEnumerable<CultureDto> GetCultures()
         {
             var type = GetType();
-            var path = type.Namespace + ".cultures.json";
+            var path = type.Namespace + ".iso6392.txt";
+
+            var list = new List<CultureDto>();
 
             using (var stream = type.Assembly.GetManifestResourceStream(path))
             {
-                return _jsonSerializer.DeserializeFromStream<List<CultureDto>>(stream);
+                using (var reader = new StreamReader(stream))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+
+                        if (!string.IsNullOrWhiteSpace(line))
+                        {
+                            var parts = line.Split('|');
+
+                            if (parts.Length == 5)
+                            {
+                                list.Add(new CultureDto
+                                {
+                                    DisplayName = parts[3],
+                                    Name = parts[3],
+                                    ThreeLetterISOLanguageName = parts[0],
+                                    TwoLetterISOLanguageName = parts[2]
+                                });
+                            }
+                        }
+                    }
+                }
             }
+
+            return list.Where(i => !string.IsNullOrWhiteSpace(i.Name) &&
+                !string.IsNullOrWhiteSpace(i.DisplayName) &&
+                !string.IsNullOrWhiteSpace(i.ThreeLetterISOLanguageName) &&
+                !string.IsNullOrWhiteSpace(i.TwoLetterISOLanguageName));
         }
 
         /// <summary>

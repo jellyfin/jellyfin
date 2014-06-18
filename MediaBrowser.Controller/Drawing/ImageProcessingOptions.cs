@@ -1,8 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Entities;
-using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Drawing
@@ -11,13 +9,9 @@ namespace MediaBrowser.Controller.Drawing
     {
         public IHasImages Item { get; set; }
 
-        public ImageType ImageType { get; set; }
+        public ItemImageInfo Image { get; set; }
 
         public int ImageIndex { get; set; }
-
-        public string OriginalImagePath { get; set; }
-
-        public DateTime OriginalImageDateModified { get; set; }
 
         public bool CropWhiteSpace { get; set; }
 
