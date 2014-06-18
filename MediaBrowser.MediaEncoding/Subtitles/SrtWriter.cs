@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -10,9 +11,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     {
         public void Write(SubtitleTrackInfo info, Stream stream, CancellationToken cancellationToken)
         {
-            var writer = new StreamWriter(stream);
-
-            try
+            using (var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true))
             {
                 var index = 1;
 
@@ -33,12 +32,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     index++;
                 }
-            }
-            catch
-            {
-                writer.Dispose();
-
-                throw;
             }
         }
     }
