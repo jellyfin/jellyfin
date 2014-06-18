@@ -16,7 +16,7 @@
             $('.lnkEditUserPreferencesContainer', page).show();
         }
 
-        if (!loggedInUser.Configuration.IsAdministrator || !user.Id || user.Id == loggedInUser.Id) {
+        if (!loggedInUser.Configuration.IsAdministrator || !user.Id) {
 
             $('.lnkEditUserPreferencesContainer', page).hide();
 
