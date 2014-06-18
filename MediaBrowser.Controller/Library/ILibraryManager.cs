@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -337,10 +336,10 @@ namespace MediaBrowser.Controller.Library
         /// Gets the named folder.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="type">The type.</param>
+        /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Folder}.</returns>
-        Task<UserView> GetNamedView(string name, string type, string sortName, CancellationToken cancellationToken);
+        Task<UserView> GetNamedView(string name, string viewType, string sortName, CancellationToken cancellationToken);
     }
 }

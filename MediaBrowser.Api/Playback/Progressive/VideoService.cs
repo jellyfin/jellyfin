@@ -4,11 +4,9 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.IO;
 using ServiceStack;
 using System;
@@ -29,6 +27,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream.m4v", "GET")]
     [Route("/Videos/{Id}/stream.mkv", "GET")]
     [Route("/Videos/{Id}/stream.mpeg", "GET")]
+    [Route("/Videos/{Id}/stream.mpg", "GET")]
     [Route("/Videos/{Id}/stream.avi", "GET")]
     [Route("/Videos/{Id}/stream.m2ts", "GET")]
     [Route("/Videos/{Id}/stream.3gp", "GET")]
@@ -44,6 +43,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream.m4v", "HEAD")]
     [Route("/Videos/{Id}/stream.mkv", "HEAD")]
     [Route("/Videos/{Id}/stream.mpeg", "HEAD")]
+    [Route("/Videos/{Id}/stream.mpg", "HEAD")]
     [Route("/Videos/{Id}/stream.avi", "HEAD")]
     [Route("/Videos/{Id}/stream.3gp", "HEAD")]
     [Route("/Videos/{Id}/stream.wmv", "HEAD")]

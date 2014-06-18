@@ -542,8 +542,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             var totalCount = results.Length;
 
             IEnumerable<Tuple<IChannel, ChannelItemInfo>> items = results
-                .SelectMany(i => i.Item2.Items.Select(m => new Tuple<IChannel, ChannelItemInfo>(i.Item1, m)))
-                .OrderBy(i => i.Item2.Name);
+                .SelectMany(i => i.Item2.Items.Select(m => new Tuple<IChannel, ChannelItemInfo>(i.Item1, m)));
 
             if (query.ContentTypes.Length > 0)
             {
@@ -994,10 +993,9 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.ProductionYear = info.ProductionYear;
                 item.ProviderIds = info.ProviderIds;
 
-                if (info.DateCreated.HasValue)
-                {
-                    item.DateCreated = info.DateCreated.Value;
-                }
+                item.DateCreated = info.DateCreated.HasValue ? 
+                    info.DateCreated.Value : 
+                    DateTime.UtcNow;
             }
 
             var channelItem = (IChannelItem)item;

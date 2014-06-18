@@ -52,6 +52,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Nat.1.2.13.0\lib\net40\Mono.Nat.dll</HintPath>
     </Reference>
+    <Reference Include="Nowin">
+      <HintPath>..\ThirdParty\Nowin\Nowin.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
     </Reference>

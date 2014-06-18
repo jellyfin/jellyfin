@@ -4,11 +4,9 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.IO;
 using ServiceStack;
 using System.Collections.Generic;
@@ -18,25 +16,14 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// <summary>
     /// Class GetAudioStream
     /// </summary>
-    [Route("/Audio/{Id}/stream.mp3", "GET", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.wma", "GET", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.aac", "GET", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.flac", "GET", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.ogg", "GET", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.oga", "GET", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.webm", "GET", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.{Container}", "GET", Summary = "Gets an audio stream")]
     [Route("/Audio/{Id}/stream", "GET", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.mp3", "HEAD", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.wma", "HEAD", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.aac", "HEAD", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.flac", "HEAD", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.ogg", "HEAD", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.oga", "HEAD", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.webm", "HEAD", Summary = "Gets an audio stream")]
+    [Route("/Audio/{Id}/stream.{Container}", "HEAD", Summary = "Gets an audio stream")]
     [Route("/Audio/{Id}/stream", "HEAD", Summary = "Gets an audio stream")]
     public class GetAudioStream : StreamRequest
     {
-
+        [ApiMember(Name = "Container", Description = "Container", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Container { get; set; }
     }
 
     /// <summary>
