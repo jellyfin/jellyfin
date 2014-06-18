@@ -133,7 +133,6 @@
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
     <Compile Include="HttpServer\ContainerAdapter.cs" />
-    <Compile Include="HttpServer\DelReceiveWebRequest.cs" />
     <Compile Include="HttpServer\GetSwaggerResource.cs" />
     <Compile Include="HttpServer\HttpListenerHost.cs" />
     <Compile Include="HttpServer\HttpResultFactory.cs" />
@@ -431,6 +430,7 @@
       <Link>swagger-ui\swagger-ui.min.js</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Localization\iso6392.txt" />
     <Content Include="x64\SQLite.Interop.dll" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

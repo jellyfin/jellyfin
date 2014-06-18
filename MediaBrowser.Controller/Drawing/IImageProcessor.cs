@@ -61,13 +61,10 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the image cache tag.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="originalImagePath">The original image path.</param>
-        /// <param name="dateModified">The date modified.</param>
+        /// <param name="image">The image.</param>
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
-        string GetImageCacheTag(IHasImages item, ImageType imageType, string originalImagePath, DateTime dateModified,
-                              List<IImageEnhancer> imageEnhancers);
+        string GetImageCacheTag(IHasImages item, ItemImageInfo image, List<IImageEnhancer> imageEnhancers);
 
         /// <summary>
         /// Processes the image.

@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using ServiceStack.Web;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -30,9 +29,7 @@ namespace MediaBrowser.Api.Images
         /// <summary>
         /// The original image date modified
         /// </summary>
-        public DateTime OriginalImageDateModified;
-
-        public string OriginalImagePath;
+        public ItemImageInfo Image;
 
         public IImageProcessor ImageProcessor { get; set; }
 
@@ -80,12 +77,10 @@ namespace MediaBrowser.Api.Images
                 Enhancers = Enhancers,
                 Height = Request.Height,
                 ImageIndex = Request.Index ?? 0,
-                ImageType = Request.Type,
+                Image = Image,
                 Item = Item,
                 MaxHeight = Request.MaxHeight,
                 MaxWidth = Request.MaxWidth,
-                OriginalImageDateModified = OriginalImageDateModified,
-                OriginalImagePath = OriginalImagePath,
                 Quality = Request.Quality,
                 Width = Request.Width,
                 OutputFormat = Request.Format,
