@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -9,9 +10,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     {
         public void Write(SubtitleTrackInfo info, Stream stream, CancellationToken cancellationToken)
         {
-            var writer = new StreamWriter(stream);
-
-            try
+            using (var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true))
             {
                 writer.WriteLine("WEBVTT");
                 writer.WriteLine(string.Empty);
@@ -29,12 +28,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     writer.WriteLine(text);
                     writer.WriteLine(string.Empty);
                 }
-            }
-            catch
-            {
-                writer.Dispose();
-
-                throw;
             }
         }
     }

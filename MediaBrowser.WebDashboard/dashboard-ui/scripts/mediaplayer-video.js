@@ -239,6 +239,23 @@
                 return;
             }
 
+            var allTracks = video.textTracks; // get list of tracks
+
+            for (var i = 0; i < allTracks.length; i++) {
+
+                var track = allTracks[i];
+
+                // This throws an error in IE, but is fine in chrome
+                // In IE it's not necessary anyway because changing the src seems to be enough
+                try {
+                    while (track.cues.length) {
+                        track.removeCue(track.cues[0]);
+                    }
+                } catch (e) {
+                    console.log('Error removing cue from textTrack');
+                }
+            }
+
             $('track', video).each(function () {
 
                 var currentSrc = this.src;
