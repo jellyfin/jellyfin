@@ -217,13 +217,8 @@ namespace MediaBrowser.Providers.TV
             var episodeNumber = identity.IndexNumber;
             var seasonOffset = TvdbSeriesProvider.GetSeriesOffset(seriesProviderIds) ?? 0;
             var seasonNumber = identity.SeasonIndex + seasonOffset;
-
-            if (seasonNumber == null)
-            {
-                return null;
-            }
-
-            var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
+            
+            string file;
             var success = false;
             var usingAbsoluteData = false;
 
@@ -236,14 +231,18 @@ namespace MediaBrowser.Providers.TV
 
             try
             {
-                FetchMainEpisodeInfo(episode, file, cancellationToken);
+                if (seasonNumber != null)
+                {
+                    file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
+                    FetchMainEpisodeInfo(episode, file, cancellationToken);
 
-                success = true;
+                    success = true;
+                }
             }
             catch (FileNotFoundException)
             {
                 // Could be using absolute numbering
-                if (seasonNumber.Value != 1)
+                if (seasonNumber.HasValue && seasonNumber.Value != 1)
                 {
                     throw;
                 }
@@ -255,6 +254,7 @@ namespace MediaBrowser.Providers.TV
 
                 FetchMainEpisodeInfo(episode, file, cancellationToken);
                 usingAbsoluteData = true;
+                success = true;
             }
 
             var end = identity.IndexNumberEnd ?? episodeNumber;
