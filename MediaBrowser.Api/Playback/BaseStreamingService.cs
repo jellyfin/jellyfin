@@ -816,6 +816,7 @@ namespace MediaBrowser.Api.Playback
                     // Must consume both stdout and stderr or deadlocks may occur
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
+                    RedirectStandardInput = true,
 
                     FileName = MediaEncoder.EncoderPath,
                     WorkingDirectory = Path.GetDirectoryName(MediaEncoder.EncoderPath),
@@ -1073,8 +1074,9 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="process">The process.</param>
         /// <param name="state">The state.</param>
-        protected void OnFfMpegProcessExited(Process process, StreamState state)
+        private void OnFfMpegProcessExited(Process process, StreamState state)
         {
+            Logger.Debug("Disposing stream resources");
             state.Dispose();
 
             try
@@ -1083,8 +1085,19 @@ namespace MediaBrowser.Api.Playback
             }
             catch
             {
-                Logger.Info("FFMpeg exited with an error.");
+                Logger.Error("FFMpeg exited with an error.");
             }
+
+            // This causes on exited to be called twice:
+            //try
+            //{
+            //    // Dispose the process
+            //    process.Dispose();
+            //}
+            //catch (Exception ex)
+            //{
+            //    Logger.ErrorException("Error disposing ffmpeg.", ex);
+            //}
         }
 
         protected double? GetFramerateParam(StreamState state)

@@ -134,7 +134,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>System.String.</returns>
         public string GetProbeSizeArgument(string[] inputFiles, MediaProtocol protocol)
         {
-            return EncodingUtils.GetProbeSizeArgument(inputFiles.Length > 0);
+            return EncodingUtils.GetProbeSizeArgument(inputFiles.Length > 1);
         }
 
         /// <summary>

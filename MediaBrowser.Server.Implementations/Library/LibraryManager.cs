@@ -1497,7 +1497,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public async Task<UserView> GetNamedView(string name, string type, string sortName, CancellationToken cancellationToken)
         {
-            var id = "namedview_2_" + name;
+            var id = "namedview_3_" + name;
             var guid = id.GetMD5();
 
             var item = GetItemById(guid) as UserView;
@@ -1506,7 +1506,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath,
                     "views",
-                    _fileSystem.GetValidFilename(name));
+                    _fileSystem.GetValidFilename(type));
 
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 

@@ -527,18 +527,27 @@ namespace MediaBrowser.ServerApplication
 
             if (!_isRunningAsService)
             {
-                _logger.Info("Executing windows forms restart");
+                _logger.Info("Hiding server notify icon");
                 _serverNotifyIcon.Visible = false;
-                Application.Restart();
 
-                ShutdownWindowsApplication();
+                _logger.Info("Executing windows forms restart");
+                //Application.Restart();
+                Process.Start(_appHost.ServerConfigurationManager.ApplicationPaths.ApplicationPath);
+
+                _logger.Info("Calling Application.Exit");
+                Environment.Exit(0);
             }
         }
 
         private static void ShutdownWindowsApplication()
         {
+            _logger.Info("Hiding server notify icon");
             _serverNotifyIcon.Visible = false;
+
+            _logger.Info("Calling Application.Exit");
             Application.Exit();
+
+            _logger.Info("Calling ApplicationTaskCompletionSource.SetResult");
             ApplicationTaskCompletionSource.SetResult(true);
         }
 

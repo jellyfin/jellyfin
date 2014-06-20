@@ -1,13 +1,10 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.IO;
 using ServiceStack;
 using System;
@@ -17,7 +14,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MimeTypes = ServiceStack.MimeTypes;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -83,29 +79,75 @@ namespace MediaBrowser.Api.Playback.Hls
             return GetDynamicSegment(request, true).Result;
         }
 
+        private static readonly SemaphoreSlim FfmpegStartLock = new SemaphoreSlim(1, 1);
         private async Task<object> GetDynamicSegment(GetDynamicHlsVideoSegment request, bool isMain)
         {
+            var cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = cancellationTokenSource.Token;
+
             var index = int.Parse(request.SegmentId, NumberStyles.Integer, UsCulture);
 
-            var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
+            var state = await GetState(request, cancellationToken).ConfigureAwait(false);
 
             var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
 
-            var path = GetSegmentPath(playlistPath, index);
+            var segmentPath = GetSegmentPath(playlistPath, index);
 
-            if (File.Exists(path))
+            if (File.Exists(segmentPath))
             {
-                return GetSegementResult(path);
+                ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
+                return GetSegementResult(segmentPath);
             }
 
-            if (!File.Exists(playlistPath))
+            await FfmpegStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+            try
             {
-                await StartFfMpeg(state, playlistPath, new CancellationTokenSource()).ConfigureAwait(false);
+                if (File.Exists(segmentPath))
+                {
+                    ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
+                    return GetSegementResult(segmentPath);
+                }
+                else
+                {
+                    if (index == 0)
+                    {
+                        // If the playlist doesn't already exist, startup ffmpeg
+                        try
+                        {
+                            ApiEntryPoint.Instance.KillTranscodingJobs(state.Request.DeviceId, false);
 
-                await WaitForMinimumSegmentCount(playlistPath, GetSegmentWait(), CancellationToken.None).ConfigureAwait(false);
+                            await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            state.Dispose();
+                            throw;
+                        }
+
+                        await WaitForMinimumSegmentCount(playlistPath, 2, cancellationTokenSource.Token).ConfigureAwait(false);
+                    }
+                }
+            }
+            finally
+            {
+                FfmpegStartLock.Release();
             }
 
-            return GetSegementResult(path);
+            Logger.Info("waiting for {0}", segmentPath);
+            while (!File.Exists(segmentPath))
+            {
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+            }
+
+            Logger.Info("returning {0}", segmentPath);
+            return GetSegementResult(segmentPath);
+        }
+
+        protected override int GetStartNumber(StreamState state)
+        {
+            var request = (GetDynamicHlsVideoSegment) state.Request;
+
+            return int.Parse(request.SegmentId, NumberStyles.Integer, UsCulture);
         }
 
         private string GetSegmentPath(string playlist, int index)
@@ -120,7 +162,7 @@ namespace MediaBrowser.Api.Playback.Hls
         private object GetSegementResult(string path)
         {
             // TODO: Handle if it's currently being written to
-            return ResultFactory.GetStaticFileResult(Request, path);
+            return ResultFactory.GetStaticFileResult(Request, path, FileShare.ReadWrite);
         }
 
         private async Task<object> GetAsync(GetMasterHlsVideoStream request)
@@ -143,7 +185,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var playlistText = GetMasterPlaylistFileText(videoBitrate + audioBitrate, appendBaselineStream, baselineStreamBitrate);
 
-            return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
+            return ResultFactory.GetResult(playlistText, Common.Net.MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
         private string GetMasterPlaylistFileText(int bitrate, bool includeBaselineStream, int baselineStreamBitrate)
@@ -226,7 +268,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var playlistText = builder.ToString();
 
-            return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
+            return ResultFactory.GetResult(playlistText, Common.Net.MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
         protected override string GetAudioArguments(StreamState state)
@@ -274,7 +316,9 @@ namespace MediaBrowser.Api.Playback.Hls
                 return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf h264_mp4toannexb" : "-codec:v:0 copy";
             }
 
-            const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+5))";
+            var keyFrameArg = state.ReadInputAtNativeFramerate ?
+                " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+1))" :
+                " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+5))";
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 

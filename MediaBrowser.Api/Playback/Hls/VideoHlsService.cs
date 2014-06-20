@@ -1,19 +1,16 @@
-using System.Threading;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.IO;
 using ServiceStack;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
