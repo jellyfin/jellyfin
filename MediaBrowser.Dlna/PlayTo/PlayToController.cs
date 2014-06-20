@@ -279,21 +279,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 case PlaystateCommand.Seek:
                     {
-                        var media = _device.CurrentMediaInfo;
-
-                        if (media != null)
-                        {
-                            var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
-
-                            if (info.Item != null && !info.IsDirectStream)
-                            {
-                                var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
-                                var newItem = CreatePlaylistItem(info.Item, user, command.SeekPositionTicks ?? 0, GetServerAddress(), info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
-
-                                return _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl);
-                            }
-                        }
-                        return _device.Seek(TimeSpan.FromTicks(command.SeekPositionTicks ?? 0));
+                        return Seek(command.SeekPositionTicks ?? 0);
                     }
 
                 case PlaystateCommand.NextTrack:
@@ -304,6 +290,33 @@ namespace MediaBrowser.Dlna.PlayTo
             }
 
             return Task.FromResult(true);
+        }
+
+        private async Task Seek(long newPosition)
+        {
+            var media = _device.CurrentMediaInfo;
+
+            if (media != null)
+            {
+                var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
+
+                if (info.Item != null && !info.IsDirectStream)
+                {
+                    var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
+                    var newItem = CreatePlaylistItem(info.Item, user, newPosition, GetServerAddress(), info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
+
+                    await _device.SetStop();
+
+                    await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
+
+                    if (newItem.StreamInfo.IsDirectStream)
+                    {
+                        await _device.Seek(TimeSpan.FromTicks(newPosition)).ConfigureAwait(false);
+                    }
+                    return;
+                }
+                await _device.Seek(TimeSpan.FromTicks(newPosition)).ConfigureAwait(false);
+            }
         }
 
         public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
@@ -542,8 +555,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var dlnaheaders = GetDlnaHeaders(nextTrack);
 
-            _logger.Debug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", _device.Properties.Name, nextTrack.StreamUrl, dlnaheaders);
-
             await _device.SetAvTransport(nextTrack.StreamUrl, dlnaheaders, nextTrack.Didl);
 
             var streamInfo = nextTrack.StreamInfo;
@@ -622,15 +633,51 @@ namespace MediaBrowser.Dlna.PlayTo
                         return _device.Unmute();
                     case GeneralCommandType.ToggleMute:
                         return _device.ToggleMute();
+                    case GeneralCommandType.SetAudioStreamIndex:
+                    {
+                        string arg;
+
+                        if (command.Arguments.TryGetValue("Index", out arg))
+                        {
+                            int val;
+
+                            if (Int32.TryParse(arg, NumberStyles.Any, _usCulture, out val))
+                            {
+                                return SetAudioStreamIndex(val);
+                            }
+
+                            throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
+                        }
+
+                        throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
+                    }
+                    case GeneralCommandType.SetSubtitleStreamIndex:
+                    {
+                        string arg;
+
+                        if (command.Arguments.TryGetValue("Index", out arg))
+                        {
+                            int val;
+
+                            if (Int32.TryParse(arg, NumberStyles.Any, _usCulture, out val))
+                            {
+                                return SetSubtitleStreamIndex(val);
+                            }
+
+                            throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
+                        }
+
+                        throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
+                    }
                     case GeneralCommandType.SetVolume:
                         {
-                            string volumeArg;
+                            string arg;
 
-                            if (command.Arguments.TryGetValue("Volume", out volumeArg))
+                            if (command.Arguments.TryGetValue("Volume", out arg))
                             {
                                 int volume;
 
-                                if (Int32.TryParse(volumeArg, NumberStyles.Any, _usCulture, out volume))
+                                if (Int32.TryParse(arg, NumberStyles.Any, _usCulture, out volume))
                                 {
                                     return _device.SetVolume(volume);
                                 }
@@ -646,6 +693,60 @@ namespace MediaBrowser.Dlna.PlayTo
             }
 
             return Task.FromResult(true);
+        }
+
+        private async Task SetAudioStreamIndex(int? newIndex)
+        {
+            var media = _device.CurrentMediaInfo;
+
+            if (media != null)
+            {
+                var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
+
+                if (info.Item != null && !info.IsDirectStream)
+                {
+                    var newPosition = _device.Position.Ticks;
+
+                    var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
+                    var newItem = CreatePlaylistItem(info.Item, user, newPosition, GetServerAddress(), info.MediaSourceId, newIndex, info.SubtitleStreamIndex);
+
+                    await _device.SetStop();
+
+                    await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
+
+                    if (newItem.StreamInfo.IsDirectStream)
+                    {
+                        await _device.Seek(TimeSpan.FromTicks(newPosition)).ConfigureAwait(false);
+                    }
+                }
+            }
+        }
+
+        private async Task SetSubtitleStreamIndex(int? newIndex)
+        {
+            var media = _device.CurrentMediaInfo;
+
+            if (media != null)
+            {
+                var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
+
+                if (info.Item != null && !info.IsDirectStream)
+                {
+                    var newPosition = _device.Position.Ticks;
+
+                    var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
+                    var newItem = CreatePlaylistItem(info.Item, user, newPosition, GetServerAddress(), info.MediaSourceId, info.AudioStreamIndex, newIndex);
+
+                    await _device.SetStop();
+
+                    await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
+
+                    if (newItem.StreamInfo.IsDirectStream)
+                    {
+                        await _device.Seek(TimeSpan.FromTicks(newPosition)).ConfigureAwait(false);
+                    }
+                }
+            }
         }
 
         private class StreamParams

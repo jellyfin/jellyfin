@@ -301,7 +301,9 @@ namespace MediaBrowser.Dlna.PlayTo
                             GeneralCommandType.Mute.ToString(),
                             GeneralCommandType.Unmute.ToString(),
                             GeneralCommandType.ToggleMute.ToString(),
-                            GeneralCommandType.SetVolume.ToString()
+                            GeneralCommandType.SetVolume.ToString(),
+                            GeneralCommandType.SetAudioStreamIndex.ToString(),
+                            GeneralCommandType.SetSubtitleStreamIndex.ToString()
                         },
 
                         SupportsMediaControl = true
