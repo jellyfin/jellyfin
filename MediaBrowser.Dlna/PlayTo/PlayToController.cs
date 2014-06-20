@@ -106,13 +106,13 @@ namespace MediaBrowser.Dlna.PlayTo
             e.Headers.TryGetValue("NTS", out nts);
 
             string usn;
-            if (!e.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
+            if (!e.Headers.TryGetValue("USN", out usn)) usn = String.Empty;
 
             string nt;
-            if (!e.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
+            if (!e.Headers.TryGetValue("NT", out nt)) nt = String.Empty;
 
-            if (string.Equals(e.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase) &&
+            if (String.Equals(e.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase) &&
+                String.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase) &&
                 usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
                 !_disposed)
             {
@@ -153,53 +153,41 @@ namespace MediaBrowser.Dlna.PlayTo
 
         async void _device_PlaybackStart(object sender, PlaybackStartEventArgs e)
         {
-            var playlistItem = Playlist.FirstOrDefault(p => p.PlayState == 1);
+            var info = GetProgressInfo(e.MediaInfo);
 
-            if (playlistItem != null)
+            try
             {
-                var streamInfo = playlistItem.StreamInfo;
-
-                var info = GetProgressInfo(streamInfo, e.MediaInfo);
-
-                try
-                {
-                    await _sessionManager.OnPlaybackStart(info).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error reporting progress", ex);
-                }
+                await _sessionManager.OnPlaybackStart(info).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error reporting progress", ex);
             }
         }
 
         async void _device_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
         {
-            var playlistItem = Playlist.FirstOrDefault(p => p.PlayState == 1);
+            var info = GetProgressInfo(e.MediaInfo);
 
-            if (playlistItem != null)
+            try
             {
-                var streamInfo = playlistItem.StreamInfo;
-
-                var info = GetProgressInfo(streamInfo, e.MediaInfo);
-
-                try
-                {
-                    await _sessionManager.OnPlaybackProgress(info).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error reporting progress", ex);
-                }
+                await _sessionManager.OnPlaybackProgress(info).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error reporting progress", ex);
             }
         }
 
-        private PlaybackStartInfo GetProgressInfo(StreamInfo streamInfo, uBaseObject mediaInfo)
+        private PlaybackStartInfo GetProgressInfo(uBaseObject mediaInfo)
         {
             var ticks = _device.Position.Ticks;
 
-            if (!streamInfo.IsDirectStream)
+            var info = StreamParams.ParseFromUrl(mediaInfo.Url, _libraryManager);
+
+            if (!info.IsDirectStream)
             {
-                ticks += streamInfo.StartPositionTicks;
+                ticks += info.StartPositionTicks;
             }
 
             return new PlaybackStartInfo
@@ -209,12 +197,14 @@ namespace MediaBrowser.Dlna.PlayTo
                 PositionTicks = ticks,
                 IsMuted = _device.IsMuted,
                 IsPaused = _device.IsPaused,
-                MediaSourceId = streamInfo.MediaSourceId,
-                AudioStreamIndex = streamInfo.AudioStreamIndex,
-                SubtitleStreamIndex = streamInfo.SubtitleStreamIndex,
+                MediaSourceId = info.MediaSourceId,
+                AudioStreamIndex = info.AudioStreamIndex,
+                SubtitleStreamIndex = info.SubtitleStreamIndex,
                 VolumeLevel = _device.Volume,
-                CanSeek = streamInfo.RunTimeTicks.HasValue,
-                PlayMethod = streamInfo.IsDirectStream ? PlayMethod.DirectStream : PlayMethod.Transcode,
+
+                CanSeek = info.MediaSource == null ? _device.Duration.HasValue : info.MediaSource.RunTimeTicks.HasValue,
+
+                PlayMethod = info.IsDirectStream ? PlayMethod.DirectStream : PlayMethod.Transcode,
                 QueueableMediaTypes = new List<string> { mediaInfo.MediaType }
             };
         }
@@ -225,7 +215,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             _logger.Debug("{0} - Received PlayRequest: {1}", this._session.DeviceName, command.PlayCommand);
 
-            var user = string.IsNullOrEmpty(command.ControllingUserId) ? null : _userManager.GetUserById(new Guid(command.ControllingUserId));
+            var user = String.IsNullOrEmpty(command.ControllingUserId) ? null : _userManager.GetUserById(new Guid(command.ControllingUserId));
 
             var items = new List<BaseItem>();
             foreach (string id in command.ItemIds)
@@ -264,7 +254,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             _logger.Debug("{0} - Playing {1} items", _session.DeviceName, playlist.Count);
 
-            if (!string.IsNullOrWhiteSpace(command.ControllingUserId))
+            if (!String.IsNullOrWhiteSpace(command.ControllingUserId))
             {
                 await _sessionManager.LogSessionActivity(_session.Client, _session.ApplicationVersion, _session.DeviceId,
                         _session.DeviceName, _session.RemoteEndPoint, user).ConfigureAwait(false);
@@ -288,18 +278,23 @@ namespace MediaBrowser.Dlna.PlayTo
                     return _device.SetPlay();
 
                 case PlaystateCommand.Seek:
-                    //var playlistItem = Playlist.FirstOrDefault(p => p.PlayState == 1);
-                    //if (playlistItem != null && playlistItem.Transcode && _currentItem != null)
-                    //{
-                    //    var newItem = CreatePlaylistItem(_currentItem, command.SeekPositionTicks ?? 0, GetServerAddress());
-                    //    playlistItem.StartPositionTicks = newItem.StartPositionTicks;
-                    //    playlistItem.StreamUrl = newItem.StreamUrl;
-                    //    playlistItem.Didl = newItem.Didl;
-                    //    return _device.SetAvTransport(playlistItem.StreamUrl, GetDlnaHeaders(playlistItem), playlistItem.Didl);
+                    {
+                        var media = _device.CurrentMediaInfo;
 
-                    //}
-                    return _device.Seek(TimeSpan.FromTicks(command.SeekPositionTicks ?? 0));
+                        if (media != null)
+                        {
+                            var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
 
+                            if (info.Item != null && !info.IsDirectStream)
+                            {
+                                var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
+                                var newItem = CreatePlaylistItem(info.Item, user, command.SeekPositionTicks ?? 0, GetServerAddress(), info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
+
+                                return _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl);
+                            }
+                        }
+                        return _device.Seek(TimeSpan.FromTicks(command.SeekPositionTicks ?? 0));
+                    }
 
                 case PlaystateCommand.NextTrack:
                     return SetNext();
@@ -385,6 +380,11 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks, string serverAddress)
         {
+            return CreatePlaylistItem(item, user, startPostionTicks, serverAddress, null, null, null);
+        }
+
+        private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks, string serverAddress, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
+        {
             var deviceInfo = _device.Properties;
 
             var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
@@ -395,7 +395,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 ? (user == null ? hasMediaSources.GetMediaSources(true) : hasMediaSources.GetMediaSources(true, user)).ToList()
                 : new List<MediaSourceInfo>();
 
-            var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId);
+            var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
             playlistItem.StreamInfo.StartPositionTicks = startPostionTicks;
 
             playlistItem.StreamUrl = playlistItem.StreamInfo.ToUrl(serverAddress);
@@ -450,7 +450,7 @@ namespace MediaBrowser.Dlna.PlayTo
             return null;
         }
 
-        private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaSourceInfo> mediaSources, DeviceProfile profile, string deviceId)
+        private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaSourceInfo> mediaSources, DeviceProfile profile, string deviceId, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
         {
             var video = item as Video;
 
@@ -464,7 +464,10 @@ namespace MediaBrowser.Dlna.PlayTo
                         MediaSources = mediaSources,
                         Profile = profile,
                         DeviceId = deviceId,
-                        MaxBitrate = profile.MaxBitrate
+                        MaxBitrate = profile.MaxBitrate,
+                        MediaSourceId = mediaSourceId,
+                        AudioStreamIndex = audioStreamIndex,
+                        SubtitleStreamIndex = subtitleStreamIndex
                     }),
 
                     Profile = profile
@@ -483,7 +486,8 @@ namespace MediaBrowser.Dlna.PlayTo
                         MediaSources = mediaSources,
                         Profile = profile,
                         DeviceId = deviceId,
-                        MaxBitrate = profile.MaxBitrate
+                        MaxBitrate = profile.MaxBitrate,
+                        MediaSourceId = mediaSourceId
                     }),
 
                     Profile = profile
@@ -626,7 +630,7 @@ namespace MediaBrowser.Dlna.PlayTo
                             {
                                 int volume;
 
-                                if (int.TryParse(volumeArg, NumberStyles.Any, _usCulture, out volume))
+                                if (Int32.TryParse(volumeArg, NumberStyles.Any, _usCulture, out volume))
                                 {
                                     return _device.SetVolume(volume);
                                 }
@@ -642,6 +646,121 @@ namespace MediaBrowser.Dlna.PlayTo
             }
 
             return Task.FromResult(true);
+        }
+
+        private class StreamParams
+        {
+            public string ItemId { get; set; }
+
+            public bool IsDirectStream { get; set; }
+
+            public long StartPositionTicks { get; set; }
+
+            public int? AudioStreamIndex { get; set; }
+
+            public int? SubtitleStreamIndex { get; set; }
+
+            public string DeviceProfileId { get; set; }
+            public string DeviceId { get; set; }
+
+            public string MediaSourceId { get; set; }
+
+            public BaseItem Item { get; set; }
+            public MediaSourceInfo MediaSource { get; set; }
+
+            private static string GetItemId(string url)
+            {
+                var parts = url.Split('/');
+
+                for (var i = 0; i < parts.Length; i++)
+                {
+                    var part = parts[i];
+
+                    if (string.Equals(part, "audio", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(part, "videos", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (parts.Length > i + 1)
+                        {
+                            return parts[i + 1];
+                        }
+                    }
+                }
+
+                return null;
+            }
+
+            public static StreamParams ParseFromUrl(string url, ILibraryManager libraryManager)
+            {
+                var request = new StreamParams
+                {
+                    ItemId = GetItemId(url)
+                };
+
+                if (string.IsNullOrWhiteSpace(request.ItemId))
+                {
+                    return request;
+                }
+
+                const string srch = "params=";
+                var index = url.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
+
+                if (index == -1) return request;
+
+                var vals = url.Substring(index + srch.Length).Split(';');
+
+                for (var i = 0; i < vals.Length; i++)
+                {
+                    var val = vals[i];
+
+                    if (string.IsNullOrWhiteSpace(val))
+                    {
+                        continue;
+                    }
+
+                    if (i == 0)
+                    {
+                        request.DeviceProfileId = val;
+                    }
+                    else if (i == 1)
+                    {
+                        request.DeviceId = val;
+                    }
+                    else if (i == 2)
+                    {
+                        request.MediaSourceId = val;
+                    }
+                    else if (i == 3)
+                    {
+                        request.IsDirectStream = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    }
+                    else if (i == 6)
+                    {
+                        request.AudioStreamIndex = int.Parse(val, CultureInfo.InvariantCulture);
+                    }
+                    else if (i == 7)
+                    {
+                        request.SubtitleStreamIndex = int.Parse(val, CultureInfo.InvariantCulture);
+                    }
+                    else if (i == 14)
+                    {
+                        request.StartPositionTicks = long.Parse(val, CultureInfo.InvariantCulture);
+                    }
+                }
+
+                request.Item = string.IsNullOrWhiteSpace(request.ItemId)
+                    ? null
+                    : libraryManager.GetItemById(new Guid(request.ItemId));
+
+                var hasMediaSources = request.Item as IHasMediaSources;
+
+                request.MediaSource = hasMediaSources == null ?
+                    null :
+                    hasMediaSources.GetMediaSources(false).FirstOrDefault(i => string.Equals(i.Id, request.MediaSourceId, StringComparison.OrdinalIgnoreCase));
+
+
+
+                return request;
+            }
         }
     }
 }

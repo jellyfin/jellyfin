@@ -30,7 +30,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public int Volume { get; set; }
 
-        public TimeSpan Duration { get; set; }
+        public TimeSpan? Duration { get; set; }
 
         private TimeSpan _position = TimeSpan.FromSeconds(0);
         public TimeSpan Position
@@ -270,8 +270,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public async Task SetAvTransport(string url, string header, string metaData)
         {
-            //await SetStop().ConfigureAwait(false);
-
             var command = AvCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
             if (command == null)
                 return;
@@ -598,9 +596,14 @@ namespace MediaBrowser.Dlna.PlayTo
             var durationElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i != null);
             var duration = durationElem == null ? null : durationElem.Value;
 
-            if (!string.IsNullOrWhiteSpace(duration) && !string.Equals(duration, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(duration) &&
+                !string.Equals(duration, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
                 Duration = TimeSpan.Parse(duration, UsCulture);
+            }
+            else
+            {
+                Duration = null;
             }
 
             var positionElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("RelTime")).FirstOrDefault(i => i != null);
@@ -891,13 +894,14 @@ namespace MediaBrowser.Dlna.PlayTo
         public event EventHandler<PlaybackProgressEventArgs> PlaybackProgress;
         public event EventHandler<PlaybackStoppedEventArgs> PlaybackStopped;
 
-        private uBaseObject _lastMediaInfo;
+        public uBaseObject CurrentMediaInfo { get; private set; }
+
         private void UpdateMediaInfo(uBaseObject mediaInfo, TRANSPORTSTATE state)
         {
             TransportState = state;
 
-            var previousMediaInfo = _lastMediaInfo;
-            _lastMediaInfo = mediaInfo;
+            var previousMediaInfo = CurrentMediaInfo;
+            CurrentMediaInfo = mediaInfo;
 
             if (previousMediaInfo == null && mediaInfo != null)
             {
