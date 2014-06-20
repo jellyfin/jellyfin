@@ -93,27 +93,26 @@ namespace MediaBrowser.Controller.Library
         };
 
         /// <summary>
-        /// To avoid the following matching movies they are only valid when contained in a folder which has been matched as a being season
+        /// To avoid the following matching movies they are only valid when contained in a folder which has been matched as a being season, or the media type is TV series
         /// </summary>
-        private static readonly Regex[] EpisodeExpressionsInASeasonFolder =
+        private static readonly Regex[] EpisodeExpressionsWithoutSeason =
         {
+            new Regex(
+                @".*[\\\/](?<epnumber>\d{1,3})\.\w+$",
+                RegexOptions.Compiled),
+            // "01.avi"
             new Regex(
                 @".*(\\|\/)(?<epnumber>\d{1,2})\s?-\s?[^\\\/]*$",
                 RegexOptions.Compiled),
-            // 01 - blah.avi, 01-blah.avi
-            new Regex(
-                @".*(\\|\/)(?<epnumber>\d{1,2})[^\d\\]*[^\\\/]*$",
+            // "01 - blah.avi", "01-blah.avi"
+             new Regex(
+                @".*(\\|\/)(?<epnumber>\d{1,2})\.[^\\\/]+$",
                 RegexOptions.Compiled),
-            // 01.avi, 01.blah.avi "01 - 22 blah.avi" 
+            // "01.blah.avi"
             new Regex(
-                @".*(\\|\/)(?<seasonnumber>\d)(?<epnumber>\d{1,2})[^\d\\]+[^\\\/]*$",
+                @".*[\\\/][^\\\/]* - (?<epnumber>\d{1,3})[^\\\/]*$",
                 RegexOptions.Compiled),
-            // 01.avi, 01.blah.avi
-            new Regex(
-                @".*(\\|\/)\D*\d+(?<epnumber>\d{2})",
-                RegexOptions.Compiled)
-            // hell0 - 101 -  hello.avi
-
+            // "blah - 01.avi", "blah 2 - 01.avi", "blah - 01 blah.avi", "blah 2 - 01 blah", "blah - 01 - blah.avi", "blah 2 - 01 - blah"
         };
 
         /// <summary>
@@ -197,7 +196,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="path">The path.</param>
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <returns><c>true</c> if [is series folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        public static bool IsSeriesFolder(string path, IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        public static bool IsSeriesFolder(string path, bool considerSeasonlessSeries, IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
         {
             // A folder with more than 3 non-season folders in will not becounted as a series
             var nonSeriesFolders = 0;
@@ -236,7 +235,7 @@ namespace MediaBrowser.Controller.Library
 
                     if (EntityResolutionHelper.IsVideoFile(fullName) || EntityResolutionHelper.IsVideoPlaceHolder(fullName))
                     {
-                        if (GetEpisodeNumberFromFile(fullName, false).HasValue)
+                        if (GetEpisodeNumberFromFile(fullName, considerSeasonlessSeries).HasValue)
                         {
                             return true;
                         }
@@ -251,9 +250,9 @@ namespace MediaBrowser.Controller.Library
         /// Episodes the number from file.
         /// </summary>
         /// <param name="fullPath">The full path.</param>
-        /// <param name="isInSeason">if set to <c>true</c> [is in season].</param>
+        /// <param name="considerSeasonlessNames">if set to <c>true</c> [is in season].</param>
         /// <returns>System.String.</returns>
-        public static int? GetEpisodeNumberFromFile(string fullPath, bool isInSeason)
+        public static int? GetEpisodeNumberFromFile(string fullPath, bool considerSeasonlessNames)
         {
             string fl = fullPath.ToLower();
             foreach (var r in EpisodeExpressions)
@@ -262,9 +261,9 @@ namespace MediaBrowser.Controller.Library
                 if (m.Success)
                     return ParseEpisodeNumber(m.Groups["epnumber"].Value);
             }
-            if (isInSeason)
+            if (considerSeasonlessNames)
             {
-                var match = EpisodeExpressionsInASeasonFolder.Select(r => r.Match(fl))
+                var match = EpisodeExpressionsWithoutSeason.Select(r => r.Match(fl))
                     .FirstOrDefault(m => m.Success);
 
                 if (match != null)
