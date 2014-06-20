@@ -72,6 +72,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _device.PlaybackStart += _device_PlaybackStart;
             _device.PlaybackProgress += _device_PlaybackProgress;
             _device.PlaybackStopped += _device_PlaybackStopped;
+            _device.MediaChanged += _device_MediaChanged;
             _device.Start();
 
             _ssdpHandler.MessageReceived += _SsdpHandler_MessageReceived;
@@ -131,25 +132,38 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
+        void _device_MediaChanged(object sender, MediaChangedEventArgs e)
+        {
+            var streamInfo = StreamParams.ParseFromUrl(e.OldMediaInfo.Url, _libraryManager);
+            var progress = GetProgressInfo(e.OldMediaInfo, streamInfo);
+
+            var positionTicks = progress.PositionTicks;
+
+            ReportPlaybackStopped(e.OldMediaInfo, streamInfo, positionTicks);
+        }
+
         async void _device_PlaybackStopped(object sender, PlaybackStoppedEventArgs e)
         {
-            try
-            {
-                await _sessionManager.OnPlaybackStopped(new PlaybackStopInfo
-                {
-                    ItemId = e.MediaInfo.Id,
-                    SessionId = _session.Id,
-                    PositionTicks = _device.Position.Ticks
+            var streamInfo = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager);
+            var progress = GetProgressInfo(e.MediaInfo, streamInfo);
 
-                }).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error reporting progress", ex);
-            }
+            var positionTicks = progress.PositionTicks;
 
-            var playedToCompletion = _device.Position.Ticks == 0 ||
-                (_device.Duration.HasValue && _device.Position.Ticks >= _device.Duration.Value.Ticks);
+            ReportPlaybackStopped(e.MediaInfo, streamInfo, positionTicks);
+
+            var duration = streamInfo.MediaSource == null ?
+                (_device.Duration == null ? (long?)null : _device.Duration.Value.Ticks) :
+                streamInfo.MediaSource.RunTimeTicks;
+
+            var playedToCompletion = (positionTicks.HasValue && positionTicks.Value == 0);
+
+            if (!playedToCompletion && duration.HasValue && positionTicks.HasValue)
+            {
+                double percent = positionTicks.Value;
+                percent /= duration.Value;
+
+                playedToCompletion = Math.Abs(1 - percent) <= .1;
+            }
 
             if (playedToCompletion)
             {
@@ -158,6 +172,25 @@ namespace MediaBrowser.Dlna.PlayTo
             else
             {
                 Playlist.Clear();
+            }
+        }
+
+        private async void ReportPlaybackStopped(uBaseObject mediaInfo, StreamParams streamInfo, long? positionTicks)
+        {
+            try
+            {
+                await _sessionManager.OnPlaybackStopped(new PlaybackStopInfo
+                {
+                    ItemId = mediaInfo.Id,
+                    SessionId = _session.Id,
+                    PositionTicks = positionTicks,
+                    MediaSourceId = streamInfo.MediaSourceId
+
+                }).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error reporting progress", ex);
             }
         }
 
@@ -191,9 +224,14 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private PlaybackStartInfo GetProgressInfo(uBaseObject mediaInfo)
         {
-            var ticks = _device.Position.Ticks;
-
             var info = StreamParams.ParseFromUrl(mediaInfo.Url, _libraryManager);
+
+            return GetProgressInfo(mediaInfo, info);
+        }
+
+        private PlaybackStartInfo GetProgressInfo(uBaseObject mediaInfo, StreamParams info)
+        {
+            var ticks = _device.Position.Ticks;
 
             if (!info.IsDirectStream)
             {
@@ -573,6 +611,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 _device.PlaybackStart -= _device_PlaybackStart;
                 _device.PlaybackProgress -= _device_PlaybackProgress;
                 _device.PlaybackStopped -= _device_PlaybackStopped;
+                _device.MediaChanged -= _device_MediaChanged;
                 _ssdpHandler.MessageReceived -= _SsdpHandler_MessageReceived;
 
                 DisposeUpdateTimer();
@@ -679,10 +718,11 @@ namespace MediaBrowser.Dlna.PlayTo
             if (media != null)
             {
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
+                var progress = GetProgressInfo(media, info);
 
                 if (info.Item != null && !info.IsDirectStream)
                 {
-                    var newPosition = _device.Position.Ticks;
+                    var newPosition = progress.PositionTicks ?? 0;
 
                     var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, GetServerAddress(), info.MediaSourceId, newIndex, info.SubtitleStreamIndex);
@@ -704,10 +744,11 @@ namespace MediaBrowser.Dlna.PlayTo
             if (media != null)
             {
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
+                var progress = GetProgressInfo(media, info);
 
                 if (info.Item != null && !info.IsDirectStream)
                 {
-                    var newPosition = _device.Position.Ticks;
+                    var newPosition = progress.PositionTicks ?? 0;
 
                     var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, GetServerAddress(), info.MediaSourceId, info.AudioStreamIndex, newIndex);

@@ -901,6 +901,7 @@ namespace MediaBrowser.Dlna.PlayTo
         public event EventHandler<PlaybackStartEventArgs> PlaybackStart;
         public event EventHandler<PlaybackProgressEventArgs> PlaybackProgress;
         public event EventHandler<PlaybackStoppedEventArgs> PlaybackStopped;
+        public event EventHandler<MediaChangedEventArgs> MediaChanged;
 
         public uBaseObject CurrentMediaInfo { get; private set; }
 
@@ -917,6 +918,10 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     OnPlaybackStart(mediaInfo);
                 }
+            }
+            else if (mediaInfo != null && previousMediaInfo != null && !mediaInfo.Equals(previousMediaInfo))
+            {
+                OnMediaChanged(previousMediaInfo, mediaInfo);
             }
             else if (mediaInfo == null && previousMediaInfo != null)
             {
@@ -957,6 +962,18 @@ namespace MediaBrowser.Dlna.PlayTo
                 PlaybackStopped.Invoke(this, new PlaybackStoppedEventArgs
                 {
                     MediaInfo = mediaInfo
+                });
+            }
+        }
+
+        private void OnMediaChanged(uBaseObject old, uBaseObject newMedia)
+        {
+            if (MediaChanged != null)
+            {
+                MediaChanged.Invoke(this, new MediaChangedEventArgs
+                {
+                    OldMediaInfo = old,
+                    NewMediaInfo = newMedia
                 });
             }
         }
