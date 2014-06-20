@@ -81,7 +81,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private async void updateTimer_Elapsed(object state)
         {
-            if (DateTime.UtcNow >= _device.DateLastActivity.AddSeconds(60))
+            if (DateTime.UtcNow >= _device.DateLastActivity.AddSeconds(120))
             {
                 try
                 {
@@ -148,7 +148,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 _logger.ErrorException("Error reporting progress", ex);
             }
 
-            await SetNext().ConfigureAwait(false);
+            //await SetNext().ConfigureAwait(false);
         }
 
         async void _device_PlaybackStart(object sender, PlaybackStartEventArgs e)
@@ -305,8 +305,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, GetServerAddress(), info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
 
-                    await _device.SetStop();
-
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
 
                     if (newItem.StreamInfo.IsDirectStream)
@@ -413,7 +411,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             playlistItem.StreamUrl = playlistItem.StreamInfo.ToUrl(serverAddress);
 
-            var itemXml = new DidlBuilder(profile, user, _imageProcessor, serverAddress).GetItemDidl(item, _session.DeviceId, new Filter());
+            var itemXml = new DidlBuilder(profile, user, _imageProcessor, serverAddress).GetItemDidl(item, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
 
             playlistItem.Didl = itemXml;
 
@@ -710,8 +708,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, GetServerAddress(), info.MediaSourceId, newIndex, info.SubtitleStreamIndex);
 
-                    await _device.SetStop();
-
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
 
                     if (newItem.StreamInfo.IsDirectStream)
@@ -736,8 +732,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
                     var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, GetServerAddress(), info.MediaSourceId, info.AudioStreamIndex, newIndex);
-
-                    await _device.SetStop();
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
 
