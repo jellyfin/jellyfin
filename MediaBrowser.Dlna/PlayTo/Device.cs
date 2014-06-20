@@ -270,6 +270,8 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public async Task SetAvTransport(string url, string header, string metaData)
         {
+            _logger.Debug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, header);
+
             var command = AvCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
             if (command == null)
                 return;
