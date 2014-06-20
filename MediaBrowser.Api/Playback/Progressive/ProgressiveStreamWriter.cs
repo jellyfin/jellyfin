@@ -62,9 +62,9 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 await StreamFile(Path, responseStream).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
-                Logger.ErrorException("Error streaming media", ex);
+                Logger.Error("Error streaming media. The client has most likely disconnected or transcoding has failed.");
 
                 throw;
             }

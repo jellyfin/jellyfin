@@ -174,10 +174,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                if (state.VideoRequest.Width.HasValue || state.VideoRequest.Height.HasValue || state.VideoRequest.MaxHeight.HasValue || state.VideoRequest.MaxWidth.HasValue)
-                {
-                    args += GetOutputSizeParam(state, codec, CancellationToken.None);
-                }
+                args += GetOutputSizeParam(state, codec, CancellationToken.None);
             }
 
             // This is for internal graphical subs

@@ -50,8 +50,17 @@
     function reload(page) {
 
         Dashboard.showLoadingMsg();
+        $('#btnEdit', page).attr('href', '#');
 
         getPromise().done(function (item) {
+
+            var context = getParameterByName('context');
+
+            var editQuery = '?id=' + item.Id;
+            if (context) {
+                editQuery += '&context=' + context;
+            }
+            $('#btnEdit', page).attr('href', 'edititemmetadata.html' + editQuery);
 
             currentItem = item;
 
@@ -69,7 +78,7 @@
             $(page).trigger('displayingitem', [{
 
                 item: item,
-                context: getParameterByName('context')
+                context: context
             }]);
 
             Dashboard.getCurrentUser().done(function (user) {
@@ -80,7 +89,8 @@
                     $('#playButtonContainer', page).hide();
                 }
 
-                var editImagesHref = user.Configuration.IsAdministrator ? 'edititemimages.html' + getWindowLocationSearch() : null;
+                var editImagesHref = user.Configuration.IsAdministrator ? 'edititemimages.html' + editQuery : null;
+
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref));
 
                 if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
@@ -519,8 +529,6 @@
         var page = this;
 
         reload(page);
-
-        $('#btnEdit', page).attr('href', 'edititemmetadata.html' + getWindowLocationSearch());
 
     }).on('pagehide', "#itemByNameDetailPage", function () {
 

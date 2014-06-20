@@ -59,15 +59,15 @@
 
         }).done(function () {
 
-            Dashboard.alert('The download has been queued.');
+            Dashboard.alert(Globalize.translate('MessageDownloadQueued'));
         });
     }
 
     function deleteLocalSubtitle(page, index) {
 
-        var msg = "Are you sure you wish to delete this subtitle file?";
+        var msg = Globalize.translate('MessageAreYouSureDeleteSubtitles');
 
-        Dashboard.confirm(msg, "Confirm Deletion", function (result) {
+        Dashboard.confirm(msg, Globalize.translate('HeaderConfirmDeletion'), function (result) {
 
             if (result) {
 
@@ -103,7 +103,7 @@
         if (subs.length) {
 
             html += '<br/>';
-            html += '<ul data-role="listview" data-split-icon="delete"><li data-role="list-divider">Current Subtitles</li>';
+            html += '<ul data-role="listview" data-split-icon="delete"><li data-role="list-divider">' + Globalize.translate('HeaderCurrentSubtitles') + '</li>';
 
             html += subs.map(function (s) {
 
@@ -111,7 +111,7 @@
 
                 var itemHtml = '<li><a class="' + cssClass + '" href="#" data-index="' + s.Index + '">';
 
-                itemHtml += '<p>' + (s.Language || 'Unknown language') + '</p>';
+                itemHtml += '<p>' + (s.Language || Globalize.translate('LabelUnknownLanaguage')) + '</p>';
 
                 if (s.IsDefault || s.IsForced) {
 
@@ -228,7 +228,7 @@
 
             html += '</a>';
 
-            html += '<a href="#" class="btnDownload" data-icon="plus" data-subid="' + result.Id + '">Download</a>';
+            html += '<a href="#" class="btnDownload" data-icon="plus" data-subid="' + result.Id + '">' + Globalize.translate('ButtonDownload') + '</a>';
 
             html += '</li>';
         }

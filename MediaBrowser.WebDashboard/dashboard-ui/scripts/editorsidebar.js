@@ -315,67 +315,11 @@
 
         function ensureInitialValues() {
 
-            if (self.currentItemType || self.currentItemName || self.currentItemId) {
+            if (self.currentItemType || self.currentItemId) {
                 return;
             }
 
             var url = window.location.hash || window.location.toString();
-
-            var name = getParameterByName('person', url);
-
-            if (name) {
-                self.currentItemType = "Person";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('studio', url);
-
-            if (name) {
-                self.currentItemType = "Studio";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('genre', url);
-
-            if (name) {
-                self.currentItemType = "Genre";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('musicgenre', url);
-
-            if (name) {
-                self.currentItemType = "MusicGenre";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('gamegenre', url);
-
-            if (name) {
-                self.currentItemType = "GameGenre";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('musicartist', url);
-
-            if (name) {
-                self.currentItemType = "MusicArtist";
-                self.currentItemName = name;
-                return;
-            }
-
-            name = getParameterByName('channelid', url);
-
-            if (name) {
-                self.currentItemType = "TvChannel";
-                self.currentItemId = name;
-                return;
-            }
 
             var id = getParameterByName('id', url);
 
@@ -388,35 +332,10 @@
         self.getItemPromise = function () {
 
             var currentItemType = self.currentItemType;
-            var currentItemName = self.currentItemName;
             var currentItemId = self.currentItemId;
 
             if (currentItemType == "TvChannel") {
                 return ApiClient.getLiveTvChannel(currentItemId);
-            }
-
-            if (currentItemType == "Person") {
-                return ApiClient.getPerson(currentItemName, Dashboard.getCurrentUserId());
-            }
-
-            if (currentItemType == "Studio") {
-                return ApiClient.getStudio(currentItemName, Dashboard.getCurrentUserId());
-            }
-
-            if (currentItemType == "Genre") {
-                return ApiClient.getGenre(currentItemName, Dashboard.getCurrentUserId());
-            }
-
-            if (currentItemType == "MusicGenre") {
-                return ApiClient.getMusicGenre(currentItemName, Dashboard.getCurrentUserId());
-            }
-
-            if (currentItemType == "GameGenre") {
-                return ApiClient.getGameGenre(currentItemName, Dashboard.getCurrentUserId());
-            }
-
-            if (currentItemType == "MusicArtist" && currentItemName) {
-                return ApiClient.getArtist(currentItemName, Dashboard.getCurrentUserId());
             }
 
             if (currentItemId) {
@@ -428,19 +347,7 @@
 
         self.getEditQueryString = function (item) {
 
-            var query;
-
-            if (item.Type == "Person" ||
-                item.Type == "Studio" ||
-                item.Type == "Genre" ||
-                item.Type == "MusicGenre" ||
-                item.Type == "GameGenre" ||
-                item.Type == "MusicArtist") {
-                query = item.Type + "=" + ApiClient.encodeName(item.Name);
-
-            } else {
-                query = "id=" + item.Id;
-            }
+            var query = "id=" + item.Id;
 
             var context = getParameterByName('context');
 

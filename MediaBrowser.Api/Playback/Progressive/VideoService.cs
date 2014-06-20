@@ -154,10 +154,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
-                {
-                    args += GetOutputSizeParam(state, codec, CancellationToken.None);
-                }
+                args += GetOutputSizeParam(state, codec, CancellationToken.None);
             }
 
             var qualityParam = GetVideoQualityParam(state, codec, false);
