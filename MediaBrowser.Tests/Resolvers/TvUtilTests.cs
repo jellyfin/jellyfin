@@ -59,6 +59,17 @@ namespace MediaBrowser.Tests.Resolvers
             Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 2\02 - blah 14 blah.avi", true));
             Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 1\02 - blah-02 a.avi", true));
             Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 2\02.avi", true));
+
+            //Without seasons
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"The Simpsons\02.avi", true));
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"The Simpsons\02 - Ep Name.avi", true));
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"The Simpsons\02-Ep Name.avi", true));
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"The Simpsons\02.EpName.avi", true));
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"The Simpsons\The Simpsons - 02.avi", true));
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"The Simpsons\The Simpsons - 02 - Ep Name.avi", true));
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"The Simpsons\The Simpsons - 02 Ep Name.avi", true));
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"The Simpsons\The Simpsons 5 - 02 - Ep Name.avi", true));
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"The Simpsons\The Simpsons 5 - 02 Ep Name.avi", true));
         }
 
         [TestMethod]
