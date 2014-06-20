@@ -172,13 +172,18 @@
     "NewVersionOfSomethingAvailable": "Est\u00e1 dispon\u00edvel uma nova vers\u00e3o de {0}!",
     "VersionXIsAvailableForDownload": "A vers\u00e3o {0} est\u00e1 dispon\u00edvel para download.",
     "LabelVersionNumber": "Vers\u00e3o {0}",
-    "LabelPlayMethodTranscoding": "Transcodificando",
-    "LabelPlayMethodDirectStream": "Fluxo Direto",
-    "LabelPlayMethodDirectPlay": "Execu\u00e7\u00e3o Direta",
+    "LabelPlayMethodTranscoding": "Transcodifica\u00e7\u00e3o",
+    "LabelPlayMethodDirectStream": "Streaming Direto",
+    "LabelPlayMethodDirectPlay": "Reprodu\u00e7\u00e3o Direta",
     "LabelAudioCodec": "\u00c1udio: {0}",
     "LabelVideoCodec": "V\u00eddeo: {0}",
     "LabelRemoteAccessUrl": "Acesso Remoto: {0}",
     "LabelRunningOnPort": "Dispon\u00edvel na porta {0}.",
     "LabelRunningOnPorts": "Dispon\u00edvel nas portas {0} e {1}.",
-    "HeaderLatestFromChannel": "Latest from {0}"
+    "HeaderLatestFromChannel": "\u00daltimo desde {0}",
+    "ButtonDownload": "Download",
+    "LabelUnknownLanaguage": "Unknown language",
+    "HeaderCurrentSubtitles": "Current Subtitles",
+    "MessageDownloadQueued": "The download has been queued.",
+    "MessageAreYouSureDeleteSubtitles": "Are you sure you wish to delete this subtitle file?"
 }

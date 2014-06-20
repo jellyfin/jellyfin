@@ -477,17 +477,13 @@ namespace MediaBrowser.Api.Playback
         {
             // http://sonnati.wordpress.com/2012/10/19/ffmpeg-the-swiss-army-knife-of-internet-streaming-part-vi/
 
-            var assSubtitleParam = string.Empty;
-            var copyTsParam = string.Empty;
-            var yadifParam = state.DeInterlace ? "yadif=0:-1:0," : string.Empty;
-
             var request = state.VideoRequest;
 
-            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream)
-            {
-                assSubtitleParam = GetTextSubtitleParam(state, cancellationToken);
+            var filters = new List<string>();
 
-                copyTsParam = " -copyts";
+            if (state.DeInterlace)
+            {
+                filters.Add("yadif=0:-1:0");
             }
 
             // If fixed dimensions were supplied
@@ -496,68 +492,89 @@ namespace MediaBrowser.Api.Playback
                 var widthParam = request.Width.Value.ToString(UsCulture);
                 var heightParam = request.Height.Value.ToString(UsCulture);
 
-                return string.Format("{4} -vf \"{0}scale=trunc({1}/2)*2:trunc({2}/2)*2{3}\"", yadifParam, widthParam, heightParam, assSubtitleParam, copyTsParam);
+                filters.Add(string.Format("scale=trunc({0}/2)*2:trunc({1}/2)*2", widthParam, heightParam));
             }
 
             // If Max dimensions were supplied, for width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
-            if (request.MaxWidth.HasValue && request.MaxHeight.HasValue)
+            else if (request.MaxWidth.HasValue && request.MaxHeight.HasValue)
             {
                 var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
                 var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
 
-                return string.Format("{4} -vf \"{0}scale=trunc(min(iw\\,{1})/2)*2:trunc(min((iw/dar)\\,{2})/2)*2{3}\"", yadifParam, maxWidthParam, maxHeightParam, assSubtitleParam, copyTsParam);
+                filters.Add(string.Format("scale=trunc(min(iw\\,{0})/2)*2:trunc(min((iw/dar)\\,{1})/2)*2", maxWidthParam, maxHeightParam));
             }
 
             // If a fixed width was requested
-            if (request.Width.HasValue)
+            else if (request.Width.HasValue)
             {
                 var widthParam = request.Width.Value.ToString(UsCulture);
 
-                return string.Format("{3} -vf \"{0}scale={1}:trunc(ow/a/2)*2{2}\"", yadifParam, widthParam, assSubtitleParam, copyTsParam);
+                filters.Add(string.Format("scale={0}:trunc(ow/a/2)*2", widthParam));
             }
 
             // If a fixed height was requested
-            if (request.Height.HasValue)
+            else if (request.Height.HasValue)
             {
                 var heightParam = request.Height.Value.ToString(UsCulture);
 
-                return string.Format("{3} -vf \"{0}scale=trunc(oh*a*2)/2:{1}{2}\"", yadifParam, heightParam, assSubtitleParam, copyTsParam);
+                filters.Add(string.Format("scale=trunc(oh*a*2)/2:{0}", heightParam));
             }
 
             // If a max width was requested
-            if (request.MaxWidth.HasValue && (!request.MaxHeight.HasValue || state.VideoStream == null))
+            else if (request.MaxWidth.HasValue && (!request.MaxHeight.HasValue || state.VideoStream == null))
             {
                 var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
 
-                return string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):trunc(ow/dar/2)*2{2}\"", yadifParam, maxWidthParam, assSubtitleParam, copyTsParam);
+                filters.Add(string.Format("scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam));
             }
 
             // If a max height was requested
-            if (request.MaxHeight.HasValue && (!request.MaxWidth.HasValue || state.VideoStream == null))
+            else if (request.MaxHeight.HasValue && (!request.MaxWidth.HasValue || state.VideoStream == null))
             {
                 var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
 
-                return string.Format("{3} -vf \"{0}scale=trunc(oh*a*2)/2:min(ih\\,{1}){2}\"", yadifParam, maxHeightParam, assSubtitleParam, copyTsParam);
+                filters.Add(string.Format("scale=trunc(oh*a*2)/2:min(ih\\,{0})", maxHeightParam));
             }
 
-            if (state.VideoStream == null)
+            else if (request.MaxWidth.HasValue ||
+                request.MaxHeight.HasValue ||
+                request.Width.HasValue ||
+                request.Height.HasValue)
             {
-                // No way to figure this out
-                return string.Empty;
+                if (state.VideoStream != null)
+                {
+                    // Need to perform calculations manually
+
+                    // Try to account for bad media info
+                    var currentHeight = state.VideoStream.Height ?? request.MaxHeight ?? request.Height ?? 0;
+                    var currentWidth = state.VideoStream.Width ?? request.MaxWidth ?? request.Width ?? 0;
+
+                    var outputSize = DrawingUtils.Resize(currentWidth, currentHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
+
+                    var manualWidthParam = outputSize.Width.ToString(UsCulture);
+                    var manualHeightParam = outputSize.Height.ToString(UsCulture);
+
+                    filters.Add(string.Format("scale=trunc({0}/2)*2:trunc({1}/2)*2", manualWidthParam, manualHeightParam));
+                }
             }
 
-            // Need to perform calculations manually
+            var output = string.Empty;
 
-            // Try to account for bad media info
-            var currentHeight = state.VideoStream.Height ?? request.MaxHeight ?? request.Height ?? 0;
-            var currentWidth = state.VideoStream.Width ?? request.MaxWidth ?? request.Width ?? 0;
+            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream)
+            {
+                var subParam = GetTextSubtitleParam(state, cancellationToken);
 
-            var outputSize = DrawingUtils.Resize(currentWidth, currentHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
+                filters.Add(subParam);
 
-            var manualWidthParam = outputSize.Width.ToString(UsCulture);
-            var manualHeightParam = outputSize.Height.ToString(UsCulture);
+                output += " -copyts";
+            }
 
-            return string.Format("{4} -vf \"{0}scale=trunc({1}/2)*2:trunc({2}/2)*2{3}\"", yadifParam, manualWidthParam, manualHeightParam, assSubtitleParam, copyTsParam);
+            if (filters.Count > 0)
+            {
+                output += string.Format(" -vf \"{0}\"", string.Join(",", filters.ToArray()));
+            }
+
+            return output;
         }
 
         /// <summary>
@@ -588,13 +605,13 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 // TODO: Perhaps also use original_size=1920x800
-                return string.Format(",subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
+                return string.Format("subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
                     subtitlePath.Replace('\\', '/').Replace(":/", "\\:/"),
                     charsetParam,
                     Math.Round(seconds).ToString(UsCulture));
             }
 
-            return string.Format(",subtitles='{0}:si={1}',setpts=PTS -{2}/TB",
+            return string.Format("subtitles='{0}:si={1}',setpts=PTS -{2}/TB",
                 state.MediaPath.Replace('\\', '/').Replace(":/", "\\:/"),
                 state.InternalSubtitleStreamOffset.ToString(UsCulture),
                 Math.Round(seconds).ToString(UsCulture));

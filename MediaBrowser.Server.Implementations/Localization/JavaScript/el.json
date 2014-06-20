@@ -180,5 +180,10 @@
     "LabelRemoteAccessUrl": "Remote access: {0}",
     "LabelRunningOnPort": "Running on port {0}.",
     "LabelRunningOnPorts": "Running on ports {0} and {1}.",
-    "HeaderLatestFromChannel": "Latest from {0}"
+    "HeaderLatestFromChannel": "Latest from {0}",
+    "ButtonDownload": "Download",
+    "LabelUnknownLanaguage": "Unknown language",
+    "HeaderCurrentSubtitles": "Current Subtitles",
+    "MessageDownloadQueued": "The download has been queued.",
+    "MessageAreYouSureDeleteSubtitles": "Are you sure you wish to delete this subtitle file?"
 }

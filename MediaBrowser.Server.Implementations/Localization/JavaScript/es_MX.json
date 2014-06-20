@@ -123,7 +123,7 @@
     "HeaderResume": "Continuar",
     "HeaderMyLibrary": "Mi Biblioteca",
     "HeaderLibraryFolders": "Vista de Carpetas",
-    "HeaderLatestMedia": "Agregado Recientemente",
+    "HeaderLatestMedia": "Agregados Recientemente",
     "ButtonMore": "M\u00e1s...",
     "HeaderFavoriteMovies": "Pel\u00edculas Preferidas",
     "HeaderFavoriteShows": "Programas Preferidos",
@@ -148,7 +148,7 @@
     "LabelChapterDownloaders": "Descargadores de Cap\u00edtulos:",
     "LabelChapterDownloadersHelp": "Habilite y califique sus descargadores de cap\u00edtulos preferidos en orden de prioridad. Los descargadores con menor prioridad s\u00f3lo seran utilizados para completar informaci\u00f3n faltante.",
     "HeaderFavoriteAlbums": "\u00c1lbumes Favoritos",
-    "HeaderLatestChannelMedia": "Agregados Recientemente al Canal",
+    "HeaderLatestChannelMedia": "Elementos Recientes del Canal",
     "ButtonOrganizeFile": "Organizar Archivo",
     "ButtonDeleteFile": "Eliminar Archivo",
     "HeaderOrganizeFile": "Organizar Archivo",
@@ -180,5 +180,10 @@
     "LabelRemoteAccessUrl": "Acceso remoto: {0}",
     "LabelRunningOnPort": "Ejecutando en el puerto: {0}.",
     "LabelRunningOnPorts": "Ejecutando en los puertos {0} y {1}.",
-    "HeaderLatestFromChannel": "Latest from {0}"
+    "HeaderLatestFromChannel": "M\u00e1s Recientes de {0}",
+    "ButtonDownload": "Download",
+    "LabelUnknownLanaguage": "Unknown language",
+    "HeaderCurrentSubtitles": "Current Subtitles",
+    "MessageDownloadQueued": "The download has been queued.",
+    "MessageAreYouSureDeleteSubtitles": "Are you sure you wish to delete this subtitle file?"
 }
