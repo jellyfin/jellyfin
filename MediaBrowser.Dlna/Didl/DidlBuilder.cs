@@ -37,7 +37,7 @@ namespace MediaBrowser.Dlna.Didl
             _user = user;
         }
 
-        public string GetItemDidl(BaseItem item, string deviceId, Filter filter)
+        public string GetItemDidl(BaseItem item, string deviceId, Filter filter, StreamInfo streamInfo)
         {
             var result = new XmlDocument();
 
@@ -54,12 +54,12 @@ namespace MediaBrowser.Dlna.Didl
 
             result.AppendChild(didl);
 
-            result.DocumentElement.AppendChild(GetItemElement(result, item, deviceId, filter));
+            result.DocumentElement.AppendChild(GetItemElement(result, item, deviceId, filter, streamInfo));
 
             return result.DocumentElement.OuterXml;
         }
 
-        public XmlElement GetItemElement(XmlDocument doc, BaseItem item, string deviceId, Filter filter)
+        public XmlElement GetItemElement(XmlDocument doc, BaseItem item, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             var element = doc.CreateElement(string.Empty, "item", NS_DIDL);
             element.SetAttribute("restricted", "1");
@@ -80,13 +80,13 @@ namespace MediaBrowser.Dlna.Didl
             var audio = item as Audio;
             if (audio != null)
             {
-                AddAudioResource(element, audio, deviceId, filter);
+                AddAudioResource(element, audio, deviceId, filter, streamInfo);
             }
 
             var video = item as Video;
             if (video != null)
             {
-                AddVideoResource(element, video, deviceId, filter);
+                AddVideoResource(element, video, deviceId, filter, streamInfo);
             }
 
             AddCover(item, element);
@@ -94,26 +94,29 @@ namespace MediaBrowser.Dlna.Didl
             return element;
         }
 
-        private void AddVideoResource(XmlElement container, Video video, string deviceId, Filter filter)
+        private void AddVideoResource(XmlElement container, Video video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
-            var sources = _user == null ? video.GetMediaSources(true).ToList() : video.GetMediaSources(true, _user).ToList();
-
-            var streamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
+            if (streamInfo == null)
             {
-                ItemId = video.Id.ToString("N"),
-                MediaSources = sources,
-                Profile = _profile,
-                DeviceId = deviceId,
-                MaxBitrate = _profile.MaxBitrate
-            });
+                var sources = _user == null ? video.GetMediaSources(true).ToList() : video.GetMediaSources(true, _user).ToList();
+
+                streamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
+               {
+                   ItemId = video.Id.ToString("N"),
+                   MediaSources = sources,
+                   Profile = _profile,
+                   DeviceId = deviceId,
+                   MaxBitrate = _profile.MaxBitrate
+               });
+            }
 
             var url = streamInfo.ToDlnaUrl(_serverAddress);
 
             res.InnerText = url;
 
-            var mediaSource = sources.First(i => string.Equals(i.Id, streamInfo.MediaSourceId));
+            var mediaSource = streamInfo.MediaSource;
 
             if (mediaSource.RunTimeTicks.HasValue)
             {
@@ -211,25 +214,28 @@ namespace MediaBrowser.Dlna.Didl
             container.AppendChild(res);
         }
 
-        private void AddAudioResource(XmlElement container, Audio audio, string deviceId, Filter filter)
+        private void AddAudioResource(XmlElement container, Audio audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
-            var sources = _user == null ? audio.GetMediaSources(true).ToList() : audio.GetMediaSources(true, _user).ToList();
-
-            var streamInfo = new StreamBuilder().BuildAudioItem(new AudioOptions
+            if (streamInfo == null)
             {
-                ItemId = audio.Id.ToString("N"),
-                MediaSources = sources,
-                Profile = _profile,
-                DeviceId = deviceId
-            });
+                var sources = _user == null ? audio.GetMediaSources(true).ToList() : audio.GetMediaSources(true, _user).ToList();
+
+                streamInfo = new StreamBuilder().BuildAudioItem(new AudioOptions
+               {
+                   ItemId = audio.Id.ToString("N"),
+                   MediaSources = sources,
+                   Profile = _profile,
+                   DeviceId = deviceId
+               });
+            }
 
             var url = streamInfo.ToDlnaUrl(_serverAddress);
 
             res.InnerText = url;
 
-            var mediaSource = sources.First(i => string.Equals(i.Id, streamInfo.MediaSourceId));
+            var mediaSource = streamInfo.MediaSource;
 
             if (mediaSource.RunTimeTicks.HasValue)
             {
