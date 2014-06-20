@@ -100,7 +100,7 @@ namespace MediaBrowser.Dlna.PlayTo
             return _serverAddress;
         }
 
-        async void _SsdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
+        void _SsdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
         {
             string nts;
             e.Headers.TryGetValue("NTS", out nts);
@@ -148,7 +148,17 @@ namespace MediaBrowser.Dlna.PlayTo
                 _logger.ErrorException("Error reporting progress", ex);
             }
 
-            //await SetNext().ConfigureAwait(false);
+            var playedToCompletion = _device.Position.Ticks == 0 ||
+                (_device.Duration.HasValue && _device.Position.Ticks >= _device.Duration.Value.Ticks);
+
+            if (playedToCompletion)
+            {
+                await SetPlaylistIndex(_currentPlaylistIndex + 1).ConfigureAwait(false);
+            }
+            else
+            {
+                Playlist.Clear();
+            }
         }
 
         async void _device_PlaybackStart(object sender, PlaybackStartEventArgs e)
@@ -252,8 +262,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 Playlist.AddRange(playlist);
             }
 
-            _logger.Debug("{0} - Playing {1} items", _session.DeviceName, playlist.Count);
-
             if (!String.IsNullOrWhiteSpace(command.ControllingUserId))
             {
                 await _sessionManager.LogSessionActivity(_session.Client, _session.ApplicationVersion, _session.DeviceId,
@@ -283,10 +291,10 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
 
                 case PlaystateCommand.NextTrack:
-                    return SetNext();
+                    return SetPlaylistIndex(_currentPlaylistIndex + 1);
 
                 case PlaystateCommand.PreviousTrack:
-                    return SetPrevious();
+                    return SetPlaylistIndex(_currentPlaylistIndex - 1);
             }
 
             return Task.FromResult(true);
@@ -361,6 +369,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         #region Playlist
 
+        private int _currentPlaylistIndex;
         private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
         private List<PlaylistItem> Playlist
         {
@@ -524,61 +533,31 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             Playlist.Clear();
             Playlist.AddRange(items);
-            await SetNext();
+            _logger.Debug("{0} - Playing {1} items", _session.DeviceName, Playlist.Count);
+
+            await SetPlaylistIndex(0).ConfigureAwait(false);
             return true;
         }
 
-        private async Task SetNext()
+        private async Task SetPlaylistIndex(int index)
         {
-            if (!Playlist.Any() || Playlist.All(i => i.PlayState != 0))
+            if (index < 0 || index >= Playlist.Count)
             {
-                return;
-            }
-
-            var currentitem = Playlist.FirstOrDefault(i => i.PlayState == 1);
-
-            if (currentitem != null)
-            {
-                currentitem.PlayState = 2;
-            }
-
-            var nextTrack = Playlist.FirstOrDefault(i => i.PlayState == 0);
-            if (nextTrack == null)
-            {
+                Playlist.Clear();
                 await _device.SetStop();
                 return;
             }
 
-            nextTrack.PlayState = 1;
+            _currentPlaylistIndex = index;
+            var currentitem = Playlist[index];
 
-            var dlnaheaders = GetDlnaHeaders(nextTrack);
+            var dlnaheaders = GetDlnaHeaders(currentitem);
 
-            await _device.SetAvTransport(nextTrack.StreamUrl, dlnaheaders, nextTrack.Didl);
+            await _device.SetAvTransport(currentitem.StreamUrl, dlnaheaders, currentitem.Didl);
 
-            var streamInfo = nextTrack.StreamInfo;
+            var streamInfo = currentitem.StreamInfo;
             if (streamInfo.StartPositionTicks > 0 && streamInfo.IsDirectStream)
                 await _device.Seek(TimeSpan.FromTicks(streamInfo.StartPositionTicks));
-        }
-
-        public Task SetPrevious()
-        {
-            if (!Playlist.Any() || Playlist.All(i => i.PlayState != 2))
-                return Task.FromResult(false);
-
-            var currentitem = Playlist.FirstOrDefault(i => i.PlayState == 1);
-
-            var prevTrack = Playlist.LastOrDefault(i => i.PlayState == 2);
-
-            if (currentitem != null)
-            {
-                currentitem.PlayState = 0;
-            }
-
-            if (prevTrack == null)
-                return Task.FromResult(false);
-
-            prevTrack.PlayState = 1;
-            return _device.SetAvTransport(prevTrack.StreamInfo.ToDlnaUrl(GetServerAddress()), GetDlnaHeaders(prevTrack), prevTrack.Didl);
         }
 
         #endregion
@@ -632,41 +611,41 @@ namespace MediaBrowser.Dlna.PlayTo
                     case GeneralCommandType.ToggleMute:
                         return _device.ToggleMute();
                     case GeneralCommandType.SetAudioStreamIndex:
-                    {
-                        string arg;
-
-                        if (command.Arguments.TryGetValue("Index", out arg))
                         {
-                            int val;
+                            string arg;
 
-                            if (Int32.TryParse(arg, NumberStyles.Any, _usCulture, out val))
+                            if (command.Arguments.TryGetValue("Index", out arg))
                             {
-                                return SetAudioStreamIndex(val);
+                                int val;
+
+                                if (Int32.TryParse(arg, NumberStyles.Any, _usCulture, out val))
+                                {
+                                    return SetAudioStreamIndex(val);
+                                }
+
+                                throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
                             }
 
-                            throw new ArgumentException("Unsupported SetAudioStreamIndex value supplied.");
+                            throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
                         }
-
-                        throw new ArgumentException("SetAudioStreamIndex argument cannot be null");
-                    }
                     case GeneralCommandType.SetSubtitleStreamIndex:
-                    {
-                        string arg;
-
-                        if (command.Arguments.TryGetValue("Index", out arg))
                         {
-                            int val;
+                            string arg;
 
-                            if (Int32.TryParse(arg, NumberStyles.Any, _usCulture, out val))
+                            if (command.Arguments.TryGetValue("Index", out arg))
                             {
-                                return SetSubtitleStreamIndex(val);
+                                int val;
+
+                                if (Int32.TryParse(arg, NumberStyles.Any, _usCulture, out val))
+                                {
+                                    return SetSubtitleStreamIndex(val);
+                                }
+
+                                throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
                             }
 
-                            throw new ArgumentException("Unsupported SetSubtitleStreamIndex value supplied.");
+                            throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
                         }
-
-                        throw new ArgumentException("SetSubtitleStreamIndex argument cannot be null");
-                    }
                     case GeneralCommandType.SetVolume:
                         {
                             string arg;

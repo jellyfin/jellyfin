@@ -293,7 +293,13 @@ namespace MediaBrowser.Dlna.PlayTo
                 .ConfigureAwait(false);
 
             await Task.Delay(50).ConfigureAwait(false);
-            await SetPlay().ConfigureAwait(false);
+
+            // If it's already in a playing state, this will throw an error
+            // TODO: What if state is transitioning?
+            if (TransportState != TRANSPORTSTATE.PLAYING)
+            {
+                await SetPlay().ConfigureAwait(false);
+            }
 
             RestartTimer();
         }
