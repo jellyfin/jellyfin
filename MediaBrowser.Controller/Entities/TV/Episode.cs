@@ -273,7 +273,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
                 {
-                    IndexNumber = TVUtils.GetEpisodeNumberFromFile(Path, Parent is Season);
+                    IndexNumber = TVUtils.GetEpisodeNumberFromFile(Path, true);
 
                     // If a change was made record it
                     if (IndexNumber.HasValue)
