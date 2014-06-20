@@ -54,12 +54,14 @@ namespace MediaBrowser.Model.Dlna
                 // Avoid implicitly captured closure
                 string mediaSourceId = options.MediaSourceId;
 
-                mediaSources = new List<MediaSourceInfo>();
+                var newMediaSources = new List<MediaSourceInfo>();
                 foreach (MediaSourceInfo i in mediaSources)
                 {
                     if (StringHelper.EqualsIgnoreCase(i.Id, mediaSourceId))
-                        mediaSources.Add(i);
+                        newMediaSources.Add(i);
                 }
+
+                mediaSources = newMediaSources;
             }
 
             List<StreamInfo> streams = new List<StreamInfo>();

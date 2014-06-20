@@ -14,90 +14,6 @@
         return deferred.promise();
     }
 
-    function createMediaLinks(options) {
-
-        var html = "";
-
-        var items = options.items;
-
-        // "My Library" backgrounds
-        for (var i = 0, length = items.length; i < length; i++) {
-
-            var item = items[i];
-
-            var imgUrl;
-
-            switch (item.CollectionType) {
-                case "movies":
-                    imgUrl = "css/images/items/folders/movies.png";
-                    break;
-                case "music":
-                    imgUrl = "css/images/items/folders/music.png";
-                    break;
-                case "photos":
-                    imgUrl = "css/images/items/folders/photos.png";
-                    break;
-                case "livetv":
-                case "tvshows":
-                    imgUrl = "css/images/items/folders/tv.png";
-                    break;
-                case "games":
-                    imgUrl = "css/images/items/folders/games.png";
-                    break;
-                case "trailers":
-                    imgUrl = "css/images/items/folders/movies.png";
-                    break;
-                case "adultvideos":
-                case "homevideos":
-                    imgUrl = "css/images/items/folders/homevideos.png";
-                    break;
-                case "musicvideos":
-                    imgUrl = "css/images/items/folders/musicvideos.png";
-                    break;
-                case "books":
-                    imgUrl = "css/images/items/folders/books.png";
-                    break;
-                case "channels":
-                    imgUrl = "css/images/items/folders/channels.png";
-                    break;
-                case "boxsets":
-                default:
-                    imgUrl = "css/images/items/folders/folder.png";
-                    break;
-            }
-
-            var cssClass = "posterItem";
-            cssClass += ' ' + options.shape + 'PosterItem';
-
-            if (item.CollectionType) {
-                cssClass += ' ' + item.CollectionType + 'PosterItem';
-            }
-
-            var href = item.url || LibraryBrowser.getHref(item, options.context);
-
-            html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
-
-            var style = "";
-
-            if (imgUrl) {
-                style += 'background-image:url(\'' + imgUrl + '\');';
-            }
-
-            var imageCssClass = 'posterItemImage';
-
-            html += '<div class="' + imageCssClass + '" style="' + style + '">';
-            html += '</div>';
-
-            html += "<div class='posterItemDefaultText posterItemText'>";
-            html += item.Name;
-            html += "</div>";
-
-            html += "</a>";
-        }
-
-        return html;
-    }
-
     function getDefaultSection(index) {
 
         switch (index) {
@@ -109,36 +25,11 @@
             case 2:
                 return 'latestmedia';
             case 3:
-                return 'latestchannelmedia';
+                return '';
             default:
                 return '';
         }
 
-    }
-
-    function loadlibraryButtons(elem, userId, index) {
-
-        getUserViews(userId).done(function (items) {
-
-            var html = '<br/>';
-
-            if (index) {
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyLibrary') + '</h1>';
-            }
-            html += '<div>';
-            html += createMediaLinks({
-                items: items,
-                shape: 'myLibrary',
-                showTitle: true,
-                centerText: true
-
-            });
-            html += '</div>';
-
-            $(elem).html(html);
-
-            handleLibraryLinkNavigations(elem);
-        });
     }
 
     function loadRecentlyAdded(elem, userId) {
@@ -224,7 +115,9 @@
 
             if (items.length) {
 
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyLibrary') + '</h1>';
+                var cssClass = index ? 'listHeader' : 'listHeader firstListHeader';
+
+                html += '<h1 class="' + cssClass + '">' + Globalize.translate('HeaderMyLibrary') + '</h1>';
 
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
@@ -326,23 +219,21 @@
         var section = displayPreferences.CustomPrefs['home' + index] || getDefaultSection(index);
 
         var elem = $('.section' + index, page);
-        
+
         if (section == 'latestmedia') {
             loadRecentlyAdded(elem, userId);
         }
         else if (section == 'librarytiles') {
             loadLibraryTiles(elem, userId, 'backdrop', index);
         }
-        else if (section == 'smalllibrarytiles') {
+        else if (section == 'smalllibrarytiles' || section == 'librarybuttons') {
             loadLibraryTiles(elem, userId, 'miniBackdrop', index);
         }
         else if (section == 'resume') {
             loadResume(elem, userId);
         }
-        else if (section == 'librarybuttons') {
-            loadlibraryButtons(elem, userId, index);
 
-        } else if (section == 'folders') {
+        else if (section == 'folders') {
             loadLibraryFolders(elem, userId, 'backdrop', index);
 
         } else if (section == 'latestchannelmedia') {

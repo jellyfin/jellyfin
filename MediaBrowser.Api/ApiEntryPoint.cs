@@ -3,15 +3,14 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Api
 {
@@ -100,7 +99,7 @@ namespace MediaBrowser.Api
         {
             var jobCount = _activeTranscodingJobs.Count;
 
-            Parallel.ForEach(_activeTranscodingJobs.ToList(), KillTranscodingJob);
+            Parallel.ForEach(_activeTranscodingJobs.ToList(), j => KillTranscodingJob(j, true));
 
             // Try to allow for some time to kill the ffmpeg processes and delete the partial stream files
             if (jobCount > 0)
@@ -291,16 +290,16 @@ namespace MediaBrowser.Api
         {
             var job = (TranscodingJob)state;
 
-            KillTranscodingJob(job);
+            KillTranscodingJob(job, true);
         }
 
         /// <summary>
         /// Kills the single transcoding job.
         /// </summary>
         /// <param name="deviceId">The device id.</param>
-        /// <param name="isVideo">if set to <c>true</c> [is video].</param>
+        /// <param name="deleteFiles">if set to <c>true</c> [delete files].</param>
         /// <exception cref="System.ArgumentNullException">sourcePath</exception>
-        internal void KillTranscodingJobs(string deviceId, bool isVideo)
+        internal void KillTranscodingJobs(string deviceId, bool deleteFiles)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
@@ -318,7 +317,7 @@ namespace MediaBrowser.Api
 
             foreach (var job in jobs)
             {
-                KillTranscodingJob(job);
+                KillTranscodingJob(job, deleteFiles);
             }
         }
 
@@ -326,7 +325,8 @@ namespace MediaBrowser.Api
         /// Kills the transcoding job.
         /// </summary>
         /// <param name="job">The job.</param>
-        private void KillTranscodingJob(TranscodingJob job)
+        /// <param name="deleteFiles">if set to <c>true</c> [delete files].</param>
+        private void KillTranscodingJob(TranscodingJob job, bool deleteFiles)
         {
             lock (_activeTranscodingJobs)
             {
@@ -344,48 +344,44 @@ namespace MediaBrowser.Api
                 }
             }
 
-            var process = job.Process;
-
-            var hasExited = true;
-
-            try
+            lock (job.ProcessLock)
             {
-                hasExited = process.HasExited;
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error determining if ffmpeg process has exited for {0}", ex, job.Path);
-            }
+                var process = job.Process;
 
-            if (!hasExited)
-            {
+                var hasExited = true;
+
                 try
                 {
-                    Logger.Info("Killing ffmpeg process for {0}", job.Path);
+                    hasExited = process.HasExited;
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error determining if ffmpeg process has exited for {0}", ex, job.Path);
+                }
 
-                    process.Kill();
+                if (!hasExited)
+                {
+                    try
+                    {
+                        Logger.Info("Killing ffmpeg process for {0}", job.Path);
 
-                    // Need to wait because killing is asynchronous
-                    process.WaitForExit(5000);
-                }
-                catch (Win32Exception ex)
-                {
-                    Logger.ErrorException("Error killing transcoding job for {0}", ex, job.Path);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Logger.ErrorException("Error killing transcoding job for {0}", ex, job.Path);
-                }
-                catch (NotSupportedException ex)
-                {
-                    Logger.ErrorException("Error killing transcoding job for {0}", ex, job.Path);
+                        //process.Kill();
+                        process.StandardInput.WriteLine("q");
+
+                        // Need to wait because killing is asynchronous
+                        process.WaitForExit(5000);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error killing transcoding job for {0}", ex, job.Path);
+                    }
                 }
             }
 
-            // Dispose the process
-            process.Dispose();
-
-            DeletePartialStreamFiles(job.Path, job.Type, 0, 1500);
+            if (deleteFiles)
+            {
+                DeletePartialStreamFiles(job.Path, job.Type, 0, 1500);
+            }
         }
 
         private async void DeletePartialStreamFiles(string path, TranscodingJobType jobType, int retryCount, int delayMs)
@@ -494,6 +490,8 @@ namespace MediaBrowser.Api
         public string DeviceId { get; set; }
 
         public CancellationTokenSource CancellationTokenSource { get; set; }
+
+        public object ProcessLock = new object();
     }
 
     /// <summary>

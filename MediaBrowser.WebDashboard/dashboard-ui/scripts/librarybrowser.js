@@ -515,8 +515,11 @@
                     options.shape = 'banner';
                     options.coverImage = true;
                 }
-                else {
+                else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 0.6666667) < .2) {
                     options.shape = 'portrait';
+                }
+                else {
+                    options.shape = options.defaultShape || 'portrait';
                 }
             }
 

@@ -83,7 +83,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var cancellationTokenSource = new CancellationTokenSource();
 
-            var state = GetState(request, cancellationTokenSource.Token).Result;
+            var state = await GetState(request, cancellationTokenSource.Token).ConfigureAwait(false);
 
             var playlist = state.OutputFilePath;
 
@@ -154,7 +154,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.Int32.</returns>
         protected int GetSegmentWait()
         {
-            var minimumSegmentCount = 3;
+            var minimumSegmentCount = 2;
             var quality = GetQualitySetting();
 
             if (quality == EncodingQuality.HighSpeed || quality == EncodingQuality.HighQuality)

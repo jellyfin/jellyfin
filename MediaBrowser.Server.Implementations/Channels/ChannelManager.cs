@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Collections.Concurrent;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -23,7 +24,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Channels
 {
-    public class ChannelManager : IChannelManager
+    public class ChannelManager : IChannelManager, IDisposable
     {
         private IChannel[] _channels;
         private IChannelFactory[] _factories;
@@ -39,6 +40,9 @@ namespace MediaBrowser.Server.Implementations.Channels
         private readonly IJsonSerializer _jsonSerializer;
 
         private readonly ILocalizationManager _localization;
+        private readonly ConcurrentDictionary<Guid, bool> _refreshedItems = new ConcurrentDictionary<Guid, bool>();
+
+        private Timer _refreshTimer;
 
         public ChannelManager(IUserManager userManager, IDtoService dtoService, ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IUserDataManager userDataManager, IJsonSerializer jsonSerializer, ILocalizationManager localization)
         {
@@ -51,6 +55,8 @@ namespace MediaBrowser.Server.Implementations.Channels
             _userDataManager = userDataManager;
             _jsonSerializer = jsonSerializer;
             _localization = localization;
+
+            _refreshTimer = new Timer(s => _refreshedItems.Clear(), null, TimeSpan.FromHours(3), TimeSpan.FromHours(3));
         }
 
         private TimeSpan CacheLength
@@ -203,8 +209,8 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             if (requiresCallback != null)
             {
-                results = await requiresCallback.GetChannelItemMediaInfo(item.ExternalId, cancellationToken)
-                   .ConfigureAwait(false);
+                results = await GetChannelItemMediaSourcesInternal(requiresCallback, item.ExternalId, cancellationToken)
+                            .ConfigureAwait(false);
             }
             else
             {
@@ -219,6 +225,31 @@ namespace MediaBrowser.Server.Implementations.Channels
             sources.InsertRange(0, cachedVersions);
 
             return sources;
+        }
+
+        private readonly ConcurrentDictionary<string, Tuple<DateTime, List<ChannelMediaInfo>>> _channelItemMediaInfo =
+            new ConcurrentDictionary<string, Tuple<DateTime, List<ChannelMediaInfo>>>();
+
+        private async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaSourcesInternal(IRequiresMediaInfoCallback channel, string id, CancellationToken cancellationToken)
+        {
+            Tuple<DateTime, List<ChannelMediaInfo>> cachedInfo;
+
+            if (_channelItemMediaInfo.TryGetValue(id, out cachedInfo))
+            {
+                if ((DateTime.UtcNow - cachedInfo.Item1).TotalMinutes < 5)
+                {
+                    return cachedInfo.Item2;
+                }
+            }
+
+            var mediaInfo = await channel.GetChannelItemMediaInfo(id, cancellationToken)
+                   .ConfigureAwait(false);
+            var list = mediaInfo.ToList();
+
+            var item2 = new Tuple<DateTime, List<ChannelMediaInfo>>(DateTime.UtcNow, list);
+            _channelItemMediaInfo.AddOrUpdate(id, item2, (key, oldValue) => item2);
+
+            return list;
         }
 
         public IEnumerable<MediaSourceInfo> GetCachedChannelItemMediaSources(string id)
@@ -515,11 +546,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                     {
                         try
                         {
-                            var result = await indexable.GetLatestMedia(new ChannelLatestMediaSearch
-                            {
-                                UserId = userId
-
-                            }, cancellationToken).ConfigureAwait(false);
+                            var result = await GetLatestItems(indexable, i, userId, cancellationToken).ConfigureAwait(false);
 
                             var resultItems = result.ToList();
 
@@ -585,6 +612,65 @@ namespace MediaBrowser.Server.Implementations.Channels
             };
         }
 
+        private async Task<IEnumerable<ChannelItemInfo>> GetLatestItems(ISupportsLatestMedia indexable, IChannel channel, string userId, CancellationToken cancellationToken)
+        {
+            var cacheLength = TimeSpan.FromHours(12);
+            var cachePath = GetChannelDataCachePath(channel, userId, "channelmanager-latest", null, false);
+
+            try
+            {
+                if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                {
+                    return _jsonSerializer.DeserializeFromFile<List<ChannelItemInfo>>(cachePath);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+
+            await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                try
+                {
+                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                    {
+                        return _jsonSerializer.DeserializeFromFile<List<ChannelItemInfo>>(cachePath);
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+
+                }
+                catch (DirectoryNotFoundException)
+                {
+
+                }
+
+                var result = await indexable.GetLatestMedia(new ChannelLatestMediaSearch
+                {
+                    UserId = userId
+
+                }, cancellationToken).ConfigureAwait(false);
+
+                var resultItems = result.ToList();
+
+                CacheResponse(resultItems, cachePath);
+
+                return resultItems;
+            }
+            finally
+            {
+                _resourcePool.Release();
+            }
+        }
+
         public async Task<QueryResult<BaseItemDto>> GetAllMedia(AllChannelMediaQuery query, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrWhiteSpace(query.UserId)
@@ -614,11 +700,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                     {
                         try
                         {
-                            var result = await indexable.GetAllMedia(new InternalAllChannelMediaQuery
-                            {
-                                UserId = userId
-
-                            }, cancellationToken).ConfigureAwait(false);
+                            var result = await GetAllItems(indexable, i, userId, cancellationToken).ConfigureAwait(false);
 
                             return new Tuple<IChannel, ChannelItemResult>(i, result);
                         }
@@ -675,6 +757,63 @@ namespace MediaBrowser.Server.Implementations.Channels
                 TotalRecordCount = totalCount,
                 Items = returnItemArray
             };
+        }
+
+        private async Task<ChannelItemResult> GetAllItems(IIndexableChannel indexable, IChannel channel, string userId, CancellationToken cancellationToken)
+        {
+            var cacheLength = TimeSpan.FromHours(12);
+            var cachePath = GetChannelDataCachePath(channel, userId, "channelmanager-allitems", null, false);
+
+            try
+            {
+                if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                {
+                    return _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+
+            await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                try
+                {
+                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                    {
+                        return _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+
+                }
+                catch (DirectoryNotFoundException)
+                {
+
+                }
+
+                var result = await indexable.GetAllMedia(new InternalAllChannelMediaQuery
+                {
+                    UserId = userId
+
+                }, cancellationToken).ConfigureAwait(false);
+
+                CacheResponse(result, cachePath);
+
+                return result;
+            }
+            finally
+            {
+                _resourcePool.Release();
+            }
         }
 
         public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
@@ -764,11 +903,9 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 if (!startIndex.HasValue && !limit.HasValue)
                 {
-                    var channelItemResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
-
                     if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                     {
-                        return channelItemResult;
+                        return _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
                     }
                 }
             }
@@ -789,11 +926,9 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
                     if (!startIndex.HasValue && !limit.HasValue)
                     {
-                        var channelItemResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
-
                         if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                         {
-                            return channelItemResult;
+                            return _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
                         }
                     }
                 }
@@ -837,7 +972,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
         }
 
-        private void CacheResponse(ChannelItemResult result, string path)
+        private void CacheResponse(object result, string path)
         {
             try
             {
@@ -993,8 +1128,8 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.ProductionYear = info.ProductionYear;
                 item.ProviderIds = info.ProviderIds;
 
-                item.DateCreated = info.DateCreated.HasValue ? 
-                    info.DateCreated.Value : 
+                item.DateCreated = info.DateCreated.HasValue ?
+                    info.DateCreated.Value :
                     DateTime.UtcNow;
             }
 
@@ -1042,14 +1177,14 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task RefreshIfNeeded(BaseItem program, CancellationToken cancellationToken)
         {
-            //if (_refreshedPrograms.ContainsKey(program.Id))
+            if (_refreshedItems.ContainsKey(program.Id))
             {
-                //return;
+                return;
             }
 
             await program.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
-            //_refreshedPrograms.TryAdd(program.Id, true);
+            _refreshedItems.TryAdd(program.Id, true);
         }
 
         internal IChannel GetChannelProvider(Channel channel)
@@ -1154,6 +1289,15 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var name = _localization.GetLocalizedString("ViewTypeChannels");
             return await _libraryManager.GetNamedView(name, "channels", "zz_" + name, cancellationToken).ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+            if (_refreshTimer != null)
+            {
+                _refreshTimer.Dispose();
+                _refreshTimer = null;
+            }
         }
     }
 }

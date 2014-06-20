@@ -47,6 +47,7 @@
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: 'auto',
+                defaultShape: 'square',
                 showTitle: true,
                 centerText: true,
                 context: 'channels',
