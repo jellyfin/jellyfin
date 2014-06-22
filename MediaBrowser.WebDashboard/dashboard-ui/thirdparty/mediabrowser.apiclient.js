@@ -2614,6 +2614,27 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
+            Gets artists from an item
+        */
+        self.getAlbumArtists = function (userId, options) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            options = options || {};
+            options.userId = userId;
+
+            var url = self.getUrl("AlbumArtists", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
             Gets genres from an item
         */
         self.getGenres = function (userId, options) {

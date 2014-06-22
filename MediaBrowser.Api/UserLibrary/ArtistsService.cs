@@ -20,6 +20,11 @@ namespace MediaBrowser.Api.UserLibrary
     {
     }
 
+    [Route("/AlbumArtists", "GET", Summary = "Gets all album artists from a given item, folder, or the entire library")]
+    public class GetAlbumArtists : GetItemsByName
+    {
+    }
+
     [Route("/Artists/{Name}", "GET", Summary = "Gets an artist, by name")]
     public class GetArtist : IReturn<BaseItemDto>
     {
@@ -102,6 +107,18 @@ namespace MediaBrowser.Api.UserLibrary
         }
 
         /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetAlbumArtists request)
+        {
+            var result = GetResult(request);
+
+            return ToOptimizedResult(result);
+        }
+
+        /// <summary>
         /// Gets all items.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -109,6 +126,11 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
         protected override IEnumerable<MusicArtist> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
+            if (request is GetAlbumArtists)
+            {
+                return items.OfType<MusicArtist>();
+            }
+
             return items
                 .OfType<IHasArtist>()
                 .Where(i => !(i is MusicAlbum))
