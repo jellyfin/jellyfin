@@ -103,12 +103,12 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSearchCapabilities()
         {
-            return new Headers { { "SearchCaps", string.Empty } };
+            return new Headers(true) { { "SearchCaps", "upnp:class,dc:title,upnp:artist" } };
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSortCapabilities()
         {
-            return new Headers { { "SortCaps", string.Empty } };
+            return new Headers(true) { { "SortCaps", string.Empty } };
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSystemUpdateID()
@@ -120,7 +120,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private IEnumerable<KeyValuePair<string, string>> HandleXGetFeatureList()
         {
-            return new Headers { { "FeatureList", GetFeatureListXml() } };
+            return new Headers(true) { { "FeatureList", GetFeatureListXml() } };
         }
 
         private string GetFeatureListXml()
@@ -386,7 +386,21 @@ namespace MediaBrowser.Dlna.ContentDirectory
                  || string.Equals(id, "1", StringComparison.OrdinalIgnoreCase)
 
                  ? user.RootFolder
-                 : _libraryManager.GetItemById(new Guid(id));
+                 : ParseItemId(id, user);
+        }
+
+        private BaseItem ParseItemId(string id, User user)
+        {
+            Guid itemId;
+
+            if (Guid.TryParse(id, out itemId))
+            {
+                return _libraryManager.GetItemById(itemId);
+            }
+
+            Logger.Error("Error parsing item Id: {0}. Returning user root folder.", id);
+
+            return user.RootFolder;
         }
     }
 }

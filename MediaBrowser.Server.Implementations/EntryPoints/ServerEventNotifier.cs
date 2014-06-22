@@ -9,7 +9,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Tasks;
 using System;
 using System.Threading;
 
@@ -74,6 +73,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             _userManager.UserDeleted += userManager_UserDeleted;
             _userManager.UserUpdated += userManager_UserUpdated;
+            _userManager.UserConfigurationUpdated += _userManager_UserConfigurationUpdated;
 
             _appHost.HasPendingRestartChanged += kernel_HasPendingRestartChanged;
 
@@ -84,6 +84,13 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _installationManager.PackageInstallationFailed += _installationManager_PackageInstallationFailed;
 
             _taskManager.TaskCompleted += _taskManager_TaskCompleted;
+        }
+
+        void _userManager_UserConfigurationUpdated(object sender, GenericEventArgs<User> e)
+        {
+            var dto = _dtoService.GetUserDto(e.Argument);
+
+            _serverManager.SendWebSocketMessage("UserConfigurationUpdated", dto);
         }
 
         void _installationManager_PackageInstalling(object sender, InstallationEventArgs e)
@@ -171,6 +178,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 _userManager.UserDeleted -= userManager_UserDeleted;
                 _userManager.UserUpdated -= userManager_UserUpdated;
+                _userManager.UserConfigurationUpdated -= _userManager_UserConfigurationUpdated;
 
                 _installationManager.PluginUninstalled -= InstallationManager_PluginUninstalled;
                 _installationManager.PackageInstalling -= _installationManager_PackageInstalling;

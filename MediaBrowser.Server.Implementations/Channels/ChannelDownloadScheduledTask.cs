@@ -232,12 +232,23 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             else
             {
+                File.Delete(response.TempFilePath);
+
                 throw new ApplicationException("Unexpected response type encountered: " + response.ContentType);
             }
 
             File.Move(response.TempFilePath, destination);
 
             await RefreshMediaSourceItem(destination, cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                File.Delete(response.TempFilePath);
+            }
+            catch
+            {
+                
+            }
         }
 
         private async Task RefreshMediaSourceItems(IEnumerable<MediaSourceInfo> items, CancellationToken cancellationToken)
@@ -265,7 +276,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             return new ITaskTrigger[]
                 {
-                    new IntervalTrigger{ Interval = TimeSpan.FromHours(4)},
+                    new IntervalTrigger{ Interval = TimeSpan.FromHours(6)},
                 };
         }
 

@@ -4,6 +4,7 @@ using MediaBrowser.Dlna.Server;
 using MediaBrowser.Dlna.Service;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -22,9 +23,21 @@ namespace MediaBrowser.Dlna.ConnectionManager
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
         {
-            var deviceId = "test";
+            if (string.Equals(methodName, "GetProtocolInfo", StringComparison.OrdinalIgnoreCase))
+            {
+                return HandleGetProtocolInfo();
+            }
 
             throw new ResourceNotFoundException("Unexpected control request name: " + methodName);
+        }
+
+        private IEnumerable<KeyValuePair<string, string>> HandleGetProtocolInfo()
+        {
+            return new Headers(true)
+            {
+                { "Source", _profile.ProtocolInfo },
+                { "Sink", "" }
+            };
         }
     }
 }

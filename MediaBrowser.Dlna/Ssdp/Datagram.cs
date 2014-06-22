@@ -9,7 +9,7 @@ namespace MediaBrowser.Dlna.Ssdp
     public class Datagram
     {
         public IPEndPoint ToEndPoint { get; private set; }
-        public IPAddress FromEndPoint { get; private set; }
+        public IPEndPoint FromEndPoint { get; private set; }
         public string Message { get; private set; }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private readonly ILogger _logger;
 
-        public Datagram(IPEndPoint toEndPoint, IPAddress fromEndPoint, ILogger logger, string message, int totalSendCount)
+        public Datagram(IPEndPoint toEndPoint, IPEndPoint fromEndPoint, ILogger logger, string message, int totalSendCount)
         {
             Message = message;
             _logger = logger;
@@ -42,7 +42,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 if (FromEndPoint != null)
                 {
-                    client.Bind(new IPEndPoint(FromEndPoint, 0));
+                    client.Bind(FromEndPoint);
                 }
 
                 client.BeginSendTo(msg, 0, msg.Length, SocketFlags.None, ToEndPoint, result =>
@@ -53,7 +53,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error sending Datagram", ex);
+                        _logger.ErrorException("Error sending Datagram to {0} from {1}: " + Message, ex, ToEndPoint, FromEndPoint == null ? "" : FromEndPoint.ToString());
                     }
                     finally
                     {
@@ -69,7 +69,7 @@ namespace MediaBrowser.Dlna.Ssdp
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error sending Datagram", ex);
+                _logger.ErrorException("Error sending Datagram: " + Message, ex);
             }
             ++SendCount;
         }

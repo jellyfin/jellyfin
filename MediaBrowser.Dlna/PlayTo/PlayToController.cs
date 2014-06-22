@@ -132,7 +132,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        void _device_MediaChanged(object sender, MediaChangedEventArgs e)
+        async void _device_MediaChanged(object sender, MediaChangedEventArgs e)
         {
             var streamInfo = StreamParams.ParseFromUrl(e.OldMediaInfo.Url, _libraryManager);
             var progress = GetProgressInfo(e.OldMediaInfo, streamInfo);
@@ -140,6 +140,18 @@ namespace MediaBrowser.Dlna.PlayTo
             var positionTicks = progress.PositionTicks;
 
             ReportPlaybackStopped(e.OldMediaInfo, streamInfo, positionTicks);
+
+            try
+            {
+                streamInfo = StreamParams.ParseFromUrl(e.NewMediaInfo.Url, _libraryManager);
+                progress = GetProgressInfo(e.NewMediaInfo, streamInfo);
+
+                await _sessionManager.OnPlaybackStart(progress).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error reporting progress", ex);
+            }
         }
 
         async void _device_PlaybackStopped(object sender, PlaybackStoppedEventArgs e)

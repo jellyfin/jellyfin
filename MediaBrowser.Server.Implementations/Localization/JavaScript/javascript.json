@@ -186,5 +186,6 @@
 	"LabelUnknownLanaguage": "Unknown language",
 	"HeaderCurrentSubtitles": "Current Subtitles",
 	"MessageDownloadQueued": "The download has been queued.",
-	"MessageAreYouSureDeleteSubtitles": "Are you sure you wish to delete this subtitle file?"
+	"MessageAreYouSureDeleteSubtitles": "Are you sure you wish to delete this subtitle file?",
+	"ButtonRemoteControl": "Remote Control"
 }

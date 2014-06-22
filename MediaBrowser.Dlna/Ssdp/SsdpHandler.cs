@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Text;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Logging;
@@ -79,9 +80,27 @@ namespace MediaBrowser.Dlna.Ssdp
             ReloadAliveNotifier();
         }
 
+        public void SendRendererSearchMessage(IPEndPoint localIp)
+        {
+            SendSearchMessage("urn:schemas-upnp-org:device:MediaRenderer:1", "3", localIp);
+        }
+
+        public void SendSearchMessage(string deviceSearchType, string mx, IPEndPoint localIp)
+        {
+            var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            values["HOST"] = "239.255.255.250:1900";
+            values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
+            values["ST"] = deviceSearchType;
+            values["MAN"] = "\"ssdp:discover\"";
+            values["MX"] = mx;
+
+            SendDatagram("M-SEARCH * HTTP/1.1", values, localIp);
+        }
+
         public void SendDatagram(string header,
             Dictionary<string, string> values,
-            IPAddress localAddress,
+            IPEndPoint localAddress,
             int sendCount = 1)
         {
             SendDatagram(header, values, _ssdpEndp, localAddress, sendCount);
@@ -90,7 +109,7 @@ namespace MediaBrowser.Dlna.Ssdp
         public void SendDatagram(string header,
             Dictionary<string, string> values,
             IPEndPoint endpoint,
-            IPAddress localAddress,
+            IPEndPoint localAddress,
             int sendCount = 1)
         {
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
@@ -116,7 +135,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 if (string.Equals(deviceType, "ssdp:all", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(deviceType, d.Type, StringComparison.OrdinalIgnoreCase))
                 {
-                    SendDatagram(header, values, endpoint, d.Address);
+                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0));
                 }
             }
         }
@@ -231,8 +250,15 @@ namespace MediaBrowser.Dlna.Ssdp
             try
             {
                 EndPoint endpoint = new IPEndPoint(IPAddress.Any, SSDPPort);
-                var receivedCount = _socket.EndReceiveFrom(result, ref endpoint);
+
+                var length = _socket.EndReceiveFrom(result, ref endpoint);
+
                 var received = (byte[])result.AsyncState;
+
+                if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+                {
+                    _logger.Debug(Encoding.ASCII.GetString(received));
+                }
 
                 var args = SsdpHelper.ParseSsdpResponse(received, (IPEndPoint)endpoint);
 
@@ -341,7 +367,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 _logger.Debug("{0} said {1}", dev.USN, type);
             }
 
-            SendDatagram(header, values, dev.Address, sendCount);
+            SendDatagram(header, values, new IPEndPoint(dev.Address, 0), sendCount);
         }
 
         public void RegisterNotification(Guid uuid, Uri descriptionUri, IPAddress address, IEnumerable<string> services)
