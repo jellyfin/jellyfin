@@ -126,6 +126,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 stream.RealFrameRate = GetFrameRate(streamInfo.r_frame_rate);
 
                 stream.BitDepth = GetBitDepth(stream.PixelFormat);
+
+                stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1",
+                    StringComparison.OrdinalIgnoreCase);
             }
             else
             {

@@ -6,13 +6,11 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace MediaBrowser.Dlna.ConnectionManager
 {
     public class ControlHandler : BaseControlHandler
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly DeviceProfile _profile;
 
         public ControlHandler(ILogger logger, DeviceProfile profile, IServerConfigurationManager config)

@@ -514,7 +514,8 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetVideoLevel,
                     streamInfo.TargetFramerate,
                     streamInfo.TargetPacketLength,
-                    streamInfo.TranscodeSeekInfo);
+                    streamInfo.TranscodeSeekInfo,
+                    streamInfo.IsTargetAnamorphic);
             }
 
             return null;

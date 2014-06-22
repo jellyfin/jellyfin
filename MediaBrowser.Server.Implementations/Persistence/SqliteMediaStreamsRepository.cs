@@ -58,6 +58,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             AddPixelFormatColumnCommand();
             AddBitDepthCommand();
+            AddIsAnamorphicColumn();
 
             PrepareStatements();
 
@@ -126,6 +127,37 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.RunQueries(new[] { builder.ToString() }, _logger);
         }
 
+        private void AddIsAnamorphicColumn()
+        {
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(mediastreams)";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(1))
+                        {
+                            var name = reader.GetString(1);
+
+                            if (string.Equals(name, "IsAnamorphic", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var builder = new StringBuilder();
+
+            builder.AppendLine("alter table mediastreams");
+            builder.AppendLine("add column IsAnamorphic BIT NULL");
+
+            _connection.RunQueries(new[] { builder.ToString() }, _logger);
+        }
+
         private readonly string[] _saveColumns =
         {
             "ItemId",
@@ -150,7 +182,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "RealFrameRate",
             "Level",
             "PixelFormat",
-            "BitDepth"
+            "BitDepth",
+            "IsAnamorphic"
         };
 
         /// <summary>
@@ -319,6 +352,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 item.BitDepth = reader.GetInt32(22);
             }
 
+            if (!reader.IsDBNull(23))
+            {
+                item.IsAnamorphic = reader.GetBoolean(23);
+            }
+
             return item;
         }
 
@@ -382,6 +420,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveStreamCommand.GetParameter(20).Value = stream.Level;
                     _saveStreamCommand.GetParameter(21).Value = stream.PixelFormat;
                     _saveStreamCommand.GetParameter(22).Value = stream.BitDepth;
+                    _saveStreamCommand.GetParameter(23).Value = stream.IsAnamorphic;
 
                     _saveStreamCommand.Transaction = transaction;
                     _saveStreamCommand.ExecuteNonQuery();

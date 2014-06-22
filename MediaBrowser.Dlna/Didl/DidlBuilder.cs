@@ -179,7 +179,8 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.TargetVideoLevel,
                 streamInfo.TargetFramerate,
                 streamInfo.TargetPacketLength,
-                streamInfo.TargetTimestamp);
+                streamInfo.TargetTimestamp,
+                streamInfo.IsTargetAnamorphic);
 
             var filename = url.Substring(0, url.IndexOf('?'));
 
@@ -203,7 +204,8 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.TargetVideoLevel,
                 streamInfo.TargetFramerate,
                 streamInfo.TargetPacketLength,
-                streamInfo.TranscodeSeekInfo);
+                streamInfo.TranscodeSeekInfo,
+                streamInfo.IsTargetAnamorphic);
 
             res.SetAttribute("protocolInfo", String.Format(
                 "http-get:*:{0}:{1}",

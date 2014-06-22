@@ -92,7 +92,9 @@ namespace MediaBrowser.Dlna.Service
                 Xml = xml,
                 IsSuccessful = true
             };
-            Logger.Debug(xml);
+
+            //Logger.Debug(xml);
+
             controlResponse.Headers.Add("EXT", string.Empty);
 
             return controlResponse;

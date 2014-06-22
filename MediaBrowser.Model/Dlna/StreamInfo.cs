@@ -348,6 +348,19 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
+        public bool? IsTargetAnamorphic
+        {
+            get
+            {
+                if (IsDirectStream)
+                {
+                    return TargetVideoStream == null ? null : TargetVideoStream.IsAnamorphic;
+                }
+
+                return false;
+            }
+        }
+
         public int? TargetWidth
         {
             get

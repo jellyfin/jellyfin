@@ -116,6 +116,12 @@ namespace MediaBrowser.Server.Implementations.Library
                         return true;
                     }
                 }
+
+                // Ignore samples
+                if (filename.IndexOf(".sample.", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return true;
+                }
             }
 
             return false;

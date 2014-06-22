@@ -96,6 +96,20 @@ namespace MediaBrowser.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Video,
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.NotEquals,
+                            Property = ProfileConditionValue.IsAnamorphic,
+                            Value = "true"
+                        }
+                    }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.Video,
                     Codec="h264",
                     Conditions = new []
                     {

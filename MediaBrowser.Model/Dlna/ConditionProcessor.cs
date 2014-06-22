@@ -17,7 +17,8 @@ namespace MediaBrowser.Model.Dlna
             double? videoLevel,
             double? videoFramerate,
             int? packetLength,
-            TransportStreamTimestamp? timestamp)
+            TransportStreamTimestamp? timestamp,
+            bool? isAnamorphic)
         {
             switch (condition.Property)
             {
@@ -27,6 +28,8 @@ namespace MediaBrowser.Model.Dlna
                 case ProfileConditionValue.Has64BitOffsets:
                     // TODO: Implement
                     return true;
+                case ProfileConditionValue.IsAnamorphic:
+                    return IsConditionSatisfied(condition, isAnamorphic);
                 case ProfileConditionValue.VideoFramerate:
                     return IsConditionSatisfied(condition, videoFramerate);
                 case ProfileConditionValue.VideoLevel:
@@ -146,6 +149,31 @@ namespace MediaBrowser.Model.Dlna
                 default:
                     throw new InvalidOperationException("Unexpected ProfileConditionType");
             }
+        }
+
+        private bool IsConditionSatisfied(ProfileCondition condition, bool? currentValue)
+        {
+            if (!currentValue.HasValue)
+            {
+                // If the value is unknown, it satisfies if not marked as required
+                return !condition.IsRequired;
+            }
+
+            bool expected;
+            if (BoolHelper.TryParseCultureInvariant(condition.Value, out expected))
+            {
+                switch (condition.Condition)
+                {
+                    case ProfileConditionType.Equals:
+                        return currentValue.Value == expected;
+                    case ProfileConditionType.NotEquals:
+                        return currentValue.Value != expected;
+                    default:
+                        throw new InvalidOperationException("Unexpected ProfileConditionType");
+                }
+            }
+
+            return false;
         }
         
         private bool IsConditionSatisfied(ProfileCondition condition, double? currentValue)
