@@ -1788,7 +1788,8 @@ namespace MediaBrowser.Api.Playback
                 state.TargetVideoLevel,
                 state.TargetFramerate,
                 state.TargetPacketLength,
-                state.TargetTimestamp);
+                state.TargetTimestamp,
+                state.IsTargetAnamorphic);
 
             if (mediaProfile != null)
             {
@@ -1885,7 +1886,8 @@ namespace MediaBrowser.Api.Playback
                     state.TargetVideoLevel,
                     state.TargetFramerate,
                     state.TargetPacketLength,
-                    state.TranscodeSeekInfo
+                    state.TranscodeSeekInfo,
+                    state.IsTargetAnamorphic
                     );
             }
 

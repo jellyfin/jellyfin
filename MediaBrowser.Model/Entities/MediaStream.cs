@@ -33,7 +33,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The channel layout.</value>
         public string ChannelLayout { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the bit rate.
         /// </summary>
@@ -155,11 +155,17 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The pixel format.</value>
         public string PixelFormat { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the level.
         /// </summary>
         /// <value>The level.</value>
         public double? Level { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is anamorphic.
+        /// </summary>
+        /// <value><c>true</c> if this instance is anamorphic; otherwise, <c>false</c>.</value>
+        public bool? IsAnamorphic { get; set; }
     }
 }

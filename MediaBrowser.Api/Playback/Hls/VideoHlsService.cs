@@ -160,7 +160,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf h264_mp4toannexb" : "-codec:v:0 copy";
+                return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf h264_mp4toannexb -bsf dump_extra" : "-codec:v:0 copy";
             }
 
             var keyFrameArg = state.ReadInputAtNativeFramerate ?

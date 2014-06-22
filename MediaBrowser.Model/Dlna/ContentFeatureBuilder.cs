@@ -108,7 +108,8 @@ namespace MediaBrowser.Model.Dlna
             double? videoLevel,
             double? videoFramerate,
             int? packetLength,
-            TranscodeSeekInfo transcodeSeekInfo)
+            TranscodeSeekInfo transcodeSeekInfo,
+            bool? isAnamorphic)
         {
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
             string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(runtimeTicks.HasValue, isDirectStream, transcodeSeekInfo);
@@ -145,7 +146,8 @@ namespace MediaBrowser.Model.Dlna
                 videoLevel,
                 videoFramerate,
                 packetLength,
-                timestamp);
+                timestamp,
+                isAnamorphic);
 
             string orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
 

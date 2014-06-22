@@ -2,18 +2,19 @@
 {
     public enum ProfileConditionValue
     {
-        AudioChannels,
-        AudioBitrate,
-        AudioProfile,
-        Width,
-        Height,
-        Has64BitOffsets,
-        PacketLength,
-        VideoBitDepth,
-        VideoBitrate,
-        VideoFramerate,
-        VideoLevel,
-        VideoProfile,
-        VideoTimestamp
+        AudioChannels = 0,
+        AudioBitrate = 1,
+        AudioProfile = 2,
+        Width = 3,
+        Height = 4,
+        Has64BitOffsets = 5,
+        PacketLength = 6,
+        VideoBitDepth = 7,
+        VideoBitrate = 8,
+        VideoFramerate = 9,
+        VideoLevel = 10,
+        VideoProfile = 11,
+        VideoTimestamp = 12,
+        IsAnamorphic = 13
     }
 }

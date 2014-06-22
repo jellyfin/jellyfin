@@ -1178,6 +1178,10 @@
             }
 
             if (type == "Video") {
+                if (stream.IsAnamorphic != null) {
+                    attributes.push(createAttribute("Anamorphic", (stream.IsAnamorphic ? 'Yes' : 'No')));
+                }
+                
                 attributes.push(createAttribute("Interlaced", (stream.IsInterlaced ? 'Yes' : 'No')));
             }
 
