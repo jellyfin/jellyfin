@@ -7,49 +7,56 @@
         //html += '<a href="index.html" class="headerButton headerButtonLeft headerHomeButton">';
         //html += '<img src="css/images/items/folders/home.png" />';
         //html += '</a>';
-        html += '<button type="button" data-role="none" title="Menu" class="headerButton libraryMenuButton headerButtonLeft">';
+
+        html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
         html += '<img src="css/images/menu.png" />';
         html += '</button>';
+
+        html += '<button type="button" data-role="none" title="Menu" class="headerButton libraryMenuButton barsMenuButton headerButtonLeft">';
+        html += '<img src="css/images/menu.png" />';
+        html += '</button>';
+        
         html += '<div class="libraryMenuButtonText headerButton"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></div>';
 
         html += '<div class="viewMenuSecondary">';
 
-        html += '<a href="nowplaying.html" class="headerButton headerButtonRight headerRemoteButton"><img src="css/images/remote.png" /></a>';
-
-        html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none"><div class="btnCastImage"></div></button>';
+        html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
 
         html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><img src="css/images/headersearch.png" /></button>';
 
-        if (user.Configuration.IsAdministrator) {
-            html += '<a href="dashboard.html" class="headerButton headerButtonRight headerSettingsButton"><img src="css/images/items/folders/settings.png" /></a>';
-        }
+        html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
-        html += '<a class="headerButton headerButtonRight" href="#" onclick="Dashboard.showUserFlyout(this);">';
-
+        var userButtonHeight = 22;
         if (user.PrimaryImageTag) {
 
             var url = ApiClient.getUserImageUrl(user.Id, {
-                height: 18,
+                height: userButtonHeight,
                 tag: user.PrimaryImageTag,
                 type: "Primary"
             });
 
-            html += '<img src="' + url + '" />';
+            html += '<img src="' + url + '" style="height:' + userButtonHeight + 'px;" />';
         } else {
-            html += '<img src="css/images/currentuserdefaultwhite.png" />';
+            html += '<img src="css/images/currentuserdefaultwhite.png" style="height:' + userButtonHeight + 'px;" />';
         }
 
         html += '</a>';
+
+        if (user.Configuration.IsAdministrator) {
+            html += '<a href="dashboard.html" class="headerButton headerButtonRight"><img src="css/images/items/folders/settings.png" /></a>';
+        }
 
         html += '</div>';
 
         html += '</div>';
 
         $(document.body).prepend(html);
+        $('.viewMenuBar').trigger('create');
 
         $(document).trigger('headercreated');
 
         $('.libraryMenuButton').createHoverTouch().on('hovertouch', showLibraryMenu);
+        $('.dashboardMenuButton').createHoverTouch().on('hovertouch', showDashboardMenu);
     }
 
     function getItemHref(item) {
@@ -76,9 +83,23 @@
 
     function showLibraryMenu() {
 
-        var panel = getLibraryMenu();
+        var page = $.mobile.activePage;
+        var panel;
 
-        updateLibraryNavLinks($.mobile.activePage);
+        panel = getLibraryMenu();
+        updateLibraryNavLinks(page);
+
+        $(panel).panel('toggle').off('mouseleave.librarymenu').on('mouseleave.librarymenu', function () {
+
+            $(this).panel("close");
+
+        });
+    }
+
+    function showDashboardMenu() {
+
+        var page = $.mobile.activePage;
+        var panel = getDashboardMenu(page);
 
         $(panel).panel('toggle').off('mouseleave.librarymenu').on('mouseleave.librarymenu', function () {
 
@@ -100,7 +121,7 @@
                 var viewMenuCssClass = (i.CollectionType || 'general') + 'ViewMenu';
 
                 var itemId = i.Id;
-                
+
                 if (i.CollectionType == "channels") {
                     itemId = "channels";
                 }
@@ -131,6 +152,8 @@
         });
     }
 
+    var requiresLibraryMenuRefresh = false;
+
     function getLibraryMenu() {
 
         var panel = $('#libraryPanel');
@@ -156,6 +179,33 @@
             panel = $('#libraryPanel').panel({}).trigger('create');
 
             updateLibraryMenu();
+        }
+        else if (requiresLibraryMenuRefresh) {
+            updateLibraryMenu();
+            requiresLibraryMenuRefresh = false;
+        }
+
+        return panel;
+    }
+
+    function getDashboardMenu(page) {
+
+        var panel = $('#dashboardPanel', page);
+
+        if (!panel.length) {
+
+            var html = '';
+
+            html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="b">';
+
+            html += '<div style="margin: 0 -1em;">';
+
+            html += '</div>';
+
+            html += '</div>';
+
+            $(document.body).append(html);
+            panel = $('#dashboardPanel').panel({}).trigger('create');
         }
 
         return panel;
@@ -187,10 +237,12 @@
         if (info.isLocalPlayer) {
 
             $('.btnCast').addClass('btnDefaultCast').removeClass('btnActiveCast');
+            $('.headerSelectedPlayer').html('');
 
         } else {
 
             $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
+            $('.headerSelectedPlayer').html(info.deviceName || info.name);
         }
     }
 
@@ -257,12 +309,30 @@
             $('.libraryMenuButtonText').html('<span>' + name + '</span>');
 
         }
-        else if ($(page).hasClass('allLibraryPage')) {
+            //else if ($(page).hasClass('type-interior')) {
+
+            //    $('.libraryMenuButtonText').html('<span>' + 'Dashboard' + '</span>');
+
+            //}
+        else if ($(page).hasClass('allLibraryPage') || $(page).hasClass('type-interior')) {
             $('.libraryMenuButtonText').html('<span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span>');
         }
     }
 
-    $(document).on('pageinit', ".libraryPage", function () {
+    function onWebSocketMessage(e, data) {
+
+        var msg = data;
+
+        if (msg.MessageType === "UserConfigurationUpdated") {
+
+            if (msg.Data.Id == Dashboard.getCurrentUserId()) {
+
+                requiresLibraryMenuRefresh = true;
+            }
+        }
+    }
+
+    $(document).on('pageinit', ".page", function () {
 
         var page = this;
 
@@ -274,10 +344,9 @@
 
         });
 
-    }).on('pagebeforeshow', ".libraryPage", function () {
+    }).on('pagebeforeshow', ".page:not(.standalonePage)", function () {
 
         var page = this;
-
         if (!$('.viewMenuBar').length) {
 
             Dashboard.getCurrentUser().done(function (user) {
@@ -294,14 +363,25 @@
             updateLibraryNavLinks(page);
         }
 
+        var jpage = $(page);
+        
+        if (jpage.hasClass('libraryPage')) {
+            $(document.body).addClass('libraryDocument').removeClass('dashboardDocument');
+        }
+        else if (jpage.hasClass('type-interior')) {
+            $(document.body).addClass('dashboardDocument').removeClass('libraryDocument');
+        } else {
+            $(document.body).removeClass('dashboardDocument').removeClass('libraryDocument');
+        }
+
     }).on('pagebeforeshow', ".page", function () {
 
         var page = this;
 
-        if ($(page).hasClass('libraryPage')) {
-            $('.viewMenuBar').show();
-        } else {
+        if ($(page).hasClass('standalonePage')) {
             $('.viewMenuBar').hide();
+        } else {
+            $('.viewMenuBar').show();
         }
 
     }).on('pageshow', ".libraryPage", function () {
@@ -316,8 +396,6 @@
             // Scroll back up so in case vertical scroll was messed with
             $(document).scrollTop(0);
         }
-
-
     });
 
     $(function () {
@@ -326,6 +404,7 @@
             updateCastIcon();
         });
 
+        $(ApiClient).on('websocketmessage', onWebSocketMessage);
     });
 
 })(window, document, jQuery);

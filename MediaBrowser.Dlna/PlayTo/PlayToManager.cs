@@ -118,7 +118,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                     socket.Bind(endPoint);
 
-                    _logger.Info("Creating SSDP listener");
+                    _logger.Info("Creating SSDP listener on {0}, network interface index {1}", localIp, networkInterfaceIndex);
 
                     var receiveBuffer = new byte[64000];
 
@@ -208,6 +208,33 @@ namespace MediaBrowser.Dlna.PlayTo
                     _logger.ErrorException("Error creating play to controller", ex);
                 }
             });
+        }
+
+        private void CreateNotifier(IPAddress localIp)
+        {
+            Task.Factory.StartNew(async (o) =>
+            {
+                try
+                {
+                    while (true)
+                    {
+                        _ssdpHandler.SendRendererSearchMessage(new IPEndPoint(localIp, 1900));
+
+                        var delay = _config.Configuration.DlnaOptions.ClientDiscoveryIntervalSeconds * 1000;
+
+                        await Task.Delay(delay, _tokenSource.Token).ConfigureAwait(false);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in notifier", ex);
+                }
+
+            }, _tokenSource.Token, TaskCreationOptions.LongRunning);
+
         }
 
         private void CreateNotifier(Socket socket)

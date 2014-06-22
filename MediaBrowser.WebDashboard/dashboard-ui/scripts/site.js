@@ -59,29 +59,12 @@ var Dashboard = {
         return Dashboard.getUserPromise;
     },
 
-    validateCurrentUser: function (page) {
+    validateCurrentUser: function () {
 
         Dashboard.getUserPromise = null;
 
         if (Dashboard.getCurrentUserId()) {
             Dashboard.getCurrentUser();
-        }
-
-        page = page || $.mobile.activePage;
-
-        var header = $('.header', page);
-
-        if (header.length) {
-            // Re-render the header
-            header.remove();
-
-            if (Dashboard.getUserPromise) {
-                Dashboard.getUserPromise.done(function (user) {
-                    Dashboard.ensureHeader(page, user);
-                });
-            } else {
-                Dashboard.ensureHeader(page);
-            }
         }
     },
 
@@ -544,21 +527,21 @@ var Dashboard = {
         Dashboard.validateCurrentUser();
     },
 
-    ensureHeader: function (page, user) {
+    ensureHeader: function (page) {
 
-        if (!page.hasClass('libraryPage') && !$('.headerButtons', page).length) {
+        if (page.hasClass('standalonePage')) {
 
-            Dashboard.renderHeader(page, user);
+            Dashboard.renderHeader(page);
         }
     },
 
-    renderHeader: function (page, user) {
-
-        var headerHtml = '';
+    renderHeader: function (page) {
 
         var header = $('.header', page);
 
         if (!header.length) {
+            var headerHtml = '';
+
             headerHtml += '<div class="header">';
 
             headerHtml += '<a class="logo" href="index.html">';
@@ -570,67 +553,9 @@ var Dashboard = {
 
             headerHtml += '</a>';
 
-            if (page.hasClass('type-interior')) {
-                headerHtml += '<div>';
-                headerHtml += '<button type="button" data-icon="bars" data-inline="true" data-iconpos="notext" class="ui-alt-icon" onclick="Dashboard.showDashboardMenu();">Menu</button>';
-                headerHtml += '</div>';
-            }
-
             headerHtml += '</div>';
             page.prepend(headerHtml);
-
-            header = $('.header', page).trigger('create');
         }
-
-        var imageColor = "black";
-
-        headerHtml = '';
-        headerHtml += '<div class="headerButtons">';
-
-        if (user && !page.hasClass('wizardPage')) {
-
-            headerHtml += '<a class="imageLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout(this);"><span class="currentUsername" style="font-weight:normal;">' + user.Name + '</span>';
-
-            if (user.PrimaryImageTag) {
-
-                var url = ApiClient.getUserImageUrl(user.Id, {
-                    width: 28,
-                    tag: user.PrimaryImageTag,
-                    type: "Primary"
-                });
-
-                headerHtml += '<img src="' + url + '" />';
-            } else {
-                headerHtml += '<img src="css/images/currentuserdefault' + imageColor + '.png" />';
-            }
-            headerHtml += '</a>';
-
-            if (user.Configuration.IsAdministrator) {
-
-                var href = window.location.toString().toLowerCase().indexOf('dashboard.html') == -1 ? 'dashboard.html' : '#';
-
-                headerHtml += '<a class="imageLink btnTools" href="' + href + '" data-role="button" data-icon="gear" data-inline="true" data-iconpos="notext">Tools</a>';
-            }
-
-        }
-
-        headerHtml += '</div>';
-
-        header.append(headerHtml).trigger('create');
-
-        if (!$('.supporterIcon', header).length) {
-
-            Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
-
-                if (pluginSecurityInfo.IsMBSupporter) {
-                    $('<a class="imageLink supporterIcon" href="supporter.html" title="Thank you for supporting Media Browser."><img src="css/images/supporter/supporterbadge.png" /></a>').insertBefore($('.btnTools', header));
-                } else {
-                    $('<a class="imageLink supporterIcon" href="supporter.html" title="Become a Media Browser supporter!"><img src="css/images/supporter/nonsupporterbadge.png" /></a>').insertBefore($('.btnTools', header));
-                }
-            });
-        }
-
-        $(Dashboard).trigger('interiorheaderrendered', [header, user]);
     },
 
     ensureToolsMenu: function (page, user) {
@@ -645,12 +570,9 @@ var Dashboard = {
 
             var html = '<div class="content-secondary ui-bar-a toolsSidebar">';
 
-            html += '<p class="libraryPanelHeader" style="margin: 30px 0 20px 25px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" style="height:28px;" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
-
-            if (user.Configuration.IsAdministrator) {
-                html += '<div style="position:absolute;top:20px;right:20px;"><a data-role="button" data-theme="b" data-icon="edit" data-iconpos="notext" href="edititemmetadata.html" title="Metadata Manager">Metadata Manager</a></div>';
-            }
-
+            //html += '<p class="libraryPanelHeader" style="margin: 25px 0 20px 20px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" style="height:28px;" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
+            html += '<br/>';
+            
             html += '<div class="sidebarLinks">';
 
             var links = Dashboard.getToolsMenuLinks(page);
@@ -688,7 +610,7 @@ var Dashboard = {
 
             html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="b">';
 
-            html += '<p class="libraryPanelHeader" style="margin: 20px 0 20px 15px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
+            html += '<p class="libraryPanelHeader" style="margin: 15px 0 15px 15px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
 
             for (i = 0, length = links.length; i < length; i++) {
 
@@ -717,13 +639,6 @@ var Dashboard = {
 
             $(page).append(html).trigger('create');
         }
-    },
-
-    showDashboardMenu: function () {
-
-        var page = $.mobile.activePage;
-
-        $("#dashboardPanel", page).panel("open");
     },
 
     getToolsMenuLinks: function (page) {
@@ -906,7 +821,7 @@ var Dashboard = {
         else if (msg.MessageType === "RestartRequired") {
             Dashboard.updateSystemInfo(msg.Data);
         }
-        else if (msg.MessageType === "UserUpdated") {
+        else if (msg.MessageType === "UserUpdated" || msg.MessageType === "UserConfigurationUpdated") {
             Dashboard.validateCurrentUser();
 
             var user = msg.Data;
@@ -949,15 +864,6 @@ var Dashboard = {
                 if (currentUser.Configuration.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "progress");
                     Dashboard.refreshSystemInfoFromServer();
-                }
-            });
-        }
-        else if (msg.MessageType === "ScheduledTaskEnded") {
-
-            Dashboard.getCurrentUser().done(function (currentUser) {
-
-                if (currentUser.Configuration.IsAdministrator) {
-                    Dashboard.showTaskCompletionNotification(msg.Data);
                 }
             });
         }
@@ -1005,35 +911,6 @@ var Dashboard = {
 
         });
 
-    },
-
-    showTaskCompletionNotification: function (result) {
-
-        var html = '';
-
-        if (result.Status == "Completed") {
-            html += '<img src="css/images/notifications/done.png" class="notificationIcon" />';
-            return;
-        }
-        else if (result.Status == "Cancelled") {
-            html += '<img src="css/images/notifications/info.png" class="notificationIcon" />';
-            return;
-        }
-        else {
-            html += '<img src="css/images/notifications/error.png" class="notificationIcon" />';
-        }
-
-        html += '<span>';
-        html += result.Name + " " + result.Status;
-        html += '</span>';
-
-        var timeout = 0;
-
-        if (result.Status == 'Cancelled') {
-            timeout = 2000;
-        }
-
-        Dashboard.showFooterNotification({ html: html, id: result.Id, forceShow: true, timeout: timeout });
     },
 
     showPackageInstallNotification: function (installation, status) {
@@ -1160,7 +1037,7 @@ var Dashboard = {
             parent = $('.ui-content', page)[0];
         }
 
-        $(parent).prepend("<h2 class='pageTitle'>" + (document.title || "&nbsp;") + "</h2>");
+        $(parent).prepend("<h1 class='pageTitle'>" + (document.title || "&nbsp;") + "</h1>");
     },
 
     setPageTitle: function (title) {
@@ -1439,7 +1316,7 @@ $(document).on('pagebeforeshow', ".page", function () {
             }
 
             Dashboard.ensureToolsMenu(page, user);
-            Dashboard.ensureHeader(page, user);
+            Dashboard.ensureHeader(page);
             Dashboard.ensurePageTitle(page);
         });
     }

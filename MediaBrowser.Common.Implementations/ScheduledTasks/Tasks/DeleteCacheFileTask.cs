@@ -74,7 +74,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
             progress.Report(90);
 
-            minDateModified = DateTime.UtcNow.AddDays(-3);
+            minDateModified = DateTime.UtcNow.AddDays(-2);
 
             try
             {

@@ -165,8 +165,6 @@
 
         Dashboard.hideLoadingMsg();
 
-        Dashboard.validateCurrentUser(page);
-
         Dashboard.alert(Globalize.translate('SettingsSaved'));
     }
 

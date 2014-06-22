@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.FolderImages
 
         public bool Supports(IHasImages item)
         {
-            return item is UserView || item is CollectionFolder;
+            return item is UserView || item is ICollectionFolder;
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)

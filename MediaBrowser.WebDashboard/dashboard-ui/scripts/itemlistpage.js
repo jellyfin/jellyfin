@@ -43,7 +43,7 @@
             else if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    shape: "portrait",
+                    shape: "auto",
                     showTitle: true,
                     centerText: true
                 });

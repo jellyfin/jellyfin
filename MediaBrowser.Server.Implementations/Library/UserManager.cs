@@ -5,8 +5,10 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,16 +48,19 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <value>The user repository.</value>
         private IUserRepository UserRepository { get; set; }
 
+        private readonly IXmlSerializer _xmlSerializer;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userRepository">The user repository.</param>
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer)
         {
             _logger = logger;
             UserRepository = userRepository;
+            _xmlSerializer = xmlSerializer;
             ConfigurationManager = configurationManager;
             Users = new List<User>();
         }
@@ -65,7 +70,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Occurs when [user updated].
         /// </summary>
         public event EventHandler<GenericEventArgs<User>> UserUpdated;
-
+        public event EventHandler<GenericEventArgs<User>> UserConfigurationUpdated;
+        
         /// <summary>
         /// Called when [user updated].
         /// </summary>
@@ -408,6 +414,13 @@ namespace MediaBrowser.Server.Implementations.Library
             };
         }
 
+        public void UpdateConfiguration(User user, UserConfiguration newConfiguration)
+        {
+            var xmlPath = user.ConfigurationFilePath;
+            Directory.CreateDirectory(Path.GetDirectoryName(xmlPath));
+            _xmlSerializer.SerializeToFile(newConfiguration, xmlPath);
 
+            EventHelper.FireEventIfNotNull(UserConfigurationUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+        }
     }
 }

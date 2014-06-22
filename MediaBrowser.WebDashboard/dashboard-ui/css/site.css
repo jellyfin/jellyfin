@@ -175,13 +175,6 @@ pre, textarea.pre {
     z-index: 99999;
 }
 
-.headerButtons {
-    float: right;
-    position: absolute;
-    top: 10px;
-    right: 5px;
-}
-
 .header .imageLink {
     display: inline-block;
 }
@@ -193,10 +186,6 @@ pre, textarea.pre {
 .header .imageLink img {
     height: 28px;
     vertical-align: middle;
-}
-
-.imageLink.supporterIcon {
-    display: none;
 }
 
 .btnCurrentUser {
@@ -226,6 +215,7 @@ h1 .imageLink {
 
 .pageTitle {
     margin-top: 0;
+    font-family: "Open Sans";
 }
 
 .imageButton {
@@ -278,12 +268,23 @@ h1 .imageLink {
     margin-bottom: 0!important;
 }
 
+.content-primary {
+    padding-top: 55px;
+}
+
 .content-secondary {
-    z-index: 99996;
-    background: #222;
+    z-index: 1000;
+    background: #333;
     border: 0;
-    margin-top: 40px;
+    border-right: 1px solid #ddd;
     display: none;
+    text-align: left;
+    width: 25%;
+    position: fixed;
+    top: 51px;
+    left: 0;
+    bottom: 0;
+    margin: 0;
 }
 
     .content-secondary h1 {
@@ -294,9 +295,9 @@ h1 .imageLink {
 
 .sidebarLinks a {
     display: block;
-    padding: 10px 20px 10px 30px;
+    padding: .6em 20px .6em 20px;
     text-decoration: none;
-    color: #fff!important;
+    color: #eee!important;
     text-shadow: none!important;
     font-weight: 400!important;
     font-size: 14px;
@@ -310,11 +311,12 @@ h1 .imageLink {
     .sidebarLinks a.selectedSidebarLink {
         background: #38c!important;
         color: #fff!important;
+        margin-right: 0;
     }
 
 .sidebarDivider {
     height: 1px;
-    background: #383838;
+    background: #444;
     margin: .25em 0;
 }
 
@@ -342,7 +344,7 @@ h1 .imageLink {
 }
 
 .dashboardPanelLink {
-    padding: .75em .5em .75em 1.25em;
+    padding: .5em .5em .5em 1.25em;
     display: block;
     text-decoration: none;
     color: #fff!important;
@@ -391,10 +393,6 @@ h1 .imageLink {
     .imgLogoIcon {
         height: 50px;
     }
-
-    .imageLink.supporterIcon {
-        display: inline-block;
-    }
 }
 
 @media all and (min-width: 750px) {
@@ -416,11 +414,6 @@ h1 .imageLink {
         padding-bottom: 15px;
     }
 
-    .headerButtons {
-        top: 20px;
-        right: 20px;
-    }
-
     .type-interior > .ui-content, .type-interior > .ui-panel-content-wrap > .ui-content {
         padding-right: 0;
         padding-left: 0;
@@ -429,33 +422,19 @@ h1 .imageLink {
     }
 
     .content-secondary {
-        text-align: left;
-        width: 34%;
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        margin: 0;
         display: block;
     }
 
     .content-primary {
-        width: 56%;
+        width: 65%;
         float: right;
-        padding: 10px 6% 3em 0;
+        padding: 80px 6% 3em 0;
         margin: 0;
     }
 
         .content-primary ul:first-child {
             margin-top: 0;
         }
-}
-
-@media all and (min-width: 850px) {
-
-    .content-primary {
-        padding-top: 0;
-    }
 }
 
 @media all and (min-width: 900px) {
@@ -469,11 +448,11 @@ h1 .imageLink {
 
 
     .content-secondary {
-        width: 30%;
+        width: 20%;
     }
 
     .content-primary {
-        width: 60%;
+        width: 70%;
     }
 }
 
@@ -481,11 +460,11 @@ h1 .imageLink {
 
 
     .content-secondary {
-        width: 25%;
+        width: 17%;
     }
 
     .content-primary {
-        width: 65%;
+        width: 74%;
     }
 }
 
@@ -497,7 +476,7 @@ h1 .imageLink {
     }
 
     .content-primary {
-        width: 70%;
+        width: 71%;
     }
 }
 
@@ -667,11 +646,6 @@ h1 .imageLink {
         max-width: 310px;
         max-height: 210px;
     }
-}
-
-/* Startup wizard */
-.wizardPage {
-    background: #e2e2e2;
 }
 
 .wizardContent {

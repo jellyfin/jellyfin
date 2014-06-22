@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Security;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Logging;
@@ -63,7 +64,7 @@ namespace MediaBrowser.Dlna.Service
 
             Logger.Debug("Received control request {0}", method.LocalName);
 
-            IEnumerable<KeyValuePair<string, string>> result = GetResult(method.LocalName, sparams);
+            var result = GetResult(method.LocalName, sparams);
 
             var env = new XmlDocument();
             env.AppendChild(env.CreateXmlDeclaration("1.0", "utf-8", string.Empty));
@@ -84,12 +85,14 @@ namespace MediaBrowser.Dlna.Service
                 response.AppendChild(ri);
             }
 
+            var xml = env.OuterXml.Replace("xmlns:m=", "xmlns:u=");
+            
             var controlResponse = new ControlResponse
             {
-                Xml = env.OuterXml,
+                Xml = xml,
                 IsSuccessful = true
             };
-
+            Logger.Debug(xml);
             controlResponse.Headers.Add("EXT", string.Empty);
 
             return controlResponse;

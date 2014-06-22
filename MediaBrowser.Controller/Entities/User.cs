@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -222,22 +221,11 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Saves the current configuration to the file system
-        /// </summary>
-        public void SaveConfiguration()
-        {
-            var xmlPath = ConfigurationFilePath;
-            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(xmlPath));
-            XmlSerializer.SerializeToFile(Configuration, xmlPath);
-        }
-
-        /// <summary>
         /// Updates the configuration.
         /// </summary>
         /// <param name="config">The config.</param>
-        /// <param name="serializer">The serializer.</param>
         /// <exception cref="System.ArgumentNullException">config</exception>
-        public void UpdateConfiguration(UserConfiguration config, IXmlSerializer serializer)
+        public void UpdateConfiguration(UserConfiguration config)
         {
             if (config == null)
             {
@@ -245,7 +233,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             Configuration = config;
-            SaveConfiguration();
+            UserManager.UpdateConfiguration(this, Configuration);
         }
     }
 }

@@ -131,3 +131,12 @@
 .ui-nosvg .ui-icon-expand:after {
     background-image: url("images/icons/expand.png");
 }
+
+.ui-icon-remote:after {
+    background-image: url("images/icons/remote.png");
+}
+
+/* Fallback */
+.ui-nosvg .ui-icon-remote:after {
+    background-image: url("images/icons/remote.png");
+}

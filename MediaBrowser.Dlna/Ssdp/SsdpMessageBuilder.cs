@@ -18,7 +18,7 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 builder.AppendFormat(argFormat, pair.Key, pair.Value);
             }
-            
+
             builder.Append("\r\n");
 
             return builder.ToString();

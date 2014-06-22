@@ -26,11 +26,11 @@
                 $('#contribute', page).show();
             }
 
+            DashboardPage.renderSupporterIcon(page, pluginSecurityInfo);
         });
 
         DashboardPage.reloadSystemInfo(page);
         DashboardPage.reloadNews(page);
-
         DashboardPage.sessionUpdateTimer = setInterval(DashboardPage.refreshSessionsLocally, 60000);
     },
 
@@ -55,7 +55,7 @@
             var port = systemInfo.HttpServerPortNumber;
 
             if (port == systemInfo.WebSocketPortNumber) {
-                
+
                 $('#ports', page).html(Globalize.translate('LabelRunningOnPort').replace('{0}', '<b>' + port + '</b>'));
             } else {
                 $('#ports', page).html(Globalize.translate('LabelRunningOnPorts').replace('{0}', '<b>' + port + '</b>').replace('{1}', '<b>' + systemInfo.WebSocketPortNumber + '</b>'));
@@ -736,6 +736,25 @@
             $('.externalUrl', page).html(remoteAccessHtml).show().trigger('create');
         } else {
             $('.externalUrl', page).hide();
+        }
+    },
+
+    renderSupporterIcon: function (page, pluginSecurityInfo) {
+
+        var imgUrl, text;
+
+        if (pluginSecurityInfo.IsMBSupporter) {
+
+            imgUrl = "css/images/supporter/supporterbadge.png";
+            text = "Thank you for supporting Media Browser.";
+
+            $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="supporter.html" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /></a><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span>');
+        } else {
+
+            imgUrl = "css/images/supporter/nonsupporterbadge.png";
+            text = "Please support Media Browser.";
+            
+            $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="supporter.html" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span></a>');
         }
     },
 

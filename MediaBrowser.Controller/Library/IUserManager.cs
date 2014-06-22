@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Events;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,14 @@ namespace MediaBrowser.Controller.Library
         event EventHandler<GenericEventArgs<User>> UserDeleted;
 
         event EventHandler<GenericEventArgs<User>> UserCreated;
+        event EventHandler<GenericEventArgs<User>> UserConfigurationUpdated;
+
+        /// <summary>
+        /// Updates the configuration.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="newConfiguration">The new configuration.</param>
+        void UpdateConfiguration(User user, UserConfiguration newConfiguration);
         
         /// <summary>
         /// Gets a User by Id

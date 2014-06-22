@@ -51,8 +51,6 @@
 
         var userId = getParameterByName("userId");
 
-        Dashboard.validateCurrentUser(page);
-
         if (userId) {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
         } else {

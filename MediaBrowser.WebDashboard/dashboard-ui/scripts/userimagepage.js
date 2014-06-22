@@ -43,7 +43,6 @@
 
         var page = $.mobile.activePage;
 
-        Dashboard.validateCurrentUser(page);
         reloadUser(page);
     }
 

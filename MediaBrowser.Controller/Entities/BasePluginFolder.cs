@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Entities
             DisplayMediaType = "CollectionFolder";
         }
 
-        public string CollectionType
+        public virtual string CollectionType
         {
             get { return Model.Entities.CollectionType.BoxSets; }
         }

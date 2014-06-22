@@ -6,7 +6,8 @@
     width: 28px;
     height: 100%;
     position: relative;
-    top: 1px;
+    top: 2px;
+    display: inline-block;
 }
 
 .btnDefaultCast .btnCastImage {
@@ -19,4 +20,22 @@
 
 .btnDisabledCast .btnCastImage {
     background-image: url(images/chromecast/ic_media_route_disabled_holo_dark.png);
+}
+
+.headerSelectedPlayer {
+    display: inline-block;
+    vertical-align: middle;
+    color: #ddd;
+    font-size: 11px;
+    margin-right: .5em;
+    height: 100%;
+    position: relative;
+    top: -19px;
+    font-family: "Open Sans";
+}
+
+@media all and (max-width: 800px) {
+    .headerSelectedPlayer {
+        display: none;
+    }
 }

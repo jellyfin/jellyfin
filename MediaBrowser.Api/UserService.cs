@@ -406,7 +406,7 @@ namespace MediaBrowser.Api
 
             Task.WaitAll(task);
 
-            user.UpdateConfiguration(dtoUser.Configuration, _xmlSerializer);
+            user.UpdateConfiguration(dtoUser.Configuration);
         }
 
         /// <summary>
@@ -420,7 +420,7 @@ namespace MediaBrowser.Api
 
             var newUser = _userManager.CreateUser(dtoUser.Name).Result;
 
-            newUser.UpdateConfiguration(dtoUser.Configuration, _xmlSerializer);
+            newUser.UpdateConfiguration(dtoUser.Configuration);
 
             var result = _dtoService.GetUserDto(newUser);
 

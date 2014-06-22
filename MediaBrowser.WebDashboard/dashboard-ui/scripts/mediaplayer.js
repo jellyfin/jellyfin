@@ -475,8 +475,7 @@
                 self.currentItem = item;
                 self.currentMediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
 
-                videoPlayer(self, item, self.currentMediaSource, startPosition, user);
-                mediaElement = self.initVideoPlayer();
+                mediaElement = self.playVideo(item, self.currentMediaSource, startPosition);
                 self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
             } else if (item.MediaType === "Audio") {
@@ -940,7 +939,7 @@
 
             var isVideo = self.currentItem.MediaType == "Video";
 
-            $(elem).off("ended.playnext").on("ended", function () {
+            $(elem).off("ended.playnext").one("ended", function () {
 
                 $(this).off();
 
@@ -1106,7 +1105,7 @@
 
             var playerElement = this;
 
-            $(playerElement).off('ended.playbackstopped');
+            $(playerElement).off('.mediaplayerevent').off('ended.playbackstopped');
 
             clearProgressInterval();
 
@@ -1259,25 +1258,25 @@
                 this.volume = initialVolume;
                 this.play();
 
-            }).on("volumechange", function () {
+            }).on("volumechange.mediaplayerevent", function () {
 
                 self.onVolumeChanged(this);
 
-            }).one("playing", function () {
+            }).one("playing.mediaplayerevent", function () {
 
                 $('.mediaPlayerAudioContainer').hide();
 
                 self.onPlaybackStart(this, item, mediaSource);
 
-            }).on("pause", function () {
+            }).on("pause.mediaplayerevent", function () {
 
                 self.onPlaystateChange(this);
 
-            }).on("playing", function () {
+            }).on("playing.mediaplayerevent", function () {
 
                 self.onPlaystateChange(this);
 
-            }).on("timeupdate", function () {
+            }).on("timeupdate.mediaplayerevent", function () {
 
                 self.setCurrentTime(self.getCurrentTicks(this));
 

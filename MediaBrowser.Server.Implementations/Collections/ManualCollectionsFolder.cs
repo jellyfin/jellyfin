@@ -27,5 +27,10 @@ namespace MediaBrowser.Server.Implementations.Collections
                 return !ActualChildren.Any() || base.IsHidden;
             }
         }
+
+        public override string CollectionType
+        {
+            get { return Model.Entities.CollectionType.BoxSets; }
+        }
     }
 }

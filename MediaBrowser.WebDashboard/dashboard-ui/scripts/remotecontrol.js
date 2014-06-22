@@ -252,6 +252,7 @@
                 }).map(function (s) {
                     return {
                         name: s.DeviceName,
+                        deviceName: s.DeviceName,
                         id: s.Id,
                         playerName: self.name,
                         appName: s.Client,

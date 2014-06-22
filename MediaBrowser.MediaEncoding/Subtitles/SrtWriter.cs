@@ -20,7 +20,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     cancellationToken.ThrowIfCancellationRequested();
 
                     writer.WriteLine(index.ToString(CultureInfo.InvariantCulture));
-                    writer.WriteLine(@"{0:hh\:mm\:ss\.fff} --> {1:hh\:mm\:ss\.fff}", TimeSpan.FromTicks(trackEvent.StartPositionTicks), TimeSpan.FromTicks(trackEvent.EndPositionTicks));
+                    writer.WriteLine(@"{0:hh\:mm\:ss\,fff} --> {1:hh\:mm\:ss\,fff}", TimeSpan.FromTicks(trackEvent.StartPositionTicks), TimeSpan.FromTicks(trackEvent.EndPositionTicks));
 
                     var text = trackEvent.Text;
 

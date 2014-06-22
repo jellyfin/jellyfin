@@ -19,7 +19,7 @@
 
             self.getNotificationsSummary().done(function (summary) {
 
-                var item = $('.btnNotifications').removeClass('levelNormal').removeClass('levelWarning').removeClass('levelError').html(summary.UnreadCount);
+                var item = $('.btnNotificationsInner').removeClass('levelNormal').removeClass('levelWarning').removeClass('levelError').html(summary.UnreadCount);
 
                 if (summary.UnreadCount) {
                     item.addClass('level' + summary.MaxUnreadNotificationLevel);
@@ -207,13 +207,9 @@
 
     window.Notifications = new notifications();
 
-    $(Dashboard).on('interiorheaderrendered', function (e, header, user) {
+    $(document).on('headercreated', function (e) {
 
-        if (!user || $('.notificationsButton', header).length) {
-            return;
-        }
-
-        $('<a class="imageLink btnNotifications" href="#" title="Notifications">0</a>').insertAfter($('.btnCurrentUser', header)).on('click', Notifications.showNotificationsFlyout);
+        $('<a class="headerButton headerButtonRight btnNotifications" href="#" title="Notifications"><div class="btnNotificationsInner">0</div></a>').insertBefore($('.headerUserButton')).on('click', Notifications.showNotificationsFlyout);
 
         Notifications.updateNotificationCount();
     });

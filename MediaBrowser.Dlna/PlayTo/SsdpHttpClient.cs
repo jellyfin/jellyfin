@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Common;
-using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -68,34 +67,7 @@ namespace MediaBrowser.Dlna.PlayTo
             options.RequestHeaders["NT"] = "upnp:event";
             options.RequestHeaders["TIMEOUT"] = "Second-" + timeOut.ToString(_usCulture);
 
-            // TODO: Method should be SUBSCRIBE
-            // https://github.com/stormboy/node-upnp-controlpoint/blob/master/lib/upnp-service.js#L106
-            using (await _httpClient.Get(options).ConfigureAwait(false))
-            {
-            }
-        }
-
-        public async Task RespondAsync(Uri url, 
-            string ip, 
-            int port, 
-            string localIp,
-            int eventport,
-            int timeOut = 3600)
-        {
-            var options = new HttpRequestOptions
-            {
-                Url = url.ToString(),
-                UserAgent = USERAGENT
-            };
-
-            options.RequestHeaders["HOST"] = ip + ":" + port.ToString(_usCulture);
-            options.RequestHeaders["CALLBACK"] = "<" + localIp + ":" + eventport.ToString(_usCulture) + ">";
-            options.RequestHeaders["NT"] = "upnp:event";
-            options.RequestHeaders["TIMEOUT"] = "Second-" + timeOut.ToString(_usCulture);
-
-            using (await _httpClient.Get(options).ConfigureAwait(false))
-            {
-            }
+            await _httpClient.SendAsync(options, "SUBSCRIBE").ConfigureAwait(false);
         }
 
         public async Task<XDocument> GetDataAsync(string url)

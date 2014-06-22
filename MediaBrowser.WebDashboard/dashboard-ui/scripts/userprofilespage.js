@@ -75,7 +75,6 @@
 
                 ApiClient.deleteUser(id).done(function () {
 
-                    Dashboard.validateCurrentUser(page);
                     UserProfilesPage.loadPageData();
                 });
             }
