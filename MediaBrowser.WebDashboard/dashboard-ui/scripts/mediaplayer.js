@@ -275,6 +275,11 @@
                 return false;
             }
 
+            if (videoStream && videoStream.IsAnamorphic) {
+                console.log('Transcoding because video is anamorphic');
+                return false;
+            }
+
             if (!mediaSource.Bitrate || mediaSource.Bitrate > bitrate) {
                 console.log('Transcoding because bitrate is too high');
                 return false;
