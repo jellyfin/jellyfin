@@ -140,7 +140,8 @@ namespace MediaBrowser.Api.Playback.Progressive
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                return state.VideoStream != null && IsH264(state.VideoStream) ? args + " -bsf h264_mp4toannexb -bsf dump_extra" : args;
+                // TODO: Switch to  -bsf dump_extra ?
+                return state.VideoStream != null && IsH264(state.VideoStream) ? args + " -bsf h264_mp4toannexb" : args;
             }
 
             const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+5))";
@@ -148,8 +149,6 @@ namespace MediaBrowser.Api.Playback.Progressive
             args += keyFrameArg;
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
-
-            var request = state.VideoRequest;
 
             // Add resolution params, if specified
             if (!hasGraphicalSubs)

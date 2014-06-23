@@ -18,7 +18,7 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
-  <AlbumArtPn>JPEG_SM</AlbumArtPn>
+  <AlbumArtPn>JPEG_TN</AlbumArtPn>
   <MaxAlbumArtWidth>512</MaxAlbumArtWidth>
   <MaxAlbumArtHeight>512</MaxAlbumArtHeight>
   <MaxIconWidth xsi:nil="true" />

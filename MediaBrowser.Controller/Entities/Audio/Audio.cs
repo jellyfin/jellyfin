@@ -79,16 +79,32 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             get
             {
+                var list = AlbumArtists;
+
+                list.AddRange(Artists);
+
+                return list;
+
+            }
+        }
+
+        [IgnoreDataMember]
+        public List<string> AlbumArtists
+        {
+            get
+            {
                 var list = new List<string>();
 
                 if (!string.IsNullOrEmpty(AlbumArtist))
                 {
                     list.Add(AlbumArtist);
                 }
-                list.AddRange(Artists);
 
                 return list;
-
+            }
+            set
+            {
+                AlbumArtist = value.FirstOrDefault();
             }
         }
 
@@ -132,7 +148,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns><c>true</c> if the specified name has artist; otherwise, <c>false</c>.</returns>
         public bool HasArtist(string name)
         {
-            return Artists.Contains(name, StringComparer.OrdinalIgnoreCase) || string.Equals(AlbumArtist, name, StringComparison.OrdinalIgnoreCase);
+            return AllArtists.Contains(name, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -168,7 +184,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             var info = GetItemLookupInfo<SongInfo>();
 
-            info.AlbumArtist = AlbumArtist;
+            info.AlbumArtists = AlbumArtists;
             info.Album = Album;
             info.Artists = Artists;
 

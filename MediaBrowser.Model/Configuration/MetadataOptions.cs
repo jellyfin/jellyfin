@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
-using System;
+using MediaBrowser.Model.Extensions;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -87,7 +86,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool IsMetadataSaverEnabled(string name)
         {
-            return !DisabledMetadataSavers.Contains(name, StringComparer.OrdinalIgnoreCase);
+            return !ListHelper.ContainsIgnoreCase(DisabledMetadataSavers, name);
         }
     }
 }

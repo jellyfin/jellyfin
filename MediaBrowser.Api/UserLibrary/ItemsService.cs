@@ -816,7 +816,7 @@ namespace MediaBrowser.Api.UserLibrary
             if (!string.IsNullOrEmpty(request.AlbumArtistStartsWithOrGreater))
             {
                 items = items.OfType<IHasAlbumArtist>()
-                    .Where(i => string.Compare(request.AlbumArtistStartsWithOrGreater, i.AlbumArtist, StringComparison.CurrentCultureIgnoreCase) < 1)
+                    .Where(i => string.Compare(request.AlbumArtistStartsWithOrGreater, i.AlbumArtists.FirstOrDefault(), StringComparison.CurrentCultureIgnoreCase) < 1)
                     .Cast<BaseItem>();
             }
 

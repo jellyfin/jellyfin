@@ -932,7 +932,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (hasAlbumArtist != null)
             {
-                dto.AlbumArtist = hasAlbumArtist.AlbumArtist;
+                dto.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
             }
 
             // Add video info

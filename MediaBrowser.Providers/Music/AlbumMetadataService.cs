@@ -105,7 +105,7 @@ namespace MediaBrowser.Providers.Music
             var updateType = ItemUpdateType.None;
             
             var albumArtist = songs
-                .Select(i => i.AlbumArtist)
+                .SelectMany(i => i.AlbumArtists)
                 .FirstOrDefault(i => !string.IsNullOrEmpty(i));
 
             if (!string.IsNullOrEmpty(albumArtist))

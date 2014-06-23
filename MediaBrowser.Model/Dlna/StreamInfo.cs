@@ -45,7 +45,7 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxWidth { get; set; }
         public int? MaxHeight { get; set; }
 
-        public double? MaxFramerate { get; set; }
+        public float? MaxFramerate { get; set; }
 
         public string DeviceProfileId { get; set; }
         public string DeviceId { get; set; }
@@ -191,7 +191,7 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Predicts the audio sample rate that will be in the output stream
         /// </summary>
-        public double? TargetFramerate
+        public float? TargetFramerate
         {
             get
             {

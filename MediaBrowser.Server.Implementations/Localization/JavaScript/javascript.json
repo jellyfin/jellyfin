@@ -122,8 +122,8 @@
 	"MessageTheFollowingItemsWillBeGrouped": "The following titles will be grouped into one item:",
 	"MessageConfirmItemGrouping": "Media Browser clients will automatically choose the optimal version to play based on device and network performance. Are you sure you wish to continue?",
 	"HeaderResume": "Resume",
-	"HeaderMyLibrary": "My Library",
-	"HeaderLibraryFolders": "Folder View",
+	"HeaderMyViews": "My Views",
+	"HeaderLibraryFolders": "Media Folders",
 	"HeaderLatestMedia": "Latest Media",
 	"ButtonMore": "More...",
 	"HeaderFavoriteMovies": "Favorite Movies",
@@ -187,5 +187,6 @@
 	"HeaderCurrentSubtitles": "Current Subtitles",
 	"MessageDownloadQueued": "The download has been queued.",
 	"MessageAreYouSureDeleteSubtitles": "Are you sure you wish to delete this subtitle file?",
-	"ButtonRemoteControl": "Remote Control"
+	"ButtonRemoteControl": "Remote Control",
+	"HeaderLatestTvRecordings": "Latest Recordings"
 }

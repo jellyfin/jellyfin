@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Linq;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
@@ -31,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         {
             var audio = x as IHasAlbumArtist;
 
-            return audio != null ? audio.AlbumArtist : null;
+            return audio != null ? audio.AlbumArtists.FirstOrDefault() : null;
         }
 
         /// <summary>

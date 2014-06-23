@@ -25,6 +25,8 @@ namespace MediaBrowser.Controller.Channels
         public float? VideoLevel { get; set; }
         public float? Framerate { get; set; }
 
+        public bool? IsAnamorphic { get; set; }
+
         public MediaProtocol Protocol { get; set; }
 
         public ChannelMediaInfo()

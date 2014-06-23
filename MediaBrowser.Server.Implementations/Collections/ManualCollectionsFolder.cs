@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Collections
 {
@@ -31,6 +31,11 @@ namespace MediaBrowser.Server.Implementations.Collections
         public override string CollectionType
         {
             get { return Model.Entities.CollectionType.BoxSets; }
+        }
+
+        public override string GetClientTypeName()
+        {
+            return typeof (CollectionFolder).Name;
         }
     }
 }

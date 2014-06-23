@@ -119,6 +119,12 @@ namespace MediaBrowser.Server.Implementations.Channels
                 channels = channels.Where(i => (GetChannelProvider(i) is ISupportsLatestMedia) == val)
                     .ToList();
             }
+            if (query.IsFavorite.HasValue)
+            {
+                var val = query.IsFavorite.Value;
+                channels = channels.Where(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite == val)
+                    .ToList();
+            }
 
             if (user != null)
             {

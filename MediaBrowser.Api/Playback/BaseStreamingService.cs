@@ -1221,7 +1221,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxFramerate = double.Parse(val, UsCulture);
+                        videoRequest.MaxFramerate = float.Parse(val, UsCulture);
                     }
                 }
                 else if (i == 12)
@@ -1509,8 +1509,6 @@ namespace MediaBrowser.Api.Playback
 
             state.OutputContainer = (container ?? string.Empty).TrimStart('.');
 
-            ApplyDeviceProfileSettings(state);
-
             state.OutputAudioBitrate = GetAudioBitrateParam(state.Request, state.AudioStream);
             state.OutputAudioSampleRate = request.AudioSampleRate;
 
@@ -1522,7 +1520,12 @@ namespace MediaBrowser.Api.Playback
             {
                 state.OutputVideoCodec = GetVideoCodec(videoRequest);
                 state.OutputVideoBitrate = GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream);
+            }
 
+            ApplyDeviceProfileSettings(state);
+
+            if (videoRequest != null)
+            {
                 if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream))
                 {
                     state.OutputVideoCodec = "copy";
@@ -1950,21 +1953,6 @@ namespace MediaBrowser.Api.Playback
             if (state.VideoRequest != null)
             {
                 inputModifier += " -fflags genpts";
-            }
-
-            if (!string.IsNullOrEmpty(state.InputFormat))
-            {
-                inputModifier += " -f " + state.InputFormat;
-            }
-
-            if (!string.IsNullOrEmpty(state.InputVideoCodec))
-            {
-                inputModifier += " -vcodec " + state.InputVideoCodec;
-            }
-
-            if (!string.IsNullOrEmpty(state.InputAudioCodec))
-            {
-                inputModifier += " -acodec " + state.InputAudioCodec;
             }
 
             if (!string.IsNullOrEmpty(state.InputAudioSync))

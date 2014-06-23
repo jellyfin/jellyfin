@@ -90,6 +90,7 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The name starts with or greater.</value>
         public string NameStartsWith { get; set; }
+        /// <summary>
         /// Gets or sets the name less than.
         /// </summary>
         /// <value>The name less than.</value>

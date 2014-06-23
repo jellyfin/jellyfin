@@ -176,6 +176,11 @@ namespace MediaBrowser.Providers.Music
                 return GetReleaseResult(albumName, artistMusicBrainId, cancellationToken);
             }
 
+            if (string.IsNullOrWhiteSpace(artistName))
+            {
+                return Task.FromResult(new ReleaseResult());
+            }
+
             return GetReleaseResultByArtistName(albumName, artistName, cancellationToken);
         }
 

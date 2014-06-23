@@ -214,7 +214,7 @@ namespace MediaBrowser.Api
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
-                result.AlbumArtist = songs.Select(i => i.AlbumArtist).FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                result.AlbumArtist = songs.SelectMany(i => i.AlbumArtists).FirstOrDefault(i => !string.IsNullOrEmpty(i));
             }
 
             var song = item as Audio;
@@ -222,7 +222,7 @@ namespace MediaBrowser.Api
             if (song != null)
             {
                 result.Album = song.Album;
-                result.AlbumArtist = song.AlbumArtist;
+                result.AlbumArtist = song.AlbumArtists.FirstOrDefault();
                 result.Artists = song.Artists.ToArray();
             }
 

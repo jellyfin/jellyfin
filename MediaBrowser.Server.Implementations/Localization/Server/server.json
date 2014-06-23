@@ -651,7 +651,6 @@
 	"OptionSpecialFeatures": "Special Features",
 	"HeaderCollections": "Collections",
 	"HeaderChannels": "Channels",
-	"HeaderMyLibrary": "My Library",
 	"LabelProfileCodecsHelp": "Separated by comma. This can be left empty to apply to all codecs.",
 	"LabelProfileContainersHelp": "Separated by comma. This can be left empty to apply to all containers.",
 	"HeaderResponseProfile": "Response Profile",
@@ -828,10 +827,11 @@
 	"ViewTypeChannels": "Channels",
 	"ViewTypeLiveTV": "Live TV",
 	"HeaderOtherDisplaySettings": "Display Settings",
-	"HeaderLibraryViews": "Library Views",
+	"HeaderMyViews": "My Views",
 	"LabelSelectFolderGroups": "Automatically group content from the following folders into views such as Movies, Music and TV:",
 	"LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own view.",
 	"OptionDisplayAdultContent": "Display adult content",
-	"OptionLibraryFolders": "Folder view",
-	"TitleRemoteControl": "Remote Control"
+	"OptionLibraryFolders": "Media folders",
+	"TitleRemoteControl": "Remote Control",
+	"OptionLatestTvRecordings": "Latest recordings"
 }

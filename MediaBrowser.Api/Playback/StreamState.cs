@@ -85,9 +85,6 @@ namespace MediaBrowser.Api.Playback
 
         public bool DeInterlace { get; set; }
         public bool ReadInputAtNativeFramerate { get; set; }
-        public string InputFormat { get; set; }
-        public string InputVideoCodec { get; set; }
-        public string InputAudioCodec { get; set; }
 
         public TransportStreamTimestamp InputTimestamp { get; set; }
 
@@ -260,7 +257,7 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Predicts the audio sample rate that will be in the output stream
         /// </summary>
-        public double? TargetFramerate
+        public float? TargetFramerate
         {
             get
             {

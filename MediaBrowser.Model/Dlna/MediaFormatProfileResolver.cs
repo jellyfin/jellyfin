@@ -7,7 +7,7 @@ namespace MediaBrowser.Model.Dlna
 {
     public class MediaFormatProfileResolver
     {
-        public IEnumerable<MediaFormatProfile> ResolveVideoFormat(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
+        public List<MediaFormatProfile> ResolveVideoFormat(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
         {
             if (StringHelper.EqualsIgnoreCase(container, "asf"))
             {
@@ -22,18 +22,18 @@ namespace MediaBrowser.Model.Dlna
             }
 
             if (StringHelper.EqualsIgnoreCase(container, "avi"))
-                return new[] { MediaFormatProfile.AVI };
+                return new List<MediaFormatProfile> { MediaFormatProfile.AVI };
 
             if (StringHelper.EqualsIgnoreCase(container, "mkv"))
-                return new[] { MediaFormatProfile.MATROSKA };
+                return new List<MediaFormatProfile> { MediaFormatProfile.MATROSKA };
 
             if (StringHelper.EqualsIgnoreCase(container, "mpeg2ps") ||
                 StringHelper.EqualsIgnoreCase(container, "ts"))
 
-                return new[] { MediaFormatProfile.MPEG_PS_NTSC, MediaFormatProfile.MPEG_PS_PAL };
+                return new List<MediaFormatProfile> { MediaFormatProfile.MPEG_PS_NTSC, MediaFormatProfile.MPEG_PS_PAL };
 
             if (StringHelper.EqualsIgnoreCase(container, "mpeg1video"))
-                return new[] { MediaFormatProfile.MPEG1 };
+                return new List<MediaFormatProfile> { MediaFormatProfile.MPEG1 };
 
             if (StringHelper.EqualsIgnoreCase(container, "mpeg2ts") ||
                 StringHelper.EqualsIgnoreCase(container, "mpegts") ||
@@ -44,10 +44,10 @@ namespace MediaBrowser.Model.Dlna
             }
 
             if (StringHelper.EqualsIgnoreCase(container, "flv"))
-                return new[] { MediaFormatProfile.FLV };
+                return new List<MediaFormatProfile> { MediaFormatProfile.FLV };
 
             if (StringHelper.EqualsIgnoreCase(container, "wtv"))
-                return new[] { MediaFormatProfile.WTV };
+                return new List<MediaFormatProfile> { MediaFormatProfile.WTV };
 
             if (StringHelper.EqualsIgnoreCase(container, "3gp"))
             {
@@ -56,12 +56,12 @@ namespace MediaBrowser.Model.Dlna
             }
 
             if (StringHelper.EqualsIgnoreCase(container, "ogv") || StringHelper.EqualsIgnoreCase(container, "ogg"))
-                return new[] { MediaFormatProfile.OGV };
+                return new List<MediaFormatProfile> { MediaFormatProfile.OGV };
 
             return new List<MediaFormatProfile>();
         }
 
-        private IEnumerable<MediaFormatProfile> ResolveVideoMPEG2TSFormat(string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
+        private List<MediaFormatProfile> ResolveVideoMPEG2TSFormat(string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
         {
             string suffix = "";
 
@@ -98,36 +98,36 @@ namespace MediaBrowser.Model.Dlna
             if (StringHelper.EqualsIgnoreCase(videoCodec, "h264"))
             {
                 if (StringHelper.EqualsIgnoreCase(audioCodec, "lpcm"))
-                    return new[] { MediaFormatProfile.AVC_TS_HD_50_LPCM_T };
+                    return new List<MediaFormatProfile> { MediaFormatProfile.AVC_TS_HD_50_LPCM_T };
 
                 if (StringHelper.EqualsIgnoreCase(audioCodec, "dts"))
                 {
                     if (timestampType == TransportStreamTimestamp.None)
                     {
-                        return new[] { MediaFormatProfile.AVC_TS_HD_DTS_ISO };
+                        return new List<MediaFormatProfile> { MediaFormatProfile.AVC_TS_HD_DTS_ISO };
                     }
-                    return new[] { MediaFormatProfile.AVC_TS_HD_DTS_T };
+                    return new List<MediaFormatProfile> { MediaFormatProfile.AVC_TS_HD_DTS_T };
                 }
 
                 if (StringHelper.EqualsIgnoreCase(audioCodec, "mp3"))
                 {
                     if (timestampType == TransportStreamTimestamp.None)
                     {
-                        return new[] { ValueOf(string.Format("AVC_TS_HP_{0}D_MPEG1_L2_ISO", resolution)) };
+                        return new List<MediaFormatProfile> { ValueOf(string.Format("AVC_TS_HP_{0}D_MPEG1_L2_ISO", resolution)) };
                     }
 
-                    return new[] { ValueOf(string.Format("AVC_TS_HP_{0}D_MPEG1_L2_T", resolution)) };
+                    return new List<MediaFormatProfile> { ValueOf(string.Format("AVC_TS_HP_{0}D_MPEG1_L2_T", resolution)) };
                 }
 
                 if (StringHelper.EqualsIgnoreCase(audioCodec, "aac"))
-                    return new[] { ValueOf(string.Format("AVC_TS_MP_{0}D_AAC_MULT5{1}", resolution, suffix)) };
+                    return new List<MediaFormatProfile> { ValueOf(string.Format("AVC_TS_MP_{0}D_AAC_MULT5{1}", resolution, suffix)) };
 
                 if (StringHelper.EqualsIgnoreCase(audioCodec, "mp3"))
-                    return new[] { ValueOf(string.Format("AVC_TS_MP_{0}D_MPEG1_L3{1}", resolution, suffix)) };
+                    return new List<MediaFormatProfile> { ValueOf(string.Format("AVC_TS_MP_{0}D_MPEG1_L3{1}", resolution, suffix)) };
 
                 if (string.IsNullOrEmpty(audioCodec) ||
                     StringHelper.EqualsIgnoreCase(audioCodec, "ac3"))
-                    return new[] { ValueOf(string.Format("AVC_TS_MP_{0}D_AC3{1}", resolution, suffix)) };
+                    return new List<MediaFormatProfile> { ValueOf(string.Format("AVC_TS_MP_{0}D_AC3{1}", resolution, suffix)) };
             }
             else if (StringHelper.EqualsIgnoreCase(videoCodec, "vc1"))
             {
@@ -135,28 +135,28 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if ((width.HasValue && width.Value > 720) || (height.HasValue && height.Value > 576))
                     {
-                        return new[] { MediaFormatProfile.VC1_TS_AP_L2_AC3_ISO };
+                        return new List<MediaFormatProfile> { MediaFormatProfile.VC1_TS_AP_L2_AC3_ISO };
                     }
-                    return new[] { MediaFormatProfile.VC1_TS_AP_L1_AC3_ISO };
+                    return new List<MediaFormatProfile> { MediaFormatProfile.VC1_TS_AP_L1_AC3_ISO };
                 }
                 if (StringHelper.EqualsIgnoreCase(audioCodec, "dts"))
                 {
                     suffix = StringHelper.EqualsIgnoreCase(suffix, "_ISO") ? suffix : "_T";
 
-                    return new[] { ValueOf(string.Format("VC1_TS_HD_DTS{0}", suffix)) };
+                    return new List<MediaFormatProfile> { ValueOf(string.Format("VC1_TS_HD_DTS{0}", suffix)) };
                 }
 
             }
             else if (StringHelper.EqualsIgnoreCase(videoCodec, "mpeg4") || StringHelper.EqualsIgnoreCase(videoCodec, "msmpeg4"))
             {
                 if (StringHelper.EqualsIgnoreCase(audioCodec, "aac"))
-                    return new[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_AAC{0}", suffix)) };
+                    return new List<MediaFormatProfile> { ValueOf(string.Format("MPEG4_P2_TS_ASP_AAC{0}", suffix)) };
                 if (StringHelper.EqualsIgnoreCase(audioCodec, "mp3"))
-                    return new[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_MPEG1_L3{0}", suffix)) };
+                    return new List<MediaFormatProfile> { ValueOf(string.Format("MPEG4_P2_TS_ASP_MPEG1_L3{0}", suffix)) };
                 if (StringHelper.EqualsIgnoreCase(audioCodec, "mp2"))
-                    return new[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_MPEG2_L2{0}", suffix)) };
+                    return new List<MediaFormatProfile> { ValueOf(string.Format("MPEG4_P2_TS_ASP_MPEG2_L2{0}", suffix)) };
                 if (StringHelper.EqualsIgnoreCase(audioCodec, "ac3"))
-                    return new[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_AC3{0}", suffix)) };
+                    return new List<MediaFormatProfile> { ValueOf(string.Format("MPEG4_P2_TS_ASP_AC3{0}", suffix)) };
             }
 
             return new List<MediaFormatProfile>();
