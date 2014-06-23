@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Providers
         /// Gets or sets the album artist.
         /// </summary>
         /// <value>The album artist.</value>
-        public string AlbumArtist { get; set; }
+        public List<string> AlbumArtists { get; set; }
 
         /// <summary>
         /// Gets or sets the artist provider ids.
@@ -78,6 +78,7 @@ namespace MediaBrowser.Controller.Providers
         {
             ArtistProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             SongInfos = new List<SongInfo>();
+            AlbumArtists = new List<string>();
         }
     }
 
@@ -137,9 +138,15 @@ namespace MediaBrowser.Controller.Providers
 
     public class SongInfo : ItemLookupInfo
     {
-        public string AlbumArtist { get; set; }
+        public List<string> AlbumArtists { get; set; }
         public string Album { get; set; }
         public List<string> Artists { get; set; }
+
+        public SongInfo()
+        {
+            Artists = new List<string>();
+            AlbumArtists = new List<string>();
+        }
     }
 
     public class SeriesInfo : ItemLookupInfo, IHasIdentities<SeriesIdentity>

@@ -35,6 +35,8 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
+            AlbumArtPn = "JPEG_TN";
+
             ModelName = "Windows Media Player Sharing";
             ModelNumber = "3.0";
             ModelUrl = "http://www.microsoft.com/";

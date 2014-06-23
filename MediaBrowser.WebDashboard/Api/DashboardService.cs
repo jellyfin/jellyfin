@@ -560,6 +560,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "gamespage.js",
                                 "gamegenrepage.js",
                                 "gamestudiospage.js",
+                                "homelatest.js",
                                 "indexpage.js",
                                 "itembynamedetailpage.js",
                                 "itemdetailpage.js",

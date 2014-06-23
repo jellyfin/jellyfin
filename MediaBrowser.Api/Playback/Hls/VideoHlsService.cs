@@ -124,26 +124,21 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var args = "-codec:a:0 " + codec;
 
-            if (state.AudioStream != null)
+            var channels = state.OutputAudioChannels;
+
+            if (channels.HasValue)
             {
-                var channels = state.OutputAudioChannels;
-
-                if (channels.HasValue)
-                {
-                    args += " -ac " + channels.Value;
-                }
-
-                var bitrate = state.OutputAudioBitrate;
-
-                if (bitrate.HasValue)
-                {
-                    args += " -ab " + bitrate.Value.ToString(UsCulture);
-                }
-
-                args += " " + GetAudioFilterParam(state, true);
-
-                return args;
+                args += " -ac " + channels.Value;
             }
+
+            var bitrate = state.OutputAudioBitrate;
+
+            if (bitrate.HasValue)
+            {
+                args += " -ab " + bitrate.Value.ToString(UsCulture);
+            }
+
+            args += " " + GetAudioFilterParam(state, true);
 
             return args;
         }
@@ -160,7 +155,8 @@ namespace MediaBrowser.Api.Playback.Hls
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf h264_mp4toannexb -bsf dump_extra" : "-codec:v:0 copy";
+                // TOOD: Switch to  -bsf dump_extra?
+                return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf h264_mp4toannexb" : "-codec:v:0 copy";
             }
 
             var keyFrameArg = state.ReadInputAtNativeFramerate ?

@@ -246,7 +246,9 @@ namespace MediaBrowser.Model.Configuration
 
             MinResumePct = 5;
             MaxResumePct = 90;
-            MinResumeDurationSeconds = Convert.ToInt32(TimeSpan.FromMinutes(5).TotalSeconds);
+
+            // 5 minutes
+            MinResumeDurationSeconds = 300;
 
             RealtimeMonitorDelay = 30;
 

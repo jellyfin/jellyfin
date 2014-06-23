@@ -12,10 +12,6 @@
     margin-left: .5em;
 }
 
-.page[data-theme=b] {
-    background-color: #202020;
-}
-
 .backdropPage {
     background-color: rgba(15, 15,15, .92)!important;
 }
@@ -49,6 +45,7 @@
     margin-bottom: 0;
     padding-left: 4px;
 }
+
 .firstListHeader {
     margin-top: .25em;
 }
@@ -72,6 +69,17 @@
 
 .homePageSection + .homePageSection {
     margin-top: 1em;
+}
+
+.sectionHeaderButton {
+    vertical-align: middle;
+    margin: 0 0 0 1.5em;
+    position: relative;
+    top: 8px;
+}
+
+.firstListHeader + .sectionHeaderButton {
+    top: 3px;
 }
 
 @media all and (min-width: 900px) {

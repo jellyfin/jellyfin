@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -209,7 +210,7 @@ namespace MediaBrowser.Api
             if (song != null)
             {
                 song.Album = request.Album;
-                song.AlbumArtist = request.AlbumArtist;
+                song.AlbumArtists = string.IsNullOrWhiteSpace(request.AlbumArtist) ? new List<string>() : new List<string> { request.AlbumArtist };
                 song.Artists = request.Artists.ToList();
             }
 

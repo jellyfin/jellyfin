@@ -350,6 +350,13 @@ namespace MediaBrowser.Model.ApiClient
         Task<ItemsResult> GetArtistsAsync(ArtistsQuery query);
 
         /// <summary>
+        /// Gets the album artists asynchronous.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetAlbumArtistsAsync(ArtistsQuery query);
+        
+        /// <summary>
         /// Gets a studio
         /// </summary>
         /// <param name="name">The name.</param>

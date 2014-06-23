@@ -34,15 +34,16 @@
 
         html += '<div class="posterItemOverlayInner">';
 
-        var isSmallItem = $(posterItem).hasClass('smallBackdropPosterItem');
+        var isSmallItem = $(posterItem).hasClass('smallBackdropPosterItem') || $(posterItem).hasClass('miniBackdropPosterItem');
+        var isMiniItem = $(posterItem).hasClass('miniBackdropPosterItem');
         var isPortrait = $(posterItem).hasClass('portraitPosterItem');
         var isSquare = $(posterItem).hasClass('squarePosterItem');
 
-        var parentName = isSmallItem || isPortrait ? null : item.SeriesName;
+        var parentName = isSmallItem || isMiniItem || isPortrait ? null : item.SeriesName;
         var name = LibraryBrowser.getPosterViewDisplayName(item, true);
 
         html += '<div style="font-weight:bold;margin-bottom:1em;">';
-        var logoHeight = isSmallItem ? 20 : 26;
+        var logoHeight = isSmallItem || isMiniItem ? 20 : 26;
         var maxLogoWidth = isPortrait ? 100 : 200;
         var imgUrl;
 
@@ -76,27 +77,29 @@
             html += '<p>';
             html += name;
             html += '</p>';
-        } else if (!isSmallItem) {
+        } else if (!isSmallItem && !isMiniItem) {
             html += '<p class="itemMiscInfo" style="white-space:nowrap;">';
             html += LibraryBrowser.getMiscInfoHtml(item);
             html += '</p>';
         }
 
-        html += '<div style="margin:1.25em 0;">';
-        html += '<span class="itemCommunityRating">';
-        html += LibraryBrowser.getRatingHtml(item, false);
-        html += '</span>';
+        if (!isMiniItem) {
+            html += '<div style="margin:1.25em 0;">';
+            html += '<span class="itemCommunityRating">';
+            html += LibraryBrowser.getRatingHtml(item, false);
+            html += '</span>';
 
-        if (isPortrait) {
-            html += '<span class="userDataIcons" style="display:block;margin:1.25em 0;">';
-            html += LibraryBrowser.getUserDataIconsHtml(item);
-            html += '</span>';
-        } else {
-            html += '<span class="userDataIcons">';
-            html += LibraryBrowser.getUserDataIconsHtml(item);
-            html += '</span>';
+            if (isPortrait) {
+                html += '<span class="userDataIcons" style="display:block;margin:1.25em 0;">';
+                html += LibraryBrowser.getUserDataIconsHtml(item);
+                html += '</span>';
+            } else {
+                html += '<span class="userDataIcons">';
+                html += LibraryBrowser.getUserDataIconsHtml(item);
+                html += '</span>';
+            }
+            html += '</div>';
         }
-        html += '</div>';
 
         html += '<div>';
 
@@ -179,9 +182,7 @@
 
     }
 
-    $.fn.createPosterItemMenus = function (options) {
-
-        options = options || {};
+    $.fn.createPosterItemMenus = function () {
 
         var preventHover = false;
 
@@ -243,7 +244,7 @@
             preventHover = true;
         }
 
-        var elems = '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem';
+        var elems = '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem,.miniBackdropPosterItem';
 
         return this.off('.posterItemHoverMenu')
             .on('mouseenter.posterItemHoverMenu', elems, onHoverIn)

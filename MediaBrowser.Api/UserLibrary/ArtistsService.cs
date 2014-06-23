@@ -20,7 +20,7 @@ namespace MediaBrowser.Api.UserLibrary
     {
     }
 
-    [Route("/AlbumArtists", "GET", Summary = "Gets all album artists from a given item, folder, or the entire library")]
+    [Route("/Artists/AlbumArtists", "GET", Summary = "Gets all album artists from a given item, folder, or the entire library")]
     public class GetAlbumArtists : GetItemsByName
     {
     }
@@ -128,7 +128,24 @@ namespace MediaBrowser.Api.UserLibrary
         {
             if (request is GetAlbumArtists)
             {
-                return items.OfType<MusicArtist>();
+                return items
+                    .OfType<IHasAlbumArtist>()
+                    .Where(i => !(i is MusicAlbum))
+                    .SelectMany(i => i.AlbumArtists)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Select(name =>
+                    {
+                        try
+                        {
+                            return LibraryManager.GetArtist(name);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.ErrorException("Error getting artist {0}", ex, name);
+                            return null;
+                        }
+
+                    }).Where(i => i != null);
             }
 
             return items

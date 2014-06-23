@@ -1,12 +1,10 @@
 ﻿.btnCastImage {
     background-color: transparent;
-    background-size: contain;
+    background-size: 100%;
     background-repeat: no-repeat;
     background-position: center center;
-    width: 28px;
+    width: 23px;
     height: 100%;
-    position: relative;
-    top: 2px;
     display: inline-block;
 }
 
@@ -37,5 +35,12 @@
 @media all and (max-width: 800px) {
     .headerSelectedPlayer {
         display: none;
+    }
+}
+
+
+@media all and (max-width: 400px) {
+    .btnCastImage {
+        width: 28px;
     }
 }

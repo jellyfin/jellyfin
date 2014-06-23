@@ -377,11 +377,11 @@
                 return 'movieslatest.html?topParentId=' + item.Id;
             }
 
-            if (item.CollectionType == 'boxsets' || item.Type == 'ManualCollectionsFolder') {
+            if (item.CollectionType == 'boxsets') {
                 return 'collections.html?topParentId=' + item.Id;
             }
 
-            if (item.CollectionType == 'trailers' || item.Type == 'TrailerCollectionFolder') {
+            if (item.CollectionType == 'trailers') {
                 return 'movietrailers.html?topParentId=' + item.Id;
             }
 
@@ -807,7 +807,7 @@
 
                 if (!imgUrl && !options.showTitle) {
                     html += "<div class='posterItemDefaultText'>";
-                    html += name;
+                    html += htmlEncode(name);
                     html += "</div>";
                 }
 
@@ -828,7 +828,7 @@
 
                 if (options.showTitle || forceName) {
 
-                    lines.push(name);
+                    lines.push(htmlEncode(name));
                 }
 
                 if (options.showItemCounts) {

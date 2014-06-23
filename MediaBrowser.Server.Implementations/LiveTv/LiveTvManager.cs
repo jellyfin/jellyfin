@@ -307,7 +307,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Sanitize(result);
 
                 _logger.Debug("Live stream info: " + _json.SerializeToString(result));
-                
+
                 if (!string.IsNullOrEmpty(result.Id))
                 {
                     _openStreams.AddOrUpdate(result.Id, result, (key, info) => result);
@@ -972,7 +972,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 progress.Report(100);
                 return;
             }
-            
+
             await _refreshSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
@@ -1036,9 +1036,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var service = ActiveService;
 
+            if (service == null)
+            {
+                return new QueryResult<RecordingInfoDto>
+                {
+                    Items = new RecordingInfoDto[] { }
+                };
+            }
+
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(new Guid(query.UserId));
 
             var recordings = await service.GetRecordingsAsync(cancellationToken).ConfigureAwait(false);
+
+            if (user != null && !IsLiveTvEnabled(user))
+            {
+                recordings = new List<RecordingInfo>();
+            }
 
             if (!string.IsNullOrEmpty(query.ChannelId))
             {
@@ -1181,7 +1194,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             foreach (var i in timers)
             {
-                var program = string.IsNullOrEmpty(i.ProgramId) ? 
+                var program = string.IsNullOrEmpty(i.ProgramId) ?
                     null :
                     await GetInternalProgram(_tvDtoService.GetInternalProgramId(service.Name, i.ProgramId).ToString("N"), cancellationToken).ConfigureAwait(false);
 
@@ -1618,7 +1631,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var startDate = _programs.Count == 0 ? DateTime.MinValue :
                 programs.Select(i => i.Value.StartDate).Min();
 
-            var endDate = programs.Count == 0 ? DateTime.MinValue : 
+            var endDate = programs.Count == 0 ? DateTime.MinValue :
                 programs.Select(i => i.Value.StartDate).Max();
 
             return new GuideInfo
@@ -1727,11 +1740,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
 
             info.EnabledUsers = _userManager.Users
-                .Where(i => i.Configuration.EnableLiveTvAccess && info.IsEnabled)
+                .Where(IsLiveTvEnabled)
                 .Select(i => i.Id.ToString("N"))
                 .ToList();
 
             return info;
+        }
+
+        private bool IsLiveTvEnabled(User user)
+        {
+            return user.Configuration.EnableLiveTvAccess && ActiveService != null;
         }
 
         public IEnumerable<User> GetEnabledUsers()

@@ -274,7 +274,7 @@ h1 .imageLink {
 
 .content-secondary {
     z-index: 1000;
-    background: #e6e6e6;
+    background: #333;
     border: 0;
     border-right: 1px solid #ddd;
     display: none;
@@ -297,7 +297,7 @@ h1 .imageLink {
     display: block;
     padding: .6em 20px .6em 20px;
     text-decoration: none;
-    color: #000!important;
+    color: #eee!important;
     text-shadow: none!important;
     font-weight: 400!important;
     font-size: 14px;
@@ -311,12 +311,12 @@ h1 .imageLink {
     .sidebarLinks a.selectedSidebarLink {
         background: #38c!important;
         color: #fff!important;
-        margin-right: -1px;
+        margin-right: 0;
     }
 
 .sidebarDivider {
     height: 1px;
-    background: #d8d8d8;
+    background: #444;
     margin: .25em 0;
 }
 

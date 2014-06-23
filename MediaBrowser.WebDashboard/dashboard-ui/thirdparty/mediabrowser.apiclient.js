@@ -2625,7 +2625,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             options = options || {};
             options.userId = userId;
 
-            var url = self.getUrl("AlbumArtists", options);
+            var url = self.getUrl("Artists/AlbumArtists", options);
 
             return self.ajax({
                 type: "GET",

@@ -604,6 +604,9 @@ namespace MediaBrowser.Dlna.PlayTo
             if (result == null || result.Document == null)
                 return new Tuple<bool, uBaseObject>(false, null);
 
+            var trackUriElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackURI")).FirstOrDefault(i => i != null);
+            var trackUri = trackUriElem == null ? null : trackUriElem.Value;
+
             var durationElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i != null);
             var duration = durationElem == null ? null : durationElem.Value;
 
@@ -654,16 +657,23 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var e = uPnpResponse.Element(uPnpNamespaces.items);
 
-            var uTrack = CreateUBaseObject(e);
+            var uTrack = CreateUBaseObject(e, trackUri);
 
             return new Tuple<bool, uBaseObject>(true, uTrack);
         }
 
-        private static uBaseObject CreateUBaseObject(XElement container)
+        private static uBaseObject CreateUBaseObject(XElement container, string trackUri)
         {
             if (container == null)
             {
                 throw new ArgumentNullException("container");
+            }
+
+            var url = container.GetValue(uPnpNamespaces.Res);
+
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                url = trackUri;
             }
 
             return new uBaseObject
@@ -673,7 +683,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 Title = container.GetValue(uPnpNamespaces.title),
                 IconUrl = container.GetValue(uPnpNamespaces.Artwork),
                 SecondText = "",
-                Url = container.GetValue(uPnpNamespaces.Res),
+                Url = url,
                 ProtocolInfo = GetProtocolInfo(container),
                 MetaData = container.ToString()
             };

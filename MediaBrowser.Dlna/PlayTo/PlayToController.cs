@@ -134,15 +134,15 @@ namespace MediaBrowser.Dlna.PlayTo
 
         async void _device_MediaChanged(object sender, MediaChangedEventArgs e)
         {
-            var streamInfo = StreamParams.ParseFromUrl(e.OldMediaInfo.Url, _libraryManager);
-            var progress = GetProgressInfo(e.OldMediaInfo, streamInfo);
-
-            var positionTicks = progress.PositionTicks;
-
-            ReportPlaybackStopped(e.OldMediaInfo, streamInfo, positionTicks);
-
             try
             {
+                var streamInfo = StreamParams.ParseFromUrl(e.OldMediaInfo.Url, _libraryManager);
+                var progress = GetProgressInfo(e.OldMediaInfo, streamInfo);
+
+                var positionTicks = progress.PositionTicks;
+
+                ReportPlaybackStopped(e.OldMediaInfo, streamInfo, positionTicks);
+
                 streamInfo = StreamParams.ParseFromUrl(e.NewMediaInfo.Url, _libraryManager);
                 progress = GetProgressInfo(e.NewMediaInfo, streamInfo);
 
@@ -156,34 +156,41 @@ namespace MediaBrowser.Dlna.PlayTo
 
         async void _device_PlaybackStopped(object sender, PlaybackStoppedEventArgs e)
         {
-            var streamInfo = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager);
-            var progress = GetProgressInfo(e.MediaInfo, streamInfo);
-
-            var positionTicks = progress.PositionTicks;
-
-            ReportPlaybackStopped(e.MediaInfo, streamInfo, positionTicks);
-
-            var duration = streamInfo.MediaSource == null ?
-                (_device.Duration == null ? (long?)null : _device.Duration.Value.Ticks) :
-                streamInfo.MediaSource.RunTimeTicks;
-
-            var playedToCompletion = (positionTicks.HasValue && positionTicks.Value == 0);
-
-            if (!playedToCompletion && duration.HasValue && positionTicks.HasValue)
+            try
             {
-                double percent = positionTicks.Value;
-                percent /= duration.Value;
+                var streamInfo = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager);
+                var progress = GetProgressInfo(e.MediaInfo, streamInfo);
 
-                playedToCompletion = Math.Abs(1 - percent) <= .1;
+                var positionTicks = progress.PositionTicks;
+
+                ReportPlaybackStopped(e.MediaInfo, streamInfo, positionTicks);
+
+                var duration = streamInfo.MediaSource == null ?
+                    (_device.Duration == null ? (long?)null : _device.Duration.Value.Ticks) :
+                    streamInfo.MediaSource.RunTimeTicks;
+
+                var playedToCompletion = (positionTicks.HasValue && positionTicks.Value == 0);
+
+                if (!playedToCompletion && duration.HasValue && positionTicks.HasValue)
+                {
+                    double percent = positionTicks.Value;
+                    percent /= duration.Value;
+
+                    playedToCompletion = Math.Abs(1 - percent) <= .1;
+                }
+
+                if (playedToCompletion)
+                {
+                    await SetPlaylistIndex(_currentPlaylistIndex + 1).ConfigureAwait(false);
+                }
+                else
+                {
+                    Playlist.Clear();
+                }
             }
-
-            if (playedToCompletion)
+            catch (Exception ex)
             {
-                await SetPlaylistIndex(_currentPlaylistIndex + 1).ConfigureAwait(false);
-            }
-            else
-            {
-                Playlist.Clear();
+                _logger.ErrorException("Error reporting playback stopped", ex);
             }
         }
 
@@ -208,10 +215,10 @@ namespace MediaBrowser.Dlna.PlayTo
 
         async void _device_PlaybackStart(object sender, PlaybackStartEventArgs e)
         {
-            var info = GetProgressInfo(e.MediaInfo);
-
             try
             {
+                var info = GetProgressInfo(e.MediaInfo);
+
                 await _sessionManager.OnPlaybackStart(info).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -222,10 +229,10 @@ namespace MediaBrowser.Dlna.PlayTo
 
         async void _device_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
         {
-            var info = GetProgressInfo(e.MediaInfo);
-
             try
             {
+                var info = GetProgressInfo(e.MediaInfo);
+
                 await _sessionManager.OnPlaybackProgress(info).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -523,9 +530,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaSourceInfo> mediaSources, DeviceProfile profile, string deviceId, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
         {
-            var video = item as Video;
-
-            if (video != null)
+            if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
                 return new PlaylistItem
                 {
@@ -545,9 +550,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 };
             }
 
-            var audio = item as Audio;
-
-            if (audio != null)
+            if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
             {
                 return new PlaylistItem
                 {
@@ -565,11 +568,9 @@ namespace MediaBrowser.Dlna.PlayTo
                 };
             }
 
-            var photo = item as Photo;
-
-            if (photo != null)
+            if (string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase))
             {
-                return new PlaylistItemFactory().Create(photo, profile);
+                return new PlaylistItemFactory().Create((Photo)item, profile);
             }
 
             throw new ArgumentException("Unrecognized item type.");

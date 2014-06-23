@@ -76,35 +76,13 @@ namespace MediaBrowser.Api.Music
 
             var artists1 = album1.GetRecursiveChildren()
                 .OfType<Audio>()
-                .SelectMany(i =>
-                {
-                    var list = new List<string>();
-
-                    if (!string.IsNullOrEmpty(i.AlbumArtist))
-                    {
-                        list.Add(i.AlbumArtist);
-                    }
-                    list.AddRange(i.Artists);
-
-                    return list;
-                })
+                .SelectMany(i => i.AllArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
             var artists2 = album2.GetRecursiveChildren()
                 .OfType<Audio>()
-                .SelectMany(i =>
-                {
-                    var list = new List<string>();
-
-                    if (!string.IsNullOrEmpty(i.AlbumArtist))
-                    {
-                        list.Add(i.AlbumArtist);
-                    }
-                    list.AddRange(i.Artists);
-
-                    return list;
-                })
+                .SelectMany(i => i.AllArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 

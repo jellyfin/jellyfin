@@ -209,7 +209,7 @@
 
     $(document).on('headercreated', function (e) {
 
-        $('<a class="headerButton headerButtonRight btnNotifications" href="#" title="Notifications"><div class="btnNotificationsInner">0</div></a>').insertBefore($('.headerUserButton')).on('click', Notifications.showNotificationsFlyout);
+        $('<a class="headerButton headerButtonRight btnNotifications" href="#" title="Notifications"><div class="btnNotificationsInner">0</div></a>').insertAfter($('.headerUserButton')).on('click', Notifications.showNotificationsFlyout);
 
         Notifications.updateNotificationCount();
     });

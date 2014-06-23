@@ -1,6 +1,5 @@
-﻿using System.Xml.Serialization;
-using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Model.Dlna;
+﻿using MediaBrowser.Model.Dlna;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
 {
@@ -35,6 +34,8 @@ namespace MediaBrowser.Dlna.Profiles
                     Value = "urn:schemas-sony-com:av"
                 }
             };
+
+            AlbumArtPn = "JPEG_TN";
 
             ModelName = "Windows Media Player Sharing";
             ModelNumber = "3.0";

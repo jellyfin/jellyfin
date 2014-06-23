@@ -106,7 +106,7 @@ namespace MediaBrowser.Model.Dlna
             long? runtimeTicks,
             string videoProfile,
             double? videoLevel,
-            double? videoFramerate,
+            float? videoFramerate,
             int? packetLength,
             TranscodeSeekInfo transcodeSeekInfo,
             bool? isAnamorphic)

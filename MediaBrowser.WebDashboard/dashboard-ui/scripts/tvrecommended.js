@@ -104,8 +104,10 @@
 
             if (result.Items.length) {
                 $('#resumableSection', page).show();
+                $('.nextUpHeader', page).removeClass('firstListHeader');
             } else {
                 $('#resumableSection', page).hide();
+                $('.nextUpHeader', page).addClass('firstListHeader');
             }
 
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({

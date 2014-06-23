@@ -494,9 +494,9 @@ namespace MediaBrowser.Dlna.Didl
                     AddValue(element, "upnp", "album", audio.Album, NS_UPNP);
                 }
 
-                if (!string.IsNullOrEmpty(audio.AlbumArtist))
+                foreach (var artist in audio.AlbumArtists)
                 {
-                    AddValue(element, "upnp", "albumArtist", audio.AlbumArtist, NS_UPNP);
+                    AddValue(element, "upnp", "albumArtist", artist, NS_UPNP);
                 }
             }
 
@@ -504,10 +504,10 @@ namespace MediaBrowser.Dlna.Didl
 
             if (album != null)
             {
-                if (!string.IsNullOrEmpty(album.AlbumArtist))
+                foreach (var artist in album.AlbumArtists)
                 {
-                    AddValue(element, "upnp", "artist", album.AlbumArtist, NS_UPNP);
-                    AddValue(element, "upnp", "albumArtist", album.AlbumArtist, NS_UPNP);
+                    AddValue(element, "upnp", "artist", artist, NS_UPNP);
+                    AddValue(element, "upnp", "albumArtist", artist, NS_UPNP);
                 }
             }
 

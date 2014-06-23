@@ -82,11 +82,11 @@ namespace MediaBrowser.Providers.Music
 
             var albumArtist = item.GetAlbumArtist();
             // Get each song, distinct by the combination of AlbumArtist and Album
-            var songs = item.SongInfos.DistinctBy(i => (i.AlbumArtist ?? string.Empty) + (i.Album ?? string.Empty), StringComparer.OrdinalIgnoreCase).ToList();
+            var songs = item.SongInfos.DistinctBy(i => (i.AlbumArtists.FirstOrDefault() ?? string.Empty) + (i.Album ?? string.Empty), StringComparer.OrdinalIgnoreCase).ToList();
 
-            foreach (var song in songs.Where(song => !string.IsNullOrEmpty(song.Album) && !string.IsNullOrEmpty(song.AlbumArtist)))
+            foreach (var song in songs.Where(song => !string.IsNullOrEmpty(song.Album) && !string.IsNullOrEmpty(song.AlbumArtists.FirstOrDefault())))
             {
-                var result = await GetAlbumResult(song.AlbumArtist, song.Album, cancellationToken).ConfigureAwait(false);
+                var result = await GetAlbumResult(song.AlbumArtists.FirstOrDefault(), song.Album, cancellationToken).ConfigureAwait(false);
 
                 if (result != null && result.album != null)
                 {

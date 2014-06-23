@@ -6,7 +6,7 @@ namespace MediaBrowser.Model.Extensions
 {
     public static class ListHelper
     {
-        public static bool ContainsIgnoreCase(List<string> list, string value)
+        public static bool ContainsIgnoreCase(IEnumerable<string> list, string value)
         {
             if (value == null)
             {

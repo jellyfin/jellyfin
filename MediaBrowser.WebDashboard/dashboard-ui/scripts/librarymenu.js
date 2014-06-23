@@ -26,7 +26,7 @@
 
         html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
-        var userButtonHeight = 22;
+        var userButtonHeight = 21;
         if (user.PrimaryImageTag) {
 
             var url = ApiClient.getUserImageUrl(user.Id, {

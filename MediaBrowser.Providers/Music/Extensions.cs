@@ -8,11 +8,11 @@ namespace MediaBrowser.Providers.Music
     {
         public static string GetAlbumArtist(this AlbumInfo info)
         {
-            var id = info.AlbumArtist;
+            var id = info.AlbumArtists.FirstOrDefault();
 
             if (string.IsNullOrEmpty(id))
             {
-                return info.SongInfos.Select(i => i.AlbumArtist)
+                return info.SongInfos.SelectMany(i => i.AlbumArtists)
                     .FirstOrDefault(i => !string.IsNullOrEmpty(i));
             }
 

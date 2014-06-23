@@ -8,23 +8,22 @@
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
     border-radius: 2px;
-    padding: 0 12px;
-    line-height: 22px;
-    margin-top: 15px;
+    padding: 6px 12px;
     text-align: center;
     text-decoration: none !important;
     -moz-user-select: none;
     -webkit-user-select: none;
-    background-color: #353535;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#353535),to(#313131));
-    background-image: -webkit-linear-gradient(top,#353535,#313131);
-    background-image: -moz-linear-gradient(top,#353535,#313131);
-    background-image: -ms-linear-gradient(top,#353535,#313131);
-    background-image: -o-linear-gradient(top,#353535,#313131);
-    background-image: linear-gradient(top,#353535,#313131);
-    border: 1px solid #444;
+    background-color: #444;
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#444),to(#313131));
+    background-image: -webkit-linear-gradient(top,#444,#313131);
+    background-image: -moz-linear-gradient(top,#444,#313131);
+    background-image: -ms-linear-gradient(top,#444,#313131);
+    background-image: -o-linear-gradient(top,#444,#313131);
+    background-image: linear-gradient(top,#444,#313131);
     color: #fff;
     font-size: 12px;
+    font-family: "Open Sans";
+    font-weight: normal;
 }
 
 .levelNormal {

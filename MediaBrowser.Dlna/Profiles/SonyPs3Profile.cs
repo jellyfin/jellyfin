@@ -32,6 +32,8 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
+            AlbumArtPn = "JPEG_TN";
+
             SonyAggregationFlags = "10";
             XDlnaDoc = "DMS-1.50";
 

@@ -323,6 +323,12 @@ namespace MediaBrowser.Model.Dlna
 
                     playlistItem.VideoBitrate = Math.Min(videoBitrate, currentValue);
                 }
+
+                // Hate to hard-code this, but it's still probably better than being subjected to encoder defaults
+                if (!playlistItem.VideoBitrate.HasValue)
+                {
+                    playlistItem.VideoBitrate = 5000000;
+                }
             }
 
             return playlistItem;
@@ -555,8 +561,8 @@ namespace MediaBrowser.Model.Dlna
                         }
                     case ProfileConditionValue.VideoFramerate:
                         {
-                            double num;
-                            if (DoubleHelper.TryParseCultureInvariant(value, out num))
+                            float num;
+                            if (FloatHelper.TryParseCultureInvariant(value, out num))
                             {
                                 item.MaxFramerate = num;
                             }
