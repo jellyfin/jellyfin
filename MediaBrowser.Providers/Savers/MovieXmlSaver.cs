@@ -56,8 +56,6 @@ namespace MediaBrowser.Providers.Savers
             return false;
         }
 
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         /// <summary>
         /// Saves the specified item.
         /// </summary>

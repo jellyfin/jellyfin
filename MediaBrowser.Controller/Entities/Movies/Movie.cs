@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasShortOverview
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -52,6 +52,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             ProductionLocations = new List<string>();
         }
 
+        public string ShortOverview { get; set; }
         public string AwardSummary { get; set; }
 
         public float? Metascore { get; set; }

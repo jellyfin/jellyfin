@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -9,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace MediaBrowser.Controller.Providers
@@ -244,6 +242,23 @@ namespace MediaBrowser.Controller.Providers
                         if (!string.IsNullOrWhiteSpace(val))
                         {
                             item.Overview = val;
+                        }
+
+                        break;
+                    }
+
+                case "ShortOverview":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            var hasShortOverview = item as IHasShortOverview;
+
+                            if (hasShortOverview != null)
+                            {
+                                hasShortOverview.ShortOverview = val;
+                            }
                         }
 
                         break;
@@ -812,19 +827,19 @@ namespace MediaBrowser.Controller.Providers
                         {
                             var val = reader.ReadElementContentAsString();
 
-                            if (string.Equals("HSBS", val))
+                            if (string.Equals("HSBS", val, StringComparison.CurrentCulture))
                             {
                                 video.Video3DFormat = Video3DFormat.HalfSideBySide;
                             }
-                            else if (string.Equals("HTAB", val))
+                            else if (string.Equals("HTAB", val, StringComparison.CurrentCulture))
                             {
                                 video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
                             }
-                            else if (string.Equals("FTAB", val))
+                            else if (string.Equals("FTAB", val, StringComparison.CurrentCulture))
                             {
                                 video.Video3DFormat = Video3DFormat.FullTopAndBottom;
                             }
-                            else if (string.Equals("FSBS", val))
+                            else if (string.Equals("FSBS", val, StringComparison.CurrentCulture))
                             {
                                 video.Video3DFormat = Video3DFormat.FullSideBySide;
                             }
@@ -1195,10 +1210,10 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <returns>IEnumerable{PersonInfo}.</returns>
-        private IEnumerable<Entities.PersonInfo> GetPersonsFromXmlNode(XmlReader reader)
+        private IEnumerable<PersonInfo> GetPersonsFromXmlNode(XmlReader reader)
         {
             var name = string.Empty;
-            var type = "Actor";  // If type is not specified assume actor
+            var type = PersonType.Actor;  // If type is not specified assume actor
             var role = string.Empty;
             int? sortOrder = null;
 
@@ -1257,7 +1272,7 @@ namespace MediaBrowser.Controller.Providers
                 }
             }
 
-            var personInfo = new Entities.PersonInfo
+            var personInfo = new PersonInfo
             {
                 Name = name.Trim(),
                 Role = role,

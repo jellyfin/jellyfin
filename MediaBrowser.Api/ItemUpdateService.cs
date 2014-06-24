@@ -108,6 +108,12 @@ namespace MediaBrowser.Api
                 hasTags.Tags = request.Tags;
             }
 
+            var hasShortOverview = item as IHasShortOverview;
+            if (hasShortOverview != null)
+            {
+                hasShortOverview.ShortOverview = request.ShortOverview;
+            }
+
             var hasKeywords = item as IHasKeywords;
             if (hasKeywords != null)
             {

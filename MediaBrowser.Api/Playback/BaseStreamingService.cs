@@ -1594,11 +1594,6 @@ namespace MediaBrowser.Api.Playback
                 {
                     return source;
                 }
-
-                Logger.Warn("Invalid channel MediaSourceId requested, defaulting to first. Item: {0}. Requested MediaSourceId: {1}.",
-                    id,
-                    mediaSourceId
-                    );
             }
 
             return list.First();
