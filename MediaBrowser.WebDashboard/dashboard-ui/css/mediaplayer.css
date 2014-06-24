@@ -123,10 +123,6 @@ input[type="range"]::-ms-fill-upper {
     display: none; /* display and visibility only */
 }
 
-.remoteControlButton {
-    float: right;
-}
-
 @media all and (max-width: 800px) {
 
     #nowPlayingBar .mediaButton {
@@ -137,6 +133,10 @@ input[type="range"]::-ms-fill-upper {
         #nowPlayingBar .mediaButton:not(#playButton):not(#pauseButton):not(.remoteControlButton) {
             display: none;
         }
+
+    .remoteControlButton {
+        float: right;
+    }
 
     #nowPlayingBar #playButton, #nowPlayingBar #pauseButton {
         float: right;

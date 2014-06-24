@@ -54,7 +54,7 @@
             }
 
             if (!path) {
-                html += '<li><a class="lnkPath lnkDirectory" data-path="Network" href="#">Network</a></li>';
+                html += '<li><a class="lnkPath lnkDirectory" data-path="Network" href="#">' + Globalize.translate('ButtonNetwork') + '</a></li>';
             }
 
             $('#ulDirectoryPickerList', page).html(html).listview('refresh');
@@ -90,7 +90,7 @@
                 fileOptions.includeFiles = options.includeFiles;
             }
 
-            options.header = options.header || "Select Media Path";
+            options.header = options.header || Globalize.translate('HeaderSelectMediaPath');
             options.instruction = options.instruction || "";
 
             var html = '<div data-transition="fade" data-role="popup" id="popupDirectoryPicker" class="popup" style="min-width:65%;">';
@@ -103,13 +103,18 @@
             html += '<form>';
 
             var instruction = options.instruction ? options.instruction + '<br/><br/>' : '';
-            
-            html += '<p class="directoryPickerHeadline">' + instruction + 'Network paths can be entered manually in the event the Network button fails to locate your devices. For example, <b>\\\\my-server</b> or <b>\\\\192.168.1.101</b>.</p>';
+
+            html += '<p class="directoryPickerHeadline">';
+            html += instruction;
+            html += Globalize.translate('MessageDirectoryPickerInstruction')
+                .replace('{0}', '<b>\\\\server</b>')
+                .replace('{1}', '<b>\\\\192.168.1.101</b>');
+            html += '</p>';
 
             html += '<div style="margin:20px 0 0;">';
-            html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">Current Path:</label>';
+            html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">' + Globalize.translate('LabelCurrentPath') + '</label>';
             html += '<div style="width:92%;display:inline-block;"><input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" required="required" style="font-weight:bold;" /></div>';
-            html += '<button class="btnRefreshDirectories" type="button" data-icon="refresh" data-inline="true" data-mini="true" data-iconpos="notext">Refresh</button>';
+            html += '<button class="btnRefreshDirectories" type="button" data-icon="refresh" data-inline="true" data-mini="true" data-iconpos="notext">' + Globalize.translate('ButtonRefresh') + '</button>';
             html += '</div>';
 
             html += '<div style="height: 320px; overflow-y: auto;">';
@@ -120,8 +125,8 @@
 
 
             html += '<p>';
-            html += '<button type="submit" data-theme="b" data-icon="check" data-mini="true">OK</button>';
-            html += '<button type="button" data-icon="delete" onclick="$(this).parents(\'.popup\').popup(\'close\');" data-mini="true">Cancel</button>';
+            html += '<button type="submit" data-theme="b" data-icon="check" data-mini="true">' + Globalize.translate('ButtonOk') + '</button>';
+            html += '<button type="button" data-icon="delete" onclick="$(this).parents(\'.popup\').popup(\'close\');" data-mini="true">' + Globalize.translate('ButtonCancel') + '</button>';
             html += '</p>';
             html += '</form>';
             html += '</div>';

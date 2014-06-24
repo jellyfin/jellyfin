@@ -455,6 +455,8 @@ $.fn.createHoverTouch = function () {
 
         if (preventHover) {
             $(this).trigger('hovertouch');
+            stopTimer(this);
+            preventHover = false;
         }
     });
 

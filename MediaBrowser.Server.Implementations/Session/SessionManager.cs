@@ -356,7 +356,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private string GetSessionKey(string clientType, string appVersion, string deviceId)
         {
-            return clientType + deviceId + appVersion;
+            return clientType + deviceId;
         }
 
         /// <summary>

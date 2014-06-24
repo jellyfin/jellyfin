@@ -82,6 +82,12 @@
                 $('#btnEditSubtitles', page).hide();
             }
 
+            if (item.MediaType == "Video" && item.Type != "Episode") {
+                $('#fldShortOverview', page).show();
+            } else {
+                $('#fldShortOverview', page).hide();
+            }
+
             Dashboard.getCurrentUser().done(function (user) {
 
                 if (user.Configuration.EnableContentDeletion &&
@@ -451,6 +457,7 @@
         $('#txtPath', page).val(item.Path || '');
         $('#txtName', page).val(item.Name || "");
         $('#txtOverview', page).val(item.Overview || "");
+        $('#txtShortOverview', page).val(item.ShortOverview || "");
         $('#txtSortName', page).val(item.ForcedSortName || "");
         $('#txtDisplayMediaType', page).val(item.DisplayMediaType || "");
         $('#txtCommunityRating', page).val(item.CommunityRating || "");
@@ -858,6 +865,7 @@
                 Metascore: $('#txtMetascore', form).val(),
                 AwardSummary: $('#txtAwardSummary', form).val(),
                 Overview: $('#txtOverview', form).val(),
+                ShortOverview: $('#txtShortOverview', form).val(),
                 Status: $('#selectStatus', form).val(),
                 AirDays: getSelectedAirDays(form),
                 AirTime: convertTo12HourFormat($('#txtAirTime', form).val()),
