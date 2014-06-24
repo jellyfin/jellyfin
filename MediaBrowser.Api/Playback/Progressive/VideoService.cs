@@ -210,7 +210,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " -ab " + bitrate.Value.ToString(UsCulture);
             }
 
-            args += " " + GetAudioFilterParam(state, true);
+            args += " " + GetAudioFilterParam(state, false);
 
             return args;
         }

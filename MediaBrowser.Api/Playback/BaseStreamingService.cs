@@ -1061,7 +1061,8 @@ namespace MediaBrowser.Api.Playback
                 // Make sure we don't request a bitrate higher than the source
                 var currentBitrate = audioStream == null ? request.AudioBitRate.Value : audioStream.BitRate ?? request.AudioBitRate.Value;
 
-                return Math.Min(currentBitrate, request.AudioBitRate.Value);
+                return request.AudioBitRate.Value;
+                //return Math.Min(currentBitrate, request.AudioBitRate.Value);
             }
 
             return null;

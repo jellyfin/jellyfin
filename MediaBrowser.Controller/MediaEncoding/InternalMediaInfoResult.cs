@@ -313,6 +313,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string bit_rate { get; set; }
 
         /// <summary>
+        /// Gets or sets the probe_score.
+        /// </summary>
+        /// <value>The probe_score.</value>
+        public int probe_score { get; set; }
+        
+        /// <summary>
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>

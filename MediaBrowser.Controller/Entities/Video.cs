@@ -23,7 +23,8 @@ namespace MediaBrowser.Controller.Entities
         IHasAspectRatio, 
         IHasTags, 
         ISupportsPlaceHolders,
-        IHasMediaSources
+        IHasMediaSources,
+        IHasShortOverview
     {
         public bool IsMultiPart { get; set; }
         public bool HasLocalAlternateVersions { get; set; }
@@ -36,6 +37,7 @@ namespace MediaBrowser.Controller.Entities
         public long? Size { get; set; }
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
+        public string ShortOverview { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp.
