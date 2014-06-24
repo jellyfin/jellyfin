@@ -769,6 +769,9 @@ progress {
     cursor: pointer;
     vertical-align: top;
 }
+.imgUserItemRating:last-child {
+    margin-right: 0;
+}
 
     .imgUserItemRating:hover {
         opacity: .5;
