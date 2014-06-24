@@ -89,12 +89,6 @@ namespace MediaBrowser.Providers.TV
                         }
                         break;
                     }
-                case "SeriesName":
-                    // TODO: Deprecate in mid-2014
-                    // No longer saving this tag but will still read it for a while
-                    item.Name = reader.ReadElementContentAsString();
-                    break;
-
                 case "Status":
                     {
                         var status = reader.ReadElementContentAsString();

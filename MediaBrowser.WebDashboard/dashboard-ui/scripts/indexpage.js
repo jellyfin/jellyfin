@@ -76,7 +76,7 @@
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     preferThumb: true,
-                    shape: 'auto',
+                    shape: 'autosmall',
                     showTitle: true,
                     centerText: true,
                     context: 'home',
@@ -245,7 +245,7 @@
 
         var options = {
 
-            Limit: screenWidth >= 1920 ? 9 : (screenWidth >= 1440 ? 8 : (screenWidth >= 800 ? 6 : 6)),
+            Limit: screenWidth >= 1920 ? 7 : (screenWidth >= 1440 ? 5 : (screenWidth >= 800 ? 6 : 6)),
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed",
             UserId: Dashboard.getCurrentUserId(),
@@ -268,7 +268,7 @@
             }
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: 'auto',
+                shape: 'autosmall',
                 defaultShape: 'square',
                 showTitle: true,
                 centerText: true,
@@ -306,7 +306,7 @@
 
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "auto",
+                shape: "autosmall",
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: screenWidth >= 600,

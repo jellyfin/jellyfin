@@ -42,7 +42,6 @@ namespace MediaBrowser.ServerApplication.IO
         {
             var link = new ShellLink();
             ((IPersistFile)link).Load(filename, NativeMethods.STGM_READ);
-            // TODO: if I can get hold of the hwnd call resolve first. This handles moved and renamed files.  
             // ((IShellLinkW)link).Resolve(hwnd, 0) 
             var sb = new StringBuilder(NativeMethods.MAX_PATH);
             WIN32_FIND_DATA data;

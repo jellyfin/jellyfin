@@ -150,9 +150,13 @@ namespace MediaBrowser.Providers.Manager
 
             var preferredLanguage = item.GetPreferredMetadataLanguage();
 
-            var language = query.IncludeAllLanguages ? null : preferredLanguage;
+            var languages = new List<string>();
+            if (!query.IncludeAllLanguages && !string.IsNullOrWhiteSpace(preferredLanguage))
+            {
+                languages.Add(preferredLanguage);
+            }
 
-            var tasks = providers.Select(i => GetImages(item, cancellationToken, i, language, query.ImageType));
+            var tasks = providers.Select(i => GetImages(item, cancellationToken, i, languages, query.ImageType));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -167,10 +171,10 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="provider">The provider.</param>
-        /// <param name="preferredLanguage">The preferred language.</param>
+        /// <param name="preferredLanguages">The preferred languages.</param>
         /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        private async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken, IRemoteImageProvider provider, string preferredLanguage, ImageType? type = null)
+        private async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken, IRemoteImageProvider provider, List<string> preferredLanguages, ImageType? type = null)
         {
             try
             {
@@ -181,11 +185,17 @@ namespace MediaBrowser.Providers.Manager
                     result = result.Where(i => i.Type == type.Value);
                 }
 
-                if (string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase))
+                if (preferredLanguages.Count > 0)
                 {
                     result = result.Where(i => string.IsNullOrEmpty(i.Language) ||
-                                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
+                                               preferredLanguages.Contains(i.Language, StringComparer.OrdinalIgnoreCase));
                 }
+
+                //if (string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    result = result.Where(i => string.IsNullOrEmpty(i.Language) ||
+                //                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
+                //}
 
                 return result;
             }

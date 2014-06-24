@@ -135,9 +135,7 @@ namespace MediaBrowser.Providers.Savers
             //Add the new node to the document.
             xmlDocument.InsertBefore(xmlDocument.CreateXmlDeclaration("1.0", "UTF-8", "yes"), xmlDocument.DocumentElement);
 
-            var parentPath = Path.GetDirectoryName(path);
-
-            Directory.CreateDirectory(parentPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             var wasHidden = false;
 
@@ -259,9 +257,13 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
-            if (!string.IsNullOrEmpty(item.Overview))
+            var hasShortOverview = item as IHasShortOverview;
+            if (hasShortOverview != null)
             {
-                builder.Append("<Overview><![CDATA[" + item.Overview + "]]></Overview>");
+                if (!string.IsNullOrEmpty(hasShortOverview.ShortOverview))
+                {
+                    builder.Append("<ShortOverview><![CDATA[" + hasShortOverview.ShortOverview + "]]></ShortOverview>");
+                }
             }
 
             if (!string.IsNullOrEmpty(item.CustomRating))
@@ -655,7 +657,7 @@ namespace MediaBrowser.Providers.Savers
 
             if (video != null)
             {
-                AddChapters(video, builder, itemRepository);
+                //AddChapters(video, builder, itemRepository);
 
                 if (video.Video3DFormat.HasValue)
                 {

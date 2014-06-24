@@ -129,6 +129,13 @@ namespace MediaBrowser.Providers.Omdb
             {
                 hasAwards.AwardSummary = WebUtility.HtmlDecode(result.Awards);
             }
+
+            var hasShortOverview = item as IHasShortOverview;
+            if (hasShortOverview != null)
+            {
+                // Imdb plots are usually pretty short
+                hasShortOverview.ShortOverview = result.Plot;
+            }
         }
 
         private bool ShouldFetchGenres(BaseItem item)

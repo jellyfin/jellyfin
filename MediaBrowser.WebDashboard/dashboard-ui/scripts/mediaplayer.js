@@ -5,11 +5,11 @@
         var self = this;
 
         var testableVideoElement = document.createElement('video');
-        var currentMediaElement;
         var currentProgressInterval;
         var canClientSeek;
         var currentPlaylistIndex = 0;
 
+        self.currentMediaElement = null;
         self.currentItem = null;
         self.currentMediaSource = null;
 
@@ -44,7 +44,7 @@
 
         self.getCurrentTicks = function (mediaElement) {
 
-            var playerTime = Math.floor(10000000 * (mediaElement || currentMediaElement).currentTime);
+            var playerTime = Math.floor(10000000 * (mediaElement || self.currentMediaElement).currentTime);
 
             //if (!self.isCopyingTimestamps) {
                 playerTime += self.startTimeTicksOffset;
@@ -77,7 +77,7 @@
 
             currentProgressInterval = setInterval(function () {
 
-                if (currentMediaElement) {
+                if (self.currentMediaElement) {
                     sendProgressUpdate();
                 }
 
@@ -104,7 +104,7 @@
 
         self.changeStream = function (ticks, params) {
 
-            var element = currentMediaElement;
+            var element = self.currentMediaElement;
 
             if (canClientSeek && params == null) {
 
@@ -223,7 +223,7 @@
                 currentTimeElement.html(timeText);
             }
 
-            var state = self.getPlayerStateInternal(currentMediaElement, self.currentItem, self.currentMediaSource);
+            var state = self.getPlayerStateInternal(self.currentMediaElement, self.currentItem, self.currentMediaSource);
 
             $(self).trigger('positionchange', [state]);
         };
@@ -496,7 +496,7 @@
                 throw new Error("Unrecognized media type");
             }
 
-            currentMediaElement = mediaElement;
+            self.currentMediaElement = mediaElement;
 
             if (item.MediaType === "Video") {
 
@@ -512,7 +512,7 @@
 
             var mediaControls = $("#videoControls");
 
-            var state = self.getPlayerStateInternal(currentMediaElement, item, self.currentMediaSource);
+            var state = self.getPlayerStateInternal(self.currentMediaElement, item, self.currentMediaSource);
 
             var url = "";
 
@@ -693,7 +693,7 @@
 
         self.queue = function (options) {
 
-            if (!currentMediaElement) {
+            if (!self.currentMediaElement) {
                 self.play(options);
                 return;
             }
@@ -727,7 +727,7 @@
 
         self.queueNext = function (options) {
 
-            if (!currentMediaElement) {
+            if (!self.currentMediaElement) {
                 self.play(options);
                 return;
             }
@@ -758,11 +758,11 @@
 
         self.pause = function () {
 
-            currentMediaElement.pause();
+            self.currentMediaElement.pause();
         };
 
         self.unpause = function () {
-            currentMediaElement.play();
+            self.currentMediaElement.play();
         };
 
         self.seek = function (position) {
@@ -782,11 +782,11 @@
 
         self.toggleMute = function () {
 
-            if (currentMediaElement) {
+            if (self.currentMediaElement) {
 
                 console.log('MediaPlayer toggling mute');
 
-                if (currentMediaElement.volume) {
+                if (self.currentMediaElement.volume) {
                     self.mute();
                 } else {
                     self.unMute();
@@ -796,27 +796,27 @@
 
         self.volumeDown = function () {
 
-            if (currentMediaElement) {
-                self.setVolume(Math.max(currentMediaElement.volume - .02, 0) * 100);
+            if (self.currentMediaElement) {
+                self.setVolume(Math.max(self.currentMediaElement.volume - .02, 0) * 100);
             }
         };
 
         self.volumeUp = function () {
 
-            if (currentMediaElement) {
-                self.setVolume(Math.min(currentMediaElement.volume + .02, 1) * 100);
+            if (self.currentMediaElement) {
+                self.setVolume(Math.min(self.currentMediaElement.volume + .02, 1) * 100);
             }
         };
 
         // Sets volume using a 0-100 scale
         self.setVolume = function (val) {
 
-            if (currentMediaElement) {
+            if (self.currentMediaElement) {
 
                 console.log('MediaPlayer setting volume to ' + val);
-                currentMediaElement.volume = val / 100;
+                self.currentMediaElement.volume = val / 100;
 
-                self.onVolumeChanged(currentMediaElement);
+                self.onVolumeChanged(self.currentMediaElement);
 
                 self.saveVolume();
             }
@@ -938,7 +938,7 @@
 
         self.stop = function () {
 
-            var elem = currentMediaElement;
+            var elem = self.currentMediaElement;
 
             elem.pause();
 
@@ -953,7 +953,7 @@
                 }
 
                 elem.src = "";
-                currentMediaElement = null;
+                self.currentMediaElement = null;
                 self.currentItem = null;
                 self.currentMediaSource = null;
 
@@ -968,14 +968,14 @@
         };
 
         self.isPlaying = function () {
-            return currentMediaElement != null;
+            return self.currentMediaElement != null;
         };
 
         self.getPlayerState = function () {
 
             var deferred = $.Deferred();
 
-            var result = self.getPlayerStateInternal(currentMediaElement, self.currentItem, self.currentMediaSource);
+            var result = self.getPlayerStateInternal(self.currentMediaElement, self.currentItem, self.currentMediaSource);
 
             deferred.resolveWith(null, [result]);
 
@@ -1140,15 +1140,15 @@
         $(window).on("beforeunload popstate", function () {
 
             // Try to report playback stopped before the browser closes
-            if (self.currentItem && currentMediaElement && currentProgressInterval) {
+            if (self.currentItem && self.currentMediaElement && currentProgressInterval) {
 
-                self.onPlaybackStopped.call(currentMediaElement);
+                self.onPlaybackStopped.call(self.currentMediaElement);
             }
         });
 
         function sendProgressUpdate() {
 
-            var state = self.getPlayerStateInternal(currentMediaElement, self.currentItem, self.currentMediaSource);
+            var state = self.getPlayerStateInternal(self.currentMediaElement, self.currentItem, self.currentMediaSource);
 
             var info = {
                 QueueableMediaTypes: state.NowPlayingItem.MediaType,

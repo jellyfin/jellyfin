@@ -220,6 +220,7 @@
     <Compile Include="TV\TvExternalIds.cs" />
     <Compile Include="Users\UserMetadataService.cs" />
     <Compile Include="Videos\VideoMetadataService.cs" />
+    <Compile Include="Videos\VideoXmlProvider.cs" />
     <Compile Include="Xbmc\XbmcImageSaver.cs" />
     <Compile Include="Years\YearMetadataService.cs" />
   </ItemGroup>

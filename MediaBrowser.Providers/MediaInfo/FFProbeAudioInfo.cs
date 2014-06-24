@@ -286,7 +286,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (!string.Equals(originalVal, val, StringComparison.OrdinalIgnoreCase))
                 {
-                    // TODO: Preserve casing from original value
                     artistsFound.Add(whitelistArtist);
                 }
             }
