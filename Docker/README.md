@@ -7,9 +7,9 @@ This is a Dockerfile for "MediaBrowser Server" - (http://mediabrowser.tv/)
 ## Build from docker file:
 
 ```
-git clone https://github.com/HurricaneHernandez/docker-mbserver.git 
-cd docker-mbserver
-docker build -t mbserver . 
+git clone --depth=1 https://github.com/MediaBrowser/MediaBrowser.git 
+rd MediaBrowser/Docker
+docker build --rm=true -t mbserver . 
 ```
 
 ## Volumes:
@@ -21,5 +21,6 @@ Configuration files and state of MediaBrowser Server folder. (i.e. /opt/appdata/
 ## Docker run command:
 
 ```
-docker run -d --net=host -v /*your_config_location*:/MBServer/ProgramData-Server  -v /*your_media_location*:/media --name=mbserver hurricane/docker-mbserver
+docker run -d --net=host -v /*your_config_location*:/MBServer/ProgramData-Server  -v /*your_media_location*:/media -v /etc/localtime:/etc/localtime:ro --name=mbserver mediabrowser/mbserver
+
 ```

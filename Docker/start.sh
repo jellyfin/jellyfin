@@ -1,5 +1,5 @@
 #! /bin/sh
 
 # Start MBServer
-cd /MediaBrowser.Mono.docker
+cd /MBServer
 mono MediaBrowser.Server.Mono.exe
