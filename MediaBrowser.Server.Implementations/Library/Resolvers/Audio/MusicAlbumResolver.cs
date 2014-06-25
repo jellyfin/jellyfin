@@ -67,32 +67,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// <returns><c>true</c> if [is music album] [the specified data]; otherwise, <c>false</c>.</returns>
         public static bool IsMusicAlbum(string path, IDirectoryService directoryService)
         {
-            // If list contains at least 2 audio files or at least one and no video files consider it to contain music
-            var foundAudio = 0;
-
-            foreach (var file in directoryService.GetFiles(path))
-            {
-                var fullName = file.FullName;
-
-                if (EntityResolutionHelper.IsAudioFile(fullName))
-                {
-                    // Don't resolve these into audio files
-                    if (string.Equals(Path.GetFileNameWithoutExtension(fullName), BaseItem.ThemeSongFilename) && EntityResolutionHelper.IsAudioFile(fullName))
-                    {
-                        continue;
-                    }
-
-                    foundAudio++;
-                }
-                if (foundAudio >= 2)
-                {
-                    return true;
-                }
-                if (EntityResolutionHelper.IsVideoFile(fullName)) return false;
-            }
-
-            //  or a single audio file and no video files
-            return foundAudio > 0;
+            return ContainsMusic(directoryService.GetFileSystemEntries(path));
         }
 
         /// <summary>
@@ -122,15 +97,31 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             // If list contains at least 2 audio files or at least one and no video files consider it to contain music
             var foundAudio = 0;
 
-            foreach (var file in list)
+            foreach (var fileSystemInfo in list)
             {
-                var fullName = file.FullName;
+                // TODO: Support disc 1, disc 2, etc
+                if ((fileSystemInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    continue;
+                }
 
-                if (EntityResolutionHelper.IsAudioFile(fullName)) foundAudio++;
+                var fullName = fileSystemInfo.FullName;
+
+                if (EntityResolutionHelper.IsAudioFile(fullName))
+                {
+                    // Don't resolve these into audio files
+                    if (string.Equals(Path.GetFileNameWithoutExtension(fullName), BaseItem.ThemeSongFilename) && EntityResolutionHelper.IsAudioFile(fullName))
+                    {
+                        continue;
+                    }
+
+                    foundAudio++;
+                }
                 if (foundAudio >= 2)
                 {
                     return true;
                 }
+
                 if (EntityResolutionHelper.IsVideoFile(fullName)) return false;
                 if (EntityResolutionHelper.IsVideoPlaceHolder(fullName)) return false;
             }

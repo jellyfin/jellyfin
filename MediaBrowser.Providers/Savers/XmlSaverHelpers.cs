@@ -72,6 +72,7 @@ namespace MediaBrowser.Providers.Savers
                     "MusicbrainzId",
 
                     "Overview",
+                    "ShortOverview",
                     "Persons",
                     "PlotKeywords",
                     "PremiereDate",
@@ -257,6 +258,11 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
+            if (!string.IsNullOrEmpty(item.Overview))
+            {
+                builder.Append("<Overview><![CDATA[" + item.Overview + "]]></Overview>");
+            }
+            
             var hasShortOverview = item as IHasShortOverview;
             if (hasShortOverview != null)
             {

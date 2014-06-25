@@ -146,34 +146,6 @@ namespace MediaBrowser.Dlna.PlayTo
             return string.Format(CommandBase, action.Name, xmlNamesapce, stateString);
         }
 
-        public string BuildSearchPost(ServiceAction action, string xmlNamesapce, object value, string commandParameter = "")
-        {
-            var stateString = string.Empty;
-
-            foreach (var arg in action.ArgumentList)
-            {
-                if (arg.Direction == "out")
-                    continue;
-
-                if (arg.Name == "ObjectID")
-                    stateString += BuildArgumentXml(arg, value.ToString());
-                else if (arg.Name == "Filter")
-                    stateString += BuildArgumentXml(arg, "*");
-                else if (arg.Name == "StartingIndex")
-                    stateString += BuildArgumentXml(arg, "0");
-                else if (arg.Name == "RequestedCount")
-                    stateString += BuildArgumentXml(arg, "200");
-                else if (arg.Name == "BrowseFlag")
-                    stateString += BuildArgumentXml(arg, null, "BrowseDirectChildren");
-                else if (arg.Name == "SortCriteria")
-                    stateString += BuildArgumentXml(arg, "");
-                else
-                    stateString += BuildArgumentXml(arg, value.ToString(), commandParameter);
-            }
-
-            return string.Format(CommandBase, action.Name, xmlNamesapce, stateString);
-        }
-
         public string BuildPost(ServiceAction action, string xmlNamesapce, object value, Dictionary<string, string> dictionary)
         {
             var stateString = string.Empty;

@@ -104,13 +104,15 @@
 
         self.showQualityFlyout = function () {
 
-            var flyout = $('#video-qualityFlyout');
+            var flyout = $('.video-qualityFlyout');
 
             if (!flyout.is(':visible')) {
                 flyout.html(getQualityFlyoutHtml()).scrollTop(0);
             }
 
-            toggleFlyout(flyout, '#video-qualityButton');
+            toggleFlyout(flyout, '.video-qualityButton');
+            
+            //$('.videoQualityPopup').html(getQualityFlyoutHtml()).trigger('create').popup('open');
         };
 
         self.showChaptersFlyout = function () {
@@ -311,7 +313,7 @@
                 hideFlyout($('#video-subtitleFlyout'));
             });
 
-            $('#video-qualityFlyout').on('click', '.mediaFlyoutOption', function () {
+            $('.video-qualityFlyout').on('click', '.mediaFlyoutOption', function () {
 
                 if (!$(this).hasClass('selectedMediaFlyoutOption')) {
 
@@ -327,7 +329,7 @@
                     });
                 }
 
-                hideFlyout($('#video-qualityFlyout'));
+                hideFlyout($('.video-qualityFlyout'));
             });
 
             var trackChange = false;
@@ -359,12 +361,9 @@
                 tooltip.remove();
             });
 
-            $(".mediaFlyoutContainer").on("click", "a", function (e) {
-                if (confirm("This option will close the video player. Proceed?")) {
-                    self.stop();
-                } else {
-                    e.preventDefault();
-                }
+            $('.video-qualityButton').on('click', function () {
+
+                self.showQualityFlyout();
             });
         });
 
@@ -1003,7 +1002,7 @@
 
             var videoElement = $('#videoElement', mediaPlayerContainer).prepend(html);
 
-            $('#video-qualityButton', videoControls).show();
+            $('.video-qualityButton', videoControls).show();
 
             if (mediaStreams.filter(function (s) {
                 return s.Type == "Audio";

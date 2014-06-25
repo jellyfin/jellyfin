@@ -88,9 +88,14 @@ namespace MediaBrowser.Api
         {
             var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
 
-            return sessionManager.Sessions.First(i => string.Equals(i.DeviceId, auth.DeviceId) &&
-                string.Equals(i.Client, auth.Client) &&
-                string.Equals(i.ApplicationVersion, auth.Version));
+            var session = sessionManager.GetSession(auth.DeviceId, auth.Client, auth.Version);
+
+            if (session == null)
+            {
+                throw new ArgumentException("Session not found.");
+            }
+
+            return session;
         }
 
         /// <summary>

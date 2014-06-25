@@ -113,21 +113,13 @@ namespace MediaBrowser.Server.Implementations.Session
             var version = vals[2];
             var deviceName = vals.Length > 3 ? vals[3] : string.Empty;
 
-            var session = _sessionManager.Sessions
-                .FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
-                    string.Equals(i.Client, client) &&
-                    string.Equals(i.ApplicationVersion, version));
+            var session = _sessionManager.GetSession(deviceId, client, version);
 
             if (session == null && !string.IsNullOrEmpty(deviceName))
             {
                 _logger.Debug("Logging session activity");
 
-                await _sessionManager.LogSessionActivity(client, version, deviceId, deviceName, message.Connection.RemoteEndPoint, null).ConfigureAwait(false);
-
-                session = _sessionManager.Sessions
-                    .FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
-                        string.Equals(i.Client, client) &&
-                        string.Equals(i.ApplicationVersion, version));
+                session = await _sessionManager.LogSessionActivity(client, version, deviceId, deviceName, message.Connection.RemoteEndPoint, null).ConfigureAwait(false);
             }
 
             if (session != null)
@@ -197,7 +189,7 @@ namespace MediaBrowser.Server.Implementations.Session
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Reports the playback start.
         /// </summary>
@@ -284,7 +276,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 _sessionManager.OnPlaybackProgress(info);
             }
         }
-        
+
         /// <summary>
         /// Reports the playback progress.
         /// </summary>
@@ -362,7 +354,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 _sessionManager.OnPlaybackStopped(info);
             }
         }
-        
+
         /// <summary>
         /// Reports the playback stopped.
         /// </summary>

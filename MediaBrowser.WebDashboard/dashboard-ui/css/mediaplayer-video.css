@@ -15,9 +15,7 @@
 
 #videoPlayer {
     z-index: 99997;
-    background-color: #1d1d1d;
     position: fixed;
-    border: 1px solid #333;
     top: 50%;
     left: 50%;
     margin-left: -170px;
@@ -26,20 +24,21 @@
 
 .itemVideo {
     background-color: #000;
-    margin: 5px 5px 75px;
+    margin: 0 0 70px;
     width: 320px;
     height: 181px;
 }
 
 #videoControls {
     z-index: 99999;
-    padding: 0 5px 5px;
+    padding: 0 5px 0;
     height: 75px;
     position: absolute;
     top: auto;
     right: 0;
     bottom: 0;
     left: 0;
+    background-color: #222;
 }
 
     #videoControls .positionSliderContainer .ui-slider-track {

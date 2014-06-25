@@ -301,10 +301,10 @@
 
             $('.playFlyout').popup("close").remove();
 
-            var html = '<div data-role="popup" class="playFlyout" style="max-width:300px;" data-theme="a" data-history="false">';
+            var html = '<div data-role="popup" class="playFlyout" data-transition="fade" data-history="false">';
 
-            html += '<ul data-role="listview" style="min-width: 150px;">';
-            html += '<li data-role="list-divider" data-theme="b">Play Menu</li>';
+            html += '<ul data-role="listview" style="min-width: 180px;">';
+            html += '<li data-role="list-divider">Play Menu</li>';
 
             html += '<li><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
 
@@ -334,7 +334,7 @@
 
                 $(this).off("popupafterclose").remove();
 
-            }).parents(".ui-popup-container").css("margin-left", 100).css("margin-top", 35);
+            }).parents(".ui-popup-container").css("margin-left", 55);
         },
 
         closePlayMenu: function () {

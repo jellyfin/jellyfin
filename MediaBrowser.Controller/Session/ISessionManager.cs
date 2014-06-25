@@ -239,5 +239,14 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="deviceId">The device identifier.</param>
         void ClearTranscodingInfo(string deviceId);
+
+        /// <summary>
+        /// Gets the session.
+        /// </summary>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="client">The client.</param>
+        /// <param name="version">The version.</param>
+        /// <returns>SessionInfo.</returns>
+        SessionInfo GetSession(string deviceId, string client, string version);
     }
 }
