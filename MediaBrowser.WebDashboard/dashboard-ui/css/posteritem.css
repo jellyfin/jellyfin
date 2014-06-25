@@ -27,7 +27,9 @@
 .posterItemOverlayInner {
     padding: 11px 12px 10px;
 }
-
+.posterItemOverlayInner button:last-child {
+    margin-right:0!important;
+}
     .posterItemOverlayInner p {
         white-space: nowrap;
         overflow: hidden;
