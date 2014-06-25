@@ -1516,5 +1516,11 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             ReportTranscodingInfo(deviceId, null);
         }
+
+        public SessionInfo GetSession(string deviceId, string client, string version)
+        {
+            return Sessions.FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
+                string.Equals(i.Client, client));
+        }
     }
 }

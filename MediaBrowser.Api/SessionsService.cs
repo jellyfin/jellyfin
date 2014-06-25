@@ -285,7 +285,7 @@ namespace MediaBrowser.Api
                 SeekPositionTicks = request.SeekPositionTicks
             };
 
-            var task = _sessionManager.SendPlaystateCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendPlaystateCommand(GetSession(_sessionManager).Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -303,7 +303,7 @@ namespace MediaBrowser.Api
                 ItemType = request.ItemType
             };
 
-            var task = _sessionManager.SendBrowseCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendBrowseCommand(GetSession(_sessionManager).Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -318,7 +318,7 @@ namespace MediaBrowser.Api
 
             if (Enum.TryParse(request.Command, true, out commandType))
             {
-                var currentSession = GetSession();
+                var currentSession = GetSession(_sessionManager);
 
                 var command = new GeneralCommand
                 {
@@ -345,7 +345,7 @@ namespace MediaBrowser.Api
                 Text = request.Text
             };
 
-            var task = _sessionManager.SendMessageCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendMessageCommand(GetSession(_sessionManager).Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -364,14 +364,14 @@ namespace MediaBrowser.Api
                 StartPositionTicks = request.StartPositionTicks
             };
 
-            var task = _sessionManager.SendPlayCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendPlayCommand(GetSession(_sessionManager).Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
 
         public void Post(SendGeneralCommand request)
         {
-            var currentSession = GetSession();
+            var currentSession = GetSession(_sessionManager);
 
             var command = new GeneralCommand
             {
@@ -386,7 +386,7 @@ namespace MediaBrowser.Api
 
         public void Post(SendFullGeneralCommand request)
         {
-            var currentSession = GetSession();
+            var currentSession = GetSession(_sessionManager);
 
             request.ControllingUserId = currentSession.UserId.HasValue ? currentSession.UserId.Value.ToString("N") : null;
 
@@ -409,7 +409,7 @@ namespace MediaBrowser.Api
         {
             if (string.IsNullOrWhiteSpace(request.Id))
             {
-                request.Id = GetSession().Id;
+                request.Id = GetSession(_sessionManager).Id;
             }
             _sessionManager.ReportCapabilities(request.Id, new SessionCapabilities
             {
@@ -421,15 +421,6 @@ namespace MediaBrowser.Api
 
                 MessageCallbackUrl = request.MessageCallbackUrl
             });
-        }
-
-        private SessionInfo GetSession()
-        {
-            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
-
-            return _sessionManager.Sessions.First(i => string.Equals(i.DeviceId, auth.DeviceId) &&
-                string.Equals(i.Client, auth.Client) &&
-                string.Equals(i.ApplicationVersion, auth.Version));
         }
     }
 }
