@@ -40,6 +40,4 @@ RUN chmod u+x  /start.sh
 
 EXPOSE 8096
 
-# uncomment for unRAID
-USER nobody
 ENTRYPOINT ["/start.sh"]
