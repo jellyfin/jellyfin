@@ -159,9 +159,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf h264_mp4toannexb" : "-codec:v:0 copy";
             }
 
-            var keyFrameArg = state.ReadInputAtNativeFramerate ?
-                " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+1))" : 
-                " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+5))";
+            var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
+                state.SegmentLength.ToString(UsCulture));
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 

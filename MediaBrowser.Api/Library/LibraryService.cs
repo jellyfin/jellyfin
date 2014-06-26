@@ -213,6 +213,7 @@ namespace MediaBrowser.Api.Library
 
     }
 
+    [Route("/Library/Series/Added", "POST")]
     [Route("/Library/Series/Updated", "POST")]
     [Api(Description = "Reports that new episodes of a series have been added by an external source")]
     public class PostUpdatedSeries : IReturnVoid

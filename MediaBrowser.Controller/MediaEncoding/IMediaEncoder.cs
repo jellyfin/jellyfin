@@ -68,5 +68,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
         string GetInputArgument(string[] inputFiles, MediaProtocol protocol);
+
+        /// <summary>
+        /// Gets the time parameter.
+        /// </summary>
+        /// <param name="ticks">The ticks.</param>
+        /// <returns>System.String.</returns>
+        string GetTimeParameter(long ticks);
     }
 }

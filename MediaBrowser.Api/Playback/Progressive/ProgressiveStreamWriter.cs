@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Web;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -60,7 +59,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             try
             {
-                await StreamFile(Path, responseStream).ConfigureAwait(false);
+                await new ProgressiveFileCopier(_fileSystem).StreamFile(Path, responseStream).ConfigureAwait(false);
             }
             catch
             {
@@ -73,14 +72,18 @@ namespace MediaBrowser.Api.Playback.Progressive
                 ApiEntryPoint.Instance.OnTranscodeEndRequest(Path, TranscodingJobType.Progressive);
             }
         }
+    }
 
-        /// <summary>
-        /// Streams the file.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="outputStream">The output stream.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        private async Task StreamFile(string path, Stream outputStream)
+    public class ProgressiveFileCopier
+    {
+        private readonly IFileSystem _fileSystem;
+
+        public ProgressiveFileCopier(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+
+        public async Task StreamFile(string path, Stream outputStream)
         {
             var eofCount = 0;
             long position = 0;

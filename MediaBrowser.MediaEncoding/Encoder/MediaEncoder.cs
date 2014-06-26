@@ -1,5 +1,3 @@
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -11,7 +9,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,11 +23,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// The _app paths
-        /// </summary>
-        private readonly IApplicationPaths _appPaths;
 
         /// <summary>
         /// Gets the json serializer.
@@ -53,23 +45,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(2, 2);
 
-        private readonly IFileSystem _fileSystem;
-
         public string FFMpegPath { get; private set; }
 
         public string FFProbePath { get; private set; }
 
         public string Version { get; private set; }
 
-        public MediaEncoder(ILogger logger, IApplicationPaths appPaths,
-            IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version,
-            IFileSystem fileSystem)
+        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version)
         {
             _logger = logger;
-            _appPaths = appPaths;
             _jsonSerializer = jsonSerializer;
             Version = version;
-            _fileSystem = fileSystem;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
         }
@@ -263,30 +249,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ((Process)sender).Dispose();
         }
 
-        private const int FastSeekOffsetSeconds = 1;
-
-        protected string GetFastSeekCommandLineParameter(TimeSpan offset)
-        {
-            var seconds = offset.TotalSeconds - FastSeekOffsetSeconds;
-
-            if (seconds > 0)
-            {
-                return string.Format("-ss {0} ", seconds.ToString(UsCulture));
-            }
-
-            return string.Empty;
-        }
-
-        protected string GetSlowSeekCommandLineParameter(TimeSpan offset)
-        {
-            if (offset.TotalSeconds - FastSeekOffsetSeconds > 0)
-            {
-                return string.Format(" -ss {0}", FastSeekOffsetSeconds.ToString(UsCulture));
-            }
-
-            return string.Empty;
-        }
-
         public Task<Stream> ExtractAudioImage(string path, CancellationToken cancellationToken)
         {
             return ExtractImage(new[] { path }, MediaProtocol.File, true, null, null, cancellationToken);
@@ -368,7 +330,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (offset.HasValue)
             {
-                args = string.Format("-ss {0} ", Convert.ToInt32(offset.Value.TotalSeconds)).ToString(UsCulture) + args;
+                args = string.Format("-ss {0} ", GetTimeParameter(offset.Value)) + args;
             }
 
             var process = new Process
@@ -462,6 +424,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 _videoImageResourcePool.Dispose();
             }
+        }
+
+        public string GetTimeParameter(long ticks)
+        {
+            var time = TimeSpan.FromTicks(ticks);
+
+            return GetTimeParameter(time);
+        }
+
+        public string GetTimeParameter(TimeSpan time)
+        {
+            return time.ToString(@"hh\:mm\:ss\.fff", UsCulture);
         }
     }
 }
