@@ -1,14 +1,11 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using System;
@@ -223,47 +220,32 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected async Task WaitForMinimumSegmentCount(string playlist, int segmentCount, CancellationToken cancellationToken)
         {
-            while (true)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                
-                string fileText;
+            var count = 0;
 
-                // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
-                using (var fileStream = FileSystem.GetFileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+            // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
+            using (var fileStream = FileSystem.GetFileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+            {
+                using (var reader = new StreamReader(fileStream))
                 {
-                    using (var reader = new StreamReader(fileStream))
+                    while (true)
                     {
-                        fileText = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        if (!reader.EndOfStream)
+                        {
+                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                            if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
+                            {
+                                count++;
+                                if (count >= segmentCount)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        await Task.Delay(25, cancellationToken).ConfigureAwait(false);
                     }
                 }
-
-                if (CountStringOccurrences(fileText, "#EXTINF:") >= segmentCount)
-                {
-                    break;
-                }
-
-                await Task.Delay(25, cancellationToken).ConfigureAwait(false);
             }
-        }
-
-        /// <summary>
-        /// Count occurrences of strings.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="pattern">The pattern.</param>
-        /// <returns>System.Int32.</returns>
-        private static int CountStringOccurrences(string text, string pattern)
-        {
-            // Loop through all instances of the string 'text'.
-            var count = 0;
-            var i = 0;
-            while ((i = text.IndexOf(pattern, i, StringComparison.OrdinalIgnoreCase)) != -1)
-            {
-                i += pattern.Length;
-                count++;
-            }
-            return count;
         }
 
         /// <summary>
@@ -290,7 +272,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
-            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9} -y \"{10}\"",
+            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} {6} -hls_time {7} -start_number {8} -hls_list_size {9} -y \"{10}\"",
                 itsOffset,
                 inputModifier,
                 GetInputArgument(state),

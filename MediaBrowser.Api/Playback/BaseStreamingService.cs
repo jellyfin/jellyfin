@@ -138,14 +138,9 @@ namespace MediaBrowser.Api.Playback
         {
             var time = request.StartTimeTicks;
 
-            if (time.HasValue)
+            if (time.HasValue && time.Value > 0)
             {
-                var seconds = TimeSpan.FromTicks(time.Value).TotalSeconds;
-
-                if (seconds > 0)
-                {
-                    return string.Format("-ss {0}", seconds.ToString(UsCulture));
-                }
+                return string.Format("-ss {0}", MediaEncoder.GetTimeParameter(time.Value));
             }
 
             return string.Empty;
@@ -586,7 +581,7 @@ namespace MediaBrowser.Api.Playback
         protected string GetTextSubtitleParam(StreamState state,
             CancellationToken cancellationToken)
         {
-            var seconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds;
+            var seconds = Math.Round(TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds);
 
             if (state.SubtitleStream.IsExternal)
             {
@@ -608,13 +603,13 @@ namespace MediaBrowser.Api.Playback
                 return string.Format("subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
                     subtitlePath.Replace('\\', '/').Replace(":/", "\\:/"),
                     charsetParam,
-                    Math.Round(seconds).ToString(UsCulture));
+                    seconds.ToString(UsCulture));
             }
 
             return string.Format("subtitles='{0}:si={1}',setpts=PTS -{2}/TB",
                 state.MediaPath.Replace('\\', '/').Replace(":/", "\\:/"),
                 state.InternalSubtitleStreamOffset.ToString(UsCulture),
-                Math.Round(seconds).ToString(UsCulture));
+                seconds.ToString(UsCulture));
         }
 
         /// <summary>
@@ -849,7 +844,6 @@ namespace MediaBrowser.Api.Playback
             ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
                 TranscodingJobType,
                 process,
-                state.Request.StartTimeTicks,
                 state.Request.DeviceId,
                 state,
                 cancellationTokenSource);
@@ -866,7 +860,7 @@ namespace MediaBrowser.Api.Playback
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             await state.LogFileStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationTokenSource.Token).ConfigureAwait(false);
 
-            process.Exited += (sender, args) => OnFfMpegProcessExited(process, state);
+            process.Exited += (sender, args) => OnFfMpegProcessExited(process, state, outputPath);
 
             try
             {
@@ -1092,8 +1086,16 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="process">The process.</param>
         /// <param name="state">The state.</param>
-        private void OnFfMpegProcessExited(Process process, StreamState state)
+        /// <param name="outputPath">The output path.</param>
+        private void OnFfMpegProcessExited(Process process, StreamState state, string outputPath)
         {
+            var job = ApiEntryPoint.Instance.GetTranscodingJob(outputPath, TranscodingJobType);
+
+            if (job != null)
+            {
+                job.HasExited = true;
+            }
+
             Logger.Debug("Disposing stream resources");
             state.Dispose();
 
