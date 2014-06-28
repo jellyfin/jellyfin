@@ -3,13 +3,13 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public class LiveTvChannel : BaseItem, IItemByName, IHasMediaSources
+    public class LiveTvChannel : BaseItem, IHasMediaSources
     {
         /// <summary>
         /// Gets the user data key.

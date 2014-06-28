@@ -272,7 +272,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
-            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} {6} -hls_time {7} -start_number {8} -hls_list_size {9} -y \"{10}\"",
+            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9} -y \"{10}\"",
                 itsOffset,
                 inputModifier,
                 GetInputArgument(state),

@@ -94,6 +94,10 @@ namespace MediaBrowser.Api.Playback
         public bool EnableMpegtsM2TsMode { get; set; }
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
 
+        public long? EncodingDurationTicks { get; set; }
+
+        public string ItemType { get; set; }
+
         public string GetMimeType(string outputPath)
         {
             if (!string.IsNullOrEmpty(MimeType))

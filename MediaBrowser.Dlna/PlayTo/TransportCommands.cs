@@ -165,12 +165,12 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private string BuildArgumentXml(Argument argument, string value, string commandParameter = "")
         {
-            var state = StateVariables.FirstOrDefault(a => a.Name == argument.RelatedStateVariable);
+            var state = StateVariables.FirstOrDefault(a => string.Equals(a.Name, argument.RelatedStateVariable, StringComparison.OrdinalIgnoreCase));
 
             if (state != null)
             {
-                var sendValue = (state.AllowedValues.FirstOrDefault(a => a == commandParameter) ??
-                                 state.AllowedValues.FirstOrDefault()) ?? 
+                var sendValue = state.AllowedValues.FirstOrDefault(a => string.Equals(a, commandParameter, StringComparison.OrdinalIgnoreCase)) ??
+                                 state.AllowedValues.FirstOrDefault() ?? 
                                  value;
 
                 return string.Format("<{0} xmlns:dt=\"urn:schemas-microsoft-com:datatypes\" dt:dt=\"{1}\">{2}</{0}>", argument.Name, state.DataType ?? "string", sendValue);

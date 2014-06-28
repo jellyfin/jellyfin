@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using System.Globalization;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Linq;
 using System.Net;
@@ -45,7 +46,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             //log.AppendLine("Headers: " + string.Join(",", response.Headers.AllKeys.Select(k => k + "=" + response.Headers[k])));
 
-            var responseTime = string.Format(". Response time: {0} ms", duration.TotalMilliseconds);
+            var responseTime = string.Format(". Response time: {0} ms. Content length: {1} bytes.", duration.TotalMilliseconds, response.ContentLength64.ToString(CultureInfo.InvariantCulture));
 
             var msg = "HTTP Response " + statusCode + " to " + endPoint + responseTime;
 
