@@ -118,14 +118,14 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath);
 
-                    if (currentTranscodingIndex == null || index < currentTranscodingIndex.Value || (index - currentTranscodingIndex.Value) > 3)
+                    if (currentTranscodingIndex == null || index < currentTranscodingIndex.Value || (index - currentTranscodingIndex.Value) > 4)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
                             if (currentTranscodingIndex.HasValue)
                             {
-                                ApiEntryPoint.Instance.KillTranscodingJobs(state.Request.DeviceId, FileDeleteMode.None);
+                                ApiEntryPoint.Instance.KillTranscodingJobs(state.Request.DeviceId, playlistPath, FileDeleteMode.None);
 
                                 DeleteLastFile(playlistPath, 0);
                             }
@@ -318,12 +318,12 @@ namespace MediaBrowser.Api.Playback.Hls
                 baselineStreamBitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? baselineStreamBitrate;
             }
 
-            var playlistText = GetMasterPlaylistFileText(videoBitrate + audioBitrate, appendBaselineStream, baselineStreamBitrate);
+            var playlistText = GetMasterPlaylistFileText(videoBitrate + audioBitrate);
 
             return ResultFactory.GetResult(playlistText, Common.Net.MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
-        private string GetMasterPlaylistFileText(int bitrate, bool includeBaselineStream, int baselineStreamBitrate)
+        private string GetMasterPlaylistFileText(int bitrate)
         {
             var builder = new StringBuilder();
 
@@ -339,14 +339,6 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + paddedBitrate.ToString(UsCulture));
             var playlistUrl = "main.m3u8" + queryString;
             builder.AppendLine(playlistUrl);
-
-            // Low bitrate stream
-            if (includeBaselineStream)
-            {
-                builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + baselineStreamBitrate.ToString(UsCulture));
-                playlistUrl = "baseline.m3u8" + queryString;
-                builder.AppendLine(playlistUrl);
-            }
 
             return builder.ToString();
         }
@@ -375,6 +367,7 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.AppendLine("#EXT-X-VERSION:3");
             builder.AppendLine("#EXT-X-TARGETDURATION:" + state.SegmentLength.ToString(UsCulture));
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
+            builder.AppendLine("#EXT-X-ALLOW-CACHE:NO");
 
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
@@ -465,6 +458,47 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 args += GetInternalGraphicalSubtitleParam(state, codec);
             }
+
+            return args;
+        }
+
+        /// <summary>
+        /// Gets the command line arguments.
+        /// </summary>
+        /// <param name="outputPath">The output path.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="isEncoding">if set to <c>true</c> [is encoding].</param>
+        /// <returns>System.String.</returns>
+        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
+        {
+            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
+
+            var itsOffsetMs = hlsVideoRequest == null
+                                       ? 0
+                                       : ((GetHlsVideoStream)state.VideoRequest).TimeStampOffsetMs;
+
+            var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds.ToString(UsCulture));
+
+            var threads = GetNumberOfThreads(state, false);
+
+            var inputModifier = GetInputModifier(state);
+
+            // If isEncoding is true we're actually starting ffmpeg
+            var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
+
+            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} -flags -global_header {6} -hls_time {7} -start_number {8} -hls_list_size {9} -y \"{10}\"",
+                itsOffset,
+                inputModifier,
+                GetInputArgument(state),
+                threads,
+                GetMapArgs(state),
+                GetVideoArguments(state),
+                GetAudioArguments(state),
+                state.SegmentLength.ToString(UsCulture),
+                startNumberParam,
+                state.HlsListSize.ToString(UsCulture),
+                outputPath
+                ).Trim();
 
             return args;
         }
