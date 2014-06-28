@@ -64,6 +64,10 @@ body {
     font-family: 'Open Sans', Arial, Helvetica, sans-serif;
 }
 
+.bodyWithPopupOpen {
+    overflow-y: hidden !important;
+}
+
 .textlink {
     text-decoration: none;
 }
@@ -169,7 +173,6 @@ pre, textarea.pre {
     display: none;
     margin-left: 5px;
 }
-
 
 .ui-popup-container {
     z-index: 99999;
@@ -681,7 +684,9 @@ h1 .imageLink {
     bottom: -2px;
     left: -2px;
     right: -2px;
-    z-index: 99997;
+
+    /* Above everything, except for the video player and popup overlays */
+    z-index: 1097;
     color: #fff;
     border: 0 !important;
 }

@@ -123,7 +123,11 @@ namespace MediaBrowser.Api.Playback
 
             var outputFileExtension = GetOutputFileExtension(state);
 
-            return Path.Combine(folder, GetCommandLineArguments("dummy\\dummy", state, false).GetMD5() + (outputFileExtension ?? string.Empty).ToLower());
+            var data = GetCommandLineArguments("dummy\\dummy", state, false);
+
+            data += "-" + (state.Request.DeviceId ?? string.Empty);
+
+            return Path.Combine(folder, data.GetMD5().ToString("N") + (outputFileExtension ?? string.Empty).ToLower());
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -772,7 +776,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        protected string GetInputArgument(StreamState state)
+        protected virtual string GetInputArgument(StreamState state)
         {
             var protocol = state.InputProtocol;
 
@@ -787,6 +791,58 @@ namespace MediaBrowser.Api.Playback
             }
 
             return MediaEncoder.GetInputArgument(inputPath, protocol);
+        }
+
+        private async Task AcquireResources(StreamState state, CancellationTokenSource cancellationTokenSource)
+        {
+            if (state.VideoType == VideoType.Iso && state.IsoType.HasValue && IsoManager.CanMount(state.MediaPath))
+            {
+                state.IsoMount = await IsoManager.Mount(state.MediaPath, cancellationTokenSource.Token).ConfigureAwait(false);
+            }
+
+            if (string.IsNullOrEmpty(state.MediaPath))
+            {
+                if (string.Equals(state.ItemType, typeof(LiveTvChannel).Name))
+                {
+                    var streamInfo = await LiveTvManager.GetChannelStream(state.Request.Id, cancellationTokenSource.Token).ConfigureAwait(false);
+
+                    state.LiveTvStreamId = streamInfo.Id;
+
+                    if (!string.IsNullOrEmpty(streamInfo.Path))
+                    {
+                        state.MediaPath = streamInfo.Path;
+                        state.InputProtocol = MediaProtocol.File;
+
+                        await Task.Delay(1000, cancellationTokenSource.Token).ConfigureAwait(false);
+                    }
+                    else if (!string.IsNullOrEmpty(streamInfo.Url))
+                    {
+                        state.MediaPath = streamInfo.Url;
+                        state.InputProtocol = MediaProtocol.Http;
+                    }
+                }
+
+                else if (string.Equals(state.ItemType, typeof(LiveTvVideoRecording).Name) ||
+                    string.Equals(state.ItemType, typeof(LiveTvAudioRecording).Name))
+                {
+                    var streamInfo = await LiveTvManager.GetRecordingStream(state.Request.Id, cancellationTokenSource.Token).ConfigureAwait(false);
+
+                    state.LiveTvStreamId = streamInfo.Id;
+
+                    if (!string.IsNullOrEmpty(streamInfo.Path))
+                    {
+                        state.MediaPath = streamInfo.Path;
+                        state.InputProtocol = MediaProtocol.File;
+
+                        await Task.Delay(1000, cancellationTokenSource.Token).ConfigureAwait(false);
+                    }
+                    else if (!string.IsNullOrEmpty(streamInfo.Url))
+                    {
+                        state.MediaPath = streamInfo.Url;
+                        state.InputProtocol = MediaProtocol.Http;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -806,10 +862,7 @@ namespace MediaBrowser.Api.Playback
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
-            if (state.VideoType == VideoType.Iso && state.IsoType.HasValue && IsoManager.CanMount(state.MediaPath))
-            {
-                state.IsoMount = await IsoManager.Mount(state.MediaPath, cancellationTokenSource.Token).ConfigureAwait(false);
-            }
+            await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
 
             var commandLineArgs = GetCommandLineArguments(outputPath, state, true);
 
@@ -1363,6 +1416,8 @@ namespace MediaBrowser.Api.Playback
 
             List<MediaStream> mediaStreams = null;
 
+            state.ItemType = item.GetType().Name;
+
             if (item is ILiveTvRecording)
             {
                 var recording = await LiveTvManager.GetInternalRecording(request.Id, cancellationToken).ConfigureAwait(false);
@@ -1379,16 +1434,8 @@ namespace MediaBrowser.Api.Playback
 
                 mediaStreams = source.MediaStreams;
 
-                if (string.IsNullOrWhiteSpace(path) && string.IsNullOrWhiteSpace(mediaUrl))
-                {
-                    var streamInfo = await LiveTvManager.GetRecordingStream(request.Id, cancellationToken).ConfigureAwait(false);
-
-                    state.LiveTvStreamId = streamInfo.Id;
-                    mediaStreams = streamInfo.MediaStreams;
-
-                    path = streamInfo.Path;
-                    mediaUrl = streamInfo.Url;
-                }
+                // Just to prevent this from being null and causing other methods to fail
+                state.MediaPath = string.Empty;
 
                 if (!string.IsNullOrEmpty(path))
                 {
@@ -1421,30 +1468,16 @@ namespace MediaBrowser.Api.Playback
 
                 state.VideoType = VideoType.VideoFile;
                 state.IsInputVideo = string.Equals(channel.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
-
-                var streamInfo = await LiveTvManager.GetChannelStream(request.Id, cancellationToken).ConfigureAwait(false);
-
-                state.LiveTvStreamId = streamInfo.Id;
-                mediaStreams = streamInfo.MediaStreams;
-
-                if (!string.IsNullOrEmpty(streamInfo.Path))
-                {
-                    state.MediaPath = streamInfo.Path;
-                    state.InputProtocol = MediaProtocol.File;
-
-                    await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
-                }
-                else if (!string.IsNullOrEmpty(streamInfo.Url))
-                {
-                    state.MediaPath = streamInfo.Url;
-                    state.InputProtocol = MediaProtocol.Http;
-                }
+                mediaStreams = new List<MediaStream>();
 
                 state.ReadInputAtNativeFramerate = true;
                 state.OutputAudioSync = "1000";
                 state.DeInterlace = true;
                 state.InputVideoSync = "-1";
                 state.InputAudioSync = "1";
+
+                // Just to prevent this from being null and causing other methods to fail
+                state.MediaPath = string.Empty;
             }
             else if (item is IChannelMediaItem)
             {
@@ -1500,7 +1533,7 @@ namespace MediaBrowser.Api.Playback
 
             AttachMediaStreamInfo(state, mediaStreams, videoRequest, url);
 
-            state.SegmentLength = state.ReadInputAtNativeFramerate ? 5 : 10;
+            state.SegmentLength = state.ReadInputAtNativeFramerate ? 5 : 7;
             state.HlsListSize = state.ReadInputAtNativeFramerate ? 100 : 1440;
 
             var container = Path.GetExtension(state.RequestedUrl);
@@ -1928,7 +1961,7 @@ namespace MediaBrowser.Api.Playback
             videoRequest.Height = null;
         }
 
-        protected string GetInputModifier(StreamState state)
+        protected string GetInputModifier(StreamState state, bool genPts = true)
         {
             var inputModifier = string.Empty;
 
@@ -1948,9 +1981,9 @@ namespace MediaBrowser.Api.Playback
             inputModifier += " " + GetFastSeekCommandLineParameter(state.Request);
             inputModifier = inputModifier.Trim();
 
-            if (state.VideoRequest != null)
+            if (state.VideoRequest != null && genPts)
             {
-                inputModifier += " -fflags genpts";
+                inputModifier += " -fflags +genpts";
             }
 
             if (!string.IsNullOrEmpty(state.InputAudioSync))

@@ -504,67 +504,6 @@
             }
         };
 
-        self.updateNowPlayingInfo = function (item) {
-
-            if (!item) {
-                throw new Error('item cannot be null');
-            }
-
-            var mediaControls = $("#videoControls");
-
-            var state = self.getPlayerStateInternal(self.currentMediaElement, item, self.currentMediaSource);
-
-            var url = "";
-
-            if (state.NowPlayingItem.PrimaryImageTag) {
-
-                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.PrimaryImageItemId, {
-                    type: "Primary",
-                    height: 40,
-                    tag: state.NowPlayingItem.PrimaryImageTag
-                });
-            }
-            else if (state.NowPlayingItem.BackdropImageTag) {
-
-                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.BackdropItemId, {
-                    type: "Backdrop",
-                    height: 40,
-                    tag: state.NowPlayingItem.BackdropImageTag,
-                    index: 0
-                });
-
-            } else if (state.NowPlayingItem.ThumbImageTag) {
-
-                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.ThumbImageItemId, {
-                    type: "Thumb",
-                    height: 40,
-                    tag: state.NowPlayingItem.ThumbImageTag
-                });
-            }
-
-            else if (item.Type == "TvChannel" || item.Type == "Recording") {
-                url = "css/images/items/detail/tv.png";
-            }
-            else if (item.MediaType == "Audio") {
-                url = "css/images/items/detail/audio.png";
-            }
-            else {
-                url = "css/images/items/detail/video.png";
-            }
-
-            var nowPlayingTextElement = $('.nowPlayingText', mediaControls);
-            var nameHtml = self.getNowPlayingNameHtml(state);
-
-            if (nameHtml.indexOf('<br/>') != -1) {
-                nowPlayingTextElement.addClass('nowPlayingDoubleText');
-            } else {
-                nowPlayingTextElement.removeClass('nowPlayingDoubleText');
-            }
-
-            $('.nowPlayingImage', mediaControls).html('<img src="' + url + '" />');
-            nowPlayingTextElement.html(nameHtml);
-        };
-
         self.getNowPlayingNameHtml = function (playerState) {
 
             var nowPlayingItem = playerState.NowPlayingItem;
@@ -1044,7 +983,12 @@
 
                 var imageTags = item.ImageTags || {};
 
-                if (imageTags.Primary) {
+                if (item.SeriesPrimaryImageTag) {
+
+                    nowPlayingItem.PrimaryImageItemId = item.SeriesId;
+                    nowPlayingItem.PrimaryImageTag = item.SeriesPrimaryImageTag;
+                }
+                else if (imageTags.Primary) {
 
                     nowPlayingItem.PrimaryImageItemId = item.Id;
                     nowPlayingItem.PrimaryImageTag = imageTags.Primary;
@@ -1070,6 +1014,17 @@
 
                     nowPlayingItem.ThumbItemId = item.Id;
                     nowPlayingItem.ThumbImageTag = imageTags.Thumb;
+                }
+
+                if (imageTags.Logo) {
+
+                    nowPlayingItem.LogoItemId = item.Id;
+                    nowPlayingItem.LogoImageTag = imageTags.Logo;
+                }
+                else if (item.ParentLogoImageTag) {
+
+                    nowPlayingItem.LogoItemId = item.ParentLogoItemId;
+                    nowPlayingItem.LogoImageTag = item.ParentLogoImageTag;
                 }
             }
 
@@ -1105,6 +1060,8 @@
         };
 
         self.onPlaybackStopped = function () {
+
+            $('body').removeClass('bodyWithPopupOpen');
 
             self.clearPauseStop();
 

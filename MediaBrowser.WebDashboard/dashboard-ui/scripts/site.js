@@ -42,7 +42,7 @@ var Dashboard = {
         //$.mobile.listview.prototype.options.dividerTheme = "b";
 
         //$.mobile.popup.prototype.options.theme = "c";
-        //$.mobile.popup.prototype.options.transition = "none";
+        $.mobile.popup.prototype.options.transition = "fade";
         $.mobile.defaultPageTransition = "none";
         //$.mobile.collapsible.prototype.options.contentTheme = "a";
     },
@@ -364,7 +364,7 @@ var Dashboard = {
 
         $('.confirmFlyout').popup("close").remove();
 
-        var html = '<div data-role="popup" data-transition="slidefade" class="confirmFlyout" style="max-width:500px;" data-theme="a">';
+        var html = '<div data-role="popup" class="confirmFlyout" style="max-width:500px;" data-theme="a">';
 
         html += '<div class="ui-bar-a" style="text-align:center;">';
         html += '<h3>' + title + '</h3>';
@@ -1211,34 +1211,53 @@ $(function () {
 
     var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
 
-    videoPlayerHtml += '<div id="videoBackdrop">';
+    videoPlayerHtml += '<div class="videoBackdrop">';
     videoPlayerHtml += '<div id="videoPlayer">';
-    videoPlayerHtml += '<div id="videoElement">';
 
+    videoPlayerHtml += '<div id="videoElement">';
     videoPlayerHtml += '<div id="play" class="status"></div>';
     videoPlayerHtml += '<div id="pause" class="status"></div>';
-
     videoPlayerHtml += '</div>';
 
+    videoPlayerHtml += '<div class="videoTopControls hiddenOnIdle">';
+    videoPlayerHtml += '<div class="videoTopControlsLogo"></div>';
+    videoPlayerHtml += '<div class="videoAdvancedControls">';
+
+    videoPlayerHtml += '<button class="imageButton mediaButton videoAudioButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">Audio Tracks</button>';
+    videoPlayerHtml += '<div data-role="popup" class="videoAudioPopup videoPlayerPopup" data-history="false" data-theme="b" data-corners="false"></div>';
+
+    videoPlayerHtml += '<button class="imageButton mediaButton videoSubtitleButton" title="Subtitles" type="button" data-icon="subtitles" data-iconpos="notext" data-inline="true">Subtitles</button>';
+    videoPlayerHtml += '<div data-role="popup" class="videoSubtitlePopup videoPlayerPopup" data-history="false" data-theme="b" data-corners="false"></div>';
+
+    videoPlayerHtml += '<button class="mediaButton videoChaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
+    videoPlayerHtml += '<div data-role="popup" class="videoChaptersPopup videoPlayerPopup" data-history="false" data-theme="b" data-corners="false"></div>';
+
+    videoPlayerHtml += '<button class="mediaButton videoQualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">Quality</button>';
+    videoPlayerHtml += '<div data-role="popup" class="videoQualityPopup videoPlayerPopup" data-history="false" data-theme="b" data-corners="false"></div>';
+
+    videoPlayerHtml += '<button class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="delete" data-iconpos="notext" data-inline="true">Stop</button>';
+
+    videoPlayerHtml += '</div>'; // videoAdvancedControls
+    videoPlayerHtml += '</div>'; // videoTopControls
+
     // Create controls
-    videoPlayerHtml += '<div id="videoControls" class="videoControls">';
+    videoPlayerHtml += '<div class="videoControls hiddenOnIdle">';
+
+    videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
+    videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">Play</button>';
+    videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">Pause</button>';
+    videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">Next Track</button>';
 
     videoPlayerHtml += '<div class="positionSliderContainer sliderContainer">';
     videoPlayerHtml += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
     videoPlayerHtml += '</div>';
 
-    videoPlayerHtml += '<div id="video-basic-controls">';
-
-    videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
-    videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">Play</button>';
-    videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">Pause</button>';
-
-    videoPlayerHtml += '<button id="video-stopButton" class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="stop" data-iconpos="notext" data-inline="true">Stop</button>';
-    videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">Next Track</button>';
-
     videoPlayerHtml += '<div class="currentTime"></div>';
+
+    videoPlayerHtml += '<div class="nowPlayingInfo hiddenOnIdle">';
     videoPlayerHtml += '<div class="nowPlayingImage"></div>';
     videoPlayerHtml += '<div class="nowPlayingText"></div>';
+    videoPlayerHtml += '</div>'; // nowPlayingInfo
 
     videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">Mute</button>';
     videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">Unmute</button>';
@@ -1247,25 +1266,7 @@ $(function () {
     videoPlayerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
     videoPlayerHtml += '</div>';
 
-    videoPlayerHtml += '</div>'; // video-basic-controls
-    videoPlayerHtml += '<div id="video-advanced-controls">';
-
-    videoPlayerHtml += '<button class="mediaButton video-qualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">Quality</button>';
-    //videoPlayerHtml += '<div data-role="popup" class="videoQualityPopup videoPlayerPopup" data-transition="flip"></div>';
-    videoPlayerHtml += '<div style="display:none;" id="video-qualityFlyout" class="video-qualityFlyout mediaPlayerFlyout"></div>';
-
-    videoPlayerHtml += '<button onclick="MediaPlayer.showAudioTracksFlyout();" id="video-audioTracksButton" class="imageButton mediaButton audioTracksButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">Audio Tracks</button>';
-    videoPlayerHtml += '<div id="video-audioTracksFlyout" style="display:none;" class="mediaPlayerFlyout audioTracksFlyout"></div>';
-
-    videoPlayerHtml += '<button onclick="MediaPlayer.showSubtitleMenu();" id="video-subtitleButton" class="imageButton mediaButton subtitleButton" title="Subtitles" type="button" data-icon="subtitles" data-iconpos="notext" data-inline="true">Subtitles</button>';
-    videoPlayerHtml += '<div id="video-subtitleFlyout" style="display:none;" class="mediaPlayerFlyout subtitleFlyout"></div>';
-
-    videoPlayerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="video-chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
-    videoPlayerHtml += '<div id="video-chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div>';
-
     videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="expand" data-iconpos="notext" data-inline="true">Fullscreen</button>';
-
-    videoPlayerHtml += '</div>'; // video-advanced-controls
 
     videoPlayerHtml += '</div>'; // videoControls
 
@@ -1298,6 +1299,22 @@ $(function () {
         }
     });
 });
+
+$.fn.openPopup = function () {
+
+    this.one('popupbeforeposition', function () {
+
+        //$("body").on("touchmove.popup", false);
+        //$('body').addClass('bodyWithPopupOpen');
+
+    }).one('popupafterclose', function () {
+        //$("body").off("touchmove.popup");
+
+        //$('body').removeClass('bodyWithPopupOpen');
+    });
+
+    return this.popup('open');
+};
 
 Dashboard.jQueryMobileInit();
 

@@ -289,7 +289,8 @@ namespace MediaBrowser.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, url, dictionary), header)
+            var post = AvCommands.BuildPost(command, service.ServiceType, url, dictionary);
+            await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, post, header)
                 .ConfigureAwait(false);
 
             await Task.Delay(50).ConfigureAwait(false);
@@ -313,31 +314,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 return String.Empty;
 
             return SecurityElement.Escape(value);
-        }
-
-        public async Task SetNextAvTransport(string value, string header, string metaData)
-        {
-            var command = AvCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetNextAVTransportURI");
-            if (command == null)
-                return;
-
-            var dictionary = new Dictionary<string, string>
-            {
-                {"NextURI", value},
-                {"NextURIMetaData", CreateDidlMeta(metaData)}
-            };
-
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
-
-            if (service == null)
-            {
-                throw new InvalidOperationException("Unable to find service");
-            }
-
-            await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, value, dictionary), header)
-                .ConfigureAwait(false);
-
-            RestartTimer();
         }
 
         public async Task SetPlay()

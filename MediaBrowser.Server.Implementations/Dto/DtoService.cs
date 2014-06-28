@@ -63,6 +63,26 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <exception cref="System.ArgumentNullException">item</exception>
         public BaseItemDto GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null)
         {
+            var byName = item as IItemByName;
+
+            if (byName != null)
+            {
+                var libraryItems = user != null ?
+                    user.RootFolder.GetRecursiveChildren(user) :
+                    _libraryManager.RootFolder.RecursiveChildren;
+
+                var dto = GetBaseItemDtoInternal(item, fields, user);
+
+                SetItemByNameInfo(item, dto, byName.GetTaggedItems(libraryItems).ToList(), user);
+
+                return dto;
+            }
+
+            return GetBaseItemDtoInternal(item, fields, user, owner);
+        }
+
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null)
+        {
             if (item == null)
             {
                 throw new ArgumentNullException("item");
@@ -141,20 +161,18 @@ namespace MediaBrowser.Server.Implementations.Dto
             return dto;
         }
 
-        public BaseItemDto GetItemByNameDto<T>(T item, List<ItemFields> fields, User user = null)
-            where T : BaseItem, IItemByName
-        {
-            var libraryItems = user != null ? user.RootFolder.GetRecursiveChildren(user) :
-                _libraryManager.RootFolder.RecursiveChildren;
-
-            return GetItemByNameDto(item, fields, item.GetTaggedItems(libraryItems).ToList(), user);
-        }
-
         public BaseItemDto GetItemByNameDto<T>(T item, List<ItemFields> fields, List<BaseItem> taggedItems, User user = null)
             where T : BaseItem, IItemByName
         {
-            var dto = GetBaseItemDto(item, fields, user);
+            var dto = GetBaseItemDtoInternal(item, fields, user);
 
+            SetItemByNameInfo(item, dto, taggedItems, user);
+
+            return dto;
+        }
+
+        private void SetItemByNameInfo(BaseItem item, BaseItemDto dto, List<BaseItem> taggedItems, User user = null)
+        {
             if (item is MusicArtist || item is MusicGenre)
             {
                 dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
@@ -181,8 +199,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             dto.ChildCount = taggedItems.Count;
-
-            return dto;
         }
 
         /// <summary>

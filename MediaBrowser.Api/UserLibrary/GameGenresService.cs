@@ -76,10 +76,10 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
 
-                return DtoService.GetItemByNameDto(item, fields.ToList(), user);
+                return DtoService.GetBaseItemDto(item, fields.ToList(), user);
             }
 
-            return DtoService.GetItemByNameDto(item, fields.ToList());
+            return DtoService.GetBaseItemDto(item, fields.ToList());
         }
 
         /// <summary>

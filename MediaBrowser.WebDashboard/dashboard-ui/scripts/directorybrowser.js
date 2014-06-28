@@ -93,7 +93,7 @@
             options.header = options.header || Globalize.translate('HeaderSelectMediaPath');
             options.instruction = options.instruction || "";
 
-            var html = '<div data-transition="fade" data-role="popup" id="popupDirectoryPicker" class="popup" style="min-width:65%;">';
+            var html = '<div data-role="popup" id="popupDirectoryPicker" class="popup" style="min-width:65%;">';
 
             html += '<div class="ui-bar-a" style="text-align: center; padding: 0 20px;">';
             html += '<h3>' + options.header + '</h3>';

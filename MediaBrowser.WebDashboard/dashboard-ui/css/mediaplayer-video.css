@@ -1,9 +1,6 @@
-﻿#mediaPlayer .mediaPlayerFlyout {
-    bottom: 64px;
-}
-
-#videoBackdrop {
-    z-index: 99990;
+﻿.videoBackdrop {
+    /* Allows popups to be closed, because their z-index is 1099 */
+    z-index: 1098;
     position: fixed;
     background-color: transparent;
     background-color: rgba(0, 0, 0, 0.6);
@@ -16,60 +13,49 @@
 #videoPlayer {
     z-index: 99997;
     position: fixed;
-    top: 50%;
-    left: 50%;
-    margin-left: -170px;
-    margin-top: -115px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #222;
 }
 
 .itemVideo {
     background-color: #000;
-    margin: 0 0 70px;
-    width: 320px;
-    height: 181px;
+    width: 100%;
+    height: auto;
 }
 
-#videoControls {
-    z-index: 99999;
-    padding: 0 5px 0;
-    height: 75px;
-    position: absolute;
-    top: auto;
-    right: 0;
-    bottom: 0;
+.videoControls {
+    padding: 0 .5em;
+    background-color: rgba(0, 0, 0, .8);
+    position: fixed;
     left: 0;
-    background-color: #222;
+    bottom: 0;
+    right: 0;
+    z-index: 99998;
+    text-align: center;
 }
 
-    #videoControls .positionSliderContainer .ui-slider-track {
-        margin: 0 !important;
-    }
+.videoTopControls {
+    padding: .7em 1em;
+    background-color: rgba(0, 0, 0, .5);
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    z-index: 99998;
+}
 
-    #videoControls .positionSliderContainer {
-        display: block;
-        width: 100%;
-        margin-top: 0px;
-    }
+.videoAdvancedControls {
+    text-align: right;
+    vertical-align: top;
+    float: right;
+}
 
-    #videoControls #video-basic-controls {
-        position: absolute;
-        top: 25px;
-        left: 10px;
-        width: 600px;
-        display: inline-block;
-    }
-
-    #videoControls #video-advanced-controls {
-        position: absolute;
-        top: 25px;
-        right: 10px;
-        width: 400px;
-        display: inline-block;
-    }
-
-    #videoControls .currentTime {
-        margin-top: 25px;
-    }
+.videoControls .currentTime {
+    margin-top: 25px;
+}
 
 #slider-tooltip {
     z-index: 99999;
@@ -83,11 +69,46 @@
     padding: 5px;
 }
 
+.nowPlayingInfo {
+    position: fixed;
+    bottom: 8px;
+    left: 10px;
+    z-index: 99999;
+}
+
+#videoPlayer .nowPlayingInfo img {
+    height: auto !important;
+    max-width: 100px;
+    max-height: 200px;
+}
+
+#videoPlayer .nowPlayingText {
+    font-weight: normal;
+    margin: 0 0 0 5px;
+    max-width: 150px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: left;
+    vertical-align: bottom;
+    position: static;
+}
+
+.videoTopControlsLogo {
+    float: left;
+}
+
+    .videoTopControlsLogo img {
+        max-height: 40px;
+        max-width: 200px;
+    }
+
+
 /* Fullscreen
     ***************************************/
 
-#videoPlayer.fullscreenVideo,
-#videoPlayer.fullscreenVideo .itemVideo {
+#videoPlayer,
+#videoPlayer .itemVideo {
     position: fixed !important;
     top: 0 !important;
     bottom: 0 !important;
@@ -106,180 +127,68 @@
     height: 2px!important;
 }
 
-#mediaPlayer .ui-slider-handle, .nowPlayingBar .ui-slider-handle, .nowPlayingPage .ui-slider-handle {
-}
-
-#videoPlayer.fullscreenVideo #videoControls {
-    opacity: 0.8;
-    background-color: #1d1d1d;
-}
-
 #videoPlayer.fullscreenVideo .inactive {
-    display: none;
-}
-
-#videoPlayer.fullscreenVideo:hover .active {
-    display: block;
-}
-
-#mediaPlayer #videoControls #video-subtitleButton:disabled, #mediaPlayer #videoControls #video-muteButton:disabled, #mediaPlayer #videoControls #video-unmuteButton:disabled {
     display: none!important;
 }
 
-#mediaPlayer #video-advanced-controls {
-    text-align: right;
-}
-
-#mediaPlayer #videoControls .mediaPlayerFlyout {
-    text-align: left;
-    margin-left: 0;
-    right: 0;
-    bottom: 70px;
-}
-
-#mediaPlayer .volumeSliderContainer {
+#mediaPlayer .sliderContainer {
     position: relative;
     top: 5px;
-}
-
-/* Media queries
-    ***************************************/
-
-@media all and (min-width: 640px) and (min-height: 360px) {
-    #mediaPlayer .itemVideo:not(.fullscreenVideo) {
-        width: 480px;
-        height: 271px;
-    }
-
-    #videoPlayer {
-        margin-left: -250px;
-        margin-top: -160px;
-    }
-}
-
-@media all and (min-width: 800px) and (min-height: 450px) {
-    #mediaPlayer .itemVideo:not(.fullscreenVideo) {
-        width: 640px;
-        height: 362px;
-    }
-
-    #videoPlayer {
-        margin-left: -330px;
-        margin-top: -205px;
-    }
-}
-
-@media all and (min-width: 960px) and (min-height: 540px) {
-    #mediaPlayer .itemVideo:not(.fullscreenVideo) {
-        width: 720px;
-        height: 406px;
-    }
-
-    #videoPlayer {
-        margin-left: -370px;
-        margin-top: -228px;
-    }
-}
-
-@media all and (min-width: 1200px) and (min-height: 720px) {
-    #mediaPlayer .itemVideo:not(.fullscreenVideo) {
-        width: 1080px;
-        height: 610px;
-    }
-
-    #videoPlayer {
-        margin-left: -550px;
-        margin-top: -329px;
-    }
-}
-
-@media all and (min-width: 1440px) and (min-height: 720px) {
-    #mediaPlayer .itemVideo:not(.fullscreenVideo) {
-        width: 1080px;
-        height: 610px;
-    }
-
-    #videoPlayer {
-        margin-left: -550px;
-        margin-top: -329px;
-    }
 }
 
 /****************************************/
 
 @media all and (max-width: 1200px), all and (max-height: 720px) {
-    #videoControls .currentTime {
+    .videoControls .currentTime {
         margin-right: 0;
         min-width: 120px;
     }
 
-    #videoControls #video-advanced-controls {
-        width: 350px;
-    }
-
-    #videoControls .nowPlayingText {
+    .videoControls .nowPlayingText {
         max-width: 160px;
     }
 }
 
 @media all and (max-width: 960px), all and (max-height: 550px) {
-    #videoControls #video-advanced-controls {
-        width: 275px;
-    }
-
-    #videoControls .nowPlayingText {
+    .videoControls .nowPlayingText {
         max-width: 90px;
     }
 }
 
 @media all and (max-width: 800px), all and (max-height: 460px) {
-    #mediaPlayer #videoPlayer {
-        margin-top: -180px;
-    }
 
-    #mediaPlayer .itemVideo {
-        margin-bottom: 120px;
-    }
-
-    #mediaPlayer #videoControls {
-        height: 120px;
-    }
-
-    #mediaPlayer #video-basic-controls {
-        width: 250px;
-    }
-
-    #mediaPlayer #video-basic-controls, #mediaPlayer #video-advanced-controls {
-        width: 200px;
-        height: 120px;
-    }
-
-    #mediaPlayer #videoControls .mediaPlayerFlyout {
-        bottom: 150px;
-    }
-
-    #mediaPlayer .nowPlayingImage, #mediaPlayer .nowPlayingText {
-        display: none;
-    }
-
-    #mediaPlayer .volumeSliderContainer {
+    #mediaPlayer .sliderContainer {
         margin-top: 8px;
     }
 }
 
-@media all and (max-width: 640px), all and (max-height: 365px) {
-    #mediaPlayer #videoPlayer {
-        margin-top: -135px;
-    }
+@media all and (max-width: 1000px), all and (max-height: 460px) {
 
-    #mediaPlayer #video-advanced-controls {
-        width: 150px;
+    #mediaPlayer .nowPlayingImage, #mediaPlayer .nowPlayingText {
+        display: none;
     }
 }
 
 @media all and (max-width: 500px) {
     #mediaPlayer .previousTrackButton, #mediaPlayer .nextTrackButton {
         display: none!important;
+    }
+    .videoTopControlsLogo {
+        display: none!important;
+    }
+}
+
+@media all and (min-width: 800px) {
+    .videoControls .positionSliderContainer {
+        width: 300px;
+    }
+}
+
+@media all and (min-width: 1200px) {
+    #videoPlayer .nowPlayingInfo img {
+        height: auto !important;
+        max-width: 150px;
+        max-height: 300px;
     }
 }
 
@@ -362,89 +271,40 @@
     }
 }
 
-.cursor-inactive {
-    cursor: none;
-}
-
-.mediaFlyoutContainer {
-    display: inline-block;
-}
-
-.mediaPlayerFlyout {
+.videoPlayerPopupContent {
     width: 200px;
-    color: #000;
-    background-color: #fff;
-    border: 1px solid #999;
+}
+
+.videoChaptersPopup .videoPlayerPopupContent {
+    width: 300px;
+}
+
+.videoChapterPopupImage {
     position: absolute;
-    z-index: 99999;
-    bottom: 78px;
-    margin-left: -125px;
-    max-height: 300px;
-    overflow-y: auto;
-    font-size: 13px;
-}
-
-.chaptersFlyout, .audioTracksFlyout {
-    width: 250px;
-    margin-left: -150px;
-}
-
-.mediaFlyoutOption {
-    display: block;
-    text-decoration: none;
-    color: #000;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-}
-
-    .mediaFlyoutOption:hover, .mediaFlyoutOption:focus {
-        background-color: #eee;
-    }
-
-.selectedMediaFlyoutOption {
-    background-color: #d9F4FF;
-    background-image: url(images/media/selected.png);
+    top: 0;
+    left: 0;
+    width: 80px;
+    height: 80px;
     background-repeat: no-repeat;
-    background-position: right top;
-    background-size: 16px 16px;
+    background-size: cover;
+    background-position: center center;
 }
 
-.mediaFlyoutOptionImage {
-    display: inline-block;
-    width: 15%;
-    vertical-align: middle;
+.videoPlayerPopupScroller {
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 180px;
 }
 
-    .mediaFlyoutOptionImage + .mediaFlyoutOptionContent {
-        vertical-align: top;
-        display: inline-block;
-        width: 85%;
+@media all and (min-height: 500px) {
+    .videoPlayerPopupScroller {
+        max-height: 300px;
     }
-
-.chaptersFlyout .mediaFlyoutOptionImage {
-    width: 40%;
 }
 
-    .chaptersFlyout .mediaFlyoutOptionImage + .mediaFlyoutOptionContent {
-        width: 60%;
+
+@media all and (min-height: 600px) {
+    .videoPlayerPopupScroller {
+        max-height: 400px;
     }
-
-.mediaFlyoutOptionName {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    padding-left: 5px;
-    font-size: 13px;
-    font-weight: normal;
-}
-
-.mediaFlyoutOptionSecondaryText {
-    font-size: 13px;
-    color: #333;
-    font-weight: normal;
-    margin-top: 3px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    padding-left: 5px;
 }

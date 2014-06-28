@@ -50,16 +50,6 @@ namespace MediaBrowser.Controller.Dto
         BaseItemDto GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null);
 
         /// <summary>
-        /// Gets the item by name dto.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="fields">The fields.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>BaseItemDto.</returns>
-        BaseItemDto GetItemByNameDto<T>(T item, List<ItemFields> fields, User user = null)
-            where T : BaseItem, IItemByName;
-
-        /// <summary>
         /// Gets the chapter information dto.
         /// </summary>
         /// <param name="chapterInfo">The chapter information.</param>

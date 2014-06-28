@@ -1352,7 +1352,7 @@
 
             var cast = casts[i];
 
-            html += '<a class="tileItem smallPosterTileItem" href="itembynamedetails.html?context=' + context + '&person=' + ApiClient.encodeName(cast.Name) + '">';
+            html += '<a class="tileItem smallPosterTileItem" href="itembynamedetails.html?context=' + context + '&id=' + cast.Id + '">';
 
             var imgUrl;
 

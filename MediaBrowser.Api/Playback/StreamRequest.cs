@@ -33,7 +33,7 @@ namespace MediaBrowser.Api.Playback
         /// <value>The start time ticks.</value>
         [ApiMember(Name = "StartTimeTicks", Description = "Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public long? StartTimeTicks { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the audio bit rate.
         /// </summary>

@@ -151,13 +151,6 @@ input[type="range"]::-ms-fill-upper {
     }
 }
 
-/*@media all and (min-width: 800px) {
-
-    .nowPlayingBar {
-        text-align: center;
-    }
-}*/
-
 @media (min-width: 1440px) {
     #nowPlayingBar .positionSliderContainer {
         width: 300px;

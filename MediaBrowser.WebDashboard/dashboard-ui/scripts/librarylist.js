@@ -114,11 +114,6 @@
 
             html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext" title="' + Globalize.translate('ButtonPlay') + '" onclick="' + onPlayClick + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonPlay') + '</button>';
             buttonCount++;
-
-            if (item.MediaType == "Audio" || item.Type == "MusicAlbum") {
-                html += '<button type="button" data-mini="true" data-inline="true" data-icon="plus" data-iconpos="notext" title="' + Globalize.translate('ButtonQueue') + '" onclick="MediaController.queue(\'' + item.Id + '\');return false;" style="' + buttonMargin + '">' + Globalize.translate('ButtonQueue') + '</button>';
-                buttonCount++;
-            }
         }
 
         if (item.LocalTrailerCount && item.PlayAccess == 'Full') {

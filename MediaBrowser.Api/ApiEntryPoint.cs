@@ -325,6 +325,35 @@ namespace MediaBrowser.Api
         }
 
         /// <summary>
+        /// Kills the transcoding jobs.
+        /// </summary>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="outputPath">The output path.</param>
+        /// <param name="deleteMode">The delete mode.</param>
+        /// <exception cref="System.ArgumentNullException">deviceId</exception>
+        internal void KillTranscodingJobs(string deviceId, string outputPath, FileDeleteMode deleteMode)
+        {
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                throw new ArgumentNullException("deviceId");
+            }
+
+            var jobs = new List<TranscodingJob>();
+
+            lock (_activeTranscodingJobs)
+            {
+                // This is really only needed for HLS. 
+                // Progressive streams can stop on their own reliably
+                jobs.AddRange(_activeTranscodingJobs.Where(i => string.Equals(deviceId, i.DeviceId, StringComparison.OrdinalIgnoreCase) && string.Equals(outputPath, i.Path, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            foreach (var job in jobs)
+            {
+                KillTranscodingJob(job, deleteMode);
+            }
+        }
+
+        /// <summary>
         /// Kills the transcoding job.
         /// </summary>
         /// <param name="job">The job.</param>
@@ -443,6 +472,8 @@ namespace MediaBrowser.Api
                 .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1)
                 .ToList();
 
+            Exception e = null;
+
             foreach (var file in filesToDelete)
             {
                 try
@@ -452,8 +483,14 @@ namespace MediaBrowser.Api
                 }
                 catch (IOException ex)
                 {
+                    e = ex;
                     Logger.ErrorException("Error deleting HLS file {0}", ex, file);
                 }
+            }
+
+            if (e != null)
+            {
+                throw e;
             }
         }
     }

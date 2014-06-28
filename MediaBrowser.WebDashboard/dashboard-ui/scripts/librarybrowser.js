@@ -219,8 +219,7 @@
                 html += '<tr>';
 
                 html += '<td class="detailTableButtonsCell">';
-                html += '<button class="btnPlay" data-icon="play" type="button" data-iconpos="notext" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\', \'Audio\');" data-inline="true" title="Play">Play</button>';
-                html += '<button class="btnQueue" data-icon="plus" type="button" data-iconpos="notext" onclick="MediaController.queue(\'' + item.Id + '\');" data-inline="true" title="Queue">Queue</button>';
+                html += '<button class="btnPlay" data-icon="play" type="button" data-iconpos="notext" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\', false, \'Audio\');" data-inline="true" title="Play">Play</button>';
                 html += '</td>';
 
                 html += '<td class="desktopColumn">' + (item.ParentIndexNumber || "") + '</td>';
@@ -301,20 +300,12 @@
 
             $('.playFlyout').popup("close").remove();
 
-            var html = '<div data-role="popup" class="playFlyout" data-transition="fade" data-history="false">';
+            var html = '<div data-role="popup" class="playFlyout" data-history="false">';
 
             html += '<ul data-role="listview" style="min-width: 180px;">';
             html += '<li data-role="list-divider">Play Menu</li>';
 
             html += '<li><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
-
-            if (itemType == "Audio" || itemType == "MusicAlbum" || itemType == "MusicArtist" || itemType == "MusicGenre") {
-                html += '<li><a href="#" onclick="MediaController.instantMix(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
-            }
-
-            if (isFolder || itemType == "MusicArtist" || itemType == "MusicGenre") {
-                html += '<li><a href="#" onclick="MediaController.shuffle(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
-            }
 
             if (resumePositionTicks) {
                 html += '<li><a href="#" onclick="MediaController.play({ids:[\'' + itemId + '\'],startPositionTicks:' + resumePositionTicks + '});LibraryBrowser.closePlayMenu();">Resume</a></li>';
@@ -322,6 +313,14 @@
 
             if (MediaController.canQueueMediaType(mediaType)) {
                 html += '<li><a href="#" onclick="MediaController.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
+            }
+
+            if (itemType == "Audio" || itemType == "MusicAlbum" || itemType == "MusicArtist" || itemType == "MusicGenre") {
+                html += '<li><a href="#" onclick="MediaController.instantMix(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
+            }
+
+            if (isFolder || itemType == "MusicArtist" || itemType == "MusicGenre") {
+                html += '<li><a href="#" onclick="MediaController.shuffle(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
             }
 
             html += '</ul>';
@@ -432,26 +431,26 @@
                 return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Genre") {
-                return "itembynamedetails.html?genre=" + ApiClient.encodeName(item.Name);
+                return "itembynamedetails.html?id=" + id;
             }
             if (item.Type == "MusicGenre") {
-                return "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(item.Name);
+                return "itembynamedetails.html?id=" + id;
             }
             if (item.Type == "GameGenre") {
-                return "itembynamedetails.html?gamegenre=" + ApiClient.encodeName(item.Name);
+                return "itembynamedetails.html?id=" + id;
             }
             if (item.Type == "Studio") {
-                return "itembynamedetails.html?studio=" + ApiClient.encodeName(item.Name);
+                return "itembynamedetails.html?id=" + id;
             }
             if (item.Type == "Person") {
-                return "itembynamedetails.html?person=" + ApiClient.encodeName(item.Name);
+                return "itembynamedetails.html?id=" + id;
             }
             if (item.Type == "Recording") {
                 return "livetvrecording.html?id=" + id;
             }
 
             if (item.Type == "MusicArtist") {
-                return "itembynamedetails.html?musicartist=" + ApiClient.encodeName(item.Name);
+                return "itembynamedetails.html?id=" + id;
             }
 
             if (item.IsFolder) {
@@ -1993,7 +1992,7 @@
             if (typeof (index) == "undefined") index = 0;
 
             html += '<div class="galleryImageContainer">';
-            html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
+            html += '<a href="#pop_' + index + '_' + tag + '" data-rel="popup" data-position-to="window">';
 
             html += '<img class="galleryImage" src="' + LibraryBrowser.getImageUrl(item, type, index, {
                 maxWidth: screenWidth,
