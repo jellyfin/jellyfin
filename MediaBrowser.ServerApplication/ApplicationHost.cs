@@ -41,7 +41,6 @@ using MediaBrowser.Dlna.Main;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.MediaEncoding.Subtitles;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
@@ -288,17 +287,24 @@ namespace MediaBrowser.ServerApplication
 
         private void MigrateModularConfigurations()
         {
+            var saveConfig = false;
+
             if (ServerConfigurationManager.Configuration.DlnaOptions != null)
             {
                 ServerConfigurationManager.SaveConfiguration("dlna", ServerConfigurationManager.Configuration.DlnaOptions);
                 ServerConfigurationManager.Configuration.DlnaOptions = null;
-                ServerConfigurationManager.SaveConfiguration();
+                saveConfig = true;
             }
 
             if (ServerConfigurationManager.Configuration.ChapterOptions != null)
             {
                 ServerConfigurationManager.SaveConfiguration("chapters", ServerConfigurationManager.Configuration.ChapterOptions);
                 ServerConfigurationManager.Configuration.ChapterOptions = null;
+                saveConfig = true;
+            }
+
+            if (saveConfig)
+            {
                 ServerConfigurationManager.SaveConfiguration();
             }
         }
@@ -1088,10 +1094,12 @@ namespace MediaBrowser.ServerApplication
             var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, "MBServer", null, ApplicationVersion,
                                                            ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
 
-            HasUpdateAvailable = version != null && version.version >= ApplicationVersion;
+            var versionObject = version == null || string.IsNullOrWhiteSpace(version.versionStr) ? null : new Version(version.versionStr);
 
-            return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
-                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
+            HasUpdateAvailable = versionObject != null && versionObject >= ApplicationVersion;
+
+            return versionObject != null ? new CheckForUpdateResult { AvailableVersion = versionObject.ToString(), IsUpdateAvailable = versionObject > ApplicationVersion, Package = version } :
+                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion.ToString(), IsUpdateAvailable = false };
         }
 
         /// <summary>

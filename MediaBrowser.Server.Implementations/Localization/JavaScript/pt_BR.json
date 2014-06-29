@@ -190,9 +190,9 @@
     "HeaderLatestTvRecordings": "\u00daltimas Grava\u00e7\u00f5es",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancelar",
-    "ButtonRefresh": "Refresh",
-    "LabelCurrentPath": "Current path:",
-    "HeaderSelectMediaPath": "Select Media Path",
-    "ButtonNetwork": "Network",
-    "MessageDirectoryPickerInstruction": "Network paths can be entered manually in the event the Network button fails to locate your devices. For example, {0} or {1}."
+    "ButtonRefresh": "Atualizar",
+    "LabelCurrentPath": "Caminho atual:",
+    "HeaderSelectMediaPath": "Selecionar o Caminho da M\u00eddia",
+    "ButtonNetwork": "Rede",
+    "MessageDirectoryPickerInstruction": "Os caminhos da rede podem ser digitados manualmente caso o bot\u00e3o de Rede n\u00e3o consiga localizar seus dispositivos. Por exemplo, {0} ou {1}."
 }

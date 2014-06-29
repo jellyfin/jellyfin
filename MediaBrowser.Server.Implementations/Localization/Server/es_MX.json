@@ -94,7 +94,7 @@
     "MessagePleaseEnsureInternetMetadata": "Por favor aseg\u00farese que la descarga de metadatos de internet esta habilitada.",
     "TabSuggested": "Sugerencias",
     "TabLatest": "Recientes",
-    "TabUpcoming": "Pr\u00f3ximo Estreno",
+    "TabUpcoming": "Por Estrenar",
     "TabShows": "Programas",
     "TabEpisodes": "Episodios",
     "TabGenres": "G\u00e9neros",
@@ -771,9 +771,9 @@
     "LabelHomePageSection2": "Pagina principal secci\u00f3n dos:",
     "LabelHomePageSection3": "Pagina principal secci\u00f3n tres:",
     "LabelHomePageSection4": "Pagina principal secci\u00f3n cuatro:",
-    "OptionMyViewsButtons": "My views (buttons)",
-    "OptionMyViews": "My views",
-    "OptionMyViewsSmall": "My views (small)",
+    "OptionMyViewsButtons": "Mis vistas (botones)",
+    "OptionMyViews": "Mis vistas",
+    "OptionMyViewsSmall": "Mis vistas (peque\u00f1o)",
     "OptionResumablemedia": "Reanudar",
     "OptionLatestMedia": "Agregados recientemente",
     "OptionLatestChannelMedia": "Elementos recientes de canales",
@@ -820,6 +820,6 @@
     "OptionLibraryFolders": "Carpetas de medios",
     "TitleRemoteControl": "Control Remoto",
     "OptionLatestTvRecordings": "\u00daltimas grabaciones",
-    "LabelProtocolInfo": "Protocol info:",
-    "LabelProtocolInfoHelp": "The value that will be used when responding to GetProtocolInfo requests from the device."
+    "LabelProtocolInfo": "Informaci\u00f3n del protocolo:",
+    "LabelProtocolInfoHelp": "El valor que ser\u00e1 utilizado cuando se responde a solicitudes GetProtocolInfo desde el dispositivo."
 }

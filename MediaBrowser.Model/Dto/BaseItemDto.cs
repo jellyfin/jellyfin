@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Dto
     /// This holds information about a BaseItem in a format that is convenient for the client.
     /// </summary>
     [DebuggerDisplay("Name = {Name}, ID = {Id}, Type = {Type}")]
-    public class BaseItemDto : IHasProviderIds, INotifyPropertyChanged, IItemDto
+    public class BaseItemDto : IHasProviderIds, IHasPropertyChangedEvent, IItemDto
     {
         /// <summary>
         /// Gets or sets the name.
@@ -844,7 +844,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsVideo
         {
-            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Video); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, MediaBrowser.Model.Entities.MediaType.Video); }
         }
 
         /// <summary>
@@ -854,7 +854,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsAudio
         {
-            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Audio); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, MediaBrowser.Model.Entities.MediaType.Audio); }
         }
 
         /// <summary>
@@ -864,7 +864,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsGame
         {
-            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Game); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, MediaBrowser.Model.Entities.MediaType.Game); }
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Model.Dlna
+namespace MediaBrowser.Dlna.Eventing
 {
     public class EventSubscription
     {
