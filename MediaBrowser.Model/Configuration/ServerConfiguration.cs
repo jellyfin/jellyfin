@@ -211,6 +211,7 @@ namespace MediaBrowser.Model.Configuration
 
         public string UICulture { get; set; }
 
+        [Obsolete]
         public DlnaOptions DlnaOptions { get; set; }
 
         public double DownMixAudioBoost { get; set; }
@@ -223,6 +224,8 @@ namespace MediaBrowser.Model.Configuration
         public string[] ManualLoginClients { get; set; }
 
         public ChannelOptions ChannelOptions { get; set; }
+
+        [Obsolete]
         public ChapterOptions ChapterOptions { get; set; }
 
         /// <summary>
@@ -268,73 +271,27 @@ namespace MediaBrowser.Model.Configuration
 
             SeasonZeroDisplayName = "Specials";
 
-            LiveTvOptions = new LiveTvOptions();
-
-            TvFileOrganizationOptions = new TvFileOrganizationOptions();
-
             EnableRealtimeMonitor = true;
 
-            List<MetadataOptions> options = new List<MetadataOptions>
+            UICulture = "en-us";
+
+            MetadataOptions = new List<MetadataOptions>
             {
                 new MetadataOptions(1, 1280) {ItemType = "Book"},
                 new MetadataOptions(1, 1280) {ItemType = "MusicAlbum"},
                 new MetadataOptions(1, 1280) {ItemType = "MusicArtist"},
                 new MetadataOptions(0, 1280) {ItemType = "Season"}
-            };
 
-            MetadataOptions = options.ToArray();
-
-            DlnaOptions = new DlnaOptions();
-
-            UICulture = "en-us";
+            }.ToArray();
 
             NotificationOptions = new NotificationOptions();
 
             SubtitleOptions = new SubtitleOptions();
 
             ChannelOptions = new ChannelOptions();
-            ChapterOptions = new ChapterOptions();
-        }
-    }
 
-    public class ChannelOptions
-    {
-        public int? PreferredStreamingWidth { get; set; }
-
-        public string DownloadPath { get; set; }
-        public int? MaxDownloadAge { get; set; }
-
-        public string[] DownloadingChannels { get; set; }
-
-        public ChannelOptions()
-        {
-            DownloadingChannels = new string[] { };
-            MaxDownloadAge = 30;
-        }
-    }
-
-    public class ChapterOptions
-    {
-        public bool EnableMovieChapterImageExtraction { get; set; }
-        public bool EnableEpisodeChapterImageExtraction { get; set; }
-        public bool EnableOtherVideoChapterImageExtraction { get; set; }
-
-        public bool DownloadMovieChapters { get; set; }
-        public bool DownloadEpisodeChapters { get; set; }
-
-        public string[] FetcherOrder { get; set; }
-        public string[] DisabledFetchers { get; set; }
-
-        public ChapterOptions()
-        {
-            EnableMovieChapterImageExtraction = true;
-            EnableEpisodeChapterImageExtraction = false;
-            EnableOtherVideoChapterImageExtraction = false;
-
-            DownloadMovieChapters = true;
-
-            DisabledFetchers = new string[] { };
-            FetcherOrder = new string[] { };
+            LiveTvOptions = new LiveTvOptions();
+            TvFileOrganizationOptions = new TvFileOrganizationOptions();
         }
     }
 }

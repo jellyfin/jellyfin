@@ -3,6 +3,7 @@ using MediaBrowser.Model.Chapters;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Chapters
@@ -70,5 +71,11 @@ namespace MediaBrowser.Controller.Chapters
         /// </summary>
         /// <returns>IEnumerable{ChapterProviderInfo}.</returns>
         IEnumerable<ChapterProviderInfo> GetProviders();
+
+        /// <summary>
+        /// Gets the configuration.
+        /// </summary>
+        /// <returns>ChapterOptions.</returns>
+        ChapterOptions GetConfiguration();
     }
 }

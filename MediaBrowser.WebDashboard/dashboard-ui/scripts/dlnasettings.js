@@ -2,9 +2,9 @@
 
     function loadPage(page, config) {
 
-        $('#chkEnablePlayTo', page).checked(config.DlnaOptions.EnablePlayTo).checkboxradio("refresh");
-        $('#chkEnableDlnaDebugLogging', page).checked(config.DlnaOptions.EnableDebugLogging).checkboxradio("refresh");
-        $('#txtClientDiscoveryInterval', page).val(config.DlnaOptions.ClientDiscoveryIntervalSeconds);
+        $('#chkEnablePlayTo', page).checked(config.EnablePlayTo).checkboxradio("refresh");
+        $('#chkEnableDlnaDebugLogging', page).checked(config.EnableDebugLogging).checkboxradio("refresh");
+        $('#txtClientDiscoveryInterval', page).val(config.ClientDiscoveryIntervalSeconds);
 
         Dashboard.hideLoadingMsg();
     }
@@ -15,7 +15,7 @@
 
         var page = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getNamedConfiguration("dlna").done(function (config) {
 
             loadPage(page, config);
 
@@ -29,13 +29,13 @@
 
         var form = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getNamedConfiguration("dlna").done(function (config) {
 
-            config.DlnaOptions.EnablePlayTo = $('#chkEnablePlayTo', form).checked();
-            config.DlnaOptions.EnableDebugLogging = $('#chkEnableDlnaDebugLogging', form).checked();
-            config.DlnaOptions.ClientDiscoveryIntervalSeconds = $('#txtClientDiscoveryInterval', form).val();
+            config.EnablePlayTo = $('#chkEnablePlayTo', form).checked();
+            config.EnableDebugLogging = $('#chkEnableDlnaDebugLogging', form).checked();
+            config.ClientDiscoveryIntervalSeconds = $('#txtClientDiscoveryInterval', form).val();
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration("dlna", config).done(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission

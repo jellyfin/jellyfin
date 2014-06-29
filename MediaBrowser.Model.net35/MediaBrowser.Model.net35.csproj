@@ -91,6 +91,12 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\ChannelOptions.cs">
+      <Link>Configuration\ChannelOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\ChapterOptions.cs">
+      <Link>Configuration\ChapterOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\DlnaOptions.cs">
       <Link>Configuration\DlnaOptions.cs</Link>
     </Compile>
@@ -138,6 +144,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\SubtitleOptions.cs">
       <Link>Configuration\SubtitleOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\SubtitlePlaybackMode.cs">
+      <Link>Configuration\SubtitlePlaybackMode.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\TvFileOrganizationOptions.cs">
       <Link>Configuration\TvFileOrganizationOptions.cs</Link>
