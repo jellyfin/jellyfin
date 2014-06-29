@@ -1,12 +1,15 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,7 +17,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Server.Implementations.MediaEncoder
 {
@@ -61,23 +63,25 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 return false;
             }
 
+            var options = _chapterManager.GetConfiguration();
+
             if (video is Movie)
             {
-                if (!_config.Configuration.ChapterOptions.EnableMovieChapterImageExtraction)
+                if (!options.EnableMovieChapterImageExtraction)
                 {
                     return false;
                 }
             }
             else if (video is Episode)
             {
-                if (!_config.Configuration.ChapterOptions.EnableEpisodeChapterImageExtraction)
+                if (!options.EnableEpisodeChapterImageExtraction)
                 {
                     return false;
                 }
             }
             else
             {
-                if (!_config.Configuration.ChapterOptions.EnableOtherVideoChapterImageExtraction)
+                if (!options.EnableOtherVideoChapterImageExtraction)
                 {
                     return false;
                 }

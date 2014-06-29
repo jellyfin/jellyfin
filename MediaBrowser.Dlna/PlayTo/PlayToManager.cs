@@ -181,7 +181,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 return;
             }
 
-            if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+            if (_config.GetDlnaConfiguration().EnableDebugLogging)
             {
                 var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
                 var headerText = string.Join(",", headerTexts.ToArray());
@@ -220,7 +220,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     {
                         _ssdpHandler.SendRendererSearchMessage(new IPEndPoint(localIp, 1900));
 
-                        var delay = _config.Configuration.DlnaOptions.ClientDiscoveryIntervalSeconds * 1000;
+                        var delay = _config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds * 1000;
 
                         await Task.Delay(delay, _tokenSource.Token).ConfigureAwait(false);
                     }
@@ -250,7 +250,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     {
                         socket.SendTo(request, new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900));
 
-                        var delay = _config.Configuration.DlnaOptions.ClientDiscoveryIntervalSeconds * 1000;
+                        var delay = _config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds * 1000;
 
                         await Task.Delay(delay).ConfigureAwait(false);
                     }

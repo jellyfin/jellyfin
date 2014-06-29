@@ -492,9 +492,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private async Task<List<ChapterInfo>> DownloadChapters(Video video, List<ChapterInfo> currentChapters, CancellationToken cancellationToken)
         {
-            if ((_config.Configuration.ChapterOptions.DownloadEpisodeChapters &&
+            var options = _chapterManager.GetConfiguration();
+
+            if ((options.DownloadEpisodeChapters &&
                  video is Episode) ||
-                (_config.Configuration.ChapterOptions.DownloadMovieChapters &&
+                (options.DownloadMovieChapters &&
                  video is Movie))
             {
                 var results = await _chapterManager.Search(video, cancellationToken).ConfigureAwait(false);

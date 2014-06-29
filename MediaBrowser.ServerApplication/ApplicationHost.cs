@@ -41,6 +41,7 @@ using MediaBrowser.Dlna.Main;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.MediaEncoding.Subtitles;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
@@ -273,9 +274,33 @@ namespace MediaBrowser.ServerApplication
 
         public override Task Init(IProgress<double> progress)
         {
-            DeleteDeprecatedModules();
+            PerformVersionMigration();
 
             return base.Init(progress);
+        }
+
+        private void PerformVersionMigration()
+        {
+            DeleteDeprecatedModules();
+
+            MigrateModularConfigurations();
+        }
+
+        private void MigrateModularConfigurations()
+        {
+            if (ServerConfigurationManager.Configuration.DlnaOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("dlna", ServerConfigurationManager.Configuration.DlnaOptions);
+                ServerConfigurationManager.Configuration.DlnaOptions = null;
+                ServerConfigurationManager.SaveConfiguration();
+            }
+
+            if (ServerConfigurationManager.Configuration.ChapterOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("chapters", ServerConfigurationManager.Configuration.ChapterOptions);
+                ServerConfigurationManager.Configuration.ChapterOptions = null;
+                ServerConfigurationManager.SaveConfiguration();
+            }
         }
 
         private void DeleteDeprecatedModules()
