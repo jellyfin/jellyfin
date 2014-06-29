@@ -194,6 +194,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
     }
 
+    [Obsolete]
     public class MusicAlbumDisc : Folder
     {
 

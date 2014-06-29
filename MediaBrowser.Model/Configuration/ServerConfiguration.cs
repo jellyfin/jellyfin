@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Weather;
 using System;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -275,14 +274,13 @@ namespace MediaBrowser.Model.Configuration
 
             UICulture = "en-us";
 
-            MetadataOptions = new List<MetadataOptions>
+            MetadataOptions = new[]
             {
                 new MetadataOptions(1, 1280) {ItemType = "Book"},
                 new MetadataOptions(1, 1280) {ItemType = "MusicAlbum"},
                 new MetadataOptions(1, 1280) {ItemType = "MusicArtist"},
                 new MetadataOptions(0, 1280) {ItemType = "Season"}
-
-            }.ToArray();
+            };
 
             NotificationOptions = new NotificationOptions();
 

@@ -199,12 +199,6 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\DlnaProfileType.cs">
       <Link>Dlna\DlnaProfileType.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dlna\EventSubscription.cs">
-      <Link>Dlna\EventSubscription.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dlna\Filter.cs">
-      <Link>Dlna\Filter.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\HeaderMatchType.cs">
       <Link>Dlna\HeaderMatchType.cs</Link>
     </Compile>
@@ -429,6 +423,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\DoubleHelper.cs">
       <Link>Extensions\DoubleHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Extensions\IHasPropertyChangedEvent.cs">
+      <Link>Extensions\IHasPropertyChangedEvent.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\IntHelper.cs">
       <Link>Extensions\IntHelper.cs</Link>

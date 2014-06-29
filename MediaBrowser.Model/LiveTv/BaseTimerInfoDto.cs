@@ -1,9 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.LiveTv
 {
-    public class BaseTimerInfoDto : INotifyPropertyChanged
+    public class BaseTimerInfoDto : IHasPropertyChangedEvent
     {
         /// <summary>
         /// Occurs when a property value changes.

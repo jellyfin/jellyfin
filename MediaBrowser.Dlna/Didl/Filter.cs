@@ -1,8 +1,9 @@
 ﻿using MediaBrowser.Model.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace MediaBrowser.Model.Dlna
+namespace MediaBrowser.Dlna.Didl
 {
     public class Filter
     {
@@ -19,9 +20,8 @@ namespace MediaBrowser.Model.Dlna
         {
             _all = StringHelper.EqualsIgnoreCase(filter, "*");
 
-            List<string> list = new List<string>();
-            foreach (string s in (filter ?? string.Empty).Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries))
-                list.Add(s);
+            var list = (filter ?? string.Empty).Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).ToList();
+
             _fields = list;
         }
 

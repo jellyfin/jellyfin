@@ -771,9 +771,9 @@
     "LabelHomePageSection2": "Hemsk\u00e4rmens del 2:",
     "LabelHomePageSection3": "Hemsk\u00e4rmens del 3:",
     "LabelHomePageSection4": "Hemsidans del 4:",
-    "OptionMyViewsButtons": "My views (buttons)",
-    "OptionMyViews": "My views",
-    "OptionMyViewsSmall": "My views (small)",
+    "OptionMyViewsButtons": "Mina vyer (knappar)",
+    "OptionMyViews": "Mina vyer",
+    "OptionMyViewsSmall": "Mina vyer (liten)",
     "OptionResumablemedia": "\u00c5teruppta",
     "OptionLatestMedia": "Nytillkommet",
     "OptionLatestChannelMedia": "Senaste objekten i Kanaler",
@@ -820,6 +820,6 @@
     "OptionLibraryFolders": "Mappvy",
     "TitleRemoteControl": "Fj\u00e4rrkontroll",
     "OptionLatestTvRecordings": "Senaste inspelningar",
-    "LabelProtocolInfo": "Protocol info:",
-    "LabelProtocolInfoHelp": "The value that will be used when responding to GetProtocolInfo requests from the device."
+    "LabelProtocolInfo": "Protokollinfo:",
+    "LabelProtocolInfoHelp": "V\u00e4rde att anv\u00e4nda vid svar p\u00e5 GetProtocolInfo-beg\u00e4ran fr\u00e5n enheter."
 }

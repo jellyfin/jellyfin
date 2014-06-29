@@ -157,8 +157,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
         private static bool IsAdditionalSubfolderAllowed(FileSystemInfo directory)
         {
-            // TOOD: allow some metadata folders like extrafanart, extrathumbs
-            return false;
+            // Resolver will ignore them based on rules engine
+            return true;
         }
     }
 }

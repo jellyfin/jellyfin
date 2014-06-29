@@ -772,8 +772,8 @@
     "LabelHomePageSection3": "Section 3 de la page de d\u00e9marrage:",
     "LabelHomePageSection4": "Section 4 de la page de d\u00e9marrage:",
     "OptionMyViewsButtons": "My views (buttons)",
-    "OptionMyViews": "My views",
-    "OptionMyViewsSmall": "My views (small)",
+    "OptionMyViews": "Mes vues",
+    "OptionMyViewsSmall": "Mes vues (petit)",
     "OptionResumablemedia": "Reprendre",
     "OptionLatestMedia": "Les plus r\u00e9cents",
     "OptionLatestChannelMedia": "Items de cha\u00eene les plus r\u00e9cents",
@@ -820,6 +820,6 @@
     "OptionLibraryFolders": "R\u00e9pertoires de m\u00e9dias",
     "TitleRemoteControl": "Acc\u00e8s \u00e0 distance",
     "OptionLatestTvRecordings": "Les plus r\u00e9cents enregistrements",
-    "LabelProtocolInfo": "Protocol info:",
+    "LabelProtocolInfo": "Infos sur le protocol:",
     "LabelProtocolInfoHelp": "The value that will be used when responding to GetProtocolInfo requests from the device."
 }

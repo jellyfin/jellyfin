@@ -136,7 +136,7 @@ namespace MediaBrowser.Model.Entities
             {
                 if (Type != MediaStreamType.Subtitle) return false;
 
-                var codec = Codec ?? string.Empty;
+                string codec = Codec ?? string.Empty;
 
                 return StringHelper.IndexOfIgnoreCase(codec, "pgs") == -1 &&
                        StringHelper.IndexOfIgnoreCase(codec, "dvd") == -1;

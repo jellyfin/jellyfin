@@ -3,11 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Session
 {
     [DebuggerDisplay("Client = {Client}, Username = {UserName}")]
-    public class SessionInfoDto : INotifyPropertyChanged
+    public class SessionInfoDto : IHasPropertyChangedEvent
     {
         /// <summary>
         /// Gets or sets a value indicating whether this instance can seek.

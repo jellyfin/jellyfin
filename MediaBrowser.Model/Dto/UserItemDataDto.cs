@@ -1,12 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
     /// Class UserItemDataDto
     /// </summary>
-    public class UserItemDataDto : INotifyPropertyChanged
+    public class UserItemDataDto : IHasPropertyChangedEvent
     {
         /// <summary>
         /// Gets or sets the rating.
