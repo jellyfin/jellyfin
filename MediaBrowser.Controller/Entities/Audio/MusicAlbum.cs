@@ -72,6 +72,23 @@ namespace MediaBrowser.Controller.Entities.Audio
         public List<string> Tags { get; set; }
 
         /// <summary>
+        /// Gets the tracks.
+        /// </summary>
+        /// <value>The tracks.</value>
+        public IEnumerable<Audio> Tracks
+        {
+            get
+            {
+                return RecursiveChildren.OfType<Audio>();
+            }
+        }
+
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        {
+            return Tracks;
+        }
+
+        /// <summary>
         /// Songs will group into us so don't also include us in the index
         /// </summary>
         /// <value><c>true</c> if [include in index]; otherwise, <c>false</c>.</value>
