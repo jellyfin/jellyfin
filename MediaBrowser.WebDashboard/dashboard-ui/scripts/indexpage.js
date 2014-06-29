@@ -105,7 +105,7 @@
             var html = '<br/>';
 
             if (index) {
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyLibrary') + '</h1>';
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyViews') + '</h1>';
             }
             html += '<div>';
             html += createMediaLinks({

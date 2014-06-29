@@ -88,6 +88,12 @@
                 $('#fldShortOverview', page).hide();
             }
 
+            if (item.MediaType == "Video" && item.Type != "Episode") {
+                $('#fldTagline', page).show();
+            } else {
+                $('#fldTagline', page).hide();
+            }
+
             Dashboard.getCurrentUser().done(function (user) {
 
                 if (user.Configuration.EnableContentDeletion &&
@@ -458,6 +464,7 @@
         $('#txtName', page).val(item.Name || "");
         $('#txtOverview', page).val(item.Overview || "");
         $('#txtShortOverview', page).val(item.ShortOverview || "");
+        $('#txtTagline', page).val((item.Taglines.length ? item.Taglines[0] : ''));
         $('#txtSortName', page).val(item.ForcedSortName || "");
         $('#txtDisplayMediaType', page).val(item.DisplayMediaType || "");
         $('#txtCommunityRating', page).val(item.CommunityRating || "");
@@ -917,6 +924,9 @@
                 var seriesRuntime = $('#txtSeriesRuntime', form).val();
                 item.RunTimeTicks = seriesRuntime ? (seriesRuntime * 600000000) : null;
             }
+
+            var tagline = $('#txtTagline', form).val();
+            item.Taglines = tagline ? [tagline] : [];
 
             ApiClient.updateItem(item).done(function () {
 
