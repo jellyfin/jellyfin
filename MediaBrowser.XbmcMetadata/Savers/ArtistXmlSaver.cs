@@ -85,20 +85,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         public bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
         {
-            var locationType = item.LocationType;
-            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
+            if (!item.SupportsLocalMetadata)
             {
                 return false;
             }
 
-            // If new metadata has been downloaded or metadata was manually edited, proceed
-            if ((updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload
-                || (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
-            {
-                return item is MusicArtist;
-            }
-
-            return false;
+            return item is MusicArtist && updateType >= ItemUpdateType.MetadataDownload;
         }
 
         private void AddAlbums(IEnumerable<MusicAlbum> albums, StringBuilder builder)

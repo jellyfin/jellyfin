@@ -118,23 +118,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         public bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
         {
-            var locationType = item.LocationType;
-            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
+            if (!item.SupportsLocalMetadata)
             {
                 return false;
             }
 
-            // If new metadata has been downloaded or metadata was manually edited, proceed
-            if ((updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload
-                || (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
-            {
-                var video = item as Video;
+            var video = item as Video;
 
-                // Check parent for null to avoid running this against things like video backdrops
-                if (video != null && !(item is Episode) && !video.IsOwnedItem)
-                {
-                    return true;
-                }
+            // Check parent for null to avoid running this against things like video backdrops
+            if (video != null && !(item is Episode) && !video.IsOwnedItem)
+            {
+                return updateType >= ItemUpdateType.MetadataDownload;
             }
 
             return false;

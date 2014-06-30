@@ -36,22 +36,39 @@ namespace MediaBrowser.XbmcMetadata
 
         void _libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
         {
-            if (e.UpdateReason == ItemUpdateType.ImageUpdate && e.Item is Person)
+            // TODO: Need a more accurate check here to see if xbmc metadata saving is enabled.
+            // This is probably good enough, but no guarantee
+            var userId = _config.GetNfoConfiguration().UserId;
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                var person = e.Item.Name;
+                return;
+            }
 
-                var items = _libraryManager.RootFolder
-                    .GetRecursiveChildren(i => !i.IsFolder && i.People.Any(p => string.Equals(p.Name, person, StringComparison.OrdinalIgnoreCase)));
+            if (e.UpdateReason == ItemUpdateType.ImageUpdate)
+            {
+                var person = e.Item as Person;
 
-                foreach (var item in items)
+                if (person != null)
                 {
-                    SaveMetadataForItem(item, ItemUpdateType.MetadataEdit);
+                    var items = _libraryManager.RootFolder.RecursiveChildren;
+                    items = person.GetTaggedItems(items).ToList();
+
+                    foreach (var item in items)
+                    {
+                        SaveMetadataForItem(item, ItemUpdateType.MetadataEdit);
+                    }
                 }
             }
         }
 
         void _userDataManager_UserDataSaved(object sender, UserDataSaveEventArgs e)
         {
+            var userId = _config.GetNfoConfiguration().UserId;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return;
+            }
+
             if (e.SaveReason == UserDataSaveReason.PlaybackFinished || e.SaveReason == UserDataSaveReason.TogglePlayed)
             {
                 var item = e.Item as BaseItem;
@@ -73,12 +90,6 @@ namespace MediaBrowser.XbmcMetadata
 
         private async void SaveMetadataForItem(BaseItem item, ItemUpdateType updateReason)
         {
-            var userId = _config.GetNfoConfiguration().UserId;
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return;
-            }
-
             var locationType = item.LocationType;
             if (locationType == LocationType.Remote ||
                 locationType == LocationType.Virtual)

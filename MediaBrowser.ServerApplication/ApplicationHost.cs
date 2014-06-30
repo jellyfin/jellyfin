@@ -289,7 +289,7 @@ namespace MediaBrowser.ServerApplication
             DeleteDeprecatedModules();
 
             MigrateModularConfigurations();
-            ApplyDefaultXbmcSettings();
+            ApplyDefaultMetadataSettings();
         }
 
         private void MigrateModularConfigurations()
@@ -316,7 +316,7 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        private void ApplyDefaultXbmcSettings()
+        private void ApplyDefaultMetadataSettings()
         {
             if (!ServerConfigurationManager.Configuration.DefaultMetadataSettingsApplied)
             {
