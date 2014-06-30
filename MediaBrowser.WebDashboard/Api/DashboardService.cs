@@ -594,6 +594,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "metadataimagespage.js",
                                 "metadatasubtitles.js",
                                 "metadatachapters.js",
+                                "metadataxbmc.js",
                                 "moviegenres.js",
                                 "moviecollections.js",
                                 "movies.js",

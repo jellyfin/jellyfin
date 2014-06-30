@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Weather;
+﻿using System.Linq;
+using MediaBrowser.Model.Weather;
 using System;
 
 namespace MediaBrowser.Model.Configuration
@@ -69,22 +70,10 @@ namespace MediaBrowser.Model.Configuration
         public string SeasonZeroDisplayName { get; set; }
 
         /// <summary>
-        /// Gets or sets the metadata refresh days.
-        /// </summary>
-        /// <value>The metadata refresh days.</value>
-        public int MetadataRefreshDays { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [save local meta].
         /// </summary>
         /// <value><c>true</c> if [save local meta]; otherwise, <c>false</c>.</value>
         public bool SaveLocalMeta { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [refresh item images].
-        /// </summary>
-        /// <value><c>true</c> if [refresh item images]; otherwise, <c>false</c>.</value>
-        public bool RefreshItemImages { get; set; }
 
         /// <summary>
         /// Gets or sets the preferred metadata language.
@@ -227,6 +216,9 @@ namespace MediaBrowser.Model.Configuration
         [Obsolete]
         public ChapterOptions ChapterOptions { get; set; }
 
+        [Obsolete]
+        public bool DefaultMetadataSettingsApplied { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -258,7 +250,6 @@ namespace MediaBrowser.Model.Configuration
 
             PathSubstitutions = new PathSubstitution[] { };
 
-            MetadataRefreshDays = 30;
             PreferredMetadataLanguage = "en";
             MetadataCountryCode = "US";
 
