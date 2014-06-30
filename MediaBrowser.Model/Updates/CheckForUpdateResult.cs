@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
@@ -17,9 +16,9 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the available version.
         /// </summary>
         /// <value>The available version.</value>
-        public Version AvailableVersion
+        public string AvailableVersion
         {
-            get { return Package != null ? Package.version : new Version(0, 0); }
+            get { return Package != null ? Package.versionStr : "0.0.0.1"; }
             set { } // need this for the serializer
         }
 

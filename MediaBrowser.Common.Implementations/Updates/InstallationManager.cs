@@ -68,7 +68,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <param name="newVersion">The new version.</param>
         private void OnPluginUpdated(IPlugin plugin, PackageVersionInfo newVersion)
         {
-            _logger.Info("Plugin updated: {0} {1} {2}", newVersion.name, newVersion.version, newVersion.classification);
+            _logger.Info("Plugin updated: {0} {1} {2}", newVersion.name, newVersion.versionStr ?? string.Empty, newVersion.classification);
 
             EventHelper.FireEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) }, _logger);
 
@@ -87,7 +87,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <param name="package">The package.</param>
         private void OnPluginInstalled(PackageVersionInfo package)
         {
-            _logger.Info("New plugin installed: {0} {1} {2}", package.name, package.version, package.classification);
+            _logger.Info("New plugin installed: {0} {1} {2}", package.name, package.versionStr ?? string.Empty, package.classification);
 
             EventHelper.FireEventIfNotNull(PluginInstalled, this, new GenericEventArgs<PackageVersionInfo> { Argument = package }, _logger);
 
@@ -131,6 +131,16 @@ namespace MediaBrowser.Common.Implementations.Updates
             _networkManager = networkManager;
             _config = config;
             _logger = logger;
+        }
+
+        private Version GetPackageVersion(PackageVersionInfo version)
+        {
+            return new Version(ValueOrDefault(version.versionStr, "0.0.0.1"));
+        }
+
+        private static string ValueOrDefault(string str, string def)
+        {
+            return string.IsNullOrEmpty(str) ? def : str;
         }
 
         /// <summary>
@@ -197,7 +207,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             foreach (var package in packages)
             {
                 package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
-                    .OrderByDescending(v => v.version).ToList();
+                    .OrderByDescending(GetPackageVersion).ToList();
             }
 
             // Remove packages with no versions
@@ -211,7 +221,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             foreach (var package in packages)
             {
                 package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
-                    .OrderByDescending(v => v.version).ToList();
+                    .OrderByDescending(GetPackageVersion).ToList();
             }
 
             if (packageType.HasValue)
@@ -272,7 +282,7 @@ namespace MediaBrowser.Common.Implementations.Updates
                 return null;
             }
 
-            return package.versions.FirstOrDefault(v => v.version.Equals(version) && v.classification == classification);
+            return package.versions.FirstOrDefault(v => GetPackageVersion(v).Equals(version) && v.classification == classification);
         }
 
         /// <summary>
@@ -309,7 +319,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             }
 
             return package.versions
-                .OrderByDescending(v => v.version)
+                .OrderByDescending(GetPackageVersion)
                 .FirstOrDefault(v => v.classification <= classification && IsPackageVersionUpToDate(v, currentServerVersion));
         }
 
@@ -338,7 +348,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             {
                 var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Id.ToString(), applicationVersion, _config.CommonConfiguration.SystemUpdateLevel);
 
-                return latestPluginInfo != null && latestPluginInfo.version != null && latestPluginInfo.version > p.Version ? latestPluginInfo : null;
+                return latestPluginInfo != null && GetPackageVersion(latestPluginInfo) > p.Version ? latestPluginInfo : null;
 
             }).Where(i => i != null).ToList();
 

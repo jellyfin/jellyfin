@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Server;
@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 
 namespace MediaBrowser.Dlna.Ssdp
@@ -42,12 +43,15 @@ namespace MediaBrowser.Dlna.Ssdp
             _config = config;
             _serverSignature = serverSignature;
 
-            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
+            _config.NamedConfigurationUpdated += _config_ConfigurationUpdated;
         }
 
-        void _config_ConfigurationUpdated(object sender, EventArgs e)
+        void _config_ConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
-            ReloadAliveNotifier();
+            if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
+            {
+                ReloadAliveNotifier();
+            }
         }
 
         public event EventHandler<SsdpMessageEventArgs> MessageReceived;
@@ -142,7 +146,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private void RespondToSearch(IPEndPoint endpoint, string deviceType)
         {
-            if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+            if (_config.GetDlnaConfiguration().EnableDebugLogging)
             {
                 _logger.Debug("RespondToSearch");
             }
@@ -166,7 +170,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
                     SendDatagram(header, values, endpoint, null);
 
-                    if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+                    if (_config.GetDlnaConfiguration().EnableDebugLogging)
                     {
                         _logger.Debug("{1} - Responded to a {0} request to {2}", d.Type, endpoint, d.Address.ToString());
                     }
@@ -255,14 +259,14 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 var received = (byte[])result.AsyncState;
 
-                if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+                if (_config.GetDlnaConfiguration().EnableDebugLogging)
                 {
                     _logger.Debug(Encoding.ASCII.GetString(received));
                 }
 
                 var args = SsdpHelper.ParseSsdpResponse(received, (IPEndPoint)endpoint);
 
-                if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+                if (_config.GetDlnaConfiguration().EnableDebugLogging)
                 {
                     var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
                     var headerText = string.Join(",", headerTexts.ToArray());
@@ -285,7 +289,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public void Dispose()
         {
-            _config.ConfigurationUpdated -= _config_ConfigurationUpdated;
+            _config.NamedConfigurationUpdated -= _config_ConfigurationUpdated;
 
             _isDisposed = true;
             while (_messageQueue.Count != 0)
@@ -337,7 +341,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private void NotifyAll()
         {
-            if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+            if (_config.GetDlnaConfiguration().EnableDebugLogging)
             {
                 _logger.Debug("Sending alive notifications");
             }
@@ -362,7 +366,7 @@ namespace MediaBrowser.Dlna.Ssdp
             values["NT"] = dev.Type;
             values["USN"] = dev.USN;
 
-            if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+            if (_config.GetDlnaConfiguration().EnableDebugLogging)
             {
                 _logger.Debug("{0} said {1}", dev.USN, type);
             }
@@ -406,13 +410,13 @@ namespace MediaBrowser.Dlna.Ssdp
         private int _aliveNotifierIntervalMs;
         private void ReloadAliveNotifier()
         {
-            if (!_config.Configuration.DlnaOptions.BlastAliveMessages)
+            if (!_config.GetDlnaConfiguration().BlastAliveMessages)
             {
                 DisposeNotificationTimer();
                 return;
             }
 
-            var intervalMs = _config.Configuration.DlnaOptions.BlastAliveMessageIntervalSeconds * 1000;
+            var intervalMs = _config.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds * 1000;
 
             if (_notificationTimer == null || _aliveNotifierIntervalMs != intervalMs)
             {

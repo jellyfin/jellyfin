@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -58,34 +59,39 @@ namespace MediaBrowser.Dlna.Main
             StartSsdpHandler();
             ReloadComponents();
 
-            _config.ConfigurationUpdated += ConfigurationUpdated;
+            _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
         }
 
-        void ConfigurationUpdated(object sender, EventArgs e)
+        void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
-            ReloadComponents();
+            if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
+            {
+                ReloadComponents();
+            }
         }
 
         private void ReloadComponents()
         {
             var isServerStarted = _dlnaServerStarted;
 
-            if (_config.Configuration.DlnaOptions.EnableServer && !isServerStarted)
+            var options = _config.GetDlnaConfiguration();
+
+            if (options.EnableServer && !isServerStarted)
             {
                 StartDlnaServer();
             }
-            else if (!_config.Configuration.DlnaOptions.EnableServer && isServerStarted)
+            else if (!options.EnableServer && isServerStarted)
             {
                 DisposeDlnaServer();
             }
 
             var isPlayToStarted = _manager != null;
 
-            if (_config.Configuration.DlnaOptions.EnablePlayTo && !isPlayToStarted)
+            if (options.EnablePlayTo && !isPlayToStarted)
             {
                 StartPlayToManager();
             }
-            else if (!_config.Configuration.DlnaOptions.EnablePlayTo && isPlayToStarted)
+            else if (!options.EnablePlayTo && isPlayToStarted)
             {
                 DisposePlayToManager();
             }

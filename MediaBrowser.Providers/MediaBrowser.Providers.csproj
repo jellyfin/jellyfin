@@ -70,41 +70,28 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="AdultVideos\AdultVideoMetadataService.cs" />
-    <Compile Include="AdultVideos\AdultVideoXmlProvider.cs" />
-    <Compile Include="All\InternalMetadataFolderImageProvider.cs" />
-    <Compile Include="All\LocalImageProvider.cs" />
     <Compile Include="Books\BookMetadataService.cs" />
     <Compile Include="BoxSets\BoxSetMetadataService.cs" />
-    <Compile Include="BoxSets\BoxSetXmlParser.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetImageProvider.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetProvider.cs" />
     <Compile Include="Channels\ChannelMetadataService.cs" />
     <Compile Include="Chapters\ChapterManager.cs" />
     <Compile Include="FolderImages\DefaultImageProvider.cs" />
-    <Compile Include="Folders\CollectionFolderImageProvider.cs" />
     <Compile Include="Folders\FolderMetadataService.cs" />
-    <Compile Include="Folders\ImagesByNameImageProvider.cs" />
-    <Compile Include="GameGenres\AudioChannelItemMetadataService.cs" />
+    <Compile Include="Channels\AudioChannelItemMetadataService.cs" />
     <Compile Include="GameGenres\GameGenreMetadataService.cs" />
-    <Compile Include="GameGenres\VideoChannelItemMetadataService.cs" />
+    <Compile Include="Channels\VideoChannelItemMetadataService.cs" />
     <Compile Include="Games\GameMetadataService.cs" />
     <Compile Include="Games\GameSystemMetadataService.cs" />
-    <Compile Include="Games\GameSystemXmlParser.cs" />
     <Compile Include="Genres\GenreMetadataService.cs" />
     <Compile Include="LiveTv\AudioRecordingService.cs" />
     <Compile Include="LiveTv\ChannelMetadataService.cs" />
-    <Compile Include="LiveTv\ChannelXmlProvider.cs" />
     <Compile Include="LiveTv\ProgramMetadataService.cs" />
     <Compile Include="LiveTv\VideoRecordingService.cs" />
     <Compile Include="Manager\ImageSaver.cs" />
     <Compile Include="Manager\ItemImageProvider.cs" />
     <Compile Include="Manager\ProviderManager.cs" />
     <Compile Include="Manager\MetadataService.cs" />
-    <Compile Include="BaseXmlProvider.cs" />
-    <Compile Include="Folders\FolderXmlProvider.cs" />
-    <Compile Include="Games\GameXmlParser.cs" />
-    <Compile Include="Games\GameXmlProvider.cs" />
-    <Compile Include="Games\GameSystemXmlProvider.cs" />
     <Compile Include="Manager\SeriesOrderManager.cs" />
     <Compile Include="MediaInfo\FFProbeAudioInfo.cs" />
     <Compile Include="MediaInfo\FFProbeHelpers.cs" />
@@ -118,16 +105,13 @@
     <Compile Include="Movies\GenericMovieDbInfo.cs" />
     <Compile Include="Movies\MovieDbSearch.cs" />
     <Compile Include="Movies\MovieMetadataService.cs" />
-    <Compile Include="Movies\MovieXmlProvider.cs" />
     <Compile Include="Movies\TmdbSettings.cs" />
-    <Compile Include="Movies\TrailerXmlProvider.cs" />
     <Compile Include="MusicGenres\MusicGenreImageProvider.cs" />
     <Compile Include="GameGenres\GameGenreImageProvider.cs" />
     <Compile Include="Genres\GenreImageProvider.cs" />
     <Compile Include="ImagesByName\ImageUtils.cs" />
     <Compile Include="MediaInfo\AudioImageProvider.cs" />
     <Compile Include="MediaInfo\VideoImageProvider.cs" />
-    <Compile Include="BoxSets\BoxSetXmlProvider.cs" />
     <Compile Include="Movies\MovieDbImageProvider.cs" />
     <Compile Include="Movies\FanartMovieImageProvider.cs" />
     <Compile Include="MusicGenres\MusicGenreMetadataService.cs" />
@@ -146,16 +130,12 @@
     <Compile Include="Music\MusicBrainzArtistProvider.cs" />
     <Compile Include="Music\MusicExternalIds.cs" />
     <Compile Include="Music\MusicVideoMetadataService.cs" />
-    <Compile Include="Music\MusicVideoXmlProvider.cs" />
     <Compile Include="Omdb\OmdbProvider.cs" />
     <Compile Include="Omdb\OmdbItemProvider.cs" />
     <Compile Include="People\MovieDbPersonImageProvider.cs" />
     <Compile Include="Movies\MovieUpdatesPrescanTask.cs" />
-    <Compile Include="Movies\MovieXmlParser.cs" />
     <Compile Include="Movies\FanArtMovieUpdatesPostScanTask.cs" />
     <Compile Include="Movies\MovieDbProvider.cs" />
-    <Compile Include="Music\AlbumXmlProvider.cs" />
-    <Compile Include="Music\ArtistXmlProvider.cs" />
     <Compile Include="Music\FanArtUpdatesPostScanTask.cs" />
     <Compile Include="Music\LastfmAlbumProvider.cs" />
     <Compile Include="Music\LastfmHelper.cs" />
@@ -163,10 +143,8 @@
     <Compile Include="Music\FanArtArtistProvider.cs" />
     <Compile Include="Music\LastFmImageProvider.cs" />
     <Compile Include="Music\MusicBrainzAlbumProvider.cs" />
-    <Compile Include="Music\MusicVideoXmlParser.cs" />
     <Compile Include="Music\SoundtrackPostScanTask.cs" />
     <Compile Include="People\PersonMetadataService.cs" />
-    <Compile Include="People\PersonXmlProvider.cs" />
     <Compile Include="People\MovieDbPersonProvider.cs" />
     <Compile Include="Photos\ExifReader.cs" />
     <Compile Include="Photos\ExifTags.cs" />
@@ -175,34 +153,17 @@
     <Compile Include="Photos\PhotoProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Manager\ProviderUtils.cs" />
-    <Compile Include="Savers\AlbumXmlSaver.cs" />
-    <Compile Include="Savers\ArtistXmlSaver.cs" />
-    <Compile Include="Savers\BoxSetXmlSaver.cs" />
-    <Compile Include="Savers\ChannelXmlSaver.cs" />
-    <Compile Include="Savers\EpisodeXmlSaver.cs" />
-    <Compile Include="Savers\FolderXmlSaver.cs" />
-    <Compile Include="Savers\GameSystemXmlSaver.cs" />
-    <Compile Include="Savers\GameXmlSaver.cs" />
-    <Compile Include="Savers\MovieXmlSaver.cs" />
-    <Compile Include="Savers\PersonXmlSaver.cs" />
-    <Compile Include="Savers\SeasonXmlSaver.cs" />
-    <Compile Include="Savers\SeriesXmlSaver.cs" />
-    <Compile Include="Savers\XmlSaverHelpers.cs" />
     <Compile Include="Studios\StudiosImageProvider.cs" />
     <Compile Include="Studios\StudioMetadataService.cs" />
     <Compile Include="Subtitles\OpenSubtitleDownloader.cs" />
     <Compile Include="Subtitles\SubtitleManager.cs" />
-    <Compile Include="TV\EpisodeLocalImageProvider.cs" />
     <Compile Include="TV\EpisodeMetadataService.cs" />
-    <Compile Include="TV\EpisodeXmlProvider.cs" />
-    <Compile Include="TV\EpisodeXmlParser.cs" />
     <Compile Include="TV\FanArtTvUpdatesPostScanTask.cs" />
     <Compile Include="TV\FanArtSeasonProvider.cs" />
     <Compile Include="TV\FanartSeriesProvider.cs" />
     <Compile Include="TV\MissingEpisodeProvider.cs" />
     <Compile Include="TV\MovieDbSeriesImageProvider.cs" />
     <Compile Include="TV\MovieDbSeriesProvider.cs" />
-    <Compile Include="TV\SeasonXmlParser.cs" />
     <Compile Include="TV\SeriesMetadataService.cs" />
     <Compile Include="TV\TvdbEpisodeImageProvider.cs" />
     <Compile Include="People\TvdbPersonImageProvider.cs" />
@@ -212,16 +173,11 @@
     <Compile Include="TV\SeasonMetadataService.cs" />
     <Compile Include="TV\TvdbEpisodeProvider.cs" />
     <Compile Include="TV\TvdbSeriesProvider.cs" />
-    <Compile Include="TV\SeasonXmlProvider.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
-    <Compile Include="TV\SeriesXmlProvider.cs" />
-    <Compile Include="TV\SeriesXmlParser.cs" />
     <Compile Include="TV\TvdbPrescanTask.cs" />
     <Compile Include="TV\TvExternalIds.cs" />
     <Compile Include="Users\UserMetadataService.cs" />
     <Compile Include="Videos\VideoMetadataService.cs" />
-    <Compile Include="Videos\VideoXmlProvider.cs" />
-    <Compile Include="Xbmc\XbmcImageSaver.cs" />
     <Compile Include="Years\YearMetadataService.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -248,6 +204,7 @@
   <ItemGroup>
     <EmbeddedResource Include="MediaInfo\whitelist.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -342,12 +342,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     RedirectStandardOutput = false,
                     RedirectStandardError = true,
+                    RedirectStandardInput = true,
 
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = _mediaEncoder.EncoderPath,
-                    Arguments =
-                        string.Format("{0} -i \"{1}\" -c:s ass \"{2}\"", encodingParam, inputPath, outputPath),
+                    Arguments = string.Format("{0} -i \"{1}\" -c:s ass \"{2}\"", encodingParam, inputPath, outputPath),
 
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
@@ -385,8 +385,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     _logger.Info("Killing ffmpeg subtitle conversion process");
 
-                    process.Kill();
-
+                    process.StandardInput.WriteLine("q");
                     process.WaitForExit(1000);
 
                     await logTask.ConfigureAwait(false);
@@ -520,6 +519,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     RedirectStandardOutput = false,
                     RedirectStandardError = true,
+                    RedirectStandardInput = true,
 
                     FileName = _mediaEncoder.EncoderPath,
                     Arguments = processArgs,
@@ -559,8 +559,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     _logger.Info("Killing ffmpeg subtitle extraction process");
 
-                    process.Kill();
-
+                    process.StandardInput.WriteLine("q");
                     process.WaitForExit(1000);
                 }
                 catch (Exception ex)

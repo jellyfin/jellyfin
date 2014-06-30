@@ -91,6 +91,12 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\ChannelOptions.cs">
+      <Link>Configuration\ChannelOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\ChapterOptions.cs">
+      <Link>Configuration\ChapterOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\DlnaOptions.cs">
       <Link>Configuration\DlnaOptions.cs</Link>
     </Compile>
@@ -139,6 +145,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\SubtitleOptions.cs">
       <Link>Configuration\SubtitleOptions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\SubtitlePlaybackMode.cs">
+      <Link>Configuration\SubtitlePlaybackMode.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\TvFileOrganizationOptions.cs">
       <Link>Configuration\TvFileOrganizationOptions.cs</Link>
     </Compile>
@@ -147,6 +156,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\UserConfiguration.cs">
       <Link>Configuration\UserConfiguration.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\XbmcMetadataOptions.cs">
+      <Link>Configuration\XbmcMetadataOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\AudioOptions.cs">
       <Link>Dlna\AudioOptions.cs</Link>
@@ -189,12 +201,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\DlnaProfileType.cs">
       <Link>Dlna\DlnaProfileType.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dlna\EventSubscription.cs">
-      <Link>Dlna\EventSubscription.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dlna\Filter.cs">
-      <Link>Dlna\Filter.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\HeaderMatchType.cs">
       <Link>Dlna\HeaderMatchType.cs</Link>
@@ -420,6 +426,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\DoubleHelper.cs">
       <Link>Extensions\DoubleHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Extensions\IHasPropertyChangedEvent.cs">
+      <Link>Extensions\IHasPropertyChangedEvent.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\IntHelper.cs">
       <Link>Extensions\IntHelper.cs</Link>

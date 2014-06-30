@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -8,7 +9,7 @@ namespace MediaBrowser.Model.Dto
     /// This is used by the api to get information about a Person within a BaseItem
     /// </summary>
     [DebuggerDisplay("Name = {Name}, Role = {Role}, Type = {Type}")]
-    public class BaseItemPerson : INotifyPropertyChanged
+    public class BaseItemPerson : IHasPropertyChangedEvent
     {
         /// <summary>
         /// Gets or sets the name.

@@ -342,6 +342,7 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         protected virtual void FindParts()
         {
+            ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             Plugins = GetExports<IPlugin>();
         }
 

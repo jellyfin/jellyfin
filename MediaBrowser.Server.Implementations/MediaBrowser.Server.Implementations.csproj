@@ -344,6 +344,8 @@
     <EmbeddedResource Include="Localization\JavaScript\vi.json" />
     <EmbeddedResource Include="Localization\Server\da.json" />
     <EmbeddedResource Include="Localization\Server\vi.json" />
+    <EmbeddedResource Include="Localization\JavaScript\pl.json" />
+    <EmbeddedResource Include="Localization\Server\pl.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

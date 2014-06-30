@@ -228,6 +228,11 @@ namespace MediaBrowser.Common.Net
                 return "text/vtt";
             }
 
+            if (ext.Equals(".bif", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/octet-stream";
+            }
+
             throw new ArgumentException("Argument not supported: " + path);
         }
     }

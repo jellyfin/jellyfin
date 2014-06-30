@@ -108,6 +108,12 @@ namespace MediaBrowser.Api
                 hasTags.Tags = request.Tags;
             }
 
+            var hasTaglines = item as IHasTaglines;
+            if (hasTaglines != null)
+            {
+                hasTaglines.Taglines = request.Taglines;
+            }
+
             var hasShortOverview = item as IHasShortOverview;
             if (hasShortOverview != null)
             {

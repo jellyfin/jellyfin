@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Model.Weather;
+﻿using System.Linq;
+using MediaBrowser.Model.Weather;
 using System;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -70,22 +70,10 @@ namespace MediaBrowser.Model.Configuration
         public string SeasonZeroDisplayName { get; set; }
 
         /// <summary>
-        /// Gets or sets the metadata refresh days.
-        /// </summary>
-        /// <value>The metadata refresh days.</value>
-        public int MetadataRefreshDays { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [save local meta].
         /// </summary>
         /// <value><c>true</c> if [save local meta]; otherwise, <c>false</c>.</value>
         public bool SaveLocalMeta { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [refresh item images].
-        /// </summary>
-        /// <value><c>true</c> if [refresh item images]; otherwise, <c>false</c>.</value>
-        public bool RefreshItemImages { get; set; }
 
         /// <summary>
         /// Gets or sets the preferred metadata language.
@@ -223,7 +211,10 @@ namespace MediaBrowser.Model.Configuration
         public string[] ManualLoginClients { get; set; }
 
         public ChannelOptions ChannelOptions { get; set; }
+
         public ChapterOptions ChapterOptions { get; set; }
+
+        public bool DefaultMetadataSettingsApplied { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -256,7 +247,6 @@ namespace MediaBrowser.Model.Configuration
 
             PathSubstitutions = new PathSubstitution[] { };
 
-            MetadataRefreshDays = 30;
             PreferredMetadataLanguage = "en";
             MetadataCountryCode = "US";
 
@@ -268,13 +258,11 @@ namespace MediaBrowser.Model.Configuration
 
             SeasonZeroDisplayName = "Specials";
 
-            LiveTvOptions = new LiveTvOptions();
-
-            TvFileOrganizationOptions = new TvFileOrganizationOptions();
-
             EnableRealtimeMonitor = true;
 
-            List<MetadataOptions> options = new List<MetadataOptions>
+            UICulture = "en-us";
+
+            MetadataOptions = new[]
             {
                 new MetadataOptions(1, 1280) {ItemType = "Book"},
                 new MetadataOptions(1, 1280) {ItemType = "MusicAlbum"},
@@ -282,59 +270,14 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions(0, 1280) {ItemType = "Season"}
             };
 
-            MetadataOptions = options.ToArray();
-
-            DlnaOptions = new DlnaOptions();
-
-            UICulture = "en-us";
-
             NotificationOptions = new NotificationOptions();
 
             SubtitleOptions = new SubtitleOptions();
 
             ChannelOptions = new ChannelOptions();
-            ChapterOptions = new ChapterOptions();
-        }
-    }
 
-    public class ChannelOptions
-    {
-        public int? PreferredStreamingWidth { get; set; }
-
-        public string DownloadPath { get; set; }
-        public int? MaxDownloadAge { get; set; }
-
-        public string[] DownloadingChannels { get; set; }
-
-        public ChannelOptions()
-        {
-            DownloadingChannels = new string[] { };
-            MaxDownloadAge = 30;
-        }
-    }
-
-    public class ChapterOptions
-    {
-        public bool EnableMovieChapterImageExtraction { get; set; }
-        public bool EnableEpisodeChapterImageExtraction { get; set; }
-        public bool EnableOtherVideoChapterImageExtraction { get; set; }
-
-        public bool DownloadMovieChapters { get; set; }
-        public bool DownloadEpisodeChapters { get; set; }
-
-        public string[] FetcherOrder { get; set; }
-        public string[] DisabledFetchers { get; set; }
-
-        public ChapterOptions()
-        {
-            EnableMovieChapterImageExtraction = true;
-            EnableEpisodeChapterImageExtraction = false;
-            EnableOtherVideoChapterImageExtraction = false;
-
-            DownloadMovieChapters = true;
-
-            DisabledFetchers = new string[] { };
-            FetcherOrder = new string[] { };
+            LiveTvOptions = new LiveTvOptions();
+            TvFileOrganizationOptions = new TvFileOrganizationOptions();
         }
     }
 }
