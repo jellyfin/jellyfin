@@ -72,6 +72,11 @@ namespace MediaBrowser.Api.Playback
 
             try
             {
+                if (File.Exists(path))
+                {
+                    return path;
+                }
+                
                 await _mediaEncoder.ExtractVideoImagesOnInterval(inputPath, protocol, mediaSource.Video3DFormat,
                         TimeSpan.FromSeconds(10), Path.GetDirectoryName(path), "img_", request.MaxWidth, CancellationToken.None)
                         .ConfigureAwait(false);

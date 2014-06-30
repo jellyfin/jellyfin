@@ -144,7 +144,8 @@ namespace MediaBrowser.Api.Playback.Progressive
                 return state.VideoStream != null && IsH264(state.VideoStream) ? args + " -bsf h264_mp4toannexb" : args;
             }
 
-            const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+5))";
+            var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
+                5.ToString(UsCulture));
 
             args += keyFrameArg;
 

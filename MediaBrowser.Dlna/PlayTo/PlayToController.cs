@@ -80,7 +80,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _updateTimer = new Timer(updateTimer_Elapsed, null, 60000, 60000);
         }
 
-        private async void updateTimer_Elapsed(object state)
+        private void updateTimer_Elapsed(object state)
         {
             if (DateTime.UtcNow >= _device.DateLastActivity.AddSeconds(120))
             {

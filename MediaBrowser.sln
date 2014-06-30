@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Controller", "MediaBrowser.Controller\MediaBrowser.Controller.csproj", "{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Api", "MediaBrowser.Api\MediaBrowser.Api.csproj", "{4FD51AC5-2C16-4308-A993-C3A84F3B4582}"
@@ -46,6 +44,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.MediaEncoding", "MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj", "{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSubtitlesHandler", "OpenSubtitlesHandler\OpenSubtitlesHandler.csproj", "{4A4402D4-E910-443B-B8FC-2C18286A2CA0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.XbmcMetadata", "MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj", "{23499896-B135-4527-8574-C26E926EA99E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.LocalMetadata", "MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj", "{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -281,6 +283,34 @@ Global
 		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|Win32.ActiveCfg = Release|Any CPU
 		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|x64.ActiveCfg = Release|Any CPU
 		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|x86.ActiveCfg = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release|Win32.ActiveCfg = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release|x64.ActiveCfg = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release|x86.ActiveCfg = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|Win32.ActiveCfg = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|x64.ActiveCfg = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
