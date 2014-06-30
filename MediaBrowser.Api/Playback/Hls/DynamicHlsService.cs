@@ -335,8 +335,9 @@ namespace MediaBrowser.Api.Playback.Hls
                 var newBitrate = totalBitrate - variation;
                 AppendPlaylist(builder, playlistUrl.Replace(requestedVideoBitrate.ToString(UsCulture), (requestedVideoBitrate - variation).ToString(UsCulture)), newBitrate);
 
-                newBitrate = totalBitrate - (2 * variation);
-                AppendPlaylist(builder, playlistUrl.Replace(requestedVideoBitrate.ToString(UsCulture), (requestedVideoBitrate - (2 * variation)).ToString(UsCulture)), newBitrate);
+                variation *= 2;
+                newBitrate = totalBitrate - variation;
+                AppendPlaylist(builder, playlistUrl.Replace(requestedVideoBitrate.ToString(UsCulture), (requestedVideoBitrate - variation).ToString(UsCulture)), newBitrate);
             }
 
             return builder.ToString();

@@ -846,5 +846,7 @@
 	"LabelXbmcMetadataSaveImagePathsHelp": "This is recommended if you have image file names that don't conform to Xbmc guidelines.",
 	"LabelXbmcMetadataEnablePathSubstitution": "Enable path substitution",
 	"LabelXbmcMetadataEnablePathSubstitutionHelp": "Enables path substitution of image paths using the server's path substitution settings.",
-	"LabelXbmcMetadataEnablePathSubstitutionHelp2": "See path substitution."
+	"LabelXbmcMetadataEnablePathSubstitutionHelp2": "See path substitution.",
+	"LabelGroupChannelsIntoViews": "Display the following channels within my views:",
+	"LabelGroupChannelsIntoViewsHelp": "If enabled, these channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view."
 }
