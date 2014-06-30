@@ -71,20 +71,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         public bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
         {
-            var locationType = item.LocationType;
-            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
+            if (!item.SupportsLocalMetadata)
             {
                 return false;
             }
 
-            // If new metadata has been downloaded or metadata was manually edited, proceed
-            if ((updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload
-                || (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
+            if (!(item is Season))
             {
-                return item is Season;
+                return false;
             }
 
-            return false;
+            return updateType >= ItemUpdateType.MetadataDownload || (updateType >= ItemUpdateType.MetadataImport && File.Exists(GetSavePath(item)));
         }
     }
 }

@@ -199,7 +199,6 @@ namespace MediaBrowser.Model.Configuration
 
         public string UICulture { get; set; }
 
-        [Obsolete]
         public DlnaOptions DlnaOptions { get; set; }
 
         public double DownMixAudioBoost { get; set; }
@@ -213,10 +212,8 @@ namespace MediaBrowser.Model.Configuration
 
         public ChannelOptions ChannelOptions { get; set; }
 
-        [Obsolete]
         public ChapterOptions ChapterOptions { get; set; }
 
-        [Obsolete]
         public bool DefaultMetadataSettingsApplied { get; set; }
 
         /// <summary>
