@@ -423,7 +423,38 @@ namespace MediaBrowser.Server.Implementations.Dto
             // Ordering by person type to ensure actors and artists are at the front.
             // This is taking advantage of the fact that they both begin with A
             // This should be improved in the future
-            var people = item.People.OrderBy(i => i.SortOrder ?? int.MaxValue).ThenBy(i => i.Type).ToList();
+            var people = item.People.OrderBy(i => i.SortOrder ?? int.MaxValue)
+                .ThenBy(i =>
+                {
+                    if (i.IsType(PersonType.Actor))
+                    {
+                        return 0;
+                    }
+                    if (i.IsType(PersonType.GuestStar))
+                    {
+                        return 1;
+                    }
+                    if (i.IsType(PersonType.Director))
+                    {
+                        return 2;
+                    }
+                    if (i.IsType(PersonType.Writer))
+                    {
+                        return 3;
+                    }
+                    if (i.IsType(PersonType.Producer))
+                    {
+                        return 4;
+                    }
+                    if (i.IsType(PersonType.Composer))
+                    {
+                        return 4;
+                    }
+
+                    return 10;
+                })
+                .ThenBy(i => i.Name)
+                .ToList();
 
             // Attach People by transforming them into BaseItemPerson (DTO)
             dto.People = new BaseItemPerson[people.Count];

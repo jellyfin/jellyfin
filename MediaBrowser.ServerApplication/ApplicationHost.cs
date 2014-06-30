@@ -277,19 +277,19 @@ namespace MediaBrowser.ServerApplication
             LogManager.RemoveConsoleOutput();
         }
 
-        public override Task Init(IProgress<double> progress)
+        public override async Task Init(IProgress<double> progress)
         {
             PerformVersionMigration();
 
-            return base.Init(progress);
+            await base.Init(progress).ConfigureAwait(false);
+
+            MigrateModularConfigurations();
+            ApplyDefaultMetadataSettings();
         }
 
         private void PerformVersionMigration()
         {
             DeleteDeprecatedModules();
-
-            MigrateModularConfigurations();
-            ApplyDefaultMetadataSettings();
         }
 
         private void MigrateModularConfigurations()

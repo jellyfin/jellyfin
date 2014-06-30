@@ -382,8 +382,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
 
             var writers = item.People
-                .Where(i => IsPersonType(i, PersonType.Director))
+                .Where(i => IsPersonType(i, PersonType.Writer))
                 .Select(i => i.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
             foreach (var person in writers)
@@ -391,11 +392,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 builder.Append("<writer>" + SecurityElement.Escape(person) + "</writer>");
             }
 
-            var credits = writers.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-
-            if (credits.Count > 0)
+            if (writers.Count > 0)
             {
-                builder.Append("<credits>" + SecurityElement.Escape(string.Join(" / ", credits.ToArray())) + "</credits>");
+                builder.Append("<credits>" + SecurityElement.Escape(string.Join(" / ", writers.ToArray())) + "</credits>");
             }
 
             var hasTrailer = item as IHasTrailers;
@@ -849,6 +848,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 builder.Append("<name>" + SecurityElement.Escape(person.Name ?? string.Empty) + "</name>");
                 builder.Append("<role>" + SecurityElement.Escape(person.Role ?? string.Empty) + "</role>");
                 builder.Append("<type>" + SecurityElement.Escape(person.Type ?? string.Empty) + "</type>");
+
+                if (person.SortOrder.HasValue)
+                {
+                    builder.Append("<sortorder>" + SecurityElement.Escape(person.SortOrder.Value.ToString(UsCulture)) + "</sortorder>");
+                }
 
                 try
                 {
