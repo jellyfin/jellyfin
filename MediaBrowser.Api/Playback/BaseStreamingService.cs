@@ -1417,6 +1417,7 @@ namespace MediaBrowser.Api.Playback
             List<MediaStream> mediaStreams = null;
 
             state.ItemType = item.GetType().Name;
+            state.ReadInputAtNativeFramerate = true;
 
             if (item is ILiveTvRecording)
             {
@@ -1478,7 +1479,6 @@ namespace MediaBrowser.Api.Playback
                 state.IsInputVideo = string.Equals(channel.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
                 mediaStreams = new List<MediaStream>();
 
-                state.ReadInputAtNativeFramerate = true;
                 state.OutputAudioSync = "1000";
                 state.DeInterlace = true;
                 state.InputVideoSync = "-1";
