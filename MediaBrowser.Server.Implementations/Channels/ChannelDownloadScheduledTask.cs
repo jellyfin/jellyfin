@@ -146,9 +146,11 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var numComplete = 0;
 
+            var options = _config.GetChannelsConfiguration();
+
             foreach (var item in result.Items)
             {
-                if (_config.Configuration.ChannelOptions.DownloadingChannels.Contains(item.ChannelId))
+                if (options.DownloadingChannels.Contains(item.ChannelId))
                 {
                     try
                     {
@@ -282,12 +284,14 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private void CleanChannelContent(CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.ChannelOptions.MaxDownloadAge.HasValue)
+            var options = _config.GetChannelsConfiguration();
+
+            if (!options.MaxDownloadAge.HasValue)
             {
                 return;
             }
 
-            var minDateModified = DateTime.UtcNow.AddDays(0 - _config.Configuration.ChannelOptions.MaxDownloadAge.Value);
+            var minDateModified = DateTime.UtcNow.AddDays(0 - options.MaxDownloadAge.Value);
 
             var path = _manager.ChannelDownloadPath;
 

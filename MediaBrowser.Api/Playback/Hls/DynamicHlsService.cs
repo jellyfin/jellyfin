@@ -304,43 +304,77 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
 
-            int audioBitrate;
-            int videoBitrate;
-            GetPlaylistBitrates(state, out audioBitrate, out videoBitrate);
+            var audioBitrate = state.OutputAudioBitrate ?? 0;
+            var videoBitrate = state.OutputVideoBitrate ?? 0;
 
-            var appendBaselineStream = false;
-            var baselineStreamBitrate = 64000;
-
-            var hlsVideoRequest = state.VideoRequest as GetMasterHlsVideoStream;
-            if (hlsVideoRequest != null)
-            {
-                appendBaselineStream = hlsVideoRequest.AppendBaselineStream;
-                baselineStreamBitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? baselineStreamBitrate;
-            }
-
-            var playlistText = GetMasterPlaylistFileText(videoBitrate + audioBitrate);
+            var playlistText = GetMasterPlaylistFileText(state, videoBitrate + audioBitrate);
 
             return ResultFactory.GetResult(playlistText, Common.Net.MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
-        private string GetMasterPlaylistFileText(int bitrate)
+        private string GetMasterPlaylistFileText(StreamState state, int totalBitrate)
         {
             var builder = new StringBuilder();
 
             builder.AppendLine("#EXTM3U");
 
-            // Pad a little to satisfy the apple hls validator
-            var paddedBitrate = Convert.ToInt32(bitrate * 1.05);
-
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
             // Main stream
-            builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + paddedBitrate.ToString(UsCulture));
             var playlistUrl = "main.m3u8" + queryString;
-            builder.AppendLine(playlistUrl);
+            AppendPlaylist(builder, playlistUrl, totalBitrate);
+
+            if (state.VideoRequest.VideoBitRate.HasValue)
+            {
+                var requestedVideoBitrate = state.VideoRequest.VideoBitRate.Value;
+
+                // By default, vary by just 200k
+                var variation = GetBitrateVariation(totalBitrate);
+
+                var newBitrate = totalBitrate - variation;
+                AppendPlaylist(builder, playlistUrl.Replace(requestedVideoBitrate.ToString(UsCulture), (requestedVideoBitrate - variation).ToString(UsCulture)), newBitrate);
+
+                newBitrate = totalBitrate - (2 * variation);
+                AppendPlaylist(builder, playlistUrl.Replace(requestedVideoBitrate.ToString(UsCulture), (requestedVideoBitrate - (2 * variation)).ToString(UsCulture)), newBitrate);
+            }
 
             return builder.ToString();
+        }
+
+        private void AppendPlaylist(StringBuilder builder, string url, int bitrate)
+        {
+            builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + bitrate.ToString(UsCulture));
+            builder.AppendLine(url);
+        }
+
+        private int GetBitrateVariation(int bitrate)
+        {
+            // By default, vary by just 200k
+            var variation = 200000;
+
+            if (bitrate >= 10000000)
+            {
+                variation = 2000000;
+            }
+            else if (bitrate >= 5000000)
+            {
+                variation = 1500000;
+            }
+            else if (bitrate >= 3000000)
+            {
+                variation = 1000000;
+            }
+            else if (bitrate >= 2000000)
+            {
+                variation = 500000;
+            }
+            else if (bitrate >= 1000000)
+            {
+                variation = 300000;
+            }
+
+            return variation;
         }
 
         public object Get(GetMainHlsVideoStream request)

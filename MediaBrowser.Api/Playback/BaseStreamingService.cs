@@ -1417,7 +1417,6 @@ namespace MediaBrowser.Api.Playback
             List<MediaStream> mediaStreams = null;
 
             state.ItemType = item.GetType().Name;
-            state.ReadInputAtNativeFramerate = true;
 
             if (item is ILiveTvRecording)
             {
@@ -1479,6 +1478,7 @@ namespace MediaBrowser.Api.Playback
                 state.IsInputVideo = string.Equals(channel.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
                 mediaStreams = new List<MediaStream>();
 
+                state.ReadInputAtNativeFramerate = true;
                 state.OutputAudioSync = "1000";
                 state.DeInterlace = true;
                 state.InputVideoSync = "-1";
@@ -1489,13 +1489,13 @@ namespace MediaBrowser.Api.Playback
             }
             else if (item is IChannelMediaItem)
             {
-                var source = await GetChannelMediaInfo(request.Id, request.MediaSourceId, cancellationToken).ConfigureAwait(false);
+                var mediaSource = await GetChannelMediaInfo(request.Id, request.MediaSourceId, cancellationToken).ConfigureAwait(false);
                 state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
-                state.InputProtocol = source.Protocol;
-                state.MediaPath = source.Path;
+                state.InputProtocol = mediaSource.Protocol;
+                state.MediaPath = mediaSource.Path;
                 state.RunTimeTicks = item.RunTimeTicks;
-                state.RemoteHttpHeaders = source.RequiredHttpHeaders;
-                mediaStreams = source.MediaStreams;
+                state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
+                mediaStreams = mediaSource.MediaStreams;
             }
             else
             {
@@ -1537,6 +1537,11 @@ namespace MediaBrowser.Api.Playback
                 mediaStreams.Count == 0)
             {
                 state.DeInterlace = true;
+            }
+
+            if (state.InputProtocol == MediaProtocol.Rtmp)
+            {
+                state.ReadInputAtNativeFramerate = true;
             }
 
             var videoRequest = request as VideoStreamRequest;

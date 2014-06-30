@@ -18,7 +18,7 @@
 
             var id = 'chkChannelDownload' + i;
 
-            var isChecked = config.ChannelOptions.DownloadingChannels.indexOf(channel.Id) != -1 ? ' checked="checked"' : '';
+            var isChecked = config.DownloadingChannels.indexOf(channel.Id) != -1 ? ' checked="checked"' : '';
 
             html += '<input class="chkChannelDownload" type="checkbox" name="' + id + '" id="' + id + '" data-channelid="' + channel.Id + '" data-mini="true"' + isChecked + '>';
             html += '<label for="' + id + '">' + channel.Name + '</label>';
@@ -43,12 +43,12 @@
 
         populateDownloadList(page, config, downloadableList);
 
-        $('#selectChannelResolution', page).val(config.ChannelOptions.PreferredStreamingWidth || '')
+        $('#selectChannelResolution', page).val(config.PreferredStreamingWidth || '')
             .selectmenu("refresh");
 
-        $('#txtDownloadAge', page).val(config.ChannelOptions.MaxDownloadAge || '');
+        $('#txtDownloadAge', page).val(config.MaxDownloadAge || '');
 
-        $('#txtCachePath', page).val(config.ChannelOptions.DownloadPath || '');
+        $('#txtCachePath', page).val(config.DownloadPath || '');
 
         Dashboard.hideLoadingMsg();
     }
@@ -83,7 +83,7 @@
 
         var page = this;
 
-        var promise1 = ApiClient.getServerConfiguration();
+        var promise1 = ApiClient.getNamedConfiguration("channels");
         var promise2 = $.getJSON(ApiClient.getUrl("Channels/Features"));
 
         $.when(promise1, promise2).done(function (response1, response2) {
@@ -103,21 +103,21 @@
 
         var form = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getNamedConfiguration("channels").done(function (config) {
 
             // This should be null if empty
-            config.ChannelOptions.PreferredStreamingWidth = $('#selectChannelResolution', form).val() || null;
-            config.ChannelOptions.MaxDownloadAge = $('#txtDownloadAge', form).val() || null;
+            config.PreferredStreamingWidth = $('#selectChannelResolution', form).val() || null;
+            config.MaxDownloadAge = $('#txtDownloadAge', form).val() || null;
 
-            config.ChannelOptions.DownloadPath = $('#txtCachePath', form).val() || null;
+            config.DownloadPath = $('#txtCachePath', form).val() || null;
 
-            config.ChannelOptions.DownloadingChannels = $('.chkChannelDownload:checked', form)
+            config.DownloadingChannels = $('.chkChannelDownload:checked', form)
                 .get()
                 .map(function(i) {
                     return i.getAttribute('data-channelid');
                 });
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration(config).done("channels", Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission

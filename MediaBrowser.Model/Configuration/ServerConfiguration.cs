@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using MediaBrowser.Model.Weather;
+﻿using MediaBrowser.Model.Weather;
 using System;
 
 namespace MediaBrowser.Model.Configuration
@@ -211,7 +210,6 @@ namespace MediaBrowser.Model.Configuration
         public string[] ManualLoginClients { get; set; }
 
         public ChannelOptions ChannelOptions { get; set; }
-
         public ChapterOptions ChapterOptions { get; set; }
 
         public bool DefaultMetadataSettingsApplied { get; set; }
@@ -273,8 +271,6 @@ namespace MediaBrowser.Model.Configuration
             NotificationOptions = new NotificationOptions();
 
             SubtitleOptions = new SubtitleOptions();
-
-            ChannelOptions = new ChannelOptions();
 
             LiveTvOptions = new LiveTvOptions();
             TvFileOrganizationOptions = new TvFileOrganizationOptions();
