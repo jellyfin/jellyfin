@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Session
 {
@@ -13,7 +12,7 @@ namespace MediaBrowser.Model.Session
 
         public GeneralCommand()
         {
-            Arguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Arguments = new Dictionary<string, string>();
         }
     }
 }

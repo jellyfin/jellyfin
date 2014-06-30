@@ -17,6 +17,9 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -38,9 +41,11 @@ using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.ConnectionManager;
 using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Dlna.Main;
+using MediaBrowser.LocalMetadata.Providers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.MediaEncoding.Subtitles;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
@@ -75,6 +80,7 @@ using MediaBrowser.ServerApplication.IO;
 using MediaBrowser.ServerApplication.Native;
 using MediaBrowser.ServerApplication.Networking;
 using MediaBrowser.WebDashboard.Api;
+using MediaBrowser.XbmcMetadata.Providers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -273,9 +279,103 @@ namespace MediaBrowser.ServerApplication
 
         public override Task Init(IProgress<double> progress)
         {
-            DeleteDeprecatedModules();
+            PerformVersionMigration();
 
             return base.Init(progress);
+        }
+
+        private void PerformVersionMigration()
+        {
+            DeleteDeprecatedModules();
+
+            MigrateModularConfigurations();
+            ApplyDefaultMetadataSettings();
+        }
+
+        private void MigrateModularConfigurations()
+        {
+            var saveConfig = false;
+
+            if (ServerConfigurationManager.Configuration.DlnaOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("dlna", ServerConfigurationManager.Configuration.DlnaOptions);
+                ServerConfigurationManager.Configuration.DlnaOptions = null;
+                saveConfig = true;
+            }
+
+            if (ServerConfigurationManager.Configuration.ChapterOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("chapters", ServerConfigurationManager.Configuration.ChapterOptions);
+                ServerConfigurationManager.Configuration.ChapterOptions = null;
+                saveConfig = true;
+            }
+
+            if (saveConfig)
+            {
+                ServerConfigurationManager.SaveConfiguration();
+            }
+        }
+
+        private void ApplyDefaultMetadataSettings()
+        {
+            if (!ServerConfigurationManager.Configuration.DefaultMetadataSettingsApplied)
+            {
+                // Make sure xbmc metadata is disabled for existing users.
+                // New users can just take the defaults.
+                var service = ServerConfigurationManager.Configuration.IsStartupWizardCompleted
+                    ? "Xbmc Nfo"
+                    : "Media Browser Xml";
+
+                DisableMetadataService(typeof(Movie), ServerConfigurationManager.Configuration, service);
+                DisableMetadataService(typeof(MusicAlbum), ServerConfigurationManager.Configuration, service);
+                DisableMetadataService(typeof(MusicArtist), ServerConfigurationManager.Configuration, service);
+                DisableMetadataService(typeof(Episode), ServerConfigurationManager.Configuration, service);
+                DisableMetadataService(typeof(Season), ServerConfigurationManager.Configuration, service);
+                DisableMetadataService(typeof(Series), ServerConfigurationManager.Configuration, service);
+                DisableMetadataService(typeof(MusicVideo), ServerConfigurationManager.Configuration, service);
+                DisableMetadataService(typeof(Trailer), ServerConfigurationManager.Configuration, service);
+                DisableMetadataService(typeof(AdultVideo), ServerConfigurationManager.Configuration, service);
+                DisableMetadataService(typeof(Video), ServerConfigurationManager.Configuration, service);
+            }
+
+            ServerConfigurationManager.Configuration.DefaultMetadataSettingsApplied = true;
+            ServerConfigurationManager.SaveConfiguration();
+        }
+
+        private void DisableMetadataService(Type type, ServerConfiguration config, string service)
+        {
+            var options = GetMetadataOptions(type, config);
+
+            if (!options.DisabledMetadataSavers.Contains(service, StringComparer.OrdinalIgnoreCase))
+            {
+                var list = options.DisabledMetadataSavers.ToList();
+
+                list.Add(service);
+
+                options.DisabledMetadataSavers = list.ToArray();
+            }
+        }
+
+        private MetadataOptions GetMetadataOptions(Type type, ServerConfiguration config)
+        {
+            var options = config.MetadataOptions
+                .FirstOrDefault(i => string.Equals(i.ItemType, type.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (options == null)
+            {
+                var list = config.MetadataOptions.ToList();
+
+                options = new MetadataOptions
+                {
+                    ItemType = type.Name
+                };
+
+                list.Add(options);
+
+                config.MetadataOptions = list.ToArray();
+            }
+
+            return options;
         }
 
         private void DeleteDeprecatedModules()
@@ -291,6 +391,15 @@ namespace MediaBrowser.ServerApplication
             try
             {
                 File.Delete(Path.Combine(ApplicationPaths.PluginsPath, "MBPhoto.dll"));
+            }
+            catch (IOException)
+            {
+                // Not there, no big deal
+            }
+
+            try
+            {
+                File.Delete(Path.Combine(ApplicationPaths.PluginsPath, "MediaBrowser.Plugins.XbmcMetadata.dll"));
             }
             catch (IOException)
             {
@@ -881,6 +990,12 @@ namespace MediaBrowser.ServerApplication
             // Dlna 
             list.Add(typeof(DlnaEntryPoint).Assembly);
 
+            // Local metadata 
+            list.Add(typeof(AlbumXmlProvider).Assembly);
+
+            // Xbmc 
+            list.Add(typeof(ArtistNfoProvider).Assembly);
+
             list.AddRange(Assemblies.GetAssembliesWithParts());
 
             // Include composable parts in the running assembly
@@ -1063,10 +1178,12 @@ namespace MediaBrowser.ServerApplication
             var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, "MBServer", null, ApplicationVersion,
                                                            ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
 
-            HasUpdateAvailable = version != null && version.version >= ApplicationVersion;
+            var versionObject = version == null || string.IsNullOrWhiteSpace(version.versionStr) ? null : new Version(version.versionStr);
 
-            return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
-                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
+            HasUpdateAvailable = versionObject != null && versionObject >= ApplicationVersion;
+
+            return versionObject != null ? new CheckForUpdateResult { AvailableVersion = versionObject.ToString(), IsUpdateAvailable = versionObject > ApplicationVersion, Package = version } :
+                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion.ToString(), IsUpdateAvailable = false };
         }
 
         /// <summary>

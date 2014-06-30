@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MediaBrowser.Model.Configuration;
+using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Model.Notifications
 {
@@ -34,7 +34,7 @@ namespace MediaBrowser.Model.Notifications
             UserIds = new List<string>();
             Date = DateTime.UtcNow;
 
-            Variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Variables = new Dictionary<string, string>();
 
             ExcludeUserIds = new List<string>();
         }

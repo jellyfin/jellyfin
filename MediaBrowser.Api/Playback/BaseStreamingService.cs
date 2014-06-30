@@ -1447,6 +1447,16 @@ namespace MediaBrowser.Api.Playback
                     state.MediaPath = mediaUrl;
                     state.InputProtocol = MediaProtocol.Http;
                 }
+                else
+                {
+                    // No media info, so this is probably needed
+                    state.DeInterlace = true;
+                }
+
+                if (recording.RecordingInfo.Status == RecordingStatus.InProgress)
+                {
+                    state.ReadInputAtNativeFramerate = true;
+                }
 
                 state.RunTimeTicks = recording.RunTimeTicks;
 
@@ -1455,9 +1465,7 @@ namespace MediaBrowser.Api.Playback
                     await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
                 }
 
-                state.ReadInputAtNativeFramerate = recording.RecordingInfo.Status == RecordingStatus.InProgress;
                 state.OutputAudioSync = "1000";
-                state.DeInterlace = true;
                 state.InputVideoSync = "-1";
                 state.InputAudioSync = "1";
                 state.InputContainer = recording.Container;
@@ -1524,7 +1532,9 @@ namespace MediaBrowser.Api.Playback
                 state.RunTimeTicks = mediaSource.RunTimeTicks;
             }
 
-            if (string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase))
+            // If it's a wtv and we don't have media info, we will probably need to deinterlace
+            if (string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase) &&
+                mediaStreams.Count == 0)
             {
                 state.DeInterlace = true;
             }

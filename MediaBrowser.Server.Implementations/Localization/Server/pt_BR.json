@@ -770,10 +770,10 @@
     "LabelHomePageSection1": "Se\u00e7\u00e3o um da tela de in\u00edcio:",
     "LabelHomePageSection2": "Se\u00e7\u00e3o dois da tela de in\u00edcio:",
     "LabelHomePageSection3": "Se\u00e7\u00e3o tr\u00eas da tela de in\u00edcio:",
-    "LabelHomePageSection4": "Se\u00e7\u00e3o quatro da tela de inicio",
-    "OptionMyViewsButtons": "My views (buttons)",
-    "OptionMyViews": "My views",
-    "OptionMyViewsSmall": "My views (small)",
+    "LabelHomePageSection4": "Se\u00e7\u00e3o quatro da tela de in\u00edcio",
+    "OptionMyViewsButtons": "Minhas visualiza\u00e7\u00f5es (bot\u00f5es)",
+    "OptionMyViews": "Minhas visualiza\u00e7\u00f5es",
+    "OptionMyViewsSmall": "Minhas visualiza\u00e7\u00f5es (pequeno)",
     "OptionResumablemedia": "Retomar",
     "OptionLatestMedia": "M\u00eddias recentes",
     "OptionLatestChannelMedia": "Itens recentes de canal",
@@ -820,6 +820,6 @@
     "OptionLibraryFolders": "Pastas de m\u00eddias",
     "TitleRemoteControl": "Controle Remoto",
     "OptionLatestTvRecordings": "\u00daltimas grava\u00e7\u00f5es",
-    "LabelProtocolInfo": "Protocol info:",
-    "LabelProtocolInfoHelp": "The value that will be used when responding to GetProtocolInfo requests from the device."
+    "LabelProtocolInfo": "Informa\u00e7\u00e3o do protocolo:",
+    "LabelProtocolInfoHelp": "O valor que ser\u00e1 usado ao responder os pedidos GetProtocolInfo do dispositivo."
 }

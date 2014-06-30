@@ -55,7 +55,9 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Configuration\ConfigurationHelper.cs" />
+    <Compile Include="Configuration\ConfigurationUpdateEventArgs.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="Configuration\IConfigurationFactory.cs" />
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="Events\EventHelper.cs" />
     <Compile Include="Extensions\BaseExtensions.cs" />

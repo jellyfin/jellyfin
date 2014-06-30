@@ -89,9 +89,11 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 }
             }
 
-            if (!string.IsNullOrEmpty(_config.Configuration.DlnaOptions.DefaultUserId))
+            var userId = _config.GetDlnaConfiguration().DefaultUserId;
+
+            if (!string.IsNullOrEmpty(userId))
             {
-                var user = _userManager.GetUserById(new Guid(_config.Configuration.DlnaOptions.DefaultUserId));
+                var user = _userManager.GetUserById(new Guid(userId));
 
                 if (user != null)
                 {

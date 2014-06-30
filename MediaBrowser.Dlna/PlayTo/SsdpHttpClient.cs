@@ -58,7 +58,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url,
                 UserAgent = USERAGENT,
-                LogRequest = _config.Configuration.DlnaOptions.EnableDebugLogging,
+                LogRequest = _config.GetDlnaConfiguration().EnableDebugLogging,
                 LogErrorResponseBody = true
             };
 
@@ -76,7 +76,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url,
                 UserAgent = USERAGENT,
-                LogRequest = _config.Configuration.DlnaOptions.EnableDebugLogging,
+                LogRequest = _config.GetDlnaConfiguration().EnableDebugLogging,
                 LogErrorResponseBody = true
             };
 
@@ -103,7 +103,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url,
                 UserAgent = USERAGENT,
-                LogRequest = _config.Configuration.DlnaOptions.EnableDebugLogging,
+                LogRequest = _config.GetDlnaConfiguration().EnableDebugLogging,
                 LogErrorResponseBody = true
             };
 

@@ -27,9 +27,11 @@
 .posterItemOverlayInner {
     padding: 11px 12px 10px;
 }
-.posterItemOverlayInner button:last-child {
-    margin-right:0!important;
-}
+
+    .posterItemOverlayInner button:last-child {
+        margin-right: 0!important;
+    }
+
     .posterItemOverlayInner p {
         white-space: nowrap;
         overflow: hidden;
@@ -139,6 +141,7 @@
 
 .myLibraryPosterItem {
     width: 42%;
+    min-width: 50px;
 }
 
     .myLibraryPosterItem .posterItemImage {
@@ -388,6 +391,8 @@
 
     .myLibraryPosterItem {
         width: 30%;
+        /* Specify a min width just in case the container doesn't have a width */
+        min-width: 160px;
     }
 }
 
@@ -406,6 +411,8 @@
 
     .myLibraryPosterItem {
         width: 23%;
+        /* Specify a min width just in case the container doesn't have a width */
+        min-width: 220px;
     }
 
     .smallBackdropPosterItem {
@@ -444,6 +451,8 @@
 
     .myLibraryPosterItem {
         width: 19%;
+        /* Specify a min width just in case the container doesn't have a width */
+        min-width: 220px;
     }
 
     .backdropPosterItem {
@@ -484,5 +493,7 @@
 
     .myLibraryPosterItem {
         width: 16%;
+        /* Specify a min width just in case the container doesn't have a width */
+        min-width: 220px;
     }
 }

@@ -8,8 +8,11 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
+using ServiceStack.Text.Controller;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace MediaBrowser.Api
@@ -23,6 +26,13 @@ namespace MediaBrowser.Api
 
     }
 
+    [Route("/System/Configuration/{Key}", "GET", Summary = "Gets a named configuration")]
+    public class GetNamedConfiguration
+    {
+        [ApiMember(Name = "Key", Description = "Key", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Key { get; set; }
+    }
+    
     /// <summary>
     /// Class UpdateConfiguration
     /// </summary>
@@ -31,6 +41,15 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Route("/System/Configuration/{Key}", "POST", Summary = "Updates named configuration")]
+    public class UpdateNamedConfiguration : IReturnVoid, IRequiresRequestStream
+    {
+        [ApiMember(Name = "Key", Description = "Key", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Key { get; set; }
+
+        public Stream RequestStream { get; set; }
+    }
+    
     [Route("/System/Configuration/MetadataOptions/Default", "GET", Summary = "Gets a default MetadataOptions object")]
     public class GetDefaultMetadataOptions : IReturn<MetadataOptions>
     {
@@ -88,6 +107,13 @@ namespace MediaBrowser.Api
             return ToOptimizedResultUsingCache(cacheKey, dateModified, null, () => _configurationManager.Configuration);
         }
 
+        public object Get(GetNamedConfiguration request)
+        {
+            var result = _configurationManager.GetConfiguration(request.Key);
+
+            return ToOptimizedResult(result);
+        }
+
         /// <summary>
         /// Posts the specified configuraiton.
         /// </summary>
@@ -95,12 +121,22 @@ namespace MediaBrowser.Api
         public void Post(UpdateConfiguration request)
         {
             // Silly, but we need to serialize and deserialize or the XmlSerializer will write the xml with an element name of UpdateConfiguration
-
             var json = _jsonSerializer.SerializeToString(request);
 
             var config = _jsonSerializer.DeserializeFromString<ServerConfiguration>(json);
 
             _configurationManager.ReplaceConfiguration(config);
+        }
+
+        public void Post(UpdateNamedConfiguration request)
+        {
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
+            var key = pathInfo.GetArgumentValue<string>(2);
+
+            var configurationType = _configurationManager.GetConfigurationType(key);
+            var configuration = _jsonSerializer.DeserializeFromStream(request.RequestStream, configurationType);
+            
+            _configurationManager.SaveConfiguration(key, configuration);
         }
 
         public object Get(GetDefaultMetadataOptions request)

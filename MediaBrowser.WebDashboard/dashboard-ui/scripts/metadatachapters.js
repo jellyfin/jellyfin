@@ -10,12 +10,12 @@
             $('.chapterDownloadSettings', page).hide();
         }
 
-        $('#chkChaptersMovies', page).checked(config.ChapterOptions.EnableMovieChapterImageExtraction).checkboxradio("refresh");
-        $('#chkChaptersEpisodes', page).checked(config.ChapterOptions.EnableEpisodeChapterImageExtraction).checkboxradio("refresh");
-        $('#chkChaptersOtherVideos', page).checked(config.ChapterOptions.EnableOtherVideoChapterImageExtraction).checkboxradio("refresh");
+        $('#chkChaptersMovies', page).checked(config.EnableMovieChapterImageExtraction).checkboxradio("refresh");
+        $('#chkChaptersEpisodes', page).checked(config.EnableEpisodeChapterImageExtraction).checkboxradio("refresh");
+        $('#chkChaptersOtherVideos', page).checked(config.EnableOtherVideoChapterImageExtraction).checkboxradio("refresh");
 
-        $('#chkDownloadChapterMovies', page).checked(config.ChapterOptions.DownloadMovieChapters).checkboxradio("refresh");
-        $('#chkDownloadChapterEpisodes', page).checked(config.ChapterOptions.DownloadEpisodeChapters).checkboxradio("refresh");
+        $('#chkDownloadChapterMovies', page).checked(config.DownloadMovieChapters).checkboxradio("refresh");
+        $('#chkDownloadChapterEpisodes', page).checked(config.DownloadEpisodeChapters).checkboxradio("refresh");
 
         renderChapterFetchers(page, config, providers);
 
@@ -46,7 +46,7 @@
 
             id = 'chkChapterFetcher' + i;
 
-            var isChecked = config.ChapterOptions.DisabledFetchers.indexOf(plugin.Name) == -1 ? ' checked="checked"' : '';
+            var isChecked = config.DisabledFetchers.indexOf(plugin.Name) == -1 ? ' checked="checked"' : '';
 
             html += '<input class="chkChapterFetcher" type="checkbox" name="' + id + '" id="' + id + '" data-pluginname="' + plugin.Name + '" data-mini="true"' + isChecked + '>';
             html += '<label for="' + id + '">' + plugin.Name + '</label>';
@@ -116,7 +116,7 @@
 
         var page = this;
 
-        var promise1 = ApiClient.getServerConfiguration();
+        var promise1 = ApiClient.getNamedConfiguration("chapters");
         var promise2 = $.getJSON(ApiClient.getUrl("Providers/Chapters"));
 
         $.when(promise1, promise2).done(function (response1, response2) {
@@ -134,28 +134,28 @@
 
             var form = this;
 
-            ApiClient.getServerConfiguration().done(function (config) {
+            ApiClient.getNamedConfiguration("chapters").done(function (config) {
 
-                config.ChapterOptions.EnableMovieChapterImageExtraction = $('#chkChaptersMovies', form).checked();
-                config.ChapterOptions.EnableEpisodeChapterImageExtraction = $('#chkChaptersEpisodes', form).checked();
-                config.ChapterOptions.EnableOtherVideoChapterImageExtraction = $('#chkChaptersOtherVideos', form).checked();
+                config.EnableMovieChapterImageExtraction = $('#chkChaptersMovies', form).checked();
+                config.EnableEpisodeChapterImageExtraction = $('#chkChaptersEpisodes', form).checked();
+                config.EnableOtherVideoChapterImageExtraction = $('#chkChaptersOtherVideos', form).checked();
 
-                config.ChapterOptions.DownloadMovieChapters = $('#chkDownloadChapterMovies', form).checked();
-                config.ChapterOptions.DownloadEpisodeChapters = $('#chkDownloadChapterEpisodes', form).checked();
+                config.DownloadMovieChapters = $('#chkDownloadChapterMovies', form).checked();
+                config.DownloadEpisodeChapters = $('#chkDownloadChapterEpisodes', form).checked();
 
-                config.ChapterOptions.DisabledFetchers = $('.chkChapterFetcher:not(:checked)', form).get().map(function (c) {
-
-                    return c.getAttribute('data-pluginname');
-
-                });
-
-                config.ChapterOptions.FetcherOrder = $('.chkChapterFetcher', form).get().map(function (c) {
+                config.DisabledFetchers = $('.chkChapterFetcher:not(:checked)', form).get().map(function (c) {
 
                     return c.getAttribute('data-pluginname');
 
                 });
 
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+                config.FetcherOrder = $('.chkChapterFetcher', form).get().map(function (c) {
+
+                    return c.getAttribute('data-pluginname');
+
+                });
+
+                ApiClient.updateNamedConfiguration("chapters", config).done(Dashboard.processServerConfigurationUpdateResult);
             });
 
             // Disable default form submission

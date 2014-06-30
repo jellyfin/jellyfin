@@ -51,13 +51,16 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="ConfigurationExtension.cs" />
     <Compile Include="ConnectionManager\ConnectionManager.cs" />
     <Compile Include="ConnectionManager\ConnectionManagerXmlBuilder.cs" />
     <Compile Include="ConnectionManager\ControlHandler.cs" />
     <Compile Include="ConnectionManager\ServiceActionListBuilder.cs" />
+    <Compile Include="Didl\Filter.cs" />
     <Compile Include="DlnaManager.cs" />
     <Compile Include="Common\Argument.cs" />
     <Compile Include="Eventing\EventManager.cs" />
+    <Compile Include="Eventing\EventSubscription.cs" />
     <Compile Include="Main\DlnaEntryPoint.cs" />
     <Compile Include="PlayTo\CurrentIdEventArgs.cs" />
     <Compile Include="PlayTo\Device.cs">

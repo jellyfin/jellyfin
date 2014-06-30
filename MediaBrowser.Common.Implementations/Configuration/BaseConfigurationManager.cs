@@ -1,10 +1,13 @@
-﻿using System.IO;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace MediaBrowser.Common.Implementations.Configuration
@@ -24,6 +27,11 @@ namespace MediaBrowser.Common.Implementations.Configuration
         /// Occurs when [configuration updated].
         /// </summary>
         public event EventHandler<EventArgs> ConfigurationUpdated;
+
+        /// <summary>
+        /// Occurs when [named configuration updated].
+        /// </summary>
+        public event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdated;
 
         /// <summary>
         /// Gets the logger.
@@ -74,6 +82,9 @@ namespace MediaBrowser.Common.Implementations.Configuration
             }
         }
 
+        private ConfigurationStore[] _configurationStores = {};
+        private IConfigurationFactory[] _configurationFactories;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseConfigurationManager" /> class.
         /// </summary>
@@ -89,10 +100,14 @@ namespace MediaBrowser.Common.Implementations.Configuration
             UpdateCachePath();
         }
 
-        /// <summary>
-        /// The _save lock
-        /// </summary>
-        private readonly object _configurationSaveLock = new object();
+        public void AddParts(IEnumerable<IConfigurationFactory> factories)
+        {
+            _configurationFactories = factories.ToArray();
+
+            _configurationStores = _configurationFactories
+                .SelectMany(i => i.GetConfigurations())
+                .ToArray();
+        }
 
         /// <summary>
         /// Saves the configuration.
@@ -103,7 +118,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            lock (_configurationSaveLock)
+            lock (_configurationSyncLock)
             {
                 XmlSerializer.SerializeToFile(CommonConfiguration, path);
             }
@@ -144,8 +159,8 @@ namespace MediaBrowser.Common.Implementations.Configuration
         /// </summary>
         private void UpdateCachePath()
         {
-            ((BaseApplicationPaths)CommonApplicationPaths).CachePath = string.IsNullOrEmpty(CommonConfiguration.CachePath) ? 
-                null : 
+            ((BaseApplicationPaths)CommonApplicationPaths).CachePath = string.IsNullOrEmpty(CommonConfiguration.CachePath) ?
+                null :
                 CommonConfiguration.CachePath;
         }
 
@@ -167,6 +182,64 @@ namespace MediaBrowser.Common.Implementations.Configuration
                     throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
             }
+        }
+
+        private readonly ConcurrentDictionary<string, object> _configurations = new ConcurrentDictionary<string, object>();
+
+        private string GetConfigurationFile(string key)
+        {
+            return Path.Combine(CommonApplicationPaths.ConfigurationDirectoryPath, key.ToLower() + ".xml");
+        }
+
+        public object GetConfiguration(string key)
+        {
+            return _configurations.GetOrAdd(key, k =>
+            {
+                var file = GetConfigurationFile(key);
+
+                var configurationType = _configurationStores
+                    .First(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase))
+                    .ConfigurationType;
+
+                lock (_configurationSyncLock)
+                {
+                    return ConfigurationHelper.GetXmlConfiguration(configurationType, file, XmlSerializer);
+                }
+            });
+        }
+
+        public void SaveConfiguration(string key, object configuration)
+        {
+            var configurationType = GetConfigurationType(key);
+
+            if (configuration.GetType() != configurationType)
+            {
+                throw new ArgumentException("Expected configuration type is " + configurationType.Name);
+            }
+
+            _configurations.AddOrUpdate(key, configuration, (k, v) => configuration);
+
+            var path = GetConfigurationFile(key);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            lock (_configurationSyncLock)
+            {
+                XmlSerializer.SerializeToFile(configuration, path);
+            }
+
+            EventHelper.FireEventIfNotNull(NamedConfigurationUpdated, this, new ConfigurationUpdateEventArgs
+            {
+                Key = key,
+                NewConfiguration = configuration
+
+            }, Logger);
+        }
+
+        public Type GetConfigurationType(string key)
+        {
+            return _configurationStores
+                .First(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase))
+                .ConfigurationType;
         }
     }
 }

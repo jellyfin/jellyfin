@@ -136,7 +136,7 @@
     "HeaderSelectTranscodingPath": "S\u00e9lectionner le chemin d'acc\u00e8s du transcodage temporaire",
     "HeaderSelectImagesByNamePath": "S\u00e9lectionner le chemin d'acc\u00e8s du \"Images By Name\"",
     "HeaderSelectMetadataPath": "S\u00e9lectionner le chemin d'acc\u00e8s des m\u00e9tadonn\u00e9es",
-    "HeaderSelectServerCachePathHelp": "Browse or enter the path to use for server cache files. The folder must be writeable. The location of this folder will directly impact server performance and should ideally be placed on a solid state drive.",
+    "HeaderSelectServerCachePathHelp": "Parcourez ou entrez le chemin \u00e0 utiliser pour les fichiers caches du serveur. Le dossier doit \u00eatre accessible en \u00e9criture. L'emplacement de ce fichier aura un impact direct sur les performances du serveur et devrait \u00eatre plac\u00e9 id\u00e9alement sur un SSD.",
     "HeaderSelectTranscodingPathHelp": "Browse or enter the path to use for transcoding temporary files. The folder must be writeable.",
     "HeaderSelectImagesByNamePathHelp": "Browse or enter the path to your items by name folder. The folder must be writeable.",
     "HeaderSelectMetadataPathHelp": "Browse or enter the path you'd like to store metadata within. The folder must be writeable.",
@@ -190,9 +190,9 @@
     "HeaderLatestTvRecordings": "Les plus r\u00e9cents enregistrements",
     "ButtonOk": "Ok",
     "ButtonCancel": "Annuler",
-    "ButtonRefresh": "Refresh",
-    "LabelCurrentPath": "Current path:",
+    "ButtonRefresh": "Actualiser",
+    "LabelCurrentPath": "Chemin actuel:",
     "HeaderSelectMediaPath": "Select Media Path",
-    "ButtonNetwork": "Network",
+    "ButtonNetwork": "R\u00e9seau",
     "MessageDirectoryPickerInstruction": "Network paths can be entered manually in the event the Network button fails to locate your devices. For example, {0} or {1}."
 }

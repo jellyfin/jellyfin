@@ -418,7 +418,7 @@ namespace MediaBrowser.Api
 
         private async void DeletePartialStreamFiles(string path, TranscodingJobType jobType, int retryCount, int delayMs)
         {
-            if (retryCount >= 8)
+            if (retryCount >= 10)
             {
                 return;
             }
