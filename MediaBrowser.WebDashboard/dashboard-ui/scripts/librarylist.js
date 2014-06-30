@@ -320,7 +320,7 @@
                 Dashboard.showLoadingMsg();
 
                 $.ajax({
-                    
+
                     type: "POST",
                     url: ApiClient.getUrl("Videos/MergeVersions", { Ids: selection.join(',') })
 
@@ -335,9 +335,9 @@
             }
         });
     }
-    
+
     function addToCollection(page) {
-        
+
         var selection = getSelectedItems(page);
 
         if (selection.length < 1) {
@@ -376,5 +376,49 @@
         hideSelections(page);
 
     });
+
+    function renderUserDataChanges(posterItem, userData) {
+
+        if (userData.Played) {
+
+            if (!$('.playedIndicator', posterItem).length) {
+
+                var html = '<div class="unplayedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+
+                $(html).insertAfter($('.posterItemOverlayTarget', posterItem));
+            }
+            
+        } else {
+            $('.playedIndicator', posterItem).remove();
+        }
+        
+        // TODO: Handle progress bar
+        // $('.posterItemProgressContainer').remove();
+    }
+
+    function onUserDataChanged(userData) {
+
+        $('.posterItemUserData' + userData.Key).each(function () {
+            renderUserDataChanges(this, userData);
+        });
+    }
+
+    function onWebSocketMessage(e, data) {
+
+        var msg = data;
+
+        if (msg.MessageType === "UserDataChanged") {
+
+            if (msg.Data.UserId == Dashboard.getCurrentUserId()) {
+
+                for (var i = 0, length = msg.Data.UserDataList.length; i < length; i++) {
+                    onUserDataChanged(msg.Data.UserDataList[i]);
+                }
+            }
+        }
+
+    }
+
+    $(ApiClient).on('websocketmessage', onWebSocketMessage);
 
 })(jQuery, document, window);

@@ -339,7 +339,7 @@
         closePlayMenu: function () {
             $('.playFlyout').popup("close").remove();
         },
-        
+
         getHref: function (item, context) {
 
             var href = LibraryBrowser.getHrefInternal(item);
@@ -737,6 +737,10 @@
 
                 var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
 
+                if (item.UserData) {
+                    cssClass += ' posterItemUserData' + item.UserData.Key;
+                }
+
                 html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-mediasourcecount="' + mediaSourceCount + '" href="' + href + '">';
 
                 var style = "";
@@ -793,7 +797,7 @@
                 if (!options.overlayText) {
 
                     if (progressHtml) {
-                        html += '<div class="posterItemTextOverlay">';
+                        html += '<div class="posterItemTextOverlay posterItemProgressContainer">';
                         html += "<div class='posterItemProgress miniPosterItemProgress'>";
                         html += progressHtml;
                         html += "</div>";
@@ -854,7 +858,7 @@
                 if (options.overlayText) {
 
                     if (progressHtml) {
-                        html += "<div class='posterItemText posterItemProgress'>";
+                        html += "<div class='posterItemText posterItemProgress posterItemProgressContainer'>";
                         html += progressHtml || "&nbsp;";
                         html += "</div>";
                     }
@@ -1053,14 +1057,8 @@
                     return '<div class="unplayedIndicator">' + item.RecursiveUnplayedItemCount + '</div>';
                 }
 
-                if (item.PlayedPercentage == 100) {
-                    return '<div class="unplayedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
-                }
-
-                var userData = item.UserData || {};
-
-                if (userData.Played) {
-                    return '<div class="unplayedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+                if (item.PlayedPercentage == 100 || (item.UserData && item.UserData.Played)) {
+                    return '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
                 }
             }
 
