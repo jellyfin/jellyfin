@@ -119,9 +119,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
             }
 
-            int audioBitrate;
-            int videoBitrate;
-            GetPlaylistBitrates(state, out audioBitrate, out videoBitrate);
+            var audioBitrate = state.OutputAudioBitrate ?? 0;
+            var videoBitrate = state.OutputVideoBitrate ?? 0;
 
             var appendBaselineStream = false;
             var baselineStreamBitrate = 64000;
@@ -160,37 +159,6 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             return minimumSegmentCount;
-        }
-
-        /// <summary>
-        /// Gets the playlist bitrates.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <param name="audioBitrate">The audio bitrate.</param>
-        /// <param name="videoBitrate">The video bitrate.</param>
-        protected void GetPlaylistBitrates(StreamState state, out int audioBitrate, out int videoBitrate)
-        {
-            var audioBitrateParam = state.OutputAudioBitrate;
-            var videoBitrateParam = state.OutputVideoBitrate;
-
-            if (!audioBitrateParam.HasValue)
-            {
-                if (state.AudioStream != null)
-                {
-                    audioBitrateParam = state.AudioStream.BitRate;
-                }
-            }
-
-            if (!videoBitrateParam.HasValue)
-            {
-                if (state.VideoStream != null)
-                {
-                    videoBitrateParam = state.VideoStream.BitRate;
-                }
-            }
-
-            audioBitrate = audioBitrateParam ?? 0;
-            videoBitrate = videoBitrateParam ?? 0;
         }
 
         private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate, bool includeBaselineStream, int baselineStreamBitrate)

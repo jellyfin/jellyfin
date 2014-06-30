@@ -77,9 +77,11 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(_config.Configuration.ChannelOptions.DownloadPath))
+                var options = _config.GetChannelsConfiguration();
+
+                if (!string.IsNullOrWhiteSpace(options.DownloadPath))
                 {
-                    return _config.Configuration.ChannelOptions.DownloadPath;
+                    return options.DownloadPath;
                 }
 
                 return Path.Combine(_config.ApplicationPaths.ProgramDataPath, "channels");
@@ -374,7 +376,9 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var list = channelMediaSources.ToList();
 
-            var width = _config.Configuration.ChannelOptions.PreferredStreamingWidth;
+            var options = _config.GetChannelsConfiguration();
+
+            var width = options.PreferredStreamingWidth;
 
             if (width.HasValue)
             {

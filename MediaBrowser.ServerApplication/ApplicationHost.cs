@@ -310,6 +310,13 @@ namespace MediaBrowser.ServerApplication
                 saveConfig = true;
             }
 
+            if (ServerConfigurationManager.Configuration.ChannelOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("channels", ServerConfigurationManager.Configuration.ChannelOptions);
+                ServerConfigurationManager.Configuration.ChannelOptions = null;
+                saveConfig = true;
+            }
+
             if (saveConfig)
             {
                 ServerConfigurationManager.SaveConfiguration();
