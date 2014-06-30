@@ -374,7 +374,6 @@
         var page = this;
 
         hideSelections(page);
-
     });
 
     function renderUserDataChanges(posterItem, userData) {
@@ -387,11 +386,11 @@
 
                 $(html).insertAfter($('.posterItemOverlayTarget', posterItem));
             }
-            
+
         } else {
             $('.playedIndicator', posterItem).remove();
         }
-        
+
         // TODO: Handle progress bar
         // $('.posterItemProgressContainer').remove();
     }

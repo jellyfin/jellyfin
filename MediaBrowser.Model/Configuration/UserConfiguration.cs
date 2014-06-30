@@ -65,6 +65,8 @@ namespace MediaBrowser.Model.Configuration
         public string[] BlockedMediaFolders { get; set; }
         public string[] BlockedChannels { get; set; }
 
+        public string[] DisplayChannelsWithinViews { get; set; }
+        
         public string[] ExcludeFoldersFromGrouping { get; set; }
 
         public UnratedItem[] BlockUnratedItems { get; set; }
@@ -85,6 +87,7 @@ namespace MediaBrowser.Model.Configuration
             EnableLiveTvAccess = true;
 
             BlockedMediaFolders = new string[] { };
+            DisplayChannelsWithinViews = new string[] { };
             BlockedChannels = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
 

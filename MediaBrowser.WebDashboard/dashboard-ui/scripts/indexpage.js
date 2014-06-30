@@ -219,7 +219,8 @@
                     shape: shape,
                     showTitle: true,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    preferThumb: true
                 });
                 html += '</div>';
             }

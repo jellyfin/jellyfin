@@ -90,12 +90,19 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var channelResult = await _channelManager.GetChannels(new ChannelQuery
                 {
-                    Limit = 0,
                     UserId = query.UserId
 
                 }, cancellationToken).ConfigureAwait(false);
 
-                if (channelResult.TotalRecordCount > 0)
+                var channels = channelResult.Items;
+
+                var embeddedChannels = channels
+                    .Where(i => user.Configuration.DisplayChannelsWithinViews.Contains(i.Id))
+                    .ToList();
+
+                list.AddRange(embeddedChannels.Select(i => _channelManager.GetChannel(i.Id)));
+
+                if (channels.Length > embeddedChannels.Count)
                 {
                     list.Add(await _channelManager.GetInternalChannelFolder(query.UserId, cancellationToken).ConfigureAwait(false));
                 }
