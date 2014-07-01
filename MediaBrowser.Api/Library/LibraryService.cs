@@ -210,7 +210,8 @@ namespace MediaBrowser.Api.Library
     [Api(Description = "Gets all user media folders.")]
     public class GetMediaFolders : IReturn<ItemsResult>
     {
-
+        [ApiMember(Name = "IsHidden", Description = "Optional. Filter by folders that are marked hidden, or not.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? IsHidden { get; set; }
     }
 
     [Route("/Library/Series/Added", "POST")]
@@ -258,6 +259,13 @@ namespace MediaBrowser.Api.Library
         public object Get(GetMediaFolders request)
         {
             var items = _libraryManager.GetUserRootFolder().Children.OrderBy(i => i.SortName).ToList();
+
+            if (request.IsHidden.HasValue)
+            {
+                var val = request.IsHidden.Value;
+
+                items = items.Where(i => i.IsHidden == val).ToList();
+            }
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))

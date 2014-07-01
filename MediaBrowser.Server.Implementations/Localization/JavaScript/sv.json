@@ -194,5 +194,11 @@
     "LabelCurrentPath": "Aktuell s\u00f6kv\u00e4g:",
     "HeaderSelectMediaPath": "V\u00e4lj s\u00f6kv\u00e4g till media",
     "ButtonNetwork": "N\u00e4tverk",
-    "MessageDirectoryPickerInstruction": "N\u00e4tverkss\u00f6kv\u00e4gar kan anges manuellt om \"N\u00e4tverk\" inte hittar dina enheter. T ex {0} eller {1}."
+    "MessageDirectoryPickerInstruction": "N\u00e4tverkss\u00f6kv\u00e4gar kan anges manuellt om \"N\u00e4tverk\" inte hittar dina enheter. T ex {0} eller {1}.",
+    "HeaderMenu": "Menu",
+    "ButtonOpen": "Open",
+    "ButtonOpenInNewTab": "Open in new tab",
+    "ButtonShuffle": "Shuffle",
+    "ButtonInstantMix": "Instant mix",
+    "ButtonResume": "Resume"
 }

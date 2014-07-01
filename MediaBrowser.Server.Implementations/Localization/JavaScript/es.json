@@ -194,5 +194,11 @@
     "LabelCurrentPath": "Ruta actual:",
     "HeaderSelectMediaPath": "Seleccionar la ruta para Medios",
     "ButtonNetwork": "Red",
-    "MessageDirectoryPickerInstruction": "Rutas de red pueden ser introducidas manualmente en el caso de que el bot\u00f3n de la red no pueda localizar sus dispositivos. Por ejemplo, {0} o {1}."
+    "MessageDirectoryPickerInstruction": "Rutas de red pueden ser introducidas manualmente en el caso de que el bot\u00f3n de la red no pueda localizar sus dispositivos. Por ejemplo, {0} o {1}.",
+    "HeaderMenu": "Menu",
+    "ButtonOpen": "Open",
+    "ButtonOpenInNewTab": "Open in new tab",
+    "ButtonShuffle": "Shuffle",
+    "ButtonInstantMix": "Instant mix",
+    "ButtonResume": "Resume"
 }

@@ -190,9 +190,15 @@
     "HeaderLatestTvRecordings": "Ultime registrazioni",
     "ButtonOk": "OK",
     "ButtonCancel": "Annulla",
-    "ButtonRefresh": "Refresh",
-    "LabelCurrentPath": "Current path:",
-    "HeaderSelectMediaPath": "Select Media Path",
-    "ButtonNetwork": "Network",
-    "MessageDirectoryPickerInstruction": "Network paths can be entered manually in the event the Network button fails to locate your devices. For example, {0} or {1}."
+    "ButtonRefresh": "Aggiorna",
+    "LabelCurrentPath": "Percorso Corrente:",
+    "HeaderSelectMediaPath": "Seleziona il percorso",
+    "ButtonNetwork": "Rete",
+    "MessageDirectoryPickerInstruction": "Percorsi di rete possono essere inseriti manualmente nel caso in cui il pulsante Rete non riesce a individuare i vostri dispositivi. Ad esempio, {0} o {1}",
+    "HeaderMenu": "Menu",
+    "ButtonOpen": "Open",
+    "ButtonOpenInNewTab": "Open in new tab",
+    "ButtonShuffle": "Shuffle",
+    "ButtonInstantMix": "Instant mix",
+    "ButtonResume": "Resume"
 }

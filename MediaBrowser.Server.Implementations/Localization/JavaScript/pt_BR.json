@@ -194,5 +194,11 @@
     "LabelCurrentPath": "Caminho atual:",
     "HeaderSelectMediaPath": "Selecionar o Caminho da M\u00eddia",
     "ButtonNetwork": "Rede",
-    "MessageDirectoryPickerInstruction": "Os caminhos da rede podem ser digitados manualmente caso o bot\u00e3o de Rede n\u00e3o consiga localizar seus dispositivos. Por exemplo, {0} ou {1}."
+    "MessageDirectoryPickerInstruction": "Os caminhos da rede podem ser digitados manualmente caso o bot\u00e3o de Rede n\u00e3o consiga localizar seus dispositivos. Por exemplo, {0} ou {1}.",
+    "HeaderMenu": "Menu",
+    "ButtonOpen": "Open",
+    "ButtonOpenInNewTab": "Open in new tab",
+    "ButtonShuffle": "Shuffle",
+    "ButtonInstantMix": "Instant mix",
+    "ButtonResume": "Resume"
 }

@@ -194,5 +194,11 @@
     "LabelCurrentPath": "Huidige pad:",
     "HeaderSelectMediaPath": "Selecteer Media Pad",
     "ButtonNetwork": "Netwerk",
-    "MessageDirectoryPickerInstruction": "Netwerk paden kunnen handmatig worden ingevoerd in het geval de Netwerk knop faalt om uw apparatuur te lokaliseren . Bijvoorbeeld: {0} of {1}."
+    "MessageDirectoryPickerInstruction": "Netwerk paden kunnen handmatig worden ingevoerd in het geval de Netwerk knop faalt om uw apparatuur te lokaliseren . Bijvoorbeeld: {0} of {1}.",
+    "HeaderMenu": "Menu",
+    "ButtonOpen": "Open",
+    "ButtonOpenInNewTab": "Open in new tab",
+    "ButtonShuffle": "Shuffle",
+    "ButtonInstantMix": "Instant mix",
+    "ButtonResume": "Resume"
 }
