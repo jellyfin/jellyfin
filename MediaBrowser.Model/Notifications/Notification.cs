@@ -19,10 +19,5 @@ namespace MediaBrowser.Model.Notifications
         public string Url { get; set; }
 
         public NotificationLevel Level { get; set; }
-
-        public Notification()
-        {
-            Date = DateTime.UtcNow;
-        }
     }
 }

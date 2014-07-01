@@ -136,7 +136,12 @@ namespace MediaBrowser.Model.Dlna
                         foreach (CodecProfile i in options.Profile.CodecProfiles)
                         {
                             if (i.Type == CodecType.Audio && i.ContainsCodec(audioCodec))
-                                conditions.AddRange(i.Conditions);
+                            {
+                                foreach (var c in i.Conditions)
+                                {
+                                    conditions.Add(c);
+                                }
+                            }
                         }
 
                         int? audioChannels = audioStream.Channels;
@@ -195,7 +200,12 @@ namespace MediaBrowser.Model.Dlna
 
                 List<ProfileCondition> audioTranscodingConditions = new List<ProfileCondition>();
                 foreach (CodecProfile i in audioCodecProfiles)
-                        audioTranscodingConditions.AddRange(i.Conditions);
+                {
+                    foreach (var c in i.Conditions)
+                    {
+                        audioTranscodingConditions.Add(c);
+                    }
+                }
 
                 ApplyTranscodingConditions(playlistItem, audioTranscodingConditions);
 
@@ -276,7 +286,10 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if (i.Type == CodecType.Video && i.ContainsCodec(transcodingProfile.VideoCodec))
                     {
-                        videoTranscodingConditions.AddRange(i.Conditions);
+                        foreach (var c in i.Conditions)
+                        {
+                            videoTranscodingConditions.Add(c);
+                        }
                         break;
                     }
                 }
@@ -287,7 +300,10 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if (i.Type == CodecType.VideoAudio && i.ContainsCodec(transcodingProfile.AudioCodec))
                     {
-                        audioTranscodingConditions.AddRange(i.Conditions);
+                        foreach (var c in i.Conditions)
+                        {
+                            audioTranscodingConditions.Add(c);
+                        }
                         break;
                     }
                 }
@@ -363,7 +379,10 @@ namespace MediaBrowser.Model.Dlna
                 if (i.Type == DlnaProfileType.Video &&
                     ListHelper.ContainsIgnoreCase(i.GetContainers(), container))
                 {
-                    conditions.AddRange(i.Conditions);
+                    foreach (var c in i.Conditions)
+                    {
+                        conditions.Add(c);
+                    }
                 }
             }
 
@@ -405,7 +424,12 @@ namespace MediaBrowser.Model.Dlna
             foreach (CodecProfile i in profile.CodecProfiles)
             {
                 if (i.Type == CodecType.Video && i.ContainsCodec(videoCodec))
-                    conditions.AddRange(i.Conditions);
+                {
+                    foreach (var c in i.Conditions)
+                    {
+                        conditions.Add(c);
+                    }
+                }
             }
 
             foreach (ProfileCondition i in conditions)
@@ -429,7 +453,12 @@ namespace MediaBrowser.Model.Dlna
                 foreach (CodecProfile i in profile.CodecProfiles)
                 {
                     if (i.Type == CodecType.VideoAudio && i.ContainsCodec(audioCodec))
-                        conditions.AddRange(i.Conditions);
+                    {
+                        foreach (var c in i.Conditions)
+                        {
+                            conditions.Add(c);
+                        }
+                    }
                 }
 
                 foreach (ProfileCondition i in conditions)

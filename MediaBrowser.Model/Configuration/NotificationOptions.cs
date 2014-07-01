@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using MediaBrowser.Model.Extensions;
+﻿using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -90,7 +88,7 @@ namespace MediaBrowser.Model.Configuration
             NotificationOption opt = GetOptions(notificationType);
 
             return opt == null ||
-                   !opt.DisabledServices.Contains(service, StringComparer.OrdinalIgnoreCase);
+                   !ListHelper.ContainsIgnoreCase(opt.DisabledServices, service);
         }
 
         public bool IsEnabledToMonitorUser(string type, string userId)
@@ -98,7 +96,7 @@ namespace MediaBrowser.Model.Configuration
             NotificationOption opt = GetOptions(type);
 
             return opt != null && opt.Enabled &&
-                   !opt.DisabledMonitorUsers.Contains(userId, StringComparer.OrdinalIgnoreCase);
+                   !ListHelper.ContainsIgnoreCase(opt.DisabledMonitorUsers, userId);
         }
 
         public bool IsEnabledToSendToUser(string type, string userId, UserConfiguration userConfig)
@@ -117,7 +115,7 @@ namespace MediaBrowser.Model.Configuration
                     return true;
                 }
 
-                return opt.SendToUsers.Contains(userId, StringComparer.OrdinalIgnoreCase);
+                return ListHelper.ContainsIgnoreCase(opt.SendToUsers, userId);
             }
 
             return false;

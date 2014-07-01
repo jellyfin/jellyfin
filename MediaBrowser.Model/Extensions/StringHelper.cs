@@ -59,5 +59,16 @@ namespace MediaBrowser.Model.Extensions
         {
             return val.ToString(CultureInfo.InvariantCulture);
         }
+
+        /// <summary>
+        /// Trims the start.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="c">The c.</param>
+        /// <returns>System.String.</returns>
+        public static string TrimStart(string str, char c)
+        {
+            return str.TrimStart(c);
+        }
     }
 }

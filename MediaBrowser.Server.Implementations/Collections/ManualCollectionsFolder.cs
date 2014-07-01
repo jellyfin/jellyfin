@@ -28,6 +28,11 @@ namespace MediaBrowser.Server.Implementations.Collections
             }
         }
 
+        public override bool IsHiddenFromUser(User user)
+        {
+            return true;
+        }
+
         public override string CollectionType
         {
             get { return Model.Entities.CollectionType.BoxSets; }
