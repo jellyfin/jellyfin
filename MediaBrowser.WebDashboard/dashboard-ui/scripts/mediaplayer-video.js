@@ -1007,36 +1007,17 @@
                 EnableAutoStreamCopy: false
             }));
 
-            if (isStatic) webmVideoUrl += seekParam;
+            var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/master.m3u8', $.extend({}, baseParams, {
+                maxWidth: m3U8Quality.maxWidth,
+                videoBitrate: m3U8Quality.videoBitrate,
+                audioBitrate: m3U8Quality.audioBitrate,
+                VideoCodec: m3U8Quality.videoCodec,
+                AudioCodec: m3U8Quality.audioCodec,
+                profile: 'baseline',
+                level: '3',
+                StartTimeTicks: 0
 
-            var hlsVideoUrl;
-
-            if (item.RunTimeTicks) {
-                hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/master.m3u8', $.extend({}, baseParams, {
-                    timeStampOffsetMs: 0,
-                    maxWidth: m3U8Quality.maxWidth,
-                    videoBitrate: m3U8Quality.videoBitrate,
-                    audioBitrate: m3U8Quality.audioBitrate,
-                    VideoCodec: m3U8Quality.videoCodec,
-                    AudioCodec: m3U8Quality.audioCodec,
-                    profile: 'baseline',
-                    level: '3',
-                    StartTimeTicks: 0
-
-                })) + seekParam;
-
-            } else {
-                hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
-                    timeStampOffsetMs: 0,
-                    maxWidth: m3U8Quality.maxWidth,
-                    videoBitrate: m3U8Quality.videoBitrate,
-                    audioBitrate: m3U8Quality.audioBitrate,
-                    VideoCodec: m3U8Quality.videoCodec,
-                    AudioCodec: m3U8Quality.audioCodec,
-                    profile: 'baseline',
-                    level: '3'
-                })) + seekParam;
-            }
+            })) + seekParam;
 
             //======================================================================================>
 
@@ -1199,9 +1180,7 @@
 
             }).on("error.mediaplayerevent", function () {
 
-                self.clearPauseStop();
-
-                self.resetEnhancements();
+                self.stop();
 
                 var errorCode = this.error ? this.error.code : '';
                 console.log('Html5 Video error code: ' + errorCode);
@@ -1212,10 +1191,15 @@
                     errorMsg += " Please ensure there is an open tuner availalble.";
                 }
 
+                if (errorCode) {
+                    errorMsg += " Error code: " + errorCode;
+                }
+
                 Dashboard.alert({
                     title: 'Video Error',
                     message: errorMsg
                 });
+
 
             }).on("click.mediaplayerevent", function (e) {
 

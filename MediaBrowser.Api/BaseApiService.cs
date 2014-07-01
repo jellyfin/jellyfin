@@ -159,7 +159,7 @@ namespace MediaBrowser.Api
             return libraryManager.GetPerson(DeSlugPersonName(name, libraryManager));
         }
 
-        protected IList<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager, string parentId = null)
+        protected IEnumerable<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager, string parentId = null)
         {
             if (!string.IsNullOrEmpty(parentId))
             {
@@ -169,7 +169,7 @@ namespace MediaBrowser.Api
                 {
                     var user = userManager.GetUserById(userId.Value);
 
-                    return folder.GetRecursiveChildren(user).ToList();
+                    return folder.GetRecursiveChildren(user);
                 }
 
                 return folder.GetRecursiveChildren();
@@ -178,7 +178,7 @@ namespace MediaBrowser.Api
             {
                 var user = userManager.GetUserById(userId.Value);
 
-                return userManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user, null);
+                return userManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user);
             }
 
             return libraryManager.RootFolder.GetRecursiveChildren();
@@ -239,7 +239,8 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.GetRecursiveChildren(i => i is Game)
+            return libraryManager.RootFolder.GetRecursiveChildren()
+                .OfType<Game>()
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault(i =>

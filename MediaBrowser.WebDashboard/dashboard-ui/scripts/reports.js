@@ -27,6 +27,7 @@
                         {},
                         { name: 'Series', sortField: 'SeriesSortName,SortName' },
                         { name: 'Season', sortField: 'SortName' },
+                        { name: 'Season Number', sortField: 'IndexNumber' },
                         { name: 'Date Added', sortField: 'DateCreated,SortName' }
                     ];
                 }
@@ -260,6 +261,7 @@
                         html += item.ParentIndexNumber == null ? '' : item.ParentIndexNumber;
                         break;
                     }
+                case 'Season Number':
                 case 'Track':
                     {
                         html += item.IndexNumber == null ? '' : item.IndexNumber;

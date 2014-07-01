@@ -46,7 +46,7 @@
         Dashboard.getCurrentUser().done(function (user) {
 
             renderImage(page, item, user);
-            
+
             setInitialCollapsibleState(page, item, context, user);
             renderDetails(page, item, context);
             LibraryBrowser.renderDetailPageBackdrop(page, item);
@@ -138,9 +138,9 @@
 
         Dashboard.hideLoadingMsg();
     }
-    
+
     function renderImage(page, item, user) {
-        
+
         var imageHref = user.Configuration.IsAdministrator ? "edititemimages.html?id=" + item.Id : "";
 
         $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, imageHref));
@@ -655,7 +655,7 @@
         }
 
         if (item.Studios.length) {
-            html += ' on <a class="textlink" href="itembynamedetails.html?context=' + context + '&studio=' + ApiClient.encodeName(item.Studios[0].Name) + '">' + item.Studios[0].Name + '</a>';
+            html += ' on <a class="textlink" href="itembynamedetails.html?context=' + context + '&id=' + item.Studios[0].Id + '">' + item.Studios[0].Name + '</a>';
         }
 
         if (html) {
@@ -890,7 +890,7 @@
     }
 
     function renderUserDataIcons(page, item) {
-        
+
         $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
 
@@ -1193,7 +1193,7 @@
                 if (stream.IsAnamorphic != null) {
                     attributes.push(createAttribute("Anamorphic", (stream.IsAnamorphic ? 'Yes' : 'No')));
                 }
-                
+
                 attributes.push(createAttribute("Interlaced", (stream.IsInterlaced ? 'Yes' : 'No')));
             }
 

@@ -59,10 +59,11 @@ namespace MediaBrowser.Api.Playback.Hls
         /// Processes the request.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <param name="isLive">if set to <c>true</c> [is live].</param>
         /// <returns>System.Object.</returns>
-        protected object ProcessRequest(StreamRequest request)
+        protected object ProcessRequest(StreamRequest request, bool isLive)
         {
-            return ProcessRequestAsync(request).Result;
+            return ProcessRequestAsync(request, isLive).Result;
         }
 
         private static readonly SemaphoreSlim FfmpegStartLock = new SemaphoreSlim(1, 1);
@@ -70,13 +71,12 @@ namespace MediaBrowser.Api.Playback.Hls
         /// Processes the request async.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <param name="isLive">if set to <c>true</c> [is live].</param>
         /// <returns>Task{System.Object}.</returns>
-        /// <exception cref="ArgumentException">
-        /// A video bitrate is required
+        /// <exception cref="ArgumentException">A video bitrate is required
         /// or
-        /// An audio bitrate is required
-        /// </exception>
-        private async Task<object> ProcessRequestAsync(StreamRequest request)
+        /// An audio bitrate is required</exception>
+        private async Task<object> ProcessRequestAsync(StreamRequest request, bool isLive)
         {
             var cancellationTokenSource = new CancellationTokenSource();
 
@@ -110,12 +110,29 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        await WaitForMinimumSegmentCount(playlist, GetSegmentWait(), cancellationTokenSource.Token).ConfigureAwait(false);
+                        var waitCount = isLive ? 1 : GetSegmentWait();
+                        await WaitForMinimumSegmentCount(playlist, waitCount, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
                 finally
                 {
                     FfmpegStartLock.Release();
+                }
+            }
+
+            if (isLive)
+            {
+                //var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
+
+                //file = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, file);
+
+                try
+                {
+                    return ResultFactory.GetStaticFileResult(Request, playlist, FileShare.ReadWrite);
+                }
+                finally
+                {
+                    ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
                 }
             }
 
@@ -188,16 +205,18 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected async Task WaitForMinimumSegmentCount(string playlist, int segmentCount, CancellationToken cancellationToken)
         {
-            var count = 0;
+            Logger.Debug("Waiting for {0} segments in {1}", segmentCount, playlist);
 
-            // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
-            using (var fileStream = FileSystem.GetFileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+            while (true)
             {
-                using (var reader = new StreamReader(fileStream))
+                // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
+                using (var fileStream = FileSystem.GetFileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {
-                    while (true)
+                    using (var reader = new StreamReader(fileStream))
                     {
-                        if (!reader.EndOfStream)
+                        var count = 0;
+
+                        while (!reader.EndOfStream)
                         {
                             var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
@@ -206,11 +225,12 @@ namespace MediaBrowser.Api.Playback.Hls
                                 count++;
                                 if (count >= segmentCount)
                                 {
+                                    Logger.Debug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
                                     return;
                                 }
                             }
                         }
-                        await Task.Delay(25, cancellationToken).ConfigureAwait(false);
+                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
@@ -229,7 +249,7 @@ namespace MediaBrowser.Api.Playback.Hls
             
             var itsOffsetMs = hlsVideoRequest == null
                                        ? 0
-                                       : ((GetHlsVideoStream)state.VideoRequest).TimeStampOffsetMs;
+                                       : hlsVideoRequest.TimeStampOffsetMs;
 
             var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds.ToString(UsCulture));
 
@@ -240,7 +260,15 @@ namespace MediaBrowser.Api.Playback.Hls
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
-            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9} -y \"{10}\"",
+            var baseUrlParam = string.Empty;
+
+            if (state.Request is GetLiveHlsStream)
+            {
+                baseUrlParam = string.Format(" -hls_base_url \"{0}/\"",
+                    "hls/" + Path.GetFileNameWithoutExtension(outputPath));
+            }
+
+            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9}{10} -y \"{11}\"",
                 itsOffset,
                 inputModifier,
                 GetInputArgument(state),
@@ -251,6 +279,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 state.SegmentLength.ToString(UsCulture),
                 startNumberParam,
                 state.HlsListSize.ToString(UsCulture),
+                baseUrlParam,
                 outputPath
                 ).Trim();
 
