@@ -134,6 +134,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public virtual bool IsHiddenFromUser(User user)
+        {
+            return false;
+        }
+
         [IgnoreDataMember]
         public virtual bool IsOwnedItem
         {

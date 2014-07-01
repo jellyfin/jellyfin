@@ -809,7 +809,10 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (filter == null || filter(child))
                     {
-                        list.Add(child);
+                        if (!child.IsHiddenFromUser(user))
+                        {
+                            list.Add(child);
+                        }
                     }
 
                     if (recursive && child.IsFolder)

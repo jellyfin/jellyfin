@@ -72,6 +72,7 @@ namespace MediaBrowser.Model.Configuration
         public UnratedItem[] BlockUnratedItems { get; set; }
 
         public SubtitlePlaybackMode SubtitleMode { get; set; }
+        public bool DisplayCollectionsView { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
@@ -92,6 +93,8 @@ namespace MediaBrowser.Model.Configuration
             BlockUnratedItems = new UnratedItem[] { };
 
             ExcludeFoldersFromGrouping = new string[] { };
+
+            DisplayCollectionsView = true;
         }
     }
 }

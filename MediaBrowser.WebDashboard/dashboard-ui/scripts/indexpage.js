@@ -219,7 +219,7 @@
                     showTitle: true,
                     centerText: true,
                     lazy: true,
-                    preferThumb: true,
+                    autoThumb: true,
                     context: 'home'
                 });
                 html += '</div>';

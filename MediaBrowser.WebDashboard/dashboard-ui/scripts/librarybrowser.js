@@ -570,7 +570,29 @@
 
                 var downloadHeight = 576;
 
-                if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
+                if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.5) {
+
+                    height = 400;
+                    width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
+
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                        type: "Primary",
+                        height: height,
+                        width: width,
+                        tag: item.ImageTags.Primary
+                    });
+
+                }
+                else if (options.autoThumb && item.ImageTags && item.ImageTags.Thumb) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Thumb",
+                        maxWidth: downloadHeight,
+                        tag: item.ImageTags.Thumb
+                    });
+
+                }
+                else if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Backdrop",

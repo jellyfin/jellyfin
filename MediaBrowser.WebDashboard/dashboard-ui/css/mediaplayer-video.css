@@ -40,7 +40,7 @@
 .videoTopControls {
     padding: .7em 1em;
     background-color: rgba(0, 0, 0, .5);
-    position: fixed;
+    position: absolute;
     left: 0;
     top: 0;
     right: 0;
@@ -50,7 +50,6 @@
 .videoAdvancedControls {
     text-align: right;
     vertical-align: top;
-    float: right;
 }
 
 .videoControls .currentTime {

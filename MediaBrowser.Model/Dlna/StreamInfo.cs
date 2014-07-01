@@ -305,8 +305,14 @@ namespace MediaBrowser.Model.Dlna
                 {
                     int? totalBitrate = TargetTotalBitrate;
 
+                    double totalSeconds = RunTimeTicks.Value;
+                    // Convert to ms
+                    totalSeconds /= 10000;
+                    // Convert to seconds
+                    totalSeconds /= 1000;
+
                     return totalBitrate.HasValue ?
-                        Convert.ToInt64(totalBitrate.Value * TimeSpan.FromTicks(RunTimeTicks.Value).TotalSeconds) :
+                        Convert.ToInt64(totalBitrate.Value * totalSeconds) :
                         (long?)null;
                 }
 
@@ -375,11 +381,14 @@ namespace MediaBrowser.Model.Dlna
                         Height = videoStream.Height.Value
                     };
 
+                    double? maxWidth = MaxWidth.HasValue ? (double)MaxWidth.Value : (double?)null;
+                    double? maxHeight = MaxHeight.HasValue ? (double)MaxHeight.Value : (double?)null;
+
                     ImageSize newSize = DrawingUtils.Resize(size,
                         null,
                         null,
-                        MaxWidth,
-                        MaxHeight);
+                        maxWidth,
+                        maxHeight);
 
                     return Convert.ToInt32(newSize.Width);
                 }
@@ -402,11 +411,14 @@ namespace MediaBrowser.Model.Dlna
                         Height = videoStream.Height.Value
                     };
 
+                    double? maxWidth = MaxWidth.HasValue ? (double)MaxWidth.Value : (double?)null;
+                    double? maxHeight = MaxHeight.HasValue ? (double)MaxHeight.Value : (double?)null;
+
                     ImageSize newSize = DrawingUtils.Resize(size,
                         null,
                         null,
-                        MaxWidth,
-                        MaxHeight);
+                        maxWidth,
+                        maxHeight);
 
                     return Convert.ToInt32(newSize.Height);
                 }

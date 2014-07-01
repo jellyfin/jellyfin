@@ -4,13 +4,13 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MoreLinq;
 
 namespace MediaBrowser.Server.Implementations.Collections
 {
@@ -25,6 +25,12 @@ namespace MediaBrowser.Server.Implementations.Collections
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
+        }
+
+        public Folder GetCollectionsFolder(string userId)
+        {
+            return _libraryManager.RootFolder.Children.Concat(_libraryManager.RootFolder.GetHiddenChildren()).OfType<ManualCollectionsFolder>()
+                .FirstOrDefault();
         }
 
         public async Task<BoxSet> CreateCollection(CollectionCreationOptions options)
@@ -104,8 +110,7 @@ namespace MediaBrowser.Server.Implementations.Collections
                 }
             }
 
-            return _libraryManager.RootFolder.Children.OfType<ManualCollectionsFolder>().FirstOrDefault() ??
-                _libraryManager.RootFolder.GetHiddenChildren().OfType<ManualCollectionsFolder>().FirstOrDefault();
+            return GetCollectionsFolder(string.Empty);
         }
 
         public async Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
