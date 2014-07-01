@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -84,7 +85,7 @@ namespace MediaBrowser.Server.Implementations.Library
             if (user.Configuration.DisplayCollectionsView ||
                 recursiveChildren.OfType<BoxSet>().Any())
             {
-                list.Add(await GetUserView(CollectionType.BoxSets, user, "zzz_" + CollectionType.BoxSets, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(CollectionType.BoxSets, user, CollectionType.BoxSets, cancellationToken).ConfigureAwait(false));
             }
 
             if (query.IncludeExternalContent)
@@ -114,7 +115,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            return list.OrderBy(i => i.SortName);
+            return _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).Cast<Folder>();
         }
 
         private Task<UserView> GetUserView(string type, User user, string sortName, CancellationToken cancellationToken)

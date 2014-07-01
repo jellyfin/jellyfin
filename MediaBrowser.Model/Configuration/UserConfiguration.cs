@@ -93,8 +93,6 @@ namespace MediaBrowser.Model.Configuration
             BlockUnratedItems = new UnratedItem[] { };
 
             ExcludeFoldersFromGrouping = new string[] { };
-
-            DisplayCollectionsView = true;
         }
     }
 }

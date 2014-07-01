@@ -381,7 +381,7 @@ namespace MediaBrowser.Api.DefaultTheme
             var currentUser1 = user;
 
             var ownedEpisodes = series
-                .SelectMany(i => i.GetRecursiveChildren(currentUser1, j => j.LocationType != LocationType.Virtual))
+                .SelectMany(i => i.GetRecursiveChildren(currentUser1).Where(j => j.LocationType != LocationType.Virtual))
                 .OfType<Episode>()
                 .ToList();
 

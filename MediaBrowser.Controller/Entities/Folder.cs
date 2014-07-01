@@ -857,19 +857,6 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.ArgumentNullException"></exception>
         public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
         {
-            return GetRecursiveChildren(user, null, includeLinkedChildren);
-        }
-
-        /// <summary>
-        /// Gets the recursive children.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="filter">The filter.</param>
-        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
-        /// <returns>IList{BaseItem}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public IList<BaseItem> GetRecursiveChildren(User user, Func<BaseItem, bool> filter, bool includeLinkedChildren = true)
-        {
             if (user == null)
             {
                 throw new ArgumentNullException("user");
@@ -877,7 +864,7 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, true, filter);
+            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, true, null);
 
             return hasLinkedChildren ? list.DistinctBy(i => i.Id).ToList() : list;
         }
@@ -888,19 +875,9 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IList{BaseItem}.</returns>
         public IList<BaseItem> GetRecursiveChildren()
         {
-            return GetRecursiveChildren(i => true);
-        }
-
-        /// <summary>
-        /// Gets the recursive children.
-        /// </summary>
-        /// <param name="filter">The filter.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        public IList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter)
-        {
             var list = new List<BaseItem>();
 
-            AddChildrenToList(list, true, filter);
+            AddChildrenToList(list, true, null);
 
             return list;
         }

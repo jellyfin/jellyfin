@@ -18,11 +18,17 @@ namespace MediaBrowser.Controller.Entities
             switch (ViewType)
             {
                 case CollectionType.Games:
-                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren)).OfType<GameSystem>();
+                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
+                        .OfType<GameSystem>();
                 case CollectionType.BoxSets:
-                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren)).OfType<BoxSet>();
+                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
+                        .OfType<BoxSet>();
                 case CollectionType.TvShows:
-                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren)).OfType<Series>();
+                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
+                        .OfType<Series>();
+                case CollectionType.Trailers:
+                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
+                        .OfType<Trailer>();
                 default:
                     return mediaFolders.SelectMany(i => i.GetChildren(user, includeLinkedChildren));
             }

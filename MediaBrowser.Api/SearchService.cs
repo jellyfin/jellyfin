@@ -192,14 +192,14 @@ namespace MediaBrowser.Api
             {
                 result.Series = season.Series.Name;
 
-                result.EpisodeCount = season.GetRecursiveChildren(i => i is Episode).Count;
+                result.EpisodeCount = season.GetRecursiveChildren().Count(i => i is Episode);
             }
 
             var series = item as Series;
 
             if (series != null)
             {
-                result.EpisodeCount = series.GetRecursiveChildren(i => i is Episode).Count;
+                result.EpisodeCount = series.GetRecursiveChildren().Count(i => i is Episode);
             }
 
             var album = item as MusicAlbum;

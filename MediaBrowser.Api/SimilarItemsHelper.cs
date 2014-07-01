@@ -78,8 +78,8 @@ namespace MediaBrowser.Api
             var fields = request.GetItemFields().ToList();
 
             var inputItems = user == null
-                                 ? libraryManager.RootFolder.GetRecursiveChildren(i => i.Id != item.Id)
-                                 : user.RootFolder.GetRecursiveChildren(user, i => i.Id != item.Id);
+                                 ? libraryManager.RootFolder.GetRecursiveChildren().Where(i => i.Id != item.Id)
+                                 : user.RootFolder.GetRecursiveChildren(user).Where(i => i.Id != item.Id);
 
             var items = GetSimilaritems(item, inputItems.Where(includeInSearch), getSimilarityScore)
                 .ToList();

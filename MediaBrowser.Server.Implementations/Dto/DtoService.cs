@@ -328,7 +328,8 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (!string.IsNullOrEmpty(item.Album))
             {
                 var parentAlbum = _libraryManager.RootFolder
-                    .GetRecursiveChildren(i => i is MusicAlbum)
+                    .GetRecursiveChildren()
+                    .Where(i => i is MusicAlbum)
                     .FirstOrDefault(i => string.Equals(i.Name, item.Album, StringComparison.OrdinalIgnoreCase));
 
                 if (parentAlbum != null)
@@ -539,6 +540,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (dictionary.TryGetValue(studio, out entity))
                 {
+                    studioDto.Id = entity.Id.ToString("N");
                     studioDto.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary);
                 }
 
@@ -1248,7 +1250,8 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
             else
             {
-                children = folder.GetRecursiveChildren(user, i => !i.IsFolder && i.LocationType != LocationType.Virtual);
+                children = folder.GetRecursiveChildren(user)
+                    .Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual);
             }
 
             // Loop through each recursive child

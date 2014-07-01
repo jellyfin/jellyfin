@@ -22,22 +22,11 @@ namespace MediaBrowser.Api.Playback.Hls
     [Api(Description = "Gets a video stream using HTTP live streaming.")]
     public class GetMasterHlsVideoStream : VideoStreamRequest
     {
-        [ApiMember(Name = "BaselineStreamAudioBitRate", Description = "Optional. Specify the audio bitrate for the baseline stream.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? BaselineStreamAudioBitRate { get; set; }
-
-        [ApiMember(Name = "AppendBaselineStream", Description = "Optional. Whether or not to include a baseline audio-only stream in the master playlist.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool AppendBaselineStream { get; set; }
     }
 
     [Route("/Videos/{Id}/main.m3u8", "GET")]
     [Api(Description = "Gets a video stream using HTTP live streaming.")]
     public class GetMainHlsVideoStream : VideoStreamRequest
-    {
-    }
-
-    [Route("/Videos/{Id}/baseline.m3u8", "GET")]
-    [Api(Description = "Gets a video stream using HTTP live streaming.")]
-    public class GetBaselineHlsVideoStream : VideoStreamRequest
     {
     }
 
@@ -73,16 +62,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
         public object Get(GetDynamicHlsVideoSegment request)
         {
-            if (string.Equals("baseline", request.PlaylistId, StringComparison.OrdinalIgnoreCase))
-            {
-                return GetDynamicSegment(request, false).Result;
-            }
-
-            return GetDynamicSegment(request, true).Result;
+            return GetDynamicSegment(request).Result;
         }
 
         private static readonly SemaphoreSlim FfmpegStartLock = new SemaphoreSlim(1, 1);
-        private async Task<object> GetDynamicSegment(GetDynamicHlsVideoSegment request, bool isMain)
+        private async Task<object> GetDynamicSegment(GetDynamicHlsVideoSegment request)
         {
             if ((request.StartTimeTicks ?? 0) > 0)
             {
@@ -322,7 +306,9 @@ namespace MediaBrowser.Api.Playback.Hls
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
             // Main stream
-            var playlistUrl = "main.m3u8" + queryString;
+            var playlistUrl = (state.RunTimeTicks ?? 0) > 0 ? "main.m3u8" : "live.m3u8";
+            playlistUrl += queryString;
+
             AppendPlaylist(builder, playlistUrl, totalBitrate);
 
             if (state.VideoRequest.VideoBitRate.HasValue)
@@ -381,13 +367,6 @@ namespace MediaBrowser.Api.Playback.Hls
         public object Get(GetMainHlsVideoStream request)
         {
             var result = GetPlaylistAsync(request, "main").Result;
-
-            return result;
-        }
-
-        public object Get(GetBaselineHlsVideoStream request)
-        {
-            var result = GetPlaylistAsync(request, "baseline").Result;
 
             return result;
         }
@@ -506,14 +485,6 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.String.</returns>
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
-            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
-
-            var itsOffsetMs = hlsVideoRequest == null
-                                       ? 0
-                                       : ((GetHlsVideoStream)state.VideoRequest).TimeStampOffsetMs;
-
-            var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds.ToString(UsCulture));
-
             var threads = GetNumberOfThreads(state, false);
 
             var inputModifier = GetInputModifier(state);
@@ -521,8 +492,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
-            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} -flags -global_header {6} -hls_time {7} -start_number {8} -hls_list_size {9} -y \"{10}\"",
-                itsOffset,
+            var args = string.Format("{0} -i {1} -map_metadata -1 -threads {2} {3} {4} -flags -global_header {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
                 inputModifier,
                 GetInputArgument(state),
                 threads,

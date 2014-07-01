@@ -32,6 +32,12 @@ namespace MediaBrowser.Api.Playback.Hls
         public int TimeStampOffsetMs { get; set; }
     }
 
+    [Route("/Videos/{Id}/live.m3u8", "GET")]
+    [Api(Description = "Gets a video stream using HTTP live streaming.")]
+    public class GetLiveHlsStream : VideoStreamRequest
+    {
+    }
+    
     /// <summary>
     /// Class GetHlsVideoSegment
     /// </summary>
@@ -105,7 +111,12 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.Object.</returns>
         public object Get(GetHlsVideoStream request)
         {
-            return ProcessRequest(request);
+            return ProcessRequest(request, false);
+        }
+
+        public object Get(GetLiveHlsStream request)
+        {
+            return ProcessRequest(request, true);
         }
 
         /// <summary>

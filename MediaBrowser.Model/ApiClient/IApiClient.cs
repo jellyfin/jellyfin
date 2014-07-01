@@ -217,6 +217,7 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the additional parts.
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
+        /// <param name="userId">The user identifier.</param>
         /// <returns>Task{BaseItemDto[]}.</returns>
         Task<ItemsResult> GetAdditionalParts(string itemId, string userId);
         
@@ -241,6 +242,12 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>Task{SessionInfoDto[]}.</returns>
         Task<SessionInfoDto[]> GetClientSessionsAsync(SessionQuery query);
 
+        /// <summary>
+        /// Gets the client session asynchronous.
+        /// </summary>
+        /// <returns>Task{SessionInfoDto}.</returns>
+        Task<SessionInfoDto> GetCurrentSessionAsync();
+        
         /// <summary>
         /// Gets the item counts async.
         /// </summary>
