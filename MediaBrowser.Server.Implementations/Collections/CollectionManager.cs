@@ -29,7 +29,7 @@ namespace MediaBrowser.Server.Implementations.Collections
 
         public Folder GetCollectionsFolder(string userId)
         {
-            return _libraryManager.RootFolder.Children.Concat(_libraryManager.RootFolder.GetHiddenChildren()).OfType<ManualCollectionsFolder>()
+            return _libraryManager.RootFolder.Children.Concat(_libraryManager.RootFolder).OfType<ManualCollectionsFolder>()
                 .FirstOrDefault();
         }
 

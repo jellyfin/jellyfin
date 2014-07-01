@@ -242,7 +242,7 @@
 
         var promise3 = ApiClient.getParentalRatings();
 
-        var promise4 = $.getJSON(ApiClient.getUrl("Library/MediaFolders"));
+        var promise4 = $.getJSON(ApiClient.getUrl("Library/MediaFolders", {IsHidden: false}));
 
         var promise5 = $.getJSON(ApiClient.getUrl("Channels"));
 

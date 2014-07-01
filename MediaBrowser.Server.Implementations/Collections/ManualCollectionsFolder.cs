@@ -24,7 +24,7 @@ namespace MediaBrowser.Server.Implementations.Collections
         {
             get
             {
-                return !ActualChildren.Any() || base.IsHidden;
+                return true;
             }
         }
 

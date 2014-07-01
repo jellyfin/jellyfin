@@ -194,5 +194,11 @@
     "LabelCurrentPath": "Chemin actuel:",
     "HeaderSelectMediaPath": "Select Media Path",
     "ButtonNetwork": "R\u00e9seau",
-    "MessageDirectoryPickerInstruction": "Network paths can be entered manually in the event the Network button fails to locate your devices. For example, {0} or {1}."
+    "MessageDirectoryPickerInstruction": "Network paths can be entered manually in the event the Network button fails to locate your devices. For example, {0} or {1}.",
+    "HeaderMenu": "Menu",
+    "ButtonOpen": "Open",
+    "ButtonOpenInNewTab": "Open in new tab",
+    "ButtonShuffle": "Shuffle",
+    "ButtonInstantMix": "Instant mix",
+    "ButtonResume": "Resume"
 }

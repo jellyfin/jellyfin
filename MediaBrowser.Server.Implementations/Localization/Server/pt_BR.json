@@ -821,5 +821,19 @@
     "TitleRemoteControl": "Controle Remoto",
     "OptionLatestTvRecordings": "\u00daltimas grava\u00e7\u00f5es",
     "LabelProtocolInfo": "Informa\u00e7\u00e3o do protocolo:",
-    "LabelProtocolInfoHelp": "O valor que ser\u00e1 usado ao responder os pedidos GetProtocolInfo do dispositivo."
+    "LabelProtocolInfoHelp": "O valor que ser\u00e1 usado ao responder os pedidos GetProtocolInfo do dispositivo.",
+    "TabXbmcMetadata": "Xbmc",
+    "HeaderXbmcMetadataHelp": "O Media Browser inclui suporte nativo aos metadados Nfo e Imagens do Xbmc. Para ativar ou desativar os metadados do Xbmc, use a aba Avan\u00e7ado para configurar as op\u00e7\u00f5es para seus tipos de m\u00eddias.",
+    "LabelXbmcMetadataUser": "Adicionar dados de monitora\u00e7\u00e3o do usu\u00e1rio para nfo`s para:",
+    "LabelXbmcMetadataUserHelp": "Ativar esta op\u00e7\u00e3o para manter dados de monitora\u00e7\u00e3o em sincronia entre o Media Browser e o Xbmc.",
+    "LabelXbmcMetadataDateFormat": "Formato da data de lan\u00e7amento:",
+    "LabelXbmcMetadataDateFormatHelp": "Todas as datas dentro dos nfo`s ser\u00e3o lidas e gravadas para usar este formato.",
+    "LabelXbmcMetadataSaveImagePaths": "Salvar o caminho da imagem dentro dos arquivos nfo.",
+    "LabelXbmcMetadataSaveImagePathsHelp": "Esta op\u00e7\u00e3o \u00e9 recomendada se possuir nomes de arquivos de imagem que n\u00e3o est\u00e3o de acordo com as recomenda\u00e7\u00f5es do Xbmc.",
+    "LabelXbmcMetadataEnablePathSubstitution": "Ativar substitui\u00e7\u00e3o de caminho",
+    "LabelXbmcMetadataEnablePathSubstitutionHelp": "Ativa a substitui\u00e7\u00e3o do caminho da imagem usando as configura\u00e7\u00f5es de suvbstitui\u00e7\u00e3o de caminho do servidor.",
+    "LabelXbmcMetadataEnablePathSubstitutionHelp2": "Ver substitui\u00e7\u00e3o de caminho.",
+    "LabelGroupChannelsIntoViews": "Exibir os seguintes canais dentro de minhas visualiza\u00e7\u00f5es:",
+    "LabelGroupChannelsIntoViewsHelp": "Se ativado, estes canais ser\u00e3o exibidos imediatamente ao lado de outras visualiza\u00e7\u00f5es. Se desativado, eles ser\u00e3o exibidos dentro de uma visualiza\u00e7\u00e3o separada de Canais.",
+    "LabelDisplayCollectionsView": "Display a Collections view to show movie collections"
 }

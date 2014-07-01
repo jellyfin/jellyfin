@@ -235,12 +235,20 @@
             html += '<li><a href="' + posterItem.href + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
             html += '<li><a href="' + posterItem.href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
 
+            if (user.Configuration.IsAdministrator && commands.indexOf('edit') != -1) {
+                html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
+            }
+
             if (MediaController.canPlay(item)) {
                 html += '<li data-icon="play"><a href="#" class="btnPlay" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlay') + '</a></li>';
             }
 
             if (item.UserData.PlaybackPositionTicks && item.MediaType != "Audio" && !item.IsFolder) {
                 html += '<li data-icon="play"><a href="#" class="btnResume" data-ticks="' + item.UserData.PlaybackPositionTicks + '" data-itemid="' + itemId + '">' + Globalize.translate('ButtonResume') + '</a></li>';
+            }
+
+            if (commands.indexOf('trailer') != -1) {
+                html += '<li data-icon="video"><a href="#" class="btnPlayTrailer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayTrailer') + '</a></li>';
             }
 
             if (MediaController.canQueueMediaType(item.MediaType)) {
@@ -253,14 +261,6 @@
 
             if (item.IsFolder || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
                 html += '<li data-icon="recycle"><a href="#" class="btnShuffle" data-itemid="' + itemId + '">' + Globalize.translate('ButtonShuffle') + '</a></li>';
-            }
-
-            if (commands.indexOf('trailer') != -1) {
-                html += '<li data-icon="video"><a href="#" class="btnPlayTrailer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayTrailer') + '</a></li>';
-            }
-
-            if (user.Configuration.IsAdministrator && commands.indexOf('edit') != -1) {
-                html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
             }
 
             html += '</ul>';

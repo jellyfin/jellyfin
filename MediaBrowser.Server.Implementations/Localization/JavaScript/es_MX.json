@@ -194,5 +194,11 @@
     "LabelCurrentPath": "Trayectoria actual:",
     "HeaderSelectMediaPath": "Seleccionar trayectoria a medios",
     "ButtonNetwork": "Red",
-    "MessageDirectoryPickerInstruction": "Las trayectorias de red pueden ser ingresadas manualmente en caso de que el bot\u00f3n de Red no pueda localizar sus dispositivos. Por ejemplo, {0} or {1}."
+    "MessageDirectoryPickerInstruction": "Las trayectorias de red pueden ser ingresadas manualmente en caso de que el bot\u00f3n de Red no pueda localizar sus dispositivos. Por ejemplo, {0} or {1}.",
+    "HeaderMenu": "Menu",
+    "ButtonOpen": "Open",
+    "ButtonOpenInNewTab": "Open in new tab",
+    "ButtonShuffle": "Shuffle",
+    "ButtonInstantMix": "Instant mix",
+    "ButtonResume": "Resume"
 }

@@ -264,7 +264,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public IEnumerable<BaseItem> Children
         {
-            get { return ActualChildren.Where(i => !i.IsHidden); }
+            get { return ActualChildren; }
         }
 
         /// <summary>
@@ -1100,11 +1100,6 @@ namespace MediaBrowser.Controller.Entities
         {
             return GetRecursiveChildren(user).Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual)
                 .All(i => i.IsUnplayed(user));
-        }
-
-        public IEnumerable<BaseItem> GetHiddenChildren()
-        {
-            return ActualChildren.Where(i => i.IsHidden);
         }
     }
 }
