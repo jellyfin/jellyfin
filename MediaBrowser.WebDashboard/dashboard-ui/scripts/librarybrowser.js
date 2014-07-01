@@ -300,7 +300,7 @@
 
             $('.playFlyout').popup("close").remove();
 
-            var html = '<div data-role="popup" class="playFlyout" data-history="false">';
+            var html = '<div data-role="popup" class="playFlyout" data-history="false" data-theme="a">';
 
             html += '<ul data-role="listview" style="min-width: 180px;">';
             html += '<li data-role="list-divider">Play Menu</li>';
@@ -345,7 +345,8 @@
             var href = LibraryBrowser.getHrefInternal(item);
 
             if (context) {
-                href += "&context=" + context;
+                href += href.indexOf('?') == -1 ? "?context=" : "&context=";
+                href += context;
             }
 
             return href;
@@ -741,7 +742,21 @@
                     cssClass += ' posterItemUserData' + item.UserData.Key;
                 }
 
-                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" data-mediasourcecount="' + mediaSourceCount + '" href="' + href + '">';
+                var itemCommands = [];
+
+                //if (MediaController.canPlay(item)) {
+                //    itemCommands.push('playmenu');
+                //}
+
+                if (item.Type != "Recording" && item.Type != "Program") {
+                    itemCommands.push('edit');
+                }
+
+                if (item.LocalTrailerCount) {
+                    itemCommands.push('trailer');
+                }
+
+                html += '<a data-commands="' + itemCommands.join(',') + '" data-itemid="' + item.Id + '" class="' + cssClass + '" data-mediasourcecount="' + mediaSourceCount + '" href="' + href + '">';
 
                 var style = "";
 

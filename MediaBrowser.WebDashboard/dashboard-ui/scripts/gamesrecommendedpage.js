@@ -23,8 +23,10 @@
                 items: result.Items,
                 transparent: true,
                 borderless: true,
-                shape: 'auto'
-            }));
+                shape: 'auto',
+                lazy: true
+
+            })).trigger('create').createPosterItemMenus();
 
         });
 
@@ -52,8 +54,10 @@
                 items: result.Items,
                 transparent: true,
                 borderless: true,
-                shape: 'auto'
-            }));
+                shape: 'auto',
+                lazy: true
+
+            })).trigger('create').createPosterItemMenus();
 
         });
 

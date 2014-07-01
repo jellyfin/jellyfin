@@ -128,6 +128,10 @@
                 else if (i.CollectionType == "livetv") {
                     itemId = "livetv";
                 }
+                
+                if (i.Type == 'Channel') {
+                    viewMenuCssClass = 'channelsViewMenu';
+                }
 
                 return '<a data-itemid="' + itemId + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink ' + viewMenuCssClass + '" href="' + getItemHref(i) + '">' + i.Name + '</a>';
 

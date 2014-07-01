@@ -847,6 +847,7 @@
 	"LabelXbmcMetadataEnablePathSubstitution": "Enable path substitution",
 	"LabelXbmcMetadataEnablePathSubstitutionHelp": "Enables path substitution of image paths using the server's path substitution settings.",
 	"LabelXbmcMetadataEnablePathSubstitutionHelp2": "See path substitution.",
-	"LabelGroupChannelsIntoViews": "Display the following channels within my views:",
-	"LabelGroupChannelsIntoViewsHelp": "If enabled, these channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view."
+	"LabelGroupChannelsIntoViews": "Display the following channels directly within my views:",
+	"LabelGroupChannelsIntoViewsHelp": "If enabled, these channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
+	"LabelDisplayCollectionsView": "Display a Collections view to show movie collections"
 }

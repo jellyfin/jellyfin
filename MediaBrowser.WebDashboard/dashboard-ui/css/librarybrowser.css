@@ -402,8 +402,8 @@ a.itemTag:hover {
     }
 
 .lnkSibling {
-    position: absolute;
-    top: 0;
+    position: fixed;
+    top: 105px;
     text-decoration: none;
     font-weight: normal!important;
     display: none;

@@ -188,7 +188,6 @@
                     shape: 'autosmall',
                     showTitle: true,
                     centerText: true,
-                    context: 'home',
                     lazy: true
                 });
                 html += '</div>';
@@ -220,7 +219,8 @@
                     showTitle: true,
                     centerText: true,
                     lazy: true,
-                    preferThumb: true
+                    preferThumb: true,
+                    context: 'home'
                 });
                 html += '</div>';
             }

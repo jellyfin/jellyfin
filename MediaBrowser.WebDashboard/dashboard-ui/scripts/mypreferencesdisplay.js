@@ -6,6 +6,7 @@
         $('#chkDisplayUnairedEpisodes', page).checked(user.Configuration.DisplayUnairedEpisodes || false).checkboxradio("refresh");
 
         $('#chkGroupMoviesIntoCollections', page).checked(user.Configuration.GroupMoviesIntoBoxSets || false).checkboxradio("refresh");
+        $('#chkDisplayCollectionView', page).checked(user.Configuration.DisplayCollectionsView || false).checkboxradio("refresh");
 
         ApiClient.getItems(user.Id, {}).done(function (result) {
 
@@ -74,6 +75,8 @@
         user.Configuration.DisplayMissingEpisodes = $('#chkDisplayMissingEpisodes', page).checked();
         user.Configuration.DisplayUnairedEpisodes = $('#chkDisplayUnairedEpisodes', page).checked();
         user.Configuration.GroupMoviesIntoBoxSets = $('#chkGroupMoviesIntoCollections', page).checked();
+
+        user.Configuration.DisplayCollectionsView = $('#chkDisplayCollectionView', page).checked();
 
         user.Configuration.ExcludeFoldersFromGrouping = $(".chkGroupFolder:not(:checked)", page).get().map(function (i) {
 
