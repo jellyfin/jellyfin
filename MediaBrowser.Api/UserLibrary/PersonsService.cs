@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -51,6 +52,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class PersonsService
     /// </summary>
+    [Authenticated]
     public class PersonsService : BaseItemsByNameService<Person>
     {
         /// <summary>

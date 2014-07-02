@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -267,6 +268,7 @@ namespace MediaBrowser.Api.LiveTv
         public string UserId { get; set; }
     }
 
+    [Authenticated]
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;

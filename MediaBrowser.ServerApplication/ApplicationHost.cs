@@ -318,6 +318,13 @@ namespace MediaBrowser.ServerApplication
                 saveConfig = true;
             }
 
+            if (ServerConfigurationManager.Configuration.NotificationOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("notifications", ServerConfigurationManager.Configuration.NotificationOptions);
+                ServerConfigurationManager.Configuration.NotificationOptions = null;
+                saveConfig = true;
+            }
+
             if (saveConfig)
             {
                 ServerConfigurationManager.SaveConfiguration();

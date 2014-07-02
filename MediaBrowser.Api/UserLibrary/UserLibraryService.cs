@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -424,6 +425,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class UserLibraryService
     /// </summary>
+    [Authenticated]
     public class UserLibraryService : BaseApiService
     {
         /// <summary>

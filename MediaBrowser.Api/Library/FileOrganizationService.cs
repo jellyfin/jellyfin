@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.FileOrganization;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
@@ -78,6 +79,7 @@ namespace MediaBrowser.Api.Library
         public bool RememberCorrection { get; set; }
     }
 
+    [Authenticated]
     public class FileOrganizationService : BaseApiService
     {
         private readonly IFileOrganizationService _iFileOrganizationService;

@@ -50,11 +50,11 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Authenticates a User and returns a result indicating whether or not it succeeded
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
         /// <returns>Task{System.Boolean}.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        Task<bool> AuthenticateUser(User user, string password);
+        Task<bool> AuthenticateUser(string username, string password);
 
         /// <summary>
         /// Refreshes metadata for each user

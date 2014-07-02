@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -86,6 +87,7 @@ namespace MediaBrowser.Api.DefaultTheme
         public Guid UserId { get; set; }
     }
 
+    [Authenticated]
     public class DefaultThemeService : BaseApiService
     {
         private readonly IUserManager _userManager;

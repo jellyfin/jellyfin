@@ -269,28 +269,6 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Post(AuthenticateUser request)
         {
-            // No response needed. Will throw an exception on failure.
-            var result = AuthenticateUser(request).Result;
-
-            return result;
-        }
-
-        public object Post(AuthenticateUserByName request)
-        {
-            var user = _userManager.Users.FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
-
-            if (user == null)
-            {
-                throw new ArgumentException(string.Format("User {0} not found.", request.Username));
-            }
-
-            var result = AuthenticateUser(new AuthenticateUser { Id = user.Id, Password = request.Password }).Result;
-
-            return ToOptimizedResult(result);
-        }
-
-        private async Task<AuthenticationResult> AuthenticateUser(AuthenticateUser request)
-        {
             var user = _userManager.GetUserById(request.Id);
 
             if (user == null)
@@ -298,38 +276,21 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
+            return Post(new AuthenticateUserByName
+            {
+                Username = user.Name,
+                Password = request.Password
+            });
+        }
+
+        public object Post(AuthenticateUserByName request)
+        {
             var auth = AuthorizationContext.GetAuthorizationInfo(Request);
 
-            // Login in the old way if the header is missing
-            if (string.IsNullOrEmpty(auth.Client) ||
-                string.IsNullOrEmpty(auth.Device) ||
-                string.IsNullOrEmpty(auth.DeviceId) ||
-                string.IsNullOrEmpty(auth.Version))
-            {
-                var success = await _userManager.AuthenticateUser(user, request.Password).ConfigureAwait(false);
+            var result = _sessionMananger.AuthenticateNewSession(request.Username, request.Password, auth.Client, auth.Version,
+                        auth.DeviceId, auth.Device, Request.RemoteIp).Result;
 
-                if (!success)
-                {
-                    // Unauthorized
-                    throw new UnauthorizedAccessException("Invalid user or password entered.");
-                }
-
-                return new AuthenticationResult
-                {
-                    User = _dtoService.GetUserDto(user)
-                };
-            }
-
-            var session = await _sessionMananger.AuthenticateNewSession(user, request.Password, auth.Client, auth.Version,
-                        auth.DeviceId, auth.Device, Request.RemoteIp).ConfigureAwait(false);
-
-            var result = new AuthenticationResult
-            {
-                User = _dtoService.GetUserDto(user),
-                SessionInfo = _sessionMananger.GetSessionInfoDto(session)
-            };
-
-            return result;
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -353,7 +314,7 @@ namespace MediaBrowser.Api
             }
             else
             {
-                var success = _userManager.AuthenticateUser(user, request.CurrentPassword).Result;
+                var success = _userManager.AuthenticateUser(user.Name, request.CurrentPassword).Result;
 
                 if (!success)
                 {

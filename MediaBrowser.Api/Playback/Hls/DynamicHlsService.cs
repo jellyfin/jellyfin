@@ -65,7 +65,6 @@ namespace MediaBrowser.Api.Playback.Hls
             return GetDynamicSegment(request).Result;
         }
 
-        private static readonly SemaphoreSlim FfmpegStartLock = new SemaphoreSlim(1, 1);
         private async Task<object> GetDynamicSegment(GetDynamicHlsVideoSegment request)
         {
             if ((request.StartTimeTicks ?? 0) > 0)
@@ -90,7 +89,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return await GetSegmentResult(playlistPath, segmentPath, index, cancellationToken).ConfigureAwait(false);
             }
 
-            await FfmpegStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+            await ApiEntryPoint.Instance.TranscodingStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
             try
             {
                 if (File.Exists(segmentPath))
@@ -107,10 +106,11 @@ namespace MediaBrowser.Api.Playback.Hls
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
+                            // TODO: Delete files from other jobs, but not this one
+                            await ApiEntryPoint.Instance.KillTranscodingJobs(state.Request.DeviceId, TranscodingJobType.Hls, FileDeleteMode.None, false).ConfigureAwait(false);
+
                             if (currentTranscodingIndex.HasValue)
                             {
-                                ApiEntryPoint.Instance.KillTranscodingJobs(state.Request.DeviceId, playlistPath, FileDeleteMode.None);
-
                                 DeleteLastFile(playlistPath, 0);
                             }
 
@@ -131,7 +131,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             finally
             {
-                FfmpegStartLock.Release();
+                ApiEntryPoint.Instance.TranscodingStartLock.Release();
             }
 
             Logger.Info("waiting for {0}", segmentPath);

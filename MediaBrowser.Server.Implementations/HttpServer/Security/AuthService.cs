@@ -51,13 +51,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
         private void ValidateUser(IRequest req)
         {
-            User user = null;
-
             //This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(req);
 
-            if (auth != null)
+            if (string.IsNullOrWhiteSpace(auth.Token))
             {
+                // Legacy
+                // TODO: Deprecate this in Oct 2014
+
+                User user = null;
+
                 if (!string.IsNullOrWhiteSpace(auth.UserId))
                 {
                     var userId = auth.UserId;
@@ -65,22 +68,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                     user = UserManager.GetUserById(new Guid(userId));
                 }
 
-                string deviceId = auth.DeviceId;
-                string device = auth.Device;
-                string client = auth.Client;
-                string version = auth.Version;
-
-                if (!string.IsNullOrEmpty(client) && !string.IsNullOrEmpty(deviceId) && !string.IsNullOrEmpty(device) && !string.IsNullOrEmpty(version))
+                if (user == null || user.Configuration.IsDisabled)
                 {
-                    var remoteEndPoint = req.RemoteIp;
-
-                    SessionManager.LogSessionActivity(client, version, deviceId, device, remoteEndPoint, user);
+                    throw new UnauthorizedAccessException("Unauthorized access.");
                 }
             }
-
-            if (user == null || user.Configuration.IsDisabled)
+            else
             {
-                throw new UnauthorizedAccessException("Unauthorized access.");
+                SessionManager.ValidateSecurityToken(auth.Token);
             }
         }
 

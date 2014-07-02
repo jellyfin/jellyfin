@@ -13,7 +13,6 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Library;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using System;
@@ -1955,12 +1954,6 @@ namespace MediaBrowser.Api.Playback
         /// <param name="videoRequest">The video request.</param>
         private void EnforceResolutionLimit(StreamState state, VideoStreamRequest videoRequest)
         {
-            // If enabled, allow whatever the client asks for
-            if (ServerConfigurationManager.Configuration.AllowVideoUpscaling)
-            {
-                return;
-            }
-
             // Switch the incoming params to be ceilings rather than fixed values
             videoRequest.MaxWidth = videoRequest.MaxWidth ?? videoRequest.Width;
             videoRequest.MaxHeight = videoRequest.MaxHeight ?? videoRequest.Height;

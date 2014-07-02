@@ -403,7 +403,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "thirdparty/jquerymobile-1.4.2/jquery.mobile-1.4.2.min.css",
+                                "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.css",
                                 "css/all.css" + versionString
                             };
 
@@ -449,7 +449,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             // jQuery + jQuery mobile
             await AppendResource(memoryStream, "thirdparty/jquery-2.0.3.min.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.2/jquery.mobile-1.4.2.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.js", newLineBytes).ConfigureAwait(false);
 
             await AppendLocalization(memoryStream).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);

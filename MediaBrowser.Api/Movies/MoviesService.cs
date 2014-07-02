@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -64,6 +65,7 @@ namespace MediaBrowser.Api.Movies
     /// <summary>
     /// Class MoviesService
     /// </summary>
+    [Authenticated]
     public class MoviesService : BaseApiService
     {
         /// <summary>

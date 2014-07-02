@@ -66,7 +66,6 @@ namespace MediaBrowser.Api.Playback.Hls
             return ProcessRequestAsync(request, isLive).Result;
         }
 
-        private static readonly SemaphoreSlim FfmpegStartLock = new SemaphoreSlim(1, 1);
         /// <summary>
         /// Processes the request async.
         /// </summary>
@@ -82,6 +81,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var state = await GetState(request, cancellationTokenSource.Token).ConfigureAwait(false);
 
+            if (isLive)
+            {
+                state.Request.StartTimeTicks = null;
+            }
+
             var playlist = state.OutputFilePath;
 
             if (File.Exists(playlist))
@@ -90,7 +94,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             else
             {
-                await FfmpegStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                await ApiEntryPoint.Instance.TranscodingStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
                 try
                 {
                     if (File.Exists(playlist))
@@ -99,6 +103,8 @@ namespace MediaBrowser.Api.Playback.Hls
                     }
                     else
                     {
+                        await ApiEntryPoint.Instance.KillTranscodingJobs(state.Request.DeviceId, TranscodingJobType.Hls, FileDeleteMode.All, false).ConfigureAwait(false);
+                        
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
@@ -116,7 +122,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
                 finally
                 {
-                    FfmpegStartLock.Release();
+                    ApiEntryPoint.Instance.TranscodingStartLock.Release();
                 }
             }
 

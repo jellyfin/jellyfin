@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using ServiceStack;
@@ -130,36 +131,11 @@ namespace MediaBrowser.Api.Library
         /// <value><c>true</c> if [refresh library]; otherwise, <c>false</c>.</value>
         public bool RefreshLibrary { get; set; }
     }
-
-    [Route("/Library/Downloaded", "POST")]
-    public class ReportContentDownloaded : IReturnVoid
-    {
-        [ApiMember(Name = "Path", Description = "The path being downloaded to.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Path { get; set; }
-
-        [ApiMember(Name = "ImageUrl", Description = "Optional thumbnail image url of the content.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string ImageUrl { get; set; }
-
-        [ApiMember(Name = "Name", Description = "The name of the content.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Name { get; set; }
-    }
-
-    [Route("/Library/Downloading", "POST")]
-    public class ReportContentDownloading : IReturnVoid
-    {
-        [ApiMember(Name = "Path", Description = "The path being downloaded to.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Path { get; set; }
-
-        [ApiMember(Name = "ImageUrl", Description = "Optional thumbnail image url of the content.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string ImageUrl { get; set; }
-
-        [ApiMember(Name = "Name", Description = "The name of the content.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Name { get; set; }
-    }
     
     /// <summary>
     /// Class LibraryStructureService
     /// </summary>
+    [Authenticated]
     public class LibraryStructureService : BaseApiService
     {
         /// <summary>

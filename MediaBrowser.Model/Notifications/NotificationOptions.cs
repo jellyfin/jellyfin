@@ -1,6 +1,7 @@
-﻿using MediaBrowser.Model.Extensions;
+﻿using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Extensions;
 
-namespace MediaBrowser.Model.Configuration
+namespace MediaBrowser.Model.Notifications
 {
     public class NotificationOptions
     {

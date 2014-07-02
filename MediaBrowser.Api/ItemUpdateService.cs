@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
 using ServiceStack;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace MediaBrowser.Api
         public string ItemId { get; set; }
     }
 
+    [Authenticated]
     public class ItemUpdateService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;

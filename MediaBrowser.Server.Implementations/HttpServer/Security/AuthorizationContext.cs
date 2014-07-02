@@ -42,7 +42,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 Device = device,
                 DeviceId = deviceId,
                 UserId = userId,
-                Version = version
+                Version = version,
+                Token = httpReq.Headers["X-AUTH-TOKEN"]
             };
         }
 

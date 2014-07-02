@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -46,6 +47,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class ArtistsService
     /// </summary>
+    [Authenticated]
     public class ArtistsService : BaseItemsByNameService<MusicArtist>
     {
         /// <summary>

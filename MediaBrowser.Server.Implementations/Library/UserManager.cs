@@ -121,16 +121,19 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// Authenticates a User and returns a result indicating whether or not it succeeded
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
         /// <returns>Task{System.Boolean}.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public async Task<bool> AuthenticateUser(User user, string password)
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
+        public async Task<bool> AuthenticateUser(string username, string password)
         {
-            if (user == null)
+            if (string.IsNullOrWhiteSpace(username))
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException("username");
             }
+
+            var user = Users.First(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
             if (user.Configuration.IsDisabled)
             {

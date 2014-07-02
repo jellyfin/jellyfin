@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
@@ -86,6 +87,7 @@ namespace MediaBrowser.Api.Library
         public string Id { get; set; }
     }
 
+    [Authenticated]
     public class SubtitleService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
