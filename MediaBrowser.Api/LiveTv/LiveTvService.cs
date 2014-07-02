@@ -280,7 +280,7 @@ namespace MediaBrowser.Api.LiveTv
 
         private void AssertUserCanManageLiveTv()
         {
-            var user = AuthorizationRequestFilterAttribute.GetCurrentUser(Request, _userManager);
+            var user = SessionContext.GetUser(Request);
 
             if (user == null)
             {

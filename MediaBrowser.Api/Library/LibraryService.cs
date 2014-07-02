@@ -470,7 +470,7 @@ namespace MediaBrowser.Api.Library
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var session = GetSession(_sessionManager);
+            var session = GetSession();
 
             if (!session.UserId.HasValue || !_userManager.GetUserById(session.UserId.Value).Configuration.EnableContentDeletion)
             {

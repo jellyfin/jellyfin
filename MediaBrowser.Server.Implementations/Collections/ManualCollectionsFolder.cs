@@ -12,12 +12,8 @@ namespace MediaBrowser.Server.Implementations.Collections
 
         public override bool IsVisible(User user)
         {
-            if (!GetChildren(user, true).Any())
-            {
-                return false;
-            }
-
-            return base.IsVisible(user);
+            return GetChildren(user, true).Any() && 
+                base.IsVisible(user);
         }
 
         public override bool IsHidden

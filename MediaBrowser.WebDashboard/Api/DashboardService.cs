@@ -25,6 +25,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPages
     /// </summary>
     [Route("/dashboard/ConfigurationPages", "GET")]
+    [Route("/web/ConfigurationPages", "GET")]
     public class GetDashboardConfigurationPages : IReturn<List<ConfigurationPageInfo>>
     {
         /// <summary>
@@ -38,6 +39,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPage
     /// </summary>
     [Route("/dashboard/ConfigurationPage", "GET")]
+    [Route("/web/ConfigurationPage", "GET")]
     public class GetDashboardConfigurationPage
     {
         /// <summary>
@@ -50,6 +52,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class GetDashboardResource
     /// </summary>
+    [Route("/web/{ResourceName*}", "GET")]
     [Route("/dashboard/{ResourceName*}", "GET")]
     public class GetDashboardResource
     {

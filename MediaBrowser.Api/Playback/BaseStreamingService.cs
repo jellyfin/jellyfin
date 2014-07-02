@@ -1386,8 +1386,6 @@ namespace MediaBrowser.Api.Playback
                 ParseParams(request);
             }
 
-            var user = AuthorizationRequestFilterAttribute.GetCurrentUser(Request, UserManager);
-
             var url = Request.PathInfo;
 
             if (string.IsNullOrEmpty(request.AudioCodec))
@@ -1408,11 +1406,6 @@ namespace MediaBrowser.Api.Playback
             }
 
             var item = LibraryManager.GetItemById(request.Id);
-
-            if (user != null && item.GetPlayAccess(user) != PlayAccess.Full)
-            {
-                throw new ArgumentException(string.Format("{0} is not allowed to play media.", user.Name));
-            }
 
             List<MediaStream> mediaStreams = null;
 

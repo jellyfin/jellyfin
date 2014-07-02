@@ -1,13 +1,13 @@
-﻿using System.Net.Sockets;
-using System.Runtime.Serialization;
-using Funq;
+﻿using Funq;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Server.Implementations.HttpServer.Security;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
+using ServiceStack.Auth;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
@@ -27,7 +27,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 {
     public class HttpListenerHost : ServiceStackHost, IHttpServer
     {
-        private string ServerName { get; set; }
         private string HandlerPath { get; set; }
         private string DefaultRedirectPath { get; set; }
 
@@ -59,7 +58,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             : base(serviceName, assembliesWithServices)
         {
             DefaultRedirectPath = defaultRedirectPath;
-            ServerName = serviceName;
             HandlerPath = handlerPath;
 
             _logger = logManager.GetLogger("HttpServer");
@@ -95,7 +93,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             container.Adapter = _containerAdapter;
 
             Plugins.Add(new SwaggerFeature());
-            Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization")); 
+            Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization"));
+
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] {
+                new SessionAuthProvider(_containerAdapter.Resolve<ISessionContext>()),
+            }));
+
             HostContext.GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
         }
 
@@ -112,7 +115,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             Config.HandlerFactoryPath = string.IsNullOrEmpty(HandlerPath)
                 ? null
-                : HandlerPath;
+                : "/" + HandlerPath;
 
             Config.MetadataRedirectPath = string.IsNullOrEmpty(HandlerPath)
                 ? "metadata"
@@ -161,8 +164,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             if (Listener == null)
                 Listener = new HttpListener();
 
-            HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
-
             foreach (var prefix in UrlPrefixes)
             {
                 _logger.Info("Adding HttpListener prefix " + prefix);
@@ -172,6 +173,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             IsStarted = true;
             _logger.Info("Starting HttpListner");
             Listener.Start();
+            _logger.Info("HttpListener started");
 
             for (var i = 0; i < _autoResetEvents.Count; i++)
             {
@@ -263,27 +265,27 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                     var localPath = request.Url.LocalPath;
 
-                    if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(localPath, "/" + HandlerPath + "/", StringComparison.OrdinalIgnoreCase))
                     {
                         context.Response.Redirect(DefaultRedirectPath);
                         context.Response.Close();
                         return;
                     }
-                    if (string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(localPath, "/" + HandlerPath, StringComparison.OrdinalIgnoreCase))
                     {
-                        context.Response.Redirect("mediabrowser/" + DefaultRedirectPath);
+                        context.Response.Redirect(HandlerPath + "/" + DefaultRedirectPath);
                         context.Response.Close();
                         return;
                     }
                     if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
                     {
-                        context.Response.Redirect("mediabrowser/" + DefaultRedirectPath);
+                        context.Response.Redirect(HandlerPath + "/" + DefaultRedirectPath);
                         context.Response.Close();
                         return;
                     }
                     if (string.IsNullOrEmpty(localPath))
                     {
-                        context.Response.Redirect("/mediabrowser/" + DefaultRedirectPath);
+                        context.Response.Redirect("/" + HandlerPath + "/" + DefaultRedirectPath);
                         context.Response.Close();
                         return;
                     }
@@ -410,6 +412,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             var req = new ListenerRequest(httpContext, operationName, RequestAttributes.None);
             req.RequestAttributes = req.GetAttributes();
+
             return req;
         }
 
@@ -442,7 +445,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var httpReq = GetRequest(context, operationName);
             var httpRes = httpReq.Response;
+            //var pathInfo = httpReq.PathInfo;
+
             var handler = HttpHandlerFactory.GetHandler(httpReq);
+            //var handler = HttpHandlerFactory.GetHandlerForPathInfo(httpReq.HttpMethod, pathInfo, pathInfo, httpReq.GetPhysicalPath());
 
             var serviceStackHandler = handler as IServiceStackHandler;
             if (serviceStackHandler != null)

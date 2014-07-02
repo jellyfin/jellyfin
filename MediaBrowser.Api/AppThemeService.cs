@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Themes;
 using MediaBrowser.Model.Themes;
 using ServiceStack;
@@ -47,6 +48,7 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Authenticated]
     public class AppThemeService : BaseApiService
     {
         private readonly IAppThemeManager _themeManager;

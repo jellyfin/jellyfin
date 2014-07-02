@@ -25,7 +25,7 @@ namespace MediaBrowser.ServerApplication.Native
         public static void OpenDashboardPage(string page, User loggedInUser, IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
         {
             var url = "http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
-                      appHost.WebApplicationName + "/dashboard/" + page;
+                      appHost.WebApplicationName + "/web/" + page;
 
             OpenUrl(url, logger);
         }

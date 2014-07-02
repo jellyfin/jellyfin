@@ -780,7 +780,7 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, false, null);
+            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, false);
 
             return hasLinkedChildren ? list.DistinctBy(i => i.Id).ToList() : list;
         }
@@ -797,9 +797,8 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <param name="list">The list.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        /// <param name="filter">The filter.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool AddChildrenToList(User user, bool includeLinkedChildren, List<BaseItem> list, bool recursive, Func<BaseItem, bool> filter)
+        private bool AddChildrenToList(User user, bool includeLinkedChildren, List<BaseItem> list, bool recursive)
         {
             var hasLinkedChildren = false;
 
@@ -807,19 +806,16 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (child.IsVisible(user))
                 {
-                    if (filter == null || filter(child))
+                    if (!child.IsHiddenFromUser(user))
                     {
-                        if (!child.IsHiddenFromUser(user))
-                        {
-                            list.Add(child);
-                        }
+                        list.Add(child);
                     }
 
                     if (recursive && child.IsFolder)
                     {
                         var folder = (Folder)child;
 
-                        if (folder.AddChildrenToList(user, includeLinkedChildren, list, true, filter))
+                        if (folder.AddChildrenToList(user, includeLinkedChildren, list, true))
                         {
                             hasLinkedChildren = true;
                         }
@@ -831,11 +827,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 foreach (var child in GetLinkedChildren())
                 {
-                    if (filter != null && !filter(child))
-                    {
-                        continue;
-                    }
-
                     if (child.IsVisible(user))
                     {
                         hasLinkedChildren = true;
@@ -864,7 +855,7 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, true, null);
+            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, true);
 
             return hasLinkedChildren ? list.DistinctBy(i => i.Id).ToList() : list;
         }

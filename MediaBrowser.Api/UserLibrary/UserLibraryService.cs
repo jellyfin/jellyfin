@@ -791,7 +791,7 @@ namespace MediaBrowser.Api.UserLibrary
                 datePlayed = DateTime.ParseExact(request.DatePlayed, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
             }
 
-            var session = GetSession(_sessionManager);
+            var session = GetSession();
 
             var dto = await UpdatePlayedStatus(user, request.Id, true, datePlayed).ConfigureAwait(false);
 
@@ -826,7 +826,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         public void Post(ReportPlaybackStart request)
         {
-            request.SessionId = GetSession(_sessionManager).Id;
+            request.SessionId = GetSession().Id;
 
             var task = _sessionManager.OnPlaybackStart(request);
 
@@ -854,7 +854,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         public void Post(ReportPlaybackProgress request)
         {
-            request.SessionId = GetSession(_sessionManager).Id;
+            request.SessionId = GetSession().Id;
 
             var task = _sessionManager.OnPlaybackProgress(request);
 
@@ -877,7 +877,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         public void Post(ReportPlaybackStopped request)
         {
-            request.SessionId = GetSession(_sessionManager).Id;
+            request.SessionId = GetSession().Id;
 
             var task = _sessionManager.OnPlaybackStopped(request);
 
@@ -899,7 +899,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var session = GetSession(_sessionManager);
+            var session = GetSession();
 
             var dto = await UpdatePlayedStatus(user, request.Id, false, null).ConfigureAwait(false);
 

@@ -228,5 +228,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         }
 
         public string StatusDescription { get; set; }
+
+        public int PaddingLength { get; set; }
     }
 }

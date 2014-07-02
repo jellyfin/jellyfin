@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Persistence;
+﻿using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
@@ -48,6 +49,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class DisplayPreferencesService
     /// </summary>
+    [Authenticated]
     public class DisplayPreferencesService : BaseApiService
     {
         /// <summary>

@@ -333,6 +333,11 @@
             Decorate any type or property with adhoc info
             </summary>
         </member>
+        <member name="T:ServiceStack.IHasResponseStatus">
+            <summary>
+            Contract indication that the Response DTO has a ResponseStatus
+            </summary>
+        </member>
         <member name="T:ServiceStack.Logging.DebugLogFactory">
             <summary>
             Creates a Debug Logger, that logs all messages to: System.Diagnostics.Debug
@@ -605,11 +610,6 @@
             </summary>
             <param name="message">The message.</param>
         </member>
-        <member name="T:ServiceStack.IHasResponseStatus">
-            <summary>
-            Contract indication that the Response DTO has a ResponseStatus
-            </summary>
-        </member>
         <member name="T:ServiceStack.Logging.LogManager">
             <summary>
             Logging API for this library. You can inject your own implementation otherwise
@@ -666,6 +666,12 @@
             <summary>
             Create a typed message from a raw MQ Response artefact
             </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageQueueClient.GetTempQueueName">
+            <summary>
+            Create a temporary Queue for Request / Reply
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:ServiceStack.Messaging.IMessageService">
             <summary>
@@ -1064,6 +1070,11 @@
             Holds the request call context
             </summary>
         </member>
+        <member name="P:ServiceStack.Web.IHttpResult.PaddingLength">
+            <summary>
+            The padding length written with the body, to be added to ContentLength of body
+            </summary>
+        </member>
         <member name="T:ServiceStack.Web.IHttpRequest">
             <summary>
             A thin wrapper around ASP.NET or HttpListener's HttpRequest
@@ -1220,6 +1231,11 @@
         <member name="P:ServiceStack.Web.IResponse.Dto">
             <summary>
             The Response DTO
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IResponse.UseBufferedStream">
+            <summary>
+            Buffer the Response OutputStream so it can be written in 1 batch
             </summary>
         </member>
         <member name="P:ServiceStack.Web.IResponse.IsClosed">
