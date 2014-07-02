@@ -25,6 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
@@ -1138,10 +1139,15 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
+        public void ValidateSecurityToken(string token)
+        {
+
+        }
+
         /// <summary>
         /// Authenticates the new session.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
         /// <param name="clientType">Type of the client.</param>
         /// <param name="appVersion">The application version.</param>
@@ -1149,17 +1155,34 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>Task{SessionInfo}.</returns>
+        /// <exception cref="System.UnauthorizedAccessException">Invalid user or password entered.</exception>
         /// <exception cref="UnauthorizedAccessException"></exception>
-        public async Task<SessionInfo> AuthenticateNewSession(User user, string password, string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint)
+        public async Task<AuthenticationResult> AuthenticateNewSession(string username, string password, string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint)
         {
-            var result = await _userManager.AuthenticateUser(user, password).ConfigureAwait(false);
+            var result = await _userManager.AuthenticateUser(username, password).ConfigureAwait(false);
 
             if (!result)
             {
                 throw new UnauthorizedAccessException("Invalid user or password entered.");
             }
 
-            return await LogSessionActivity(clientType, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
+            var user = _userManager.Users
+                .First(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
+
+            var session = await LogSessionActivity(clientType,
+                appVersion,
+                deviceId,
+                deviceName,
+                remoteEndPoint,
+                user)
+                .ConfigureAwait(false);
+
+            return new AuthenticationResult
+            {
+                User = _dtoService.GetUserDto(user),
+                SessionInfo = GetSessionInfoDto(session),
+                AuthenticationToken = Guid.NewGuid().ToString("N")
+            };
         }
 
         /// <summary>

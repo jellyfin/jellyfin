@@ -1199,11 +1199,9 @@ else if (!IsStorageEnabled()) {
     alert("This browser does not support local storage or is running in private mode. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
 }
 
-
 var ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
 
 $(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
-
 
 $(function () {
 

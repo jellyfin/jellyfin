@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
@@ -41,6 +42,7 @@ namespace MediaBrowser.Api
         public string Ids { get; set; }
     }
 
+    [Authenticated]
     public class VideosService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;

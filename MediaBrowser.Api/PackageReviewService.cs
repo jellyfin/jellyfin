@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
@@ -96,6 +97,7 @@ namespace MediaBrowser.Api
 
     }
 
+    [Authenticated]
     public class PackageReviewService : BaseApiService
     {
         private readonly IHttpClient _httpClient;

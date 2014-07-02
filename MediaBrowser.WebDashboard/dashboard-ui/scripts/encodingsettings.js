@@ -10,8 +10,6 @@
 
         }).checkboxradio('refresh');
         
-        $('#chkAllowUpscaling', page).checked(config.AllowVideoUpscaling).checkboxradio("refresh");
-
         $('#txtDownMixAudioBoost', page).val(config.DownMixAudioBoost);
 
         Dashboard.hideLoadingMsg();
@@ -40,7 +38,6 @@
 
             ApiClient.getServerConfiguration().done(function (config) {
 
-                config.AllowVideoUpscaling = $('#chkAllowUpscaling', form).checked();
                 config.EnableDebugEncodingLogging = $('#chkEnableDebugEncodingLogging', form).checked();
                 config.MediaEncodingQuality = $('.radioEncodingQuality:checked', form).val();
                 config.DownMixAudioBoost = $('#txtDownMixAudioBoost', form).val();

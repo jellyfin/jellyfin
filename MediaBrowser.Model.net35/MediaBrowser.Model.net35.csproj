@@ -124,20 +124,8 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\MetadataPluginType.cs">
       <Link>Configuration\MetadataPluginType.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\NotificationOption.cs">
-      <Link>Configuration\NotificationOption.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\NotificationOptions.cs">
-      <Link>Configuration\NotificationOptions.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\NotificationType.cs">
-      <Link>Configuration\NotificationType.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\PathSubstitution.cs">
       <Link>Configuration\PathSubstitution.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\SendToUserType.cs">
-      <Link>Configuration\SendToUserType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\ServerConfiguration.cs">
       <Link>Configuration\ServerConfiguration.cs</Link>
@@ -619,6 +607,12 @@
     <Compile Include="..\MediaBrowser.Model\Notifications\NotificationLevel.cs">
       <Link>Notifications\NotificationLevel.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\NotificationOption.cs">
+      <Link>Notifications\NotificationOption.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\NotificationOptions.cs">
+      <Link>Notifications\NotificationOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Notifications\NotificationQuery.cs">
       <Link>Notifications\NotificationQuery.cs</Link>
     </Compile>
@@ -634,8 +628,14 @@
     <Compile Include="..\MediaBrowser.Model\Notifications\NotificationsSummary.cs">
       <Link>Notifications\NotificationsSummary.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\NotificationType.cs">
+      <Link>Notifications\NotificationType.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Notifications\NotificationTypeInfo.cs">
       <Link>Notifications\NotificationTypeInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\SendToUserType.cs">
+      <Link>Notifications\SendToUserType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Plugins\BasePluginConfiguration.cs">
       <Link>Plugins\BasePluginConfiguration.cs</Link>

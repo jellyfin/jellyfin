@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Weather;
+﻿using MediaBrowser.Model.Notifications;
+using MediaBrowser.Model.Weather;
 using System;
 
 namespace MediaBrowser.Model.Configuration
@@ -178,8 +179,6 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The encoding quality.</value>
         public EncodingQuality MediaEncodingQuality { get; set; }
 
-        public bool AllowVideoUpscaling { get; set; }
-
         public MetadataOptions[] MetadataOptions { get; set; }
 
         public bool EnableDebugEncodingLogging { get; set; }
@@ -268,10 +267,7 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions(0, 1280) {ItemType = "Season"}
             };
 
-            NotificationOptions = new NotificationOptions();
-
             SubtitleOptions = new SubtitleOptions();
-
             LiveTvOptions = new LiveTvOptions();
             TvFileOrganizationOptions = new TvFileOrganizationOptions();
         }

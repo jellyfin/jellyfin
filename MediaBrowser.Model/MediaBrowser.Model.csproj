@@ -88,11 +88,11 @@
     <Compile Include="Configuration\MetadataOptions.cs" />
     <Compile Include="Configuration\MetadataPluginSummary.cs" />
     <Compile Include="Configuration\MetadataPluginType.cs" />
-    <Compile Include="Configuration\NotificationOption.cs" />
-    <Compile Include="Configuration\NotificationOptions.cs" />
-    <Compile Include="Configuration\NotificationType.cs" />
+    <Compile Include="Notifications\NotificationOption.cs" />
+    <Compile Include="Notifications\NotificationOptions.cs" />
+    <Compile Include="Notifications\NotificationType.cs" />
     <Compile Include="Configuration\PathSubstitution.cs" />
-    <Compile Include="Configuration\SendToUserType.cs" />
+    <Compile Include="Notifications\SendToUserType.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
     <Compile Include="Configuration\SubtitleOptions.cs" />
     <Compile Include="Configuration\UnratedItem.cs" />

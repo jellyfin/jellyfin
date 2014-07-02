@@ -12,15 +12,6 @@
 
         LogPage.startInterval();
 
-        var autoScroll = localStorage.getItem("autoScrollLogPage");
-        
-        if (autoScroll == "true") {
-            LogPage.updateAutoScroll(true);
-        }
-        else if (autoScroll == "false") {
-            LogPage.updateAutoScroll(false);
-        }
-
         ApiClient.getSystemInfo().done(function(systemInfo) {
 
             $('#logPath', page).html(systemInfo.LogPath);
@@ -86,8 +77,6 @@
         
         $('#chkAutoScrollBottom', page).checked(value).checkboxradio('refresh');
         $('#chkAutoScroll', page).checked(value).checkboxradio('refresh');
-        
-        localStorage.setItem("autoScrollLogPage", value.toString());
     }
 };
 

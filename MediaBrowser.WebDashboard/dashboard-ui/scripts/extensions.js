@@ -1,4 +1,4 @@
-﻿function IsStorageEnabled() {
+﻿function IsStorageEnabled(skipRetry) {
 
     if (!window.localStorage) {
         return false;
@@ -6,9 +6,15 @@
     try {
         window.localStorage.setItem("__test", "data");
     } catch (err) {
-        if ((err.name).toUpperCase() == 'QUOTA_EXCEEDED_ERR') {
-            return false;
+
+        if (!skipRetry) {
+            if ((err.name).toUpperCase().indexOf('EXCEEDED') != -1) {
+                window.localStorage.clear();
+                return IsStorageEnabled(true);
+            }
         }
+
+        return false;
     }
     return true;
 }
@@ -110,7 +116,7 @@ var WebNotifications = {
                 });
             }
         }
-        
+
         else if (window.webkitNotifications) {
             if (!webkitNotifications.checkPermission()) {
                 var notif = webkitNotifications.createNotification(data.icon, data.title, data.body);
@@ -279,7 +285,7 @@ function replaceQueryString(url, param, value) {
     if (url.match(re))
         return url.replace(re, '$1' + param + "=" + value + '$2');
     else {
-        
+
         if (url.indexOf('?') == -1) {
             return url + '?' + param + "=" + value;
         }

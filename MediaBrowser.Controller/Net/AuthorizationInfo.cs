@@ -28,5 +28,10 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <value>The version.</value>
         public string Version { get; set; }
+        /// <summary>
+        /// Gets or sets the token.
+        /// </summary>
+        /// <value>The token.</value>
+        public string Token { get; set; }
     }
 }

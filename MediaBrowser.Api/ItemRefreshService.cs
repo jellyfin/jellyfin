@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using ServiceStack;
 using System;
@@ -30,6 +31,7 @@ namespace MediaBrowser.Api
         public string Id { get; set; }
     }
 
+    [Authenticated]
     public class ItemRefreshService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;

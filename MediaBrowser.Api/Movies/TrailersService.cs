@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using ServiceStack;
 
@@ -18,6 +19,7 @@ namespace MediaBrowser.Api.Movies
     /// <summary>
     /// Class TrailersService
     /// </summary>
+    [Authenticated]
     public class TrailersService : BaseApiService
     {
         /// <summary>

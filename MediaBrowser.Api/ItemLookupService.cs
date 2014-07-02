@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -104,6 +105,7 @@ namespace MediaBrowser.Api
         public string Id { get; set; }
     }
 
+    [Authenticated]
     public class ItemLookupService : BaseApiService
     {
         private readonly IProviderManager _providerManager;

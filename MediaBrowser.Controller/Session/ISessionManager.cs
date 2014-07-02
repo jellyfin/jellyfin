@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -206,11 +207,11 @@ namespace MediaBrowser.Controller.Session
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="item">The item.</param>
         void ReportNowViewingItem(string sessionId, BaseItemInfo item);
-        
+
         /// <summary>
         /// Authenticates the new session.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
         /// <param name="clientType">Type of the client.</param>
         /// <param name="appVersion">The application version.</param>
@@ -218,7 +219,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>Task{SessionInfo}.</returns>
-        Task<SessionInfo> AuthenticateNewSession(User user, string password, string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint);
+        Task<AuthenticationResult> AuthenticateNewSession(string username, string password, string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint);
 
         /// <summary>
         /// Reports the capabilities.
@@ -248,5 +249,11 @@ namespace MediaBrowser.Controller.Session
         /// <param name="version">The version.</param>
         /// <returns>SessionInfo.</returns>
         SessionInfo GetSession(string deviceId, string client, string version);
+
+        /// <summary>
+        /// Validates the security token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        void ValidateSecurityToken(string token);
     }
 }

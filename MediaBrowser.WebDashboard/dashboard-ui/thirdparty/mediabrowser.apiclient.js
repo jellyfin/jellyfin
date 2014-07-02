@@ -14,19 +14,19 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         var randomId = '';
         
         if (localStorage) {
-            
+
             //  Since the above is not guaranteed to be unique per device, add a little more
             randomId = localStorage.getItem('randomId');
-            
+
             if (!randomId) {
 
                 randomId = new Date().getTime();
-                localStorage.setItem('randomId', randomId);
+
+                localStorage.setItem('randomId', randomId.toString());
             }
         }
 
         keys.push(randomId);
-
         return MediaBrowser.SHA1(keys.join('|'));
     }
     

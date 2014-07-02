@@ -49,12 +49,20 @@
                 values.SortOrder = query.SortOrder;
             }
 
-            localStorage.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
+            try {
+                localStorage.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
+            } catch (e) {
+                
+            }
         },
 
         saveViewSetting: function (key, value) {
 
-            localStorage.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
+            try {
+                localStorage.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
+            } catch (e) {
+
+            }
         },
 
         getSavedViewSetting: function (key) {
@@ -1276,7 +1284,11 @@
         getPagingHtml: function (query, totalRecordCount, updatePageSizeSetting, pageSizes, showLimit) {
 
             if (query.Limit && updatePageSizeSetting !== false) {
-                localStorage.setItem('pagesize_', query.Limit);
+                try {
+                    localStorage.setItem('pagesize_', query.Limit);
+                } catch (e) {
+
+                }
             }
 
             var html = '';

@@ -24,6 +24,9 @@
     background-color: #000;
     width: 100%;
     height: auto;
+
+    /* Without this the buttons displayed over the video surface will not be clickable in safari. */
+    -webkit-transform-style: preserve-3d
 }
 
 .videoControls {
@@ -107,7 +110,7 @@
     ***************************************/
 
 #videoPlayer,
-#videoPlayer .itemVideo {
+.itemVideo {
     position: fixed !important;
     top: 0 !important;
     bottom: 0 !important;
@@ -120,6 +123,10 @@
     max-width: 100%;
     max-height: 100%;
 }
+
+/* Hack for safari because it doesn't allow clickable content over the video surface. */
+.itemVideo { (;top: 60px!important;); }
+.itemVideo { [;top: 60px!important;]; }
 
 #mediaPlayer .ui-slider-track, .nowPlayingBar .ui-slider-track, .nowPlayingPage .ui-slider-track {
     border-color: #2ad !important;

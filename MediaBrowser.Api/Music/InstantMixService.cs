@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System.Collections.Generic;
@@ -33,6 +34,7 @@ namespace MediaBrowser.Api.Music
         public string Name { get; set; }
     }
 
+    [Authenticated]
     public class InstantMixService : BaseApiService
     {
         private readonly IUserManager _userManager;

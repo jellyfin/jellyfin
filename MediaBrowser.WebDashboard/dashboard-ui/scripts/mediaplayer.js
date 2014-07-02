@@ -157,9 +157,13 @@
                     isStatic = finalParams.isStatic;
                 }
 
-                if (isStatic || !ticks) {
+                var isSeekableMedia = self.currentMediaSource.RunTimeTicks;
+                var isClientSeekable = isStatic || (isSeekableMedia && transcodingExtension == '.m3u8');
+
+                if (isClientSeekable || !ticks || !isSeekableMedia) {
                     currentSrc = replaceQueryString(currentSrc, 'starttimeticks', '');
-                } else {
+                }
+                else {
                     currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
                 }
 

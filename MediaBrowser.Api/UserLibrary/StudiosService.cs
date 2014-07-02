@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -43,6 +44,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class StudiosService
     /// </summary>
+    [Authenticated]
     public class StudiosService : BaseItemsByNameService<Studio>
     {
         public StudiosService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IDtoService dtoService)

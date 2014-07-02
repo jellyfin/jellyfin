@@ -37,6 +37,8 @@ namespace MediaBrowser.Api
 
         private readonly ISessionManager _sessionManager;
 
+        public readonly SemaphoreSlim TranscodingStartLock = new SemaphoreSlim(1,1);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiEntryPoint" /> class.
         /// </summary>
@@ -301,8 +303,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deleteMode">The delete mode.</param>
+        /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
         /// <exception cref="System.ArgumentNullException">sourcePath</exception>
-        internal void KillTranscodingJobs(string deviceId, FileDeleteMode deleteMode)
+        internal async Task KillTranscodingJobs(string deviceId, FileDeleteMode deleteMode, bool acquireLock)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
@@ -318,9 +321,29 @@ namespace MediaBrowser.Api
                 jobs.AddRange(_activeTranscodingJobs.Where(i => string.Equals(deviceId, i.DeviceId, StringComparison.OrdinalIgnoreCase)));
             }
 
-            foreach (var job in jobs)
+            if (jobs.Count == 0)
             {
-                KillTranscodingJob(job, deleteMode);
+                return;
+            }
+
+            if (acquireLock)
+            {
+                await TranscodingStartLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            
+            try
+            {
+                foreach (var job in jobs)
+                {
+                    KillTranscodingJob(job, deleteMode);
+                }
+            }
+            finally
+            {
+                if (acquireLock)
+                {
+                    TranscodingStartLock.Release();
+                }
             }
         }
 
@@ -328,10 +351,11 @@ namespace MediaBrowser.Api
         /// Kills the transcoding jobs.
         /// </summary>
         /// <param name="deviceId">The device identifier.</param>
-        /// <param name="outputPath">The output path.</param>
+        /// <param name="type">The type.</param>
         /// <param name="deleteMode">The delete mode.</param>
+        /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
         /// <exception cref="System.ArgumentNullException">deviceId</exception>
-        internal void KillTranscodingJobs(string deviceId, string outputPath, FileDeleteMode deleteMode)
+        internal async Task KillTranscodingJobs(string deviceId, TranscodingJobType type, FileDeleteMode deleteMode, bool acquireLock)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
@@ -344,12 +368,32 @@ namespace MediaBrowser.Api
             {
                 // This is really only needed for HLS. 
                 // Progressive streams can stop on their own reliably
-                jobs.AddRange(_activeTranscodingJobs.Where(i => string.Equals(deviceId, i.DeviceId, StringComparison.OrdinalIgnoreCase) && string.Equals(outputPath, i.Path, StringComparison.OrdinalIgnoreCase)));
+                jobs.AddRange(_activeTranscodingJobs.Where(i => string.Equals(deviceId, i.DeviceId, StringComparison.OrdinalIgnoreCase) && i.Type == type));
             }
 
-            foreach (var job in jobs)
+            if (jobs.Count == 0)
             {
-                KillTranscodingJob(job, deleteMode);
+                return;
+            }
+
+            if (acquireLock)
+            {
+                await TranscodingStartLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+
+            try
+            {
+                foreach (var job in jobs)
+                {
+                    KillTranscodingJob(job, deleteMode);
+                }
+            }
+            finally
+            {
+                if (acquireLock)
+                {
+                    TranscodingStartLock.Release();
+                }
             }
         }
 

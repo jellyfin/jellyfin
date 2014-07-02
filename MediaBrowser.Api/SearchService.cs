@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
 using ServiceStack;
@@ -79,6 +80,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class SearchService
     /// </summary>
+    [Authenticated]
     public class SearchService : BaseApiService
     {
         /// <summary>

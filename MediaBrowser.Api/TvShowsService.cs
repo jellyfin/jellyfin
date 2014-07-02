@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -175,6 +176,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class TvShowsService
     /// </summary>
+    [Authenticated]
     public class TvShowsService : BaseApiService
     {
         /// <summary>

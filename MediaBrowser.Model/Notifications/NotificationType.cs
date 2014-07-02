@@ -1,4 +1,4 @@
-namespace MediaBrowser.Model.Configuration
+namespace MediaBrowser.Model.Notifications
 {
     public enum NotificationType
     {

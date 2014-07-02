@@ -85,40 +85,60 @@
             return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement ? true : false;
         };
 
+        function onFlyoutClose() {
+            $('.itemVideo').css('visibility', 'visible');
+        }
+
+        function onPopupOpen(elem) {
+            elem.popup("open").parents(".ui-popup-container").css("margin-top", 30);
+
+            if ($.browser.safari) {
+                $('.itemVideo').css('visibility', 'hidden');
+            }
+        }
+
         self.showSubtitleMenu = function () {
 
             var elem = $('.videoSubtitlePopup').html(getSubtitleTracksHtml())
                 .trigger('create')
-                .popup("option", "positionTo", $('.videoSubtitleButton'));
+                .popup("option", "positionTo", $('.videoSubtitleButton'))
+                .off('popupafterclose', onFlyoutClose)
+                .on('popupafterclose', onFlyoutClose);
 
-            elem.popup("open").parents(".ui-popup-container").css("margin-top", 30);
+            onPopupOpen(elem);
         };
 
         self.showQualityFlyout = function () {
 
             var elem = $('.videoQualityPopup').html(getQualityFlyoutHtml())
                 .trigger('create')
-                .popup("option", "positionTo", $('.videoQualityButton'));
+                .popup("option", "positionTo", $('.videoQualityButton'))
+                .off('popupafterclose', onFlyoutClose)
+                .on('popupafterclose', onFlyoutClose);
 
-            elem.popup("open").parents(".ui-popup-container").css("margin-top", 30);
+            onPopupOpen(elem);
         };
 
         self.showChaptersFlyout = function () {
 
             var elem = $('.videoChaptersPopup').html(getChaptersFlyoutHtml())
                 .trigger('create')
-                .popup("option", "positionTo", $('.videoChaptersButton'));
+                .popup("option", "positionTo", $('.videoChaptersButton'))
+                .off('popupafterclose', onFlyoutClose)
+                .on('popupafterclose', onFlyoutClose);
 
-            elem.popup("open").parents(".ui-popup-container").css("margin-top", 30);
+            onPopupOpen(elem);
         };
 
         self.showAudioTracksFlyout = function () {
 
             var elem = $('.videoAudioPopup').html(getAudioTracksHtml())
                 .trigger('create')
-                .popup("option", "positionTo", $('.videoAudioButton'));
+                .popup("option", "positionTo", $('.videoAudioButton'))
+                .off('popupafterclose', onFlyoutClose)
+                .on('popupafterclose', onFlyoutClose);
 
-            elem.popup("open").parents(".ui-popup-container").css("margin-top", 30);
+            onPopupOpen(elem);
         };
 
         self.setAudioStreamIndex = function (index) {
@@ -512,7 +532,7 @@
 
             var html = '';
             html += '<div class="videoPlayerPopupContent">';
-            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">Scenes</li>';
+            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">' + Globalize.translate('HeaderScenes') + '</li>';
             html += '</ul>';
 
             html += '<div class="videoPlayerPopupScroller">';
@@ -588,7 +608,7 @@
 
             var html = '';
             html += '<div class="videoPlayerPopupContent">';
-            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">Audio Tracks</li>';
+            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">' + Globalize.translate('HeaderAudioTracks') + '</li>';
             html += '</ul>';
 
             html += '<div class="videoPlayerPopupScroller">';
@@ -613,7 +633,7 @@
                 }
 
                 var textLines = [];
-                textLines.push(stream.Language || 'Unknown language');
+                textLines.push(stream.Language || Globalize.translate('LabelUnknownLanguage'));
 
                 var attributes = [];
 
@@ -673,7 +693,7 @@
 
             var html = '';
             html += '<div class="videoPlayerPopupContent">';
-            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">Subtitles</li>';
+            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">' + Globalize.translate('HeaderSubtitles') + '</li>';
             html += '</ul>';
 
             html += '<div class="videoPlayerPopupScroller">';
@@ -698,7 +718,7 @@
                 }
 
                 var textLines = [];
-                textLines.push(stream.Language || 'Unknown language');
+                textLines.push(stream.Language || Globalize.translate('LabelUnknownLanguage'));
 
                 if (stream.Codec) {
                     textLines.push(stream.Codec);
@@ -754,8 +774,9 @@
             }
 
             var html = '';
+
             html += '<div class="videoPlayerPopupContent">';
-            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">Video Quality</li>';
+            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">' + Globalize.translate('HeaderVideoQuality') + '</li>';
             html += '</ul>';
 
             html += '<div class="videoPlayerPopupScroller">';
@@ -1185,14 +1206,10 @@
                 var errorCode = this.error ? this.error.code : '';
                 console.log('Html5 Video error code: ' + errorCode);
 
-                var errorMsg = 'There was an error playing the video.';
+                var errorMsg = Globalize.translate('MessageErrorPlayingVideo');
 
                 if (item.Type == "TvChannel") {
-                    errorMsg += " Please ensure there is an open tuner availalble.";
-                }
-
-                if (errorCode) {
-                    errorMsg += " Error code: " + errorCode;
+                    errorMsg += "<br/><br/>" + Globalize.translate('MessageEnsureOpenTuner');
                 }
 
                 Dashboard.alert({

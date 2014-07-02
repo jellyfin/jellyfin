@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
@@ -45,6 +46,7 @@ namespace MediaBrowser.Api.Movies
         public Guid Id { get; set; }
     }
 
+    [Authenticated]
     public class CollectionService : BaseApiService
     {
         private readonly ICollectionManager _collectionManager;

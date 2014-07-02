@@ -8,11 +8,11 @@
 
         html += '<thead><tr>';
         html += '<th></th>';
-        html += '<th>Name</th>';
-        html += '<th>Album</th>';
-        html += '<th>Artist</th>';
-        html += '<th>Album Artist</th>';
-        html += '<th>Time</th>';
+        html += '<th>' + Globalize.translate('HeaderName') + '</th>';
+        html += '<th>' + Globalize.translate('HeaderAlbum') + '</th>';
+        html += '<th>' + Globalize.translate('HeaderArtist') + '</th>';
+        html += '<th>' + Globalize.translate('HeaderAlbumArtist') + '</th>';
+        html += '<th>' + Globalize.translate('HeaderTime') + '</th>';
         html += '</tr></thead>';
 
         html += '<tbody>';
@@ -24,7 +24,7 @@
             var parentName = item.SeriesName || item.Album;
 
             html += '<tr>';
-            html += '<td><button type="button" data-index="' + i + '" class="lnkPlay" data-icon="play" data-iconpos="notext">Play</button></td>';
+            html += '<td><button type="button" data-index="' + i + '" class="lnkPlay" data-icon="play" data-iconpos="notext">' + Globalize.translate('ButtonPlay') + '</button></td>';
             html += '<td>';
             html += '<a href="itemdetails.html?id=' + item.Id + '">' + name + '</a>';
             html += '</td>';
@@ -47,7 +47,7 @@
             html += '</td>';
 
             html += '<td>' + Dashboard.getDisplayTime(item.RunTimeTicks) + '</td>';
-            html += '<td><button type="button" data-index="' + i + '" class="lnkRemove" data-icon="delete" data-iconpos="notext">Remove</button></td>';
+            html += '<td><button type="button" data-index="' + i + '" class="lnkRemove" data-icon="delete" data-iconpos="notext">' + Globalize.translate('ButtonRemove') + '</button></td>';
             html += '</tr>';
         });
 
