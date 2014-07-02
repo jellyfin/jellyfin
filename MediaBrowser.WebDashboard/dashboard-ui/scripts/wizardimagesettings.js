@@ -4,7 +4,7 @@
 
         Dashboard.showLoadingMsg();
 
-        $.ajax({
+        ApiClient.ajax({
             type: "POST",
             url: ApiClient.getUrl("System/Configuration/VideoImageExtraction", { Enabled: $('#chkVideoImages', page).checked() })
 

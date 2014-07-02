@@ -4,7 +4,7 @@
 
         Dashboard.showLoadingMsg();
 
-        $.getJSON(ApiClient.getUrl("Dlna/ProfileInfos")).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Dlna/ProfileInfos")).done(function (result) {
 
             renderProfiles(page, result);
 
@@ -88,7 +88,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                $.ajax({
+                ApiClient.ajax({
                     type: "DELETE",
                     url: ApiClient.getUrl("Dlna/Profiles/" + id)
 

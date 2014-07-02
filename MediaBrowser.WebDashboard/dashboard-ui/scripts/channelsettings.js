@@ -84,7 +84,7 @@
         var page = this;
 
         var promise1 = ApiClient.getNamedConfiguration("channels");
-        var promise2 = $.getJSON(ApiClient.getUrl("Channels/Features"));
+        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Channels/Features"));
 
         $.when(promise1, promise2).done(function (response1, response2) {
 

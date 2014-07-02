@@ -117,7 +117,7 @@
         var page = this;
 
         var promise1 = ApiClient.getNamedConfiguration("chapters");
-        var promise2 = $.getJSON(ApiClient.getUrl("Providers/Chapters"));
+        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Providers/Chapters"));
 
         $.when(promise1, promise2).done(function (response1, response2) {
 

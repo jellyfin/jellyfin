@@ -123,7 +123,7 @@
 
     function loadMediaFolders(service, openItems, callback) {
 
-        $.getJSON(ApiClient.getUrl("Library/MediaFolders")).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Library/MediaFolders")).done(function (result) {
 
             var nodes = result.Items.map(function (i) {
 

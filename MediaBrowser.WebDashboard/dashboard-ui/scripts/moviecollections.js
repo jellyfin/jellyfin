@@ -289,7 +289,7 @@
 
         });
 
-        $.ajax({
+        ApiClient.ajax({
             type: "POST",
             url: url,
             dataType: "json"
@@ -320,7 +320,7 @@
             Ids: $('.fldSelectedItemIds', page).val() || ''
         });
 
-        $.ajax({
+        ApiClient.ajax({
             type: "POST",
             url: url
 

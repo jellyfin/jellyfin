@@ -37,7 +37,7 @@
             Dashboard.hideLoadingMsg();
         });
 
-        $.getJSON(ApiClient.getUrl("Channels", {
+        ApiClient.getJSON(ApiClient.getUrl("Channels", {
 
             UserId: user.Id
 

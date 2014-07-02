@@ -147,6 +147,15 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return $.ajax(request);
         };
 
+        self.getJSON = function(url) {
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Creates an api url based on a handler name and query string parameters
          * @param {String} name

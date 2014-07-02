@@ -175,7 +175,7 @@
             UserId: userId
         };
 
-        $.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
 
             var html = '';
 
@@ -327,7 +327,7 @@
             SupportsLatestItems: true
         });
 
-        $.getJSON(ApiClient.getUrl("Channels", options)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels", options)).done(function (result) {
 
             var channels = result.Items;
 
@@ -362,7 +362,7 @@
             ChannelIds: channel.Id
         };
 
-        $.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
 
             var html = '';
 

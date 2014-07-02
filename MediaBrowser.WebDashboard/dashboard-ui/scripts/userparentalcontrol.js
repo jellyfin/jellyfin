@@ -242,9 +242,9 @@
 
         var promise3 = ApiClient.getParentalRatings();
 
-        var promise4 = $.getJSON(ApiClient.getUrl("Library/MediaFolders", {IsHidden: false}));
+        var promise4 = ApiClient.getJSON(ApiClient.getUrl("Library/MediaFolders", {IsHidden: false}));
 
-        var promise5 = $.getJSON(ApiClient.getUrl("Channels"));
+        var promise5 = ApiClient.getJSON(ApiClient.getUrl("Channels"));
 
         $.when(promise1, promise2, promise3, promise4, promise5).done(function (response1, response2, response3, response4, response5) {
 

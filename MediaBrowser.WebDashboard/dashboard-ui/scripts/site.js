@@ -428,7 +428,7 @@ var Dashboard = {
     reloadPageWhenServerAvailable: function (retryCount) {
 
         // Don't use apiclient method because we don't want it reporting authentication under the old version
-        $.getJSON(ApiClient.getUrl("System/Info")).done(function (info) {
+        ApiClient.getJSON(ApiClient.getUrl("System/Info")).done(function (info) {
 
             // If this is back to false, the restart completed
             if (!info.HasPendingRestart) {
@@ -503,7 +503,7 @@ var Dashboard = {
             var deferred = $.Deferred();
 
             // Don't let this blow up the dashboard when it fails
-            $.ajax({
+            ApiClient.ajax({
                 type: "GET",
                 url: ApiClient.getUrl("Plugins/SecurityInfo"),
                 dataType: 'json',

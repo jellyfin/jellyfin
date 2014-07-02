@@ -27,8 +27,8 @@
 
         var promise1 = ApiClient.getUsers();
         var promise2 = ApiClient.getServerConfiguration();
-        var promise3 = $.getJSON(ApiClient.getUrl("Notifications/Types"));
-        var promise4 = $.getJSON(ApiClient.getUrl("Notifications/Services"));
+        var promise3 = ApiClient.getJSON(ApiClient.getUrl("Notifications/Types"));
+        var promise4 = ApiClient.getJSON(ApiClient.getUrl("Notifications/Services"));
 
         $.when(promise1, promise2, promise3, promise4).done(function (response1, response2, response3, response4) {
 
@@ -98,7 +98,7 @@
         var type = getParameterByName('type');
 
         var promise1 = ApiClient.getServerConfiguration();
-        var promise2 = $.getJSON(ApiClient.getUrl("Notifications/Types"));
+        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Notifications/Types"));
 
         $.when(promise1, promise2).done(function (response1, response2) {
 

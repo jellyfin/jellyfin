@@ -1423,7 +1423,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                $.ajax({
+                ApiClient.ajax({
                     type: "DELETE",
                     url: ApiClient.getUrl("Videos/" + id + "/AlternateSources")
 

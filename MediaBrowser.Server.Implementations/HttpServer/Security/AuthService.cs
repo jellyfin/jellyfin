@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Controller.Net;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Session;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Web;
@@ -10,6 +13,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 {
     public class AuthService : IAuthService
     {
+        public AuthService(IUserManager userManager, ISessionManager sessionManager, IAuthorizationContext authorizationContext)
+        {
+            AuthorizationContext = authorizationContext;
+            SessionManager = sessionManager;
+            UserManager = userManager;
+        }
+
+        public IUserManager UserManager { get; private set; }
+        public ISessionManager SessionManager { get; private set; }
+        public IAuthorizationContext AuthorizationContext { get; private set; }
+
         /// <summary>
         /// Restrict authentication to a specific <see cref="IAuthProvider"/>.
         /// For example, if this attribute should only permit access
@@ -37,7 +51,32 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
         private void ValidateUser(IRequest req)
         {
-            var user = req.TryResolve<ISessionContext>().GetUser(req);
+            User user = null;
+
+            //This code is executed before the service
+            var auth = AuthorizationContext.GetAuthorizationInfo(req);
+
+            if (auth != null)
+            {
+                if (!string.IsNullOrWhiteSpace(auth.UserId))
+                {
+                    var userId = auth.UserId;
+
+                    user = UserManager.GetUserById(new Guid(userId));
+                }
+
+                string deviceId = auth.DeviceId;
+                string device = auth.Device;
+                string client = auth.Client;
+                string version = auth.Version;
+
+                if (!string.IsNullOrEmpty(client) && !string.IsNullOrEmpty(deviceId) && !string.IsNullOrEmpty(device) && !string.IsNullOrEmpty(version))
+                {
+                    var remoteEndPoint = req.RemoteIp;
+
+                    SessionManager.LogSessionActivity(client, version, deviceId, device, remoteEndPoint, user);
+                }
+            }
 
             if (user == null || user.Configuration.IsDisabled)
             {
@@ -72,6 +111,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
                 AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
             }
+        }
+
+        private void LogRequest()
+        {
+
         }
 
         protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)

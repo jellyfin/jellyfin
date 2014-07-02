@@ -184,7 +184,7 @@
 
         });
 
-        $.ajax({
+        ApiClient.ajax({
             type: "POST",
             url: url
 
@@ -217,7 +217,7 @@
 
         });
 
-        $.ajax({
+        ApiClient.ajax({
             type: "DELETE",
             url: url
 

@@ -577,7 +577,7 @@
         var url = ApiClient.getUrl("Items", query);
         var reportType = $('#selectView', page).val();
 
-        $.getJSON(url).done(function (result) {
+        ApiClient.getJSON(url).done(function (result) {
 
             renderItems(page, result, reportType);
 

@@ -42,7 +42,7 @@
 
         var channelId = getParameterByName('id');
 
-        $.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Features", query)).done(function (features) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Features", query)).done(function (features) {
 
             if (features.CanFilter) {
 
@@ -121,7 +121,7 @@
 
         query.folderId = folderId;
 
-        $.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             $(document).scrollTop(0);

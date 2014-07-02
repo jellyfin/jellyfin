@@ -27,7 +27,7 @@
         currentType = type;
 
         var promise1 = ApiClient.getServerConfiguration();
-        var promise2 = $.getJSON(ApiClient.getUrl("System/Configuration/MetadataPlugins"));
+        var promise2 = ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataPlugins"));
 
         $.when(promise1, promise2).done(function (response1, response2) {
 
@@ -46,7 +46,7 @@
 
             } else {
 
-                $.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultConfig) {
+                ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultConfig) {
 
 
                     config = defaultConfig;
@@ -510,7 +510,7 @@
 
             } else {
 
-                $.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultOptions) {
+                ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultOptions) {
 
                     defaultOptions.ItemType = type;
                     config.MetadataOptions.push(defaultOptions);

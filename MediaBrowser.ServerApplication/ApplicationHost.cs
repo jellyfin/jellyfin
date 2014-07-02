@@ -671,7 +671,7 @@ namespace MediaBrowser.ServerApplication
             var authContext = new AuthorizationContext();
             RegisterSingleInstance<IAuthorizationContext>(authContext);
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
-            RegisterSingleInstance<IAuthService>(new AuthService());
+            RegisterSingleInstance<IAuthService>(new AuthService(UserManager, SessionManager, authContext));
 
             RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder));
 

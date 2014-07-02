@@ -29,7 +29,7 @@
         var url = id ? 'Dlna/Profiles/' + id :
             'Dlna/Profiles/Default';
 
-        return $.getJSON(ApiClient.getUrl(url));
+        return ApiClient.getJSON(ApiClient.getUrl(url));
     }
 
     function renderProfile(page, profile, users) {
@@ -627,7 +627,7 @@
 
         if (id) {
 
-            $.ajax({
+            ApiClient.ajax({
                 type: "POST",
                 url: ApiClient.getUrl("Dlna/Profiles/" + id),
                 data: JSON.stringify(profile),
@@ -639,7 +639,7 @@
 
         } else {
 
-            $.ajax({
+            ApiClient.ajax({
                 type: "POST",
                 url: ApiClient.getUrl("Dlna/Profiles"),
                 data: JSON.stringify(profile),

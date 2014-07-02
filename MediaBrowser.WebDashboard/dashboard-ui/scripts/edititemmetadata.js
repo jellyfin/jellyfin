@@ -44,7 +44,7 @@
             var languages = response2[0];
             var countries = response3[0];
 
-            $.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
+            ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
                 loadExternalIds(page, item, idList);
             });
 
@@ -1002,7 +1002,7 @@
 
         var item = currentItem;
 
-        $.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
+        ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
 
             var html = '';
 
@@ -1100,7 +1100,7 @@
 
         Dashboard.showLoadingMsg();
 
-        $.ajax({
+        ApiClient.ajax({
             type: "POST",
             url: ApiClient.getUrl("Items/RemoteSearch/" + currentItem.Type),
             data: JSON.stringify(lookupInfo),
@@ -1180,7 +1180,7 @@
 
             var currentResult = results[index];
 
-            $.ajax({
+            ApiClient.ajax({
                 type: "POST",
                 url: ApiClient.getUrl("Items/RemoteSearch/Apply/" + currentItem.Id),
                 data: JSON.stringify(currentResult),

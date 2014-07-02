@@ -83,7 +83,7 @@
             Fields: "PrimaryImageAspectRatio"
         });
 
-        $.getJSON(url).done(function (recommendations) {
+        ApiClient.getJSON(url).done(function (recommendations) {
 
             if (!recommendations.length) {
 

@@ -12,7 +12,7 @@
 
         query.UserId = Dashboard.getCurrentUserId();
 
-        $.getJSON(ApiClient.getUrl("Channels", query)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels", query)).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             $(document).scrollTop(0);

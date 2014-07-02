@@ -436,7 +436,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                $.ajax({
+                ApiClient.ajax({
 
                     type: "POST",
                     url: ApiClient.getUrl("Videos/MergeVersions", { Ids: selection.join(',') })
