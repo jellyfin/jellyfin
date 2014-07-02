@@ -62,6 +62,7 @@ using MediaBrowser.Server.Implementations.Dto;
 using MediaBrowser.Server.Implementations.EntryPoints;
 using MediaBrowser.Server.Implementations.FileOrganization;
 using MediaBrowser.Server.Implementations.HttpServer;
+using MediaBrowser.Server.Implementations.HttpServer.Security;
 using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Library;
 using MediaBrowser.Server.Implementations.LiveTv;
@@ -598,7 +599,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", "mediabrowser", "dashboard/index.html");
+            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", WebApplicationName, "dashboard/index.html");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
@@ -666,6 +667,11 @@ namespace MediaBrowser.ServerApplication
             EncodingManager = new EncodingManager(ServerConfigurationManager, FileSystemManager, Logger,
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
+
+            var authContext = new AuthorizationContext();
+            RegisterSingleInstance<IAuthorizationContext>(authContext);
+            RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
+            RegisterSingleInstance<IAuthService>(new AuthService());
 
             RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder));
 

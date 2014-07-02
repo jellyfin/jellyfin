@@ -28,7 +28,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
         protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
-            return directoryService.GetFile(Path.Combine(info.Path, "series.nfo"));
+            return directoryService.GetFile(Path.Combine(info.Path, "tvshow.nfo"));
         }
     }
 }

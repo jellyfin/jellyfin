@@ -79,7 +79,6 @@
     <Compile Include="DefaultTheme\Models.cs" />
     <Compile Include="DisplayPreferencesService.cs" />
     <Compile Include="EnvironmentService.cs" />
-    <Compile Include="AuthorizationRequestFilterAttribute.cs" />
     <Compile Include="GamesService.cs" />
     <Compile Include="IHasItemFields.cs" />
     <Compile Include="Images\ImageByNameService.cs" />

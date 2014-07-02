@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using ServiceStack;
@@ -86,6 +87,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class EnvironmentService
     /// </summary>
+    [Authenticated]
     public class EnvironmentService : BaseApiService
     {
         const char UncSeparator = '\\';

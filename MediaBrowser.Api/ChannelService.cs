@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -172,7 +173,8 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "UserId", Description = "Optional attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
     }
-    
+
+    [Authenticated]
     public class ChannelService : BaseApiService
     {
         private readonly IChannelManager _channelManager;

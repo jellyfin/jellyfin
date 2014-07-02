@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Serialization;
@@ -152,7 +153,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UsersService
     /// </summary>
-    public class UserService : BaseApiService
+    public class UserService : BaseApiService, IHasAuthorization
     {
         /// <summary>
         /// The _XML serializer
@@ -165,6 +166,8 @@ namespace MediaBrowser.Api
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
         private readonly ISessionManager _sessionMananger;
+
+        public IAuthorizationContext AuthorizationContext { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService" /> class.
@@ -295,7 +298,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
+            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
 
             // Login in the old way if the header is missing
             if (string.IsNullOrEmpty(auth.Client) ||

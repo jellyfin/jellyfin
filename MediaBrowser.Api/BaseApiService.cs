@@ -14,8 +14,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class BaseApiService
     /// </summary>
-    [AuthorizationRequestFilter]
-    public class BaseApiService : IHasResultFactory, IRestfulService
+    public class BaseApiService : IHasResultFactory, IRestfulService, IHasSession
     {
         /// <summary>
         /// Gets or sets the logger.
@@ -34,6 +33,8 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The request context.</value>
         public IRequest Request { get; set; }
+
+        public ISessionContext SessionContext { get; set; }
 
         public string GetHeader(string name)
         {
@@ -82,13 +83,11 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Gets the session.
         /// </summary>
-        /// <param name="sessionManager">The session manager.</param>
         /// <returns>SessionInfo.</returns>
-        protected SessionInfo GetSession(ISessionManager sessionManager)
+        /// <exception cref="System.ArgumentException">Session not found.</exception>
+        protected SessionInfo GetSession()
         {
-            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
-
-            var session = sessionManager.GetSession(auth.DeviceId, auth.Client, auth.Version);
+            var session = SessionContext.GetSession(Request);
 
             if (session == null)
             {

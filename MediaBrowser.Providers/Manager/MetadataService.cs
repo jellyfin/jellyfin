@@ -340,13 +340,17 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
+                    Logger.ErrorException("Error in {0}", ex, provider.Name);
+                    
                     // If a local provider fails, consider that a failure
                     refreshResult.Status = ProviderRefreshStatus.Failure;
                     refreshResult.ErrorMessage = ex.Message;
-                    Logger.ErrorException("Error in {0}", ex, provider.Name);
 
-                    // If the local provider fails don't continue with remote providers because the user's saved metadata could be lost
-                    return refreshResult;
+                    if (options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
+                    {
+                        // If the local provider fails don't continue with remote providers because the user's saved metadata could be lost
+                        return refreshResult;
+                    }
                 }
             }
 
