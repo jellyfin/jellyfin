@@ -98,19 +98,19 @@ namespace MediaBrowser.Controller.Library
         private static readonly Regex[] EpisodeExpressionsWithoutSeason =
         {
             new Regex(
-                @".*[\\\/](?<epnumber>\d{1,3})\.\w+$",
+                @".*[\\\/](?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*\.\w+$",
                 RegexOptions.Compiled),
             // "01.avi"
             new Regex(
-                @".*(\\|\/)(?<epnumber>\d{1,2})\s?-\s?[^\\\/]*$",
+                @".*(\\|\/)(?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*\s?-\s?[^\\\/]*$",
                 RegexOptions.Compiled),
             // "01 - blah.avi", "01-blah.avi"
              new Regex(
-                @".*(\\|\/)(?<epnumber>\d{1,2})\.[^\\\/]+$",
+                @".*(\\|\/)(?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*\.[^\\\/]+$",
                 RegexOptions.Compiled),
             // "01.blah.avi"
             new Regex(
-                @".*[\\\/][^\\\/]* - (?<epnumber>\d{1,3})[^\\\/]*$",
+                @".*[\\\/][^\\\/]* - (?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*[^\\\/]*$",
                 RegexOptions.Compiled),
             // "blah - 01.avi", "blah 2 - 01.avi", "blah - 01 blah.avi", "blah 2 - 01 blah", "blah - 01 - blah.avi", "blah 2 - 01 - blah"
         };
@@ -279,6 +279,12 @@ namespace MediaBrowser.Controller.Library
         {
             var fl = fullPath.ToLower();
             foreach (var r in MultipleEpisodeExpressions)
+            {
+                var m = r.Match(fl);
+                if (m.Success && !string.IsNullOrEmpty(m.Groups["endingepnumber"].Value))
+                    return ParseEpisodeNumber(m.Groups["endingepnumber"].Value);
+            }
+            foreach (var r in EpisodeExpressionsWithoutSeason)
             {
                 var m = r.Match(fl);
                 if (m.Success && !string.IsNullOrEmpty(m.Groups["endingepnumber"].Value))
