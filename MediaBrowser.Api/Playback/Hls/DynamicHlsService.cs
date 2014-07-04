@@ -60,12 +60,23 @@ namespace MediaBrowser.Api.Playback.Hls
             return result;
         }
 
-        public object Get(GetDynamicHlsVideoSegment request)
+        public object Get(GetMainHlsVideoStream request)
         {
-            return GetDynamicSegment(request).Result;
+            var result = GetPlaylistAsync(request, "main").Result;
+
+            // Get the transcoding started
+            //var start = GetStartNumber(request);
+            //var segment = GetDynamicSegment(request, start.ToString(UsCulture)).Result;
+
+            return result;
         }
 
-        private async Task<object> GetDynamicSegment(GetDynamicHlsVideoSegment request)
+        public object Get(GetDynamicHlsVideoSegment request)
+        {
+            return GetDynamicSegment(request, request.SegmentId).Result;
+        }
+
+        private async Task<object> GetDynamicSegment(VideoStreamRequest request, string segmentId)
         {
             if ((request.StartTimeTicks ?? 0) > 0)
             {
@@ -75,7 +86,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
-            var index = int.Parse(request.SegmentId, NumberStyles.Integer, UsCulture);
+            var index = int.Parse(segmentId, NumberStyles.Integer, UsCulture);
 
             var state = await GetState(request, cancellationToken).ConfigureAwait(false);
 
@@ -209,9 +220,20 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override int GetStartNumber(StreamState state)
         {
-            var request = (GetDynamicHlsVideoSegment)state.Request;
+            return GetStartNumber(state.VideoRequest);
+        }
 
-            return int.Parse(request.SegmentId, NumberStyles.Integer, UsCulture);
+        private int GetStartNumber(VideoStreamRequest request)
+        {
+            var segmentId = "0";
+
+            var segmentRequest = request as GetDynamicHlsVideoSegment;
+            if (segmentRequest != null)
+            {
+                segmentId = segmentRequest.SegmentId;
+            }
+
+            return int.Parse(segmentId, NumberStyles.Integer, UsCulture);
         }
 
         private string GetSegmentPath(string playlist, int index)
@@ -364,13 +386,6 @@ namespace MediaBrowser.Api.Playback.Hls
             return variation;
         }
 
-        public object Get(GetMainHlsVideoStream request)
-        {
-            var result = GetPlaylistAsync(request, "main").Result;
-
-            return result;
-        }
-
         private async Task<object> GetPlaylistAsync(VideoStreamRequest request, string name)
         {
             var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
@@ -394,7 +409,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 var length = seconds >= state.SegmentLength ? state.SegmentLength : seconds;
 
-                builder.AppendLine("#EXTINF:" + length.ToString(UsCulture));
+                builder.AppendLine("#EXTINF:" + length.ToString(UsCulture) + ",");
 
                 builder.AppendLine(string.Format("hlsdynamic/{0}/{1}.ts{2}",
 
