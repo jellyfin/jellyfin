@@ -20,7 +20,7 @@
                     <p>${HeaderSupportTheTeamHelp}</p>
 
                     <br />
-                    <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr"
+                    <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" id="payPalForm"
                         method="post">
                         <label for="donateAmt">${LabelSupportAmount}</label>
                         <select id="donateAmt" name="amount">
@@ -29,8 +29,10 @@
                             <option value="30">$30</option>
                             <option value="50">$50</option>
                         </select>
-
-                        <input type="hidden" name="cmd" value="_xclick">
+                        <input type="checkbox" name="Recurring" id="cbxRecurring"/>
+                        <label for="cbxRecurring" >Automatically donate this amount each month</label>
+                        <p>You can cancel at any time via your PayPal account</p>
+                        <input type="hidden" name="cmd" id="ppCmd" value="_xclick">
                         <input type="hidden" name="business" value="donate@mediabrowser3.com">
                         <input type="hidden" name="currency_code" value="USD">
                         <input type="hidden" name="item_name" value="Media Browser Supporter">
