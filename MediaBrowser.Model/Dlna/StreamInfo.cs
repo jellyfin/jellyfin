@@ -91,7 +91,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (StringHelper.EqualsIgnoreCase(Protocol, "hls"))
             {
-                return string.Format("{0}/videos/{1}/stream.m3u8?{2}", baseUrl, ItemId, dlnaCommand);
+                return string.Format("{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, dlnaCommand);
             }
 
             return string.Format("{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, dlnaCommand);

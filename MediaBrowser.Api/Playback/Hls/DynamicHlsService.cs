@@ -57,6 +57,16 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var result = GetAsync(request).Result;
 
+            if (string.Equals(request.AudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Audio codec copy is not allowed here.");
+            }
+
+            if (string.Equals(request.VideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Video codec copy is not allowed here.");
+            }
+
             return result;
         }
 

@@ -109,7 +109,8 @@ namespace MediaBrowser.Providers.Movies
             {
                 if (year.HasValue && i.ProductionYear.HasValue)
                 {
-                    return year.Value == i.ProductionYear.Value;
+                    // Allow one year tolerance
+                    return Math.Abs(year.Value - i.ProductionYear.Value) <= 1;
                 }
 
                 return true;
@@ -177,11 +178,19 @@ namespace MediaBrowser.Providers.Movies
                 // These dates are always in this exact format
                 if (DateTime.TryParseExact(result.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
                 {
-                    return Math.Abs(r.Year - year.Value);
+                    // Allow one year tolernace, preserve order from Tmdb
+                    var variance = Math.Abs(r.Year - year.Value);
+
+                    if (variance <= 1)
+                    {
+                        return 0;
+                    }
+
+                    return variance;
                 }
             }
 
-            return 0;
+            return int.MaxValue;
         }
 
         /// <summary>

@@ -95,7 +95,7 @@ namespace MediaBrowser.Providers.TV
         {
             var offset = TvdbSeriesProvider.GetSeriesOffset(series.ProviderIds);
             if (offset != null)
-                return (int) (seasonNumber + offset);
+                return (seasonNumber + offset.Value);
 
             return seasonNumber;
         }
