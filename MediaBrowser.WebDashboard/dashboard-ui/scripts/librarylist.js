@@ -219,6 +219,8 @@
         var itemId = posterItem.getAttribute('data-itemid');
         var commands = posterItem.getAttribute('data-commands').split(',');
 
+        $(posterItem).addClass('hasContextMenu');
+
         var promise1 = ApiClient.getItem(Dashboard.getCurrentUserId(), itemId);
         var promise2 = Dashboard.getCurrentUser();
 
@@ -272,6 +274,7 @@
             var elem = $('.tapHoldMenu').popup({ positionTo: e.target }).trigger('create').popup("open").on("popupafterclose", function () {
 
                 $(this).off("popupafterclose").remove();
+                $(posterItem).removeClass('hasContextMenu');
 
             });
 
@@ -352,11 +355,8 @@
 
         var elems = '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem,.miniBackdropPosterItem';
 
-        if ($.browser.mobile) {
-
-            this.off('contextmenu.posterItemMenu', elems)
-                .on('contextmenu.posterItemMenu', elems, onPosterItemTapHold);
-        }
+        this.off('contextmenu.posterItemMenu', elems)
+            .on('contextmenu.posterItemMenu', elems, onPosterItemTapHold);
 
         return this.off('.posterItemHoverMenu')
             .on('mouseenter.posterItemHoverMenu', elems, onHoverIn)

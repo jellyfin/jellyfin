@@ -1158,12 +1158,7 @@
             volumeSlider.val(initialVolume).slider('refresh');
             updateVolumeButtons(initialVolume);
 
-            video.on("loadstart.mediaplayerevent", function (e) {
-
-                Dashboard.showLoadingMsg();
-
-
-            }).on("volumechange.mediaplayerevent", function (e) {
+            video.on("volumechange.mediaplayerevent", function (e) {
 
                 var vol = this.volume;
 
@@ -1188,8 +1183,6 @@
                 }, 5 * 60 * 1000); // 5 minutes
 
             }).on("playing.mediaplayerevent", function (e) {
-
-                Dashboard.hideLoadingMsg();
 
                 $('#video-playButton', videoControls).hide();
                 $('#video-pauseButton', videoControls).show();

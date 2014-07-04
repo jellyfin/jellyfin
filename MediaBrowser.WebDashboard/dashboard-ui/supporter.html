@@ -29,9 +29,12 @@
                             <option value="30">$30</option>
                             <option value="50">$50</option>
                         </select>
-                        <input type="checkbox" name="Recurring" id="cbxRecurring"/>
-                        <label for="cbxRecurring" >Automatically donate this amount each month</label>
-                        <p>You can cancel at any time via your PayPal account</p>
+                        <div>
+                            <input type="checkbox" name="Recurring" id="cbxRecurring" />
+                            <label for="cbxRecurring">${LabelAutomaticallyDonate}</label>
+                            <div class="fieldDescription">${LabelAutomaticallyDonateHelp}</div>
+                        </div>
+                        <br />
                         <input type="hidden" name="cmd" id="ppCmd" value="_xclick">
                         <input type="hidden" name="business" value="donate@mediabrowser3.com">
                         <input type="hidden" name="currency_code" value="USD">

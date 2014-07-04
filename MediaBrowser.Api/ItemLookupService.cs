@@ -22,6 +22,7 @@ namespace MediaBrowser.Api
 {
     [Route("/Items/{Id}/ExternalIdInfos", "GET")]
     [Api(Description = "Gets external id infos for an item")]
+    [Authenticated]
     public class GetExternalIdInfos : IReturn<List<ExternalIdInfo>>
     {
         /// <summary>
@@ -34,54 +35,63 @@ namespace MediaBrowser.Api
 
     [Route("/Items/RemoteSearch/Movie", "POST")]
     [Api(Description = "Gets external id infos for an item")]
+    [Authenticated]
     public class GetMovieRemoteSearchResults : RemoteSearchQuery<MovieInfo>, IReturn<List<RemoteSearchResult>>
     {
     }
 
     [Route("/Items/RemoteSearch/Trailer", "POST")]
     [Api(Description = "Gets external id infos for an item")]
+    [Authenticated]
     public class GetTrailerRemoteSearchResults : RemoteSearchQuery<TrailerInfo>, IReturn<List<RemoteSearchResult>>
     {
     }
 
     [Route("/Items/RemoteSearch/AdultVideo", "POST")]
     [Api(Description = "Gets external id infos for an item")]
+    [Authenticated]
     public class GetAdultVideoRemoteSearchResults : RemoteSearchQuery<ItemLookupInfo>, IReturn<List<RemoteSearchResult>>
     {
     }
 
     [Route("/Items/RemoteSearch/Series", "POST")]
     [Api(Description = "Gets external id infos for an item")]
+    [Authenticated]
     public class GetSeriesRemoteSearchResults : RemoteSearchQuery<SeriesInfo>, IReturn<List<RemoteSearchResult>>
     {
     }
 
     [Route("/Items/RemoteSearch/Game", "POST")]
     [Api(Description = "Gets external id infos for an item")]
+    [Authenticated]
     public class GetGameRemoteSearchResults : RemoteSearchQuery<GameInfo>, IReturn<List<RemoteSearchResult>>
     {
     }
 
     [Route("/Items/RemoteSearch/BoxSet", "POST")]
     [Api(Description = "Gets external id infos for an item")]
+    [Authenticated]
     public class GetBoxSetRemoteSearchResults : RemoteSearchQuery<BoxSetInfo>, IReturn<List<RemoteSearchResult>>
     {
     }
 
     [Route("/Items/RemoteSearch/MusicArtist", "POST")]
     [Api(Description = "Gets external id infos for an item")]
+    [Authenticated]
     public class GetMusicArtistRemoteSearchResults : RemoteSearchQuery<ArtistInfo>, IReturn<List<RemoteSearchResult>>
     {
     }
 
     [Route("/Items/RemoteSearch/MusicAlbum", "POST")]
     [Api(Description = "Gets external id infos for an item")]
+    [Authenticated]
     public class GetMusicAlbumRemoteSearchResults : RemoteSearchQuery<AlbumInfo>, IReturn<List<RemoteSearchResult>>
     {
     }
 
     [Route("/Items/RemoteSearch/Person", "POST")]
     [Api(Description = "Gets external id infos for an item")]
+    [Authenticated]
     public class GetPersonRemoteSearchResults : RemoteSearchQuery<PersonLookupInfo>, IReturn<List<RemoteSearchResult>>
     {
     }
@@ -99,13 +109,13 @@ namespace MediaBrowser.Api
 
     [Route("/Items/RemoteSearch/Apply/{Id}", "POST")]
     [Api(Description = "Applies search criteria to an item and refreshes metadata")]
+    [Authenticated]
     public class ApplySearchCriteria : RemoteSearchResult, IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "The item id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Id { get; set; }
     }
 
-    [Authenticated]
     public class ItemLookupService : BaseApiService
     {
         private readonly IProviderManager _providerManager;

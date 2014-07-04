@@ -858,5 +858,7 @@
 	"TabBranding": "Branding",
 	"HeaderBrandingHelp": "Customize the appearance of Media Browser to fit the needs of your group or organization.",
 	"LabelLoginDisclaimer": "Login disclaimer:",
-	"LabelLoginDisclaimerHelp": "This will be displayed at the bottom of the login page."
+	"LabelLoginDisclaimerHelp": "This will be displayed at the bottom of the login page.",
+	"LabelAutomaticallyDonate": "Automatically donate this amount each month",
+	"LabelAutomaticallyDonateHelp": "You can cancel at any time via your PayPal account."
 }

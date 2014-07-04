@@ -24,9 +24,6 @@
     background-color: #000;
     width: 100%;
     height: auto;
-
-    /* Without this the buttons displayed over the video surface will not be clickable in safari. */
-    -webkit-transform-style: preserve-3d
 }
 
 .videoControls {
@@ -109,8 +106,7 @@
 /* Fullscreen
     ***************************************/
 
-#videoPlayer,
-.itemVideo {
+#videoPlayer, .itemVideo {
     position: fixed !important;
     top: 0 !important;
     bottom: 0 !important;
@@ -125,8 +121,8 @@
 }
 
 /* Hack for safari because it doesn't allow clickable content over the video surface. */
-.itemVideo { (;top: 60px!important;); }
-.itemVideo { [;top: 60px!important;]; }
+.itemVideo { (;top: 9%!important;height: 91% !important;); }
+.itemVideo { [;top: 9%!important;height: 91% !important;]; }
 
 #mediaPlayer .ui-slider-track, .nowPlayingBar .ui-slider-track, .nowPlayingPage .ui-slider-track {
     border-color: #2ad !important;
