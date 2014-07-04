@@ -26,13 +26,36 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>System.String.</returns>
         private DateTime GetValue(BaseItem x)
         {
-            var series = (x as Series) ?? x.FindParent<Series>();
+            var series = x as Series;
 
-            DateTime result;
-            if (series != null && DateTime.TryParse(series.AirTime, out result))
+            if (series == null)
             {
-                return result;
-            } 
+                var season = x as Season;
+
+                if (season != null)
+                {
+                    series = season.Series;
+                }
+                else
+                {
+                    var episode = x as Episode;
+
+                    if (episode != null)
+                    {
+                        series = episode.Series;
+                    }
+                }
+            }
+
+            if (series != null)
+            {
+                DateTime result;
+                if (DateTime.TryParse(series.AirTime, out result))
+                {
+                    return result;
+                }
+            }
+
             return DateTime.MinValue;
         }
 

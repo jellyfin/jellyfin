@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
@@ -26,6 +27,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Items/{Id}/Images", "GET")]
     [Api(Description = "Gets information about an item's images")]
+    [Authenticated]
     public class GetItemImageInfos : IReturn<List<ImageInfo>>
     {
         /// <summary>
@@ -56,6 +58,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Items/{Id}/Images/{Type}/{Index}/Index", "POST")]
     [Api(Description = "Updates the index for an item image")]
+    [Authenticated]
     public class UpdateItemImageIndex : IReturnVoid
     {
         /// <summary>
@@ -137,6 +140,7 @@ namespace MediaBrowser.Api.Images
     [Route("/Items/{Id}/Images/{Type}", "DELETE")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "DELETE")]
     [Api(Description = "Deletes an item image")]
+    [Authenticated]
     public class DeleteItemImage : DeleteImageRequest, IReturnVoid
     {
         /// <summary>
@@ -153,6 +157,7 @@ namespace MediaBrowser.Api.Images
     [Route("/Users/{Id}/Images/{Type}", "DELETE")]
     [Route("/Users/{Id}/Images/{Type}/{Index}", "DELETE")]
     [Api(Description = "Deletes a user image")]
+    [Authenticated]
     public class DeleteUserImage : DeleteImageRequest, IReturnVoid
     {
         /// <summary>
@@ -169,6 +174,7 @@ namespace MediaBrowser.Api.Images
     [Route("/Users/{Id}/Images/{Type}", "POST")]
     [Route("/Users/{Id}/Images/{Type}/{Index}", "POST")]
     [Api(Description = "Posts a user image")]
+    [Authenticated]
     public class PostUserImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
     {
         /// <summary>
@@ -191,6 +197,7 @@ namespace MediaBrowser.Api.Images
     [Route("/Items/{Id}/Images/{Type}", "POST")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "POST")]
     [Api(Description = "Posts an item image")]
+    [Authenticated]
     public class PostItemImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
     {
         /// <summary>

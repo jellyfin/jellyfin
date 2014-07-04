@@ -10,12 +10,15 @@ namespace MediaBrowser.Model.Configuration
         public bool SaveImagePathsInNfo { get; set; }
         public bool EnablePathSubstitution { get; set; }
 
+        public bool EnableExtraThumbsDuplication { get; set; }
+
         public XbmcMetadataOptions()
         {
             ReleaseDateFormat = "yyyy-MM-dd";
 
             SaveImagePathsInNfo = true;
             EnablePathSubstitution = true;
+            EnableExtraThumbsDuplication = true;
         }
     }
 }

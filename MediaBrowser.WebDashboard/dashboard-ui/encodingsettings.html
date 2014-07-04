@@ -1,5 +1,4 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <title>${TitleAdvanced}</title>
@@ -14,6 +13,7 @@
                     <a href="advanced.html" data-role="button">${TabGeneral}</a>
                     <a href="notificationsettings.html" data-role="button">${TabNotifications}</a>
                     <a href="advancedpaths.html" data-role="button">${TabPaths}</a>
+                    <a href="appsplayback.html" data-role="button">${TabResume}</a>
                     <a href="advancedserversettings.html" data-role="button">${TabServer}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabTranscoding}</a>
                 </div>
@@ -42,6 +42,16 @@
 
                     <br />
                     <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="txtTranscodingTempPath">${LabelTranscodingTempPath}</label>
+                            <div style="display: inline-block; width: 92%;">
+                                <input type="text" id="txtTranscodingTempPath" name="txtTranscodingTempPath" data-mini="true" />
+                            </div>
+                            <button id="btnSelectTranscodingTempPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                            <div class="fieldDescription">
+                                ${LabelTranscodingTempPathHelp}
+                            </div>
+                        </li>
                         <li>
                             <label for="txtDownMixAudioBoost">${LabelDownMixAudioScale}</label>
                             <input type="number" id="txtDownMixAudioBoost" pattern="[0-9]*" required="required" min=".5" max="3" step=".1" data-mini="true" />

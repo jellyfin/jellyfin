@@ -40,7 +40,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ITaskManager _taskManager;
-        private readonly IJsonSerializer _json;
 
         private readonly IDtoService _dtoService;
         private readonly ILocalizationManager _localization;
@@ -58,7 +57,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
 
-        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, IJsonSerializer json, ILocalizationManager localization)
+        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization)
         {
             _config = config;
             _fileSystem = fileSystem;
@@ -67,12 +66,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _userManager = userManager;
             _libraryManager = libraryManager;
             _taskManager = taskManager;
-            _json = json;
             _localization = localization;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
 
-            _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, _itemRepo);
+            _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger);
         }
 
         /// <summary>

@@ -51,6 +51,7 @@ namespace MediaBrowser.Api
     /// Class DeleteUser
     /// </summary>
     [Route("/Users/{Id}", "DELETE", Summary = "Deletes a user")]
+    [Authenticated]
     public class DeleteUser : IReturnVoid
     {
         /// <summary>
@@ -107,6 +108,7 @@ namespace MediaBrowser.Api
     /// Class UpdateUserPassword
     /// </summary>
     [Route("/Users/{Id}/Password", "POST", Summary = "Updates a user's password")]
+    [Authenticated]
     public class UpdateUserPassword : IReturnVoid
     {
         /// <summary>
@@ -138,6 +140,7 @@ namespace MediaBrowser.Api
     /// Class UpdateUser
     /// </summary>
     [Route("/Users/{Id}", "POST", Summary = "Updates a user")]
+    [Authenticated]
     public class UpdateUser : UserDto, IReturnVoid
     {
     }
@@ -146,6 +149,7 @@ namespace MediaBrowser.Api
     /// Class CreateUser
     /// </summary>
     [Route("/Users", "POST", Summary = "Creates a user")]
+    [Authenticated]
     public class CreateUser : UserDto, IReturn<UserDto>
     {
     }

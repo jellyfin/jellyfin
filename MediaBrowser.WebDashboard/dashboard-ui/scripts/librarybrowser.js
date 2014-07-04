@@ -52,7 +52,7 @@
             try {
                 localStorage.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
             } catch (e) {
-                
+
             }
         },
 
@@ -810,7 +810,7 @@
                     dataSrc = ' data-src="' + imgUrl + '"';
                 }
 
-                var progressHtml = options.showProgress === false ? '' : LibraryBrowser.getItemProgressBarHtml(item);
+                var progressHtml = options.showProgress === false || item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 
                 html += '<div class="' + imageCssClass + '" style="' + style + '"' + dataSrc + '>';
 
@@ -842,9 +842,9 @@
                 if (!options.overlayText) {
 
                     if (progressHtml) {
-                        html += '<div class="posterItemTextOverlay posterItemProgressContainer">';
+                        html += '<div class="posterItemTextOverlay">';
                         html += "<div class='posterItemProgress miniPosterItemProgress'>";
-                        html += progressHtml;
+                        html += progressHtml || "&nbsp;";
                         html += "</div>";
                         html += "</div>";
                     }
@@ -903,7 +903,7 @@
                 if (options.overlayText) {
 
                     if (progressHtml) {
-                        html += "<div class='posterItemText posterItemProgress posterItemProgressContainer'>";
+                        html += "<div class='posterItemText posterItemProgress'>";
                         html += progressHtml || "&nbsp;";
                         html += "</div>";
                     }
@@ -1094,15 +1094,12 @@
 
         getPlayedIndicatorHtml: function (item) {
 
-            if (item.Type == "TvChannel") {
-                return '';
-            }
             if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet" || item.MediaType == "Video" || item.MediaType == "Game" || item.MediaType == "Book") {
-                if (item.RecursiveUnplayedItemCount) {
-                    return '<div class="unplayedIndicator">' + item.RecursiveUnplayedItemCount + '</div>';
+                if (item.UserData.UnplayedItemCount) {
+                    return '<div class="playedIndicator">' + item.UserData.UnplayedItemCount + '</div>';
                 }
 
-                if (item.PlayedPercentage == 100 || (item.UserData && item.UserData.Played)) {
+                if (item.UserData.PlayedPercentage >= 100 || (item.UserData && item.UserData.Played)) {
                     return '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
                 }
             }
@@ -1393,16 +1390,11 @@
                 return '<progress class="itemProgressBar recordingProgressBar" min="0" max="100" value="' + item.CompletionPercentage + '"></progress>';
             }
 
-            if (item.UserData && item.UserData.PlaybackPositionTicks && item.RunTimeTicks) {
+            var pct = item.PlayedPercentage;
 
-                var tooltip = Dashboard.getDisplayTime(item.UserData.PlaybackPositionTicks) + " / " + Dashboard.getDisplayTime(item.RunTimeTicks);
+            if (pct && pct < 100) {
 
-                var pct = (item.UserData.PlaybackPositionTicks / item.RunTimeTicks) * 100;
-
-                if (pct && pct < 100) {
-
-                    return '<progress title="' + tooltip + '" class="itemProgressBar" min="0" max="100" value="' + pct + '"></progress>';
-                }
+                return '<progress class="itemProgressBar" min="0" max="100" value="' + pct + '"></progress>';
             }
 
             return null;
@@ -1640,7 +1632,7 @@
                 html += "</a>";
             }
 
-            var progressHtml = LibraryBrowser.getItemProgressBarHtml(item);
+            var progressHtml = item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 
             if (progressHtml) {
                 html += '<div class="detailImageProgressContainer">';

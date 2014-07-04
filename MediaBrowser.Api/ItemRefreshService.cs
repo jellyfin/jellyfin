@@ -13,10 +13,16 @@ namespace MediaBrowser.Api
 {
     public class BaseRefreshRequest : IReturnVoid
     {
-        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
-        public bool Forced { get; set; }
+        [ApiMember(Name = "MetadataRefreshMode", Description = "Specifies the metadata refresh mode", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
+        public MetadataRefreshMode MetadataRefreshMode { get; set; }
 
-        [ApiMember(Name = "ReplaceAllImages", Description = "Determines if images should be replaced during the refresh.", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "ImageRefreshMode", Description = "Specifies the image refresh mode", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
+        public ImageRefreshMode ImageRefreshMode { get; set; }
+
+        [ApiMember(Name = "ReplaceAllMetadata", Description = "Determines if metadata should be replaced. Only applicable if mode is FullRefresh", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
+        public bool ReplaceAllMetadata { get; set; }
+
+        [ApiMember(Name = "ReplaceAllImages", Description = "Determines if images should be replaced. Only applicable if mode is FullRefresh", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
         public bool ReplaceAllImages { get; set; }
     }
 
@@ -93,7 +99,7 @@ namespace MediaBrowser.Api
         private async Task RefreshItem(RefreshItem request, BaseItem item)
         {
             var options = GetRefreshOptions(request);
-            
+
             try
             {
                 await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
@@ -148,10 +154,10 @@ namespace MediaBrowser.Api
         {
             return new MetadataRefreshOptions
             {
-                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                ImageRefreshMode = ImageRefreshMode.FullRefresh,
-                ReplaceAllMetadata = request.Forced,
-                ReplaceAllImages = request.ReplaceAllImages
+                MetadataRefreshMode = request.MetadataRefreshMode,
+                ImageRefreshMode = request.ImageRefreshMode,
+                ReplaceAllImages = request.ReplaceAllImages,
+                ReplaceAllMetadata = request.ReplaceAllMetadata
             };
         }
     }

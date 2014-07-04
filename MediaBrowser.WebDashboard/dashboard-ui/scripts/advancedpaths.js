@@ -3,7 +3,6 @@
     function loadPage(page, config) {
 
         $('#txtCachePath', page).val(config.CachePath || '');
-        $('#txtTranscodingTempPath', page).val(config.TranscodingTempPath || '');
         $('#txtItemsByNamePath', page).val(config.ItemsByNamePath || '');
         $('#txtMetadataPath', page).val(config.MetadataPath || '');
 
@@ -43,26 +42,6 @@
                 header: Globalize.translate('HeaderSelectServerCachePath'),
 
                 instruction: Globalize.translate('HeaderSelectServerCachePathHelp')
-            });
-        });
-
-        $('#btnSelectTranscodingTempPath', page).on("click.selectDirectory", function () {
-
-            var picker = new DirectoryBrowser(page);
-
-            picker.show({
-
-                callback: function (path) {
-
-                    if (path) {
-                        $('#txtTranscodingTempPath', page).val(path);
-                    }
-                    picker.close();
-                },
-
-                header: Globalize.translate('HeaderSelectTranscodingPath'),
-
-                instruction: Globalize.translate('HeaderSelectTranscodingPathHelp')
             });
         });
 
@@ -119,7 +98,6 @@
             ApiClient.getServerConfiguration().done(function (config) {
 
                 config.CachePath = $('#txtCachePath', form).val();
-                config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
                 config.ItemsByNamePath = $('#txtItemsByNamePath', form).val();
                 config.MetadataPath = $('#txtMetadataPath', form).val();
 

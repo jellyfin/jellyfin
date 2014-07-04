@@ -1,7 +1,8 @@
 ﻿/* Now playing bar */
 .nowPlayingBar {
     padding: 6px 0 14px 0;
-    border-top: 1px solid green;
+    border-top: 2px solid green;
+    text-align: center;
 }
 
 .nowPlayingBarImage {
@@ -148,6 +149,7 @@ input[type="range"]::-ms-fill-upper {
 
     .nowPlayingBar {
         padding: 10px 5px 10px 0;
+        text-align: left;
     }
 }
 

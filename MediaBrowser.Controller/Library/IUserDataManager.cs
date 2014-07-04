@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Threading;
@@ -34,5 +35,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
         UserItemData GetUserData(Guid userId, string key);
+
+        /// <summary>
+        /// Gets the user data dto.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>UserItemDataDto.</returns>
+        UserItemDataDto GetUserDataDto(IHasUserData item, User user);
     }
 }

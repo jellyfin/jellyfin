@@ -36,6 +36,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 auth.TryGetValue("Version", out version);
             }
 
+            var token = httpReq.Headers["X-MediaBrowser-Token"];
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                token = httpReq.QueryString["api_key"];
+            }
+
             return new AuthorizationInfo
             {
                 Client = client,
@@ -43,7 +50,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 DeviceId = deviceId,
                 UserId = userId,
                 Version = version,
-                Token = httpReq.Headers["X-AUTH-TOKEN"]
+                Token = token
             };
         }
 

@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Security.Cryptography;
+using System.Text;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -1185,6 +1187,24 @@ namespace MediaBrowser.Server.Implementations.Session
             };
         }
 
+        private bool IsLocal(string remoteEndpoint)
+        {
+            if (string.IsNullOrWhiteSpace(remoteEndpoint))
+            {
+                throw new ArgumentNullException("remoteEndpoint");
+            }
+
+            // Private address space:
+            // http://en.wikipedia.org/wiki/Private_network
+
+            return remoteEndpoint.IndexOf("localhost", StringComparison.OrdinalIgnoreCase) != -1 ||
+                remoteEndpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
+                remoteEndpoint.StartsWith("192.", StringComparison.OrdinalIgnoreCase) ||
+                remoteEndpoint.StartsWith("172.", StringComparison.OrdinalIgnoreCase) ||
+                remoteEndpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
+                remoteEndpoint.StartsWith("::", StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Reports the capabilities.
         /// </summary>
@@ -1283,15 +1303,10 @@ namespace MediaBrowser.Server.Implementations.Session
                 DeviceName = session.DeviceName,
                 Id = session.Id,
                 LastActivityDate = session.LastActivityDate,
-                NowPlayingPositionTicks = session.PlayState.PositionTicks,
-                IsPaused = session.PlayState.IsPaused,
-                IsMuted = session.PlayState.IsMuted,
                 NowViewingItem = session.NowViewingItem,
                 ApplicationVersion = session.ApplicationVersion,
-                CanSeek = session.PlayState.CanSeek,
                 QueueableMediaTypes = session.QueueableMediaTypes,
                 PlayableMediaTypes = session.PlayableMediaTypes,
-                RemoteEndPoint = session.RemoteEndPoint,
                 AdditionalUsers = session.AdditionalUsers,
                 SupportedCommands = session.SupportedCommands,
                 UserName = session.UserName,

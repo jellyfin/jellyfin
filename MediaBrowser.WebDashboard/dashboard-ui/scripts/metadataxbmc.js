@@ -14,6 +14,7 @@
         $('#selectReleaseDateFormat', page).val(config.ReleaseDateFormat).selectmenu('refresh');
         $('#chkSaveImagePaths', page).checked(config.SaveImagePathsInNfo).checkboxradio('refresh');
         $('#chkEnablePathSubstitution', page).checked(config.EnablePathSubstitution).checkboxradio('refresh');
+        $('#chkEnableExtraThumbs', page).checked(config.EnableExtraThumbsDuplication).checkboxradio('refresh');
 
         Dashboard.hideLoadingMsg();
     }
@@ -47,6 +48,7 @@
                 config.ReleaseDateFormat = $('#selectReleaseDateFormat', form).val();
                 config.SaveImagePathsInNfo = $('#chkSaveImagePaths', form).checked();
                 config.EnablePathSubstitution = $('#chkEnablePathSubstitution', form).checked();
+                config.EnableExtraThumbsDuplication = $('#chkEnableExtraThumbs', form).checked();
 
                 ApiClient.updateNamedConfiguration(metadataKey, config).done(Dashboard.processServerConfigurationUpdateResult);
             });

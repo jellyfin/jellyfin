@@ -64,6 +64,9 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\SessionUpdatesEventArgs.cs">
       <Link>ApiClient\SessionUpdatesEventArgs.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Branding\BrandingOptions.cs">
+      <Link>Branding\BrandingOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelFeatures.cs">
       <Link>Channels\ChannelFeatures.cs</Link>
     </Compile>
@@ -795,6 +798,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\UserDataChangeInfo.cs">
       <Link>Session\UserDataChangeInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\System\LogFile.cs">
+      <Link>System\LogFile.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\System\SystemInfo.cs">
       <Link>System\SystemInfo.cs</Link>

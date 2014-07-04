@@ -16,9 +16,8 @@
 
                 <label for="txtManualPassword" style="text-align: left;">${LabelPassword}</label>
                 <input type="password" name="txtManualPassword" id="txtManualPassword" placeholder="password" />
-
                 <p>
-                    <button type="submit" data-theme="b" data-icon="check">
+                    <button type="submit" data-icon="check">
                         ${ButtonSignIn}
                     </button>
                 </p>
@@ -28,34 +27,13 @@
                 <div id="divUsers"></div>
 
                 <p class="localhostMessage" style="text-align: center; display: none;">${PasswordLocalhostMessage}</p>
-                <p style="text-align: center;"><a onclick="$('.manualLoginForm').show();$('.visualLoginForm').hide();$('#txtManualName').focus();" href="#">${ButtonManualLogin}</a></p>
 
             </div>
-        </div>
 
-        <div data-role="popup" id="popupLogin" class="popup" data-dismissible="false">
-            <form class="loginForm">
-                <div class="ui-bar-a" style="text-align: center;">
-                    <h3>${HeaderPleaseSignIn}</h3>
-                </div>
-                <div data-role="content">
-                    <label for="pw" class="ui-hidden-accessible">${LabelPassword}</label>
-                    <input type="password" name="pw" id="pw" value="" placeholder="password" />
-
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check">
-                            ${ButtonSignIn}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </div>
-            </form>
+            <p class="disclaimer" style="text-align: center; margin-top: 2em;"></p>
         </div>
 
         <script type="text/javascript">
-            $('.loginForm').on('submit', LoginPage.onSubmit);
             $('#manualLoginForm').on('submit', LoginPage.onManualSubmit);
         </script>
     </div>

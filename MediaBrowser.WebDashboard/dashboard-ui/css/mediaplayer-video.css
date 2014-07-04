@@ -133,7 +133,7 @@
     height: 2px!important;
 }
 
-#videoPlayer.fullscreenVideo .inactive {
+#videoPlayer .inactive {
     display: none!important;
 }
 

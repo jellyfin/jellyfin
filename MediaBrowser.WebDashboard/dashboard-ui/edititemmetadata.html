@@ -43,8 +43,8 @@
 
                                 <select data-mini="true" data-inline="true" id="selectRefreshMode">
                                     <option value="all">Refresh All Data</option>
-                                    <option value="allandimages">Refresh All Data and Images</option>
                                     <option value="missing">Add Missing Data Only</option>
+                                    <option value="advanced">Advanced</option>
                                 </select>
 
                             </div>
@@ -507,11 +507,53 @@
 
         </div>
 
+        <div data-role="popup" class="popup popupAdvancedRefresh" data-theme="a">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3 style="margin: .5em;">Refresh Metadata</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="popupAdvancedRefreshForm" style="min-width: 200px;">
+
+                    <br />
+                    <div>
+                        <label for="selectMetadataRefreshMode">Metadata refresh mode:</label>
+                        <select id="selectMetadataRefreshMode" data-mini="true">
+                            <option value="">None</option>
+                            <option value="missing">Add Missing Data Only</option>
+                            <option value="all">Refresh All Data</option>
+                        </select>
+                    </div>
+                    <br />
+                    <div>
+                        <label for="selectImageRefreshMode">Images refresh mode:</label>
+                        <select id="selectImageRefreshMode" data-mini="true">
+                            <option value="">None</option>
+                            <option value="missing">Download missing images</option>
+                            <option value="all">Replace existing images</option>
+                        </select>
+                    </div>
+                    <br />
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            Ok
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            Cancel
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
+
         <script type="text/javascript">
             $('.editItemMetadataForm').off('submit', EditItemMetadataPage.onSubmit).on('submit', EditItemMetadataPage.onSubmit);
             $('.popupConfirmDeleteForm').off('submit', EditItemMetadataPage.onDeleteFormSubmitted).on('submit', EditItemMetadataPage.onDeleteFormSubmitted);
             $('.popupIdentifyForm').off('submit', EditItemMetadataPage.onIdentificationFormSubmitted).on('submit', EditItemMetadataPage.onIdentificationFormSubmitted);
             $('.popupEditPersonForm').off('submit', EditItemMetadataPage.onPersonInfoFormSubmit).on('submit', EditItemMetadataPage.onPersonInfoFormSubmit);
+            $('.popupAdvancedRefreshForm').off('submit', EditItemMetadataPage.onRefreshFormSubmit).on('submit', EditItemMetadataPage.onRefreshFormSubmit);
         </script>
 
     </div>

@@ -499,17 +499,27 @@
 
             if (!$('.playedIndicator', posterItem).length) {
 
-                var html = '<div class="unplayedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
-
-                $(html).insertAfter($('.posterItemOverlayTarget', posterItem));
+                $('<div class="playedIndicator"></div>').insertAfter($('.posterItemOverlayTarget', posterItem));
             }
-
-        } else {
-            $('.playedIndicator', posterItem).remove();
+            $('.playedIndicator', posterItem).html('<div class="ui-icon-check ui-btn-icon-notext"></div>');
+            $('.posterItemProgress', posterItem).remove();
         }
+        else if (userData.UnplayedItemCount) {
 
-        // TODO: Handle progress bar
-        // $('.posterItemProgressContainer').remove();
+            if (!$('.playedIndicator', posterItem).length) {
+
+                $('<div class="playedIndicator"></div>').insertAfter($('.posterItemOverlayTarget', posterItem));
+            }
+            $('.playedIndicator', posterItem).html(userData.UnplayedItemCount);
+        }
+        else {
+
+            $('.playedIndicator', posterItem).remove();
+
+            var progressHtml = LibraryBrowser.getItemProgressBarHtml(userData);
+
+            $('.posterItemProgress', posterItem).html(progressHtml);
+        }
     }
 
     function onUserDataChanged(userData) {

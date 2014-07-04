@@ -782,7 +782,7 @@ a.itemTag:hover {
     background: rgba(248, 58, 34, .8);
 }
 
-.unplayedIndicator, .playedIndicator {
+.playedIndicator {
     display: block;
     position: absolute;
     top: 5px;
@@ -798,7 +798,7 @@ a.itemTag:hover {
     background: rgba(82, 181, 75, .8);
 }
 
-    .unplayedIndicator div:after, .playedIndicator div:after {
+    .playedIndicator div:after {
         background-color: transparent !important;
     }
 

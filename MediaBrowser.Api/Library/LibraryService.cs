@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -226,6 +227,7 @@ namespace MediaBrowser.Api.Library
     /// <summary>
     /// Class LibraryService
     /// </summary>
+    [Authenticated]
     public class LibraryService : BaseApiService
     {
         /// <summary>

@@ -212,6 +212,12 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             if (item.IsFolder)
             {
+                var userData = _userDataRepository.GetUserData(user.Id, item.GetUserDataKey());
+
+                // Skip the user data manager because we've already looped through the recursive tree and don't want to do it twice
+                // TODO: Improve in future
+                dto.UserData = GetUserItemDataDto(userData);
+
                 var folder = (Folder)item;
 
                 dto.ChildCount = GetChildCount(folder, user);
@@ -220,15 +226,15 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     SetSpecialCounts(folder, user, dto, fields);
                 }
+
+                dto.UserData.Played = dto.PlayedPercentage.HasValue && dto.PlayedPercentage.Value >= 100;
+                dto.UserData.PlayedPercentage = dto.PlayedPercentage;
+                dto.UserData.UnplayedItemCount = dto.RecursiveUnplayedItemCount;
             }
 
-            var userData = _userDataRepository.GetUserData(user.Id, item.GetUserDataKey());
-
-            dto.UserData = GetUserItemDataDto(userData);
-
-            if (item.IsFolder)
+            else
             {
-                dto.UserData.Played = dto.PlayedPercentage.HasValue && dto.PlayedPercentage.Value >= 100;
+                dto.UserData = _userDataRepository.GetUserDataDto(item, user);
             }
 
             dto.PlayAccess = item.GetPlayAccess(user);
@@ -1110,16 +1116,17 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (episode != null)
             {
-                series = item.FindParent<Series>();
+                series = episode.Series;
 
-                dto.SeriesId = GetDtoId(series);
-                dto.SeriesName = series.Name;
-                dto.AirTime = series.AirTime;
-                dto.SeriesStudio = series.Studios.FirstOrDefault();
-
-                dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb);
-
-                dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+                if (series != null)
+                {
+                    dto.SeriesId = GetDtoId(series);
+                    dto.SeriesName = series.Name;
+                    dto.AirTime = series.AirTime;
+                    dto.SeriesStudio = series.Studios.FirstOrDefault();
+                    dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb);
+                    dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+                }
             }
 
             // Add SeasonInfo
@@ -1127,14 +1134,17 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (season != null)
             {
-                series = item.FindParent<Series>();
+                series = season.Series;
 
-                dto.SeriesId = GetDtoId(series);
-                dto.SeriesName = series.Name;
-                dto.AirTime = series.AirTime;
-                dto.SeriesStudio = series.Studios.FirstOrDefault();
+                if (series != null)
+                {
+                    dto.SeriesId = GetDtoId(series);
+                    dto.SeriesName = series.Name;
+                    dto.AirTime = series.AirTime;
+                    dto.SeriesStudio = series.Studios.FirstOrDefault();
 
-                dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+                    dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+                }
             }
 
             var game = item as Game;

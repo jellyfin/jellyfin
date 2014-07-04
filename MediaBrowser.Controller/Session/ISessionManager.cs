@@ -219,7 +219,13 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>Task{SessionInfo}.</returns>
-        Task<AuthenticationResult> AuthenticateNewSession(string username, string password, string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint);
+        Task<AuthenticationResult> AuthenticateNewSession(string username, 
+            string password, 
+            string clientType, 
+            string appVersion, 
+            string deviceId, 
+            string deviceName, 
+            string remoteEndPoint);
 
         /// <summary>
         /// Reports the capabilities.

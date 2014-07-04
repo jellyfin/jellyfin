@@ -170,7 +170,6 @@ pre, textarea.pre {
 
 .imgLogoText {
     height: 45px;
-    display: none;
     margin-left: 5px;
 }
 
@@ -409,7 +408,6 @@ h1 .imageLink {
 
     .imgLogoText {
         height: 50px;
-        display: inline;
     }
 
     .header {
@@ -689,6 +687,7 @@ h1 .imageLink {
     z-index: 1097;
     color: #fff;
     border: 0 !important;
+    background-color: #111;
 }
 
 .footerNotification {

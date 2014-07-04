@@ -1,83 +1,48 @@
-﻿var LogPage = {
+﻿(function () {
 
-    onPageShow: function () {
+    $(document).on('pagebeforeshow', "#logPage", function () {
 
         var page = this;
-        
-        LogPage.startLine = 0;
 
-        $('#logContents', page).html('');
+        ApiClient.getJSON(ApiClient.getUrl('System/Logs')).done(function (logs) {
 
-        $(ApiClient).on("websocketmessage", LogPage.onWebSocketMessage).on("websocketopen", LogPage.onWebSocketConnectionChange).on("websocketerror", LogPage.onWebSocketConnectionChange).on("websocketclose", LogPage.onWebSocketConnectionChange);
+            var html = '';
 
-        LogPage.startInterval();
+            html += '<ul data-role="listview" data-inset="true">';
 
-        ApiClient.getSystemInfo().done(function(systemInfo) {
+            html += logs.map(function (log) {
 
-            $('#logPath', page).html(systemInfo.LogPath);
+                var logUrl = ApiClient.getUrl('System/Logs/Log', {
+                    name: log.Name
+                });
+                var logHtml = '<li><a href="' + logUrl + '" target="_blank">';
+
+                logHtml += '<h3>';
+                logHtml += log.Name;
+                logHtml += '</h3>';
+
+                var date = parseISO8601Date(log.DateModified, { toLocal: true });
+
+                var text = date.toLocaleDateString();
+
+                text += ' ' + LiveTvHelpers.getDisplayTime(date);
+
+                logHtml += '<p>' + text + '</p>';
+
+                logHtml += '</li>';
+
+                return logHtml;
+
+            })
+                .join('');
+
+            html += '</ul>';
+
+            $('.serverLogs', page).html(html).trigger('create');
 
         });
-    },
 
-    onPageHide: function () {
 
-        $(ApiClient).off("websocketmessage", LogPage.onWebSocketMessage).off("websocketopen", LogPage.onWebSocketConnectionChange).off("websocketerror", LogPage.onWebSocketConnectionChange).off("websocketclose", LogPage.onWebSocketConnectionChange);
+    });
 
-        LogPage.stopInterval();
-    },
-
-    startInterval: function () {
-
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("LogFileStart", "0,2000");
-        } 
-    },
-
-    stopInterval: function () {
-
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("LogFileStop");
-        }
-    },
-
-    onWebSocketConnectionChange: function () {
-        LogPage.stopInterval();
-        LogPage.startInterval();
-    },
-
-    onWebSocketMessage: function (e, msg) {
-
-        if (msg.MessageType == "LogFile") {
-            LogPage.appendLines(msg.Data);
-        }
-    },
-
-    appendLines: function (lines) {
-
-        if (!lines.length) {
-            return;
-        }
-
-        LogPage.startLine += lines.length;
-
-        lines = lines.join('\n') + '\n';
-
-        var elem = $('#logContents', $.mobile.activePage).append(lines)[0];
-
-        elem.style.height = (elem.scrollHeight) + 'px';
-
-        if ($('#chkAutoScroll', $.mobile.activePage).checked()) {
-            $('html, body').animate({ scrollTop: $(document).height() }, 'slow');
-        }
-    },
-
-    updateAutoScroll: function (value) {
-
-        var page = $.mobile.activePage;
-        
-        $('#chkAutoScrollBottom', page).checked(value).checkboxradio('refresh');
-        $('#chkAutoScroll', page).checked(value).checkboxradio('refresh');
-    }
-};
-
-$(document).on('pageshow', "#logPage", LogPage.onPageShow).on('pagehide', "#logPage", LogPage.onPageHide);
+})();

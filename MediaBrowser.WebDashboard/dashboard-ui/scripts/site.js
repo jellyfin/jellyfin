@@ -685,10 +685,6 @@ var Dashboard = {
             href: "userprofiles.html",
             selected: page.hasClass("userProfilesConfigurationPage") || (pageElem.id == "mediaLibraryPage" && getParameterByName('userId'))
         }, {
-            name: "App Settings",
-            href: "appsplayback.html",
-            selected: page.hasClass("appsPage")
-        }, {
             name: "Advanced",
             divider: true,
             href: "advanced.html",
@@ -1190,22 +1186,28 @@ var Dashboard = {
     }
 };
 
-if (!window.WebSocket) {
+(function () {
 
-    alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
-}
+    if (!window.WebSocket) {
 
-else if (!IsStorageEnabled()) {
-    alert("This browser does not support local storage or is running in private mode. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
-}
+        alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
+    }
 
-var ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
+    else if (!IsStorageEnabled()) {
+        alert("This browser does not support local storage or is running in private mode. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
+    }
 
-$(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
+    window.ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
 
-$(function () {
+    $(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened)
+        .on("websocketmessage", Dashboard.onWebSocketMessageReceived);
 
     ApiClient.currentUserId(Dashboard.getCurrentUserId());
+
+})();
+
+
+$(function () {
 
     var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
 
@@ -1321,7 +1323,6 @@ $(document).on('pagebeforeshow', ".page", function () {
     var page = $(this);
 
     var userId = Dashboard.getCurrentUserId();
-    ApiClient.currentUserId(userId);
 
     if (userId) {
 

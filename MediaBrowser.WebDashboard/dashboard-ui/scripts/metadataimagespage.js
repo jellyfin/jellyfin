@@ -360,7 +360,7 @@
             return;
         }
 
-        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Preferred Local Metadata:</div>';
+        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Metadata Readers:</div>';
         html += '<ul data-role="listview" data-inset="true" data-mini="true" style="margin-top:.5em;margin-bottom:.5em;">';
 
         for (var i = 0, length = plugins.length; i < length; i++) {

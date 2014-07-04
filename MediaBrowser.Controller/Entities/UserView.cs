@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Entities
             var excludeFolderIds = user.Configuration.ExcludeFoldersFromGrouping.Select(i => new Guid(i)).ToList();
 
             return user.RootFolder
-                .GetChildren(user, true)
+                .GetChildren(user, true, true)
                 .OfType<Folder>()
                 .Where(i => !excludeFolderIds.Contains(i.Id) && !IsExcludedFromGrouping(i));
         }

@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
 using System;
@@ -93,7 +92,9 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
             if (options != null && !string.IsNullOrWhiteSpace(request.NotificationType))
             {
-                return _userManager.Users.Where(i => _config.Configuration.NotificationOptions.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N"), i.Configuration))
+                var config = GetConfiguration();
+
+                return _userManager.Users.Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N"), i.Configuration))
                    .Select(i => i.Id.ToString("N"));
             }
 

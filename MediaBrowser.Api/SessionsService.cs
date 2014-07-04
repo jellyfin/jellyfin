@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
 using ServiceStack;
@@ -14,6 +15,7 @@ namespace MediaBrowser.Api
     /// Class GetSessions
     /// </summary>
     [Route("/Sessions", "GET", Summary = "Gets a list of sessions")]
+    [Authenticated]
     public class GetSessions : IReturn<List<SessionInfoDto>>
     {
         [ApiMember(Name = "ControllableByUserId", Description = "Optional. Filter by sessions that a given user is allowed to remote control.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -27,6 +29,7 @@ namespace MediaBrowser.Api
     /// Class DisplayContent
     /// </summary>
     [Route("/Sessions/{Id}/Viewing", "POST", Summary = "Instructs a session to browse to an item or view")]
+    [Authenticated]
     public class DisplayContent : IReturnVoid
     {
         /// <summary>
@@ -59,6 +62,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Sessions/{Id}/Playing", "POST", Summary = "Instructs a session to play an item")]
+    [Authenticated]
     public class Play : IReturnVoid
     {
         /// <summary>
@@ -91,6 +95,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Sessions/{Id}/Playing/{Command}", "POST", Summary = "Issues a playstate command to a client")]
+    [Authenticated]
     public class SendPlaystateCommand : IReturnVoid
     {
         /// <summary>
@@ -115,6 +120,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Sessions/{Id}/System/{Command}", "POST", Summary = "Issues a system command to a client")]
+    [Authenticated]
     public class SendSystemCommand : IReturnVoid
     {
         /// <summary>
@@ -133,6 +139,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Sessions/{Id}/Command/{Command}", "POST", Summary = "Issues a system command to a client")]
+    [Authenticated]
     public class SendGeneralCommand : IReturnVoid
     {
         /// <summary>
@@ -151,6 +158,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Sessions/{Id}/Command", "POST", Summary = "Issues a system command to a client")]
+    [Authenticated]
     public class SendFullGeneralCommand : GeneralCommand, IReturnVoid
     {
         /// <summary>
@@ -162,6 +170,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Sessions/{Id}/Message", "POST", Summary = "Issues a command to a client to display a message to the user")]
+    [Authenticated]
     public class SendMessageCommand : IReturnVoid
     {
         /// <summary>
@@ -182,6 +191,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Sessions/{Id}/Users/{UserId}", "POST", Summary = "Adds an additional user to a session")]
+    [Authenticated]
     public class AddUserToSession : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
@@ -192,6 +202,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Sessions/{Id}/Users/{UserId}", "DELETE", Summary = "Removes an additional user from a session")]
+    [Authenticated]
     public class RemoveUserFromSession : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
@@ -202,7 +213,6 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Sessions/Capabilities", "POST", Summary = "Updates capabilities for a device")]
-    [Route("/Sessions/{Id}/Capabilities", "POST", Summary = "Updates capabilities for a device")]
     public class PostCapabilities : IReturnVoid
     {
         /// <summary>

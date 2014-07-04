@@ -234,7 +234,7 @@ namespace MediaBrowser.Providers.MediaInfo
             await _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
 
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
-                options.MetadataRefreshMode == MetadataRefreshMode.EnsureMetadata)
+                options.MetadataRefreshMode == MetadataRefreshMode.Default)
             {
                 try
                 {
@@ -460,7 +460,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, currentStreams.Count, options.DirectoryService, false).ToList();
 
-            var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.EnsureMetadata ||
+            var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
                                             options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
             if (enableSubtitleDownloading && (_config.Configuration.SubtitleOptions.DownloadEpisodeSubtitles &&

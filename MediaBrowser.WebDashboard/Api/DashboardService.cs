@@ -521,6 +521,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "mediacontroller.js",
                                 "chromecast.js",
                                 "backdrops.js",
+                                "branding.js",
 
                                 "mediaplayer.js",
                                 "mediaplayer-video.js",
@@ -529,7 +530,6 @@ namespace MediaBrowser.WebDashboard.Api
 
                                 "ratingdialog.js",
                                 "aboutpage.js",
-                                "allusersettings.js",
                                 "alphapicker.js",
                                 "addpluginpage.js",
                                 "advancedconfigurationpage.js",
@@ -537,7 +537,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "advancedserversettings.js",
                                 "metadataadvanced.js",
                                 "appsplayback.js",
-                                "appsweather.js",
                                 "autoorganizetv.js",
                                 "autoorganizelog.js",
                                 "channels.js",

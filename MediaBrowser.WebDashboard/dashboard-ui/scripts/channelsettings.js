@@ -117,7 +117,7 @@
                     return i.getAttribute('data-channelid');
                 });
 
-            ApiClient.updateNamedConfiguration(config).done("channels", Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration("channels", config).done(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
