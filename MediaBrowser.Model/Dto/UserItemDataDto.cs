@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MediaBrowser.Model.Extensions;
+using System;
 using System.ComponentModel;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -14,6 +14,18 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The rating.</value>
         public double? Rating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the played percentage.
+        /// </summary>
+        /// <value>The played percentage.</value>
+        public double? PlayedPercentage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unplayed item count.
+        /// </summary>
+        /// <value>The unplayed item count.</value>
+        public int? UnplayedItemCount { get; set; }
 
         /// <summary>
         /// Gets or sets the playback position ticks.

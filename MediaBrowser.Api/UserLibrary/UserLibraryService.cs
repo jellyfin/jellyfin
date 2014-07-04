@@ -717,9 +717,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
 
-            data = _userDataRepository.GetUserData(user.Id, key);
-
-            return _dtoService.GetUserItemDataDto(data);
+            return _userDataRepository.GetUserDataDto(item, user);
         }
 
         /// <summary>
@@ -766,9 +764,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
 
-            data = _userDataRepository.GetUserData(user.Id, key);
-
-            return _dtoService.GetUserItemDataDto(data);
+            return _userDataRepository.GetUserDataDto(item, user);
         }
 
         /// <summary>
@@ -936,7 +932,7 @@ namespace MediaBrowser.Api.UserLibrary
                 await item.MarkUnplayed(user, _userDataRepository).ConfigureAwait(false);
             }
 
-            return _dtoService.GetUserItemDataDto(_userDataRepository.GetUserData(user.Id, item.GetUserDataKey()));
+            return _userDataRepository.GetUserDataDto(item, user);
         }
     }
 }

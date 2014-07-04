@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Logging;
@@ -1570,6 +1571,20 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return path;
+        }
+
+        public virtual void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, User user)
+        {
+            if (RunTimeTicks.HasValue)
+            {
+                double pct = RunTimeTicks.Value;
+
+                if (pct > 0)
+                {
+                    pct = userData.PlaybackPositionTicks / pct;
+                    dto.PlayedPercentage = 100 * pct;
+                }
+            }
         }
     }
 }

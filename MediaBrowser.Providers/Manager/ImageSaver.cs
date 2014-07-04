@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -441,11 +442,16 @@ namespace MediaBrowser.Providers.Manager
 
                 var extraFanartFilename = GetBackdropSaveFilename(item.GetImages(ImageType.Backdrop), "fanart", "fanart", outputIndex);
 
-                return new[]
-                    {
-                        Path.Combine(item.ContainingFolderPath, "extrafanart", extraFanartFilename + extension),
-                        Path.Combine(item.ContainingFolderPath, "extrathumbs", "thumb" + outputIndex.ToString(UsCulture) + extension)
-                    };
+                var list = new List<string>
+                {
+                    Path.Combine(item.ContainingFolderPath, "extrafanart", extraFanartFilename + extension)
+                };
+
+                if (EnableExtraThumbsDuplication)
+                {
+                    list.Add(Path.Combine(item.ContainingFolderPath, "extrathumbs", "thumb" + outputIndex.ToString(UsCulture) + extension));
+                }
+                return list.ToArray();
             }
 
             if (type == ImageType.Primary)
@@ -526,6 +532,16 @@ namespace MediaBrowser.Providers.Manager
 
             // All other paths are the same
             return new[] { GetStandardSavePath(item, type, imageIndex, mimeType, true) };
+        }
+
+        private bool EnableExtraThumbsDuplication
+        {
+            get
+            {
+                var config = _config.GetConfiguration<XbmcMetadataOptions>("xbmcmetadata");
+
+                return config.EnableExtraThumbsDuplication;
+            }
         }
 
         /// <summary>

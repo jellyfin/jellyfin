@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
@@ -23,15 +22,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly IUserDataManager _userDataManager;
         private readonly IDtoService _dtoService;
-        private readonly IItemRepository _itemRepo;
 
-        public LiveTvDtoService(IDtoService dtoService, IUserDataManager userDataManager, IImageProcessor imageProcessor, ILogger logger, IItemRepository itemRepo)
+        public LiveTvDtoService(IDtoService dtoService, IUserDataManager userDataManager, IImageProcessor imageProcessor, ILogger logger)
         {
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _imageProcessor = imageProcessor;
             _logger = logger;
-            _itemRepo = itemRepo;
         }
 
         public TimerInfoDto GetTimerInfoDto(TimerInfo info, ILiveTvService service, LiveTvProgram program, LiveTvChannel channel)
@@ -249,7 +246,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (user != null)
             {
-                dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, recording.GetUserDataKey()));
+                dto.UserData = _userDataManager.GetUserDataDto(recording, user);
 
                 dto.PlayAccess = recording.GetPlayAccess(user);
             }
@@ -322,7 +319,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (user != null)
             {
-                dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, info.GetUserDataKey()));
+                dto.UserData = _userDataManager.GetUserDataDto(info, user);
 
                 dto.PlayAccess = info.GetPlayAccess(user);
             }
@@ -401,7 +398,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (user != null)
             {
-                dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, item.GetUserDataKey()));
+                dto.UserData = _userDataManager.GetUserDataDto(item, user);
 
                 dto.PlayAccess = item.GetPlayAccess(user);
             }

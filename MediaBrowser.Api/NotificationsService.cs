@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Notifications;
 using ServiceStack;
@@ -82,6 +83,7 @@ namespace MediaBrowser.Api
         public string Ids { get; set; }
     }
 
+    [Authenticated]
     public class NotificationsService : BaseApiService
     {
         private readonly INotificationsRepository _notificationsRepo;

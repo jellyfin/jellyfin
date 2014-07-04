@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
@@ -27,6 +28,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/System/Configuration/{Key}", "GET", Summary = "Gets a named configuration")]
+    [Authenticated]
     public class GetNamedConfiguration
     {
         [ApiMember(Name = "Key", Description = "Key", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -37,11 +39,13 @@ namespace MediaBrowser.Api
     /// Class UpdateConfiguration
     /// </summary>
     [Route("/System/Configuration", "POST", Summary = "Updates application configuration")]
+    [Authenticated]
     public class UpdateConfiguration : ServerConfiguration, IReturnVoid
     {
     }
 
     [Route("/System/Configuration/{Key}", "POST", Summary = "Updates named configuration")]
+    [Authenticated]
     public class UpdateNamedConfiguration : IReturnVoid, IRequiresRequestStream
     {
         [ApiMember(Name = "Key", Description = "Key", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -51,18 +55,21 @@ namespace MediaBrowser.Api
     }
     
     [Route("/System/Configuration/MetadataOptions/Default", "GET", Summary = "Gets a default MetadataOptions object")]
+    [Authenticated]
     public class GetDefaultMetadataOptions : IReturn<MetadataOptions>
     {
 
     }
 
     [Route("/System/Configuration/MetadataPlugins", "GET", Summary = "Gets all available metadata plugins")]
+    [Authenticated]
     public class GetMetadataPlugins : IReturn<List<MetadataPluginSummary>>
     {
 
     }
 
     [Route("/System/Configuration/VideoImageExtraction", "POST", Summary = "Updates image extraction for all types")]
+    [Authenticated]
     public class UpdateVideoImageExtraction : IReturnVoid
     {
         public bool Enabled { get; set; }

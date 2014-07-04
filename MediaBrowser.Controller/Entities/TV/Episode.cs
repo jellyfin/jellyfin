@@ -91,7 +91,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return FindParent<Season>();
+                return Season;
             }
         }
 

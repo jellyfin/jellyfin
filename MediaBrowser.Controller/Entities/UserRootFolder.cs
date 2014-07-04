@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,6 +51,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 LibraryManager.RegisterItem(item);
             }
+        }
+
+        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, User user)
+        {
+            // Nothing meaninful here and will only waste resources
         }
     }
 }

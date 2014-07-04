@@ -87,18 +87,6 @@ namespace MediaBrowser.ServerApplication.Native
         }
 
         /// <summary>
-        /// Opens the standard API documentation.
-        /// </summary>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="appHost">The app host.</param>
-        /// <param name="logger">The logger.</param>
-        public static void OpenStandardApiDocumentation(IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
-        {
-            OpenUrl("http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
-                      appHost.WebApplicationName + "/metadata", logger);
-        }
-
-        /// <summary>
         /// Opens the URL.
         /// </summary>
         /// <param name="url">The URL.</param>

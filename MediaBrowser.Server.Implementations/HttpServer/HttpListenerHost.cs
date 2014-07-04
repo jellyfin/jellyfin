@@ -363,19 +363,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             try
             {
-                var errorResponse = new ErrorResponse
-                {
-                    ResponseStatus = new ResponseStatus
-                    {
-                        ErrorCode = ex.GetType().GetOperationName(),
-                        Message = ex.Message,
-                        StackTrace = ex.StackTrace,
-                    }
-                };
-
                 var operationName = context.Request.GetOperationName();
                 var httpReq = GetRequest(context, operationName);
                 var httpRes = httpReq.Response;
+
+                if (httpRes.IsClosed)
+                {
+                    return;
+                }
+
                 var contentType = httpReq.ResponseContentType;
 
                 var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
@@ -397,6 +393,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 }
 
                 httpRes.ContentType = contentType;
+
+                var errorResponse = new ErrorResponse
+                {
+                    ResponseStatus = new ResponseStatus
+                    {
+                        ErrorCode = ex.GetType().GetOperationName(),
+                        Message = ex.Message,
+                        StackTrace = ex.StackTrace,
+                    }
+                };
 
                 serializer(httpReq, errorResponse, httpRes);
 

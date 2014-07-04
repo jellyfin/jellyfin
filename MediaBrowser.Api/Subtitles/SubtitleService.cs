@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.IO;
+using System.Linq;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
@@ -9,13 +11,64 @@ using MediaBrowser.Model.Providers;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Api.Library
+namespace MediaBrowser.Api.Subtitles
 {
+    [Route("/Videos/{Id}/Subtitles/{Index}", "DELETE", Summary = "Deletes an external subtitle file")]
+    [Authenticated]
+    public class DeleteSubtitle
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "Index", Description = "The subtitle stream index", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "DELETE")]
+        public int Index { get; set; }
+    }
+
+    [Route("/Items/{Id}/RemoteSearch/Subtitles/{Language}", "GET")]
+    [Authenticated]
+    public class SearchRemoteSubtitles : IReturn<List<RemoteSubtitleInfo>>
+    {
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "Language", Description = "Language", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Language { get; set; }
+    }
+
+    [Route("/Items/{Id}/RemoteSearch/Subtitles/Providers", "GET")]
+    [Authenticated]
+    public class GetSubtitleProviders : IReturn<List<SubtitleProviderInfo>>
+    {
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Items/{Id}/RemoteSearch/Subtitles/{SubtitleId}", "POST")]
+    [Authenticated]
+    public class DownloadRemoteSubtitles : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "SubtitleId", Description = "SubtitleId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string SubtitleId { get; set; }
+    }
+
+    [Route("/Providers/Subtitles/Subtitles/{Id}", "GET")]
+    [Authenticated]
+    public class GetRemoteSubtitles : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     [Route("/Videos/{Id}/{MediaSourceId}/Subtitles/{Index}/Stream.{Format}", "GET", Summary = "Gets subtitles in a specified format (vtt).")]
     public class GetSubtitle
     {
@@ -39,55 +92,6 @@ namespace MediaBrowser.Api.Library
         public long StartPositionTicks { get; set; }
     }
 
-    [Route("/Videos/{Id}/Subtitles/{Index}", "DELETE", Summary = "Deletes an external subtitle file")]
-    public class DeleteSubtitle
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string Id { get; set; }
-
-        [ApiMember(Name = "Index", Description = "The subtitle stream index", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "DELETE")]
-        public int Index { get; set; }
-    }
-
-    [Route("/Items/{Id}/RemoteSearch/Subtitles/{Language}", "GET")]
-    public class SearchRemoteSubtitles : IReturn<List<RemoteSubtitleInfo>>
-    {
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-
-        [ApiMember(Name = "Language", Description = "Language", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Language { get; set; }
-    }
-
-    [Route("/Items/{Id}/RemoteSearch/Subtitles/Providers", "GET")]
-    public class GetSubtitleProviders : IReturn<List<SubtitleProviderInfo>>
-    {
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
-    [Route("/Items/{Id}/RemoteSearch/Subtitles/{SubtitleId}", "POST")]
-    public class DownloadRemoteSubtitles : IReturnVoid
-    {
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Id { get; set; }
-
-        [ApiMember(Name = "SubtitleId", Description = "SubtitleId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string SubtitleId { get; set; }
-    }
-
-    [Route("/Providers/Subtitles/Subtitles/{Id}", "GET")]
-    public class GetRemoteSubtitles : IReturnVoid
-    {
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
-    [Authenticated]
     public class SubtitleService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
@@ -101,14 +105,6 @@ namespace MediaBrowser.Api.Library
             _subtitleEncoder = subtitleEncoder;
         }
 
-        public object Get(SearchRemoteSubtitles request)
-        {
-            var video = (Video)_libraryManager.GetItemById(request.Id);
-
-            var response = _subtitleManager.SearchSubtitles(video, request.Language, CancellationToken.None).Result;
-
-            return ToOptimizedResult(response);
-        }
         public object Get(GetSubtitle request)
         {
             if (string.IsNullOrEmpty(request.Format))
@@ -131,12 +127,21 @@ namespace MediaBrowser.Api.Library
 
         private async Task<Stream> GetSubtitles(GetSubtitle request)
         {
-            return await _subtitleEncoder.GetSubtitles(request.Id, 
-                request.MediaSourceId, 
-                request.Index, 
+            return await _subtitleEncoder.GetSubtitles(request.Id,
+                request.MediaSourceId,
+                request.Index,
                 request.Format,
                 request.StartPositionTicks,
                 CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public object Get(SearchRemoteSubtitles request)
+        {
+            var video = (Video)_libraryManager.GetItemById(request.Id);
+
+            var response = _subtitleManager.SearchSubtitles(video, request.Language, CancellationToken.None).Result;
+
+            return ToOptimizedResult(response);
         }
 
         public void Delete(DeleteSubtitle request)

@@ -65,6 +65,7 @@
     <Compile Include="ApiClient\IServerEvents.cs" />
     <Compile Include="ApiClient\GeneralCommandEventArgs.cs" />
     <Compile Include="ApiClient\SessionUpdatesEventArgs.cs" />
+    <Compile Include="Branding\BrandingOptions.cs" />
     <Compile Include="Channels\ChannelFeatures.cs" />
     <Compile Include="Channels\ChannelInfo.cs" />
     <Compile Include="Channels\ChannelItemQuery.cs" />
@@ -294,6 +295,7 @@
     <Compile Include="Session\SessionInfoDto.cs" />
     <Compile Include="Session\SessionUserInfo.cs" />
     <Compile Include="Session\UserDataChangeInfo.cs" />
+    <Compile Include="System\LogFile.cs" />
     <Compile Include="Themes\AppTheme.cs" />
     <Compile Include="Themes\AppThemeInfo.cs" />
     <Compile Include="Themes\ThemeImage.cs" />

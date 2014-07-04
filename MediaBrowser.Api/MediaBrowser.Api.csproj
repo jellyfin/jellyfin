@@ -65,11 +65,12 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="BrandingService.cs" />
     <Compile Include="ChannelService.cs" />
     <Compile Include="Dlna\DlnaServerService.cs" />
     <Compile Include="Dlna\DlnaService.cs" />
     <Compile Include="Library\ChapterService.cs" />
-    <Compile Include="Library\SubtitleService.cs" />
+    <Compile Include="Subtitles\SubtitleService.cs" />
     <Compile Include="Movies\CollectionService.cs" />
     <Compile Include="Music\AlbumsService.cs" />
     <Compile Include="AppThemeService.cs" />
@@ -139,7 +140,6 @@
     <Compile Include="UserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VideosService.cs" />
-    <Compile Include="WebSocket\LogFileWebSocketListener.cs" />
     <Compile Include="WebSocket\SessionInfoWebSocketListener.cs" />
     <Compile Include="WebSocket\SystemInfoWebSocketListener.cs" />
   </ItemGroup>
