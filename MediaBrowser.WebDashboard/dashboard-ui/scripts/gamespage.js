@@ -1,6 +1,8 @@
 
 (function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'List');
+
     // The base query options
     var query = {
 
@@ -8,7 +10,7 @@
         SortOrder: "Ascending",
         MediaTypes: "Game",
         Recursive: true,
-        Fields: "Genres,Studios,PrimaryImageAspectRatio",
+        Fields: "Genres,Studios,PrimaryImageAspectRatio,SortName",
         StartIndex: 0
     };
 
@@ -32,14 +34,25 @@
 
             updateFilterControls(page);
 
-            html = LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "auto",
-                context: 'games',
-                showTitle: true,
-                showParentTitle: true,
-                centerText: true
-            });
+            if (view == "List") {
+
+                html = LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    context: 'games',
+                    sortBy: query.SortBy
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "Poster") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "auto",
+                    context: 'games',
+                    showTitle: true,
+                    showParentTitle: true,
+                    centerText: true
+                });
+            }
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
@@ -103,6 +116,8 @@
             this.checked = filters.indexOf(',' + filterName) != -1;
 
         }).checkboxradio('refresh');
+
+        $('#selectView', page).val(view).selectmenu('refresh');
 
         $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
@@ -193,8 +208,27 @@
             reloadItems(page);
         });
 
+        $('#selectView', this).on('change', function () {
+
+            view = this.value;
+
+            if (view == "Timeline") {
+
+                query.SortBy = "PremiereDate";
+                query.SortOrder = "Descending";
+                query.StartIndex = 0;
+                $('#radioPremiereDate', page)[0].click();
+
+            } else {
+                reloadItems(page);
+            }
+
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+        });
+
     }).on('pagebeforeshow', "#gamesPage", function () {
 
+        var page = this;
         query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -205,9 +239,18 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
+        var viewkey = getSavedQueryKey();
 
-        reloadItems(this);
+        LibraryBrowser.loadSavedQueryValues(viewkey, query);
+
+        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#gamesPage", function () {
 

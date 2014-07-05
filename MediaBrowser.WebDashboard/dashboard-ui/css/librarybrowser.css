@@ -1267,6 +1267,12 @@ a.itemTag:hover {
         border: 0;
     }
 
+    .itemsListview .playedIndicator {
+        right: 1em;
+        top: 55%;
+        background: rgba(82, 181, 75, .8);
+    }
+
 .listviewImage {
     width: 80px;
     height: 80px;

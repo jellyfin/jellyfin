@@ -498,21 +498,24 @@
             return ApiClient.getScaledImageUrl(item.Id || item.ItemId, options);
 
         },
-        
-        getListViewIndex: function(item, sortBy) {
+
+        getListViewIndex: function (item, sortBy) {
 
             sortBy = (sortBy || '').toLowerCase();
-            
+            var code, name;
+
             if (sortBy.indexOf('sortname') == 0) {
 
                 if (item.Type == 'Episode') return '';
-                
+
                 // SortName
-                var name = (item.SortName || item.Name)[0];
-                
-                if (!isNaN(name)) {
+                name = (item.SortName || item.Name)[0].toUpperCase();
+
+                code = name.charCodeAt(0);
+                if (code < 65 || code > 90) {
                     return '#';
                 }
+
                 return name.toUpperCase();
             }
             if (sortBy.indexOf('officialrating') == 0) {
@@ -547,13 +550,15 @@
 
                 // SortName
                 if (!item.AlbumArtist) return '';
-                
-                var albumartist = item.AlbumArtist[0];
 
-                if (!isNaN(albumartist)) {
+                name = item.AlbumArtist[0].toUpperCase();
+
+                code = name.charCodeAt(0);
+                if (code < 65 || code > 90) {
                     return '#';
                 }
-                return albumartist.toUpperCase();
+
+                return name.toUpperCase();
             }
             return '';
         },
@@ -572,7 +577,7 @@
                 var html = '';
 
                 var itemGroupTitle = LibraryBrowser.getListViewIndex(item, options.sortBy);
-                
+
                 if (itemGroupTitle != groupTitle) {
 
                     html += '<li data-role="list-divider">';
@@ -590,7 +595,7 @@
                 if (item.ImageTags.Primary) {
 
                     // Scaling 400w episode images to 80 doesn't turn out very well
-                    var width = item.Type == 'Episode' ? 160 : 80;
+                    var width = item.Type == 'Episode' || item.Type == 'Game' ? 160 : 80;
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         width: width,
@@ -609,24 +614,62 @@
                     }
                 }
 
+                var textlines = [];
+
+                if (item.Type == 'Episode') {
+                    textlines.push(item.SeriesName || 'Unknown Series');
+                }
+                else if (item.Type == 'MusicAlbum') {
+                    textlines.push(item.AlbumArtist || 'Unknown Artist');
+                }
+
+                textlines.push(LibraryBrowser.getPosterViewDisplayName(item));
+
+                if (item.Type == 'Game') {
+                    textlines.push(item.GameSystem || 'Unknown Gane System');
+                }
+
+                textlines.push(LibraryBrowser.getMiscInfoHtml(item));
+
                 html += '<h3>';
-                html += LibraryBrowser.getPosterViewDisplayName(item);
+                html += textlines[0];
                 html += '</h3>';
 
-                html += '<p>';
-                html += LibraryBrowser.getMiscInfoHtml(item);
-                html += '</p>';
+                if (textlines.length > 1) {
+                    html += '<p>';
+                    html += textlines[1];
+                    html += '</p>';
+                }
 
                 html += '<div class="ui-li-aside">';
-                html += LibraryBrowser.getRatingHtml(item, false);
+                html += textlines[2] || LibraryBrowser.getRatingHtml(item, false);
                 html += '</div>';
 
-                if (item.UserData.UnplayedItemCount) {
-                    html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
+                if (item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.MediaType == 'Video') {
+                    if (item.UserData.UnplayedItemCount) {
+                        html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
+                    }
+                    else if (item.UserData.Played) {
+                        html += '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+                    }
                 }
                 html += '</a>';
 
-                html += '<a href="#" data-icon="ellipsis-v">';
+                var itemCommands = [];
+
+                //if (MediaController.canPlay(item)) {
+                //    itemCommands.push('playmenu');
+                //}
+
+                if (item.Type != "Recording" && item.Type != "Program") {
+                    itemCommands.push('edit');
+                }
+
+                if (item.LocalTrailerCount) {
+                    itemCommands.push('trailer');
+                }
+
+                html += '<a href="#" data-icon="ellipsis-v" data-itemid="' + item.Id + '" data-commands="' + itemCommands.join(',') + '" data-href="' + LibraryBrowser.getHref(item, options.context) + '" class="listviewMenuButton">';
                 html += '</a>';
 
                 html += '</li>';

@@ -212,9 +212,15 @@
 
     function onPosterItemTapHold(e) {
 
-        $('.tapHoldMenu').popup("close").remove();
+        showContextMenu(this);
 
-        var posterItem = this;
+        e.preventDefault();
+        return false;
+    }
+
+    function showContextMenu(posterItem) {
+
+        $('.tapHoldMenu').popup("close").remove();
 
         var itemId = posterItem.getAttribute('data-itemid');
         var commands = posterItem.getAttribute('data-commands').split(',');
@@ -234,8 +240,10 @@
             html += '<ul data-role="listview" style="min-width: 240px;">';
             html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
-            html += '<li><a href="' + posterItem.href + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
-            html += '<li><a href="' + posterItem.href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
+            var href = posterItem.getAttribute('data-href') || posterItem.href;
+            
+            html += '<li><a href="' + href + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
+            html += '<li><a href="' + href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
 
             if (user.Configuration.IsAdministrator && commands.indexOf('edit') != -1) {
                 html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
@@ -285,6 +293,11 @@
             $('.btnShuffle', elem).on('click', onShuffleButtonClick);
             $('.btnPlayTrailer', elem).on('click', onTrailerButtonClick);
         });
+    }
+
+    function onListViewMenuButtonClick(e) {
+
+        showContextMenu(this);
 
         e.preventDefault();
         return false;
@@ -470,6 +483,8 @@
         var elems = '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem,.miniBackdropPosterItem';
 
         $('.posterItem', this).on('contextmenu.posterItemMenu', onPosterItemTapHold);
+
+        $('.listviewMenuButton', this).on('click', onListViewMenuButtonClick);
 
         $('.groupedPosterItem', this).on('click', onGroupedPosterItemClick);
 
