@@ -200,5 +200,20 @@
     "ButtonOpenInNewTab": "Open in new tab",
     "ButtonShuffle": "Shuffle",
     "ButtonInstantMix": "Instant mix",
-    "ButtonResume": "Resume"
+    "ButtonResume": "Resume",
+    "HeaderScenes": "Sc\u00e9ny",
+    "HeaderAudioTracks": "Audio Tracks",
+    "HeaderSubtitles": "Subtitles",
+    "HeaderVideoQuality": "Video Quality",
+    "MessageErrorPlayingVideo": "There was an error playing the video.",
+    "MessageEnsureOpenTuner": "Please ensure there is an open tuner availalble.",
+    "ButtonHome": "Home",
+    "ButtonDashboard": "Dashboard",
+    "ButtonReports": "Reports",
+    "ButtonMetadataManager": "Metadata Manager",
+    "HeaderTime": "Time",
+    "HeaderName": "N\u00e1zev",
+    "HeaderAlbum": "Album",
+    "HeaderAlbumArtist": "Album Artist",
+    "HeaderArtist": "Artist"
 }

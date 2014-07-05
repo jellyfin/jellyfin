@@ -200,5 +200,20 @@
     "ButtonOpenInNewTab": "Open in new tab",
     "ButtonShuffle": "Shuffle",
     "ButtonInstantMix": "Instant mix",
-    "ButtonResume": "Resume"
+    "ButtonResume": "Resume",
+    "HeaderScenes": "\u05e1\u05e6\u05e0\u05d5\u05ea",
+    "HeaderAudioTracks": "Audio Tracks",
+    "HeaderSubtitles": "Subtitles",
+    "HeaderVideoQuality": "Video Quality",
+    "MessageErrorPlayingVideo": "There was an error playing the video.",
+    "MessageEnsureOpenTuner": "Please ensure there is an open tuner availalble.",
+    "ButtonHome": "Home",
+    "ButtonDashboard": "Dashboard",
+    "ButtonReports": "Reports",
+    "ButtonMetadataManager": "Metadata Manager",
+    "HeaderTime": "Time",
+    "HeaderName": "\u05e9\u05dd",
+    "HeaderAlbum": "Album",
+    "HeaderAlbumArtist": "Album Artist",
+    "HeaderArtist": "Artist"
 }
