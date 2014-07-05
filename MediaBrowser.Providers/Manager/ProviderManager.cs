@@ -188,14 +188,9 @@ namespace MediaBrowser.Providers.Manager
                 if (preferredLanguages.Count > 0)
                 {
                     result = result.Where(i => string.IsNullOrEmpty(i.Language) ||
-                                               preferredLanguages.Contains(i.Language, StringComparer.OrdinalIgnoreCase));
+                                               preferredLanguages.Contains(i.Language, StringComparer.OrdinalIgnoreCase) ||
+                                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
                 }
-
-                //if (string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase))
-                //{
-                //    result = result.Where(i => string.IsNullOrEmpty(i.Language) ||
-                //                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
-                //}
 
                 return result;
             }
