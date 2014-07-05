@@ -129,6 +129,12 @@ namespace MediaBrowser.Controller.Library
                 return 0;
             }
 
+            int val;
+            if (int.TryParse(filename, NumberStyles.Integer, CultureInfo.InvariantCulture, out val))
+            {
+                return val;
+            }
+
             // Look for one of the season folder names
             foreach (var name in SeasonFolderNames)
             {
