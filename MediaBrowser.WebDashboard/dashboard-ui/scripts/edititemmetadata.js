@@ -51,13 +51,7 @@
             Dashboard.populateLanguages($('#selectLanguage', page), languages);
             Dashboard.populateCountries($('#selectCountry', page), countries);
 
-            if (item.LocationType == "Offline") {
-                $('.saveButtonContainer', page).hide();
-            } else {
-                $('.saveButtonContainer', page).show();
-            }
-
-            $('#btnRefresh', page).buttonEnabled(true);
+            $('.btnRefresh', page).buttonEnabled(true);
             $('#btnDelete', page).buttonEnabled(true);
             $('.btnSave', page).buttonEnabled(true);
 
@@ -819,7 +813,7 @@
     function performDelete(page) {
 
         $('#btnDelete', page).buttonEnabled(false);
-        $('#btnRefresh', page).buttonEnabled(false);
+        $('.btnRefresh', page).buttonEnabled(false);
         $('.btnSave', page).buttonEnabled(false);
 
         $('#refreshLoading', page).show();
@@ -987,7 +981,7 @@
             return false;
         };
 
-        self.onRefreshFormSubmit = function() {
+        self.onRefreshFormSubmit = function () {
             var page = $(this).parents('.page');
 
             refreshFromPopupOptions(page);
@@ -1211,9 +1205,9 @@
         $('#selectMetadataRefreshMode', page).val('all').selectmenu('refresh');
         $('#selectImageRefreshMode', page).val('missing').selectmenu('refresh');
     }
-    
+
     function refreshFromPopupOptions(page) {
-        
+
         var metadataRefreshMode = $('#selectMetadataRefreshMode', page).val();
         var imageRefreshMode = $('#selectImageRefreshMode', page).val();
 
@@ -1221,7 +1215,7 @@
 
             Recursive: true,
             ImageRefreshMode: imageRefreshMode == 'none' ? 'None' : 'FullRefresh',
-            MetadataRefreshMode: metadataRefreshMode == 'none' ? 'None' : 'FullRefresh',
+            MetadataRefreshMode: metadataRefreshMode == 'none' ? 'None' : (metadataRefreshMode == 'local' ? 'ValidationOnly' : 'FullRefresh'),
             ReplaceAllImages: imageRefreshMode == imageRefreshMode == 'all',
             ReplaceAllMetadata: metadataRefreshMode == 'all'
         });
@@ -1233,7 +1227,7 @@
         $('#refreshLoading', page).show();
 
         $('#btnDelete', page).buttonEnabled(false);
-        $('#btnRefresh', page).buttonEnabled(false);
+        $('.btnRefresh', page).buttonEnabled(false);
         $('.btnSave', page).buttonEnabled(false);
 
         ApiClient.refreshItem(currentItem.Id, options).done(function () {
@@ -1246,23 +1240,21 @@
 
         var page = this;
 
-        $('#btnRefresh', this).on('click', function () {
+        $('.btnRefreshBasic', this).on('click', function () {
 
-            var metadataRefreshMode = $('#selectRefreshMode', page).val();
+            refreshWithOptions(page, {
 
-            if (metadataRefreshMode == 'advanced') {
-                performAdvancedRefresh(page);
-            } else {
+                Recursive: true,
+                ImageRefreshMode: 'FullRefresh',
+                MetadataRefreshMode: 'FullRefresh',
+                ReplaceAllImages: false,
+                ReplaceAllMetadata: true
+            });
+        });
 
-                refreshWithOptions(page, {
+        $('.btnRefreshAdvanced', this).on('click', function () {
 
-                    Recursive: true,
-                    ImageRefreshMode: 'FullRefresh',
-                    MetadataRefreshMode: 'FullRefresh',
-                    ReplaceAllImages: false,
-                    ReplaceAllMetadata: metadataRefreshMode == 'all'
-                });
-            }
+            performAdvancedRefresh(page);
         });
 
         $('#btnIdentify', page).on('click', function () {

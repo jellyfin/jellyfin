@@ -126,33 +126,29 @@
     function loadRecentlyAdded(elem, userId) {
 
         var screenWidth = $(window).width();
-
+        
         var options = {
 
-            SortBy: "DateCreated",
-            SortOrder: "Descending",
             Limit: screenWidth >= 2400 ? 30 : (screenWidth >= 1920 ? 15 : (screenWidth >= 1440 ? 10 : (screenWidth >= 800 ? 9 : 8))),
-            Recursive: true,
             Fields: "PrimaryImageAspectRatio",
-            Filters: "IsUnplayed,IsNotFolder",
-            CollapseBoxSetItems: false,
-            ExcludeLocationTypes: "Virtual,Remote"
+            IsPlayed: false,
+            IsFolder: false
         };
 
-        ApiClient.getItems(userId, options).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
             var html = '';
 
-            if (result.Items.length) {
+            if (items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
+                    items: items,
                     preferThumb: true,
                     shape: 'backdrop',
-                    showTitle: true,
-                    centerText: true,
                     context: 'home',
+                    showUnplayedIndicator: false,
+                    showChildCountIndicator: true,
                     lazy: true
                 });
                 html += '</div>';

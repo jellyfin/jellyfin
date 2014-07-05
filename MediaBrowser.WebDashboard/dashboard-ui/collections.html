@@ -6,7 +6,17 @@
 <body>
     <div id="boxsetsPage" data-role="page" class="page libraryPage backdropPage collectionEditorPage" data-backdroptype="movie,boxset" data-theme="b">
 
-        <div class="libraryViewNav scopedLibraryViewNav">
+        <div class="libraryViewNav scopedLibraryViewNav movieTabs">
+            <a href="movieslatest.html">${TabLatest}</a>
+            <a href="moviesrecommended.html">${TabSuggested}</a>
+            <a href="movies.html">${TabMovies}</a>
+            <a href="#" class="ui-btn-active">${TabCollections}</a>
+            <a href="moviegenres.html">${TabGenres}</a>
+            <a href="moviepeople.html">${TabPeople}</a>
+            <a href="moviestudios.html">${TabStudios}</a>
+        </div>
+
+        <div class="libraryViewNav scopedLibraryViewNav collectionTabs">
             <a href="#" class="ui-btn-active">${TabCollections}</a>
         </div>
 

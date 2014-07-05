@@ -56,7 +56,7 @@
     function reload(page) {
 
         Dashboard.showLoadingMsg();
-        $('#btnEdit', page).attr('href', '#');
+        $('.btnEdit', page).attr('href', '#');
 
         getPromise().done(function (item) {
 
@@ -66,7 +66,7 @@
             if (context) {
                 editQuery += '&context=' + context;
             }
-            $('#btnEdit', page).attr('href', 'edititemmetadata.html' + editQuery);
+            $('.btnEdit', page).attr('href', 'edititemmetadata.html' + editQuery);
 
             currentItem = item;
 
@@ -90,9 +90,9 @@
             Dashboard.getCurrentUser().done(function (user) {
 
                 if (MediaController.canPlay(item)) {
-                    $('#playButtonContainer', page).show();
+                    $('.btnPlay', page).show();
                 } else {
-                    $('#playButtonContainer', page).hide();
+                    $('.btnPlay', page).hide();
                 }
 
                 var editImagesHref = user.Configuration.IsAdministrator ? 'edititemimages.html' + editQuery : null;
@@ -100,9 +100,9 @@
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref));
 
                 if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
-                    $('#editButtonContainer', page).show();
+                    $('.btnEdit', page).show();
                 } else {
-                    $('#editButtonContainer', page).hide();
+                    $('.btnEdit', page).hide();
                 }
 
             });
@@ -522,7 +522,7 @@
 
         var page = this;
 
-        $('#btnPlay', page).on('click', function () {
+        $('.btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
             LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, false, "Audio", userdata.PlaybackPositionTicks);
         });

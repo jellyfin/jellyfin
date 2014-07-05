@@ -28,7 +28,8 @@
 
         html += '<div>';
         html += LibraryBrowser.getPosterViewHtml({
-            items: recommendation.Items
+            items: recommendation.Items,
+            lazy: true
         });
         html += '</div>';
 
@@ -69,16 +70,17 @@
                 preferBackdrop: true,
                 shape: 'backdrop',
                 overlayText: screenWidth >= 600,
-                showTitle: true
+                showTitle: true,
+                lazy: true
 
-            })).createPosterItemMenus();
+            })).trigger('create').createPosterItemMenus();
 
         });
 
         var url = ApiClient.getUrl("Movies/Recommendations", {
 
             userId: Dashboard.getCurrentUserId(),
-            categoryLimit: screenWidth >= 1200 ? 6 : 3,
+            categoryLimit: screenWidth >= 1200 ? 4 : 3,
             itemLimit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 7),
             Fields: "PrimaryImageAspectRatio"
         });
@@ -95,7 +97,7 @@
             var html = recommendations.map(getRecommendationHtml).join('');
 
             $('.noItemsMessage', page).hide();
-            $('.recommendations', page).html(html).createPosterItemMenus();
+            $('.recommendations', page).html(html).trigger('create').createPosterItemMenus();
         });
 
     });

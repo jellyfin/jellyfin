@@ -3,27 +3,25 @@
     $(document).on('pagebeforeshow', "#musicRecommendedPage", function () {
 
         var screenWidth = $(window).width();
+        var userId = Dashboard.getCurrentUserId();
 
         var page = this;
 
         var parentId = LibraryMenu.getTopParentId();
 
         var options = {
-
-            SortBy: "DateCreated",
-            SortOrder: "Descending",
             IncludeItemTypes: "MusicAlbum",
             Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 6),
-            Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             ParentId: parentId
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
             $('#recentlyAddedAlbums', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
+                items: items,
                 showUnplayedIndicator: false,
+                showChildCountIndicator: true,
                 shape: "square",
                 showTitle: true,
                 showParentTitle: true
@@ -32,21 +30,18 @@
         });
 
         options = {
-
-            SortBy: "DateCreated",
-            SortOrder: "Descending",
             IncludeItemTypes: "Audio",
             Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 6),
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio,AudioInfo",
+            Fields: "PrimaryImageAspectRatio",
             ParentId: parentId
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
             $('#recentlyAddedSongs', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
+                items: items,
                 showUnplayedIndicator: false,
+                showChildCountIndicator: true,
                 shape: "square",
                 showTitle: true,
                 showParentTitle: true

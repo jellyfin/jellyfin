@@ -20,7 +20,7 @@
 
         var html = '';
 
-        html += '<div id="nowPlayingBar" class="nowPlayingBar" style="display:none;">';
+        html += '<div class="nowPlayingBar" style="display:none;">';
         html += '<div style="display:inline-block;width:12px;"></div>';
 
         html += '<a class="mediaButton remoteControlButton" title="' + Globalize.translate('ButtonRemoteControl') + '" href="nowplaying.html" data-role="button" data-icon="remote" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonRemoteControl') + '</a>';

@@ -5,12 +5,12 @@ namespace MediaBrowser.Controller.Providers
 {
     public static class NameParser
     {
-        static readonly Regex[] NameMatches = new[] {
+        static readonly Regex[] NameMatches =
+        {
             new Regex(@"(?<name>.*)\((?<year>\d{4})\)"), // matches "My Movie (2001)" and gives us the name and the year
             new Regex(@"(?<name>.*)(\.(?<year>\d{4})(\.|$)).*$"), 
             new Regex(@"(?<name>.*)") // last resort matches the whole string as the name
         };
-
 
         /// <summary>
         /// Parses the name.

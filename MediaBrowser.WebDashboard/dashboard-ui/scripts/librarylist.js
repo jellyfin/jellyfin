@@ -271,7 +271,7 @@
 
             $($.mobile.activePage).append(html);
 
-            var elem = $('.tapHoldMenu').popup({ positionTo: e.target }).trigger('create').popup("open").on("popupafterclose", function () {
+            var elem = $('.tapHoldMenu').popup({ positionTo: posterItem }).trigger('create').popup("open").on("popupafterclose", function () {
 
                 $(this).off("popupafterclose").remove();
                 $(posterItem).removeClass('hasContextMenu');
@@ -289,6 +289,161 @@
         e.preventDefault();
         return false;
     }
+
+    function getGroupingHeaderHtml(item) {
+
+        var itemHtml = '';
+
+        var href = LibraryBrowser.getHref(item);
+        itemHtml += '<li><a href="' + href + '">';
+
+        var imgUrl = "css/images/media/chapterflyout.png";
+
+        if (item.ImageTags.Primary) {
+
+            itemHtml += '<img src="' + imgUrl + '" style="visibility:hidden;" />';
+            imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                width: 160,
+                tag: item.ImageTags.Primary,
+                type: "Primary",
+                index: 0
+            });
+            itemHtml += '<div class="videoChapterPopupImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+
+        } else {
+            itemHtml += '<img src="' + imgUrl + '" />';
+        }
+
+
+        itemHtml += '<h3>';
+        itemHtml += LibraryBrowser.getPosterViewDisplayName(item);
+        itemHtml += '</h3>';
+
+        var date = parseISO8601Date(item.DateCreated, { toLocal: true });
+
+        itemHtml += '<p>';
+        itemHtml += Globalize.translate('LabelAddedOnDate').replace('{0}', date.toLocaleDateString());
+        itemHtml += '</p>';
+
+        itemHtml += '</a></li>';
+
+        return itemHtml;
+    }
+
+    function onGroupedPosterItemClick(e) {
+
+        var posterItem = this;
+        var itemId = posterItem.getAttribute('data-itemid');
+
+        $(posterItem).addClass('hasContextMenu');
+
+        var userId = Dashboard.getCurrentUserId();
+
+        var promise1 = ApiClient.getItem(userId, itemId);
+
+        var options = {
+
+            Limit: parseInt($('.playedIndicator', posterItem).html() || '10'),
+            Fields: "PrimaryImageAspectRatio",
+            ParentId: itemId,
+            IsFolder: false,
+            GroupItems: false
+        };
+
+        if ($(posterItem).hasClass('unplayedGroupings')) {
+            options.IsPlayed = false;
+        }
+
+        var promise2 = ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options));
+
+        $.when(promise1, promise2).done(function (response1, response2) {
+
+            var item = response1[0];
+            var latestItems = response2[0];
+
+            if (latestItems.length == 1) {
+
+                var first = latestItems[0];
+                Dashboard.navigate(LibraryBrowser.getHref(first));
+                return;
+            }
+
+            var html = '<div data-role="popup" class="groupingMenu" data-theme="a">';
+
+            html += '<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>';
+            html += '<div>';
+            html += '<ul data-role="listview">';
+
+            var href = LibraryBrowser.getHref(item);
+            var header = Globalize.translate('HeaderLatestFromChannel').replace('{0}', '<a href="' + href + '">' + item.Name + '</a>');
+            html += '<li data-role="list-divider">' + header + '</li>';
+
+            html += '</ul>';
+
+            html += '<div class="groupingMenuScroller">';
+            html += '<ul data-role="listview">';
+
+            html += latestItems.map(function (latestItem) {
+
+                var itemHtml = '';
+
+                href = LibraryBrowser.getHref(latestItem);
+                itemHtml += '<li><a href="' + href + '">';
+
+                var imgUrl = "css/images/media/chapterflyout.png";
+
+                if (latestItem.ImageTags.Primary) {
+
+                    itemHtml += '<img src="' + imgUrl + '" style="visibility:hidden;" />';
+                    imgUrl = ApiClient.getScaledImageUrl(latestItem.Id, {
+                        width: 160,
+                        tag: latestItem.ImageTags.Primary,
+                        type: "Primary",
+                        index: 0
+                    });
+                    itemHtml += '<div class="videoChapterPopupImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+
+                } else {
+                    itemHtml += '<img src="' + imgUrl + '" />';
+                }
+
+
+                itemHtml += '<h3>';
+                itemHtml += LibraryBrowser.getPosterViewDisplayName(latestItem);
+                itemHtml += '</h3>';
+
+                var date = parseISO8601Date(item.DateCreated, { toLocal: true });
+
+                itemHtml += '<p>';
+                itemHtml += Globalize.translate('LabelAddedOnDate').replace('{0}', date.toLocaleDateString());
+                itemHtml += '</p>';
+
+                itemHtml += '</a></li>';
+
+                return itemHtml;
+
+            }).join('');
+
+            html += '</ul>';
+            html += '</div>';
+
+            html += '</div>';
+            html += '</div>';
+
+            $($.mobile.activePage).append(html);
+
+            var elem = $('.groupingMenu').popup().trigger('create').popup("open").on("popupafterclose", function () {
+
+                $(this).off("popupafterclose").remove();
+                $(posterItem).removeClass('hasContextMenu');
+
+            });
+        });
+
+        e.preventDefault();
+        return false;
+    }
+
 
     $.fn.createPosterItemMenus = function () {
 
@@ -355,8 +510,9 @@
 
         var elems = '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem,.miniBackdropPosterItem';
 
-        this.off('contextmenu.posterItemMenu', elems)
-            .on('contextmenu.posterItemMenu', elems, onPosterItemTapHold);
+        $('.posterItem', this).on('contextmenu.posterItemMenu', onPosterItemTapHold);
+
+        $('.groupedPosterItem', this).on('click', onGroupedPosterItemClick);
 
         return this.off('.posterItemHoverMenu')
             .on('mouseenter.posterItemHoverMenu', elems, onHoverIn)

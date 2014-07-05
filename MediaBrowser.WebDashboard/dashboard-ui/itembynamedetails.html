@@ -10,6 +10,7 @@
                 <a href="movieslatest.html">${TabLatest}</a>
                 <a href="moviesrecommended.html">${TabSuggested}</a>
                 <a href="movies.html">${TabMovies}</a>
+                <a href="collections.html?context=movies">${TabCollections}</a>
                 <a href="moviegenres.html" class="ui-btn-active">${TabGenres}</a>
                 <a href="moviepeople.html">${TabPeople}</a>
                 <a href="moviestudios.html">${TabStudios}</a>
@@ -20,6 +21,7 @@
                 <a href="movieslatest.html">${TabLatest}</a>
                 <a href="moviesrecommended.html">${TabSuggested}</a>
                 <a href="movies.html">${TabMovies}</a>
+                <a href="collections.html?context=movies">${TabCollections}</a>
                 <a href="moviegenres.html">${TabGenres}</a>
                 <a href="moviepeople.html" class="ui-btn-active">${TabPeople}</a>
                 <a href="moviestudios.html">${TabStudios}</a>
@@ -30,6 +32,7 @@
                 <a href="movieslatest.html">${TabLatest}</a>
                 <a href="moviesrecommended.html">${TabSuggested}</a>
                 <a href="movies.html">${TabMovies}</a>
+                <a href="collections.html?context=movies">${TabCollections}</a>
                 <a href="moviegenres.html">${TabGenres}</a>
                 <a href="moviepeople.html">${TabPeople}</a>
                 <a href="moviestudios.html" class="ui-btn-active">${TabStudios}</a>
@@ -129,19 +132,19 @@
                             <p id="itemDeathDate"></p>
 
                             <p id="itemLinks"></p>
+                            <div class="detailButtonsContainer desktopDetailButtons" style="text-align: left;">
+                                <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+                                <a class="btnEdit hide" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">${ButtonEdit}</a>
+                            </div>
                         </td>
                     </tr>
                 </table>
             </div>
             <p class="itemOverview mobileOverview"></p>
         </div>
-        <div class="detailButtonsContainer">
-            <span id="playButtonContainer" style="display: none;">
-                <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
-            </span>
-            <span id="editButtonContainer" style="display: none;">
-                <a id="btnEdit" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">${ButtonEdit}</a>
-            </span>
+        <div class="detailButtonsContainer mobileDetailButtons">
+            <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+            <a class="btnEdit hide" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">${ButtonEdit}</a>
         </div>
         <div data-role="content">
 

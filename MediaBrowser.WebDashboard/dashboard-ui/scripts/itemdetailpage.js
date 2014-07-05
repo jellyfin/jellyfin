@@ -240,6 +240,16 @@
             $('a', elem).removeClass('ui-btn-active');
             $('.lnkHomeUpcoming', page).addClass('ui-btn-active');
         }
+        else if (context == 'movies' || item.Type == 'Movie') {
+            elem = $('#movieTabs', page).show();
+            $('a', elem).removeClass('ui-btn-active');
+            
+            if (item.Type == 'BoxSet') {
+                $('.lnkCollections', page).addClass('ui-btn-active');
+            } else {
+                $('.lnkMovies', page).addClass('ui-btn-active');
+            }
+        }
         else if (item.Type == "MusicAlbum") {
             $('#albumTabs', page).show();
         }
@@ -250,10 +260,6 @@
 
         else if (item.Type == "Audio") {
             $('#songTabs', page).show();
-        }
-
-        else if (item.Type == "Movie") {
-            $('#movieTabs', page).show();
         }
 
         else if (item.Type == "ChannelVideoItem" || item.Type == "ChannelAudioItem" || item.Type == "ChannelFolderItem") {
@@ -363,7 +369,7 @@
 
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item));
 
-        if (item.Type != "Episode" && item.Type != "Movie" && item.Type != "Series") {
+        if (item.Type != "Episode" && item.Type != "Movie" && item.Type != "Series" && item.Type != "Season") {
             var premiereDateElem = $('#itemPremiereDate', page).show();
             LibraryBrowser.renderPremiereDate(premiereDateElem, item);
         } else {

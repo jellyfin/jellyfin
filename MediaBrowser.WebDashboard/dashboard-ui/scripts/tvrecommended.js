@@ -115,9 +115,10 @@
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: screenWidth >= 600
+                overlayText: screenWidth >= 600,
+                lazy: true
 
-            })).createPosterItemMenus();
+            })).trigger('create').createPosterItemMenus();
 
         });
     }

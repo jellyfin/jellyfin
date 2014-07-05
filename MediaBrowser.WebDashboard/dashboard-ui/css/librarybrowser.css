@@ -1197,3 +1197,53 @@ a.itemTag:hover {
     .channelHeader a {
         text-decoration: none;
     }
+
+.groupingMenuScroller {
+    max-height: 200px;
+    min-width: 240px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+@media all and (min-width: 400px) {
+
+    .groupingMenuScroller {
+        min-width: 300px;
+    }
+}
+
+@media all and (min-width: 500px) {
+
+    .groupingMenuScroller {
+        min-width: 400px;
+    }
+}
+
+@media all and (min-width: 600px) {
+
+    .groupingMenuScroller {
+        min-width: 500px;
+    }
+}
+
+@media all and (min-height: 400px) {
+
+    .groupingMenuScroller {
+        max-height: 300px;
+    }
+}
+
+@media all and (min-height: 500px) {
+
+    .groupingMenuScroller {
+        max-height: 400px;
+    }
+}
+
+@media all and (min-height: 600px) {
+
+    .groupingMenuScroller {
+        max-height: 500px;
+    }
+}

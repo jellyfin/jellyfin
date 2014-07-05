@@ -1104,7 +1104,7 @@
             $(self).trigger('playstatechange', [state]);
         };
 
-        $(window).on("beforeunload popstate", function () {
+        $(window).on("beforeunload", function () {
 
             // Try to report playback stopped before the browser closes
             if (self.currentItem && self.currentMediaElement && currentProgressInterval) {

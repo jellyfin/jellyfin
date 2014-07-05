@@ -627,7 +627,7 @@
                     });
 
                 }
-                else if (options.preferThumb && item.SeriesThumbImageTag) {
+                else if (options.preferThumb && item.SeriesThumbImageTag && options.inheritThumb !== false) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
                         type: "Thumb",
@@ -636,7 +636,7 @@
                     });
 
                 }
-                else if (options.preferThumb && item.ParentThumbItemId) {
+                else if (options.preferThumb && item.ParentThumbItemId && options.inheritThumb !== false) {
 
                     imgUrl = ApiClient.getThumbImageUrl(item.ParentThumbItemId, {
                         type: "Thumb",
@@ -772,6 +772,14 @@
                     cssClass += ' posterItemUserData' + item.UserData.Key;
                 }
 
+                if (options.showChildCountIndicator && item.ChildCount) {
+                    cssClass += ' groupedPosterItem';
+                    
+                    if (item.Type == 'Series') {
+                        cssClass += ' unplayedGroupings';
+                    }
+                }
+
                 var itemCommands = [];
 
                 //if (MediaController.canPlay(item)) {
@@ -784,6 +792,10 @@
 
                 if (item.LocalTrailerCount) {
                     itemCommands.push('trailer');
+                }
+
+                if (options.showChildCountIndicator) {
+                    cssClass += ' groupingPosterItem';
                 }
 
                 html += '<a data-commands="' + itemCommands.join(',') + '" data-itemid="' + item.Id + '" class="' + cssClass + '" data-mediasourcecount="' + mediaSourceCount + '" href="' + href + '">';
@@ -820,8 +832,12 @@
                     if (options.showLocationTypeIndicator !== false) {
                         html += LibraryBrowser.getOfflineIndicatorHtml(item);
                     }
-                } else if (options.showUnplayedIndicator !== false) {
+                }
+                else if (options.showUnplayedIndicator !== false) {
                     html += LibraryBrowser.getPlayedIndicatorHtml(item);
+                }
+                else if (options.showChildCountIndicator) {
+                    html += LibraryBrowser.getGroupCountIndicator(item);
                 }
 
                 if (mediaSourceCount > 1) {
@@ -1102,6 +1118,15 @@
                 if (item.UserData.PlayedPercentage >= 100 || (item.UserData && item.UserData.Played)) {
                     return '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
                 }
+            }
+
+            return '';
+        },
+
+        getGroupCountIndicator: function (item) {
+
+            if (item.ChildCount) {
+                return '<div class="playedIndicator">' + item.ChildCount + '</div>';
             }
 
             return '';

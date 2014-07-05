@@ -77,7 +77,7 @@
     width: 130px;
 }
 
-#nowPlayingBar .sliderContainer {
+.nowPlayingBar .sliderContainer {
     margin-top: 14px;
 }
 
@@ -126,12 +126,12 @@ input[type="range"]::-ms-fill-upper {
 
 @media all and (max-width: 800px) {
 
-    #nowPlayingBar .mediaButton {
+    .nowPlayingBar .mediaButton {
         margin-top: 0;
         margin-bottom: 0;
     }
 
-        #nowPlayingBar .mediaButton:not(#playButton):not(#pauseButton):not(.remoteControlButton) {
+        .nowPlayingBar .mediaButton:not(#playButton):not(#pauseButton):not(.remoteControlButton) {
             display: none;
         }
 
@@ -139,11 +139,11 @@ input[type="range"]::-ms-fill-upper {
         float: right;
     }
 
-    #nowPlayingBar #playButton, #nowPlayingBar #pauseButton {
+    .nowPlayingBar #playButton, .nowPlayingBar #pauseButton {
         float: right;
     }
 
-    #nowPlayingBar .currentTime, #nowPlayingBar .positionSliderContainer, #nowPlayingBar .volumeSliderContainer, #nowPlayingBar .muteButton, #nowPlayingBar .unmuteButton {
+    .nowPlayingBar .currentTime, .nowPlayingBar .positionSliderContainer, .nowPlayingBar .volumeSliderContainer, #nowPlayingBar .muteButton, #nowPlayingBar .unmuteButton {
         display: none !important;
     }
 

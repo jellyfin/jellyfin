@@ -175,6 +175,18 @@
 
     }).on('pagebeforeshow', "#boxsetsPage", function () {
 
+        var page = this;
+        
+        var context = getParameterByName('context');
+
+        if (context == 'movies') {
+            $('.collectionTabs', page).hide();
+            $('.movieTabs', page).show();
+        } else {
+            $('.collectionTabs', page).show();
+            $('.movieTabs', page).hide();
+        }
+
         query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();

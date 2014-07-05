@@ -134,6 +134,7 @@
     <Compile Include="UserLibrary\ItemsService.cs" />
     <Compile Include="UserLibrary\MusicGenresService.cs" />
     <Compile Include="UserLibrary\PersonsService.cs" />
+    <Compile Include="UserLibrary\PlaystateService.cs" />
     <Compile Include="UserLibrary\StudiosService.cs" />
     <Compile Include="UserLibrary\UserLibraryService.cs" />
     <Compile Include="UserLibrary\YearsService.cs" />
