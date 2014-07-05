@@ -460,7 +460,6 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                     return 10;
                 })
-                .ThenBy(i => i.Name)
                 .ToList();
 
             // Attach People by transforming them into BaseItemPerson (DTO)

@@ -616,6 +616,20 @@ namespace MediaBrowser.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId;
             }
 
+            if (!string.IsNullOrWhiteSpace(info.ItemId) && libraryItem != null)
+            {
+                var current = session.NowPlayingItem;
+
+                if (current == null || !string.Equals(current.Id, info.ItemId, StringComparison.OrdinalIgnoreCase))
+                {
+                    info.Item = GetItemInfo(libraryItem, libraryItem, info.MediaSourceId);
+                }
+                else
+                {
+                    info.Item = current;
+                }
+            }
+
             RemoveNowPlayingItem(session);
 
             var users = GetUsers(session);

@@ -796,6 +796,12 @@ namespace MediaBrowser.Controller.Entities
             get { return null; }
         }
 
+        [IgnoreDataMember]
+        public virtual Folder LatestItemsIndexContainer
+        {
+            get { return null; }
+        }
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>

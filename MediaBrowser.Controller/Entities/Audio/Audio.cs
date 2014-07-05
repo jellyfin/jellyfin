@@ -14,11 +14,11 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class Audio
     /// </summary>
-    public class Audio : BaseItem, 
-        IHasAlbumArtist, 
-        IHasArtist, 
-        IHasMusicGenres, 
-        IHasLookupInfo<SongInfo>, 
+    public class Audio : BaseItem,
+        IHasAlbumArtist,
+        IHasArtist,
+        IHasMusicGenres,
+        IHasLookupInfo<SongInfo>,
         IHasTags,
         IHasMediaSources
     {
@@ -64,7 +64,15 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             get
             {
-                return Parents.OfType<MusicAlbum>().FirstOrDefault() ?? new MusicAlbum { Name = "<Unknown>" };
+                return LatestItemsIndexContainer ?? new MusicAlbum { Name = "Unknown Album" };
+            }
+        }
+
+        public override Folder LatestItemsIndexContainer
+        {
+            get
+            {
+                return Parents.OfType<MusicAlbum>().FirstOrDefault();
             }
         }
 
@@ -204,7 +212,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         private static MediaSourceInfo GetVersionInfo(Audio i, bool enablePathSubstituion)
         {
             var locationType = i.LocationType;
-            
+
             var info = new MediaSourceInfo
             {
                 Id = i.Id.ToString("N"),

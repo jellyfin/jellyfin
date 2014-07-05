@@ -95,6 +95,14 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        public override Folder LatestItemsIndexContainer
+        {
+            get
+            {
+                return Series;
+            }
+        }
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>

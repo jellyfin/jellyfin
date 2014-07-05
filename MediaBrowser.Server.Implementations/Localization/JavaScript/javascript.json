@@ -217,5 +217,6 @@
 	"HeaderName": "Name",
 	"HeaderAlbum": "Album",
 	"HeaderAlbumArtist": "Album Artist",
-	"HeaderArtist": "Artist"
+	"HeaderArtist": "Artist",
+	"LabelAddedOnDate": "Added {0}"
 }

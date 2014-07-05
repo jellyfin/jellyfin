@@ -489,7 +489,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                args += GetOutputSizeParam(state, codec, CancellationToken.None);
+                args += GetOutputSizeParam(state, codec, CancellationToken.None, false);
             }
 
             // This is for internal graphical subs
@@ -517,7 +517,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
-            var args = string.Format("{0} -i {1} -map_metadata -1 -threads {2} {3} {4} -flags -global_header {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
+            var args = string.Format("{0} -i {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
                 inputModifier,
                 GetInputArgument(state),
                 threads,
