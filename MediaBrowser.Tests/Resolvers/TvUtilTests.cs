@@ -161,6 +161,8 @@ namespace MediaBrowser.Tests.Resolvers
             Assert.AreEqual(1, TVUtils.GetSeasonNumberFromPath(@"\Drive\Season 1"));
             Assert.AreEqual(1, TVUtils.GetSeasonNumberFromPath(@"\Drive\Season 1"));
 
+            Assert.AreEqual(2, TVUtils.GetSeasonNumberFromPath(@"\Drive\Seinfeld\2"));
+            
             //Four Digits seasons
             Assert.AreEqual(2009, TVUtils.GetSeasonNumberFromPath(@"\Drive\Season 2009"));
             Assert.AreEqual(2009, TVUtils.GetSeasonNumberFromPath(@"\Drive\Season 2009"));
