@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'List');
+
     // The base query options
     var query = {
 
@@ -7,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Episode",
         Recursive: true,
-        Fields: "SeriesInfo,PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio,SortName",
         StartIndex: 0,
         IsMissing: false,
         IsVirtualUnaired: false
@@ -35,15 +37,25 @@
 
             var screenWidth = $(window).width();
 
-            html += LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "backdrop",
-                showTitle: true,
-                showParentTitle: true,
-                overlayText: screenWidth >= 600,
-                selectionPanel: true,
-                lazy: true
-            });
+            if (view == "List") {
+
+                html = LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    context: 'tv',
+                    sortBy: query.SortBy
+                });
+            }
+            else if (view == "Poster") {
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    showTitle: true,
+                    showParentTitle: true,
+                    overlayText: screenWidth >= 600,
+                    selectionPanel: true,
+                    lazy: true
+                });
+            }
 
             $('.itemsContainer', page).removeClass('timelineItemsContainer');
 
@@ -106,6 +118,8 @@
             this.checked = filters.indexOf(',' + filterName) != -1;
 
         }).checkboxradio('refresh');
+
+        $('#selectView', page).val(view).selectmenu('refresh');
 
         $('#chkHD', page).checked(query.IsHD == true).checkboxradio('refresh');
         $('#chkSD', page).checked(query.IsHD == false).checkboxradio('refresh');
@@ -272,8 +286,18 @@
 
         });
 
+        $('#selectView', this).on('change', function () {
+
+            view = this.value;
+
+            reloadItems(page);
+
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+        });
+
     }).on('pagebeforeshow', "#episodesPage", function () {
 
+        var page = this;
         query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -284,7 +308,9 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
+        var viewkey = getSavedQueryKey();
+
+        LibraryBrowser.loadSavedQueryValues(viewkey, query);
 
         var filters = getParameterByName('filters');
         if (filters) {
@@ -301,7 +327,14 @@
             query.SortOrder = sortorder;
         }
 
-        reloadItems(this);
+        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#episodesPage", function () {
 

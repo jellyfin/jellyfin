@@ -24,6 +24,12 @@
             return 20;
         },
 
+        getDefaultItemsView: function (view, mobileView) {
+
+            return $.browser.mobile ? mobileView : view;
+
+        },
+
         loadSavedQueryValues: function (key, query) {
 
             var values = localStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
@@ -492,6 +498,65 @@
             return ApiClient.getScaledImageUrl(item.Id || item.ItemId, options);
 
         },
+        
+        getListViewIndex: function(item, sortBy) {
+
+            sortBy = (sortBy || '').toLowerCase();
+            
+            if (sortBy.indexOf('sortname') == 0) {
+
+                if (item.Type == 'Episode') return '';
+                
+                // SortName
+                var name = (item.SortName || item.Name)[0];
+                
+                if (!isNaN(name)) {
+                    return '#';
+                }
+                return name.toUpperCase();
+            }
+            if (sortBy.indexOf('officialrating') == 0) {
+
+                return item.OfficialRating || 'Unrated';
+            }
+            if (sortBy.indexOf('communityrating') == 0) {
+
+                if (item.CommunityRating == null) {
+                    return 'Unrated';
+                }
+
+                return Math.floor(item.CommunityRating);
+            }
+            if (sortBy.indexOf('criticrating') == 0) {
+
+                if (item.CriticRating == null) {
+                    return 'Unrated';
+                }
+
+                return Math.floor(item.CriticRating);
+            }
+            if (sortBy.indexOf('metascore') == 0) {
+
+                if (item.Metascore == null) {
+                    return 'Unrated';
+                }
+
+                return Math.floor(item.Metascore);
+            }
+            if (sortBy.indexOf('albumartist') == 0) {
+
+                // SortName
+                if (!item.AlbumArtist) return '';
+                
+                var albumartist = item.AlbumArtist[0];
+
+                if (!isNaN(albumartist)) {
+                    return '#';
+                }
+                return albumartist.toUpperCase();
+            }
+            return '';
+        },
 
         getListViewHtml: function (options) {
 
@@ -499,19 +564,36 @@
 
             outerHtml += '<ul data-role="listview" data-inset="true" class="itemsListview">';
 
+            var index = 0;
+            var groupTitle = '';
+
             outerHtml += options.items.map(function (item) {
 
                 var html = '';
 
+                var itemGroupTitle = LibraryBrowser.getListViewIndex(item, options.sortBy);
+                
+                if (itemGroupTitle != groupTitle) {
+
+                    html += '<li data-role="list-divider">';
+                    html += itemGroupTitle;
+                    html += '</li>';
+
+                    groupTitle = itemGroupTitle;
+                }
+
                 var href = LibraryBrowser.getHref(item, options.context);
-                html += '<li class="ui-li-has-thumb"><a href="' + href + '">';
+                html += '<li class="ui-li-has-thumb" data-itemid="' + item.Id + '"><a href="' + href + '">';
 
                 var imgUrl;
 
                 if (item.ImageTags.Primary) {
 
+                    // Scaling 400w episode images to 80 doesn't turn out very well
+                    var width = item.Type == 'Episode' ? 160 : 80;
+
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                        width: 80,
+                        width: width,
                         tag: item.ImageTags.Primary,
                         type: "Primary",
                         index: 0
@@ -519,7 +601,12 @@
 
                 }
                 if (imgUrl) {
-                    html += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
+
+                    if (index < 10) {
+                        html += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                    } else {
+                        html += '<div class="listviewImage ui-li-thumb lazy" data-src="' + imgUrl + '"></div>';
+                    }
                 }
 
                 html += '<h3>';
@@ -550,6 +637,7 @@
 
             outerHtml += '</ul>';
 
+            index++;
             return outerHtml;
         },
 

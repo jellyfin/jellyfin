@@ -1254,14 +1254,14 @@ a.itemTag:hover {
 }
 
     .itemsListview .ui-li-aside {
-        right: 1.5em;
+        right: 1.3em;
         font-weight: normal;
         font-size: 13px;
         font-family: "Open Sans";
     }
 
     .itemsListview .ui-li-count {
-        right: 1.2em;
+        right: 1em;
         top: 70%;
         background: rgba(82, 181, 75, .8);
         border: 0;

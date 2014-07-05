@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = "Thumb";
+    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'List');
 
     // The base query options
     var query = {
@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Series",
         Recursive: true,
-        Fields: "SeriesInfo,PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio,SortName",
         StartIndex: 0
     };
 
@@ -72,7 +72,8 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    context: 'tv'
+                    context: 'tv',
+                    sortBy: query.SortBy
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }

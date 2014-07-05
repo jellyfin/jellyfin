@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = "Poster";
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'List');
 
     // The base query options
     var query = {
@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Movie",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio,SortName",
         StartIndex: 0
     };
 
@@ -59,7 +59,8 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    context: 'movies'
+                    context: 'movies',
+                    sortBy: query.SortBy
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }

@@ -353,8 +353,10 @@
 
                 if (latestItem.ImageTags.Primary) {
 
+                    // Scaling 400w episode images to 80 doesn't turn out very well
+                    var width = latestItem.Type == 'Episode' ? 160 : 80;
                     imgUrl = ApiClient.getScaledImageUrl(latestItem.Id, {
-                        width: 80,
+                        width: width,
                         tag: latestItem.ImageTags.Primary,
                         type: "Primary",
                         index: 0

@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'List');
+
     // The base query options
     var query = {
 
@@ -7,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "BoxSet",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio,SortName",
         StartIndex: 0
     };
 
@@ -33,17 +35,28 @@
 
             if (result.TotalRecordCount) {
 
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    context: 'movies',
-                    showTitle: true,
-                    centerText: true,
-                    lazy: true
-                });
+                if (view == "List") {
+
+                    html = LibraryBrowser.getListViewHtml({
+                        items: result.Items,
+                        context: 'movies',
+                        sortBy: query.SortBy
+                    });
+                }
+                else if (view == "Poster") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "portrait",
+                        context: 'movies',
+                        showTitle: true,
+                        centerText: true,
+                        lazy: true
+                    });
+                }
 
                 html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
                 $('.noItemsMessage', page).hide();
+                
             } else {
 
                 $('.noItemsMessage', page).show();
@@ -96,6 +109,8 @@
             this.checked = filters.indexOf(',' + filterName) != -1;
 
         }).checkboxradio('refresh');
+
+        $('#selectView', page).val(view).selectmenu('refresh');
 
         $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
@@ -173,6 +188,15 @@
             reloadItems(page);
         });
 
+        $('#selectView', this).on('change', function () {
+
+            view = this.value;
+
+            reloadItems(page);
+
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+        });
+
     }).on('pagebeforeshow', "#boxsetsPage", function () {
 
         var page = this;
@@ -197,9 +221,18 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
+        var viewkey = getSavedQueryKey();
 
-        reloadItems(this);
+        LibraryBrowser.loadSavedQueryValues(viewkey, query);
+
+        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#boxsetsPage", function () {
 
