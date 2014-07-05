@@ -860,5 +860,6 @@
 	"LabelLoginDisclaimer": "Login disclaimer:",
 	"LabelLoginDisclaimerHelp": "This will be displayed at the bottom of the login page.",
 	"LabelAutomaticallyDonate": "Automatically donate this amount each month",
-	"LabelAutomaticallyDonateHelp": "You can cancel at any time via your PayPal account."
+	"LabelAutomaticallyDonateHelp": "You can cancel at any time via your PayPal account.",
+	"OptionList": "List"
 }

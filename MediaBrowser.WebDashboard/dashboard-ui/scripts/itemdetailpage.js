@@ -40,7 +40,7 @@
 
         renderHeader(page, item, context);
 
-        LibraryBrowser.renderName(item, $('.itemName', page));
+        LibraryBrowser.renderName(item, $('.itemName', page), false, context);
         LibraryBrowser.renderParentName(item, $('.parentName', page));
 
         Dashboard.getCurrentUser().done(function (user) {

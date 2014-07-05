@@ -493,6 +493,66 @@
 
         },
 
+        getListViewHtml: function (options) {
+
+            var outerHtml = "";
+
+            outerHtml += '<ul data-role="listview" data-inset="true" class="itemsListview">';
+
+            outerHtml += options.items.map(function (item) {
+
+                var html = '';
+
+                var href = LibraryBrowser.getHref(item, options.context);
+                html += '<li class="ui-li-has-thumb"><a href="' + href + '">';
+
+                var imgUrl;
+
+                if (item.ImageTags.Primary) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        width: 80,
+                        tag: item.ImageTags.Primary,
+                        type: "Primary",
+                        index: 0
+                    });
+
+                }
+                if (imgUrl) {
+                    html += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                }
+
+                html += '<h3>';
+                html += LibraryBrowser.getPosterViewDisplayName(item);
+                html += '</h3>';
+
+                html += '<p>';
+                html += LibraryBrowser.getMiscInfoHtml(item);
+                html += '</p>';
+
+                html += '<div class="ui-li-aside">';
+                html += LibraryBrowser.getRatingHtml(item, false);
+                html += '</div>';
+
+                if (item.UserData.UnplayedItemCount) {
+                    html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
+                }
+                html += '</a>';
+
+                html += '<a href="#" data-icon="ellipsis-v">';
+                html += '</a>';
+
+                html += '</li>';
+
+                return html;
+
+            }).join('');
+
+            outerHtml += '</ul>';
+
+            return outerHtml;
+        },
+
         getPosterViewHtml: function (options) {
 
             var items = options.items;
@@ -774,7 +834,7 @@
 
                 if (options.showChildCountIndicator && item.ChildCount) {
                     cssClass += ' groupedPosterItem';
-                    
+
                     if (item.Type == 'Series') {
                         cssClass += ' unplayedGroupings';
                     }
@@ -1212,14 +1272,14 @@
 
         },
 
-        renderName: function (item, nameElem, linkToElement) {
+        renderName: function (item, nameElem, linkToElement, context) {
 
             var name = LibraryBrowser.getPosterViewDisplayName(item, false, false);
 
             Dashboard.setPageTitle(name);
 
             if (linkToElement) {
-                nameElem.html('<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item) + '">' + name + '</a>').trigger('create');
+                nameElem.html('<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>').trigger('create');
             } else {
                 nameElem.html(name);
             }

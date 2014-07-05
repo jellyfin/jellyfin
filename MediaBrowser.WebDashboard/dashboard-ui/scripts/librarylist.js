@@ -290,46 +290,6 @@
         return false;
     }
 
-    function getGroupingHeaderHtml(item) {
-
-        var itemHtml = '';
-
-        var href = LibraryBrowser.getHref(item);
-        itemHtml += '<li><a href="' + href + '">';
-
-        var imgUrl = "css/images/media/chapterflyout.png";
-
-        if (item.ImageTags.Primary) {
-
-            itemHtml += '<img src="' + imgUrl + '" style="visibility:hidden;" />';
-            imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                width: 160,
-                tag: item.ImageTags.Primary,
-                type: "Primary",
-                index: 0
-            });
-            itemHtml += '<div class="videoChapterPopupImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
-
-        } else {
-            itemHtml += '<img src="' + imgUrl + '" />';
-        }
-
-
-        itemHtml += '<h3>';
-        itemHtml += LibraryBrowser.getPosterViewDisplayName(item);
-        itemHtml += '</h3>';
-
-        var date = parseISO8601Date(item.DateCreated, { toLocal: true });
-
-        itemHtml += '<p>';
-        itemHtml += Globalize.translate('LabelAddedOnDate').replace('{0}', date.toLocaleDateString());
-        itemHtml += '</p>';
-
-        itemHtml += '</a></li>';
-
-        return itemHtml;
-    }
-
     function onGroupedPosterItemClick(e) {
 
         var posterItem = this;
@@ -387,25 +347,23 @@
                 var itemHtml = '';
 
                 href = LibraryBrowser.getHref(latestItem);
-                itemHtml += '<li><a href="' + href + '">';
+                itemHtml += '<li class="ui-li-has-thumb"><a href="' + href + '">';
 
-                var imgUrl = "css/images/media/chapterflyout.png";
+                var imgUrl;
 
                 if (latestItem.ImageTags.Primary) {
 
-                    itemHtml += '<img src="' + imgUrl + '" style="visibility:hidden;" />';
                     imgUrl = ApiClient.getScaledImageUrl(latestItem.Id, {
-                        width: 160,
+                        width: 80,
                         tag: latestItem.ImageTags.Primary,
                         type: "Primary",
                         index: 0
                     });
-                    itemHtml += '<div class="videoChapterPopupImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
 
-                } else {
-                    itemHtml += '<img src="' + imgUrl + '" />';
                 }
-
+                if (imgUrl) {
+                    itemHtml += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                }
 
                 itemHtml += '<h3>';
                 itemHtml += LibraryBrowser.getPosterViewDisplayName(latestItem);

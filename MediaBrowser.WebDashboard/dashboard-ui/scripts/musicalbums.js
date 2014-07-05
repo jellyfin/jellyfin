@@ -44,6 +44,14 @@
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
+            else if (view == "List") {
+
+                html = LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    context: 'music'
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
             else if (view == "Timeline") {
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,

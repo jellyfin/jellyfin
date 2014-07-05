@@ -140,3 +140,16 @@
 .ui-nosvg .ui-icon-remote:after {
     background-image: url("images/icons/remote.png");
 }
+
+
+.ui-icon-ellipsis-v:after {
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%20Tiny%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11-tiny.dtd%22%3E%3Csvg%20version%3D%221.1%22%20baseProfile%3D%22tiny%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20width%3D%2216px%22%20height%3D%2216px%22%20viewBox%3D%220%200%20500%20500%22%20xml%3Aspace%3D%22preserve%22%3E%20%3Cpath%20d%3D%22M107.143%20348.214v53.571q0%2011.161-7.813%2018.973t-18.973%207.813h-53.571q-11.161%200-18.973-7.813t-7.813-18.973v-53.571q0-11.161%207.813-18.973t18.973-7.813h53.571q11.161%200%2018.973%207.813t7.813%2018.973zM107.143%20205.357v53.571q0%2011.161-7.813%2018.973t-18.973%207.813h-53.571q-11.161%200-18.973-7.813t-7.813-18.973v-53.571q0-11.161%207.813-18.973t18.973-7.813h53.571q11.161%200%2018.973%207.813t7.813%2018.973zM107.143%2062.5v53.571q0%2011.161-7.813%2018.973t-18.973%207.813h-53.571q-11.161%200-18.973-7.813t-7.813-18.973v-53.571q0-11.161%207.813-18.973t18.973-7.813h53.571q11.161%200%2018.973%207.813t7.813%2018.973z%22%20fill%3D%22%23ffffff%22%20%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: 9px 3px;
+}
+
+/* Fallback */
+.ui-nosvg .ui-icon-ellipsis-v:after {
+    background-image: url("images/icons/ellipsis-v.png");
+    background-repeat: no-repeat;
+}

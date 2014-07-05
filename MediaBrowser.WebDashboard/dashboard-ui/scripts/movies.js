@@ -55,6 +55,14 @@
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
+            else if (view == "List") {
+
+                html = LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    context: 'movies'
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
             else if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,

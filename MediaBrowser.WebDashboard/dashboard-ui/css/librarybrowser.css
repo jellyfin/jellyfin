@@ -1247,3 +1247,37 @@ a.itemTag:hover {
         max-height: 500px;
     }
 }
+
+.itemsListview {
+    max-width: 800px;
+    margin: 0 auto!important;
+}
+
+    .itemsListview .ui-li-aside {
+        right: 1.5em;
+        font-weight: normal;
+        font-size: 13px;
+        font-family: "Open Sans";
+    }
+
+    .itemsListview .ui-li-count {
+        right: 1.2em;
+        top: 70%;
+        background: rgba(82, 181, 75, .8);
+        border: 0;
+    }
+
+.listviewImage {
+    width: 80px;
+    height: 80px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+}
+
+@media all and (max-width: 600px) {
+
+    .itemsListview .ui-li-aside {
+        display: none;
+    }
+}

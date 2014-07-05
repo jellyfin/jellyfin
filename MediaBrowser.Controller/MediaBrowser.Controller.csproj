@@ -232,6 +232,7 @@
     <Compile Include="Providers\IMetadataService.cs" />
     <Compile Include="Providers\IRemoteMetadataProvider.cs" />
     <Compile Include="Providers\VideoContentType.cs" />
+    <Compile Include="RelatedMedia\IRelatedMediaProvider.cs" />
     <Compile Include="Security\IEncryptionManager.cs" />
     <Compile Include="Subtitles\ISubtitleManager.cs" />
     <Compile Include="Subtitles\ISubtitleProvider.cs" />

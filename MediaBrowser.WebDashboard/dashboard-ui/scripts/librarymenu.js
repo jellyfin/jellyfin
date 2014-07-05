@@ -59,9 +59,9 @@
         $('.dashboardMenuButton').createHoverTouch().on('hovertouch', showDashboardMenu);
     }
 
-    function getItemHref(item) {
+    function getItemHref(item, context) {
 
-        return LibraryBrowser.getHref(item);
+        return LibraryBrowser.getHref(item, context);
     }
 
     function getViewsHtml() {
