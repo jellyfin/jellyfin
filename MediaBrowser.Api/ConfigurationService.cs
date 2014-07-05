@@ -1,9 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -11,7 +8,6 @@ using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using ServiceStack.Text.Controller;
 using ServiceStack.Web;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -66,13 +62,6 @@ namespace MediaBrowser.Api
     public class GetMetadataPlugins : IReturn<List<MetadataPluginSummary>>
     {
 
-    }
-
-    [Route("/System/Configuration/VideoImageExtraction", "POST", Summary = "Updates image extraction for all types")]
-    [Authenticated]
-    public class UpdateVideoImageExtraction : IReturnVoid
-    {
-        public bool Enabled { get; set; }
     }
 
     public class ConfigurationService : BaseApiService
@@ -154,72 +143,6 @@ namespace MediaBrowser.Api
         public object Get(GetMetadataPlugins request)
         {
             return ToOptimizedSerializedResultUsingCache(_providerManager.GetAllMetadataPlugins().ToList());
-        }
-
-        /// <summary>
-        /// This is a temporary method used until image settings get broken out.
-        /// </summary>
-        /// <param name="request"></param>
-        public void Post(UpdateVideoImageExtraction request)
-        {
-            var config = _configurationManager.Configuration;
-
-            EnableImageExtractionForType(typeof(Movie), config, request.Enabled);
-            EnableImageExtractionForType(typeof(Episode), config, request.Enabled);
-            EnableImageExtractionForType(typeof(AdultVideo), config, request.Enabled);
-            EnableImageExtractionForType(typeof(MusicVideo), config, request.Enabled);
-            EnableImageExtractionForType(typeof(Video), config, request.Enabled);
-            EnableImageExtractionForType(typeof(Trailer), config, request.Enabled);
-
-            _configurationManager.SaveConfiguration();
-        }
-
-        private void EnableImageExtractionForType(Type type, ServerConfiguration config, bool enabled)
-        {
-            var options = GetMetadataOptions(type, config);
-
-            const string imageProviderName = "Screen Grabber";
-
-            var contains = options.DisabledImageFetchers.Contains(imageProviderName, StringComparer.OrdinalIgnoreCase);
-
-            if (!enabled && !contains)
-            {
-                var list = options.DisabledImageFetchers.ToList();
-
-                list.Add(imageProviderName);
-
-                options.DisabledImageFetchers = list.ToArray();
-            }
-            else if (enabled && contains)
-            {
-                var list = options.DisabledImageFetchers.ToList();
-
-                list.Remove(imageProviderName);
-
-                options.DisabledImageFetchers = list.ToArray();
-            }
-        }
-
-        private MetadataOptions GetMetadataOptions(Type type, ServerConfiguration config)
-        {
-            var options = config.MetadataOptions
-                .FirstOrDefault(i => string.Equals(i.ItemType, type.Name, StringComparison.OrdinalIgnoreCase));
-
-            if (options == null)
-            {
-                var list = config.MetadataOptions.ToList();
-
-                options = new MetadataOptions
-                {
-                    ItemType = type.Name
-                };
-
-                list.Add(options);
-
-                config.MetadataOptions = list.ToArray();
-            }
-
-            return options;
         }
     }
 }

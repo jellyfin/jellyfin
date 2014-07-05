@@ -265,7 +265,6 @@
             $('#fldCommunityRating', page).hide();
             $('#fldCommunityVoteCount', page).hide();
             $('#genresCollapsible', page).hide();
-            $('#countriesCollapsible', page).hide();
             $('#peopleCollapsible', page).hide();
             $('#studiosCollapsible', page).hide();
 
@@ -280,10 +279,15 @@
             $('#fldCommunityVoteCount', page).show();
             $('#genresCollapsible', page).show();
             $('#peopleCollapsible', page).show();
-            $('#countriesCollapsible', page).show();
             $('#studiosCollapsible', page).show();
             $('#fldOfficialRating', page).show();
             $('#fldCustomRating', page).show();
+        }
+
+        if (item.Type == "Movie" || item.Type == "AdultVideo" || item.Type == "Trailer" || item.Type == "MusicArtist") {
+            $('#countriesCollapsible', page).show();
+        } else {
+            $('#countriesCollapsible', page).hide();
         }
 
         if (item.Type == "TvChannel") {

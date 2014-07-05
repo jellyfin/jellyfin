@@ -344,7 +344,7 @@
         var options = {
 
             Limit: parseInt($('.playedIndicator', posterItem).html() || '10'),
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,DateCreated",
             ParentId: itemId,
             IsFolder: false,
             GroupItems: false
@@ -361,12 +361,11 @@
             var item = response1[0];
             var latestItems = response2[0];
 
-            if (latestItems.length == 1) {
-
-                var first = latestItems[0];
-                Dashboard.navigate(LibraryBrowser.getHref(first));
-                return;
-            }
+            //if (latestItems.length == 1) {
+            //    var first = latestItems[0];
+            //    Dashboard.navigate(LibraryBrowser.getHref(first));
+            //    return;
+            //}
 
             var html = '<div data-role="popup" class="groupingMenu" data-theme="a">';
 
@@ -412,7 +411,7 @@
                 itemHtml += LibraryBrowser.getPosterViewDisplayName(latestItem);
                 itemHtml += '</h3>';
 
-                var date = parseISO8601Date(item.DateCreated, { toLocal: true });
+                var date = parseISO8601Date(latestItem.DateCreated, { toLocal: true });
 
                 itemHtml += '<p>';
                 itemHtml += Globalize.translate('LabelAddedOnDate').replace('{0}', date.toLocaleDateString());
