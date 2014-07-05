@@ -79,6 +79,7 @@ namespace MediaBrowser.Providers.TV
                 }
 
                 result.Item.PremiereDate = seasonInfo.air_date;
+                result.Item.ProductionYear = result.Item.PremiereDate.Value.Year;
             }
 
             return result;
