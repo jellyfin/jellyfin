@@ -51,6 +51,29 @@ namespace MediaBrowser.Providers.TV
         }
     }
 
+    public class TvdbSeasonExternalId : IExternalId
+    {
+        public string Name
+        {
+            get { return "TheTVDB"; }
+        }
+
+        public string Key
+        {
+            get { return MetadataProviders.Tvdb.ToString(); }
+        }
+
+        public string UrlFormatString
+        {
+            get { return null; }
+        }
+
+        public bool Supports(IHasProviderIds item)
+        {
+            return item is Season;
+        }
+    }
+
     public class TvdbEpisodeExternalId : IExternalId
     {
         public string Name

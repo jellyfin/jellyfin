@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
@@ -108,7 +107,7 @@ namespace MediaBrowser.Providers.TV
         private async Task<RootObject> GetSeasonInfo(string seriesTmdbId, int season, string preferredMetadataLanguage,
             CancellationToken cancellationToken)
         {
-            await EnsureSeriesInfo(seriesTmdbId, season, preferredMetadataLanguage, cancellationToken)
+            await EnsureSeasonInfo(seriesTmdbId, season, preferredMetadataLanguage, cancellationToken)
                     .ConfigureAwait(false);
 
             var dataFilePath = GetDataFilePath(seriesTmdbId, season, preferredMetadataLanguage);
@@ -117,7 +116,7 @@ namespace MediaBrowser.Providers.TV
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
-        internal Task EnsureSeriesInfo(string tmdbId, int seasonNumber, string language, CancellationToken cancellationToken)
+        internal Task EnsureSeasonInfo(string tmdbId, int seasonNumber, string language, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(tmdbId))
             {
