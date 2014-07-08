@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -13,9 +13,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 {
     public class AuthService : IAuthService
     {
-        public AuthService(IUserManager userManager, ISessionManager sessionManager, IAuthorizationContext authorizationContext)
+        private readonly IServerConfigurationManager _config;
+
+        public AuthService(IUserManager userManager, ISessionManager sessionManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config)
         {
             AuthorizationContext = authorizationContext;
+            _config = config;
             SessionManager = sessionManager;
             UserManager = userManager;
         }
@@ -54,28 +57,30 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             //This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(req);
 
-            if (string.IsNullOrWhiteSpace(auth.Token))
-            {
-                // Legacy
-                // TODO: Deprecate this in Oct 2014
-
-                User user = null;
-
-                if (!string.IsNullOrWhiteSpace(auth.UserId))
-                {
-                    var userId = auth.UserId;
-
-                    user = UserManager.GetUserById(new Guid(userId));
-                }
-
-                if (user == null || user.Configuration.IsDisabled)
-                {
-                    throw new UnauthorizedAccessException("Unauthorized access.");
-                }
-            }
-            else
+            if (!string.IsNullOrWhiteSpace(auth.Token) || _config.Configuration.EnableTokenAuthentication)
             {
                 SessionManager.ValidateSecurityToken(auth.Token);
+            }
+
+            var user = string.IsNullOrWhiteSpace(auth.UserId)
+                ? null
+                : UserManager.GetUserById(new Guid(auth.UserId));
+
+            if (user != null && user.Configuration.IsDisabled)
+            {
+                throw new UnauthorizedAccessException("User account has been disabled.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(auth.DeviceId) &&
+                !string.IsNullOrWhiteSpace(auth.Client) &&
+                !string.IsNullOrWhiteSpace(auth.Device))
+            {
+                SessionManager.LogSessionActivity(auth.Client,
+                    auth.Version,
+                    auth.DeviceId,
+                    auth.Device,
+                    req.RemoteIp,
+                    user);
             }
         }
 
@@ -106,11 +111,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
                 AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
             }
-        }
-
-        private void LogRequest()
-        {
-
         }
 
         protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)

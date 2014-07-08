@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {

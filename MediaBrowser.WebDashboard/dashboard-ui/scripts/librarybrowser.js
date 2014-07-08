@@ -595,13 +595,15 @@
                 if (item.ImageTags.Primary) {
 
                     // Scaling 400w episode images to 80 doesn't turn out very well
-                    var width = item.Type == 'Episode' || item.Type == 'Game' ? 160 : 80;
+                    var minScale = item.Type == 'Episode' || item.Type == 'Game' ? 2 : null;
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                        width: width,
+                        width: 80,
                         tag: item.ImageTags.Primary,
                         type: "Primary",
-                        index: 0
+                        index: 0,
+                        EnableImageEnhancers: false,
+                        minScale: minScale
                     });
 
                 }
@@ -649,7 +651,7 @@
                     if (item.UserData.UnplayedItemCount) {
                         html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
                     }
-                    else if (item.UserData.Played) {
+                    else if (item.UserData.Played && item.Type != 'TvChannel') {
                         html += '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
                     }
                 }
@@ -1306,8 +1308,10 @@
                     return '<div class="playedIndicator">' + item.UserData.UnplayedItemCount + '</div>';
                 }
 
-                if (item.UserData.PlayedPercentage >= 100 || (item.UserData && item.UserData.Played)) {
-                    return '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+                if (item.Type != 'TvChannel') {
+                    if (item.UserData.PlayedPercentage >= 100 || (item.UserData && item.UserData.Played)) {
+                        return '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+                    }
                 }
             }
 

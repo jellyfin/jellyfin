@@ -37,7 +37,7 @@ namespace MediaBrowser.Api
 
         private readonly ISessionManager _sessionManager;
 
-        public readonly SemaphoreSlim TranscodingStartLock = new SemaphoreSlim(1,1);
+        public readonly SemaphoreSlim TranscodingStartLock = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiEntryPoint" /> class.
@@ -102,7 +102,7 @@ namespace MediaBrowser.Api
         {
             var jobCount = _activeTranscodingJobs.Count;
 
-            Parallel.ForEach(_activeTranscodingJobs.ToList(), j => KillTranscodingJob(j, FileDeleteMode.All));
+            Parallel.ForEach(_activeTranscodingJobs.ToList(), j => KillTranscodingJob(j, path => true));
 
             // Try to allow for some time to kill the ffmpeg processes and delete the partial stream files
             if (jobCount > 0)
@@ -295,17 +295,18 @@ namespace MediaBrowser.Api
         {
             var job = (TranscodingJob)state;
 
-            KillTranscodingJob(job, FileDeleteMode.All);
+            KillTranscodingJob(job, path => true);
         }
 
         /// <summary>
         /// Kills the single transcoding job.
         /// </summary>
         /// <param name="deviceId">The device id.</param>
-        /// <param name="deleteMode">The delete mode.</param>
+        /// <param name="delete">The delete.</param>
         /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
+        /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">sourcePath</exception>
-        internal async Task KillTranscodingJobs(string deviceId, FileDeleteMode deleteMode, bool acquireLock)
+        internal async Task KillTranscodingJobs(string deviceId, Func<string, bool> delete, bool acquireLock)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
@@ -330,12 +331,12 @@ namespace MediaBrowser.Api
             {
                 await TranscodingStartLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
             }
-            
+
             try
             {
                 foreach (var job in jobs)
                 {
-                    KillTranscodingJob(job, deleteMode);
+                    KillTranscodingJob(job, delete);
                 }
             }
             finally
@@ -352,10 +353,11 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="deviceId">The device identifier.</param>
         /// <param name="type">The type.</param>
-        /// <param name="deleteMode">The delete mode.</param>
+        /// <param name="delete">The delete.</param>
         /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
+        /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">deviceId</exception>
-        internal async Task KillTranscodingJobs(string deviceId, TranscodingJobType type, FileDeleteMode deleteMode, bool acquireLock)
+        internal async Task KillTranscodingJobs(string deviceId, TranscodingJobType type, Func<string, bool> delete, bool acquireLock)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
@@ -385,7 +387,7 @@ namespace MediaBrowser.Api
             {
                 foreach (var job in jobs)
                 {
-                    KillTranscodingJob(job, deleteMode);
+                    KillTranscodingJob(job, delete);
                 }
             }
             finally
@@ -401,8 +403,8 @@ namespace MediaBrowser.Api
         /// Kills the transcoding job.
         /// </summary>
         /// <param name="job">The job.</param>
-        /// <param name="deleteMode">The delete mode.</param>
-        private void KillTranscodingJob(TranscodingJob job, FileDeleteMode deleteMode)
+        /// <param name="delete">The delete.</param>
+        private void KillTranscodingJob(TranscodingJob job, Func<string, bool> delete)
         {
             lock (_activeTranscodingJobs)
             {
@@ -454,7 +456,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            if (deleteMode == FileDeleteMode.All)
+            if (delete(job.Path))
             {
                 DeletePartialStreamFiles(job.Path, job.Type, 0, 1500);
             }
@@ -592,11 +594,5 @@ namespace MediaBrowser.Api
         /// The HLS
         /// </summary>
         Hls
-    }
-
-    public enum FileDeleteMode
-    {
-        None,
-        All
     }
 }

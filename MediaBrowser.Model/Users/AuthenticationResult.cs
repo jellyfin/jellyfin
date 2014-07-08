@@ -21,6 +21,6 @@ namespace MediaBrowser.Model.Users
         /// Gets or sets the authentication token.
         /// </summary>
         /// <value>The authentication token.</value>
-        public string AuthenticationToken { get; set; }
+        public string AccessToken { get; set; }
     }
 }

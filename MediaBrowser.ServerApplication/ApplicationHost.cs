@@ -210,6 +210,8 @@ namespace MediaBrowser.ServerApplication
 
         private IUserViewManager UserViewManager { get; set; }
 
+        private IAuthenticationRepository AuthenticationRepository { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
         /// </summary>
@@ -586,6 +588,9 @@ namespace MediaBrowser.ServerApplication
             FileOrganizationRepository = await GetFileOrganizationRepository().ConfigureAwait(false);
             RegisterSingleInstance(FileOrganizationRepository);
 
+            AuthenticationRepository = await GetAuthenticationRepository().ConfigureAwait(false);
+            RegisterSingleInstance(AuthenticationRepository);
+
             UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer);
             RegisterSingleInstance(UserManager);
 
@@ -625,7 +630,7 @@ namespace MediaBrowser.ServerApplication
             DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager);
             RegisterSingleInstance(DtoService);
 
-            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient);
+            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient, AuthenticationRepository);
             RegisterSingleInstance(SessionManager);
 
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
@@ -651,7 +656,7 @@ namespace MediaBrowser.ServerApplication
             var connectionManager = new ConnectionManager(dlnaManager, ServerConfigurationManager, LogManager.GetLogger("UpnpConnectionManager"), HttpClient);
             RegisterSingleInstance<IConnectionManager>(connectionManager);
 
-            var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);
+            var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("CollectionManager"));
             RegisterSingleInstance<ICollectionManager>(collectionManager);
 
             LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager);
@@ -678,7 +683,7 @@ namespace MediaBrowser.ServerApplication
             var authContext = new AuthorizationContext();
             RegisterSingleInstance<IAuthorizationContext>(authContext);
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
-            RegisterSingleInstance<IAuthService>(new AuthService(UserManager, SessionManager, authContext));
+            RegisterSingleInstance<IAuthService>(new AuthService(UserManager, SessionManager, authContext, ServerConfigurationManager));
 
             RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder));
 
@@ -749,6 +754,15 @@ namespace MediaBrowser.ServerApplication
         private async Task<IFileOrganizationRepository> GetFileOrganizationRepository()
         {
             var repo = new SqliteFileOrganizationRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
+
+            await repo.Initialize().ConfigureAwait(false);
+
+            return repo;
+        }
+
+        private async Task<IAuthenticationRepository> GetAuthenticationRepository()
+        {
+            var repo = new AuthenticationRepository(LogManager.GetLogger("AuthenticationRepository"), ServerConfigurationManager.ApplicationPaths);
 
             await repo.Initialize().ConfigureAwait(false);
 

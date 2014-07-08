@@ -210,6 +210,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool DefaultMetadataSettingsApplied { get; set; }
 
+        public bool EnableTokenAuthentication { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>

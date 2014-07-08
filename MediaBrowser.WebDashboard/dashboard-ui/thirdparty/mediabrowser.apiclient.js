@@ -12,7 +12,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         keys.push((navigator.cpuClass || ""));
 
         var randomId = '';
-        
+
         if (localStorage) {
 
             //  Since the above is not guaranteed to be unique per device, add a little more
@@ -29,7 +29,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         keys.push(randomId);
         return MediaBrowser.SHA1(keys.join('|'));
     }
-    
+
     /**
      * Creates a new api client instance
      * @param {String} serverAddress
@@ -46,6 +46,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         var deviceName = "Web Browser";
         var deviceId = generateDeviceId();
         var currentUserId;
+        var accessToken;
         var webSocket;
 
         /**
@@ -59,13 +60,15 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets or sets the current user id.
          */
-        self.currentUserId = function (val) {
+        self.getCurrentUserId = function () {
 
-            if (val !== undefined) {
-                currentUserId = val;
-            } else {
-                return currentUserId;
-            }
+            return currentUserId;
+        };
+
+        self.setCurrentUserId = function (userId, token) {
+
+            currentUserId = userId;
+            accessToken = token;
         };
 
         deviceName = (function () {
@@ -144,10 +147,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 };
             }
 
+            if (accessToken) {
+                request.headers['X-MediaBrowser-Token'] = accessToken;
+            }
+
             return $.ajax(request);
         };
 
-        self.getJSON = function(url) {
+        self.getJSON = function (url) {
 
             return self.ajax({
                 type: "GET",
@@ -347,6 +354,26 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 type: "POST",
                 url: url
             });
+        };
+
+        self.logout = function () {
+
+            var done = function () {
+                self.setCurrentUserId(null, null);
+            };
+
+            if (accessToken) {
+                var url = self.getUrl("Sessions/Logout");
+
+                return self.ajax({
+                    type: "POST",
+                    url: url
+                }).done(done);
+            }
+
+            var deferred = $.Deferred();
+            deferred.resolveWith(null, []);
+            return deferred.promise().done(done);
         };
 
         function getRemoteImagePrefix(options) {
@@ -1319,7 +1346,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 dataType: "json"
             });
         };
-        
+
         self.getNamedConfiguration = function (name) {
 
             var url = self.getUrl("System/Configuration/" + name);
@@ -2115,8 +2142,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             if (ratio) {
 
-                if (options.width) {
+                if (options.minScale) {
+                    ratio = Math.max(options.minScale, ratio);
+                }
 
+                if (options.width) {
                     options.width = Math.round(options.width * ratio);
                 }
                 if (options.height) {
@@ -2129,7 +2159,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                     options.maxHeight = Math.round(options.maxHeight * ratio);
                 }
             }
-
+            
             options.quality = options.quality || (options.type.toLowerCase() == 'backdrop' ? 80 : 90);
         }
 
@@ -2263,6 +2293,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             // Don't put these on the query string
             delete options.type;
             delete options.index;
+            delete options.minScale;
 
             return self.getUrl(url, options);
         };
@@ -3476,7 +3507,7 @@ MediaBrowser.SHA1 = function (msg) {
     } else if (browser.webkit) {
         browser.safari = true;
     }
-    
+
     browser.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
 
     jQuery.browser = browser;

@@ -68,6 +68,11 @@ var Dashboard = {
         }
     },
 
+    getAccessToken: function () {
+
+        return localStorage.getItem('token');
+    },
+
     getCurrentUserId: function () {
 
         if (!window.localStorage) {
@@ -76,24 +81,24 @@ var Dashboard = {
 
         var autoLoginUserId = getParameterByName('u');
         var storedUserId = localStorage.getItem("userId");
-        var userId;
 
         if (autoLoginUserId && autoLoginUserId != storedUserId) {
 
-            localStorage.setItem("userId", autoLoginUserId);
-            ApiClient.currentUserId(autoLoginUserId);
+            var token = getParameterByName('t');
+            Dashboard.setCurrentUser(autoLoginUserId, token);
         }
 
         return autoLoginUserId || storedUserId;
     },
 
-    setCurrentUser: function (userId) {
+    setCurrentUser: function (userId, token) {
 
         if (window.localStorage) {
             localStorage.setItem("userId", userId);
+            localStorage.setItem("token", token);
         }
 
-        ApiClient.currentUserId(userId);
+        ApiClient.setCurrentUserId(userId, token);
         Dashboard.getUserPromise = null;
     },
 
@@ -101,11 +106,12 @@ var Dashboard = {
 
         if (window.localStorage) {
             localStorage.removeItem("userId");
+            localStorage.removeItem("token");
         }
 
-        Dashboard.getUserPromise = null;
-        ApiClient.currentUserId(null);
-        window.location = "login.html";
+        ApiClient.logout().done(function () {
+            window.location = "login.html";
+        });
     },
 
     showError: function (message) {
@@ -146,6 +152,7 @@ var Dashboard = {
     updateSystemInfo: function (info) {
 
         Dashboard.lastSystemInfo = info;
+
         Dashboard.ensureWebSocket(info);
 
         if (!Dashboard.initialServerVersion) {
@@ -403,10 +410,14 @@ var Dashboard = {
     },
 
     refreshSystemInfoFromServer: function () {
-        ApiClient.getSystemInfo().done(function (info) {
 
-            Dashboard.updateSystemInfo(info);
-        });
+        // TODO: Eventually remove the currentUserId check
+        if (Dashboard.getAccessToken() || Dashboard.getCurrentUserId()) {
+            ApiClient.getSystemInfo().done(function (info) {
+
+                Dashboard.updateSystemInfo(info);
+            });
+        }
     },
 
     restartServer: function () {
@@ -650,6 +661,10 @@ var Dashboard = {
             href: "dashboard.html",
             selected: page.hasClass("dashboardHomePage")
         }, {
+            name: "Users",
+            href: "userprofiles.html",
+            selected: page.hasClass("userProfilesConfigurationPage") || (pageElem.id == "mediaLibraryPage" && getParameterByName('userId'))
+        }, {
             name: "Library",
             divider: true,
             href: "library.html",
@@ -679,11 +694,6 @@ var Dashboard = {
             name: "Plugins",
             href: "plugins.html",
             selected: page.hasClass("pluginConfigurationPage")
-        }, {
-            name: "Users",
-            divider: true,
-            href: "userprofiles.html",
-            selected: page.hasClass("userProfilesConfigurationPage") || (pageElem.id == "mediaLibraryPage" && getParameterByName('userId'))
         }, {
             name: "Advanced",
             divider: true,
@@ -1202,7 +1212,7 @@ var Dashboard = {
     $(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened)
         .on("websocketmessage", Dashboard.onWebSocketMessageReceived);
 
-    ApiClient.currentUserId(Dashboard.getCurrentUserId());
+    ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
 
 })();
 
@@ -1299,22 +1309,6 @@ $(function () {
         }
     });
 });
-
-$.fn.openPopup = function () {
-
-    this.one('popupbeforeposition', function () {
-
-        //$("body").on("touchmove.popup", false);
-        //$('body').addClass('bodyWithPopupOpen');
-
-    }).one('popupafterclose', function () {
-        //$("body").off("touchmove.popup");
-
-        //$('body').removeClass('bodyWithPopupOpen');
-    });
-
-    return this.popup('open');
-};
 
 Dashboard.jQueryMobileInit();
 

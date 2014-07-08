@@ -1133,6 +1133,8 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.CommunityRating = info.CommunityRating;
                 item.OfficialRating = info.OfficialRating;
                 item.Overview = info.Overview;
+                item.IndexNumber = info.IndexNumber;
+                item.ParentIndexNumber = info.ParentIndexNumber;
                 item.People = info.People;
                 item.PremiereDate = info.PremiereDate;
                 item.ProductionYear = info.ProductionYear;
@@ -1159,7 +1161,6 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             if (channelMediaItem != null)
             {
-                channelMediaItem.IsInfiniteStream = info.IsInfiniteStream;
                 channelMediaItem.ContentType = info.ContentType;
                 channelMediaItem.ChannelMediaSources = info.MediaSources;
 

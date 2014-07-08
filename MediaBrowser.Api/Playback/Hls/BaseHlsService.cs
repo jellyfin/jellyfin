@@ -22,7 +22,8 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
-        protected BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder)
+        protected BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder)
         {
         }
 
@@ -103,8 +104,8 @@ namespace MediaBrowser.Api.Playback.Hls
                     }
                     else
                     {
-                        await ApiEntryPoint.Instance.KillTranscodingJobs(state.Request.DeviceId, TranscodingJobType.Hls, FileDeleteMode.All, false).ConfigureAwait(false);
-                        
+                        await ApiEntryPoint.Instance.KillTranscodingJobs(state.Request.DeviceId, TranscodingJobType.Hls, p => true, false).ConfigureAwait(false);
+
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
@@ -252,7 +253,7 @@ namespace MediaBrowser.Api.Playback.Hls
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
             var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
-            
+
             var itsOffsetMs = hlsVideoRequest == null
                                        ? 0
                                        : hlsVideoRequest.TimeStampOffsetMs;

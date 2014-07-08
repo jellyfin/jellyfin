@@ -113,11 +113,11 @@
 
             html += '<div style="margin:20px 0 0;">';
             html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">' + Globalize.translate('LabelCurrentPath') + '</label>';
-            html += '<div style="width:92%;display:inline-block;"><input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" required="required" style="font-weight:bold;" /></div>';
+            html += '<div style="width:82%;display:inline-block;"><input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" required="required" style="font-weight:bold;" /></div>';
             html += '<button class="btnRefreshDirectories" type="button" data-icon="refresh" data-inline="true" data-mini="true" data-iconpos="notext">' + Globalize.translate('ButtonRefresh') + '</button>';
             html += '</div>';
 
-            html += '<div style="height: 320px; overflow-y: auto;">';
+            html += '<div style="height: 180px; overflow-y: auto;">';
             html += '<ul id="ulDirectoryPickerList" data-role="listview" data-inset="true" data-auto-enhanced="false"></ul>';
 
 

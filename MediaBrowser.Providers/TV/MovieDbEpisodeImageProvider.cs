@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class MovieDbEpisodeImageProvider : IRemoteImageProvider, IHasOrder
+    public class MovieDbEpisodeImageProvider/* : IRemoteImageProvider, IHasOrder*/
     {
         private const string GetTvInfo3 = @"http://api.themoviedb.org/3/tv/{0}/season/{1}/episode/{2}?api_key={3}&append_to_response=images,external_ids,credits,videos";
         private readonly IHttpClient _httpClient;

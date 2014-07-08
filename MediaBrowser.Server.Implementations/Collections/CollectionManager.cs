@@ -1,9 +1,11 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Logging;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
@@ -19,12 +21,18 @@ namespace MediaBrowser.Server.Implementations.Collections
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _iLibraryMonitor;
+        private readonly ILogger _logger;
 
-        public CollectionManager(ILibraryManager libraryManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor)
+        public event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
+        public event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
+        public event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
+
+        public CollectionManager(ILibraryManager libraryManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
+            _logger = logger;
         }
 
         public Folder GetCollectionsFolder(string userId)
@@ -74,8 +82,15 @@ namespace MediaBrowser.Server.Implementations.Collections
 
                 if (options.ItemIdList.Count > 0)
                 {
-                    await AddToCollection(collection.Id, options.ItemIdList);
+                    await AddToCollection(collection.Id, options.ItemIdList, false);
                 }
+
+                EventHelper.FireEventIfNotNull(CollectionCreated, this, new CollectionCreatedEventArgs
+                {
+                    Collection = collection,
+                    Options = options
+
+                }, _logger);
 
                 return collection;
             }
@@ -113,7 +128,12 @@ namespace MediaBrowser.Server.Implementations.Collections
             return GetCollectionsFolder(string.Empty);
         }
 
-        public async Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
+        public Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
+        {
+            return AddToCollection(collectionId, ids, true);
+        }
+
+        private async Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids, bool fireEvent)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
 
@@ -123,6 +143,7 @@ namespace MediaBrowser.Server.Implementations.Collections
             }
 
             var list = new List<LinkedChild>();
+            var itemList = new List<BaseItem>();
             var currentLinkedChildren = collection.GetLinkedChildren().ToList();
 
             foreach (var itemId in ids)
@@ -134,6 +155,8 @@ namespace MediaBrowser.Server.Implementations.Collections
                     throw new ArgumentException("No item exists with the supplied Id");
                 }
 
+                itemList.Add(item);
+                
                 if (currentLinkedChildren.Any(i => i.Id == itemId))
                 {
                     throw new ArgumentException("Item already exists in collection");
@@ -165,6 +188,16 @@ namespace MediaBrowser.Server.Implementations.Collections
             await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+
+            if (fireEvent)
+            {
+                EventHelper.FireEventIfNotNull(ItemsRemovedFromCollection, this, new CollectionModifiedEventArgs
+                {
+                    Collection = collection,
+                    ItemsChanged = itemList
+
+                }, _logger);
+            }
         }
 
         public async Task RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds)
@@ -177,6 +210,7 @@ namespace MediaBrowser.Server.Implementations.Collections
             }
 
             var list = new List<LinkedChild>();
+            var itemList = new List<BaseItem>();
 
             foreach (var itemId in itemIds)
             {
@@ -190,6 +224,12 @@ namespace MediaBrowser.Server.Implementations.Collections
                 list.Add(child);
 
                 var childItem = _libraryManager.GetItemById(itemId);
+
+                if (childItem != null)
+                {
+                    itemList.Add(childItem);
+                }
+
                 var supportsGrouping = childItem as ISupportsBoxSetGrouping;
 
                 if (supportsGrouping != null)
@@ -221,7 +261,7 @@ namespace MediaBrowser.Server.Implementations.Collections
                 {
                     File.Delete(file);
                 }
-                
+
                 foreach (var child in list)
                 {
                     collection.LinkedChildren.Remove(child);
@@ -238,6 +278,13 @@ namespace MediaBrowser.Server.Implementations.Collections
             await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+
+            EventHelper.FireEventIfNotNull(ItemsRemovedFromCollection, this, new CollectionModifiedEventArgs
+            {
+                Collection = collection,
+                ItemsChanged = itemList
+
+            }, _logger);
         }
 
         public IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user)

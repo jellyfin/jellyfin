@@ -15,6 +15,7 @@ namespace MediaBrowser.Api
     /// Class GetSystemInfo
     /// </summary>
     [Route("/System/Info", "GET", Summary = "Gets information about the server")]
+    [Authenticated]
     public class GetSystemInfo : IReturn<SystemInfo>
     {
 

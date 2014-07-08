@@ -5,25 +5,11 @@
         ApiClient.getServerConfiguration().done(function (config) {
 
             config.IsStartupWizardCompleted = true;
-            
+
             ApiClient.updateServerConfiguration(config).done(function () {
 
-                ApiClient.getUsers().done(function (users) {
-
-                    for (var i = 0, length = users.length; i < length; i++) {
-
-                        if (users[i].Configuration.IsAdministrator) {
-                            Dashboard.setCurrentUser(users[i].Id);
-                            break;
-                        }
-
-                    }
-                    
-                    Dashboard.navigate('dashboard.html');
-                });
+                Dashboard.navigate('dashboard.html');
             });
         });
-
     }
-
 };

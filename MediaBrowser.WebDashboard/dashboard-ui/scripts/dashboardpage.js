@@ -101,7 +101,7 @@
                 var date = parseISO8601Date(item.Date, { toLocal: true });
                 itemHtml += '<div class="newsItemDate">' + date.toLocaleDateString() + '</div>';
 
-                itemHtml += '<div class="newsItemDescription">' + item.DescriptionHtml + '</div>';
+                itemHtml += '<div class="newsItemDescription">' + item.Description + '</div>';
                 itemHtml += '</div>';
 
                 return itemHtml;

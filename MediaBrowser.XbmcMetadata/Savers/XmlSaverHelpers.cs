@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Security;
-using System.Text;
-using System.Xml;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -18,6 +10,14 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.XbmcMetadata.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Security;
+using System.Text;
+using System.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
@@ -392,9 +392,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 builder.Append("<writer>" + SecurityElement.Escape(person) + "</writer>");
             }
 
-            if (writers.Count > 0)
+            foreach (var person in writers)
             {
-                builder.Append("<credits>" + SecurityElement.Escape(string.Join(" / ", writers.ToArray())) + "</credits>");
+                builder.Append("<credits>" + SecurityElement.Escape(person) + "</credits>");
             }
 
             var hasTrailer = item as IHasTrailers;

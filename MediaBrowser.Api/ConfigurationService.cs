@@ -18,6 +18,7 @@ namespace MediaBrowser.Api
     /// Class GetConfiguration
     /// </summary>
     [Route("/System/Configuration", "GET", Summary = "Gets application configuration")]
+    [Authenticated]
     public class GetConfiguration : IReturn<ServerConfiguration>
     {
 
