@@ -213,6 +213,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Sessions/Capabilities", "POST", Summary = "Updates capabilities for a device")]
+    [Authenticated]
     public class PostCapabilities : IReturnVoid
     {
         /// <summary>
@@ -235,6 +236,11 @@ namespace MediaBrowser.Api
         public bool SupportsMediaControl { get; set; }
     }
 
+    [Route("/Sessions/Logout", "POST", Summary = "Reports that a session has ended")]
+    public class ReportSessionEnded : IReturnVoid
+    {
+    }
+
     /// <summary>
     /// Class SessionsService
     /// </summary>
@@ -246,16 +252,26 @@ namespace MediaBrowser.Api
         private readonly ISessionManager _sessionManager;
 
         private readonly IUserManager _userManager;
+        private readonly IAuthorizationContext _authContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionsService" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="userManager">The user manager.</param>
-        public SessionsService(ISessionManager sessionManager, IUserManager userManager)
+        public SessionsService(ISessionManager sessionManager, IUserManager userManager, IAuthorizationContext authContext)
         {
             _sessionManager = sessionManager;
             _userManager = userManager;
+            _authContext = authContext;
+        }
+
+
+        public void Post(ReportSessionEnded request)
+        {
+            var auth = _authContext.GetAuthorizationInfo(Request);
+
+            _sessionManager.Logout(auth.Token);
         }
 
         /// <summary>

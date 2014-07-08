@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
-    public class SqliteFileOrganizationRepository : IFileOrganizationRepository
+    public class SqliteFileOrganizationRepository : IFileOrganizationRepository, IDisposable
     {
         private IDbConnection _connection;
 

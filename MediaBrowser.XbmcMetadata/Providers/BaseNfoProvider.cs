@@ -27,7 +27,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
             var path = file.FullName;
 
-            await XmlProviderUtils.XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            //await XmlProviderUtils.XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -44,10 +44,10 @@ namespace MediaBrowser.XbmcMetadata.Providers
             {
                 result.HasMetadata = false;
             }
-            finally
-            {
-                XmlProviderUtils.XmlParsingResourcePool.Release();
-            }
+            //finally
+            //{
+            //    XmlProviderUtils.XmlParsingResourcePool.Release();
+            //}
 
             return result;
         }

@@ -170,7 +170,7 @@ namespace MediaBrowser.Providers.Manager
                 var key = id.Key;
 
                 // Don't replace existing Id's.
-                if (!target.ProviderIds.ContainsKey(key))
+                if (replaceData || !target.ProviderIds.ContainsKey(key))
                 {
                     target.ProviderIds[key] = id.Value;
                 }

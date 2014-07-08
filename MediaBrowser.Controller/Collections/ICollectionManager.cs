@@ -9,6 +9,21 @@ namespace MediaBrowser.Controller.Collections
     public interface ICollectionManager
     {
         /// <summary>
+        /// Occurs when [collection created].
+        /// </summary>
+        event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
+
+        /// <summary>
+        /// Occurs when [items added to collection].
+        /// </summary>
+        event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
+
+        /// <summary>
+        /// Occurs when [items removed from collection].
+        /// </summary>
+        event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
+
+        /// <summary>
         /// Creates the collection.
         /// </summary>
         /// <param name="options">The options.</param>

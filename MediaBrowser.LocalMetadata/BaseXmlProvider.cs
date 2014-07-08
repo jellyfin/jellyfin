@@ -1,11 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.LocalMetadata
 {

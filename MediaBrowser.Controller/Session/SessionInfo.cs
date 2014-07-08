@@ -123,7 +123,7 @@ namespace MediaBrowser.Controller.Session
         public List<string> SupportedCommands { get; set; }
 
         public TranscodingInfo TranscodingInfo { get; set; }
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance is active.
         /// </summary>

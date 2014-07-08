@@ -246,7 +246,7 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the client session asynchronous.
         /// </summary>
         /// <returns>Task{SessionInfoDto}.</returns>
-        Task<SessionInfoDto> GetCurrentSessionAsync();
+        Task<SessionInfoDto> GetCurrentSessionAsync(CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the item counts async.
@@ -645,6 +645,13 @@ namespace MediaBrowser.Model.ApiClient
         Task SetVolume(string sessionId, int volume);
 
         /// <summary>
+        /// Stops the transcoding processes.
+        /// </summary>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <returns>Task.</returns>
+        Task StopTranscodingProcesses(string deviceId);
+
+        /// <summary>
         /// Sets the index of the audio stream.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
@@ -984,7 +991,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{LiveTvInfo}.</returns>
-        Task<QueryResult<ChannelInfoDto>> GetLiveTvChannelsAsync(ChannelQuery query, CancellationToken cancellationToken);
+        Task<QueryResult<ChannelInfoDto>> GetLiveTvChannelsAsync(LiveTvChannelQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the live tv channel asynchronous.
@@ -1187,5 +1194,13 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{BaseItemDto}}.</returns>
         Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the latest channel items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{QueryResult{BaseItemDto}}.</returns>
+        Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken);
     }
 }

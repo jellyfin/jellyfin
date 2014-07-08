@@ -77,7 +77,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="cancellationToken">The cancellation token.</param>
         private void Fetch(T item, string metadataFile, XmlReaderSettings settings, Encoding encoding, CancellationToken cancellationToken)
         {
-            using (var streamReader = new StreamReader(metadataFile, encoding))
+            using (var streamReader = new StreamReader(metadataFile))
             {
                 // Use XmlReader for best performance
                 using (var reader = XmlReader.Create(streamReader, settings))

@@ -259,7 +259,28 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Validates the security token.
         /// </summary>
-        /// <param name="token">The token.</param>
-        void ValidateSecurityToken(string token);
+        /// <param name="accessToken">The access token.</param>
+        void ValidateSecurityToken(string accessToken);
+
+        /// <summary>
+        /// Logouts the specified access token.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <returns>Task.</returns>
+        Task Logout(string accessToken);
+
+        /// <summary>
+        /// Revokes the user tokens.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <returns>Task.</returns>
+        Task RevokeUserTokens(string userId);
+
+        /// <summary>
+        /// Determines whether the specified remote endpoint is local.
+        /// </summary>
+        /// <param name="remoteEndpoint">The remote endpoint.</param>
+        /// <returns><c>true</c> if the specified remote endpoint is local; otherwise, <c>false</c>.</returns>
+        bool IsLocal(string remoteEndpoint);
     }
 }

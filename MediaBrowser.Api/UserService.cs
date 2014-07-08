@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using ServiceStack;
 using ServiceStack.Text.Controller;
@@ -19,6 +18,7 @@ namespace MediaBrowser.Api
     /// Class GetUsers
     /// </summary>
     [Route("/Users", "GET", Summary = "Gets a list of users")]
+    [Authenticated]
     public class GetUsers : IReturn<List<UserDto>>
     {
         [ApiMember(Name = "IsHidden", Description = "Optional filter by IsHidden=true or false", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
@@ -37,6 +37,7 @@ namespace MediaBrowser.Api
     /// Class GetUser
     /// </summary>
     [Route("/Users/{Id}", "GET", Summary = "Gets a user by Id")]
+    [Authenticated]
     public class GetUser : IReturn<UserDto>
     {
         /// <summary>
@@ -160,11 +161,6 @@ namespace MediaBrowser.Api
     public class UserService : BaseApiService, IHasAuthorization
     {
         /// <summary>
-        /// The _XML serializer
-        /// </summary>
-        private readonly IXmlSerializer _xmlSerializer;
-
-        /// <summary>
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
@@ -176,19 +172,12 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService" /> class.
         /// </summary>
-        /// <param name="xmlSerializer">The XML serializer.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="dtoService">The dto service.</param>
+        /// <param name="sessionMananger">The session mananger.</param>
         /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
-        public UserService(IXmlSerializer xmlSerializer, IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger)
-            : base()
+        public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger)
         {
-            if (xmlSerializer == null)
-            {
-                throw new ArgumentNullException("xmlSerializer");
-            }
-
-            _xmlSerializer = xmlSerializer;
             _userManager = userManager;
             _dtoService = dtoService;
             _sessionMananger = sessionMananger;
@@ -196,6 +185,11 @@ namespace MediaBrowser.Api
 
         public object Get(GetPublicUsers request)
         {
+            if (!Request.IsLocal && !_sessionMananger.IsLocal(Request.RemoteIp))
+            {
+                return ToOptimizedResult(new List<UserDto>());
+            }
+
             return Get(new GetUsers
             {
                 IsHidden = false,
@@ -368,9 +362,15 @@ namespace MediaBrowser.Api
                 {
                     throw new ArgumentException("There must be at least one enabled user in the system.");
                 }
+
+                var revokeTask = _sessionMananger.RevokeUserTokens(user.Id.ToString("N"));
+
+                Task.WaitAll(revokeTask);
             }
 
-            var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ? _userManager.UpdateUser(user) : _userManager.RenameUser(user, dtoUser.Name);
+            var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ? 
+                _userManager.UpdateUser(user) : 
+                _userManager.RenameUser(user, dtoUser.Name);
 
             Task.WaitAll(task);
 

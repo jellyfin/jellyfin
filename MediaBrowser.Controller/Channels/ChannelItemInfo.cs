@@ -10,6 +10,8 @@ namespace MediaBrowser.Controller.Channels
     {
         public string Name { get; set; }
 
+        public string SeriesName { get; set; }
+
         public string Id { get; set; }
 
         public ChannelItemType Type { get; set; }
@@ -28,8 +30,6 @@ namespace MediaBrowser.Controller.Channels
 
         public long? RunTimeTicks { get; set; }
 
-        public bool IsInfiniteStream { get; set; }
-        
         public string ImageUrl { get; set; }
 
         public ChannelMediaType MediaType { get; set; }
@@ -43,9 +43,14 @@ namespace MediaBrowser.Controller.Channels
         public int? ProductionYear { get; set; }
 
         public DateTime? DateCreated { get; set; }
-        
+
+        public int? IndexNumber { get; set; }
+        public int? ParentIndexNumber { get; set; }
+
         public List<ChannelMediaInfo> MediaSources { get; set; }
-        
+
+        public bool IsInfiniteStream { get; set; }
+
         public ChannelItemInfo()
         {
             MediaSources = new List<ChannelMediaInfo>();

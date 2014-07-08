@@ -127,8 +127,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            // TODO: Delete files from other jobs, but not this one
-                            await ApiEntryPoint.Instance.KillTranscodingJobs(state.Request.DeviceId, TranscodingJobType.Hls, FileDeleteMode.None, false).ConfigureAwait(false);
+                            await ApiEntryPoint.Instance.KillTranscodingJobs(state.Request.DeviceId, TranscodingJobType.Hls, p => !string.Equals(p, playlistPath, StringComparison.OrdinalIgnoreCase), false).ConfigureAwait(false);
 
                             if (currentTranscodingIndex.HasValue)
                             {
