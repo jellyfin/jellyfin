@@ -128,6 +128,14 @@
       <Project>{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}</Project>
       <Name>MediaBrowser.MediaEncoding</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj">
+      <Project>{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}</Project>
+      <Name>MediaBrowser.LocalMetadata</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj">
+      <Project>{23499896-B135-4527-8574-C26E926EA99E}</Project>
+      <Name>MediaBrowser.XbmcMetadata</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="EntryPoints\" />

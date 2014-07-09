@@ -632,6 +632,7 @@ namespace MediaBrowser.Common.Implementations
             return parts;
         }
 
+        private Version _version;
         /// <summary>
         /// Gets the current application version
         /// </summary>
@@ -640,7 +641,7 @@ namespace MediaBrowser.Common.Implementations
         {
             get
             {
-                return GetType().Assembly.GetName().Version;
+                return _version ?? (_version = GetType().Assembly.GetName().Version);
             }
         }
 

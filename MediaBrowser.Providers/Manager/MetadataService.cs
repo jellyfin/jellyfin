@@ -470,7 +470,17 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
+            if (refreshResult.Successes > 0)
+            {
+                AfterRemoteRefresh(temp);
+            }
+
             return refreshResult;
+        }
+
+        protected virtual void AfterRemoteRefresh(TItemType item)
+        {
+            
         }
 
         private async Task<TIdType> CreateInitialLookupInfo(TItemType item, CancellationToken cancellationToken)
