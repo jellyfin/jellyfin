@@ -734,7 +734,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
                 var progress = GetProgressInfo(media, info);
 
-                if (info.Item != null && !info.IsDirectStream)
+                if (info.Item != null)
                 {
                     var newPosition = progress.PositionTicks ?? 0;
 
@@ -760,7 +760,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
                 var progress = GetProgressInfo(media, info);
 
-                if (info.Item != null && !info.IsDirectStream)
+                if (info.Item != null)
                 {
                     var newPosition = progress.PositionTicks ?? 0;
 

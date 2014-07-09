@@ -123,13 +123,9 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 AddDlnaHeaders(state, responseHeaders, true);
 
-                try
+                using (state)
                 {
                     return GetStaticRemoteStreamResult(state, responseHeaders, isHeadRequest).Result;
-                }
-                finally
-                {
-                    state.Dispose();
                 }
             }
 
@@ -151,13 +147,9 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 var contentType = state.GetMimeType(state.MediaPath);
 
-                try
+                using (state)
                 {
                     return ResultFactory.GetStaticFileResult(Request, state.MediaPath, contentType, FileShare.Read, responseHeaders, isHeadRequest);
-                }
-                finally
-                {
-                    state.Dispose();
                 }
             }
 

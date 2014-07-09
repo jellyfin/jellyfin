@@ -5,6 +5,8 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
@@ -13,6 +15,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,14 +29,16 @@ namespace MediaBrowser.Providers.TV
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
+        private readonly ILogger _logger;
 
-        public MovieDbSeasonProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer)
+        public MovieDbSeasonProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer, ILogManager logManager)
         {
             _httpClient = httpClient;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
             _jsonSerializer = jsonSerializer;
+            _logger = logManager.GetLogger(GetType().Name);
         }
 
         public async Task<MetadataResult<Season>> GetMetadata(SeasonInfo info, CancellationToken cancellationToken)
@@ -43,42 +48,58 @@ namespace MediaBrowser.Providers.TV
             string seriesTmdbId;
             info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out seriesTmdbId);
 
-            if (!string.IsNullOrWhiteSpace(seriesTmdbId) && info.IndexNumber.HasValue)
+            var seasonNumber = info.IndexNumber;
+
+            if (!string.IsNullOrWhiteSpace(seriesTmdbId) && seasonNumber.HasValue)
             {
                 result.HasMetadata = true;
                 result.Item = new Season();
 
-                var seasonInfo = await GetSeasonInfo(seriesTmdbId, info.IndexNumber.Value, info.MetadataLanguage, cancellationToken)
-                            .ConfigureAwait(false);
-
-                result.Item.Name = seasonInfo.name;
-                result.Item.Overview = seasonInfo.overview;
-                result.Item.IndexNumber = info.IndexNumber;
-
-                if (seasonInfo.external_ids.tvdb_id > 0)
+                try
                 {
-                    result.Item.SetProviderId(MetadataProviders.Tvdb, seasonInfo.external_ids.tvdb_id.ToString(CultureInfo.InvariantCulture));
-                }
+                    var seasonInfo = await GetSeasonInfo(seriesTmdbId, seasonNumber.Value, info.MetadataLanguage, cancellationToken)
+                      .ConfigureAwait(false);
 
-                var credits = seasonInfo.credits;
-                if (credits != null)
-                {
-                    //Actors, Directors, Writers - all in People
-                    //actors come from cast
-                    if (credits.cast != null)
+                    result.Item.Name = seasonInfo.name;
+                    result.Item.Overview = seasonInfo.overview;
+                    result.Item.IndexNumber = seasonNumber;
+
+                    if (seasonInfo.external_ids.tvdb_id > 0)
                     {
-                        //foreach (var actor in credits.cast.OrderBy(a => a.order)) result.Item.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
+                        result.Item.SetProviderId(MetadataProviders.Tvdb, seasonInfo.external_ids.tvdb_id.ToString(CultureInfo.InvariantCulture));
                     }
 
-                    //and the rest from crew
-                    if (credits.crew != null)
+                    var credits = seasonInfo.credits;
+                    if (credits != null)
                     {
-                        //foreach (var person in credits.crew) result.Item.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
-                    }
-                }
+                        //Actors, Directors, Writers - all in People
+                        //actors come from cast
+                        if (credits.cast != null)
+                        {
+                            //foreach (var actor in credits.cast.OrderBy(a => a.order)) result.Item.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
+                        }
 
-                result.Item.PremiereDate = seasonInfo.air_date;
-                result.Item.ProductionYear = result.Item.PremiereDate.Value.Year;
+                        //and the rest from crew
+                        if (credits.crew != null)
+                        {
+                            //foreach (var person in credits.crew) result.Item.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
+                        }
+                    }
+
+                    result.Item.PremiereDate = seasonInfo.air_date;
+                    result.Item.ProductionYear = result.Item.PremiereDate.Value.Year;
+                }
+                catch (HttpException ex)
+                {
+                    _logger.Error("No metadata found for {0}", seasonNumber.Value);
+
+                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    {
+                        return result;
+                    }
+
+                    throw;
+                }
             }
 
             return result;

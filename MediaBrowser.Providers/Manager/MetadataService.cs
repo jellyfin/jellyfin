@@ -295,11 +295,19 @@ namespace MediaBrowser.Providers.Manager
 
             var temp = CreateNew();
             temp.Path = item.Path;
+            var successfulProviderCount = 0;
+            var failedProviderCount = 0;
 
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
             {
-                await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
+                var remoteResult = await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                    .ConfigureAwait(false);
+                refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
+                refreshResult.Status = remoteResult.Status;
+                refreshResult.ErrorMessage = remoteResult.ErrorMessage;
+                successfulProviderCount += remoteResult.Successes;
+                failedProviderCount += remoteResult.Failures;
             }
 
             var hasLocalMetadata = false;
@@ -327,10 +335,11 @@ namespace MediaBrowser.Providers.Manager
 
                         // Only one local provider allowed per item
                         hasLocalMetadata = true;
-                        item.IsUnidentified = false;
+                        successfulProviderCount++;
                         break;
                     }
 
+                    failedProviderCount++;
                     Logger.Debug("{0} returned no metadata for {1}", providerName, item.Path ?? item.Name);
                 }
                 catch (OperationCanceledException)
@@ -339,6 +348,8 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
+                    failedProviderCount++;
+                    
                     Logger.ErrorException("Error in {0}", ex, provider.Name);
                     
                     // If a local provider fails, consider that a failure
@@ -356,12 +367,29 @@ namespace MediaBrowser.Providers.Manager
             // Local metadata is king - if any is found don't run remote providers
             if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh))
             {
-                await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
+                var remoteResult = await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                    .ConfigureAwait(false);
+
+                refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
+                if (remoteResult.Status != ProviderRefreshStatus.Success)
+                {
+                    refreshResult.Status = remoteResult.Status;
+                    refreshResult.ErrorMessage = remoteResult.ErrorMessage;
+                }
+                successfulProviderCount += remoteResult.Successes;
             }
 
             if (refreshResult.UpdateType > ItemUpdateType.None)
             {
                 MergeData(temp, item, item.LockedFields, true, true);
+            }
+
+            var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;
+
+            if (item.IsUnidentified != isUnidentified)
+            {
+                item.IsUnidentified = isUnidentified;
+                refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
             }
 
             foreach (var provider in customProviders.Where(i => !(i is IPreRefreshProvider)))
@@ -397,10 +425,9 @@ namespace MediaBrowser.Providers.Manager
             return new TItemType();
         }
 
-        private async Task ExecuteRemoteProviders(TItemType item, TItemType temp, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, RefreshResult refreshResult, CancellationToken cancellationToken)
+        private async Task<RefreshResult> ExecuteRemoteProviders(TItemType item, TItemType temp, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
         {
-            var unidentifiedCount = 0;
-            var identifiedCount = 0;
+            var refreshResult = new RefreshResult();
 
             foreach (var provider in providers)
             {
@@ -422,11 +449,11 @@ namespace MediaBrowser.Providers.Manager
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
 
-                        identifiedCount++;
+                        refreshResult.Successes++;
                     }
                     else
                     {
-                        unidentifiedCount++; 
+                        refreshResult.Failures++;
                         Logger.Debug("{0} returned no metadata for {1}", providerName, item.Path ?? item.Name);
                     }
                 }
@@ -436,20 +463,14 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    unidentifiedCount++; 
+                    refreshResult.Failures++;
                     refreshResult.Status = ProviderRefreshStatus.CompletedWithErrors;
                     refreshResult.ErrorMessage = ex.Message;
                     Logger.ErrorException("Error in {0}", ex, provider.Name);
                 }
             }
 
-            var isUnidentified = unidentifiedCount > 0 && identifiedCount == 0;
-
-            if (item.IsUnidentified != isUnidentified)
-            {
-                item.IsUnidentified = isUnidentified;
-                refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
-            }
+            return refreshResult;
         }
 
         private async Task<TIdType> CreateInitialLookupInfo(TItemType item, CancellationToken cancellationToken)
@@ -510,5 +531,7 @@ namespace MediaBrowser.Providers.Manager
         public ProviderRefreshStatus Status { get; set; }
         public string ErrorMessage { get; set; }
         public List<Guid> Providers { get; set; }
+        public int Successes { get; set; }
+        public int Failures { get; set; }
     }
 }
