@@ -334,11 +334,11 @@
             var item = response1[0];
             var latestItems = response2[0];
 
-            //if (latestItems.length == 1) {
-            //    var first = latestItems[0];
-            //    Dashboard.navigate(LibraryBrowser.getHref(first));
-            //    return;
-            //}
+            if (latestItems.length == 1) {
+                var first = latestItems[0];
+                Dashboard.navigate(LibraryBrowser.getHref(first));
+                return;
+            }
 
             var html = '<div data-role="popup" class="groupingMenu" data-theme="a">';
 
