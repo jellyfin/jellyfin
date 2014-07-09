@@ -837,14 +837,14 @@
     "LabelGroupChannelsIntoViewsHelp": "Al habilitarse, estos canales ser\u00e1n desplegados directamente junto con otras vistas. Si permanecen deshabilitados, ser\u00e1n desplegados dentro de una vista independiente de Canales.",
     "LabelDisplayCollectionsView": "Desplegar una Vista de colecciones para mostrar las colecciones de pel\u00edculas",
     "LabelXbmcMetadataEnableExtraThumbs": "Copiar extrafanart en extrathumbs",
-    "LabelXbmcMetadataEnableExtraThumbsHelp": "Cuando se descargan las im\u00e1genes \u00e9stas pueden ser almacenadas en extrafanart y extrathumbs para una m\u00e1xima compatibilidad con los skins de Xbmc.",
+    "LabelXbmcMetadataEnableExtraThumbsHelp": "Cuando se descargan im\u00e1genes \u00e9stas pueden ser almacenadas en extrafanart y extrathumbs para una m\u00e1xima compatibilidad con los skins de Xbmc.",
     "TabServices": "Servicios",
     "TabLogs": "Registros",
     "HeaderServerLogFiles": "Archivos de registro del servidor:",
-    "TabBranding": "Branding",
+    "TabBranding": "Establecer Marca",
     "HeaderBrandingHelp": "Personaliza la apariencia de Media Browser para ajustarla a las necesidades de tu grupo u organizaci\u00f3n.",
-    "LabelLoginDisclaimer": "Aviso legal de Inicio de Sesi\u00f3n:",
-    "LabelLoginDisclaimerHelp": "Se mostrara al final de la pagina de inicio de sesi\u00f3n.",
+    "LabelLoginDisclaimer": "Aviso de Inicio de Sesi\u00f3n:",
+    "LabelLoginDisclaimerHelp": "Esto se mostrara al final de la pagina de inicio de sesi\u00f3n.",
     "LabelAutomaticallyDonate": "Donar autom\u00e1ticamente esta cantidad cada mes",
     "LabelAutomaticallyDonateHelp": "Puedes cancelarlo en cualquier momento por medio de tu cuenta PayPal."
 }

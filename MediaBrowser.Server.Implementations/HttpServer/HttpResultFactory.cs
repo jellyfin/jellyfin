@@ -382,9 +382,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 return result;
             }
 
+            return GetNonCachedResult(requestContext, contentType, factoryFn, responseHeaders, isHeadRequest);
+        }
+
+        private async Task<IHasOptions> GetNonCachedResult(IRequest requestContext, string contentType, Func<Task<Stream>> factoryFn, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false)
+        {
             var compress = ShouldCompressResponse(requestContext, contentType);
 
-            var hasOptions = GetStaticResult(requestContext, responseHeaders, contentType, factoryFn, compress, isHeadRequest).Result;
+            var hasOptions = await GetStaticResult(requestContext, responseHeaders, contentType, factoryFn, compress, isHeadRequest).ConfigureAwait(false);
 
             AddResponseHeaders(hasOptions, responseHeaders);
 

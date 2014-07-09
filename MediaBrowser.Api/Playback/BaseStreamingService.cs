@@ -953,7 +953,7 @@ namespace MediaBrowser.Api.Playback
             // This is arbitrary, but add a little buffer time when internet streaming
             if (state.InputProtocol != MediaProtocol.File)
             {
-                await Task.Delay(3000, cancellationTokenSource.Token).ConfigureAwait(false);
+                await Task.Delay(2500, cancellationTokenSource.Token).ConfigureAwait(false);
             }
         }
 

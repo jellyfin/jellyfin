@@ -15,13 +15,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security;
 using System.Text;
+using System.Threading;
 using System.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
-    public static class XmlSaverHelpers
+    public abstract class BaseNfoSaver : IMetadataFileSaver
     {
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
@@ -98,33 +98,77 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>
-        /// Saves the specified XML.
-        /// </summary>
-        /// <param name="xml">The XML.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="xmlTagsUsed">The XML tags used.</param>
-        public static void Save(StringBuilder xml, string path, List<string> xmlTagsUsed)
+        protected BaseNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager)
         {
-            if (File.Exists(path))
+            UserDataManager = userDataManager;
+            UserManager = userManager;
+            LibraryManager = libraryManager;
+            ConfigurationManager = configurationManager;
+            FileSystem = fileSystem;
+        }
+
+        protected IFileSystem FileSystem { get; private set; }
+        protected IServerConfigurationManager ConfigurationManager { get; private set; }
+        protected ILibraryManager LibraryManager { get; private set; }
+        protected IUserManager UserManager { get; private set; }
+        protected IUserDataManager UserDataManager { get; private set; }
+
+        public string Name
+        {
+            get
             {
-                var tags = xmlTagsUsed.ToList();
-
-                var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
-                xml.Insert(position, GetCustomTags(path, tags));
+                return "Xbmc Nfo";
             }
+        }
 
-            var xmlDocument = new XmlDocument();
-            xmlDocument.LoadXml(xml.ToString());
+        /// <summary>
+        /// Gets the save path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        public abstract string GetSavePath(IHasMetadata item);
 
-            //Add the new node to the document.
-            xmlDocument.InsertBefore(xmlDocument.CreateXmlDeclaration("1.0", "UTF-8", "yes"), xmlDocument.DocumentElement);
+        /// <summary>
+        /// Gets the name of the root element.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        protected abstract string GetRootElementName(IHasMetadata item);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+        /// <summary>
+        /// Determines whether [is enabled for] [the specified item].
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="updateType">Type of the update.</param>
+        /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
+        public abstract bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType);
+
+        protected virtual List<string> GetTagsUsed()
+        {
+            return new List<string>();
+        }
+
+        public void Save(IHasMetadata item, CancellationToken cancellationToken)
+        {
+            var path = GetSavePath(item);
+                
+            using (var memoryStream = new MemoryStream())
+            {
+                Save(item, memoryStream, path);
+
+                memoryStream.Position = 0;
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                SaveToFile(memoryStream, path);
+            }
+        }
+
+        private void SaveToFile(Stream stream, string path)
+        {
+            var file = new FileInfo(path);
 
             var wasHidden = false;
-
-            var file = new FileInfo(path);
 
             // This will fail if the file is hidden
             if (file.Exists)
@@ -139,10 +183,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
-                using (var streamWriter = new StreamWriter(filestream, Encoding.UTF8))
-                {
-                    xmlDocument.Save(streamWriter);
-                }
+                stream.CopyTo(filestream);
             }
 
             if (wasHidden)
@@ -154,130 +195,136 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
-        /// <summary>
-        /// Gets the custom tags.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="xmlTagsUsed">The XML tags used.</param>
-        /// <returns>System.String.</returns>
-        private static string GetCustomTags(string path, List<string> xmlTagsUsed)
+        private void Save(IHasMetadata item, Stream stream, string xmlPath)
         {
-            var settings = new XmlReaderSettings
+            var settings = new XmlWriterSettings
             {
-                CheckCharacters = false,
-                IgnoreProcessingInstructions = true,
-                IgnoreComments = true,
-                ValidationType = ValidationType.None
+                Indent = true,
+                Encoding = Encoding.UTF8,
+                CloseOutput = false
             };
 
-            var builder = new StringBuilder();
-
-            using (var streamReader = new StreamReader(path, Encoding.UTF8))
+            using (XmlWriter writer = XmlWriter.Create(stream, settings))
             {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, settings))
+                var root = GetRootElementName(item);
+
+                writer.WriteStartDocument(true);
+
+                writer.WriteStartElement(root);
+
+                var baseItem = item as BaseItem;
+
+                if (baseItem != null)
                 {
-                    reader.MoveToContent();
-
-                    // Loop through each element
-                    while (reader.Read())
-                    {
-                        if (reader.NodeType == XmlNodeType.Element)
-                        {
-                            var name = reader.Name;
-
-                            if (!CommonTags.ContainsKey(name) && !xmlTagsUsed.Contains(name, StringComparer.OrdinalIgnoreCase))
-                            {
-                                builder.AppendLine(reader.ReadOuterXml());
-                            }
-                            else
-                            {
-                                reader.Skip();
-                            }
-                        }
-                    }
+                    AddCommonNodes(baseItem, writer, LibraryManager, UserManager, UserDataManager, FileSystem, ConfigurationManager);
                 }
-            }
 
-            return builder.ToString();
+                WriteCustomElements(item, writer);
+
+                var hasMediaSources = baseItem as IHasMediaSources;
+
+                if (hasMediaSources != null)
+                {
+                    AddMediaInfo(hasMediaSources, writer);
+                }
+
+                var tagsUsed = GetTagsUsed();
+
+                try
+                {
+                    AddCustomTags(xmlPath, tagsUsed, writer);
+                }
+                catch (FileNotFoundException)
+                {
+                    
+                }
+
+                writer.WriteEndElement();
+
+                writer.WriteEndDocument();
+            }
         }
 
-        public static void AddMediaInfo<T>(T item, StringBuilder builder)
-            where T : BaseItem, IHasMediaSources
-        {
-            builder.Append("<fileinfo>");
-            builder.Append("<streamdetails>");
+        protected abstract void WriteCustomElements(IHasMetadata item, XmlWriter writer);
 
-            foreach (var stream in item.GetMediaSources(false).First().MediaStreams)
+        public static void AddMediaInfo<T>(T item, XmlWriter writer)
+         where T : IHasMediaSources
+        {
+            writer.WriteStartElement("fileinfo");
+            writer.WriteStartElement("streamdetails");
+
+            var mediaSource = item.GetMediaSources(false).First();
+
+            foreach (var stream in mediaSource.MediaStreams)
             {
-                builder.Append("<" + stream.Type.ToString().ToLower() + ">");
+                writer.WriteStartElement(stream.Type.ToString().ToLower());
 
                 if (!string.IsNullOrEmpty(stream.Codec))
                 {
-                    builder.Append("<codec>" + SecurityElement.Escape(stream.Codec) + "</codec>");
-                    builder.Append("<micodec>" + SecurityElement.Escape(stream.Codec) + "</micodec>");
+                    writer.WriteElementString("codec", stream.Codec);
+                    writer.WriteElementString("micodec", stream.Codec);
                 }
 
                 if (stream.BitRate.HasValue)
                 {
-                    builder.Append("<bitrate>" + stream.BitRate.Value.ToString(UsCulture) + "</bitrate>");
+                    writer.WriteElementString("bitrate", stream.BitRate.Value.ToString(UsCulture));
                 }
 
                 if (stream.Width.HasValue)
                 {
-                    builder.Append("<width>" + stream.Width.Value.ToString(UsCulture) + "</width>");
+                    writer.WriteElementString("width", stream.Width.Value.ToString(UsCulture));
                 }
 
                 if (stream.Height.HasValue)
                 {
-                    builder.Append("<height>" + stream.Height.Value.ToString(UsCulture) + "</height>");
+                    writer.WriteElementString("height", stream.Height.Value.ToString(UsCulture));
                 }
 
                 if (!string.IsNullOrEmpty(stream.AspectRatio))
                 {
-                    builder.Append("<aspect>" + SecurityElement.Escape(stream.AspectRatio) + "</aspect>");
-                    builder.Append("<aspectratio>" + SecurityElement.Escape(stream.AspectRatio) + "</aspectratio>");
+                    writer.WriteElementString("aspect", stream.AspectRatio);
+                    writer.WriteElementString("aspectratio", stream.AspectRatio);
                 }
 
                 var framerate = stream.AverageFrameRate ?? stream.RealFrameRate;
 
                 if (framerate.HasValue)
                 {
-                    builder.Append("<framerate>" + framerate.Value.ToString(UsCulture) + "</framerate>");
+                    writer.WriteElementString("framerate", framerate.Value.ToString(UsCulture));
                 }
 
                 if (!string.IsNullOrEmpty(stream.Language))
                 {
-                    builder.Append("<language>" + SecurityElement.Escape(stream.Language) + "</language>");
+                    writer.WriteElementString("language", stream.Language);
                 }
 
                 var scanType = stream.IsInterlaced ? "interlaced" : "progressive";
                 if (!string.IsNullOrEmpty(scanType))
                 {
-                    builder.Append("<scantype>" + SecurityElement.Escape(scanType) + "</scantype>");
+                    writer.WriteElementString("scantype", scanType);
                 }
 
                 if (stream.Channels.HasValue)
                 {
-                    builder.Append("<channels>" + stream.Channels.Value.ToString(UsCulture) + "</channels>");
+                    writer.WriteElementString("channels", stream.Channels.Value.ToString(UsCulture));
                 }
 
                 if (stream.SampleRate.HasValue)
                 {
-                    builder.Append("<samplingrate>" + stream.SampleRate.Value.ToString(UsCulture) + "</samplingrate>");
+                    writer.WriteElementString("samplingrate", stream.SampleRate.Value.ToString(UsCulture));
                 }
 
-                builder.Append("<default>" + SecurityElement.Escape(stream.IsDefault.ToString()) + "</default>");
-                builder.Append("<forced>" + SecurityElement.Escape(stream.IsForced.ToString()) + "</forced>");
+                writer.WriteElementString("default", stream.IsDefault.ToString());
+                writer.WriteElementString("forced", stream.IsForced.ToString());
 
                 if (stream.Type == MediaStreamType.Video)
                 {
-                    if (item.RunTimeTicks.HasValue)
+                    if (mediaSource.RunTimeTicks.HasValue)
                     {
-                        var timespan = TimeSpan.FromTicks(item.RunTimeTicks.Value);
+                        var timespan = TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value);
 
-                        builder.Append("<duration>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</duration>");
-                        builder.Append("<durationinseconds>" + Convert.ToInt32(timespan.TotalSeconds).ToString(UsCulture) + "</durationinseconds>");
+                        writer.WriteElementString("duration", Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture));
+                        writer.WriteElementString("durationinseconds", Convert.ToInt32(timespan.TotalSeconds).ToString(UsCulture));
                     }
 
                     var video = item as Video;
@@ -291,34 +338,34 @@ namespace MediaBrowser.XbmcMetadata.Savers
                             switch (video.Video3DFormat.Value)
                             {
                                 case Video3DFormat.FullSideBySide:
-                                    builder.Append("<format3d>FSBS</format3d>");
+                                    writer.WriteElementString("format3d", "FSBS");
                                     break;
                                 case Video3DFormat.FullTopAndBottom:
-                                    builder.Append("<format3d>FTAB</format3d>");
+                                    writer.WriteElementString("format3d", "FTAB");
                                     break;
                                 case Video3DFormat.HalfSideBySide:
-                                    builder.Append("<format3d>HSBS</format3d>");
+                                    writer.WriteElementString("format3d", "HSBS");
                                     break;
                                 case Video3DFormat.HalfTopAndBottom:
-                                    builder.Append("<format3d>HTAB</format3d>");
+                                    writer.WriteElementString("format3d", "HTAB");
                                     break;
                             }
                         }
                     }
                 }
 
-                builder.Append("</" + stream.Type.ToString().ToLower() + ">");
+                writer.WriteEndElement();
             }
 
-            builder.Append("</streamdetails>");
-            builder.Append("</fileinfo>");
+            writer.WriteEndElement();
+            writer.WriteEndElement();
         }
 
         /// <summary>
         /// Adds the common nodes.
         /// </summary>
         /// <returns>Task.</returns>
-        public static void AddCommonNodes(BaseItem item, StringBuilder builder, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepo, IFileSystem fileSystem, IServerConfigurationManager config)
+        public static void AddCommonNodes(BaseItem item, XmlWriter writer, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepo, IFileSystem fileSystem, IServerConfigurationManager config)
         {
             var overview = (item.Overview ?? string.Empty)
                 .StripHtml()
@@ -328,15 +375,15 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (item is MusicArtist)
             {
-                builder.Append("<biography><![CDATA[" + overview + "]]></biography>");
+                writer.WriteElementString("biography", overview);
             }
             else if (item is MusicAlbum)
             {
-                builder.Append("<review><![CDATA[" + overview + "]]></review>");
+                writer.WriteElementString("review", overview);
             }
             else
             {
-                builder.Append("<plot><![CDATA[" + overview + "]]></plot>");
+                writer.WriteElementString("plot", overview);
             }
 
             var hasShortOverview = item as IHasShortOverview;
@@ -346,30 +393,34 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     .StripHtml()
                     .Replace("&quot;", "'");
 
-                builder.Append("<outline><![CDATA[" + outline + "]]></outline>");
+                writer.WriteElementString("outline", outline);
             }
             else
             {
-                builder.Append("<outline><![CDATA[" + overview + "]]></outline>");
+                writer.WriteElementString("outline", overview);
             }
 
-            builder.Append("<customrating>" + SecurityElement.Escape(item.CustomRating ?? string.Empty) + "</customrating>");
-            builder.Append("<lockdata>" + item.IsLocked.ToString().ToLower() + "</lockdata>");
+            if (!string.IsNullOrWhiteSpace(item.CustomRating))
+            {
+                writer.WriteElementString("customrating", item.CustomRating);
+            }
+
+            writer.WriteElementString("lockdata", item.IsLocked.ToString().ToLower());
 
             if (item.LockedFields.Count > 0)
             {
-                builder.Append("<lockedfields>" + string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray()) + "</lockedfields>");
+                writer.WriteElementString("lockedfields", string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray()));
             }
-            
+
             if (!string.IsNullOrEmpty(item.DisplayMediaType))
             {
-                builder.Append("<type>" + SecurityElement.Escape(item.DisplayMediaType) + "</type>");
+                writer.WriteElementString("type", item.DisplayMediaType);
             }
 
-            builder.Append("<dateadded>" + SecurityElement.Escape(item.DateCreated.ToString("yyyy-MM-dd HH:mm:ss")) + "</dateadded>");
+            writer.WriteElementString("dateadded", item.DateCreated.ToString("yyyy-MM-dd HH:mm:ss"));
 
-            builder.Append("<title>" + SecurityElement.Escape(item.Name ?? string.Empty) + "</title>");
-            builder.Append("<originaltitle>" + SecurityElement.Escape(item.Name ?? string.Empty) + "</originaltitle>");
+            writer.WriteElementString("title", item.Name ?? string.Empty);
+            writer.WriteElementString("originaltitle", item.Name ?? string.Empty);
 
             var directors = item.People
                 .Where(i => IsPersonType(i, PersonType.Director))
@@ -378,7 +429,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             foreach (var person in directors)
             {
-                builder.Append("<director>" + SecurityElement.Escape(person) + "</director>");
+                writer.WriteElementString("director", person);
             }
 
             var writers = item.People
@@ -389,12 +440,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             foreach (var person in writers)
             {
-                builder.Append("<writer>" + SecurityElement.Escape(person) + "</writer>");
+                writer.WriteElementString("writer", person);
             }
 
             foreach (var person in writers)
             {
-                builder.Append("<credits>" + SecurityElement.Escape(person) + "</credits>");
+                writer.WriteElementString("credits", person);
             }
 
             var hasTrailer = item as IHasTrailers;
@@ -402,33 +453,33 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 foreach (var trailer in hasTrailer.RemoteTrailers)
                 {
-                    builder.Append("<trailer>" + SecurityElement.Escape(GetOutputTrailerUrl(trailer.Url)) + "</trailer>");
+                    writer.WriteElementString("trailer", GetOutputTrailerUrl(trailer.Url));
                 }
             }
 
             if (item.CommunityRating.HasValue)
             {
-                builder.Append("<rating>" + SecurityElement.Escape(item.CommunityRating.Value.ToString(UsCulture)) + "</rating>");
+                writer.WriteElementString("rating", item.CommunityRating.Value.ToString(UsCulture));
             }
 
             if (item.ProductionYear.HasValue)
             {
-                builder.Append("<year>" + SecurityElement.Escape(item.ProductionYear.Value.ToString(UsCulture)) + "</year>");
+                writer.WriteElementString("year", item.ProductionYear.Value.ToString(UsCulture));
             }
 
             if (!string.IsNullOrEmpty(item.ForcedSortName))
             {
-                builder.Append("<sorttitle>" + SecurityElement.Escape(item.ForcedSortName) + "</sorttitle>");
+                writer.WriteElementString("sorttitle", item.ForcedSortName);
             }
 
             if (!string.IsNullOrEmpty(item.OfficialRating))
             {
-                builder.Append("<mpaa>" + SecurityElement.Escape(item.OfficialRating) + "</mpaa>");
+                writer.WriteElementString("mpaa", item.OfficialRating);
             }
 
             if (!string.IsNullOrEmpty(item.OfficialRatingDescription))
             {
-                builder.Append("<mpaadescription>" + SecurityElement.Escape(item.OfficialRatingDescription) + "</mpaadescription>");
+                writer.WriteElementString("mpaadescription", item.OfficialRatingDescription);
             }
 
             var hasAspectRatio = item as IHasAspectRatio;
@@ -436,27 +487,27 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 if (!string.IsNullOrEmpty(hasAspectRatio.AspectRatio))
                 {
-                    builder.Append("<aspectratio>" + SecurityElement.Escape(hasAspectRatio.AspectRatio) + "</aspectratio>");
+                    writer.WriteElementString("aspectratio", hasAspectRatio.AspectRatio);
                 }
             }
 
             if (!string.IsNullOrEmpty(item.HomePageUrl))
             {
-                builder.Append("<website>" + SecurityElement.Escape(item.HomePageUrl) + "</website>");
+                writer.WriteElementString("website", item.HomePageUrl);
             }
 
             var rt = item.GetProviderId(MetadataProviders.RottenTomatoes);
 
             if (!string.IsNullOrEmpty(rt))
             {
-                builder.Append("<rottentomatoesid>" + SecurityElement.Escape(rt) + "</rottentomatoesid>");
+                writer.WriteElementString("rottentomatoesid", rt);
             }
 
             var tmdbCollection = item.GetProviderId(MetadataProviders.TmdbCollection);
 
             if (!string.IsNullOrEmpty(tmdbCollection))
             {
-                builder.Append("<collectionnumber>" + SecurityElement.Escape(tmdbCollection) + "</collectionnumber>");
+                writer.WriteElementString("collectionnumber", tmdbCollection);
             }
 
             var imdb = item.GetProviderId(MetadataProviders.Imdb);
@@ -464,11 +515,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 if (item is Series)
                 {
-                    builder.Append("<imdb_id>" + SecurityElement.Escape(imdb) + "</imdb_id>");
+                    writer.WriteElementString("imdb_id", imdb);
                 }
                 else
                 {
-                    builder.Append("<imdbid>" + SecurityElement.Escape(imdb) + "</imdbid>");
+                    writer.WriteElementString("imdbid", imdb);
                 }
             }
 
@@ -478,20 +529,20 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 var tvdb = item.GetProviderId(MetadataProviders.Tvdb);
                 if (!string.IsNullOrEmpty(tvdb))
                 {
-                    builder.Append("<tvdbid>" + SecurityElement.Escape(tvdb) + "</tvdbid>");
+                    writer.WriteElementString("tvdbid", tvdb);
                 }
             }
 
             var tmdb = item.GetProviderId(MetadataProviders.Tmdb);
             if (!string.IsNullOrEmpty(tmdb))
             {
-                builder.Append("<tmdbid>" + SecurityElement.Escape(tmdb) + "</tmdbid>");
+                writer.WriteElementString("tmdbid", tmdb);
             }
 
             var tvcom = item.GetProviderId(MetadataProviders.Tvcom);
             if (!string.IsNullOrEmpty(tvcom))
             {
-                builder.Append("<tvcomid>" + SecurityElement.Escape(tvcom) + "</tvcomid>");
+                writer.WriteElementString("tvcomid", tvcom);
             }
 
             var hasLanguage = item as IHasPreferredMetadataLanguage;
@@ -499,7 +550,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 if (!string.IsNullOrEmpty(hasLanguage.PreferredMetadataLanguage))
                 {
-                    builder.Append("<language>" + SecurityElement.Escape(hasLanguage.PreferredMetadataLanguage) + "</language>");
+                    writer.WriteElementString("language", hasLanguage.PreferredMetadataLanguage);
                 }
             }
 
@@ -509,12 +560,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (item is MusicArtist)
                 {
-                    builder.Append("<formed>" + SecurityElement.Escape(item.PremiereDate.Value.ToString(formatString)) + "</formed>");
+                    writer.WriteElementString("formed", item.PremiereDate.Value.ToString(formatString));
                 }
                 else
                 {
-                    builder.Append("<premiered>" + SecurityElement.Escape(item.PremiereDate.Value.ToString(formatString)) + "</premiered>");
-                    builder.Append("<releasedate>" + SecurityElement.Escape(item.PremiereDate.Value.ToString(formatString)) + "</releasedate>");
+                    writer.WriteElementString("premiered", item.PremiereDate.Value.ToString(formatString));
+                    writer.WriteElementString("releasedate", item.PremiereDate.Value.ToString(formatString));
                 }
             }
 
@@ -524,7 +575,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     var formatString = options.ReleaseDateFormat;
 
-                    builder.Append("<enddate>" + SecurityElement.Escape(item.EndDate.Value.ToString(formatString)) + "</enddate>");
+                    writer.WriteElementString("enddate", item.EndDate.Value.ToString(formatString));
                 }
             }
 
@@ -534,12 +585,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 if (hasCriticRating.CriticRating.HasValue)
                 {
-                    builder.Append("<criticrating>" + SecurityElement.Escape(hasCriticRating.CriticRating.Value.ToString(UsCulture)) + "</criticrating>");
+                    writer.WriteElementString("criticrating", hasCriticRating.CriticRating.Value.ToString(UsCulture));
                 }
 
                 if (!string.IsNullOrEmpty(hasCriticRating.CriticRatingSummary))
                 {
-                    builder.Append("<criticratingsummary><![CDATA[" + hasCriticRating.CriticRatingSummary + "]]></criticratingsummary>");
+                    writer.WriteElementString("criticratingsummary", hasCriticRating.CriticRatingSummary);
                 }
             }
 
@@ -549,13 +600,13 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 if (!string.IsNullOrEmpty(hasDisplayOrder.DisplayOrder))
                 {
-                    builder.Append("<displayorder>" + SecurityElement.Escape(hasDisplayOrder.DisplayOrder) + "</displayorder>");
+                    writer.WriteElementString("displayorder", hasDisplayOrder.DisplayOrder);
                 }
             }
 
             if (item.VoteCount.HasValue)
             {
-                builder.Append("<votes>" + SecurityElement.Escape(item.VoteCount.Value.ToString(UsCulture)) + "</votes>");
+                writer.WriteElementString("votes", item.VoteCount.Value.ToString(UsCulture));
             }
 
             var hasBudget = item as IHasBudget;
@@ -563,19 +614,19 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 if (hasBudget.Budget.HasValue)
                 {
-                    builder.Append("<budget>" + SecurityElement.Escape(hasBudget.Budget.Value.ToString(UsCulture)) + "</budget>");
+                    writer.WriteElementString("budget", hasBudget.Budget.Value.ToString(UsCulture));
                 }
 
                 if (hasBudget.Revenue.HasValue)
                 {
-                    builder.Append("<revenue>" + SecurityElement.Escape(hasBudget.Revenue.Value.ToString(UsCulture)) + "</revenue>");
+                    writer.WriteElementString("revenue", hasBudget.Revenue.Value.ToString(UsCulture));
                 }
             }
 
             var hasMetascore = item as IHasMetascore;
             if (hasMetascore != null && hasMetascore.Metascore.HasValue)
             {
-                builder.Append("<metascore>" + SecurityElement.Escape(hasMetascore.Metascore.Value.ToString(UsCulture)) + "</metascore>");
+                writer.WriteElementString("metascore", hasMetascore.Metascore.Value.ToString(UsCulture));
             }
 
             // Use original runtime here, actual file runtime later in MediaInfo
@@ -585,7 +636,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 var timespan = TimeSpan.FromTicks(runTimeTicks.Value);
 
-                builder.Append("<runtime>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</runtime>");
+                writer.WriteElementString("runtime", Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture));
             }
 
             var hasTaglines = item as IHasTaglines;
@@ -593,7 +644,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 foreach (var tagline in hasTaglines.Taglines)
                 {
-                    builder.Append("<tagline>" + SecurityElement.Escape(tagline) + "</tagline>");
+                    writer.WriteElementString("tagline", tagline);
                 }
             }
 
@@ -602,18 +653,18 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 foreach (var country in hasProductionLocations.ProductionLocations)
                 {
-                    builder.Append("<country>" + SecurityElement.Escape(country) + "</country>");
+                    writer.WriteElementString("country", country);
                 }
             }
 
             foreach (var genre in item.Genres)
             {
-                builder.Append("<genre>" + SecurityElement.Escape(genre) + "</genre>");
+                writer.WriteElementString("genre", genre);
             }
 
             foreach (var studio in item.Studios)
             {
-                builder.Append("<studio>" + SecurityElement.Escape(studio) + "</studio>");
+                writer.WriteElementString("studio", studio);
             }
 
             var hasTags = item as IHasTags;
@@ -623,11 +674,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     if (item is MusicAlbum || item is MusicArtist)
                     {
-                        builder.Append("<style>" + SecurityElement.Escape(tag) + "</style>");
+                        writer.WriteElementString("style", tag);
                     }
                     else
                     {
-                        builder.Append("<tag>" + SecurityElement.Escape(tag) + "</tag>");
+                        writer.WriteElementString("tag", tag);
                     }
                 }
             }
@@ -637,111 +688,111 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 foreach (var tag in hasKeywords.Keywords)
                 {
-                    builder.Append("<plotkeyword>" + SecurityElement.Escape(tag) + "</plotkeyword>");
+                    writer.WriteElementString("plotkeyword", tag);
                 }
             }
 
             var hasAwards = item as IHasAwards;
             if (hasAwards != null && !string.IsNullOrEmpty(hasAwards.AwardSummary))
             {
-                builder.Append("<awardsummary>" + SecurityElement.Escape(hasAwards.AwardSummary) + "</awardsummary>");
+                writer.WriteElementString("awardsummary", hasAwards.AwardSummary);
             }
 
             var externalId = item.GetProviderId(MetadataProviders.AudioDbArtist);
 
             if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<audiodbartistid>" + SecurityElement.Escape(externalId) + "</audiodbartistid>");
+                writer.WriteElementString("audiodbartistid", externalId);
             }
 
             externalId = item.GetProviderId(MetadataProviders.AudioDbAlbum);
 
             if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<audiodbalbumid>" + SecurityElement.Escape(externalId) + "</audiodbalbumid>");
+                writer.WriteElementString("audiodbalbumid", externalId);
             }
 
             externalId = item.GetProviderId(MetadataProviders.Zap2It);
 
             if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<zap2itid>" + SecurityElement.Escape(externalId) + "</zap2itid>");
+                writer.WriteElementString("zap2itid", externalId);
             }
 
             externalId = item.GetProviderId(MetadataProviders.MusicBrainzAlbum);
 
             if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<musicbrainzalbumid>" + SecurityElement.Escape(externalId) + "</musicbrainzalbumid>");
+                writer.WriteElementString("musicbrainzalbumid", externalId);
             }
 
             externalId = item.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist);
 
             if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<musicbrainzalbumartistid>" + SecurityElement.Escape(externalId) + "</musicbrainzalbumartistid>");
+                writer.WriteElementString("musicbrainzalbumartistid", externalId);
             }
 
             externalId = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
             if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<musicbrainzartistid>" + SecurityElement.Escape(externalId) + "</musicbrainzartistid>");
+                writer.WriteElementString("musicbrainzartistid", externalId);
             }
 
             externalId = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
             if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<musicbrainzreleasegroupid>" + SecurityElement.Escape(externalId) + "</musicbrainzreleasegroupid>");
+                writer.WriteElementString("musicbrainzreleasegroupid", externalId);
             }
 
             externalId = item.GetProviderId(MetadataProviders.Gamesdb);
             if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<gamesdbid>" + SecurityElement.Escape(externalId) + "</gamesdbid>");
+                writer.WriteElementString("gamesdbid", externalId);
             }
 
             externalId = item.GetProviderId(MetadataProviders.TvRage);
             if (!string.IsNullOrEmpty(externalId))
             {
-                builder.Append("<tvrageid>" + SecurityElement.Escape(externalId) + "</tvrageid>");
+                writer.WriteElementString("tvrageid", externalId);
             }
 
             if (options.SaveImagePathsInNfo)
             {
-                AddImages(item, builder, fileSystem, config);
+                AddImages(item, writer, fileSystem, config);
             }
 
-            AddUserData(item, builder, userManager, userDataRepo, options);
+            AddUserData(item, writer, userManager, userDataRepo, options);
 
-            AddActors(item, builder, libraryManager, fileSystem, config);
+            AddActors(item, writer, libraryManager, fileSystem, config);
 
             var folder = item as BoxSet;
             if (folder != null)
             {
-                AddCollectionItems(folder, builder);
+                AddCollectionItems(folder, writer);
             }
         }
 
-        public static void AddChapters(Video item, StringBuilder builder, IItemRepository repository)
+        public static void AddChapters(Video item, XmlWriter writer, IItemRepository repository)
         {
             var chapters = repository.GetChapters(item.Id);
 
             foreach (var chapter in chapters)
             {
-                builder.Append("<chapter>");
-                builder.Append("<name>" + SecurityElement.Escape(chapter.Name) + "</name>");
+                writer.WriteStartElement("chapter");
+                writer.WriteElementString("name", chapter.Name);
 
                 var time = TimeSpan.FromTicks(chapter.StartPositionTicks);
                 var ms = Convert.ToInt64(time.TotalMilliseconds);
 
-                builder.Append("<startpositionms>" + SecurityElement.Escape(ms.ToString(UsCulture)) + "</startpositionms>");
-                builder.Append("</chapter>");
+                writer.WriteElementString("startpositionms", ms.ToString(UsCulture));
+                writer.WriteEndElement();
             }
         }
 
-        public static void AddCollectionItems(Folder item, StringBuilder builder)
+        private static void AddCollectionItems(Folder item, XmlWriter writer)
         {
             var items = item.LinkedChildren
                 .Where(i => i.Type == LinkedChildType.Manual && !string.IsNullOrWhiteSpace(i.ItemName))
@@ -749,17 +800,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             foreach (var link in items)
             {
-                builder.Append("<collectionitem>");
+                writer.WriteStartElement("collectionitem");
 
-                builder.Append("<name>" + SecurityElement.Escape(link.ItemName) + "</name>");
-                builder.Append("<type>" + SecurityElement.Escape(link.ItemType) + "</type>");
+                writer.WriteElementString("name", link.ItemName);
+                writer.WriteElementString("type", link.ItemType);
 
                 if (link.ItemYear.HasValue)
                 {
-                    builder.Append("<year>" + SecurityElement.Escape(link.ItemYear.Value.ToString(UsCulture)) + "</year>");
+                    writer.WriteElementString("year", link.ItemYear.Value.ToString(UsCulture));
                 }
 
-                builder.Append("</collectionitem>");
+                writer.WriteEndElement();
             }
         }
 
@@ -777,26 +828,26 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 StringComparison.OrdinalIgnoreCase);
         }
 
-        private static void AddImages(BaseItem item, StringBuilder builder, IFileSystem fileSystem, IServerConfigurationManager config)
+        private static void AddImages(BaseItem item, XmlWriter writer, IFileSystem fileSystem, IServerConfigurationManager config)
         {
-            builder.Append("<art>");
+            writer.WriteStartElement("art");
 
             var poster = item.PrimaryImagePath;
 
             if (!string.IsNullOrEmpty(poster))
             {
-                builder.Append("<poster>" + SecurityElement.Escape(GetPathToSave(item.PrimaryImagePath, fileSystem, config)) + "</poster>");
+                writer.WriteElementString("poster", GetPathToSave(item.PrimaryImagePath, fileSystem, config));
             }
 
             foreach (var backdrop in item.GetImages(ImageType.Backdrop))
             {
-                builder.Append("<fanart>" + SecurityElement.Escape(GetPathToSave(backdrop.Path, fileSystem, config)) + "</fanart>");
+                writer.WriteElementString("fanart", GetPathToSave(backdrop.Path, fileSystem, config));
             }
 
-            builder.Append("</art>");
+            writer.WriteEndElement();
         }
 
-        private static void AddUserData(BaseItem item, StringBuilder builder, IUserManager userManager, IUserDataManager userDataRepo, XbmcMetadataOptions options)
+        private static void AddUserData(BaseItem item, XmlWriter writer, IUserManager userManager, IUserDataManager userDataRepo, XbmcMetadataOptions options)
         {
             var userId = options.UserId;
             if (string.IsNullOrWhiteSpace(userId))
@@ -818,25 +869,25 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             var userdata = userDataRepo.GetUserData(user.Id, item.GetUserDataKey());
 
-            builder.Append("<playcount>" + userdata.PlayCount.ToString(UsCulture) + "</playcount>");
-            builder.Append("<watched>" + userdata.Played.ToString().ToLower() + "</watched>");
+            writer.WriteElementString("playcount", userdata.PlayCount.ToString(UsCulture));
+            writer.WriteElementString("watched", userdata.Played.ToString().ToLower());
 
             if (userdata.LastPlayedDate.HasValue)
             {
-                builder.Append("<lastplayed>" + SecurityElement.Escape(userdata.LastPlayedDate.Value.ToString("yyyy-MM-dd HH:mm:ss")) + "</lastplayed>");
+                writer.WriteElementString("lastplayed", userdata.LastPlayedDate.Value.ToString("yyyy-MM-dd HH:mm:ss").ToLower());
             }
 
-            builder.Append("<resume>");
+            writer.WriteStartElement("resume");
 
             var runTimeTicks = item.RunTimeTicks ?? 0;
 
-            builder.Append("<position>" + TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds.ToString(UsCulture) + "</position>");
-            builder.Append("<total>" + TimeSpan.FromTicks(runTimeTicks).TotalSeconds.ToString(UsCulture) + "</total>");
+            writer.WriteElementString("position", TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds.ToString(UsCulture));
+            writer.WriteElementString("total", TimeSpan.FromTicks(runTimeTicks).TotalSeconds.ToString(UsCulture));
 
-            builder.Append("</resume>");
+            writer.WriteEndElement();
         }
 
-        public static void AddActors(BaseItem item, StringBuilder builder, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager config)
+        private static void AddActors(BaseItem item, XmlWriter writer, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager config)
         {
             var actors = item.People
                 .Where(i => !IsPersonType(i, PersonType.Director) && !IsPersonType(i, PersonType.Writer))
@@ -844,14 +895,26 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             foreach (var person in actors)
             {
-                builder.Append("<actor>");
-                builder.Append("<name>" + SecurityElement.Escape(person.Name ?? string.Empty) + "</name>");
-                builder.Append("<role>" + SecurityElement.Escape(person.Role ?? string.Empty) + "</role>");
-                builder.Append("<type>" + SecurityElement.Escape(person.Type ?? string.Empty) + "</type>");
+                writer.WriteStartElement("actor");
 
+                if (!string.IsNullOrWhiteSpace(person.Name))
+                {
+                    writer.WriteElementString("name", person.Name);
+                }
+
+                if (!string.IsNullOrWhiteSpace(person.Role))
+                {
+                    writer.WriteElementString("role", person.Role);
+                }
+
+                if (!string.IsNullOrWhiteSpace(person.Type))
+                {
+                    writer.WriteElementString("type", person.Type);
+                }
+                
                 if (person.SortOrder.HasValue)
                 {
-                    builder.Append("<sortorder>" + SecurityElement.Escape(person.SortOrder.Value.ToString(UsCulture)) + "</sortorder>");
+                    writer.WriteElementString("sortorder", person.SortOrder.Value.ToString(UsCulture));
                 }
 
                 try
@@ -860,7 +923,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                     if (!string.IsNullOrEmpty(personEntity.PrimaryImagePath))
                     {
-                        builder.Append("<thumb>" + SecurityElement.Escape(GetPathToSave(personEntity.PrimaryImagePath, fileSystem, config)) + "</thumb>");
+                        writer.WriteElementString("thumb", GetPathToSave(personEntity.PrimaryImagePath, fileSystem, config));
                     }
                 }
                 catch (Exception)
@@ -868,13 +931,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     // Already logged in core
                 }
 
-                builder.Append("</actor>");
+                writer.WriteEndElement();
             }
-        }
-
-        private static bool IsPersonType(PersonInfo person, string type)
-        {
-            return string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase) || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
         }
 
         private static string GetPathToSave(string path, IFileSystem fileSystem, IServerConfigurationManager config)
@@ -887,24 +945,53 @@ namespace MediaBrowser.XbmcMetadata.Savers
             return path;
         }
 
-        public static string ReplaceString(string str, string oldValue, string newValue, StringComparison comparison)
+        private static bool IsPersonType(PersonInfo person, string type)
         {
-            var sb = new StringBuilder();
+            return string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase) || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
+        }
 
-            int previousIndex = 0;
-            int index = str.IndexOf(oldValue, comparison);
-            while (index != -1)
+        private static void AddCustomTags(string path, List<string> xmlTagsUsed, XmlWriter writer)
+        {
+            var settings = new XmlReaderSettings
             {
-                sb.Append(str.Substring(previousIndex, index - previousIndex));
-                sb.Append(newValue);
-                index += oldValue.Length;
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                ValidationType = ValidationType.None
+            };
 
-                previousIndex = index;
-                index = str.IndexOf(oldValue, index, comparison);
+            using (var streamReader = GetStreamReader(path))
+            {
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
+                {
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            var name = reader.Name;
+
+                            if (!CommonTags.ContainsKey(name) && !xmlTagsUsed.Contains(name, StringComparer.OrdinalIgnoreCase))
+                            {
+                                writer.WriteNode(reader, false);
+                            }
+                            else
+                            {
+                                reader.Skip();
+                            }
+                        }
+                    }
+                }
             }
-            sb.Append(str.Substring(previousIndex));
 
-            return sb.ToString();
+        }
+
+        public static StreamReader GetStreamReader(string path)
+        {
+            return new StreamReader(path, Encoding.UTF8);
         }
     }
 }

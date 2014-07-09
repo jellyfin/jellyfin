@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -16,6 +15,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1167,6 +1167,8 @@ namespace MediaBrowser.Server.Implementations.Channels
                 var mediaSource = info.MediaSources.FirstOrDefault();
 
                 item.Path = mediaSource == null ? null : mediaSource.Path;
+
+                item.DisplayMediaType = channelMediaItem.ContentType.ToString();
             }
 
             if (isNew)

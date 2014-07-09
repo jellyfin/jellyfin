@@ -838,13 +838,13 @@
     "LabelDisplayCollectionsView": "Visa en Samlingar-vy f\u00f6r filmsamlingar",
     "LabelXbmcMetadataEnableExtraThumbs": "Kopiera extrafanart till extrathumbs",
     "LabelXbmcMetadataEnableExtraThumbsHelp": "N\u00e4r bilder h\u00e4mtas fr\u00e5n Internet kan de sparas i b\u00e5de extrafanart- och extrathumbs-mapparna f\u00f6r att ge maximal kompatibilitet med Xbmc-skins.",
-    "TabServices": "Services",
-    "TabLogs": "Logs",
-    "HeaderServerLogFiles": "Server log files:",
+    "TabServices": "Tj\u00e4nster",
+    "TabLogs": "Loggfiler",
+    "HeaderServerLogFiles": "Serverloggfiler:",
     "TabBranding": "Branding",
-    "HeaderBrandingHelp": "Customize the appearance of Media Browser to fit the needs of your group or organization.",
-    "LabelLoginDisclaimer": "Login disclaimer:",
-    "LabelLoginDisclaimerHelp": "This will be displayed at the bottom of the login page.",
-    "LabelAutomaticallyDonate": "Automatically donate this amount each month",
-    "LabelAutomaticallyDonateHelp": "You can cancel at any time via your PayPal account."
+    "HeaderBrandingHelp": "Anpassa utseendet p\u00e5 Media Browser till din grupp eller f\u00f6retags \u00f6nskem\u00e5l.",
+    "LabelLoginDisclaimer": "Ansvarsbegr\u00e4nsning vid inloggning:",
+    "LabelLoginDisclaimerHelp": "Detta visas l\u00e4ngst ned p\u00e5 inloggningssidan.",
+    "LabelAutomaticallyDonate": "Donera automatiskt detta belopp varje m\u00e5nad",
+    "LabelAutomaticallyDonateHelp": "Du kan avbryta n\u00e4r som helst via ditt PayPal-konto."
 }

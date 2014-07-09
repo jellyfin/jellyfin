@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using MediaBrowser.XbmcMetadata.Savers;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
@@ -63,8 +64,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 ValidationType = ValidationType.None
             };
 
-            //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
-            Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
+            Fetch(item, metadataFile, settings, cancellationToken);
         }
 
         /// <summary>
@@ -73,11 +73,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="item">The item.</param>
         /// <param name="metadataFile">The metadata file.</param>
         /// <param name="settings">The settings.</param>
-        /// <param name="encoding">The encoding.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void Fetch(T item, string metadataFile, XmlReaderSettings settings, Encoding encoding, CancellationToken cancellationToken)
+        private void Fetch(T item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
-            using (var streamReader = new StreamReader(metadataFile))
+            using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
             {
                 // Use XmlReader for best performance
                 using (var reader = XmlReader.Create(streamReader, settings))

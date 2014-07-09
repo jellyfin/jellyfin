@@ -837,14 +837,14 @@
     "LabelGroupChannelsIntoViewsHelp": "Se abilitata, questi canali verranno visualizzati direttamente accanto ad altri punti di vista. Se disattivato, saranno visualizzati all'interno di una visione canali separati.",
     "LabelDisplayCollectionsView": "Visualizzare una vista Collezioni per mostrare collezioni di film",
     "LabelXbmcMetadataEnableExtraThumbs": "Copy extrafanart into extrathumbs",
-    "LabelXbmcMetadataEnableExtraThumbsHelp": "When downloading images they can be saved into both extrafanart and extrathumbs for maximum Xbmc skin compatibility.",
-    "TabServices": "Services",
+    "LabelXbmcMetadataEnableExtraThumbsHelp": "Quando si scaricano le immagini possono essere salvate in entrambi extrafanart e extrathumbs per la massima compatibilit\u00e0 cutanea XBMC.",
+    "TabServices": "Servizi",
     "TabLogs": "Logs",
     "HeaderServerLogFiles": "Server log files:",
     "TabBranding": "Branding",
-    "HeaderBrandingHelp": "Customize the appearance of Media Browser to fit the needs of your group or organization.",
+    "HeaderBrandingHelp": "Personalizzare l'aspetto del browser media per soddisfare le esigenze del vostro gruppo o organizzazione.",
     "LabelLoginDisclaimer": "Login disclaimer:",
-    "LabelLoginDisclaimerHelp": "This will be displayed at the bottom of the login page.",
-    "LabelAutomaticallyDonate": "Automatically donate this amount each month",
-    "LabelAutomaticallyDonateHelp": "You can cancel at any time via your PayPal account."
+    "LabelLoginDisclaimerHelp": "Questo verr\u00e0 visualizzato nella parte inferiore della pagina di accesso.",
+    "LabelAutomaticallyDonate": "Donare automaticamente questo importo ogni mese",
+    "LabelAutomaticallyDonateHelp": "\u00c8 possibile annullare in qualsiasi momento tramite il vostro conto PayPal."
 }

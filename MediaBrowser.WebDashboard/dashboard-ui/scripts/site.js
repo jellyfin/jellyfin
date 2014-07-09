@@ -1308,6 +1308,15 @@ $(function () {
             ApiClient.closeWebSocket();
         }
     });
+
+    $(document).on('contextmenu', '.ui-popup-screen', function (e) {
+
+        document.title = '1';
+        $('.ui-popup').popup('close');
+
+        e.preventDefault();
+        return false;
+    });
 });
 
 Dashboard.jQueryMobileInit();
