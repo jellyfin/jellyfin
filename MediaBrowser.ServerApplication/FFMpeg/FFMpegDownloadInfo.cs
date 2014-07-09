@@ -14,6 +14,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         // Windows builds: http://ffmpeg.zeranoe.com/builds/
         // Linux builds: http://ffmpeg.gusari.org/static/
         // OS X builds: http://ffmpegmac.net/
+        // OS X x64: http://www.evermeet.cx/ffmpeg/
 
         public static string Version = ffmpegOsType("Version");
 
@@ -113,15 +114,23 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     return new[]
                     {
                         "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20140612-git-3a1c895-win32-static.7z",
-                        "https://www.dropbox.com/s/lllit55bynbz6zc/ffmpeg-20140612-git-3a1c895-win32-static.7z?dl=1"
+                        "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20140612-git-3a1c895-win32-static.7z"
                     };
 
                 case PlatformID.Unix:
+                    if (PlatformDetection.IsMac && PlatformDetection.IsX86)
+                    {
+                        return new[]
+                        {
+                            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/osx/ffmpeg-osx-20131121.gz"
+                        };
+                    }
+
                     if (PlatformDetection.IsMac && PlatformDetection.IsX86_64)
                     {
                         return new[]
                         {
-                            "https://www.dropbox.com/s/n188rxbulqem8ry/ffmpeg-osx-20131121.gz?dl=1"
+                            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/osx/ffprobe-x64-2.2.4.7z"
                         };
                     }
 
@@ -132,7 +141,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             return new[]
                             {
                                 "http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.latest.tar.gz",
-                                "https://www.dropbox.com/s/k9s02pv5to6slfb/ffmpeg.static.32bit.2014-05-06.tar.gz?dl=1"
+                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg.static.32bit.2014-05-06.tar.gz"
                             };
                         }
 
@@ -141,13 +150,13 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             return new[]
                             {
                                 "http://ffmpeg.gusari.org/static/64bit/ffmpeg.static.64bit.latest.tar.gz",
-                                "https://www.dropbox.com/s/onuregwghywnzjo/ffmpeg.static.64bit.2014-05-05.tar.gz?dl=1"
+                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg.static.64bit.2014-05-05.tar.gz"
                             };
                         }
 
                     }
 
-                    //No Unix version available 
+                    // No Unix version available 
                     return new string[] { };
 
                 default:

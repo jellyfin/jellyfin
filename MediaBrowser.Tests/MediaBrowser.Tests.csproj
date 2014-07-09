@@ -80,6 +80,10 @@
       <Project>{2E781478-814D-4A48-9D80-BFF206441A65}</Project>
       <Name>MediaBrowser.Server.Implementations</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj">
+      <Project>{23499896-b135-4527-8574-c26e926ea99e}</Project>
+      <Name>MediaBrowser.XbmcMetadata</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

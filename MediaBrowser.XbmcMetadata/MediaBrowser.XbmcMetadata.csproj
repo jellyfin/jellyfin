@@ -56,13 +56,13 @@
     <Compile Include="Providers\MovieNfoProvider.cs" />
     <Compile Include="Providers\SeasonNfoProvider.cs" />
     <Compile Include="Providers\SeriesNfoProvider.cs" />
-    <Compile Include="Savers\AlbumXmlSaver.cs" />
-    <Compile Include="Savers\ArtistXmlSaver.cs" />
-    <Compile Include="Savers\EpisodeXmlSaver.cs" />
-    <Compile Include="Savers\MovieXmlSaver.cs" />
-    <Compile Include="Savers\SeasonXmlSaver.cs" />
-    <Compile Include="Savers\SeriesXmlSaver.cs" />
-    <Compile Include="Savers\XmlSaverHelpers.cs" />
+    <Compile Include="Savers\AlbumNfoSaver.cs" />
+    <Compile Include="Savers\ArtistNfoSaver.cs" />
+    <Compile Include="Savers\BaseNfoSaver.cs" />
+    <Compile Include="Savers\EpisodeNfoSaver.cs" />
+    <Compile Include="Savers\MovieNfoSaver.cs" />
+    <Compile Include="Savers\SeasonNfoSaver.cs" />
+    <Compile Include="Savers\SeriesNfoSaver.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
