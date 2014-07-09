@@ -1216,8 +1216,14 @@ namespace MediaBrowser.ServerApplication
 
             HasUpdateAvailable = versionObject != null && versionObject >= ApplicationVersion;
 
-            return versionObject != null ? new CheckForUpdateResult { AvailableVersion = versionObject.ToString(), IsUpdateAvailable = versionObject > ApplicationVersion, Package = version } :
-                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion.ToString(), IsUpdateAvailable = false };
+            if (versionObject != null && versionObject >= ApplicationVersion)
+            {
+                Logger.Info("New application version is available: {0}", versionObject);
+            }
+
+            return versionObject != null ? 
+                new CheckForUpdateResult { AvailableVersion = versionObject.ToString(), IsUpdateAvailable = versionObject > ApplicationVersion, Package = version } :
+                new CheckForUpdateResult { AvailableVersion = ApplicationVersion.ToString(), IsUpdateAvailable = false };
         }
 
         /// <summary>

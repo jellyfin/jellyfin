@@ -60,7 +60,7 @@ namespace MediaBrowser.Providers.TV
                     var seasonInfo = await GetSeasonInfo(seriesTmdbId, seasonNumber.Value, info.MetadataLanguage, cancellationToken)
                       .ConfigureAwait(false);
 
-                    result.Item.Name = seasonInfo.name;
+                    result.Item.Name = info.Name;
                     result.Item.Overview = seasonInfo.overview;
                     result.Item.IndexNumber = seasonNumber;
 

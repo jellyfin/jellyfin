@@ -25,6 +25,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.MediaEncoding"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSubtitlesHandler", "OpenSubtitlesHandler\OpenSubtitlesHandler.csproj", "{4A4402D4-E910-443B-B8FC-2C18286A2CA0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.LocalMetadata", "MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj", "{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.XbmcMetadata", "MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj", "{23499896-B135-4527-8574-C26E926EA99E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -57,6 +61,14 @@ Global
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|x86.ActiveCfg = Release|Any CPU
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|x86.Build.0 = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Debug|x86.Build.0 = Debug|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release Mono|Any CPU.Build.0 = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release|x86.ActiveCfg = Release|Any CPU
+		{23499896-B135-4527-8574-C26E926EA99E}.Release|x86.Build.0 = Release|Any CPU
 		{2E781478-814D-4A48-9D80-BFF206441A65}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{2E781478-814D-4A48-9D80-BFF206441A65}.Debug|x86.Build.0 = Debug|Any CPU
 		{2E781478-814D-4A48-9D80-BFF206441A65}.Release Mono|Any CPU.ActiveCfg = Release Mono|Any CPU
@@ -113,6 +125,14 @@ Global
 		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Release|x86.ActiveCfg = Release|Any CPU
 		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Release|x86.Build.0 = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Debug|x86.Build.0 = Debug|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release Mono|Any CPU.Build.0 = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|x86.ActiveCfg = Release|Any CPU
+		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|x86.Build.0 = Release|Any CPU
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Debug|x86.Build.0 = Debug|Any CPU
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Release Mono|Any CPU.ActiveCfg = Release Mono|Any CPU
