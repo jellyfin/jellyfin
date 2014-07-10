@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
-        <id>MediaBrowser.Common</id>
+        <id>MediaBrowser.Model.Signed</id>
         <version>3.0.415</version>
-        <title>MediaBrowser.Common</title>
+        <title>MediaBrowser.Model - Signed Edition</title>
         <authors>Media Browser Team</authors>
         <owners>ebr,Luke,scottisafool</owners>
         <projectUrl>https://github.com/MediaBrowser/MediaBrowser</projectUrl>
@@ -20,9 +20,6 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="dlls\net35\MediaBrowser.Model.dll" target="lib\net35\MediaBrowser.Model.dll" />
-        <file src="dlls\MediaBrowser.Common.dll" target="lib\net45\MediaBrowser.Common.dll" />
-        <file src="dlls\net45\MediaBrowser.Model.dll" target="lib\net45\MediaBrowser.Model.dll" />
-        <file src="dlls\portable\MediaBrowser.Model.dll" target="lib\portable-net4+sl4+wp71+win8\MediaBrowser.Model.dll" />
+        <file src="dllssigned\net45\MediaBrowser.Model.dll" target="lib\net45\MediaBrowser.Model.dll" />
     </files>
 </package>
