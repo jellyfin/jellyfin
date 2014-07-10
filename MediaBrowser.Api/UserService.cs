@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -166,6 +167,7 @@ namespace MediaBrowser.Api
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
         private readonly ISessionManager _sessionMananger;
+        private readonly IServerConfigurationManager _config;
 
         public IAuthorizationContext AuthorizationContext { get; set; }
 
@@ -176,25 +178,34 @@ namespace MediaBrowser.Api
         /// <param name="dtoService">The dto service.</param>
         /// <param name="sessionMananger">The session mananger.</param>
         /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
-        public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger)
+        public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger, IServerConfigurationManager config)
         {
             _userManager = userManager;
             _dtoService = dtoService;
             _sessionMananger = sessionMananger;
+            _config = config;
         }
 
         public object Get(GetPublicUsers request)
         {
-            if (!Request.IsLocal && !_sessionMananger.IsLocal(Request.RemoteIp))
+            if (Request.IsLocal || !_config.Configuration.IsStartupWizardCompleted)
             {
-                return ToOptimizedResult(new List<UserDto>());
+                return Get(new GetUsers
+                {
+                    IsDisabled = false
+                });
             }
 
-            return Get(new GetUsers
+            if (_sessionMananger.IsLocal(Request.RemoteIp))
             {
-                IsHidden = false,
-                IsDisabled = false
-            });
+                return Get(new GetUsers
+                {
+                    IsHidden = false,
+                    IsDisabled = false
+                });
+            }
+
+            return ToOptimizedResult(new List<UserDto>());
         }
 
         /// <summary>
