@@ -14,10 +14,6 @@
 
         public ChapterOptions()
         {
-            EnableMovieChapterImageExtraction = true;
-            EnableEpisodeChapterImageExtraction = false;
-            EnableOtherVideoChapterImageExtraction = false;
-
             DownloadMovieChapters = true;
 
             DisabledFetchers = new string[] { };

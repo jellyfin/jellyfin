@@ -10,6 +10,7 @@ namespace MediaBrowser.Model.Configuration
 
         public string OpenSubtitlesUsername { get; set; }
         public string OpenSubtitlesPasswordHash { get; set; }
+        public bool IsOpenSubtitleVipAccount { get; set; }
 
         public SubtitleOptions()
         {

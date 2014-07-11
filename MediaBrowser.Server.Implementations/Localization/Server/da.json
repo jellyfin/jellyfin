@@ -846,5 +846,13 @@
     "LabelLoginDisclaimer": "Login disclaimer:",
     "LabelLoginDisclaimerHelp": "This will be displayed at the bottom of the login page.",
     "LabelAutomaticallyDonate": "Automatically donate this amount each month",
-    "LabelAutomaticallyDonateHelp": "You can cancel at any time via your PayPal account."
+    "LabelAutomaticallyDonateHelp": "You can cancel at any time via your PayPal account.",
+    "OptionList": "List",
+    "TabDashboard": "Dashboard",
+    "TitleServer": "Server",
+    "LabelCache": "Cache:",
+    "LabelLogs": "Logs:",
+    "LabelMetadata": "Metadata:",
+    "LabelImagesByName": "Images by name:",
+    "LabelTranscodingTemporaryFiles": "Transcoding temporary files:"
 }

@@ -384,11 +384,15 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 var val = width.Value;
 
-                return list
+                var res = list
                     .OrderBy(i => i.Width.HasValue && i.Width.Value <= val)
-                    .ThenBy(i => Math.Abs(i.Width ?? 0 - val))
+                    .ThenBy(i => Math.Abs((i.Width ?? 0) - val))
                     .ThenByDescending(i => i.Width ?? 0)
-                    .ThenBy(list.IndexOf);
+                    .ThenBy(list.IndexOf)
+                    .ToList();
+
+
+                return res;
             }
 
             return list
@@ -532,6 +536,11 @@ namespace MediaBrowser.Server.Implementations.Channels
             var user = string.IsNullOrWhiteSpace(query.UserId)
                 ? null
                 : _userManager.GetUserById(new Guid(query.UserId));
+
+            if (!string.IsNullOrWhiteSpace(query.UserId) && user == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
 
             var channels = _channels;
 

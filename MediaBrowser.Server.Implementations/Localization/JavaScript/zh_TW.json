@@ -215,5 +215,20 @@
     "HeaderName": "Name",
     "HeaderAlbum": "Album",
     "HeaderAlbumArtist": "Album Artist",
-    "HeaderArtist": "Artist"
+    "HeaderArtist": "Artist",
+    "LabelAddedOnDate": "Added {0}",
+    "ButtonStart": "Start",
+    "HeaderChannels": "\u983b\u5ea6",
+    "HeaderMediaFolders": "\u5a92\u9ad4\u6587\u4ef6\u593e",
+    "HeaderBlockItemsWithNoRating": "Block items with no rating information:",
+    "OptionBlockOthers": "Others",
+    "OptionBlockTvShows": "TV Shows",
+    "OptionBlockTrailers": "Trailers",
+    "OptionBlockMusic": "Music",
+    "OptionBlockMovies": "Movies",
+    "OptionBlockBooks": "Books",
+    "OptionBlockGames": "Games",
+    "OptionBlockLiveTvPrograms": "Live TV Programs",
+    "OptionBlockLiveTvChannels": "Live TV Channels",
+    "OptionBlockChannelContent": "Internet Channel Content"
 }

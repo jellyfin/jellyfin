@@ -846,5 +846,13 @@
     "LabelLoginDisclaimer": "Aviso legal no login:",
     "LabelLoginDisclaimerHelp": "Isto ser\u00e1 exibido na parte inferior da p\u00e1gina de login.",
     "LabelAutomaticallyDonate": "Doar automaticamente esta quantidade a cada m\u00eas",
-    "LabelAutomaticallyDonateHelp": "Voc\u00ea pode cancelar a qualquer hora atrav\u00e9s de sua conta do PayPal."
+    "LabelAutomaticallyDonateHelp": "Voc\u00ea pode cancelar a qualquer hora atrav\u00e9s de sua conta do PayPal.",
+    "OptionList": "List",
+    "TabDashboard": "Dashboard",
+    "TitleServer": "Server",
+    "LabelCache": "Cache:",
+    "LabelLogs": "Logs:",
+    "LabelMetadata": "Metadata:",
+    "LabelImagesByName": "Images by name:",
+    "LabelTranscodingTemporaryFiles": "Transcoding temporary files:"
 }

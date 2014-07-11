@@ -281,6 +281,6 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="remoteEndpoint">The remote endpoint.</param>
         /// <returns><c>true</c> if the specified remote endpoint is local; otherwise, <c>false</c>.</returns>
-        bool IsLocal(string remoteEndpoint);
+        bool IsInLocalNetwork(string remoteEndpoint);
     }
 }

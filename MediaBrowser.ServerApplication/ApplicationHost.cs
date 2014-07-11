@@ -17,9 +17,6 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -45,7 +42,6 @@ using MediaBrowser.LocalMetadata.Providers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.MediaEncoding.Subtitles;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
@@ -343,56 +339,11 @@ namespace MediaBrowser.ServerApplication
                     ? "Xbmc Nfo"
                     : "Media Browser Xml";
 
-                DisableMetadataService(typeof(Movie), ServerConfigurationManager.Configuration, service);
-                DisableMetadataService(typeof(MusicAlbum), ServerConfigurationManager.Configuration, service);
-                DisableMetadataService(typeof(MusicArtist), ServerConfigurationManager.Configuration, service);
-                DisableMetadataService(typeof(Episode), ServerConfigurationManager.Configuration, service);
-                DisableMetadataService(typeof(Season), ServerConfigurationManager.Configuration, service);
-                DisableMetadataService(typeof(Series), ServerConfigurationManager.Configuration, service);
-                DisableMetadataService(typeof(MusicVideo), ServerConfigurationManager.Configuration, service);
-                DisableMetadataService(typeof(Trailer), ServerConfigurationManager.Configuration, service);
-                DisableMetadataService(typeof(AdultVideo), ServerConfigurationManager.Configuration, service);
-                DisableMetadataService(typeof(Video), ServerConfigurationManager.Configuration, service);
+                ServerConfigurationManager.SetPreferredMetadataService(service);
             }
 
             ServerConfigurationManager.Configuration.DefaultMetadataSettingsApplied = true;
             ServerConfigurationManager.SaveConfiguration();
-        }
-
-        private void DisableMetadataService(Type type, ServerConfiguration config, string service)
-        {
-            var options = GetMetadataOptions(type, config);
-
-            if (!options.DisabledMetadataSavers.Contains(service, StringComparer.OrdinalIgnoreCase))
-            {
-                var list = options.DisabledMetadataSavers.ToList();
-
-                list.Add(service);
-
-                options.DisabledMetadataSavers = list.ToArray();
-            }
-        }
-
-        private MetadataOptions GetMetadataOptions(Type type, ServerConfiguration config)
-        {
-            var options = config.MetadataOptions
-                .FirstOrDefault(i => string.Equals(i.ItemType, type.Name, StringComparison.OrdinalIgnoreCase));
-
-            if (options == null)
-            {
-                var list = config.MetadataOptions.ToList();
-
-                options = new MetadataOptions
-                {
-                    ItemType = type.Name
-                };
-
-                list.Add(options);
-
-                config.MetadataOptions = list.ToArray();
-            }
-
-            return options;
         }
 
         private void DeleteDeprecatedModules()
