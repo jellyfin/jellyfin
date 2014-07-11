@@ -1526,6 +1526,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsUnplayed(User user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
             var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
 
             return userdata == null || !userdata.Played;

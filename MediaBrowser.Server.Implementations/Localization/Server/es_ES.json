@@ -479,10 +479,10 @@
     "HeaderProgram": "Programa",
     "HeaderClients": "Clientes",
     "LabelCompleted": "Completado",
-    "LabelFailed": "Err\u00f3neo",
+    "LabelFailed": "Error",
     "LabelSkipped": "Omitido",
     "HeaderEpisodeOrganization": "Organizaci\u00f3n de episodios",
-    "LabelSeries": "Serie:",
+    "LabelSeries": "Series:",
     "LabelSeasonNumber": "Temporada n\u00famero:",
     "LabelEpisodeNumber": "Episodio n\u00famero:",
     "LabelEndingEpisodeNumber": "N\u00famero episodio final:",
@@ -846,5 +846,13 @@
     "LabelLoginDisclaimer": "Login renuncia:",
     "LabelLoginDisclaimerHelp": "This will be displayed at the bottom of the login page.",
     "LabelAutomaticallyDonate": "Donar autom\u00e1ticamente esta cantidad cada mes",
-    "LabelAutomaticallyDonateHelp": "Usted puede cancelar en cualquier momento desde su cuenta de PayPal."
+    "LabelAutomaticallyDonateHelp": "Usted puede cancelar en cualquier momento desde su cuenta de PayPal.",
+    "OptionList": "List",
+    "TabDashboard": "Dashboard",
+    "TitleServer": "Server",
+    "LabelCache": "Cache:",
+    "LabelLogs": "Logs:",
+    "LabelMetadata": "Metadata:",
+    "LabelImagesByName": "Images by name:",
+    "LabelTranscodingTemporaryFiles": "Transcoding temporary files:"
 }

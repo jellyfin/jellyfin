@@ -7,7 +7,7 @@
 
         MediaLibraryPage.reloadLibrary(page);
     },
-    
+
     reloadLibrary: function (page) {
 
         Dashboard.showLoadingMsg();
@@ -326,6 +326,24 @@
 };
 
 $(document).on('pageshow', ".mediaLibraryPage", MediaLibraryPage.onPageShow);
+
+var WizardLibraryPage = {
+
+    next: function () {
+
+        Dashboard.showLoadingMsg();
+
+        ApiClient.ajax({
+            type: "POST",
+            url: ApiClient.getUrl('System/Configuration/MetadataPlugins/Autoset')
+
+        }).done(function () {
+
+            Dashboard.hideLoadingMsg();
+            Dashboard.navigate('wizardsettings.html');
+        });
+    }
+};
 
 (function ($, document, window) {
 

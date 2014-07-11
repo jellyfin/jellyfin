@@ -12,7 +12,7 @@
         var options = {
 
             IncludeItemTypes: "Movie",
-            Limit: screenWidth >= 1920 ? 32 : (screenWidth >= 1440 ? 32 : (screenWidth >= 800 ? 28 : 18)),
+            Limit: screenWidth >= 1920 ? 30 : (screenWidth >= 1440 ? 30 : (screenWidth >= 800 ? 28 : 18)),
             Fields: "PrimaryImageAspectRatio",
             ParentId: parentId,
             IsPlayed: false

@@ -259,7 +259,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     Chapters = chapters,
                     Video = video,
-                    ExtractImages = false,
+                    ExtractImages = true,
                     SaveChapters = false
 
                 }, cancellationToken).ConfigureAwait(false);

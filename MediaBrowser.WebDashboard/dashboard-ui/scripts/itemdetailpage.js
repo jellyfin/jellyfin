@@ -591,7 +591,7 @@
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: item.Type == "MusicAlbum" ? 4 : 6,
+            limit: item.Type == "MusicAlbum" ? 4 : 5,
             fields: "PrimaryImageAspectRatio,UserData"
         };
 
@@ -872,7 +872,7 @@
         html += '<span>' + type.name + '</span>';
 
         if (user.Configuration.IsAdministrator) {
-            html += '<a href="editcollectionitems.html?id=' + currentItem.Id + '" data-role="button" data-icon="edit" data-iconpos="notext" data-inline="true" style="position: absolute; right: 0; top: 6px; margin-top: 0; margin-bottom: 0;">Edit</a>';
+            html += '<a class="detailSectionHeaderButton" href="editcollectionitems.html?id=' + currentItem.Id + '" data-role="button" data-icon="edit" data-iconpos="notext" data-inline="true">Edit</a>';
         }
 
         html += '</div>';

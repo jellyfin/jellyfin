@@ -630,8 +630,8 @@
     "ButtonScenes": "Scenes",
     "ButtonSubtitles": "Ondertitels",
     "ButtonAudioTracks": "Audio tracks",
-    "ButtonPreviousTrack": "Vorig nummer",
-    "ButtonNextTrack": "Volgend nummer",
+    "ButtonPreviousTrack": "Vorige track",
+    "ButtonNextTrack": "Volgende track",
     "ButtonStop": "Stop",
     "ButtonPause": "Pauze",
     "LabelGroupMoviesIntoCollections": "Groepeer films in verzamelingen",
@@ -846,5 +846,13 @@
     "LabelLoginDisclaimer": "Aanmeld vrijwaring:",
     "LabelLoginDisclaimerHelp": "Dit wordt onderaan de login pagina weergegeven.",
     "LabelAutomaticallyDonate": "Doneer dit bedrag automatisch per maand",
-    "LabelAutomaticallyDonateHelp": "U kunt dit via uw PayPal account op elk moment annuleren."
+    "LabelAutomaticallyDonateHelp": "U kunt dit via uw PayPal account op elk moment annuleren.",
+    "OptionList": "List",
+    "TabDashboard": "Dashboard",
+    "TitleServer": "Server",
+    "LabelCache": "Cache:",
+    "LabelLogs": "Logs:",
+    "LabelMetadata": "Metadata:",
+    "LabelImagesByName": "Images by name:",
+    "LabelTranscodingTemporaryFiles": "Transcoding temporary files:"
 }

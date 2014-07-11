@@ -148,7 +148,7 @@
         populateHistory(pkg, page);
         if (pkg.totalRatings > 0) populateReviews(pkg.id, page);
 
-        Dashboard.setPageTitle(pkg.name);
+        $('.pluginName', page).html(pkg.name);
 
         if (pkg.targetSystem == 'Server') {
             $("#btnInstallDiv", page).show();

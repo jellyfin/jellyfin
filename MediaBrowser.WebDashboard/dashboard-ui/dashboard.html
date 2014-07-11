@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>${TitleDashboard}</title>
+    <title>${TitleServer}</title>
 </head>
 <body>
     <div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage">
@@ -10,10 +10,10 @@
             <div class="content-primary">
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">${TabHome}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabDashboard}</a>
                     <a href="dashboardgeneral.html" data-role="button">${TabGeneral}</a>
-                    <a href="dashboardinfopage.html" data-role="button">${TabInfo}</a>
-                    <a href="branding.html" data-role="button">${TabBranding}</a>
+                    <a href="advancedserversettings.html" data-role="button">${TabAdvanced}</a>
+                    <a href="serversecurity.html" data-role="button">${TabSecurity}</a>
                 </div>
                 <div class="dashboardContent">
                     <div class="readOnlyContent dashboardHomeLeftColumn">
@@ -113,6 +113,44 @@
                         <div data-role="collapsible" data-collapsed="false">
                             <h3>${HeaderLatestNews}</h3>
                             <div class="latestNewsItems">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="readOnlyContent" style="clear: left;">
+                        <div data-role="collapsible" data-collapsed="true">
+                            <h3>${HeaderLinks}</h3>
+                            <div>
+                                <p><a href="http://mediabrowser.tv/community" target="_blank">${LinkCommunity}</a></p>
+                                <p><a href="https://github.com/MediaBrowser/MediaBrowser" target="_blank">${LinkGithub}</a></p>
+                                <p><a href="../swagger-ui/index.html" target="_blank">${LinkApiDocumentation}</a></p>
+                            </div>
+                        </div>
+
+                        <div data-role="collapsible" data-collapsed="true">
+                            <h3>${HeaderSystemPaths}</h3>
+                            <div>
+                                <p>
+                                    <b>${LabelCache}</b><br />
+                                    <span id="cachePath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelImagesByName}</b><br />
+                                    <span id="imagesByNamePath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelLogs}</b><br />
+                                    <span id="logPath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelMetadata}</b><br />
+                                    <span id="metadataPath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelTranscodingTemporaryFiles}</b><br />
+                                    <span id="transcodingTemporaryPath"></span>
+                                </p>
                             </div>
                         </div>
                     </div>

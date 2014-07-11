@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>${PluginsTitle}</title>
 </head>
 <body>
     <div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage">
@@ -11,8 +11,11 @@
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="plugins.html" data-role="button">${TabMyPlugins}</a>
                     <a href="plugincatalog.html" data-role="button" class="ui-btn-active">${TabCatalog}</a>
+                    <a href="channelsettings.html" data-role="button">${TabChannels}</a>
                 </div>
                 <form class="addPluginForm">
+
+                    <h2 class="pluginName"></h2>
                     <p id="tagline" style="font-style: italic;"></p>
                     <p id="pPreviewImage" style="text-align: center; margin: 2em 0;"></p>
 
@@ -40,9 +43,11 @@
                         </p>
                         <p id="regInfo">
                         </p>
-                        <p class="supporterDescription">This is a <a data-rel="popup" href="#supporterPlugins">supporter-only</a> plugin.<br />
+                        <p class="supporterDescription">
+                            This is a <a data-rel="popup" href="#supporterPlugins">supporter-only</a> plugin.<br />
                             <br />
-                            It will require a <a href="supporter.html">supporter key</a> in order to register after the <strong>14-day free trial</strong>.</p>
+                            It will require a <a href="supporter.html">supporter key</a> in order to register after the <strong>14-day free trial</strong>.
+                        </p>
                         <p class="premiumDescription">
                             This is a <a data-rel="popup" href="#premiumPlugins">premium</a> plugin.<br />
                             <br />

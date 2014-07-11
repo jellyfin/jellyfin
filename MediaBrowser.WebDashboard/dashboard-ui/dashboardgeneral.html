@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>${TitleDashboard}</title>
+    <title>${TitleServer}</title>
 </head>
 <body>
     <div id="dashboardGeneralPage" data-role="page" class="page type-interior dashboardHomePage">
@@ -10,10 +10,10 @@
             <div class="content-primary">
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="dashboard.html" data-role="button">${TabHome}</a>
+                    <a href="dashboard.html" data-role="button">${TabDashboard}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabGeneral}</a>
-                    <a href="dashboardinfopage.html" data-role="button">${TabInfo}</a>
-                    <a href="branding.html" data-role="button">${TabBranding}</a>
+                    <a href="advancedserversettings.html" data-role="button">${TabAdvanced}</a>
+                    <a href="serversecurity.html" data-role="button">${TabSecurity}</a>
                 </div>
 
                 <form class="dashboardGeneralForm">
@@ -36,6 +36,23 @@
                             </div>
                         </li>
                     </ul>
+
+                    <div data-role="collapsible">
+                        <h2>${HeaderBranding}</h2>
+                        <div>
+                            <p>${HeaderBrandingHelp}</p>
+                            <br />
+
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtLoginDisclaimer">${LabelLoginDisclaimer}</label>
+                                    <input id="txtLoginDisclaimer" data-mini="true" />
+                                    <div class="fieldDescription">${LabelLoginDisclaimerHelp}</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">

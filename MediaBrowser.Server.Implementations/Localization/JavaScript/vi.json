@@ -215,5 +215,20 @@
     "HeaderName": "T\u00ean",
     "HeaderAlbum": "Album",
     "HeaderAlbumArtist": "Album Artist",
-    "HeaderArtist": "Artist"
+    "HeaderArtist": "Artist",
+    "LabelAddedOnDate": "Added {0}",
+    "ButtonStart": "Start",
+    "HeaderChannels": "Channels",
+    "HeaderMediaFolders": "Media Folders",
+    "HeaderBlockItemsWithNoRating": "Block items with no rating information:",
+    "OptionBlockOthers": "Others",
+    "OptionBlockTvShows": "TV Shows",
+    "OptionBlockTrailers": "Trailers",
+    "OptionBlockMusic": "Music",
+    "OptionBlockMovies": "Movies",
+    "OptionBlockBooks": "Books",
+    "OptionBlockGames": "Games",
+    "OptionBlockLiveTvPrograms": "Live TV Programs",
+    "OptionBlockLiveTvChannels": "Live TV Channels",
+    "OptionBlockChannelContent": "Internet Channel Content"
 }

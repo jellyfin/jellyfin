@@ -129,7 +129,7 @@
         
         var options = {
 
-            Limit: screenWidth >= 2400 ? 30 : (screenWidth >= 1920 ? 15 : (screenWidth >= 1440 ? 10 : (screenWidth >= 800 ? 9 : 8))),
+            Limit: screenWidth >= 2400 ? 30 : (screenWidth >= 1920 ? 15 : (screenWidth >= 1440 ? 12 : (screenWidth >= 800 ? 9 : 8))),
             Fields: "PrimaryImageAspectRatio",
             IsPlayed: false,
             IsFolder: false
@@ -153,7 +153,6 @@
                 });
                 html += '</div>';
             }
-
 
             $(elem).html(html).trigger('create').createPosterItemMenus();
         });

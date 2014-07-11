@@ -215,5 +215,20 @@
     "HeaderName": "N\u00e1zev",
     "HeaderAlbum": "Album",
     "HeaderAlbumArtist": "Album Artist",
-    "HeaderArtist": "Artist"
+    "HeaderArtist": "Artist",
+    "LabelAddedOnDate": "Added {0}",
+    "ButtonStart": "Start",
+    "HeaderChannels": "Kan\u00e1ly",
+    "HeaderMediaFolders": "Slo\u017eky m\u00e9di\u00ed",
+    "HeaderBlockItemsWithNoRating": "Block items with no rating information:",
+    "OptionBlockOthers": "Others",
+    "OptionBlockTvShows": "TV Shows",
+    "OptionBlockTrailers": "Trailers",
+    "OptionBlockMusic": "Music",
+    "OptionBlockMovies": "Movies",
+    "OptionBlockBooks": "Books",
+    "OptionBlockGames": "Games",
+    "OptionBlockLiveTvPrograms": "Live TV Programs",
+    "OptionBlockLiveTvChannels": "Live TV Channels",
+    "OptionBlockChannelContent": "Internet Channel Content"
 }

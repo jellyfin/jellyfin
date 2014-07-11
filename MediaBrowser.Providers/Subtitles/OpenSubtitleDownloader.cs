@@ -29,6 +29,15 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly IServerConfigurationManager _config;
         private readonly IEncryptionManager _encryption;
 
+        private Timer _dailyTimer;
+
+        // This is limited to 200 per day
+        private int _dailyDownloadCount;
+
+        // It's 200 but this will be in-exact so buffer a little
+        // And the user may restart the server
+        private const int MaxDownloadsPerDay = 150;
+
         public OpenSubtitleDownloader(ILogManager logManager, IHttpClient httpClient, IServerConfigurationManager config, IEncryptionManager encryption)
         {
             _logger = logManager.GetLogger(GetType().Name);
@@ -37,6 +46,9 @@ namespace MediaBrowser.Providers.Subtitles
             _encryption = encryption;
 
             _config.ConfigurationUpdating += _config_ConfigurationUpdating;
+
+            // Reset the count every 24 hours
+            _dailyTimer = new Timer(state => _dailyDownloadCount = 0, null, TimeSpan.FromHours(24), TimeSpan.FromHours(24));
         }
 
         private const string PasswordHashPrefix = "h:";
@@ -98,6 +110,12 @@ namespace MediaBrowser.Providers.Subtitles
             if (string.IsNullOrWhiteSpace(id))
             {
                 throw new ArgumentNullException("id");
+            }
+
+            if (_dailyDownloadCount >= MaxDownloadsPerDay &&
+                !_config.Configuration.SubtitleOptions.IsOpenSubtitleVipAccount)
+            {
+                throw new InvalidOperationException("Open Subtitle's daily download limit has been exceeded. Please try again tomorrow.");
             }
 
             var idParts = id.Split(new[] { '-' }, 3);
@@ -272,6 +290,12 @@ namespace MediaBrowser.Providers.Subtitles
         public void Dispose()
         {
             _config.ConfigurationUpdating -= _config_ConfigurationUpdating;
+
+            if (_dailyTimer != null)
+            {
+                _dailyTimer.Dispose();
+                _dailyTimer = null;
+            }
         }
     }
 }

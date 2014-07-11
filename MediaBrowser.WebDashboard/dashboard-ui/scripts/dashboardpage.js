@@ -34,6 +34,24 @@
         DashboardPage.sessionUpdateTimer = setInterval(DashboardPage.refreshSessionsLocally, 60000);
     },
 
+    renderPaths: function (page, systemInfo) {
+
+        $('#cachePath', page).html(systemInfo.CachePath);
+        $('#logPath', page).html(systemInfo.LogPath);
+        $('#imagesByNamePath', page).html(systemInfo.ItemsByNamePath);
+        $('#transcodingTemporaryPath', page).html(systemInfo.TranscodingTempPath);
+        $('#metadataPath', page).html(systemInfo.InternalMetadataPath);
+
+        if (systemInfo.WanAddress) {
+
+            var externalUrl = systemInfo.WanAddress + "/mediabrowser";
+
+            $('.externalUrl', page).html('Remote access: <a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>').show().trigger('create');
+        } else {
+            $('.externalUrl', page).hide();
+        }
+    },
+
     refreshSessionsLocally: function () {
 
         var list = DashboardPage.sessionsList;
@@ -78,6 +96,7 @@
                 $('#btnManualUpdateContainer', page).show();
             }
 
+            DashboardPage.renderPaths(page, systemInfo);
             DashboardPage.renderHasPendingRestart(page, systemInfo.HasPendingRestart);
         });
     },
@@ -753,7 +772,7 @@
 
             imgUrl = "css/images/supporter/nonsupporterbadge.png";
             text = "Please support Media Browser.";
-            
+
             $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="supporter.html" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span></a>');
         }
     },

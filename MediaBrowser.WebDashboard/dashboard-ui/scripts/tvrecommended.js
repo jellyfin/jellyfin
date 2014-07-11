@@ -11,27 +11,29 @@
         };
 
         query.ParentId = LibraryMenu.getTopParentId();
-        
+        var context = '';
+
         if (query.ParentId) {
 
             $('.scopedLibraryViewNav', page).show();
             $('.globalNav', page).hide();
-            $('.homeEhsContent', page).css('text-align', 'left');
+            $('.ehsContent', page).css('text-align', 'left');
             $('.scopedContent', page).show();
+            context = 'tv';
 
             loadResume(page);
 
         } else {
             $('.scopedLibraryViewNav', page).hide();
             $('.globalNav', page).show();
-            $('.homeEhsContent', page).css('text-align', 'center');
+            $('.ehsContent', page).css('text-align', 'center');
             $('.scopedContent', page).hide();
         }
 
-        loadNextUp(page);
+        loadNextUp(page, context || 'home-nextup');
     }
 
-    function loadNextUp(page) {
+    function loadNextUp(page, context) {
 
         var screenWidth = $(window).width();
 
@@ -49,13 +51,13 @@
 
             $('.scopedLibraryViewNav', page).show();
             $('.globalNav', page).hide();
-            $('.ehsContent', page).css('text-align', 'left').removeClass('homeEhsContent');
+            $('.ehsContent', page).css('text-align', 'left');
             $('.scopedContent', page).show();
 
         } else {
             $('.scopedLibraryViewNav', page).hide();
             $('.globalNav', page).show();
-            $('.ehsContent', page).css('text-align', 'center').addClass('homeEhsContent');
+            $('.ehsContent', page).css('text-align', 'center');
             $('.scopedContent', page).hide();
         }
 
@@ -73,7 +75,7 @@
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: screenWidth >= 600,
-                context: 'home-nextup',
+                context: context,
                 lazy: true
 
             })).trigger('create').createPosterItemMenus();
@@ -93,7 +95,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 5 : 4,
+            Limit: screenWidth >= 1920 ? 6 : 4,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             ExcludeLocationTypes: "Virtual",
@@ -116,7 +118,8 @@
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: screenWidth >= 600,
-                lazy: true
+                lazy: true,
+                context: 'tv'
 
             })).trigger('create').createPosterItemMenus();
 

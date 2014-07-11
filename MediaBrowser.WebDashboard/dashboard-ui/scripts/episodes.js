@@ -53,7 +53,8 @@
                     showParentTitle: true,
                     overlayText: screenWidth >= 600,
                     selectionPanel: true,
-                    lazy: true
+                    lazy: true,
+                    context: 'tv'
                 });
             }
 

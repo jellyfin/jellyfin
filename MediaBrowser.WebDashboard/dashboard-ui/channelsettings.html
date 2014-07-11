@@ -1,13 +1,19 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>${TitleChannels}</title>
+    <title>${PluginsTitle}</title>
 </head>
 <body>
-    <div id="channelSettingsPage" data-role="page" class="page type-interior channelSettingsPage">
+    <div id="channelSettingsPage" data-role="page" class="page type-interior pluginConfigurationPage">
 
         <div data-role="content">
             <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="plugins.html" data-role="button">${TabMyPlugins}</a>
+                    <a href="plugincatalog.html" data-role="button">${TabCatalog}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabChannels}</a>
+                </div>
+
                 <form class="channelSettingsForm">
                     <p class="noChannelsHeader" style="display: none;">${ChannelSettingsFormHelp}</p>
                     <br />

@@ -657,7 +657,7 @@ var Dashboard = {
         var pageElem = page[0];
 
         return [{
-            name: "Dashboard",
+            name: "Server",
             href: "dashboard.html",
             selected: page.hasClass("dashboardHomePage")
         }, {
@@ -677,11 +677,6 @@ var Dashboard = {
             name: "Auto-Organize",
             href: "autoorganizelog.html",
             selected: page.hasClass("organizePage")
-        }, {
-            name: "Channels",
-            divider: true,
-            href: "channelsettings.html",
-            selected: page.hasClass("channelSettingsPage")
         }, {
             name: "DLNA",
             href: "dlnasettings.html",

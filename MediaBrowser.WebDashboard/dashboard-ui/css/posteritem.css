@@ -51,9 +51,9 @@
 }
 
 .posterItem:hover .posterItemImage {
-    -moz-box-shadow: 0 0 12px 7px #38c;
-    -webkit-box-shadow: 0 0 12px 7px #38c;
-    box-shadow: 0 0 12px 7px #38c;
+    -moz-box-shadow: 0 0 0 5px #38c;
+    -webkit-box-shadow: 0 0 0 5px #38c;
+    box-shadow: 0 0 0 5px #38c;
 }
 
 .coveredPosterItemImage {
@@ -456,11 +456,11 @@
     }
 
     .backdropPosterItem {
-        width: 298px;
+        width: 350px;
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 167.625px;
+            height: 196.875px;
         }
 
     .miniBackdropPosterItem {
@@ -472,20 +472,23 @@
         }
 
     .squarePosterItem {
-        width: 160px;
+        width: 192px;
     }
 
         .squarePosterItem .posterItemImage {
-            height: 160px;
+            height: 192px;
         }
 
     .portraitPosterItem {
-        width: 144px;
+        width: 170px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 216px;
+            height: 255px;
         }
+
+    .posterItemText {
+    }
 }
 
 

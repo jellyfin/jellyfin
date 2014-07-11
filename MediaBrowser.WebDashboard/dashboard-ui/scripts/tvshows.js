@@ -34,7 +34,7 @@
             updateFilterControls(page);
 
             if (view == "Thumb") {
-                
+
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "backdrop",
@@ -42,7 +42,7 @@
                     context: 'tv',
                     lazy: true
                 });
-                
+
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "Banner") {
@@ -56,18 +56,6 @@
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
-            else if (view == "Poster") {
-
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    context: 'tv',
-                    showTitle: true,
-                    centerText: true,
-                    lazy: true
-                });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
-            }
             else if (view == "List") {
 
                 html = LibraryBrowser.getListViewHtml({
@@ -77,18 +65,18 @@
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
-            else if (view == "Timeline") {
-                
+            else {
+
+                // Poster
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
                     context: 'tv',
-                    timeline: true,
                     showTitle: true,
+                    centerText: true,
                     lazy: true
                 });
-
-                $('.itemsContainer', page).addClass('timelineItemsContainer');
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

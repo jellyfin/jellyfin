@@ -165,7 +165,7 @@ namespace MediaBrowser.Providers.TV
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                result.Item = await FetchMovieData(tmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                result.Item = await FetchMovieData(tmdbId, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
                 result.HasMetadata = result.Item != null;
             }
@@ -173,7 +173,7 @@ namespace MediaBrowser.Providers.TV
             return result;
         }
 
-        private async Task<Series> FetchMovieData(string tmdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
+        private async Task<Series> FetchMovieData(string tmdbId, string language, CancellationToken cancellationToken)
         {
             string dataFilePath = null;
             RootObject seriesInfo = null;
@@ -198,12 +198,12 @@ namespace MediaBrowser.Providers.TV
 
             var item = new Series();
 
-            ProcessMainInfo(item, preferredCountryCode, seriesInfo);
+            ProcessMainInfo(item, seriesInfo);
 
             return item;
         }
 
-        private void ProcessMainInfo(Series series, string countryCode, RootObject seriesInfo)
+        private void ProcessMainInfo(Series series, RootObject seriesInfo)
         {
             series.Name = seriesInfo.name;
             series.SetProviderId(MetadataProviders.Tmdb, seriesInfo.id.ToString(_usCulture));
@@ -231,7 +231,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             series.HomePageUrl = seriesInfo.homepage;
-
+            
             series.RunTimeTicks = seriesInfo.episode_run_time.Select(i => TimeSpan.FromMinutes(i).Ticks).FirstOrDefault();
 
             if (string.Equals(seriesInfo.status, "Ended", StringComparison.OrdinalIgnoreCase))

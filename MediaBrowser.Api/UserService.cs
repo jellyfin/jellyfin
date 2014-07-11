@@ -188,7 +188,11 @@ namespace MediaBrowser.Api
 
         public object Get(GetPublicUsers request)
         {
-            if (Request.IsLocal || !_config.Configuration.IsStartupWizardCompleted)
+            var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
+            var isDashboard = string.Equals(authInfo.Client, "Dashboard", StringComparison.OrdinalIgnoreCase);
+
+            if ((Request.IsLocal && isDashboard) || 
+                !_config.Configuration.IsStartupWizardCompleted)
             {
                 return Get(new GetUsers
                 {
@@ -196,7 +200,8 @@ namespace MediaBrowser.Api
                 });
             }
 
-            if (_sessionMananger.IsLocal(Request.RemoteIp))
+            // TODO: Add or is authenticated
+            if (_sessionMananger.IsInLocalNetwork(Request.RemoteIp))
             {
                 return Get(new GetUsers
                 {
@@ -205,6 +210,7 @@ namespace MediaBrowser.Api
                 });
             }
 
+            // Return empty when external
             return ToOptimizedResult(new List<UserDto>());
         }
 

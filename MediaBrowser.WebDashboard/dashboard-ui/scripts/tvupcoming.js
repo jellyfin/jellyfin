@@ -13,6 +13,19 @@
 
         query.ParentId = LibraryMenu.getTopParentId();
 
+        var context = '';
+
+        if (query.ParentId) {
+
+            $('.scopedLibraryViewNav', page).show();
+            $('.globalNav', page).hide();
+            context = 'tv';
+
+        } else {
+            $('.scopedLibraryViewNav', page).hide();
+            $('.globalNav', page).show();
+        }
+
         ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).done(function (result) {
 
             var items = result.Items;
@@ -31,8 +44,8 @@
                 showPremiereDate: true,
                 showPremiereDateIndex: true,
                 preferThumb: true,
-                context: 'home-upcoming',
-                lazy: true
+                context: context || 'home-upcoming',
+                lazy: true,
 
             })).trigger('create').createPosterItemMenus();
         });

@@ -49,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             //ExecuteBasic(req, res, requestDto); //first check if session is authenticated
             //if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            //ValidateUser(req);
+            ValidateUser(req);
         }
 
         private void ValidateUser(IRequest req)

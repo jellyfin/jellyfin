@@ -599,9 +599,9 @@ h1 .imageLink {
 }
 
 .posterViewItem:hover, .userItem:hover, .tileItem:hover {
-    -moz-box-shadow: 0 0 20px 3px #38c;
-    -webkit-box-shadow: 0 0 20px 3px #38c;
-    box-shadow: 0 0 20px 3px #38c;
+    -moz-box-shadow: 0 0 0 5px #38c;
+    -webkit-box-shadow: 0 0 0 5px #38c;
+    box-shadow: 0 0 0 5px #38c;
 }
 
 @media all and (min-width: 750px) {
@@ -980,9 +980,9 @@ progress {
 }
 
 .activeSession:hover {
-    -moz-box-shadow: 0 0 20px 1px #38c;
-    -webkit-box-shadow: 0 0 20px 1px #38c;
-    box-shadow: 0 0 20px 1px #38c;
+    -moz-box-shadow: 0 0 10px 3px #38c;
+    -webkit-box-shadow: 0 0 10px 3px #38c;
+    box-shadow: 0 0 10px 3px #38c;
 }
 
 .sessionNowPlayingTime {

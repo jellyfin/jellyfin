@@ -1,5 +1,7 @@
 ﻿(function ($, document, window) {
 
+    var brandingConfigKey = "branding";
+
     function loadPage(page, config, languageOptions) {
 
         $('#txtServerName', page).val(config.ServerName || '');
@@ -29,6 +31,10 @@
 
         });
 
+        ApiClient.getNamedConfiguration(brandingConfigKey).done(function (config) {
+
+            $('#txtLoginDisclaimer', page).val(config.LoginDisclaimer || '');
+        });
     });
 
     window.DashboardGeneralPage = {
@@ -43,7 +49,16 @@
                 config.ServerName = $('#txtServerName', form).val();
                 config.UICulture = $('#selectLocalizationLanguage', form).val();
 
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+                ApiClient.updateServerConfiguration(config).done(function() {
+                    
+                    ApiClient.getNamedConfiguration(brandingConfigKey).done(function (brandingConfig) {
+
+                        brandingConfig.LoginDisclaimer = $('#txtLoginDisclaimer', form).val();
+
+                        ApiClient.updateNamedConfiguration(brandingConfigKey, brandingConfig).done(Dashboard.processServerConfigurationUpdateResult);
+                    });
+
+                });
             });
 
             // Disable default form submission

@@ -1,8 +1,13 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Linq;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
@@ -204,6 +209,56 @@ namespace MediaBrowser.Server.Implementations.Configuration
                     throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
             }
+        }
+
+        public void SetPreferredMetadataService(string service)
+        {
+            DisableMetadataService(typeof(Movie), Configuration, service);
+            DisableMetadataService(typeof(MusicAlbum), Configuration, service);
+            DisableMetadataService(typeof(MusicArtist), Configuration, service);
+            DisableMetadataService(typeof(Episode), Configuration, service);
+            DisableMetadataService(typeof(Season), Configuration, service);
+            DisableMetadataService(typeof(Series), Configuration, service);
+            DisableMetadataService(typeof(MusicVideo), Configuration, service);
+            DisableMetadataService(typeof(Trailer), Configuration, service);
+            DisableMetadataService(typeof(AdultVideo), Configuration, service);
+            DisableMetadataService(typeof(Video), Configuration, service);
+        }
+
+        private void DisableMetadataService(Type type, ServerConfiguration config, string service)
+        {
+            var options = GetMetadataOptions(type, config);
+
+            if (!options.DisabledMetadataSavers.Contains(service, StringComparer.OrdinalIgnoreCase))
+            {
+                var list = options.DisabledMetadataSavers.ToList();
+
+                list.Add(service);
+
+                options.DisabledMetadataSavers = list.ToArray();
+            }
+        }
+
+        private MetadataOptions GetMetadataOptions(Type type, ServerConfiguration config)
+        {
+            var options = config.MetadataOptions
+                .FirstOrDefault(i => string.Equals(i.ItemType, type.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (options == null)
+            {
+                var list = config.MetadataOptions.ToList();
+
+                options = new MetadataOptions
+                {
+                    ItemType = type.Name
+                };
+
+                list.Add(options);
+
+                config.MetadataOptions = list.ToArray();
+            }
+
+            return options;
         }
     }
 }

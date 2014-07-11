@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -65,6 +67,13 @@ namespace MediaBrowser.Api
 
     }
 
+    [Route("/System/Configuration/MetadataPlugins/Autoset", "POST")]
+    [Authenticated]
+    public class AutoSetMetadataOptions : IReturnVoid
+    {
+
+    }
+
     public class ConfigurationService : BaseApiService
     {
         /// <summary>
@@ -79,13 +88,15 @@ namespace MediaBrowser.Api
 
         private readonly IFileSystem _fileSystem;
         private readonly IProviderManager _providerManager;
+        private readonly ILibraryManager _libraryManager;
 
-        public ConfigurationService(IJsonSerializer jsonSerializer, IServerConfigurationManager configurationManager, IFileSystem fileSystem, IProviderManager providerManager)
+        public ConfigurationService(IJsonSerializer jsonSerializer, IServerConfigurationManager configurationManager, IFileSystem fileSystem, IProviderManager providerManager, ILibraryManager libraryManager)
         {
             _jsonSerializer = jsonSerializer;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _providerManager = providerManager;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -109,6 +120,44 @@ namespace MediaBrowser.Api
             var result = _configurationManager.GetConfiguration(request.Key);
 
             return ToOptimizedResult(result);
+        }
+
+        public void Post(AutoSetMetadataOptions request)
+        {
+            var service = AutoDetectMetadataService();
+
+            Logger.Info("Setting preferred metadata format to " + service);
+
+            _configurationManager.SetPreferredMetadataService(service);
+            _configurationManager.SaveConfiguration();
+        }
+
+        private string AutoDetectMetadataService()
+        {
+            const string xbmc = "Xbmc Nfo";
+            const string mb = "Media Browser Xml";
+
+            var paths = _libraryManager.GetDefaultVirtualFolders()
+                .SelectMany(i => i.Locations)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(i => new DirectoryInfo(i))
+                .ToList();
+
+            if (paths.Select(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
+                .SelectMany(i => i)
+                .Any())
+            {
+                return xbmc;
+            }
+
+            if (paths.Select(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
+                .SelectMany(i => i)
+                .Any(i => string.Equals(i.Name, "series.xml", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "movie.xml", StringComparison.OrdinalIgnoreCase)))
+            {
+                return mb;
+            }
+            
+            return xbmc;
         }
 
         /// <summary>

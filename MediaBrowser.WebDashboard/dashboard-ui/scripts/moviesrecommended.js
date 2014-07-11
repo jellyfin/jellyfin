@@ -50,7 +50,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 4 : (screenWidth >= 1440 ? 4 : 3),
+            Limit: screenWidth >= 1920 ? 6 : (screenWidth >= 1440 ? 6 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             CollapseBoxSetItems: false,
@@ -81,7 +81,7 @@
 
             userId: Dashboard.getCurrentUserId(),
             categoryLimit: screenWidth >= 1200 ? 4 : 3,
-            itemLimit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 7),
+            itemLimit: screenWidth >= 1920 ? 6 : (screenWidth >= 1440 ? 6 : 7),
             Fields: "PrimaryImageAspectRatio"
         });
 
