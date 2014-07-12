@@ -33,7 +33,7 @@ If you're a new user looking to install Media Browser Server, please head over t
 
 ## Visit our community: ##
 
-http://mediabrowser3.com/community
+http://mediabrowser.tv/community
 
 ## Images
 
