@@ -117,6 +117,13 @@
     }
 }
 
+@media all and (min-width: 1920px) {
+
+    .squareEhsContent {
+        width: 1200px;
+    }
+}
+
 .detailPageContent {
     margin: 0 auto;
     padding: 0;

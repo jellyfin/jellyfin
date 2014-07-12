@@ -224,16 +224,23 @@ namespace MediaBrowser.Api
                 }
             }
 
-            var task = item.RefreshMetadata(new MetadataRefreshOptions
+            var service = new ItemRefreshService(_libraryManager)
             {
+                Logger = Logger,
+                Request = Request,
+                ResultFactory = ResultFactory,
+                SessionContext = SessionContext
+            };
+
+            service.Post(new RefreshItem
+            {
+                Id = request.Id,
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ImageRefreshMode = ImageRefreshMode.FullRefresh,
                 ReplaceAllMetadata = true,
                 ReplaceAllImages = true,
-
-            }, CancellationToken.None);
-
-            Task.WaitAll(task);
+                Recursive = true
+            });
         }
 
         /// <summary>

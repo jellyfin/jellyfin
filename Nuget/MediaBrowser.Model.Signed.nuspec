@@ -14,9 +14,7 @@
         <dependencies>
 			<group targetFramework=".NETFramework4.5"/>
             <group targetFramework=".NETFramework3.5"/>
-            <group targetFramework=".NETPortable0.0-net45+sl4+wp71+win8">
-                <dependency id="Microsoft.Bcl.Async" version="1.0.16" />
-            </group>
+            <group targetFramework=".NETPortable0.0-net45+sl4+wp71+win8"/>
         </dependencies>
     </metadata>
     <files>

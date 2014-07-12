@@ -279,7 +279,7 @@
             SortOrder: "Descending",
             MediaTypes: "Video",
             Filters: "IsResumable",
-            Limit: (screenWidth >= 1200 ? 9 : 6),
+            Limit: screenWidth >= 1920 ? 9 : (screenWidth >= 1200 ? 9 : 6),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             CollapseBoxSetItems: false,

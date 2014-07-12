@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
@@ -53,7 +53,12 @@ namespace MediaBrowser.LocalMetadata.Images
             return parentPathFiles
               .Where(i =>
               {
-                  if (BaseItem.SupportedImageExtensions.Contains(i.Extension))
+                  if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                  {
+                      return false;
+                  }
+                  
+                  if (BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
                   {
                       var currentNameWithoutExtension = Path.GetFileNameWithoutExtension(i.Name);
 
