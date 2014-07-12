@@ -226,8 +226,6 @@ namespace MediaBrowser.ServerApplication
                              ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
             }
 
-            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
-            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
 
             var task = _appHost.Init(initProgress);
             task = task.ContinueWith(new Action<Task>(a => _appHost.RunStartupTasks()));
@@ -239,7 +237,10 @@ namespace MediaBrowser.ServerApplication
             else
             {
                 Task.WaitAll(task);
-                
+
+                SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+                SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+   
                 HideSplashScreen();
 
                 ShowTrayIcon();
