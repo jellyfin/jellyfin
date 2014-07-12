@@ -229,7 +229,7 @@ namespace MediaBrowser.Api
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ImageRefreshMode = ImageRefreshMode.FullRefresh,
                 ReplaceAllMetadata = true,
-                ReplaceAllImages = true
+                ReplaceAllImages = true,
 
             }, CancellationToken.None);
 

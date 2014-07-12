@@ -230,5 +230,8 @@
     "OptionBlockGames": "Spellen",
     "OptionBlockLiveTvPrograms": "Live TV Programma's",
     "OptionBlockLiveTvChannels": "Live TV Kanalen",
-    "OptionBlockChannelContent": "Internet kanaal Inhoud"
+    "OptionBlockChannelContent": "Internet kanaal Inhoud",
+    "ButtonRevoke": "Herroepen",
+    "MessageConfirmRevokeApiKey": "Weet u zeker dat u deze api-sleutel intrekt? Verbinding van de toepassing met Media Browser zal abrupt worden be\u00ebindigd.",
+    "HeaderConfirmRevokeApiKey": "Intrekken Api Sleutel"
 }

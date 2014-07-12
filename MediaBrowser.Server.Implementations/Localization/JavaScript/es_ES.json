@@ -230,5 +230,8 @@
     "OptionBlockGames": "Juegos",
     "OptionBlockLiveTvPrograms": "Programas de TV en vivo",
     "OptionBlockLiveTvChannels": "Canales de Tv en vivo",
-    "OptionBlockChannelContent": "Contenido de canales de Internet"
+    "OptionBlockChannelContent": "Contenido de canales de Internet",
+    "ButtonRevoke": "Revocar",
+    "MessageConfirmRevokeApiKey": "Are you sure you wish to revoke this api key? The application's connection to Media Browser will be abruptly terminated.",
+    "HeaderConfirmRevokeApiKey": "Revoke Api Key"
 }

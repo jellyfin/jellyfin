@@ -273,6 +273,10 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
+            var revokeTask = _sessionMananger.RevokeUserTokens(user.Id.ToString("N"));
+
+            Task.WaitAll(revokeTask);
+            
             var task = _userManager.DeleteUser(user);
 
             Task.WaitAll(task);
