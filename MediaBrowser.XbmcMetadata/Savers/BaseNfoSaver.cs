@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.XbmcMetadata.Configuration;
 using System;
 using System.Collections.Generic;
@@ -98,8 +99,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-        protected BaseNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager)
+        protected BaseNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
         {
+            Logger = logger;
             UserDataManager = userDataManager;
             UserManager = userManager;
             LibraryManager = libraryManager;
@@ -112,6 +114,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         protected ILibraryManager LibraryManager { get; private set; }
         protected IUserManager UserManager { get; private set; }
         protected IUserDataManager UserDataManager { get; private set; }
+        protected ILogger Logger { get; private set; }
 
         public string Name
         {
@@ -232,11 +235,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 try
                 {
-                    AddCustomTags(xmlPath, tagsUsed, writer);
+                    AddCustomTags(xmlPath, tagsUsed, writer, Logger);
                 }
                 catch (FileNotFoundException)
                 {
-                    
+
                 }
 
                 writer.WriteEndElement();
@@ -950,7 +953,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             return string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase) || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static void AddCustomTags(string path, List<string> xmlTagsUsed, XmlWriter writer)
+        private static void AddCustomTags(string path, List<string> xmlTagsUsed, XmlWriter writer, ILogger logger)
         {
             var settings = new XmlReaderSettings
             {
@@ -965,7 +968,15 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 // Use XmlReader for best performance
                 using (var reader = XmlReader.Create(streamReader, settings))
                 {
-                    reader.MoveToContent();
+                    try
+                    {
+                        reader.MoveToContent();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.ErrorException("Error reading existing xml tags from {0}.", ex, path);
+                        return;
+                    }
 
                     // Loop through each element
                     while (reader.Read())

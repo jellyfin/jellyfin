@@ -277,6 +277,13 @@ namespace MediaBrowser.Controller.Session
         Task RevokeUserTokens(string userId);
 
         /// <summary>
+        /// Revokes the token.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task RevokeToken(string id);
+        
+        /// <summary>
         /// Determines whether the specified remote endpoint is local.
         /// </summary>
         /// <param name="remoteEndpoint">The remote endpoint.</param>
