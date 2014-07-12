@@ -192,8 +192,14 @@
         });
     }
 
-    function loadLibraryTiles(elem, userId, shape, index) {
+    function loadLibraryTiles(elem, userId, shape, index, autoHideOnMobile) {
 
+        if (autoHideOnMobile) {
+            $(elem).addClass('hiddenSectionOnMobile');
+        } else {
+            $(elem).removeClass('hiddenSectionOnMobile');
+        }
+        
         getUserViews(userId).done(function (items) {
 
             var html = '';
@@ -273,7 +279,7 @@
             SortOrder: "Descending",
             MediaTypes: "Video",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6),
+            Limit: (screenWidth >= 1200 ? 9 : 6),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             CollapseBoxSetItems: false,
@@ -350,7 +356,7 @@
 
         var options = {
 
-            Limit: screenWidth >= 1920 ? 7 : (screenWidth >= 1440 ? 5 : (screenWidth >= 800 ? 6 : 6)),
+            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1440 ? 5 : (screenWidth >= 800 ? 6 : 6)),
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed",
             UserId: Dashboard.getCurrentUserId(),
@@ -373,7 +379,7 @@
             }
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: 'autosmall',
+                shape: 'auto',
                 defaultShape: 'square',
                 showTitle: true,
                 centerText: true,
@@ -390,7 +396,7 @@
         ApiClient.getLiveTvRecordings({
 
             userId: userId,
-            limit: 9,
+            limit: 5,
             IsInProgress: false
 
         }).done(function (result) {
@@ -444,11 +450,11 @@
         switch (index) {
 
             case 0:
-                return 'smalllibrarytiles';
+                return 'smalllibrarytiles-automobile';
             case 1:
                 return 'resume';
             case 2:
-                return '';
+                return 'latestmedia';
             case 3:
                 return '';
             default:
@@ -470,7 +476,10 @@
             Sections.loadLibraryTiles(elem, userId, 'backdrop', index);
         }
         else if (section == 'smalllibrarytiles') {
-            Sections.loadLibraryTiles(elem, userId, 'smallBackdrop', index);
+            Sections.loadLibraryTiles(elem, userId, 'miniBackdrop', index);
+        }
+        else if (section == 'smalllibrarytiles-automobile') {
+            Sections.loadLibraryTiles(elem, userId, 'miniBackdrop', index, true);
         }
         else if (section == 'librarybuttons') {
             Sections.loadlibraryButtons(elem, userId, index);
@@ -484,7 +493,7 @@
         }
 
         else if (section == 'folders') {
-            Sections.loadLibraryFolders(elem, userId, 'smallBackdrop', index);
+            Sections.loadLibraryFolders(elem, userId, 'backdrop', index);
 
         } else if (section == 'latestchannelmedia') {
             Sections.loadLatestChannelMedia(elem, userId);

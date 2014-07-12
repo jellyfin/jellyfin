@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,7 +13,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 {
     public class SeasonNfoSaver : BaseNfoSaver
     {
-        public SeasonNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager)
+        public SeasonNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }
 

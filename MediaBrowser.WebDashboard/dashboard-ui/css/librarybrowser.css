@@ -13,7 +13,7 @@
 }
 
 .backdropPage {
-    background-color: rgba(15, 15,15, .92)!important;
+    background-color: rgba(15, 15,15, .94)!important;
 }
 
 .backdropContainer {
@@ -73,25 +73,32 @@
     top: 8px;
 }
 
+@media all and (max-width: 800px) {
+
+    .hiddenSectionOnMobile {
+        display: none;
+    }
+}
+
 .firstListHeader + .sectionHeaderButton {
     top: 3px;
 }
 
-@media all and (min-width: 900px) {
+@media all and (min-width: 800px) {
 
     .ehsContent {
-        width: 880px;
+        width: 770px;
     }
 
     .squareEhsContent {
-        width: 750px;
+        width: 760px;
     }
 }
 
 @media all and (min-width: 1000px) {
 
     .ehsContent {
-        width: 905px;
+        width: 900px;
     }
 
     .squareEhsContent {
@@ -102,33 +109,11 @@
 @media all and (min-width: 1200px) {
 
     .ehsContent {
-        width: 925px;
+        width: 1000px;
     }
 
     .squareEhsContent {
-        width: 900px;
-    }
-}
-
-@media all and (min-width: 1400px) {
-
-    .ehsContent {
-        width: 1080px;
-    }
-
-    .squareEhsContent {
-        width: 1220px;
-    }
-}
-
-@media all and (min-width: 1600px) {
-
-    .homeEhsContent {
-        width: 1440px;
-    }
-
-    .squareEhsContent {
-        width: 1420px;
+        width: 1000px;
     }
 }
 

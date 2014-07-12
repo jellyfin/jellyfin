@@ -1210,15 +1210,15 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task{SessionInfo}.</returns>
         /// <exception cref="System.UnauthorizedAccessException">Invalid user or password entered.</exception>
         /// <exception cref="UnauthorizedAccessException"></exception>
-        public async Task<AuthenticationResult> AuthenticateNewSession(string username, 
-            string password, 
-            string clientType, 
-            string appVersion, 
-            string deviceId, 
-            string deviceName, 
+        public async Task<AuthenticationResult> AuthenticateNewSession(string username,
+            string password,
+            string clientType,
+            string appVersion,
+            string deviceId,
+            string deviceName,
             string remoteEndPoint)
         {
-            var result = (IsLocalhost(remoteEndPoint) && string.Equals(clientType, "Dashboard", StringComparison.OrdinalIgnoreCase)) || 
+            var result = (IsLocalhost(remoteEndPoint) && string.Equals(clientType, "Dashboard", StringComparison.OrdinalIgnoreCase)) ||
                 await _userManager.AuthenticateUser(username, password).ConfigureAwait(false);
 
             if (!result)
@@ -1330,6 +1330,11 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 await Logout(info.AccessToken).ConfigureAwait(false);
             }
+        }
+
+        public Task RevokeToken(string token)
+        {
+            return Logout(token);
         }
 
         private bool IsLocalhost(string remoteEndpoint)

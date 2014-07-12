@@ -283,11 +283,11 @@ namespace MediaBrowser.Server.Implementations.Security
             }
 
             info.IsActive = reader.GetBoolean(6);
-            info.DateCreated = reader.GetDateTime(7);
+            info.DateCreated = reader.GetDateTime(7).ToUniversalTime();
 
             if (!reader.IsDBNull(8))
             {
-                info.DateRevoked = reader.GetDateTime(8);
+                info.DateRevoked = reader.GetDateTime(8).ToUniversalTime();
             }
          
             return info;

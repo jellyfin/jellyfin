@@ -305,9 +305,15 @@
 
     function onGroupedPosterItemClick(e) {
 
+        if ($(e.target).is('.posterItemOverlayTarget') ||
+            $(e.target).parents('.posterItemOverlayTarget').length) {
+            e.preventDefault();
+            return;
+        }
+
         var posterItem = this;
         var itemId = posterItem.getAttribute('data-itemid');
-
+        
         $(posterItem).addClass('hasContextMenu');
 
         var userId = Dashboard.getCurrentUserId();

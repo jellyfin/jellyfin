@@ -98,17 +98,13 @@
         if ($.browser.msie) {
             return false;
         }
-        
-        // For bandwidth
-        if ($.browser.mobile) {
-            return false;
-        }
 
         var userId = Dashboard.getCurrentUserId();
 
         var val = LocalSettings.val('enableBackdrops', userId);
 
-        return val != '0';
+        // For bandwidth
+        return val == '1' || (val != '0' && !$.browser.mobile);
     }
 
     $(document).on('pagebeforeshow', ".page", function () {

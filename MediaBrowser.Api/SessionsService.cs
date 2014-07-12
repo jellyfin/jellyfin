@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
 using ServiceStack;
@@ -241,6 +242,25 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Route("/Auth/Keys", "GET")]
+    public class GetApiKeys
+    {
+    }
+
+    [Route("/Auth/Keys/{Key}", "DELETE")]
+    public class RevokeKey
+    {
+        [ApiMember(Name = "Key", Description = "Auth Key", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Key { get; set; }
+    }
+
+    [Route("/Auth/Keys", "POST")]
+    public class CreateKey
+    {
+        [ApiMember(Name = "App", Description = "App", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string App { get; set; }
+    }
+
     /// <summary>
     /// Class SessionsService
     /// </summary>
@@ -253,25 +273,59 @@ namespace MediaBrowser.Api
 
         private readonly IUserManager _userManager;
         private readonly IAuthorizationContext _authContext;
+        private readonly IAuthenticationRepository _authRepo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionsService" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="userManager">The user manager.</param>
-        public SessionsService(ISessionManager sessionManager, IUserManager userManager, IAuthorizationContext authContext)
+        /// <param name="authContext">The authentication context.</param>
+        /// <param name="authRepo">The authentication repo.</param>
+        public SessionsService(ISessionManager sessionManager, IUserManager userManager, IAuthorizationContext authContext, IAuthenticationRepository authRepo)
         {
             _sessionManager = sessionManager;
             _userManager = userManager;
             _authContext = authContext;
+            _authRepo = authRepo;
         }
 
+        public void Delete(RevokeKey request)
+        {
+            var task = _sessionManager.RevokeToken(request.Key);
+
+            Task.WaitAll(task);
+        }
+
+        public void Post(CreateKey request)
+        {
+            var task = _authRepo.Create(new AuthenticationInfo
+            {
+                AppName = request.App,
+                IsActive = true,
+                AccessToken = Guid.NewGuid().ToString("N"),
+                DateCreated = DateTime.UtcNow
+
+            }, CancellationToken.None);
+
+            Task.WaitAll(task);
+        }
 
         public void Post(ReportSessionEnded request)
         {
             var auth = _authContext.GetAuthorizationInfo(Request);
 
             _sessionManager.Logout(auth.Token);
+        }
+
+        public object Get(GetApiKeys request)
+        {
+            var result = _authRepo.Get(new AuthenticationInfoQuery
+            {
+                IsActive = true
+            });
+
+            return ToOptimizedResult(result);
         }
 
         /// <summary>

@@ -311,7 +311,7 @@
             $('#scenesCollapsible', page).hide();
         } else {
             $('#scenesCollapsible', page).show();
-            renderScenes(page, item, user, 4);
+            renderScenes(page, item, user, 3);
         }
 
         if (!item.SpecialFeatureCount || item.SpecialFeatureCount == 0 || item.Type == "Series") {

@@ -62,14 +62,28 @@ namespace MediaBrowser.Server.Implementations.Session
 
         void connection_Closed(object sender, EventArgs e)
         {
-            var capabilities = new SessionCapabilities
+            if (!GetActiveSockets().Any())
             {
-                PlayableMediaTypes = Session.PlayableMediaTypes,
-                SupportedCommands = Session.SupportedCommands,
-                SupportsMediaControl = SupportsMediaControl
-            };
+                try
+                {
+                    _sessionManager.ReportSessionEnded(Session.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error reporting session ended.", ex);
+                }
+            }
+            else
+            {
+                var capabilities = new SessionCapabilities
+                {
+                    PlayableMediaTypes = Session.PlayableMediaTypes,
+                    SupportedCommands = Session.SupportedCommands,
+                    SupportsMediaControl = SupportsMediaControl
+                };
 
-            _sessionManager.ReportCapabilities(Session.Id, capabilities);
+                _sessionManager.ReportCapabilities(Session.Id, capabilities);
+            }
         }
 
         private IWebSocketConnection GetActiveSocket()

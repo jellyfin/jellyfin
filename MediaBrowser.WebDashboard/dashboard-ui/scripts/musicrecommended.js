@@ -11,7 +11,7 @@
 
         var options = {
             IncludeItemTypes: "Audio",
-            Limit: screenWidth >= 1920 ? 14 : (screenWidth >= 1440 ? 14 : 12),
+            Limit: screenWidth >= 1920 ? 15 : (screenWidth >= 1200 ? 10 : 12),
             Fields: "PrimaryImageAspectRatio",
             ParentId: parentId
         };
@@ -34,7 +34,7 @@
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             IncludeItemTypes: "Audio",
-            Limit: screenWidth >= 1920 ? 7 : (screenWidth >= 1440 ? 7 : 6),
+            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1200 ? 5 : 6),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo",
             Filters: "IsPlayed",
@@ -64,7 +64,7 @@
             SortBy: "PlayCount",
             SortOrder: "Descending",
             IncludeItemTypes: "Audio",
-            Limit: screenWidth >= 1920 ? 14 : (screenWidth >= 1440 ? 14 : 12),
+            Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1200 ? 10 : 12),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo",
             Filters: "IsPlayed",

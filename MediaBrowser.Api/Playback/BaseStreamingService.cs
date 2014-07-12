@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Api.Playback.Hls;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -317,7 +318,7 @@ namespace MediaBrowser.Api.Playback
                 switch (qualitySetting)
                 {
                     case EncodingQuality.HighSpeed:
-                        param = "-preset ultrafast";
+                        param = "-preset superfast";
                         break;
                     case EncodingQuality.HighQuality:
                         param = "-preset superfast";
@@ -945,7 +946,8 @@ namespace MediaBrowser.Api.Playback
             }
 
             // Allow a small amount of time to buffer a little
-            if (state.IsInputVideo)
+            // But not with HLS because it already has it's own wait
+            if (state.IsInputVideo && TranscodingJobType != TranscodingJobType.Hls)
             {
                 await Task.Delay(500, cancellationTokenSource.Token).ConfigureAwait(false);
             }

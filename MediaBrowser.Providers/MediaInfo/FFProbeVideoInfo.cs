@@ -255,6 +255,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     AddDummyChapters(video, chapters);
                 }
 
+                NormalizeChapterNames(chapters);
+
                 await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
                 {
                     Chapters = chapters,
@@ -265,6 +267,25 @@ namespace MediaBrowser.Providers.MediaInfo
                 }, cancellationToken).ConfigureAwait(false);
 
                 await _chapterManager.SaveChapters(video.Id.ToString(), chapters, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private void NormalizeChapterNames(List<ChapterInfo> chapters)
+        {
+            var index = 1;
+
+            foreach (var chapter in chapters)
+            {
+                TimeSpan time;
+
+                // Check if the name is empty and/or if the name is a time
+                // Some ripping programs do that.
+                if (string.IsNullOrWhiteSpace(chapter.Name) ||
+                    TimeSpan.TryParse(chapter.Name, out time))
+                {
+                    chapter.Name = string.Format(_localization.GetLocalizedString("LabelChapterName"), index.ToString(CultureInfo.InvariantCulture));
+                }
+                index++;
             }
         }
 
@@ -570,7 +591,6 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 chapters.Add(new ChapterInfo
                 {
-                    Name = "Chapter " + index,
                     StartPositionTicks = currentChapterTicks
                 });
 

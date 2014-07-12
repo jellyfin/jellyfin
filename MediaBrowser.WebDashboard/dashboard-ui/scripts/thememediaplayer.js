@@ -46,7 +46,8 @@
         
         var val = LocalSettings.val('enableThemeSongs', userId);
 
-        return val == '1';
+        // For bandwidth
+        return val == '1' || (val != '0' && !$.browser.mobile);
     }
 
     function getPlayer() {

@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.XbmcMetadata.Configuration;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,8 +14,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 {
     public class EpisodeNfoSaver : BaseNfoSaver
     {
-        public EpisodeNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager)
-            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager)
+        public EpisodeNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }
 

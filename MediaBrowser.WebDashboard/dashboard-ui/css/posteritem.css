@@ -332,11 +332,11 @@
 @media all and (min-width: 540px) {
 
     .backdropPosterItem {
-        width: 266px;
+        width: 246px;
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 149.625px;
+            height: 138.375px;
         }
 
     .smallBackdropPosterItem {
@@ -361,14 +361,6 @@
 }
 
 @media all and (min-width: 650px) {
-
-    .backdropPosterItem {
-        width: 282px;
-    }
-
-        .backdropPosterItem .posterItemImage {
-            height: 158.625px;
-        }
 
     .smallBackdropPosterItem {
         width: 190px;
@@ -415,12 +407,28 @@
         min-width: 220px;
     }
 
+    .backdropPosterItem {
+        width: 290px;
+    }
+
+        .backdropPosterItem .posterItemImage {
+            height: 163.125px;
+        }
+
     .smallBackdropPosterItem {
-        width: 208px;
+        width: 290px;
     }
 
         .smallBackdropPosterItem .posterItemImage {
-            height: 117px;
+            height: 163.125px;
+        }
+
+    .miniBackdropPosterItem {
+        width: 190px;
+    }
+
+        .miniBackdropPosterItem .posterItemImage {
+            height: 106.875px;
         }
 }
 
@@ -445,6 +453,30 @@
         .bannerPosterItem .posterItemImage {
             height: 92.5px;
         }
+
+    .backdropPosterItem {
+        width: 320px;
+    }
+
+        .backdropPosterItem .posterItemImage {
+            height: 180px;
+        }
+
+    .portraitPosterItem {
+        width: 156px;
+    }
+
+        .portraitPosterItem .posterItemImage {
+            height: 234px;
+        }
+
+    .squarePosterItem {
+        width: 190px;
+    }
+
+        .squarePosterItem .posterItemImage {
+            height: 190px;
+        }
 }
 
 @media all and (min-width: 1440px) {
@@ -453,41 +485,6 @@
         width: 19%;
         /* Specify a min width just in case the container doesn't have a width */
         min-width: 220px;
-    }
-
-    .backdropPosterItem {
-        width: 350px;
-    }
-
-        .backdropPosterItem .posterItemImage {
-            height: 196.875px;
-        }
-
-    .miniBackdropPosterItem {
-        width: 180px;
-    }
-
-        .miniBackdropPosterItem .posterItemImage {
-            height: 101.25px;
-        }
-
-    .squarePosterItem {
-        width: 192px;
-    }
-
-        .squarePosterItem .posterItemImage {
-            height: 192px;
-        }
-
-    .portraitPosterItem {
-        width: 170px;
-    }
-
-        .portraitPosterItem .posterItemImage {
-            height: 255px;
-        }
-
-    .posterItemText {
     }
 }
 

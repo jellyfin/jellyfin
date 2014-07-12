@@ -22,7 +22,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: section.types,
             Filters: "IsFavorite",
-            Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6),
+            Limit: screenWidth >= 1920 ? 9 : (screenWidth >= 1440 ? 8 : 6),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             CollapseBoxSetItems: false,

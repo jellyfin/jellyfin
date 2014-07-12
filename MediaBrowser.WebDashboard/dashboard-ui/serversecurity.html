@@ -16,9 +16,51 @@
                     <a href="#" data-role="button" class="ui-btn-active">${TabSecurity}</a>
                 </div>
 
+                <h2 style="margin-top: -10px;">
+                    <span>${HeaderApiKeys}</span>
+                    <button class="btnNewKey" style="float: right; margin: -4px 0 0; vertical-align: top;" data-icon="plus" data-mini="true" data-inline="true" type="button">${ButtonNew}</button>
+                </h2>
+                <p>${HeaderApiKeysHelp}</p>
+                <br />
+                <table data-role="table" data-mode="reflow" class="tblApiKeys stripedTable ui-responsive table-stroke" style="display: table;">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>${HeaderApiKey}</th>
+                            <th>${HeaderApp}</th>
+                            <th>${HeaderDevice}</th>
+                            <th>${HeaderUser}</th>
+                            <th>${HeaderDateIssued}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="resultBody">
+                    </tbody>
+                </table>
+
             </div>
         </div>
+        <div data-role="panel" class="newKeyPanel" data-position="right" data-display="overlay" data-position-fixed="true">
+            <form class="newKeyForm">
 
+                <h3>${HeaderNewApiKey}</h3>
+
+                <p>${HeaderNewApiKeyHelp}</p>
+                <div>
+                    <label for="txtAppName">${LabelAppName}</label>
+                    <input type="text" id="txtAppName" required="required" />
+                    <div class="fieldDescription">${LabelAppNameExample}</div>
+                </div>
+
+                <br />
+                <p>
+                    <button type="submit" data-icon="plus" data-mini="true" data-theme="b">${ButtonCreate}</button>
+                </p>
+            </form>
+        </div>
+
+        <script type="text/javascript">
+            $('.newKeyForm').off('submit', ServerSecurityPage.onSubmit).on('submit', ServerSecurityPage.onSubmit);
+        </script>
     </div>
 </body>
 </html>
