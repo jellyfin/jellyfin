@@ -220,7 +220,7 @@ namespace MediaBrowser.Api.Library
     [Api(Description = "Reports that new episodes of a series have been added by an external source")]
     public class PostUpdatedSeries : IReturnVoid
     {
-        [ApiMember(Name = "TvdbId", Description = "Tvdb Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "TvdbId", Description = "Tvdb Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string TvdbId { get; set; }
     }
 

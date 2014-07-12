@@ -854,5 +854,19 @@
     "LabelLogs": "Bit\u00e1coras:",
     "LabelMetadata": "Metadatos:",
     "LabelImagesByName": "Im\u00e1genes por nombre:",
-    "LabelTranscodingTemporaryFiles": "Archivos temporales de transcodificaci\u00f3n:"
+    "LabelTranscodingTemporaryFiles": "Archivos temporales de transcodificaci\u00f3n:",
+    "HeaderLatestMusic": "Latest Music",
+    "HeaderBranding": "Branding",
+    "HeaderApiKeys": "Api Keys",
+    "HeaderApiKeysHelp": "External applications are required to have an Api key in order to communicate with Media Browser. Keys are issued by logging in with a Media Browser account, or by manually granting the application a key.",
+    "HeaderApiKey": "Api Key",
+    "HeaderApp": "App",
+    "HeaderDevice": "Device",
+    "HeaderUser": "User",
+    "HeaderDateIssued": "Date Issued",
+    "LabelChapterName": "Chapter {0}",
+    "HeaderNewApiKey": "New Api Key",
+    "LabelAppName": "App name",
+    "LabelAppNameExample": "Example: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Grant an application permission to communicate with Media Browser."
 }

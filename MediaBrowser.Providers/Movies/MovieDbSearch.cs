@@ -147,7 +147,7 @@ namespace MediaBrowser.Providers.Movies
                             Name = i.title ?? i.original_title ?? i.name,
                             ImageUrl = string.IsNullOrWhiteSpace(i.poster_path) ? null : baseImageUrl + i.poster_path
                         };
-
+                        
                         if (!string.IsNullOrWhiteSpace(i.release_date))
                         {
                             DateTime r;

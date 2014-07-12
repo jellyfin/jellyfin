@@ -57,22 +57,27 @@ namespace MediaBrowser.Providers.Omdb
                 Item = new Series()
             };
 
-            var imdbId = info.GetProviderId(MetadataProviders.Imdb);
-
             var searchResult = await GetSeriesImdbId(info, cancellationToken).ConfigureAwait(false);
-            result.Item.Name = searchResult.Item3;
+            result.Item.Name = searchResult.Item4;
 
-            if (string.IsNullOrEmpty(imdbId))
+            if (!string.IsNullOrEmpty(searchResult.Item1))
             {
-                imdbId = searchResult.Item1;
-
-                if (!string.IsNullOrEmpty(searchResult.Item2))
-                {
-                    result.Item.SetProviderId(MetadataProviders.Tvdb, searchResult.Item2);
-                }
+                result.Item.SetProviderId(MetadataProviders.Imdb, searchResult.Item1);
             }
-            
-            if (!string.IsNullOrEmpty(imdbId))
+
+            if (!string.IsNullOrEmpty(searchResult.Item2))
+            {
+                result.Item.SetProviderId(MetadataProviders.Tmdb, searchResult.Item2);
+            }
+
+            if (!string.IsNullOrEmpty(searchResult.Item3))
+            {
+                result.Item.SetProviderId(MetadataProviders.Tvdb, searchResult.Item3);
+            }
+
+            var imdbId = result.Item.GetProviderId(MetadataProviders.Imdb);
+
+            if (!string.IsNullOrEmpty(info.GetProviderId(MetadataProviders.Imdb)))
             {
                 result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
                 result.HasMetadata = true;
@@ -148,16 +153,26 @@ namespace MediaBrowser.Providers.Omdb
             return new Tuple<string, string, string>(imdb, tmdb, name);
         }
 
-        private async Task<Tuple<string, string, string>> GetSeriesImdbId(SeriesInfo info, CancellationToken cancellationToken)
+        private async Task<Tuple<string, string, string, string>> GetSeriesImdbId(SeriesInfo info, CancellationToken cancellationToken)
         {
-            var result = await TvdbSeriesProvider.Current.GetMetadata(info, cancellationToken)
-                   .ConfigureAwait(false);
+            //var result = await TvdbSeriesProvider.Current.GetMetadata(info, cancellationToken)
+            //       .ConfigureAwait(false);
+
+            //var imdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Imdb) : null;
+            //var tvdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Tvdb) : null;
+            //var name = result.HasMetadata ? result.Item.Name : null;
+
+            //return new Tuple<string, string, string>(imdb, tvdb, name);
+
+            var result = await MovieDbSeriesProvider.Current.GetMetadata(info, cancellationToken)
+                        .ConfigureAwait(false);
 
             var imdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Imdb) : null;
+            var tmdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Tmdb) : null;
             var tvdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Tvdb) : null;
             var name = result.HasMetadata ? result.Item.Name : null;
 
-            return new Tuple<string, string, string>(imdb, tvdb, name);
+            return new Tuple<string, string, string, string>(imdb, tmdb, tvdb, name);
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
