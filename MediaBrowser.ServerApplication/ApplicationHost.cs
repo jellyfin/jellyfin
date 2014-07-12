@@ -331,15 +331,13 @@ namespace MediaBrowser.ServerApplication
 
         private void ApplyDefaultMetadataSettings()
         {
-            if (!ServerConfigurationManager.Configuration.DefaultMetadataSettingsApplied)
+            if (!ServerConfigurationManager.Configuration.DefaultMetadataSettingsApplied &&
+                ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
             {
                 // Make sure xbmc metadata is disabled for existing users.
-                // New users can just take the defaults.
-                var service = ServerConfigurationManager.Configuration.IsStartupWizardCompleted
-                    ? "Xbmc Nfo"
-                    : "Media Browser Xml";
+                // New users will be handled by the startup wizard.
 
-                ServerConfigurationManager.SetPreferredMetadataService(service);
+                ServerConfigurationManager.SetPreferredMetadataService("Media Browser Xml");
             }
 
             ServerConfigurationManager.Configuration.DefaultMetadataSettingsApplied = true;
