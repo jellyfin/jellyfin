@@ -57,6 +57,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return serverAddress;
         };
 
+        self.apiPrefix = function () {
+
+            return "/mediabrowser";
+        };
+
         /**
          * Gets or sets the current user id.
          */
@@ -176,7 +181,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             var url = serverAddress;
 
-            url += "/mediabrowser/" + name;
+            url += self.apiPrefix() + "/" + name;
 
             if (params) {
                 url += "?" + $.param(params);
@@ -187,7 +192,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         self.openWebSocket = function (webSocketAddress) {
 
-            var url = webSocketAddress + "/mediabrowser";
+            var url = webSocketAddress + self.apiPrefix();
 
             webSocket = new WebSocket(url);
 
@@ -2159,7 +2164,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                     options.maxHeight = Math.round(options.maxHeight * ratio);
                 }
             }
-            
+
             options.quality = options.quality || (options.type.toLowerCase() == 'backdrop' ? 80 : 90);
         }
 

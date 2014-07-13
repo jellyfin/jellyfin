@@ -6,11 +6,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
@@ -79,29 +79,29 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             {
                 if (string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Trailer>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, false, false);
+                    return FindMovie<Trailer>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, false, false);
                 }
 
                 if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<MusicVideo>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, false, false);
+                    return FindMovie<MusicVideo>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, false, false);
                 }
 
                 if (string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<AdultVideo>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true, false);
+                    return FindMovie<AdultVideo>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, true, false);
                 }
 
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true, false);
+                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, true, false);
                 }
 
                 if (string.IsNullOrEmpty(collectionType) ||
                     string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren, args.DirectoryService, true, true);
+                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, true, true);
                 }
 
                 return null;
@@ -187,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <param name="directoryService">The directory service.</param>
         /// <param name="supportMultiFileItems">if set to <c>true</c> [support multi file items].</param>
         /// <returns>Movie.</returns>
-        private T FindMovie<T>(string path, Folder parent, IEnumerable<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, bool supportMultiFileItems, bool supportsMultipleSources)
+        private T FindMovie<T>(string path, Folder parent, List<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, bool supportMultiFileItems, bool supportsMultipleSources)
             where T : Video, new()
         {
             var movies = new List<T>();

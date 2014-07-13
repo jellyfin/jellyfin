@@ -1,20 +1,42 @@
-﻿$.ajaxSetup({
-    crossDomain: true,
+﻿(function() {
+    
+    function onAuthFailure(data, textStatus, xhr) {
 
-    error: function (event) {
-        Dashboard.hideLoadingMsg();
+        var url = (this.url || '').toLowerCase();
 
-        if (!Dashboard.suppressAjaxErrors) {
-            setTimeout(function () {
-
-
-                var msg = event.getResponseHeader("X-Application-Error-Code") || Dashboard.defaultErrorMessage;
-
-                Dashboard.showError(msg);
-            }, 500);
+        // Bounce to the login screen, but not if a password entry fails, obviously
+        if (url.indexOf('/password') == -1 && url.indexOf('/authenticate') == -1) {
+            Dashboard.logout(false);
         }
     }
-});
+
+    $.ajaxSetup({
+        crossDomain: true,
+
+        statusCode: {
+
+            401: onAuthFailure,
+            403: onAuthFailure
+        },
+
+        error: function (event) {
+
+            Dashboard.hideLoadingMsg();
+
+            if (!Dashboard.suppressAjaxErrors) {
+                setTimeout(function () {
+
+                    var msg = event.getResponseHeader("X-Application-Error-Code") || Dashboard.defaultErrorMessage;
+                    Dashboard.showError(msg);
+
+                }, 500);
+            }
+        }
+    });
+
+
+
+})();
 
 if ($.browser.msie) {
 
@@ -102,16 +124,21 @@ var Dashboard = {
         Dashboard.getUserPromise = null;
     },
 
-    logout: function () {
+    logout: function (logoutWithServer) {
 
         if (window.localStorage) {
             localStorage.removeItem("userId");
             localStorage.removeItem("token");
         }
 
-        ApiClient.logout().done(function () {
+        if (logoutWithServer === false) {
             window.location = "login.html";
-        });
+        } else {
+            ApiClient.logout().done(function () {
+                window.location = "login.html";
+            });
+
+        }
     },
 
     showError: function (message) {

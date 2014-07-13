@@ -211,7 +211,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
             }
         }
 
-        public void SetPreferredMetadataService(string service)
+        public void DisableMetadataService(string service)
         {
             DisableMetadataService(typeof(Movie), Configuration, service);
             DisableMetadataService(typeof(MusicAlbum), Configuration, service);

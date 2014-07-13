@@ -1207,18 +1207,20 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="deviceId">The device identifier.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
+        /// <param name="isLocal">if set to <c>true</c> [is local].</param>
         /// <returns>Task{SessionInfo}.</returns>
         /// <exception cref="System.UnauthorizedAccessException">Invalid user or password entered.</exception>
-        /// <exception cref="UnauthorizedAccessException"></exception>
+        /// <exception cref="UnauthorizedAccessException">Invalid user or password entered.</exception>
         public async Task<AuthenticationResult> AuthenticateNewSession(string username,
             string password,
             string clientType,
             string appVersion,
             string deviceId,
             string deviceName,
-            string remoteEndPoint)
+            string remoteEndPoint,
+            bool isLocal)
         {
-            var result = (IsLocalhost(remoteEndPoint) && string.Equals(clientType, "Dashboard", StringComparison.OrdinalIgnoreCase)) ||
+            var result = (isLocal && string.Equals(clientType, "Dashboard", StringComparison.OrdinalIgnoreCase)) ||
                 await _userManager.AuthenticateUser(username, password).ConfigureAwait(false);
 
             if (!result)
@@ -1335,35 +1337,6 @@ namespace MediaBrowser.Server.Implementations.Session
         public Task RevokeToken(string token)
         {
             return Logout(token);
-        }
-
-        private bool IsLocalhost(string remoteEndpoint)
-        {
-            if (string.IsNullOrWhiteSpace(remoteEndpoint))
-            {
-                throw new ArgumentNullException("remoteEndpoint");
-            }
-
-            return remoteEndpoint.IndexOf("localhost", StringComparison.OrdinalIgnoreCase) != -1 ||
-                remoteEndpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
-                remoteEndpoint.StartsWith("::", StringComparison.OrdinalIgnoreCase);
-        }
-
-        public bool IsInLocalNetwork(string remoteEndpoint)
-        {
-            if (string.IsNullOrWhiteSpace(remoteEndpoint))
-            {
-                throw new ArgumentNullException("remoteEndpoint");
-            }
-
-            // Private address space:
-            // http://en.wikipedia.org/wiki/Private_network
-
-            return IsLocalhost(remoteEndpoint) ||
-                remoteEndpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
-                remoteEndpoint.StartsWith("192.", StringComparison.OrdinalIgnoreCase) ||
-                remoteEndpoint.StartsWith("172.", StringComparison.OrdinalIgnoreCase) ||
-                remoteEndpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

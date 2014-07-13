@@ -337,7 +337,7 @@ namespace MediaBrowser.ServerApplication
                 // Make sure xbmc metadata is disabled for existing users.
                 // New users will be handled by the startup wizard.
 
-                ServerConfigurationManager.SetPreferredMetadataService("Media Browser Xml");
+                ServerConfigurationManager.DisableMetadataService("Xbmc Nfo");
             }
 
             ServerConfigurationManager.Configuration.DefaultMetadataSettingsApplied = true;

@@ -9,7 +9,7 @@
 
         return LibraryBrowser.getPosterViewHtml({
             items: channels,
-            shape: "smallBackdrop",
+            shape: "miniBackdrop",
             centerText: true
         });
     }

@@ -65,6 +65,11 @@ namespace MediaBrowser.Api
             }
         }
 
+        private DateTime NormalizeDateTime(DateTime val)
+        {
+            return DateTime.SpecifyKind(val, DateTimeKind.Utc);
+        }
+
         private void UpdateItem(BaseItemDto request, BaseItem item)
         {
             item.Name = request.Name;
@@ -140,11 +145,11 @@ namespace MediaBrowser.Api
 
             if (request.DateCreated.HasValue)
             {
-                item.DateCreated = request.DateCreated.Value.ToUniversalTime();
+                item.DateCreated = NormalizeDateTime(request.DateCreated.Value);
             }
 
-            item.EndDate = request.EndDate.HasValue ? request.EndDate.Value.ToUniversalTime() : (DateTime?)null;
-            item.PremiereDate = request.PremiereDate.HasValue ? request.PremiereDate.Value.ToUniversalTime() : (DateTime?)null;
+            item.EndDate = request.EndDate.HasValue ? NormalizeDateTime(request.EndDate.Value) : (DateTime?)null;
+            item.PremiereDate = request.PremiereDate.HasValue ? NormalizeDateTime(request.PremiereDate.Value) : (DateTime?)null;
             item.ProductionYear = request.ProductionYear;
             item.OfficialRating = request.OfficialRating;
             item.CustomRating = request.CustomRating;

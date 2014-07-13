@@ -122,42 +122,44 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result);
         }
 
+        const string XbmcMetadata = "Xbmc Nfo";
+        const string MediaBrowserMetadata = "Media Browser Xml";
+
         public void Post(AutoSetMetadataOptions request)
         {
             var service = AutoDetectMetadataService();
 
             Logger.Info("Setting preferred metadata format to " + service);
 
-            _configurationManager.SetPreferredMetadataService(service);
+            var serviceToDisable = string.Equals(service, XbmcMetadata) ?
+                MediaBrowserMetadata :
+                XbmcMetadata;
+
+            _configurationManager.DisableMetadataService(serviceToDisable);
             _configurationManager.SaveConfiguration();
         }
 
         private string AutoDetectMetadataService()
         {
-            const string xbmc = "Xbmc Nfo";
-            const string mb = "Media Browser Xml";
-
             var paths = _libraryManager.GetDefaultVirtualFolders()
                 .SelectMany(i => i.Locations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(i => new DirectoryInfo(i))
                 .ToList();
 
-            if (paths.Select(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
-                .SelectMany(i => i)
+            if (paths.SelectMany(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
                 .Any())
             {
-                return xbmc;
+                return XbmcMetadata;
             }
 
-            if (paths.Select(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
-                .SelectMany(i => i)
+            if (paths.SelectMany(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
                 .Any(i => string.Equals(i.Name, "series.xml", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "movie.xml", StringComparison.OrdinalIgnoreCase)))
             {
-                return mb;
+                return MediaBrowserMetadata;
             }
             
-            return xbmc;
+            return XbmcMetadata;
         }
 
         /// <summary>

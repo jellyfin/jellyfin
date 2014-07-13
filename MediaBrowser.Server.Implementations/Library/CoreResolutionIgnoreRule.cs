@@ -14,21 +14,6 @@ namespace MediaBrowser.Server.Implementations.Library
     /// </summary>
     public class CoreResolutionIgnoreRule : IResolverIgnoreRule
     {
-        /// <summary>
-        /// Any folder named in this list will be ignored - can be added to at runtime for extensibility
-        /// </summary>
-        private static readonly Dictionary<string, string> IgnoreFolders = new List<string>
-        {
-                "metadata",
-                "ps3_update",
-                "ps3_vprm",
-                "extrafanart",
-                "extrathumbs",
-                ".actors",
-                ".wd_tv"
-
-        }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
-
         private readonly IFileSystem _fileSystem;
 
         public CoreResolutionIgnoreRule(IFileSystem fileSystem)
@@ -78,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.Library
             if (args.IsDirectory)
             {
                 // Ignore any folders in our list
-                if (IgnoreFolders.ContainsKey(filename))
+                if (EntityResolutionHelper.IgnoreFolders.Contains(filename, StringComparer.OrdinalIgnoreCase))
                 {
                     return true;
                 }
