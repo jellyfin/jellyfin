@@ -129,7 +129,7 @@
         
         var options = {
 
-            Limit: screenWidth >= 2400 ? 30 : (screenWidth >= 1920 ? 15 : (screenWidth >= 1440 ? 12 : (screenWidth >= 800 ? 9 : 8))),
+            Limit: screenWidth >= 2400 ? 24 : (screenWidth >= 1920 ? 20 : (screenWidth >= 1440 ? 12 : (screenWidth >= 800 ? 9 : 8))),
             Fields: "PrimaryImageAspectRatio",
             IsPlayed: false,
             IsFolder: false
@@ -279,7 +279,7 @@
             SortOrder: "Descending",
             MediaTypes: "Video",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 9 : (screenWidth >= 1200 ? 9 : 6),
+            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1200 ? 9 : 6),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             CollapseBoxSetItems: false,

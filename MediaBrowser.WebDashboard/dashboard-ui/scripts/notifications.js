@@ -17,6 +17,10 @@
 
         self.updateNotificationCount = function () {
 
+            if (!Dashboard.getCurrentUserId()) {
+                return;
+            }
+
             self.getNotificationsSummary().done(function (summary) {
 
                 var item = $('.btnNotificationsInner').removeClass('levelNormal').removeClass('levelWarning').removeClass('levelError').html(summary.UnreadCount);

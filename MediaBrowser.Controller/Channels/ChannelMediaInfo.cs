@@ -29,6 +29,8 @@ namespace MediaBrowser.Controller.Channels
 
         public MediaProtocol Protocol { get; set; }
 
+        public long? RunTimeTicks { get; set; }
+
         public ChannelMediaInfo()
         {
             RequiredHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

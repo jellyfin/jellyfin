@@ -5,7 +5,10 @@
         var url = (this.url || '').toLowerCase();
 
         // Bounce to the login screen, but not if a password entry fails, obviously
-        if (url.indexOf('/password') == -1 && url.indexOf('/authenticate') == -1) {
+        if (url.indexOf('/password') == -1 &&
+            url.indexOf('/authenticate') == -1 &&
+            !$($.mobile.activePage).is('.standalonePage')) {
+
             Dashboard.logout(false);
         }
     }

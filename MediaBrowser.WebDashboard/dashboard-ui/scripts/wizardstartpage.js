@@ -28,7 +28,7 @@
 
     }
 
-    $(document).on('pageshow', "#wizardStartPage", function () {
+    $(document).on('pagebeforeshow', "#wizardStartPage", function () {
 
         Dashboard.showLoadingMsg();
         var page = this;

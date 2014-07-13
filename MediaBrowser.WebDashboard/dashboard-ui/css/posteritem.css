@@ -1,10 +1,10 @@
 ﻿.posterItem {
     margin: 5px 5px;
     text-shadow: none;
-    font-weight: normal!important;
+    font-weight: normal !important;
     display: inline-block;
     position: relative;
-    color: #fff!important;
+    color: #fff !important;
     text-decoration: none;
     text-align: left;
     -webkit-transition: all 500ms ease;
@@ -29,7 +29,7 @@
 }
 
     .posterItemOverlayInner button:last-child {
-        margin-right: 0!important;
+        margin-right: 0 !important;
     }
 
     .posterItemOverlayInner p {
@@ -274,11 +274,11 @@
 }
 
 .sessionPosterItem .posterItemName {
-    color: #fff!important;
+    color: #fff !important;
 }
 
 .sessionPosterItem .posterItemDefaultText {
-    color: #000!important;
+    color: #000 !important;
     font-weight: normal !important;
     top: 42%;
 }
@@ -488,12 +488,21 @@
     }
 }
 
+@media all and (min-width: 1920px) {
 
-@media all and (min-width: 1600px) {
-
-    .myLibraryPosterItem {
-        width: 16%;
-        /* Specify a min width just in case the container doesn't have a width */
-        min-width: 220px;
+    .backdropPosterItem {
+        width: 290px;
     }
+
+        .backdropPosterItem .posterItemImage {
+            height: 163.125px;
+        }
+
+    .portraitPosterItem {
+        width: 160px;
+    }
+
+        .portraitPosterItem .posterItemImage {
+            height: 240px;
+        }
 }

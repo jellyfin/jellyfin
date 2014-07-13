@@ -12,6 +12,11 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="result">The result.</param>
         public static void NormalizeFFProbeResult(InternalMediaInfoResult result)
         {
+            if (result == null)
+            {
+                throw new ArgumentNullException("result");
+            }
+
             if (result.format != null && result.format.tags != null)
             {
                 result.format.tags = ConvertDictionaryToCaseInSensitive(result.format.tags);

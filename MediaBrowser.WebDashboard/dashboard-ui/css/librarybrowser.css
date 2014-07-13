@@ -119,7 +119,11 @@
 
 @media all and (min-width: 1920px) {
 
-    .squareEhsContent {
+     .ehsContent {
+        width: 1200px;
+    }
+
+   .squareEhsContent {
         width: 1200px;
     }
 }

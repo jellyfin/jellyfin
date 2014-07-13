@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
-                await FanartArtistProvider.Current.EnsureMovieXml(artistMusicBrainzId, cancellationToken).ConfigureAwait(false);
+                await FanartArtistProvider.Current.EnsureArtistXml(artistMusicBrainzId, cancellationToken).ConfigureAwait(false);
 
                 var artistXmlPath = FanartArtistProvider.GetArtistXmlPath(_config.CommonApplicationPaths, artistMusicBrainzId);
 
