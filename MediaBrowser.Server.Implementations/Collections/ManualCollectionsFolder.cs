@@ -26,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.Collections
 
         public override bool IsHiddenFromUser(User user)
         {
-            return true;
+            return !user.Configuration.DisplayCollectionsView;
         }
 
         public override string CollectionType

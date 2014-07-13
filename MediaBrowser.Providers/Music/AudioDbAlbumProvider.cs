@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -86,6 +87,8 @@ namespace MediaBrowser.Providers.Music
 
             item.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
             item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, result.strMusicBrainzID);
+
+            item.Overview = (result.strDescriptionEN ?? string.Empty).StripHtml();
         }
 
         public string Name

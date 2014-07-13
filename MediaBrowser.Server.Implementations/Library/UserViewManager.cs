@@ -10,12 +10,12 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
+using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -82,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 list.Add(await GetUserView(CollectionType.Games, user, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
-            if (user.Configuration.DisplayCollectionsView ||
+            if (user.Configuration.DisplayCollectionsView &&
                 recursiveChildren.OfType<BoxSet>().Any())
             {
                 list.Add(await GetUserView(CollectionType.BoxSets, user, CollectionType.BoxSets, cancellationToken).ConfigureAwait(false));

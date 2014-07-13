@@ -79,7 +79,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!String.IsNullOrEmpty(artistMusicBrainzId))
             {
-                await EnsureMovieXml(artistMusicBrainzId, cancellationToken).ConfigureAwait(false);
+                await EnsureArtistXml(artistMusicBrainzId, cancellationToken).ConfigureAwait(false);
 
                 var artistXmlPath = GetArtistXmlPath(_config.CommonApplicationPaths, artistMusicBrainzId);
 
@@ -390,7 +390,7 @@ namespace MediaBrowser.Providers.Music
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
-        internal Task EnsureMovieXml(string musicBrainzId, CancellationToken cancellationToken)
+        internal Task EnsureArtistXml(string musicBrainzId, CancellationToken cancellationToken)
         {
             var xmlPath = GetArtistXmlPath(_config.ApplicationPaths, musicBrainzId);
 
