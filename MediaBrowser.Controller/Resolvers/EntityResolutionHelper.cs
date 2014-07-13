@@ -15,6 +15,21 @@ namespace MediaBrowser.Controller.Resolvers
     public static class EntityResolutionHelper
     {
         /// <summary>
+        /// Any folder named in this list will be ignored - can be added to at runtime for extensibility
+        /// </summary>
+        public static readonly List<string> IgnoreFolders = new List<string>
+        {
+                "metadata",
+                "ps3_update",
+                "ps3_vprm",
+                "extrafanart",
+                "extrathumbs",
+                ".actors",
+                ".wd_tv"
+
+        };
+
+        /// <summary>
         /// Any extension in this list is considered a video file - can be added to at runtime for extensibility
         /// </summary>
         public static List<string> VideoFileExtensions = new List<string>

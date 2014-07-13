@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
@@ -11,6 +12,7 @@ using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
@@ -168,6 +170,7 @@ namespace MediaBrowser.Api
         private readonly IDtoService _dtoService;
         private readonly ISessionManager _sessionMananger;
         private readonly IServerConfigurationManager _config;
+        private readonly INetworkManager _networkManager;
 
         public IAuthorizationContext AuthorizationContext { get; set; }
 
@@ -178,12 +181,13 @@ namespace MediaBrowser.Api
         /// <param name="dtoService">The dto service.</param>
         /// <param name="sessionMananger">The session mananger.</param>
         /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
-        public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger, IServerConfigurationManager config)
+        public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager)
         {
             _userManager = userManager;
             _dtoService = dtoService;
             _sessionMananger = sessionMananger;
             _config = config;
+            _networkManager = networkManager;
         }
 
         public object Get(GetPublicUsers request)
@@ -200,18 +204,65 @@ namespace MediaBrowser.Api
                 });
             }
 
-            // TODO: Add or is authenticated
-            if (_sessionMananger.IsInLocalNetwork(Request.RemoteIp))
+            // TODO: Uncomment this once all clients can handle an empty user list.
+            return Get(new GetUsers
             {
-                return Get(new GetUsers
-                {
-                    IsHidden = false,
-                    IsDisabled = false
-                });
+                IsHidden = false,
+                IsDisabled = false
+            });
+
+            //// TODO: Add or is authenticated
+            //if (Request.IsLocal || IsInLocalNetwork(Request.RemoteIp))
+            //{
+            //    return Get(new GetUsers
+            //    {
+            //        IsHidden = false,
+            //        IsDisabled = false
+            //    });
+            //}
+
+            //// Return empty when external
+            //return ToOptimizedResult(new List<UserDto>());
+        }
+
+        private bool IsInLocalNetwork(string remoteEndpoint)
+        {
+            if (string.IsNullOrWhiteSpace(remoteEndpoint))
+            {
+                throw new ArgumentNullException("remoteEndpoint");
             }
 
-            // Return empty when external
-            return ToOptimizedResult(new List<UserDto>());
+            IPAddress address;
+            if (!IPAddress.TryParse(remoteEndpoint, out address))
+            {
+                return true;
+            }
+
+            const int lengthMatch = 4;
+
+            if (remoteEndpoint.Length >= lengthMatch)
+            {
+                var prefix = remoteEndpoint.Substring(0, lengthMatch);
+
+                if (_networkManager.GetLocalIpAddresses()
+                    .Any(i => i.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+            }
+
+            // Private address space:
+            // http://en.wikipedia.org/wiki/Private_network
+
+            return
+
+                // If url was requested with computer name, we may see this
+                remoteEndpoint.IndexOf("::", StringComparison.OrdinalIgnoreCase) != -1 ||
+
+                remoteEndpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
+                remoteEndpoint.StartsWith("192.", StringComparison.OrdinalIgnoreCase) ||
+                remoteEndpoint.StartsWith("172.", StringComparison.OrdinalIgnoreCase) ||
+                remoteEndpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -307,7 +358,7 @@ namespace MediaBrowser.Api
             var auth = AuthorizationContext.GetAuthorizationInfo(Request);
 
             var result = _sessionMananger.AuthenticateNewSession(request.Username, request.Password, auth.Client, auth.Version,
-                        auth.DeviceId, auth.Device, Request.RemoteIp).Result;
+                        auth.DeviceId, auth.Device, Request.RemoteIp, Request.IsLocal).Result;
 
             return ToOptimizedResult(result);
         }

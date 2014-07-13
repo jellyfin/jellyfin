@@ -93,6 +93,12 @@ namespace MediaBrowser.Model.ApiClient
         Task ReportCapabilities(ClientCapabilities capabilities, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Logouts this instance.
+        /// </summary>
+        /// <returns>Task.</returns>
+        Task Logout();
+
+        /// <summary>
         /// Gets the index of the game players.
         /// </summary>
         /// <param name="userId">The user id.</param>

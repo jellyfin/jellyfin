@@ -177,17 +177,27 @@ namespace MediaBrowser.Common.Implementations.Updates
         {
             if (_lastPackageListResult != null)
             {
-                // Let dev users get results more often for testing purposes
-                var cacheLength = _config.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Dev
-                                      ? TimeSpan.FromMinutes(3)
-                                      : TimeSpan.FromHours(6);
+                TimeSpan cacheLength;
+
+                switch (_config.CommonConfiguration.SystemUpdateLevel)
+                {
+                    case PackageVersionClass.Beta:
+                        cacheLength = TimeSpan.FromMinutes(30);
+                        break;
+                    case PackageVersionClass.Dev:
+                        cacheLength = TimeSpan.FromMinutes(3);
+                        break;
+                    default:
+                        cacheLength = TimeSpan.FromHours(6);
+                        break;
+                }
 
                 if ((DateTime.UtcNow - _lastPackageListResult.Item2) < cacheLength)
                 {
                     return _lastPackageListResult.Item1;
                 }
             }
-            
+
             using (var json = await _httpClient.Get(Constants.Constants.MbAdminUrl + "service/MB3Packages.json", cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -274,7 +284,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         {
             var packages = await GetAvailablePackages(CancellationToken.None).ConfigureAwait(false);
 
-            var package = packages.FirstOrDefault(p => string.Equals(p.guid, guid ?? "none", StringComparison.OrdinalIgnoreCase)) 
+            var package = packages.FirstOrDefault(p => string.Equals(p.guid, guid ?? "none", StringComparison.OrdinalIgnoreCase))
                             ?? packages.FirstOrDefault(p => p.name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (package == null)
@@ -310,7 +320,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <returns>PackageVersionInfo.</returns>
         public PackageVersionInfo GetLatestCompatibleVersion(IEnumerable<PackageInfo> availablePackages, string name, string guid, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release)
         {
-            var package = availablePackages.FirstOrDefault(p => string.Equals(p.guid, guid ?? "none", StringComparison.OrdinalIgnoreCase)) 
+            var package = availablePackages.FirstOrDefault(p => string.Equals(p.guid, guid ?? "none", StringComparison.OrdinalIgnoreCase))
                             ?? availablePackages.FirstOrDefault(p => p.name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (package == null)
