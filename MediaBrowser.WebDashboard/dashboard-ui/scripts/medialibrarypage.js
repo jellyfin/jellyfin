@@ -228,7 +228,7 @@
             { name: "Home videos", value: "homevideos" },
             { name: "Music videos", value: "musicvideos" },
             { name: "Photos", value: "photos" },
-            { name: "Trailers", value: "trailers" },
+            //{ name: "Trailers", value: "trailers" },
             { name: "Adult videos", value: "adultvideos" },
             { name: "Mixed movies & tv", value: "mixed" }
         ];

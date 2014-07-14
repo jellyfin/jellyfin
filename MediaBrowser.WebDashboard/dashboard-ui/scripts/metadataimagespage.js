@@ -405,25 +405,25 @@
         loadTabs(page, [
 
             { name: 'Movies', type: 'Movie' },
-            { name: 'Trailers', type: 'Trailer' },
+            //{ name: 'Trailers', type: 'Trailer' },
             { name: 'Collections', type: 'BoxSet' },
             { name: 'TV Series', type: 'Series' },
             { name: 'TV Seasons', type: 'Season' },
             { name: 'TV Episodes', type: 'Episode' },
             { name: 'Games', type: 'Game' },
             { name: 'Game Systems', type: 'GameSystem' },
-            { name: 'Game Genres', type: 'GameGenre' },
+            //{ name: 'Game Genres', type: 'GameGenre' },
             { name: 'Music Artists', type: 'MusicArtist' },
             { name: 'Music Albums', type: 'MusicAlbum' },
             { name: 'Music Videos', type: 'MusicVideo' },
-            { name: 'Music Genres', type: 'MusicGenre' },
+            //{ name: 'Music Genres', type: 'MusicGenre' },
             { name: 'Songs', type: 'Audio' },
             { name: 'Home Videos', type: 'Video' },
             { name: 'Books', type: 'Book' },
             { name: 'Adult Videos', type: 'AdultVideo' },
-            { name: 'People', type: 'Person' },
-            { name: 'Genres', type: 'Genre' },
-            { name: 'Studios', type: 'Studio' }
+            { name: 'People', type: 'Person' }
+            //{ name: 'Genres', type: 'Genre' },
+            //{ name: 'Studios', type: 'Studio' }
         ]);
     }
 
