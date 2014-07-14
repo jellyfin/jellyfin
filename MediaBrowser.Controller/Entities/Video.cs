@@ -326,7 +326,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                     {
-                        return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsMultiPartFolder(i.FullName) && EntityResolutionHelper.IsMultiPartFile(i.Name);
+                        return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsMultiPartFolder(i.FullName);
                     }
 
                     return false;
