@@ -265,7 +265,7 @@ namespace MediaBrowser.Providers.Subtitles
             var hasCopy = hash;
 
             return results.Where(x => x.SubBad == "0" && mediaFilter(x))
-                    .OrderBy(x => x.MovieHash == hash)
+                    .OrderBy(x => (x.MovieHash == hash ? 0 : 1))
                     .ThenBy(x => Math.Abs(long.Parse(x.MovieByteSize, _usCulture) - movieByteSize))
                     .ThenByDescending(x => int.Parse(x.SubDownloadsCnt, _usCulture))
                     .ThenByDescending(x => double.Parse(x.SubRating, _usCulture))

@@ -305,11 +305,7 @@
 
     function onGroupedPosterItemClick(e) {
 
-        if ($(e.target).is('.posterItemOverlayTarget') ||
-            $(e.target).parents('.posterItemOverlayTarget').length) {
-            e.preventDefault();
-            return;
-        }
+        var target = $(e.target);
 
         var posterItem = this;
         var itemId = posterItem.getAttribute('data-itemid');
@@ -341,9 +337,12 @@
             var latestItems = response2[0];
 
             if (latestItems.length == 1) {
-                var first = latestItems[0];
-                Dashboard.navigate(LibraryBrowser.getHref(first));
-                return;
+
+                if (!target.is('a,button')) {
+                    var first = latestItems[0];
+                    Dashboard.navigate(LibraryBrowser.getHref(first));
+                    return;
+                }
             }
 
             var html = '<div data-role="popup" class="groupingMenu" data-theme="a">';
