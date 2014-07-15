@@ -1107,6 +1107,11 @@
                     }
                 }
 
+                if (options.showYear) {
+
+                    lines.push(item.ProductionYear || '');
+                }
+
                 html += LibraryBrowser.getPosterItemTextLines(lines, cssClass, !options.overlayText);
 
                 if (options.overlayText) {
