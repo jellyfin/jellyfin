@@ -17,7 +17,7 @@
         $("<input type='hidden' name='a3' class='pprecurring' />")
             .attr('value', $('#donateAmt', '#supporterPage').val())
             .appendTo("#payPalForm", '#supporterPage');
-        $("<input type='hidden' name='p3' value='1' class='pprecurring' />")
+        $("<input type='hidden' name='p3' value='6' class='pprecurring' />")
             .appendTo("#payPalForm", '#supporterPage');
         $("<input type='hidden' name='t3' value='M' class='pprecurring' />")
             .appendTo("#payPalForm", '#supporterPage');
