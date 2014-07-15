@@ -638,6 +638,11 @@
 
             return "<img src='css/images/chromecast/ic_media_route_on_holo_light.png' />";
         }
+        if (clientLowered == "chrome companion") {
+
+            return "<img src='css/images/clients/chrome_companion.png' />";
+        }
+
 
         return null;
     },
