@@ -426,9 +426,7 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "scripts/all.js" + versionString,
-                                "thirdparty/jstree1.0/jquery.jstree.min.js",
-                                "thirdparty/jquery.unveil-custom.js",
-                                "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"
+                                "thirdparty/jstree1.0/jquery.jstree.min.js"
             };
 
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
@@ -451,6 +449,9 @@ namespace MediaBrowser.WebDashboard.Api
             await AppendResource(memoryStream, "thirdparty/jquery-2.0.3.min.js", newLineBytes).ConfigureAwait(false);
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.js", newLineBytes).ConfigureAwait(false);
 
+            await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/cast_sender.js", newLineBytes).ConfigureAwait(false);
+            
             await AppendLocalization(memoryStream).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
@@ -584,8 +585,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "livetvsuggested.js",
                                 "livetvstatus.js",
                                 "livetvtimers.js",
-
-                                "localsettings.js",
 
                                 "loginpage.js",
                                 "logpage.js",
