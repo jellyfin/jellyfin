@@ -339,7 +339,6 @@ namespace MediaBrowser.Providers.Manager
                         break;
                     }
 
-                    failedProviderCount++;
                     Logger.Debug("{0} returned no metadata for {1}", providerName, item.Path ?? item.Name);
                 }
                 catch (OperationCanceledException)
