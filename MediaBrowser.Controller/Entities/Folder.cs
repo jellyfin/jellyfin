@@ -21,12 +21,13 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Folder
     /// </summary>
-    public class Folder : BaseItem, IHasThemeMedia
+    public class Folder : BaseItem, IHasThemeMedia, IHasTags
     {
         public static IUserManager UserManager { get; set; }
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
+        public List<string> Tags { get; set; }
 
         public Folder()
         {
@@ -34,6 +35,7 @@ namespace MediaBrowser.Controller.Entities
 
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
+            Tags = new List<string>();
         }
 
         /// <summary>

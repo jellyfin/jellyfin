@@ -66,6 +66,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 ? null
                 : UserManager.GetUserById(new Guid(auth.UserId));
 
+            if (user == null & !string.IsNullOrWhiteSpace(auth.UserId))
+            {
+                // TODO: Re-enable
+                //throw new ArgumentException("User with Id " + auth.UserId + " not found");
+            }
+
             if (user != null && user.Configuration.IsDisabled)
             {
                 throw new UnauthorizedAccessException("User account has been disabled.");

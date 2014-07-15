@@ -7,8 +7,15 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Studio
     /// </summary>
-    public class Studio : BaseItem, IItemByName
+    public class Studio : BaseItem, IItemByName, IHasTags
     {
+        public List<string> Tags { get; set; }
+
+        public Studio()
+        {
+            Tags = new List<string>();
+        }
+        
         /// <summary>
         /// Gets the user data key.
         /// </summary>
