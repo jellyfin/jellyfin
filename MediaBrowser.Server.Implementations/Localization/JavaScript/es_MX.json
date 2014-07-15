@@ -231,7 +231,7 @@
     "OptionBlockLiveTvPrograms": "Programas de TV en Vivo",
     "OptionBlockLiveTvChannels": "Canales de TV en Vivo",
     "OptionBlockChannelContent": "Contenido de Canales de Internet",
-    "ButtonRevoke": "Revoke",
-    "MessageConfirmRevokeApiKey": "Are you sure you wish to revoke this api key? The application's connection to Media Browser will be abruptly terminated.",
-    "HeaderConfirmRevokeApiKey": "Revoke Api Key"
+    "ButtonRevoke": "Revocar",
+    "MessageConfirmRevokeApiKey": "\u00bfEst\u00e1 seguro de querer revocar esta llave de API?",
+    "HeaderConfirmRevokeApiKey": "Revocar llave de API"
 }

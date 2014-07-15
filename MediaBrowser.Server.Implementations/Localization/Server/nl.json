@@ -868,5 +868,5 @@
     "HeaderNewApiKey": "Nieuwe API-sleutel",
     "LabelAppName": "Applicatie Naam",
     "LabelAppNameExample": "Voorbeeld: Sickbeard, NzbDrone",
-    "HeaderNewApiKeyHelp": "Grant an application permission to communicate with Media Browser."
+    "HeaderNewApiKeyHelp": "Verleen een applicatie toestemming om te communiceren met Media Browser."
 }
