@@ -125,7 +125,7 @@ namespace MediaBrowser.Api
             return ResultFactory.GetStaticFileResult(Request, path);
         }
 
-        private readonly char[] _dashReplaceChars = new[] { '?', '/' };
+        private readonly char[] _dashReplaceChars = { '?', '/' };
         private const char SlugChar = '-';
 
         protected MusicArtist GetArtist(string name, ILibraryManager libraryManager)
@@ -168,6 +168,11 @@ namespace MediaBrowser.Api
                 {
                     var user = userManager.GetUserById(userId.Value);
 
+                    if (user == null)
+                    {
+                        throw new ArgumentException("User not found");
+                    }
+
                     return folder.GetRecursiveChildren(user);
                 }
 
@@ -176,6 +181,11 @@ namespace MediaBrowser.Api
             if (userId.HasValue)
             {
                 var user = userManager.GetUserById(userId.Value);
+
+                if (user == null)
+                {
+                    throw new ArgumentException("User not found");
+                }
 
                 return userManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user);
             }

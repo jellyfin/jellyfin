@@ -188,4 +188,4 @@
     }
 };
 
-$(document).on('pagebeforeshow', "#loginPage", LoginPage.onPageShow);
+$(document).on('pageshow', "#loginPage", LoginPage.onPageShow);
