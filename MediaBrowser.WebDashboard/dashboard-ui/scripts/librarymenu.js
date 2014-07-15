@@ -223,7 +223,7 @@
 
     function getTopParentId() {
 
-        return getParameterByName('topParentId') || sessionStorage.getItem('topParentId') || null;
+        return getParameterByName('topParentId') || sessionStore.getItem('topParentId') || null;
     }
 
     window.LibraryMenu = {
@@ -263,7 +263,7 @@
             '' :
             getTopParentId() || '';
 
-        sessionStorage.setItem('topParentId', id);
+        sessionStore.setItem('topParentId', id);
 
         $('.lnkMediaFolder').each(function () {
 

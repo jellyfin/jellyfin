@@ -342,7 +342,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             AppendPlaylist(builder, playlistUrl, totalBitrate);
 
-            if (state.VideoRequest.VideoBitRate.HasValue)
+            if (EnableAdaptiveBitrateStreaming(state))
             {
                 var requestedVideoBitrate = state.VideoRequest.VideoBitRate.Value;
 
@@ -360,6 +360,17 @@ namespace MediaBrowser.Api.Playback.Hls
             return builder.ToString();
         }
 
+        private bool EnableAdaptiveBitrateStreaming(StreamState state)
+        {
+            if (string.IsNullOrWhiteSpace(state.MediaPath))
+            {
+                // Opening live streams is so slow it's not even worth it
+                return false;
+            }
+
+            return state.VideoRequest.VideoBitRate.HasValue;
+        }
+
         private void AppendPlaylist(StringBuilder builder, string url, int bitrate)
         {
             builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + bitrate.ToString(UsCulture));
@@ -368,8 +379,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private int GetBitrateVariation(int bitrate)
         {
-            // By default, vary by just 200k
-            var variation = 200000;
+            // By default, vary by just 100k
+            var variation = 100000;
 
             if (bitrate >= 10000000)
             {
@@ -390,6 +401,10 @@ namespace MediaBrowser.Api.Playback.Hls
             else if (bitrate >= 1000000)
             {
                 variation = 300000;
+            }
+            else if (bitrate >= 600000)
+            {
+                variation = 200000;
             }
 
             return variation;

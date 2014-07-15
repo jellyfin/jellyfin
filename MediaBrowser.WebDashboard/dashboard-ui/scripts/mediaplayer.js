@@ -1,4 +1,4 @@
-(function (document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window) {
+(function (document, setTimeout, clearTimeout, screen, store, $, setInterval, window) {
 
     function mediaPlayer() {
 
@@ -116,10 +116,12 @@
 
                 var currentSrc = element.currentSrc;
 
-                var transcodingExtension = self.getTranscodingExtension();
+                var transcodingExtension;
                 var isStatic;
 
                 if (self.currentItem.MediaType == "Video") {
+
+                    transcodingExtension = self.getTranscodingExtension();
 
                     if (params.AudioStreamIndex != null) {
                         currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
@@ -155,6 +157,8 @@
                     currentSrc = replaceQueryString(currentSrc, 'Static', finalParams.isStatic);
                     currentSrc = replaceQueryString(currentSrc, 'AudioCodec', finalParams.audioCodec);
                     isStatic = finalParams.isStatic;
+                } else {
+                    transcodingExtension = '.mp3';
                 }
 
                 var isSeekableMedia = self.currentMediaSource.RunTimeTicks;
@@ -436,7 +440,7 @@
         };
 
         self.getBitrateSetting = function () {
-            return parseInt(localStorage.getItem('preferredVideoBitrate') || '') || 1500000;
+            return parseInt(store.getItem('preferredVideoBitrate') || '') || 1500000;
         };
 
         function getOptimalMediaSource(mediaType, versions) {
@@ -768,13 +772,13 @@
         self.saveVolume = function (val) {
 
             if (val) {
-                localStorage.setItem("volume", val);
+                store.setItem("volume", val);
             }
 
         };
 
         self.getSavedVolume = function () {
-            return localStorage.getItem("volume") || 0.5;
+            return store.getItem("volume") || 0.5;
         };
 
         self.shuffle = function (id) {
@@ -1291,4 +1295,4 @@
     window.MediaController.setActivePlayer(window.MediaPlayer);
 
 
-})(document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window);
+})(document, setTimeout, clearTimeout, screen, window.store, $, setInterval, window);

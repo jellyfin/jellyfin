@@ -22,7 +22,7 @@
 
         var deferred = $.Deferred();
 
-        var data = sessionStorage.getItem(key);
+        var data = sessionStore.getItem(key);
 
         if (data) {
 
@@ -51,7 +51,7 @@
                     };
                 });
 
-                sessionStorage.setItem(key, JSON.stringify(images));
+                sessionStore.setItem(key, JSON.stringify(images));
                 deferred.resolveWith(null, [images]);
             });
         }
@@ -101,7 +101,7 @@
 
         var userId = Dashboard.getCurrentUserId();
 
-        var val = LocalSettings.val('enableBackdrops', userId);
+        var val = store.getItem('enableBackdrops', userId);
 
         // For bandwidth
         return val == '1' || (val != '0' && !$.browser.mobile);

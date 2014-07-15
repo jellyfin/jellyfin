@@ -203,7 +203,11 @@
             return self.getPlayerInfo().playableMediaTypes.indexOf(item.MediaType) != -1;
         };
 
-        self.canQueueMediaType = function (mediaType) {
+        self.canQueueMediaType = function (mediaType, itemType) {
+
+            if (itemType == 'MusicAlbum' || itemType == 'MusicArtist' || itemType == 'MusicGenre') {
+                mediaType = 'Audio';
+            }
 
             return currentPlayer.canQueueMediaType(mediaType);
         };

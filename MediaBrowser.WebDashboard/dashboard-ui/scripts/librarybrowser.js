@@ -1,4 +1,4 @@
-﻿var LibraryBrowser = (function (window, document, $, screen, localStorage) {
+﻿var LibraryBrowser = (function (window, document, $, screen, store) {
 
     $(function () {
         $("body").on("create", function () {
@@ -12,7 +12,7 @@
 
         getDefaultPageSize: function () {
 
-            var saved = localStorage.getItem('pagesize_');
+            var saved = store.getItem('pagesize_');
 
             if (saved) {
                 return parseInt(saved);
@@ -32,7 +32,7 @@
 
         loadSavedQueryValues: function (key, query) {
 
-            var values = localStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
+            var values = store.getItem(key + '_' + Dashboard.getCurrentUserId());
 
             if (values) {
 
@@ -56,7 +56,7 @@
             }
 
             try {
-                localStorage.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
+                store.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
             } catch (e) {
 
             }
@@ -65,7 +65,7 @@
         saveViewSetting: function (key, value) {
 
             try {
-                localStorage.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
+                store.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
             } catch (e) {
 
             }
@@ -74,7 +74,7 @@
         getSavedViewSetting: function (key) {
 
             var deferred = $.Deferred();
-            var val = localStorage.getItem(key + '_' + Dashboard.getCurrentUserId() + '_view');
+            var val = store.getItem(key + '_' + Dashboard.getCurrentUserId() + '_view');
 
             deferred.resolveWith(null, [val]);
             return deferred.promise();
@@ -325,7 +325,7 @@
                 html += '<li><a href="#" onclick="MediaController.play({ids:[\'' + itemId + '\'],startPositionTicks:' + resumePositionTicks + '});LibraryBrowser.closePlayMenu();">Resume</a></li>';
             }
 
-            if (MediaController.canQueueMediaType(mediaType)) {
+            if (MediaController.canQueueMediaType(mediaType, itemType)) {
                 html += '<li><a href="#" onclick="MediaController.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
             }
 
@@ -1507,7 +1507,7 @@
 
             if (query.Limit && updatePageSizeSetting !== false) {
                 try {
-                    localStorage.setItem('pagesize_', query.Limit);
+                    store.setItem('pagesize_', query.Limit);
                 } catch (e) {
 
                 }
@@ -2279,4 +2279,4 @@
 
     };
 
-})(window, document, jQuery, screen, localStorage);
+})(window, document, jQuery, screen, window.store);

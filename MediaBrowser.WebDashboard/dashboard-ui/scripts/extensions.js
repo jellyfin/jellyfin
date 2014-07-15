@@ -1,25 +1,4 @@
-﻿function IsStorageEnabled(skipRetry) {
-
-    if (!window.localStorage) {
-        return false;
-    }
-    try {
-        window.localStorage.setItem("__test", "data");
-    } catch (err) {
-
-        if (!skipRetry) {
-            if ((err.name).toUpperCase().indexOf('EXCEEDED') != -1) {
-                window.localStorage.clear();
-                return IsStorageEnabled(true);
-            }
-        }
-
-        return false;
-    }
-    return true;
-}
-
-function htmlEncode(value) {
+﻿function htmlEncode(value) {
     //create a in-memory div, set it's inner text(which jQuery automatically encodes)
     //then grab the encoded contents back out.  The div never exists on the page.
     return $('<div/>').text(value).html();
@@ -538,5 +517,45 @@ function ticks_to_human(str) {
 
         }
     };
+
+})(window);
+
+(function (window) {
+
+    function myStore(defaultObject) {
+
+        var self = this;
+        self.localData = {};
+
+        self.setItem = function (name, value) {
+
+            if (defaultObject) {
+                defaultObject.setItem(name, value);
+            } else {
+                self.localData[name] = value;
+            }
+        };
+
+        self.getItem = function (name) {
+
+            if (defaultObject) {
+                return defaultObject.getItem(name);
+            }
+
+            return self.localData[name];
+        };
+
+        self.removeItem = function (name) {
+
+            if (defaultObject) {
+                defaultObject.removeItem(name);
+            } else {
+                self.localData[name] = null;
+            }
+        };
+    }
+
+    window.store = new myStore(window.localStorage);
+    window.sessionStore = new myStore(window.sessionStorage);
 
 })(window);

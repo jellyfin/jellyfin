@@ -95,17 +95,14 @@ var Dashboard = {
 
     getAccessToken: function () {
 
-        return localStorage.getItem('token');
+        return store.getItem('token');
     },
 
     getCurrentUserId: function () {
 
-        if (!window.localStorage) {
-            return null;
-        }
-
         var autoLoginUserId = getParameterByName('u');
-        var storedUserId = localStorage.getItem("userId");
+
+        var storedUserId = store.getItem("userId");
 
         if (autoLoginUserId && autoLoginUserId != storedUserId) {
 
@@ -118,10 +115,8 @@ var Dashboard = {
 
     setCurrentUser: function (userId, token) {
 
-        if (window.localStorage) {
-            localStorage.setItem("userId", userId);
-            localStorage.setItem("token", token);
-        }
+        store.setItem("userId", userId);
+        store.setItem("token", token);
 
         ApiClient.setCurrentUserId(userId, token);
         Dashboard.getUserPromise = null;
@@ -129,10 +124,8 @@ var Dashboard = {
 
     logout: function (logoutWithServer) {
 
-        if (window.localStorage) {
-            localStorage.removeItem("userId");
-            localStorage.removeItem("token");
-        }
+        store.removeItem("userId");
+        store.removeItem("token");
 
         if (logoutWithServer === false) {
             window.location = "login.html";
@@ -1226,10 +1219,6 @@ var Dashboard = {
     if (!window.WebSocket) {
 
         alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
-    }
-
-    else if (!IsStorageEnabled()) {
-        alert("This browser does not support local storage or is running in private mode. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
     }
 
     window.ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);

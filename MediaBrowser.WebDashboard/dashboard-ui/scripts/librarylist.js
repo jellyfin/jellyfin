@@ -241,7 +241,7 @@
             html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
             var href = posterItem.getAttribute('data-href') || posterItem.href;
-            
+
             html += '<li><a href="' + href + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
             html += '<li><a href="' + href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
 
@@ -261,7 +261,7 @@
                 html += '<li data-icon="video"><a href="#" class="btnPlayTrailer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayTrailer') + '</a></li>';
             }
 
-            if (MediaController.canQueueMediaType(item.MediaType)) {
+            if (MediaController.canQueueMediaType(item.MediaType, item.Type)) {
                 html += '<li data-icon="plus"><a href="#" class="btnQueue" data-itemid="' + itemId + '">' + Globalize.translate('ButtonQueue') + '</a></li>';
             }
 
@@ -313,7 +313,7 @@
 
         var posterItem = this;
         var itemId = posterItem.getAttribute('data-itemid');
-        
+
         $(posterItem).addClass('hasContextMenu');
 
         var userId = Dashboard.getCurrentUserId();

@@ -25,7 +25,7 @@
                 shape: "backdrop",
                 preferThumb: true,
                 inheritThumb: false,
-                showParentTitle: true,
+                showParentTitle: false,
                 showUnplayedIndicator: false,
                 showChildCountIndicator: true,
                 overlayText: screenWidth >= 600,

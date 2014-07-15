@@ -398,7 +398,7 @@
                     var maxWidth = parseInt(this.getAttribute('data-maxwidth'));
                     var bitrate = parseInt(this.getAttribute('data-bitrate'));
 
-                    localStorage.setItem('preferredVideoBitrate', bitrate);
+                    store.setItem('preferredVideoBitrate', bitrate);
 
                     self.changeStream(self.getCurrentTicks(), {
 

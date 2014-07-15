@@ -2,8 +2,8 @@
 
     function loadForm(page, userId, displayPreferences) {
 
-        $('#selectThemeSong', page).val(LocalSettings.val('enableThemeSongs', userId) || '').selectmenu("refresh");
-        $('#selectBackdrop', page).val(LocalSettings.val('enableBackdrops', userId) || '').selectmenu("refresh");
+        $('#selectThemeSong', page).val(store.getItem('enableThemeSongs', userId) || '').selectmenu("refresh");
+        $('#selectBackdrop', page).val(store.getItem('enableBackdrops', userId) || '').selectmenu("refresh");
 
         $('#selectHomeSection1', page).val(displayPreferences.CustomPrefs.home0 || '').selectmenu("refresh");
         $('#selectHomeSection2', page).val(displayPreferences.CustomPrefs.home1 || '').selectmenu("refresh");
@@ -15,8 +15,8 @@
 
     function saveUser(page, userId, displayPreferences) {
 
-        LocalSettings.val('enableThemeSongs', userId, $('#selectThemeSong', page).val());
-        LocalSettings.val('enableBackdrops', userId, $('#selectBackdrop', page).val());
+        store.setItem('enableThemeSongs', userId, $('#selectThemeSong', page).val());
+        store.setItem('enableBackdrops', userId, $('#selectBackdrop', page).val());
 
         displayPreferences.CustomPrefs.home0 = $('#selectHomeSection1', page).val();
         displayPreferences.CustomPrefs.home1 = $('#selectHomeSection2', page).val();
