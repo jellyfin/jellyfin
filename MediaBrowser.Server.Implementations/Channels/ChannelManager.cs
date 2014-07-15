@@ -385,7 +385,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 var val = width.Value;
 
                 var res = list
-                    .OrderBy(i => i.Width.HasValue && i.Width.Value <= val)
+                    .OrderBy(i => (i.Width.HasValue && i.Width.Value <= val ? 0 : 1))
                     .ThenBy(i => Math.Abs((i.Width ?? 0) - val))
                     .ThenByDescending(i => i.Width ?? 0)
                     .ThenBy(list.IndexOf)
