@@ -191,7 +191,7 @@ namespace MediaBrowser.Server.Implementations.Collections
 
             if (fireEvent)
             {
-                EventHelper.FireEventIfNotNull(ItemsRemovedFromCollection, this, new CollectionModifiedEventArgs
+                EventHelper.FireEventIfNotNull(ItemsAddedToCollection, this, new CollectionModifiedEventArgs
                 {
                     Collection = collection,
                     ItemsChanged = itemList
